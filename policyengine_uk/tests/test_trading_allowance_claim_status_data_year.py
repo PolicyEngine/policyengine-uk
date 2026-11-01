@@ -274,6 +274,45 @@ def test_a_modifier_that_writes_the_profit_back_changes_nothing():
     assert deduction(reformed, 2027) == pytest.approx([2_000])
 
 
+def test_a_situation_built_without_a_profit_reads_the_years_one_is_set_for():
+    # Nothing was recorded at the build, so the profit set afterwards for
+    # 2025 is the one measured: under £1,000, so the 2027 raise gives £2,000.
+    import numpy as np
+
+    simulation = Simulation(situation=situation({"age": {2025: 40}}))
+    simulation.set_input("self_employment_income", 2025, np.array([5_000.0]))
+    simulation.set_input("trading_allowance_claim_status", 2025, np.array(["CLAIMANT"]))
+    assert deduction(simulation, 2027) == pytest.approx([2_000])
+
+
+def test_a_profit_set_after_the_build_leaves_the_recorded_year():
+    # The situation gave a 2025 profit, so a 2027 profit set afterwards is
+    # read as measured in 2025, as a modifier's or a derivative's would be.
+    import numpy as np
+
+    simulation = Simulation(situation=claimant_with_2025_inputs())
+    simulation.set_input("self_employment_income", 2027, np.array([5_000.0]))
+    assert deduction(simulation, 2027) == pytest.approx([2_000])
+
+
+def test_replacing_the_populations_takes_their_profits_years():
+    # Populations taken from a situation whose profit was given for 2027
+    # bring that year, so the profit already deducts £3,000, as in a fresh
+    # build from that situation.
+    donor = Simulation(
+        situation=situation(
+            {
+                "age": {2027: 40},
+                "self_employment_income": {2027: 5_000},
+                "trading_allowance_claim_status": {2027: "CLAIMANT"},
+            }
+        )
+    )
+    simulation = Simulation(situation=claimant_with_2025_inputs())
+    simulation.build_from_populations(donor.populations)
+    assert deduction(simulation, 2027) == [0]
+
+
 def test_a_core_simulation_over_data_reads_the_first_year_of_the_profit():
     # Data stored for every year, as a policyengine-core simulation over a
     # data frame holds them, were measured in their first year: 2025, under

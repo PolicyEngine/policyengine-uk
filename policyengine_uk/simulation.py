@@ -630,6 +630,9 @@ class Simulation(CoreSimulation):
         # the values the new populations hold, and only those: an equal value
         # a rebuild stores later (from a situation or a frame) is supplied.
         keep_population_records(self, adopted)
+        # The new populations bring their own self-employment profits, so
+        # record the years those were supplied for (see build_from_situation).
+        self._situation_profit_years = self._supplied_profit_years()
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
         # What is set here is supplied, even a value equal to the model's own,
@@ -1069,6 +1072,15 @@ class Simulation(CoreSimulation):
             # recompute them under the rebuilt parameters.
             self._invalidate_all_caches()
 
+    def _supplied_profit_years(self) -> tuple:
+        """The years self_employment_income is supplied for, earliest first."""
+        return tuple(
+            period.start.year
+            for period in supplied_input_periods(
+                self.populations["person"], "self_employment_income"
+            )
+        )
+
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
 
@@ -1091,12 +1103,7 @@ class Simulation(CoreSimulation):
         # was measured from them (utils/trading_allowance.py, _data_year), so
         # a later write of the profit, by a scenario or a derivative, must
         # not move it.
-        self._situation_profit_years = tuple(
-            period.start.year
-            for period in supplied_input_periods(
-                self.populations["person"], "self_employment_income"
-            )
-        )
+        self._situation_profit_years = self._supplied_profit_years()
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period

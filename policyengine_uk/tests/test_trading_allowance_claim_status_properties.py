@@ -29,7 +29,8 @@ simulation per draw:
    deduction, Class 4 profits and whether the person takes the allowance.
 2. A claimant's deductions never exceed the allowance's excess over £1,000,
    and with the default share a cut leaves their profit as reported.
-3. A larger allowance never raises taxable trade profit, for any status.
+3. A larger allowance never raises taxable trade profit, nor Class 4
+   profits, for any status.
 4. A smaller expense share never lowers a claimant's taxable trade profit.
 """
 
@@ -89,19 +90,25 @@ def sims():
         },
     }
     return {
-        (allowance, share): Simulation(
-            situation=situation,
-            reform={
-                "gov.hmrc.income_tax.allowances.trading_allowance": {
-                    str(YEAR): allowance
-                },
-                "gov.simulation.trading_allowance_claimant_expense_share": {
-                    str(YEAR): share
-                },
-            },
-        )
+        (allowance, share): changed(Simulation(situation=situation), allowance, share)
         for allowance, share in SCENARIOS
     }
+
+
+def changed(simulation, allowance, share, year=YEAR):
+    """The simulation with the allowance and expense share changed for the
+    year. Changing the parameters of a built simulation skips the baseline a
+    reform would build, which halves the fixture's cost; the input allowance
+    still comes from the unreformed tree."""
+    simulation.apply_parameter_changes(
+        {
+            "gov.hmrc.income_tax.allowances.trading_allowance": {str(year): allowance},
+            "gov.simulation.trading_allowance_claimant_expense_share": {
+                str(year): share
+            },
+        }
+    )
+    return simulation
 
 
 def run(sim, drawn):
@@ -231,7 +238,12 @@ def reference(r, allowance, share):
     finite = np.isfinite(receipts)
     near_full = non_claimant & finite
     near_full &= np.abs(np.where(finite, receipts, 0) + chapter_8 - allowance) <= margin
-    exact_tie = claimant & (loss == 0) & (allowance == claimant_expenses)
+    # Exact ties: the allowance equal to the expenses, or losses brought
+    # forward clearly absorbing both options, where both savings are nil.
+    absorbed = (ordinary <= brought_forward - margin) & (
+        with_allowance <= brought_forward - margin
+    )
+    exact_tie = claimant & (loss == 0) & ((allowance == claimant_expenses) | absorbed)
     near_loss = (loss > 0) | (claimant & covers)
     near_loss &= (np.abs(loss - saving) <= margin) & ~exact_tie
     advantage = np.where(np.isfinite(with_allowance), ordinary - with_allowance, -1)
@@ -295,12 +307,14 @@ def test_every_status_matches_the_act_and_more_allowance_never_charges_more(
                 np.abs(r["taxable"] - reported)[claimant]
                 <= tolerance(r["profit"])[claimant]
             ).all(), allowance
-    # 3. A larger allowance never raises taxable trade profit.
+    # 3. A larger allowance never raises taxable trade profit, nor the
+    # profits Class 4 charges before its own losses.
     for share in (1.0, 0.5, 0.0):
         levels = sorted(a for a, s in SCENARIOS if s == share)
-        taxable = [results[(a, share)]["taxable"] for a in levels]
-        for smaller, larger in zip(taxable, taxable[1:]):
-            assert (larger <= smaller + tolerance(smaller)).all(), share
+        for name in ("taxable", "class_4_profits"):
+            figures = [results[(a, share)][name] for a in levels]
+            for smaller, larger in zip(figures, figures[1:]):
+                assert (larger <= smaller + tolerance(smaller)).all(), (name, share)
     # 4. A smaller expense share never lowers a claimant's taxable profit.
     for allowance in (0, 300, 500):
         taxable = [results[(allowance, share)]["taxable"] for share in (1.0, 0.5, 0.0)]
@@ -324,20 +338,21 @@ def test_a_claimant_with_no_loss_takes_an_allowance_equal_to_their_expenses(
     count = 500
     expenses = round(share * {2026: 1_000, 2027: 3_000}[year], 2)
     people = {f"person_{i}": {"age": {year: 40}} for i in range(count)}
-    simulation = Simulation(
-        situation={
-            "people": people,
-            "benunits": {f"b_{i}": {"members": [f"person_{i}"]} for i in range(count)},
-            "households": {
-                f"h_{i}": {"members": [f"person_{i}"]} for i in range(count)
-            },
-        },
-        reform={
-            "gov.hmrc.income_tax.allowances.trading_allowance": {str(year): allowance},
-            "gov.simulation.trading_allowance_claimant_expense_share": {
-                str(year): share
-            },
-        },
+    simulation = changed(
+        Simulation(
+            situation={
+                "people": people,
+                "benunits": {
+                    f"b_{i}": {"members": [f"person_{i}"]} for i in range(count)
+                },
+                "households": {
+                    f"h_{i}": {"members": [f"person_{i}"]} for i in range(count)
+                },
+            }
+        ),
+        allowance,
+        share,
+        year,
     )
     some = rng.random(count) < 0.5
     simulation.set_input(
