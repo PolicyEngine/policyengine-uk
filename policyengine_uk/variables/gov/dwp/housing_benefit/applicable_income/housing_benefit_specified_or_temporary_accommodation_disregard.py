@@ -6,12 +6,30 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
     """Keep annual inputs, replacement formulas and computed aggregates out of
-    recalculation."""
+    recalculation. A defined_for mask on the model's formula is none of
+    these: the segment helpers apply it themselves (hb_apply_defined_for)."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
     if formula is None or formula.__code__ != default_formula.__code__:
         return True
     return hb_reads_no_other_variable(benunit, period, variable_name)
+
+
+def hb_apply_defined_for(benunit, period, variable_name, amount):
+    """The amount a segment helper rebuilt for the variable, where the
+    variable's defined_for condition holds, and the variable's default
+    elsewhere. Core masks the variable's annual output this way
+    (Simulation._calculate): it maps the condition to the variable's entity
+    and tests it for a value above zero. Reading defined_for from the
+    variable the simulation holds lets a condition a reform adds reach each
+    segment, and so the award, as it reaches the annual output."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.defined_for is None:
+        return amount
+    condition = benunit.simulation.calculate(
+        variable.defined_for, period, map_to=variable.entity.key
+    )
+    return where(np.asarray(condition) > 0, amount, variable.default_value)
 
 
 def hb_can_read_other_variables(variable, period):
@@ -47,7 +65,8 @@ def hb_reads_no_other_variable(benunit, period, variable_name):
 
 
 def hb_accommodation_segments(benunit, period, parameters):
-    """Full annual-equivalent accommodation amounts and fiscal-year weights."""
+    """Full annual-equivalent accommodation amounts and fiscal-year weights.
+    Each amount is nil where the disregard's defined_for condition fails."""
     name = "housing_benefit_specified_or_temporary_accommodation_disregard"
     if hb_uses_annual_override(
         benunit,
@@ -96,7 +115,8 @@ def hb_accommodation_segments(benunit, period, parameters):
             ],
             default=where(older, rates.single_older, rates.single_younger),
         )
-        yield where(applies, weekly * WEEKS_IN_YEAR, 0), share
+        amount = where(applies, weekly * WEEKS_IN_YEAR, 0)
+        yield hb_apply_defined_for(benunit, period, name, amount), share
 
 
 class housing_benefit_specified_or_temporary_accommodation_disregard(Variable):

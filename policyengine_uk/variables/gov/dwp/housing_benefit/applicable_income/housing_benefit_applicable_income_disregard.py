@@ -5,6 +5,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
+    hb_apply_defined_for,
     hb_uses_annual_override,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
@@ -16,7 +17,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 def hb_segment_deductions(benunit, period, parameters, accommodation):
     """Apply childcare/earnings limits to one full accommodation amount.
     Return the earnings disregard, the WTC disregard and the childcare
-    deduction."""
+    deduction, each nil where its defined_for condition fails."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     accommodation = min_(max_(accommodation, 0), max_(net - standard, 0))
@@ -47,7 +48,11 @@ def hb_segment_deductions(benunit, period, parameters, accommodation):
         net,
         standard + accommodation + additional,
     )
-    return disregard, wtc_disregard, childcare
+    return (
+        hb_apply_defined_for(benunit, period, name, disregard),
+        wtc_disregard,
+        childcare,
+    )
 
 
 class housing_benefit_applicable_income_disregard(Variable):

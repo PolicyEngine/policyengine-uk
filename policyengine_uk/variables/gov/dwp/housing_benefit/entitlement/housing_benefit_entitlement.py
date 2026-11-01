@@ -8,6 +8,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
+    hb_apply_defined_for,
     hb_uses_annual_override,
 )
 
@@ -28,6 +29,9 @@ class housing_benefit_entitlement(Variable):
         "ages and household status remain constant. Other parameters keep "
         "the model's annual convention. Supplied annual income/deductions "
         "and replacement formulas retain their normal override semantics. "
+        "A defined_for condition that a reform adds to the income, a "
+        "disregard, the childcare deduction or its limit applies in each "
+        "segment. "
         "Annual income intermediates are not period-specific assessments."
     )
     entity = BenUnit
@@ -113,9 +117,17 @@ class housing_benefit_entitlement(Variable):
             segment_income = where(
                 retain_annual_income,
                 income,
-                max_(
-                    0,
-                    income_before_deductions - disregard - wtc_disregard - childcare,
+                hb_apply_defined_for(
+                    benunit,
+                    period,
+                    "housing_benefit_applicable_income",
+                    max_(
+                        0,
+                        income_before_deductions
+                        - disregard
+                        - wtc_disregard
+                        - childcare,
+                    ),
                 ),
             )
             taper = max_(0, segment_income - applicable_amount) * withdrawal_rate

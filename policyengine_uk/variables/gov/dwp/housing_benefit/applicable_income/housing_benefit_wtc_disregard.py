@@ -10,6 +10,7 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
+    hb_apply_defined_for,
     hb_uses_annual_override,
 )
 
@@ -24,10 +25,11 @@ def hb_fixed_childcare_deduction(benunit, period, parameters):
         return benunit(childcare.__name__, period)
     limit = housing_benefit_childcare_earnings_limit
     if hb_uses_annual_override(benunit, period, limit.__name__, limit.formula):
-        return min_(
+        deduction = min_(
             hb_capped_childcare_charges(benunit, period, parameters),
             benunit(limit.__name__, period),
         )
+        return hb_apply_defined_for(benunit, period, childcare.__name__, deduction)
     return None
 
 
@@ -35,26 +37,42 @@ def hb_segment_childcare_deduction(benunit, period, parameters, accommodation):
     """The childcare deduction in force where the accommodation disregard has
     this full annual amount: the annual deduction where
     hb_fixed_childcare_deduction gives one, and otherwise the lesser of the
-    capped charge and the earnings and tax-credit limit."""
+    capped charge and the earnings and tax-credit limit. The limit is nil
+    where its defined_for condition fails, and so is the deduction where
+    its own fails."""
     childcare = hb_fixed_childcare_deduction(benunit, period, parameters)
     if childcare is not None:
         return childcare
-    return min_(
-        hb_capped_childcare_charges(benunit, period, parameters),
+    limit = hb_apply_defined_for(
+        benunit,
+        period,
+        housing_benefit_childcare_earnings_limit.__name__,
         hb_childcare_earnings_limit(benunit, period, parameters, accommodation),
+    )
+    return hb_apply_defined_for(
+        benunit,
+        period,
+        housing_benefit_applicable_income_childcare_element.__name__,
+        min_(hb_capped_childcare_charges(benunit, period, parameters), limit),
     )
 
 
 def hb_segment_wtc_disregard(benunit, period, parameters, accommodation, childcare):
     """The WTC disregard in one accommodation segment, where Sch 4 para
-    17(3)(b) counts this childcare deduction. A supplied, neutralized or
-    replaced annual amount applies in every segment."""
+    17(3)(b) counts this childcare deduction, and nil where its defined_for
+    condition fails. A supplied, neutralized or replaced annual amount
+    applies in every segment."""
     name = "housing_benefit_wtc_disregard"
     if hb_uses_annual_override(
         benunit, period, name, housing_benefit_wtc_disregard.formula
     ):
         return benunit(name, period)
-    return hb_wtc_disregard(benunit, period, parameters, accommodation, childcare)
+    return hb_apply_defined_for(
+        benunit,
+        period,
+        name,
+        hb_wtc_disregard(benunit, period, parameters, accommodation, childcare),
+    )
 
 
 class housing_benefit_wtc_disregard(Variable):
