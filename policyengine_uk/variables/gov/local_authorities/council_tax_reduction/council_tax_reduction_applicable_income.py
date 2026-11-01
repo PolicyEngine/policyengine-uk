@@ -13,8 +13,8 @@ class council_tax_reduction_applicable_income(Variable):
         "use the Secretary of State's Pension Credit assessment of income, plus "
         "the savings credit payable, where the award is savings credit only. "
         "Otherwise a pension-age family's net earnings are reduced by the "
-        "pensioner earnings disregards and its tariff income from capital "
-        "(council_tax_reduction_pensioner_tariff_income) is added. Great "
+        "pensioner earnings disregards, and we add its tariff income from "
+        "capital (council_tax_reduction_pensioner_tariff_income). Great "
         "Britain's pensioner schemes "
         "also exclude Child Benefit from general-rule income; statutory sick "
         "and maternity pay remain counted as earnings. The other adjustments those "
@@ -98,7 +98,7 @@ class council_tax_reduction_applicable_income(Variable):
         # 21(3); SSI 2021/249 reg 36(2)); the other schemes count the
         # applicant's and partner's alone. Anyone else in the benefit unit does
         # not count either. A household head who applies alone is the
-        # applicant, whatever else the benefit unit reads her as.
+        # applicant, whatever else the benefit unit reads them as.
         person = benunit.members
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         applicant_family = ~head_applies_alone

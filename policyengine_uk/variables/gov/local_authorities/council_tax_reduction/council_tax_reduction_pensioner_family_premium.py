@@ -8,13 +8,14 @@ class council_tax_reduction_pensioner_family_premium(Variable):
     label = "Council Tax Reduction pensioner family premium"
     documentation = (
         "The family premium in a pensioner's Council Tax Reduction applicable "
-        "amount, where the family includes a child or young person. Wales "
-        "keeps it. England's prescribed requirements make it nil for "
-        "reduction weeks beginning after 1 May 2016, and Scotland removed it "
-        "from 1 May 2016. Each saved it for families with a child who had a "
-        "reduction on 30 April 2016 until they make a new application or "
-        "have no child; that protection is not modelled. The model reads "
-        "each year's amount on 30 April, so 2016-17 keeps the premium."
+        "amount, where the family includes a child or young person. The Welsh "
+        "Ministers keep it. The Secretary of State made England's nil for "
+        "reduction weeks beginning after 1 May 2016, and the Scottish "
+        "Ministers removed Scotland's from 1 May 2016. Each kept it for "
+        "families with a child who had a reduction on 30 April 2016 until "
+        "they make a new application or have no child; we do not model that "
+        "protection. We read each year's amount on 30 April, so model year "
+        "2016 keeps the premium."
     )
     definition_period = YEAR
     unit = GBP
