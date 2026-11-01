@@ -1,6 +1,8 @@
 """Shared definitions for Housing Benefit and Council Tax Reduction
 non-dependant deductions."""
 
+from policyengine_core.errors import CycleError
+
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.benefit_unit import add_for_members, award_of_couple
@@ -115,14 +117,20 @@ def universal_credit_after_benefit_cap(benunit, period, parameters):
     income, so this keeps them in and applies the floor as for a family with
     none: the deduction rate depends on the cap reduction, and so on Housing
     Benefit. Where the simulation stores universal_credit as an input, or a
-    reform replaces its formula, this reads it as it stands. It also reads a
-    stored or neutralized uc_benefit_cap_reduction_after_floor,
-    uc_benefit_cap_reduction or benefit_cap_welfare_benefits, the last with
-    Housing Benefit at nil."""
+    reform replaces its formula, this reads it as it stands, unless the new
+    formula still reads the cap reduction and so this deduction; then it
+    calculates the award here. It also reads a stored or neutralized
+    uc_benefit_cap_reduction_after_floor, uc_benefit_cap_reduction or
+    benefit_cap_welfare_benefits, the last with Housing Benefit at nil."""
     if reads_simulation_value(
         benunit, period, "universal_credit", universal_credit_variable.formula
     ):
-        return benunit("universal_credit", period)
+        try:
+            return benunit("universal_credit", period)
+        except CycleError:
+            # Core unwinds the calculation; the award below doesn't read
+            # Housing Benefit.
+            pass
     if reads_simulation_value(benunit, period, "uc_benefit_cap_reduction_after_floor"):
         applied = benunit("uc_benefit_cap_reduction_after_floor", period)
     else:

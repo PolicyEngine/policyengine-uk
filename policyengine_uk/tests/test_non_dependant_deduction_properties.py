@@ -1035,6 +1035,70 @@ def test_capped_universal_credit_reads_stored_and_replaced_values():
     )
     assert capped_universal_credit(sim, year) == pytest.approx([12_345], abs=0.01)
 
+    # A replacement that scales the current-law award still reads the cap
+    # reduction, and so Housing Benefit and this deduction. The gross income
+    # then uses the award calculated without Housing Benefit, and nothing
+    # cycles: the non-dependant's deduction matches current law's.
+    scaled_award = type(
+        "universal_credit",
+        (current_law,),
+        dict(
+            formula=lambda benunit, period, parameters: (
+                0.9 * current_law.formula(benunit, period, parameters)
+            )
+        ),
+    )
+
+    class ScaledAward(Reform):
+        def apply(self):
+            self.update_variable(scaled_award)
+
+    situation = for_years(
+        dict(
+            people=dict(
+                claimant=dict(age=70),
+                non_dependant=dict(
+                    age=24,
+                    current_education="NOT_IN_EDUCATION",
+                    employment_income=5_000.0,
+                    weekly_hours=20.0,
+                ),
+            ),
+            benunits=dict(
+                claimant_unit=dict(members=["claimant"], benunit_is_rent_liable=True),
+                non_dependant_unit=dict(
+                    members=["non_dependant"],
+                    benunit_is_rent_liable=False,
+                    would_claim_uc=True,
+                ),
+            ),
+            households=dict(
+                household=dict(
+                    members=["claimant", "non_dependant"],
+                    country="ENGLAND",
+                    local_authority="MAIDSTONE",
+                    rent=6_000.0,
+                    tenure_type="RENT_PRIVATELY",
+                )
+            ),
+        ),
+        [year],
+    )
+    current = Simulation(situation=situation)
+    scaled = CoreSimulation(
+        tax_benefit_system=ScaledAward(SYSTEM),
+        situation=situation,
+        default_input_period=year,
+        default_calculation_period=year,
+    )
+    assert scaled.calculate("universal_credit", year) == pytest.approx(
+        0.9 * current.calculate("universal_credit", year), abs=0.01
+    )
+    for name in ["household_benefits_individual_non_dep_deduction", "housing_benefit"]:
+        assert scaled.calculate(name, year) == pytest.approx(
+            current.calculate(name, year), abs=0.01
+        ), name
+
 
 # Earned-income cases for invariant 13. Each sets the person's earnings
 # inputs; "settled" is what the inputs alone say, where they say it without
