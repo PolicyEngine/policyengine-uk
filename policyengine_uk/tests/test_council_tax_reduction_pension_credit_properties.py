@@ -7,8 +7,8 @@ Law:
   24). Capital for the 16,000 limit is calculated under the same Part (SI
   2012/2885 reg 11(3); WSI 2013/3029 reg 30(2)), so the limit cannot apply.
   The award is the maximum reduction less non-dependant deductions.
-- Savings credit only: the Secretary of State's assessment of income and
-  capital is used, adjusted for the savings credit payable (SI 2012/2885 Sch 1
+- Savings credit only: councils use the Secretary of State's assessment of
+  income and capital and add the savings credit payable (SI 2012/2885 Sch 1
   para 14; WSI 2013/3029 Sch 1 para 8; SSI 2012/319 reg 25).
 
 Invariants, for any generated population of families, where L is the eligible
@@ -539,9 +539,10 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
 
 
 def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
-    """A pensioner with £39,500 of total income is charged the winter fuel
-    payment (ITEPA 2003 s.681I) through income tax. CTR deducts the tax
-    before the charge, so the routes agree with the main definition."""
+    """We charge income tax to recover the Winter Fuel Payment from a pensioner
+    with £39,500 of total income (winter_fuel_payment_charge, ITEPA 2003
+    s.681I). CTR deducts income tax before that charge, so the routes agree
+    with the main definition."""
     family = dict(
         shape="single_pension",
         ages=[70],

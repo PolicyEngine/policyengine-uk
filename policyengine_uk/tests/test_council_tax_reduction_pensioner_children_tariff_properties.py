@@ -1,16 +1,16 @@
 """A pensioner's Council Tax Reduction child amounts and tariff income.
 
-Councils' pensioner schemes add an amount for each child or young person in
-the family and, in Wales, a family premium (SI 2012/2885 Sch 1 para
-6(1)(b)-(c) and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch
-2 paras 2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). For 2018-19 to
-2024-25 the Secretary of State limited England's to two unless a Child Tax
-Credit award included more (SI 2017/1305 reg 7; SI 2025/39 reg 5(2)). A
-pensioner's capital counts as a weekly income of £1 for each £500, or part
-of £500, over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para
-31; SSI 2012/319 reg 27(2)), except where Pension Credit sets the means
-test. England and Wales count the excess up to £16,000; Scotland sets no
-ceiling.
+Councils add an amount for each child or young person in the family and, in
+Wales, a family premium for pensioners (SI 2012/2885 Sch 1 para 6(1)(b)-(c)
+and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch 2 paras
+2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). For 2018-19 to 2024-25 the
+Secretary of State limited England's to two unless a Child Tax Credit award
+included more (SI 2017/1305 reg 7; SI 2025/39 reg 5(2)). Councils treat a
+pensioner's capital as a weekly income of £1 for each £500, or part of £500,
+over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31; SSI
+2012/319 reg 27(2)), except where Pension Credit sets the means test. The
+Secretary of State and Welsh Ministers count the excess up to £16,000; the
+Scottish Ministers set no ceiling.
 
 Each invariant holds on a fixed route and status. The generated families
 claim no Universal Credit, so neither capital nor a child can move a family
@@ -27,13 +27,15 @@ whose applicable amount can be lower.
    and Wales), and it never falls as capital rises. Capital changes nothing
    else in the applicable income, and the award never rises with capital.
 2. For a family that claims no Universal Credit, adding a dependent child
-   never lowers the applicable amount. For a pensioner it adds the scheme's
-   weekly amount for 52 weeks, unless the family already has the two children
-   that England's limit allowed from 2018-19 to 2024-25, and in Wales the
-   family premium with the first child.
+   never lowers the applicable amount. For a pensioner, the child amount
+   grows by 52 times the scheme's weekly rate for each extra child counted.
+   In England from 2018-19 to 2024-25, count up to two children, or more
+   where a Child Tax Credit award includes individual elements for more. Add
+   the family premium with the first child in Wales. The generated families
+   report no Child Tax Credit, so none has an award.
 3. A pensioner with no child and capital up to £10,000, and every working-age
    family, gets no child amount, family premium or tariff income, so their
-   applicable amount, applicable income and award are origin/main's.
+   applicable amount, applicable income and award match origin/main.
    test_matches_origin_main_on_unchanged_households checks that against
    values computed on origin/main.
 """
@@ -87,7 +89,8 @@ SETTINGS = settings(
 
 
 def situation(households, year):
-    """One benefit unit and household for each spec, in one simulation."""
+    """Build one benefit unit and household for each specification in one
+    simulation."""
     data = {"people": {}, "benunits": {}, "households": {}}
     for index, spec in enumerate(households):
         members = []

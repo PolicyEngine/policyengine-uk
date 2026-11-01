@@ -7,9 +7,9 @@ class council_tax_reduction_pensioner_family_premium(Variable):
     entity = BenUnit
     label = "Council Tax Reduction pensioner family premium"
     documentation = (
-        "The family premium in a pensioner's Council Tax Reduction applicable "
-        "amount, where the family includes a child or young person. The Welsh "
-        "Ministers keep it. The Secretary of State made England's nil for "
+        "Councils add the family premium to a pensioner's applicable amount "
+        "when their family includes a child or young person. The Welsh "
+        "Ministers retain it. The Secretary of State made England's nil for "
         "reduction weeks beginning after 1 May 2016, and the Scottish "
         "Ministers removed Scotland's from 1 May 2016. Each kept it for "
         "families with a child who had a reduction on 30 April 2016 until "

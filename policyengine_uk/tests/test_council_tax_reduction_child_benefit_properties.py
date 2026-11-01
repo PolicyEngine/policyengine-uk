@@ -1,8 +1,8 @@
 """Pensioner Child Benefit exclusion and unchanged adjacent CTR contracts.
 
-These model2026 tests use actual Child Benefit claims and family incomes, not
-forced applicable income, pensioner status or reduction awards. The 20% cash
-relation is conditional on an interior award; the existing floor/cap still apply.
+These tests calculate 2026 Council Tax Reduction awards from actual Child
+Benefit claims and family incomes. They check the 20% cash relation where the
+award lies between the floor and cap.
 """
 
 from copy import deepcopy

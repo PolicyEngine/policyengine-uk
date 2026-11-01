@@ -7,19 +7,22 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
     entity = BenUnit
     label = "Council Tax Reduction pensioner tariff income from capital"
     documentation = (
-        "Weekly income that councils treat a pensioner's capital as "
-        "yielding, annualised: £1 for each £500, or part of £500, of "
-        "council_tax_reduction_assessable_capital above £10,000. The "
-        "Secretary of State and the Welsh Ministers count the excess up to "
-        "£16,000; the Scottish Ministers set no ceiling, though in every "
-        "nation nobody with capital over £16,000 gets a reduction. We use "
-        "the pension-age Housing Benefit tariff amounts, which all three "
-        "nations share. We give nil on the Pension Credit routes: councils "
-        "disregard the whole of a guarantee credit recipient's capital, and "
-        "on a savings-credit-only award they use the Secretary of State's "
-        "assessment of income, which already includes Pension Credit's "
-        "deemed income from capital. We also give working-age families nil, "
-        "because we do not model their tariff income here."
+        "Councils treat a pensioner's capital as weekly income of £1 for "
+        "each £500, or part of £500, of "
+        "council_tax_reduction_assessable_capital above £10,000. We "
+        "annualise that income. The Secretary of State and the Welsh "
+        "Ministers count the excess up to £16,000, and the Scottish Ministers "
+        "set no ceiling. All three bar a reduction where capital exceeds "
+        "£16,000. Councils apply the £16,000 limit to assessable capital "
+        "after statutory disregards. Councils disregard all capital for "
+        "Guarantee Credit recipients. We use the pension-age Housing Benefit "
+        "tariff amounts, which all three nations share. We give nil on both "
+        "Pension Credit routes: the guarantee credit disregard covers all "
+        "capital, and on a savings-credit-only award councils use the "
+        "Secretary of State's assessment of income, which already includes "
+        "Pension Credit's deemed income from capital. We also give "
+        "working-age families nil, because we do not model their tariff "
+        "income here."
     )
     definition_period = YEAR
     unit = GBP
@@ -45,8 +48,11 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
         capital = benunit("council_tax_reduction_assessable_capital", period)
         # SI 2012/2885 Sch 1 para 37 and WSI 2013/3029 Sch 1 para 31 count
         # the excess "not exceeding £16,000", the capital limit. The Scottish
-        # Ministers set no ceiling in SSI 2012/319 reg 27(2); under reg 40
-        # nobody with capital above £16,000 gets a reduction.
+        # Ministers set no ceiling in SSI 2012/319 reg 27(2), and reg 40 bars
+        # a reduction where capital exceeds £16,000. Councils apply the
+        # £16,000 limit to assessable capital after statutory disregards (reg
+        # 41(2)). Councils disregard all capital for Guarantee Credit
+        # recipients (reg 24).
         counted_capital = select(
             [
                 country == Country.ENGLAND,
