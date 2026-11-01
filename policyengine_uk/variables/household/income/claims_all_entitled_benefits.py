@@ -14,7 +14,7 @@ class claims_all_entitled_benefits(Variable):
         "checks (Child Tax Credit, Working Tax Credit, Universal Credit, "
         "Housing Benefit, income-based JSA, Income Support and income-related "
         "ESA), and false where it reports £1 or more, in which case its "
-        "reported benefits are taken as the complete set. A report counts "
+        "reported benefits count as the complete set. A report counts "
         "after its award has ended, as an income-related ESA award does "
         "after its abolition: it records the family's claiming history. "
         "Council Tax "
