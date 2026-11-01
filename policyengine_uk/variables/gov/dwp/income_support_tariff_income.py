@@ -6,6 +6,20 @@ class income_support_tariff_income(Variable):
     value_type = float
     entity = BenUnit
     label = "Income Support tariff income from capital"
+    documentation = (
+        "Weekly tariff income from capital under IS Regs 1987 reg 53 (NI: SR "
+        "1987/459 reg 53), over 52 weeks: £1 for each complete £250 of "
+        "capital above the lower threshold and £1 for any part left over. The "
+        "lower threshold is £6,000, or £10,000 where "
+        "legacy_prescribed_accommodation_capital_exception is true. The "
+        "regulation counts capital only up to £16,000. Above that amount this "
+        "variable continues the same arithmetic, which the regulation does "
+        "not prescribe. income_support_applicable_income adds it in full, and "
+        "income_support_entitlement pays nothing while income_support_eligible "
+        "finds capital above the configured capital limit (reg 45, £16,000), "
+        "so at that limit no award depends on the continuation. A reform that "
+        "raises the limit lets awards read it."
+    )
     definition_period = YEAR
     unit = GBP
     reference = (
@@ -17,16 +31,16 @@ class income_support_tariff_income(Variable):
         IS = parameters(period).gov.dwp.income_support
         capital = benunit("income_support_assessable_capital", period)
         mt = IS.means_test.capital
-        # IS Regs 1987 reg 53(1A)-(1C) (NI: the same regulation of SR
-        # 1987/459): for a claimant who lives permanently in prescribed
-        # accommodation the lower threshold is £10,000, not £6,000. The
-        # capital limit (reg 45) bars the award above the upper limit, so no
-        # award turns on tariff income there.
-        threshold = where(
+        # Reg 53(1)-(1C): the lower threshold is £6,000, or £10,000 for a
+        # claimant who lives permanently in prescribed accommodation. Each
+        # branch subtracts its own scalar threshold, so both keep the stored
+        # capital's float32 precision.
+        ordinary_excess = max_(0, capital - mt.tariff_income.threshold)
+        residential_excess = max_(0, capital - mt.residential_threshold)
+        excess_capital = where(
             benunit("legacy_prescribed_accommodation_capital_exception", period),
-            mt.residential_threshold,
-            mt.tariff_income.threshold,
+            residential_excess,
+            ordinary_excess,
         )
-        excess_capital = max_(0, capital - threshold)
         tariff_units = np.ceil(excess_capital / mt.tariff_income.step)
         return tariff_units * mt.tariff_income.amount * WEEKS_IN_YEAR

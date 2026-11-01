@@ -3,9 +3,12 @@
 # for each complete £250 (reg 118(1)-(2)) and £1 for any part of £250 left
 # over (reg 118(5)), over 52 weeks. The lower threshold is £6,000 (reg
 # 118(1)), or £10,000 where the claimant lives permanently in prescribed
-# accommodation (reg 118(2)-(4)). Capital above £16,000 bars the award
-# (reg 110), so the figures at £16,001 continue the formula past the limit.
-# No award turns on them: the last case shows the award is nil there.
+# accommodation (reg 118(2)-(4)).
+# The regulation counts capital only up to £16,000, and esa_income pays
+# nothing above the £16,000 capital limit (reg 110). The figures at £16,001
+# show the model continuing the arithmetic, which the regulation does not
+# prescribe; the award case at £16,001 shows a nil award at the configured
+# limit.
 
 - name: Income-related ESA ordinary capital threshold and partial steps
   period: 2025
@@ -144,6 +147,40 @@
       household_2:
         members: claimant_2
   output:
-    # Reg 110: capital above £16,000 bars the award.
+    # Reg 110: no award where capital exceeds £16,000.
     esa_income_eligible: [false, false]
     esa_income: [0, 0]
+
+- name: Income-related ESA keeps a fractional ordinary threshold when the exception input is omitted
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.ESA.income.capital.tariff_income.threshold: 6_000.02
+    esa_income_assessable_capital: [6_000.02, 6_000.03, 6_250.02]
+  output:
+    # Reg 118(1) with the threshold reformed to £6,000.02: excess 0, 0.01
+    # and 250; steps of £250 or part 0, 1 and 1; each £1 x 52.
+    esa_income_tariff_income: [0, 52, 52]
+
+- name: Income-related ESA keeps a fractional ordinary threshold when the exception input is false
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.ESA.income.capital.tariff_income.threshold: 6_000.02
+    esa_income_assessable_capital: [6_000.02, 6_000.03, 6_250.02]
+    legacy_prescribed_accommodation_capital_exception: [false, false, false]
+  output:
+    # Reg 118(1): excess over £6,000.02 of 0, 0.01 and 250; 0, 1 and 1 steps.
+    esa_income_tariff_income: [0, 52, 52]
+
+- name: Income-related ESA applies a fractional prescribed accommodation threshold exactly
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.ESA.income.capital.residential_threshold: 10_000.07
+    esa_income_assessable_capital: [10_000.07, 10_000.08, 10_250.07]
+    legacy_prescribed_accommodation_capital_exception: [true, true, true]
+  output:
+    # Reg 118(2)-(4) with the threshold reformed to £10,000.07: excess 0,
+    # 0.01 and 250; 0, 1 and 1 steps; each £1 x 52.
+    esa_income_tariff_income: [0, 52, 52]
