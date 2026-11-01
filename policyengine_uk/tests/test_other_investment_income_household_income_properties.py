@@ -1,9 +1,9 @@
 """Property tests for other investment income in household income.
 
 Income tax charges other investment income (interest on National Savings and
-Investments products, gilts and other securities, and from trusts) as savings
-income through taxable_savings_interest_income, exactly as it charges bank
-interest. HBAI counts investment income, which the Family Resources Survey
+Investments products, gilts and other securities, and trust interest) as
+savings income through taxable_savings_interest_income, exactly as it charges
+bank interest. HBAI counts investment income, which the Family Resources Survey
 defines as the interest and dividends received on savings and investments,
 NS&I products and gilts included. So every household income measure must
 count a pound of other investment income as it counts a pound of bank
@@ -125,7 +125,7 @@ def test_other_investment_income_counts_like_bank_interest(sim, drawn):
         none, _, other = r[variable]
         change = other - none
         assert (np.abs(change - interest) <= tolerance(other, interest)).all(), variable
-    # Net income rises by the interest less the tax on it: it never falls.
+    # Net income rises by at most the interest, and never falls.
     for variable in (
         "household_net_income",
         "hbai_household_net_income_before_reset_to_zero",
