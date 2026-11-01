@@ -119,9 +119,11 @@ def calculate(households, year, names=OUTPUTS):
     return {name: np.asarray(simulation.calculate(name, year)) for name in names}
 
 
-def tariff(capital):
-    excess = max(0, min(capital, 16_000) - 10_000)
-    return 52 * math.ceil(excess / 500)
+def tariff(capital, country):
+    # England and Wales count the excess "not exceeding £16,000"; Scotland's
+    # reg 27(2) sets no ceiling.
+    counted = capital if country == "SCOTLAND" else min(capital, 16_000)
+    return 52 * math.ceil(max(0, counted - 10_000) / 500)
 
 
 countries = st.sampled_from(sorted(AUTHORITIES))
@@ -161,7 +163,9 @@ def test_tariff_income_is_the_tariff_and_never_falls_as_capital_rises(
     result = calculate(households, year)
     assert result["council_tax_reduction_pensioner"].all()
     tariffs = result["council_tax_reduction_pensioner_tariff_income"]
-    np.testing.assert_allclose(tariffs, [tariff(c) for c in capitals], atol=0.01)
+    np.testing.assert_allclose(
+        tariffs, [tariff(c, base["country"]) for c in capitals], atol=0.01
+    )
     assert (np.diff(tariffs) >= 0).all()
     # Capital adds the tariff income and nothing else.
     other_income = result["council_tax_reduction_applicable_income"] - tariffs

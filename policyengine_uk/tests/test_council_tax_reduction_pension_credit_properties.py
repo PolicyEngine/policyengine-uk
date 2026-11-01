@@ -297,9 +297,10 @@ PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
 PENSIONER_ADDITIONAL_DISREGARD = 17.10
 # Since #1933, a pensioner family's general-rules income also adds tariff
 # income from capital after the floor, written out from the law: £1 a week
-# for each £500, or part of £500, of capital above £10,000 and up to £16,000
-# (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31; SSI 2012/319 reg
-# 27(2)). Household savings are these families' capital.
+# for each £500, or part of £500, of capital above £10,000, up to £16,000 in
+# England and Wales (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31)
+# and with no ceiling in Scotland (SSI 2012/319 reg 27(2)). Household
+# savings are these families' capital.
 TARIFF_THRESHOLD = 10_000
 TARIFF_STEP = 500
 HOUSEHOLD_VARIABLES = [
@@ -381,9 +382,13 @@ def calculate(units, guarantee=None, **kwargs):
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
     )
+    tariff_capital = np.where(
+        [unit["country"] == "SCOTLAND" for unit in units],
+        values["savings"],
+        np.minimum(values["savings"], CAPITAL_LIMIT),
+    )
     tariff_steps = np.ceil(
-        np.maximum(0, np.minimum(values["savings"], CAPITAL_LIMIT) - TARIFF_THRESHOLD)
-        / TARIFF_STEP
+        np.maximum(0, tariff_capital - TARIFF_THRESHOLD) / TARIFF_STEP
     )
     values["income_under_main_definition"] += np.where(
         values["council_tax_reduction_pensioner"], 52 * tariff_steps, 0
