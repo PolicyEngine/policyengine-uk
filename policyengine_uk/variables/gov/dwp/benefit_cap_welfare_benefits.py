@@ -60,7 +60,7 @@ class benefit_cap_welfare_benefits(Variable):
         "housing_benefit_pre_benefit_cap). Universal Credit's cap reads "
         "uc_benefit_cap_welfare_benefits, which totals the same benefits "
         "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Inputs that "
-        "supply this total include Housing Benefit in it, and also supply "
+        "supply this total include Housing Benefit in it. They also supply "
         "housing_benefit_pre_benefit_cap, which "
         "uc_benefit_cap_welfare_benefits subtracts, or supply "
         "uc_benefit_cap_welfare_benefits itself; otherwise Universal Credit's "

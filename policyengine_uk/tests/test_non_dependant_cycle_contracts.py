@@ -8,7 +8,7 @@ welfare benefits itself. Inputs that supply benefit_cap_welfare_benefits, a
 total that includes Housing Benefit, also supply housing_benefit_pre_benefit_cap,
 which the basket subtracts, or supply the basket itself.
 
-Contract (an invariant for every population): either the inputs leave
+The contract holds for every population: either the inputs leave
 benefit_cap_welfare_benefits to the model, or they supply
 housing_benefit_pre_benefit_cap or uc_benefit_cap_welfare_benefits beside it;
 otherwise the basket raises ValueError, whether or not any household holds a
@@ -18,12 +18,13 @@ and Housing Benefit equal its results alone. A reform that makes Universal
 Credit read calculated Housing Benefit adds a cycle, and the engine raises
 CycleError.
 
-Two independent households: a single Universal Credit claimant with £20,000
-before a £14,753 cap and no rent; and a 70-year-old paying £6,000 rent with a
-40-year-old non-dependant who earns £9,000 at 20 hours and claims no
-Universal Credit. Alone, the first gets £14,753 of Universal Credit, and the
-council deducts £19.65 x 52 = £1,021.80 (HB Regs 2006 reg 74(2)(a), 2025-26)
-from the second's rent, leaving £4,978.20 of Housing Benefit.
+The tests use two independent households: a single Universal Credit
+claimant with £20,000 before a £14,753 cap and no rent; and a 70-year-old
+paying £6,000 rent with a 40-year-old non-dependant who earns £9,000 at 20
+hours and claims no Universal Credit. Alone, the first gets £14,753 of
+Universal Credit. For the second's non-dependant the council deducts
+£19.65 x 52 = £1,021.80 (HB Regs 2006 regs 70 and 74(2)(a), 2025-26),
+leaving £4,978.20 of Housing Benefit.
 """
 
 import copy
