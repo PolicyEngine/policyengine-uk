@@ -126,10 +126,10 @@ the total. Data that store only household totals hold no balances, so the pool
 keeps the whole total. The formulas count a balance only while the programme's
 `sources` lists the household source that holds it, so a reform that drops
 `cash_isa` or `share_like_capital` from `sources` drops the balances with it.
-In Universal Credit, a unit that reports its capital
-(`benunit_reported_capital` or `uc_reported_capital`, zero or more) leaves its
-claimant's and partner's ISAs in the pool, and the formula subtracts the report
-from the pool instead, as it does for company holdings.
+For a Universal Credit unit that reports its capital
+(`benunit_reported_capital` or `uc_reported_capital`, zero or more), the
+formula leaves the unit's claimant's and partner's ISAs in the pool and
+subtracts the report instead, as it does for their company holdings.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and

@@ -56,7 +56,7 @@ def pooled_person_capital(benunit, source, period, capital, leaves_pool=None):
 def bounded_person_holding(person, balance, household_total):
     """Each member's ``balance``, bounded by ``household_total``.
 
-    ``household_total`` is the household's total for each member. See
+    ``household_total`` gives the household's total for each member. See
     ``bounded_holdings``, which this calls with Core's household sum.
     """
     return bounded_holdings(balance, household_total, person.household.sum)
@@ -69,11 +69,12 @@ def bounded_holdings(balance, household_total, household_sum):
     ``household_sum`` maps a member array to each member's household sum, as
     Core's ``person.household.sum`` does. A negative or missing balance holds
     nothing, and an infinite one the whole total. Where the household's
-    balances add up, stored as Core stores a total, to the nonnegative total
-    or less, each member holds their balance exactly, and no one the data
-    name holds the rest. Where they add up to more, the function scales each
-    balance by the total over their sum and rounds it down to float32, as
-    Core stores the result. For every float32 balance and finite total:
+    balances, summed as Core stores a total, come to the nonnegative total or
+    less, each member holds their balance exactly, and the rest of the total
+    stays with no one the data name. Where they come to more, the function
+    scales each balance by the total over their sum and rounds it down to
+    float32, as Core stores the result. For every float32 balance and finite
+    total:
 
     - no holding exceeds the household total;
     - the household's stored sum of holdings never exceeds the total, so the
@@ -89,7 +90,7 @@ def bounded_holdings(balance, household_total, household_sum):
     held_sum = np.asarray(household_sum(held), np.float64)
     over = _as_stored(held_sum) > total
     # Float64 holds the product of two float32 amounts exactly, so each share
-    # rounds once, in the division. A sole holder's share is then the total
+    # rounds once, in the division. A sole holder's share then equals the total
     # itself, and rounding every share down keeps their sum within the total.
     share = held * total.astype(np.float64) / np.where(over, held_sum, 1)
     return np.where(over, _round_down_to_float32(share), held)
