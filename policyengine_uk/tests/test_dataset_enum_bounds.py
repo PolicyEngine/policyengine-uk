@@ -1,4 +1,9 @@
-"""Integer enum inputs are zero-based positions, never survey source codes."""
+"""Integer enum inputs are zero-based positions, never survey source codes.
+
+A dataset's tables give an enum as member names, so the loader refuses an
+integer column it has not recorded, and checks a recorded one against the
+enum it recorded.
+"""
 
 from types import SimpleNamespace
 
@@ -91,9 +96,12 @@ def assert_context(error, enum_name="Band", bad=None):
         assert bad in message
 
 
+@pytest.mark.parametrize("recorded", [False, True])
 @pytest.mark.parametrize("codes,bad", INVALID)
-def test_preencoding_rejects_invalid_positions_with_context(codes, bad):
+def test_preencoding_rejects_invalid_positions_with_context(codes, bad, recorded):
     dataset = single(codes.copy())
+    if recorded:
+        dataset._enum_columns = {"council_tax_band": Band}
     before = dataset._household.copy(deep=True)
     with pytest.raises(ValueError) as error:
         _pre_encode_enum_columns(UKMultiYearDataset(datasets=[dataset]), enum_system())
@@ -114,21 +122,27 @@ def test_decoding_rejects_invalid_positions_with_context(codes, bad):
 
 @pytest.mark.parametrize("dtype", [np.int8, np.int64, np.uint64])
 @pytest.mark.parametrize("values,expected", [([0, 8], ["A", "I"]), ([], [])])
-def test_valid_endpoints_and_empty_integer_arrays_are_preserved(
+def test_recorded_endpoints_and_empty_integer_arrays_are_preserved(
     dtype, values, expected
 ):
     dataset = single(np.array(values, dtype=dtype))
+    dataset._enum_columns = {"council_tax_band": Band}
     original = dataset._household.copy(deep=True)
     _pre_encode_enum_columns(UKMultiYearDataset(datasets=[dataset]), enum_system())
     assert dataset.household.council_tax_band.tolist() == expected
     pd.testing.assert_frame_equal(dataset._household, original)
 
 
-def test_in_range_integers_are_positions_not_one_based_source_codes():
+def test_in_range_survey_codes_are_refused_unless_recorded_as_positions():
     assert [
         item.name for item in system.variables["council_tax_band"].possible_values
     ] == list("ABCDEFGHI")
     dataset = single(np.array([1, 4, 8]))
+    with pytest.raises(ValueError) as error:
+        _pre_encode_enum_columns(UKMultiYearDataset(datasets=[dataset]), enum_system())
+    assert_context(error, bad="1, 4, 8")
+    # A record says the loader read the column as positions.
+    dataset._enum_columns = {"council_tax_band": Band}
     _pre_encode_enum_columns(UKMultiYearDataset(datasets=[dataset]), enum_system())
     assert dataset.household.council_tax_band.tolist() == ["B", "E", "I"]
 
@@ -144,6 +158,7 @@ def test_names_and_enum_members_keep_their_meaning(codes):
 def test_real_unknown_member_and_non_enum_columns_remain_valid():
     dataset = single(np.array([0, 8]))
     dataset._person["sample_status"] = np.array([0, 1], dtype=np.uint64)
+    dataset._enum_columns = {"council_tax_band": Band, "sample_status": WithUnknown}
     original_ids = dataset._person.person_id.copy()
     _pre_encode_enum_columns(
         UKMultiYearDataset(datasets=[dataset]), enum_system(sample_status=WithUnknown)
@@ -189,7 +204,7 @@ def test_all_years_are_preflighted_before_earlier_year_conversion():
 
 @pytest.mark.parametrize("preencoded", [False, True])
 def test_public_multiyear_ingestion_rejects_invalid_later_year(preencoded):
-    earlier = single(np.array([0]))
+    earlier = single(np.array([0]) if preencoded else ["A"])
     later = single(np.array([9]), year=2026)
     if preencoded:
         earlier._enum_columns = {
@@ -201,10 +216,13 @@ def test_public_multiyear_ingestion_rejects_invalid_later_year(preencoded):
 
 
 @pytest.mark.parametrize("single_year", [False, True])
-def test_public_ingestion_and_decoded_round_trip_preserve_valid_positions(
+def test_public_ingestion_and_decoded_round_trip_preserve_recorded_positions(
     monkeypatch, single_year
 ):
     dataset = single(np.array([0, 8], dtype=np.uint64))
+    dataset._enum_columns = {
+        "council_tax_band": system.variables["council_tax_band"].possible_values
+    }
     if single_year:
         monkeypatch.setattr(
             Simulation,
@@ -221,9 +239,7 @@ def test_public_ingestion_and_decoded_round_trip_preserve_valid_positions(
 
 
 def test_invalid_file_input_does_not_publish_a_cache_entry(tmp_path, monkeypatch):
-    simulation = Simulation(
-        dataset=UKMultiYearDataset(datasets=[single(np.array([0]))])
-    )
+    simulation = Simulation(dataset=UKMultiYearDataset(datasets=[single(["A"])]))
     invalid = single(np.array([-1]))
     invalid._household["region"] = "LONDON"
     invalid._household["tenure_type"] = "OWNED_OUTRIGHT"
@@ -241,9 +257,7 @@ def test_invalid_file_input_does_not_publish_a_cache_entry(tmp_path, monkeypatch
 
 
 def test_cached_preencoded_input_is_not_trusted_without_validation(monkeypatch):
-    simulation = Simulation(
-        dataset=UKMultiYearDataset(datasets=[single(np.array([0]))])
-    )
+    simulation = Simulation(dataset=UKMultiYearDataset(datasets=[single(["A"])]))
     invalid = single(np.array([-1]))
     invalid._enum_columns = {
         "council_tax_band": system.variables["council_tax_band"].possible_values
