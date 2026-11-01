@@ -1,7 +1,8 @@
 """Spousal maintenance is gross income for non-dependant deductions.
 
-HB Regs 2006 reg 74(2), (9), pension-age HB reg 55(2), (10), and
-SI 2012/2885 Sch 1 para 8(2), (9) do not disregard spousal maintenance.
+HB Regs 2006 reg 74(2), (9), pension-age HB reg 55(2), (10), SI 2012/2885
+Sch 1 para 8(2), (9) and WSI 2013/3029 Sch 6 para 5(2), (9) do not disregard
+spousal maintenance.
 It remains exempt from income tax under ITTOIA 2005 s 727.
 """
 
