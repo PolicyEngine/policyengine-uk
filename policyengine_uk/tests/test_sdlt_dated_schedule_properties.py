@@ -30,6 +30,11 @@ Invariants, for any effective date, price and buyer:
    from 2015 to 2040 it never falls as the price or the lease rent rises.
 4. At any effective date, no buyer's tax falls as the price or the lease
    rent rises.
+5. Omitted relief: from 8 July 2020 to 30 June 2021, whatever the main and
+   first-time buyers' rates, a first-time buyer pays the same tax as a
+   non-first buyer. Changing first-time buyers' rates leaves that tax
+   unchanged, and changing the main rates moves both buyers' tax equally.
+   Model year 2021 shows the same through stamp_duty_land_tax.
 """
 
 from datetime import date, timedelta
@@ -38,9 +43,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import ParameterNode
+from policyengine_core.periods import instant
 
 import policyengine_uk
 from policyengine_uk import Microsimulation
@@ -181,6 +187,52 @@ def test_tax_never_falls_as_the_price_rises_on_any_date(effective_date, price_li
     assert np.all(np.diff(residential.rent.calc(price)) >= -1e-9)
 
 
+# SDLT (Temporary Relief) Act 2020 s1(5) omits first-time buyers' relief over
+# the initial relief period that s1(1), as amended, sets.
+INITIAL_RELIEF = (date(2020, 7, 8), date(2021, 6, 30))
+rates = st.floats(0, 0.5)
+
+
+def _change_rates_over_initial_relief(scale, new_rates):
+    # The relief tables leave some brackets empty; change the others in order.
+    start, stop = (instant(day) for day in INITIAL_RELIEF)
+    on_start = INITIAL_RELIEF[0].isoformat()
+    brackets = [b for b in scale.brackets if b.rate(on_start) is not None]
+    for bracket, rate in zip(brackets, new_rates):
+        bracket.rate.update(start=start, stop=stop, value=rate)
+
+
+@PROPERTY_SETTINGS
+@example(
+    effective_date=date(2021, 4, 30),
+    price_list=[0.01, 1, 300_000],
+    main_rates=[0.07] * 4,
+    first_time_buyer_rates=[0.11, 0.30],
+)
+@given(
+    effective_date=st.dates(*INITIAL_RELIEF),
+    price_list=st.lists(prices, min_size=1, max_size=8),
+    main_rates=st.lists(rates, min_size=4, max_size=4),
+    first_time_buyer_rates=st.lists(rates, min_size=2, max_size=2),
+)
+def test_omitted_relief_ignores_buyer_status_under_any_rates(
+    effective_date, price_list, main_rates, first_time_buyer_rates
+):
+    residential = RAW.clone()
+    main = residential.purchase.main
+    _change_rates_over_initial_relief(main.subsequent, main_rates)
+    _change_rates_over_initial_relief(main.first.rate, first_time_buyer_rates)
+    purchase = residential(effective_date.isoformat()).purchase
+    assert list(purchase.main.subsequent.rates) == main_rates
+    assert list(purchase.main.first.rate.rates) == first_time_buyer_rates
+    price = np.array(price_list, dtype=float)
+    np.testing.assert_array_equal(
+        _model_tax(purchase, price, "first"),
+        _model_tax(purchase, price, "main"),
+        err_msg=f"{effective_date}, main {main_rates}, first {first_time_buyer_rates}",
+    )
+
+
 def _scale(scale):
     return scale.thresholds, scale.rates
 
@@ -215,12 +267,9 @@ GRID = np.unique(
 GROUPS = BUYERS + ("lease",)
 
 
-@pytest.fixture(scope="module")
-def grid_simulation():
-    # One household per price and group: a non-first purchase, a first-time
-    # buyer, an additional dwelling and a lease, all in London.
-    ids = np.arange(1, len(GRID) * len(GROUPS) + 1)
-    dataset = UKSingleYearDataset(
+def _london_dataset(households):
+    ids = np.arange(1, households + 1)
+    return UKSingleYearDataset(
         person=pd.DataFrame(
             {
                 "person_id": ids,
@@ -242,7 +291,13 @@ def grid_simulation():
         ),
         fiscal_year=2025,
     )
-    return Microsimulation(dataset=dataset)
+
+
+@pytest.fixture(scope="module")
+def grid_simulation():
+    # One household per price and group: a non-first purchase, a first-time
+    # buyer, an additional dwelling and a lease, all in London.
+    return Microsimulation(dataset=_london_dataset(len(GRID) * len(GROUPS)))
 
 
 def _grid_inputs():
@@ -279,3 +334,77 @@ def test_stamp_duty_by_model_year(grid_simulation, year):
         )
     expected = [reference_lease_tax(sampled, v) for v in GRID]
     np.testing.assert_allclose(groups["lease"], expected, rtol=1e-6, atol=0.01)
+
+
+# Model year 2021 samples 30 April 2021, inside the initial relief period.
+OMITTED_RELIEF_YEAR = 2021
+MAIN_RATES = "gov.hmrc.stamp_duty.residential.purchase.main.subsequent"
+FIRST_TIME_BUYER_RATES = "gov.hmrc.stamp_duty.residential.purchase.main.first.rate"
+# New rates for the brackets that carry one in model year 2021, by index.
+FIRST_TIME_BUYER_REFORM = {FIRST_TIME_BUYER_RATES: {0: 0.11, 1: 0.30}}
+MAIN_REFORM = {MAIN_RATES: {0: 0.07, 2: 0.09, 3: 0.15, 4: 0.20}}
+RATE_REFORMS = {
+    "first-time buyers' rates": FIRST_TIME_BUYER_REFORM,
+    "main rates": MAIN_REFORM,
+    "both": {**FIRST_TIME_BUYER_REFORM, **MAIN_REFORM},
+}
+BUYER_PRICES = np.unique(np.concatenate([[0.01, 1], GRID]))
+
+
+@pytest.fixture(scope="module")
+def buyer_simulation():
+    # A non-first purchase and a first-time buyer at each price, in London.
+    simulation = Microsimulation(dataset=_london_dataset(2 * len(BUYER_PRICES)))
+    zero = np.zeros(2 * len(BUYER_PRICES))
+    inputs = {
+        "main_residential_property_purchased": np.tile(BUYER_PRICES, 2),
+        "main_residential_property_purchased_is_first_home": np.repeat(
+            [False, True], len(BUYER_PRICES)
+        ),
+        "additional_residential_property_purchased": zero,
+        "cumulative_residential_rent": zero,
+        "rent": zero,
+    }
+    for variable, values in inputs.items():
+        simulation.set_input(variable, OMITTED_RELIEF_YEAR, values)
+    return simulation
+
+
+def _buyer_tax(simulation):
+    tax = simulation.calculate("stamp_duty_land_tax", OMITTED_RELIEF_YEAR)
+    return np.split(np.array(tax, dtype=float), 2)
+
+
+def _set_rates(simulation, leaf_rates):
+    for leaf, rate in leaf_rates:
+        leaf.update(period=str(OMITTED_RELIEF_YEAR), value=rate)
+    simulation.tax_benefit_system.reset_parameter_caches()
+    simulation.reset_calculations()
+
+
+@pytest.mark.parametrize("reform", RATE_REFORMS)
+def test_model_year_2021_omits_relief_under_rate_reforms(buyer_simulation, reform):
+    parameters = buyer_simulation.tax_benefit_system.parameters
+    changes = [
+        (parameters.get_child(f"{scale}[{index}].rate"), rate)
+        for scale, new_rates in RATE_REFORMS[reform].items()
+        for index, rate in new_rates.items()
+    ]
+    baseline = [(leaf, leaf(str(OMITTED_RELIEF_YEAR))) for leaf, _ in changes]
+    base_main, base_first = _buyer_tax(buyer_simulation)
+    _set_rates(buyer_simulation, changes)
+    try:
+        assert all(leaf(str(OMITTED_RELIEF_YEAR)) == rate for leaf, rate in changes)
+        main, first = _buyer_tax(buyer_simulation)
+    finally:
+        _set_rates(buyer_simulation, baseline)
+    # Buyer status leaves the tax unchanged, with and without the reform.
+    np.testing.assert_array_equal(base_first, base_main)
+    np.testing.assert_array_equal(first, main)
+    if MAIN_RATES in RATE_REFORMS[reform]:
+        # Main-rate changes move both buyers' tax, and equally.
+        assert np.any(main != base_main)
+        np.testing.assert_array_equal(first - base_first, main - base_main)
+    else:
+        # First-time buyers' rates leave their tax unchanged.
+        np.testing.assert_array_equal(first, base_first)
