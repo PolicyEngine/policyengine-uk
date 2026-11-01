@@ -14,6 +14,16 @@ screen passes. The couple's part stays £2,792. A working outside reporter canno
 raise the total; failure of the couple's own screen cannot erase another eligible
 person's separate award. These examples presume separate preassessed claims.
 
+The abolition of income-related ESA reached every remaining award on 1 July 2026
+in Great Britain and 1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A;
+SR 2025/176 art. 3A). The model pays each claim for `esa_income_payable_share`
+of the year: the couple's claim at the highest share among its reporters, and
+each outside claim at its own. In 2026–27 that is 86/365 in Great Britain and
+178/365 in Northern Ireland, so the £3,876 above becomes £913.25 in Great Britain.
+From 2027–28 `esa_income_report_closed` closes every report, except one saved
+for an appointee (`esa_income_appointee_saving`); a Universal Credit claim
+still ends a saved award. Contributory ESA is unchanged.
+
 All formula readers use the same original claim groups. A scope mask selects
 reports; it does not change claimant or partner roles. Claimant-or-partner awards
 exclude outside claims, including in Income Support and an alternate benefit-cap

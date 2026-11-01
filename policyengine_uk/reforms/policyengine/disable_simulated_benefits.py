@@ -72,7 +72,9 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # Universal Credit anyway (would_claim_uc) is still not eligible for Housing
 # Benefit or tax credits. An adult outside the couple who reports
 # income-based JSA is on it, as their own claim, only in the years the model
-# has the scheme open (gov.dwp.JSA.income.active: to 2025).
+# has the scheme open (gov.dwp.JSA.income.active: to 2025). Likewise one who
+# reports income-related ESA is on it only while some of the year is payable
+# (esa_income_payable_share: to 2026-27, unless saved for an appointee).
 # Hold the family closure and each separate member's own closure.
 NOT_MOVED = ["legacy_benefits_closed", "person_legacy_benefits_closed"]
 

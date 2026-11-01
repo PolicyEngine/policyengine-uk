@@ -363,8 +363,18 @@ def test_each_person_is_on_their_own_award(reformed, year):
         str(year)
     ).gov.dwp.JSA.income.active
     assert jsa_open == (year == DATASET_YEAR)
+    # Likewise their own income-related ESA, which its abolition ends from 1
+    # July 2026 (SI 2025/1148 art. 3A): payable for part of 2026-27, none of
+    # 2027-28.
+    esa_open = (
+        reformed.tax_benefit_system.parameters(
+            str(year)
+        ).gov.dwp.ESA.income.awards_payable.great_britain
+        > 0
+    )
+    assert esa_open == (year < DATASET_YEAR + 2)
     assert not on_esa["excluded_adult_no_award_0"]
-    assert on_esa["excluded_adult_no_award_1"]
+    assert on_esa["excluded_adult_no_award_1"] == esa_open
     assert not on_jsa["excluded_adult_no_award_0"]
     assert on_jsa["excluded_adult_no_award_1"] == jsa_open
     assert on_esa["own_esa_0"] and not on_jsa["own_esa_0"]
