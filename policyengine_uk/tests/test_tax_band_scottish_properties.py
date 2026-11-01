@@ -319,9 +319,10 @@ def test_savings_allowance_does_not_read_the_band():
 # The Marriage Allowance income conditions against the liability, with the nil
 # rates in force: people alternate between Scotland and England, from 2016-17,
 # the first year of the savings and dividend nil rates. Before 2017-18 the
-# model charges a Scottish taxpayer's non-savings income on the Scottish scale
-# it carries back from 2017-18, where s. 11A(1) charged it on the rest-of-UK
-# limits. The conditions follow the law, so the test leaves those people out.
+# model charges a Scottish taxpayer's non-savings income on its 2017-18
+# Scottish scale, where s. 11A(1) charged it on the rest-of-UK limits. The
+# Marriage Allowance test uses the basic rate limit there, as the law did, so
+# this test leaves those people out.
 MA_YEARS = list(range(2016, 2027))
 MA_COUNTRIES = ["SCOTLAND", "ENGLAND"]
 FIRST_SCOTTISH_LIMITS_YEAR = 2017

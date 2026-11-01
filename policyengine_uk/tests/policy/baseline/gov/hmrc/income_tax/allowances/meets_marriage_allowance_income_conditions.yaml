@@ -110,12 +110,12 @@
 - name: Under a raised starting rate limit, savings at the starting rate meet the conditions
   period: 2026
   input:
-    # The starting rate limit for savings moves to 40,000. Pay takes the
-    # personal allowance, so all 38,000 of interest is taxable. The model
-    # charges the 37,700 of it within the basic rate band at the starting
-    # rate for savings (s. 12), and the 500 savings allowance for income
-    # above the basic rate limit (s. 12B(3)) covers the other 300 at the
-    # savings nil rate (s. 12A). s. 55B(2)(b) allows both rates.
+    # A reform raises the starting rate limit for savings to 40,000. Pay
+    # takes the personal allowance, so the model taxes all 38,000 of
+    # interest. It charges the 37,700 within the basic rate band at the
+    # starting rate for savings (s. 12), and the 500 savings allowance for
+    # income above the basic rate limit (s. 12B(3)) covers the other 300 at
+    # the savings nil rate (s. 12A). Section 55B(2)(b) allows both rates.
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
     employment_income: 12_570
     savings_interest_income: 38_000
@@ -228,10 +228,10 @@
 - name: In 2015-16 a Scottish taxpayer's limit is the basic rate limit
   period: 2015
   input:
-    # s. 11A takes effect in 2016-17 (SI 2015/2000 art. 3), and the 2015-16
-    # s. 55B(2)(b) allows the basic rate. 42,200 - 10,600 = 31,600, below the
-    # basic rate limit, though above the 31,500 the model's Scottish scale
-    # carries back from 2017-18.
+    # Section 11A takes effect in 2016-17 (SI 2015/2000 art. 3), and the
+    # 2015-16 s. 55B(2)(b) allows the basic rate. 42,200 - 10,600 = 31,600,
+    # below the basic rate limit, though above the 31,500 the model reads
+    # from its 2017-18 Scottish scale.
     employment_income: 42_200
     region: SCOTLAND
   output:
@@ -240,10 +240,10 @@
 - name: In 2016-17 a Scottish taxpayer's limit is the basic rate limit
   period: 2016
   input:
-    # SI 2015/1810 art. 14(3) adds the Scottish basic rate to s. 55B(2)(b),
-    # and the 2016-17 s. 11A(1) charges it on non-savings income that would
-    # otherwise bear the basic rate. 42,700 - 11,000 = 31,700, below the
-    # basic rate limit.
+    # The Treasury added the Scottish basic rate to s. 55B(2)(b) (SI
+    # 2015/1810 art. 14(3)), and the 2016-17 s. 11A(1) charges it on
+    # non-savings income that would otherwise bear the basic rate.
+    # 42,700 - 11,000 = 31,700, below the basic rate limit.
     employment_income: 42_700
     region: SCOTLAND
   output:
