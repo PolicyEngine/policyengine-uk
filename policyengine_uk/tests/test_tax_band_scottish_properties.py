@@ -22,7 +22,7 @@ so the band can rest on that income alone, but no one pays tax at the higher
 or additional rates above their band.
 
 Before #2350 the band compared all taxable income with the Scottish limits.
-From 2019-20, when that formula last applied, the band never rises, except
+Against that formula, which ran from 2019-20, the band never rises, except
 from STARTER to BASIC where savings or dividends sit below the Scottish
 starter limit: they are charged at the rest-of-UK basic rates, not at the
 starter rate.
