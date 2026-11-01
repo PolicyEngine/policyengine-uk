@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class uc_award_upper_bound(Variable):
     value_type = float
     entity = BenUnit
-    label = "Universal Credit award before the non-dependant deduction"
+    label = "Upper bound on the Universal Credit award"
     documentation = (
         "The family's award before the benefit cap "
         "(universal_credit_pre_benefit_cap) never exceeds this amount, which "

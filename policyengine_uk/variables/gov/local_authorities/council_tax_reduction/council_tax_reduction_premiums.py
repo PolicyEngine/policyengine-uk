@@ -22,7 +22,7 @@ class council_tax_reduction_premiums(Variable):
         "her non-dependant (everyone else in the household, since she has no "
         "partner or children, unless they receive a qualifying benefit or are "
         "blind); and the carer premium if she is entitled to a carer benefit. "
-        "At working age the benefit unit's carer premium is "
+        "At working age the benefit unit's carer premium comes from "
         "council_tax_reduction_carer_premium, which in Scotland also counts "
         "an award of Universal Credit which includes the carer element. "
         "Whom a carer benefit is paid for caring for comes from "
