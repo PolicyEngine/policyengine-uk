@@ -1,12 +1,12 @@
 """DWP and councils count Maternity Allowance in the benefit cap.
 
-Parliament lists maternity allowance among the welfare benefits regulations
-may cap (Welfare Reform Act 2012 s.96(10)(i)), and the woman entitled to it
-receives it (Social Security Contributions and Benefits Act 1992 s.35(1)).
-Under UC Regs 2013 regs 79(1) and 80(1) and HB Regs 2006 reg 75A, DWP and
-councils count the welfare benefits "to which the single person or couple is
-entitled". Under regs 80(4) and 75C(4) they use the amount each scheme counts
-as income. DWP counts all of a Maternity Allowance as unearned income (UC Regs
+Parliament lists maternity allowance among the welfare benefits whose total
+the Secretary of State may cap by regulations (Welfare Reform Act 2012
+s.96(1), (10)(i)), and the woman entitled to it receives it (Social Security
+Contributions and Benefits Act 1992 s.35(1)). Under UC Regs 2013 regs 79(1)
+and 80(1) and HB Regs 2006 reg 75A, DWP and councils count the welfare
+benefits "to which the single person or couple is entitled". Under regs 80(4)
+and 75C(4) they use the amount they count as income. DWP counts all of a Maternity Allowance as unearned income (UC Regs
 2013 reg 66(1)(b)(viii)), and councils disregard none of it under HB Regs 2006
 reg 40 and Schedule 5.
 
@@ -35,13 +35,14 @@ adult receives the allowance:
    raises the total by d for a claimant or partner, and leaves it unchanged
    for a non-dependent adult. The total therefore never falls as the
    allowance rises, and nor does either reduction.
-3. Differential: the total equals a reference written from s.96(10) and
+3. Differential: the total equals a reference that follows s.96(10) and
    those regulations: the listed benefits of the claimant and partner, plus
    the family's Child Benefit, Child Tax Credit, Income Support, and
-   Universal Credit and Housing Benefit before the cap. Each reduction is
-   the excess over the statutory limit (UC reg 80A(2); HB reg 75CA(2)), less
-   Housing Benefit for Universal Credit (reg 80(2A)), and for Housing Benefit
-   no more than leaves 50p a week (reg 75D(2)).
+   Universal Credit and Housing Benefit before the cap. DWP reduces Universal
+   Credit by the excess over the statutory limit (UC reg 80A(2)), counting
+   Housing Benefit as nil (reg 80(2A)). Councils reduce Housing Benefit by the
+   excess over theirs (HB reg 75CA(2)), leaving at least 50p a week (reg
+   75D(2)).
 4. Pound for pound, through the whole model: where the model works out
    Universal Credit and the award before the cap stays above nil, raising
    the mother's allowance by d lowers that award by d (reg 66(1)(b)(viii)),
