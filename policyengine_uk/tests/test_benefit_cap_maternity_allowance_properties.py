@@ -6,18 +6,29 @@ receives it (Social Security Contributions and Benefits Act 1992 s.35(1)).
 Under UC Regs 2013 regs 79(1) and 80(1) and HB Regs 2006 reg 75A, DWP and
 councils count the welfare benefits "to which the single person or couple is
 entitled". Under regs 80(4) and 75C(4) they use the amount each scheme counts
-as income: all of a Maternity Allowance (UC Regs 2013 reg 66(1)(b)(viii); HB
-Regs 2006 reg 40, whose Sch 5 disregards none of it).
+as income. DWP counts all of a Maternity Allowance as unearned income (UC Regs
+2013 reg 66(1)(b)(viii)), and councils disregard none of it under HB Regs 2006
+reg 40 and Schedule 5.
 
 Invariants, for families on Universal Credit or on Housing Benefit alone, and
 a holder who is a single claimant, either member of a couple, or a
 non-dependent adult:
 
 1. Exchange: moving an amount between the holder's Maternity Allowance and
-   an equal amount of another welfare benefit of theirs that the cap counts
-   in the same way (contribution-based JSA or ESA, incapacity benefit, severe
-   disablement allowance or widowed parent's allowance) leaves the cap's
-   total, both exemptions and both reductions unchanged.
+   an equal amount of another welfare benefit of theirs that the scheme
+   counts in the same way leaves the cap's total, both exemptions and both
+   reductions unchanged. For Universal Credit the other benefit is
+   contribution-based JSA or ESA, incapacity benefit, severe disablement
+   allowance or widowed parent's allowance. DWP counts JSA, ESA and widowed
+   parent's allowance in full as unearned income (UC Regs 2013 regs
+   66(1)(b)(i), (ii), (vi) and 80(4)), and the other two at the amount of the
+   award (reg 80(1)). For Housing Benefit it is contribution-based JSA or ESA,
+   which councils count at the amount of the award (HB Regs 2006 reg 75C(1),
+   (4)), or severe disablement allowance, which no paragraph of Schedule 5
+   disregards and which bears no income tax (ITEPA 2003 s.677(1)). Councils
+   disregard £15 a week of widowed parent's allowance (Sch 5 para 16(b)) and
+   any tax paid on incapacity benefit (Sch 5 para 1; ITEPA 2003 s.660(1)), so
+   the families on Housing Benefit receive neither.
 2. Coefficient one: with each award before the cap entered, so that
    Universal Credit does not taper, raising the holder's allowance by d
    raises the total by exactly d when the holder is the claimant or partner,
@@ -34,10 +45,15 @@ non-dependent adult:
 4. Pound for pound, through the whole model: where the model works out
    Universal Credit and the award before the cap stays above nil, raising
    the mother's allowance by d lowers that award by d (reg 66(1)(b)(viii)),
-   so the total does not move. Where the cap reduces the award at both
-   amounts, Universal Credit after the cap plus the allowance does not move
-   either: DWP holds the family's capped benefits at the limit whichever of
-   them the allowance replaces.
+   so the total does not move. Where DWP reduces the award at both
+   amounts, and the award absorbs the whole reduction at each, Universal
+   Credit after the cap plus the allowance does not move either: DWP holds
+   the family's capped benefits at the limit whichever of them the allowance
+   replaces. That needs an award large enough to take the whole excess and no
+   protected floor that limits the reduction. Once the reduction takes the
+   award to nil, DWP has nothing left to reduce, and each further pound of
+   allowance adds a pound to what the family keeps: the test for a mother of
+   16 children shows it.
 
 Each example fills fixed benefit units in one simulation per module, so the
 draws set amounts while each family's members stay fixed.
@@ -60,14 +76,19 @@ SINGLE_LIMIT, COUPLE_LIMIT = 14_753, 22_020
 HOUSING_BENEFIT_MINIMUM = 0.50 * 52
 
 # The holder's other welfare benefits that the cap counts as theirs (WRA 2012
-# s.96(10)(d), (f), (h), (j), (n)), each entered as an award.
-OTHER_BENEFITS = [
-    "jsa_contrib",
-    "esa_contrib",
-    "incapacity_benefit",
-    "sda",
-    "widowed_parents_allowance",
-]
+# s.96(10)(d), (f), (h), (j), (n)), each entered as an award. Each scheme's
+# list holds those it counts at the amount of the award, as it does
+# Maternity Allowance (invariant 1).
+OTHER_BENEFITS = {
+    "uc": [
+        "jsa_contrib",
+        "esa_contrib",
+        "incapacity_benefit",
+        "sda",
+        "widowed_parents_allowance",
+    ],
+    "hb": ["jsa_contrib", "esa_contrib", "sda"],
+}
 FAMILY_AWARDS = ["child_benefit", "child_tax_credit", "income_support"]
 
 # Families by structure: whether each member is the claimant or partner.
@@ -137,21 +158,30 @@ def entered():
     return Simulation(situation=entered_situation())
 
 
-PERSON_AMOUNTS = ["maternity_allowance_reported", *OTHER_BENEFITS]
+PERSON_AMOUNTS = ["maternity_allowance_reported", *OTHER_BENEFITS["uc"]]
+# The benefits each scheme's families receive. Families on Housing Benefit
+# receive none of the others, which councils count at less than the award.
+SCHEME_AMOUNTS = {
+    scheme: ["maternity_allowance_reported", *others]
+    for scheme, others in OTHER_BENEFITS.items()
+}
 pounds = st.integers(0, 1_200_000).map(lambda pence: pence / 100)
 
 
 @st.composite
 def rows(draw):
     """One row's amounts: the amount moved and its split, the other benefit
-    it moves to, every member's own benefits before the move, and the
-    family's awards."""
+    it moves to under each scheme, every member's own benefits before the
+    move, and the family's awards."""
     moved = draw(pounds)
     split = round(moved * draw(st.integers(0, 100)) / 100, 2)
     return {
         "moved": moved,
         "split": split,
-        "other": draw(st.sampled_from(OTHER_BENEFITS)),
+        "other": {
+            scheme: draw(st.sampled_from(others))
+            for scheme, others in OTHER_BENEFITS.items()
+        },
         # Benefits before the move, for the first and second member.
         "own": [
             {
@@ -166,10 +196,10 @@ def rows(draw):
     }
 
 
-def holder_amounts(row, variant):
+def holder_amounts(row, scheme, variant):
     """The holder's Maternity Allowance and other benefit after the move."""
     allowance = row["own"][0]["maternity_allowance_reported"]
-    other = row["own"][0][row["other"]]
+    other = row["own"][0][row["other"][scheme]]
     added_to_allowance = {
         "base": 0,
         "allowance": row["moved"],
@@ -185,6 +215,26 @@ def holder_amounts(row, variant):
     return allowance + added_to_allowance, other + added_to_other
 
 
+def member_amounts(row, structure, holder, scheme, variant):
+    """Each member's own benefits after the move, by member: the holder takes
+    the first member's benefits before the move, any other member the
+    second's, and a benefit the scheme's families don't receive is nil."""
+    members = []
+    for j, _ in enumerate(STRUCTURES[structure]):
+        own = dict(row["own"][0 if j == holder else 1])
+        if j == holder:
+            allowance, other = holder_amounts(row, scheme, variant)
+            own["maternity_allowance_reported"] = allowance
+            own[row["other"][scheme]] = other
+        members.append(
+            {
+                name: own[name] if name in SCHEME_AMOUNTS[scheme] else 0.0
+                for name in PERSON_AMOUNTS
+            }
+        )
+    return members
+
+
 def fill(sim, drawn):
     """Enter each row's amounts into the fixed families and recalculate."""
     person_inputs = {name: [] for name in PERSON_AMOUNTS}
@@ -198,14 +248,7 @@ def fill(sim, drawn):
     }
     for row in drawn:
         for (structure, holder), scheme, variant in UNITS:
-            for j, _ in enumerate(STRUCTURES[structure]):
-                # The holder takes the first member's benefits before the
-                # move; any other member takes the second's.
-                own = dict(row["own"][0 if j == holder else 1])
-                if j == holder:
-                    allowance, other = holder_amounts(row, variant)
-                    own["maternity_allowance_reported"] = allowance
-                    own[row["other"]] = other
+            for own in member_amounts(row, structure, holder, scheme, variant):
                 for name in PERSON_AMOUNTS:
                     person_inputs[name].append(own[name])
             for name in FAMILY_AWARDS:
@@ -254,17 +297,13 @@ def tolerance(*values):
 def reference_total(row, structure, holder, scheme, variant):
     """WRA 2012 s.96(10); UC Regs 2013 regs 79(1), 80(1); HB Regs 2006 reg
     75A: the claimant's and partner's own welfare benefits and the family's
-    awards. A non-dependent adult's benefits are their own."""
+    awards. A non-dependent adult's benefits are their own. Each scheme's
+    families receive only benefits it counts at the amount of the award."""
+    members = member_amounts(row, structure, holder, scheme, variant)
     total = 0.0
-    for j, counted in enumerate(STRUCTURES[structure]):
-        if not counted:
-            continue
-        own = dict(row["own"][0 if j == holder else 1])
-        if j == holder:
-            allowance, other = holder_amounts(row, variant)
-            own["maternity_allowance_reported"] = allowance
-            own[row["other"]] = other
-        total += sum(own[name] for name in PERSON_AMOUNTS)
+    for own, counted in zip(members, STRUCTURES[structure]):
+        if counted:
+            total += sum(own[name] for name in SCHEME_AMOUNTS[scheme])
     total += sum(row["family"].values())
     if scheme == "uc":
         return total + row["universal_credit"]
@@ -287,9 +326,9 @@ def test_moving_income_between_maternity_allowance_and_another_counted_benefit(
 ):
     out = results(entered, drawn)
     for r, row in enumerate(drawn):
-        event(f"moved to {row['other']}")
         for holder in HOLDERS:
             for scheme in SCHEMES:
+                event(f"{scheme}: moved to {row['other'][scheme]}")
                 columns = [column(holder, scheme, v) for v in VARIANTS[1:]]
                 for name in OUTPUTS:
                     values = out[name][r, columns]
@@ -449,6 +488,7 @@ def test_universal_credit_falls_by_the_allowance_inside_the_cap(modelled, drawn)
             "universal_credit_pre_benefit_cap",
             "benefit_cap_welfare_benefits",
             "uc_benefit_cap_reduction",
+            "uc_benefit_cap_reduction_after_floor",
             "universal_credit",
         ]
     }
@@ -468,12 +508,95 @@ def test_universal_credit_falls_by_the_allowance_inside_the_cap(modelled, drawn)
             total[lower], total[higher]
         ), context
         reduction = value["uc_benefit_cap_reduction"]
+        applied = value["uc_benefit_cap_reduction_after_floor"]
         capped = reduction[lower] > 0 and reduction[higher] > 0
-        event(f"capped at both amounts: {capped}")
-        if capped:
+        # The award takes the whole reduction at both amounts: it doesn't
+        # reach nil first, and no protected floor limits the reduction.
+        absorbed = all(
+            abs(applied[i] - reduction[i]) <= tolerance(reduction[i])
+            for i in (lower, higher)
+        )
+        event(f"capped at both amounts: {capped}; award absorbs it: {absorbed}")
+        if capped and absorbed:
             paid = value["universal_credit"]
             kept_lower = paid[lower] + d["allowance"]
             kept_higher = paid[higher] + d["allowance"] + d["rise"]
             assert abs(kept_higher - kept_lower) <= tolerance(
                 kept_lower, kept_higher
             ), context
+
+
+# The edge of invariant 4. A mother of 40 with 16 children (aged 1 to 15, and
+# another of 7) owns her home outright outside London and has no earnings,
+# 2026-27. Monthly Universal Credit before her allowance (DWP, Benefit and
+# pension rates 2026 to 2027; UC Regs 2013 reg 24A revoked from 6 April 2026
+# by the Universal Credit (Removal of Two Child Limit) Act 2026 s.1(3)(a)):
+#   standard allowance, single 25 or over                 424.90
+#   child element, first child born before 6 April 2017   351.88
+#   child element, 15 more children, 15 x 303.94         4,559.10
+#   maximum amount                                       5,335.88, or 64,030.56
+#     a year
+# Child Benefit: (27.05 + 15 x 17.90) x 52 = 15,368.60 a year (Child Benefit
+# (Rates) Regulations 2006 reg 2(1)). Her family's limit is 22,020 (reg
+# 80A(2)(d)(ii)).
+EDGE_CHILD_AGES = [*range(1, 16), 7]
+EDGE_ALLOWANCES = [6_000, 7_000]
+
+
+def test_a_mother_of_16_keeps_more_once_the_cap_takes_universal_credit_to_nil():
+    people, benunits, households = {}, {}, {}
+    for i, amount in enumerate(EDGE_ALLOWANCES):
+        mother = f"e{i}_mother"
+        children = [f"e{i}_child{j}" for j in range(len(EDGE_CHILD_AGES))]
+        people[mother] = {
+            "age": {MODEL_YEAR: 40},
+            "maternity_allowance_reported": {MODEL_YEAR: amount},
+        }
+        for child, age in zip(children, EDGE_CHILD_AGES):
+            people[child] = {"age": {MODEL_YEAR: age}}
+        benunits[f"e{i}"] = {"members": [mother, *children]}
+        households[f"e{i}_home"] = {
+            "members": [mother, *children],
+            "region": {MODEL_YEAR: "NORTH_EAST"},
+            "tenure_type": {MODEL_YEAR: "OWNED_OUTRIGHT"},
+        }
+    sim = Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+    value = {
+        name: np.asarray(sim.calculate(name, MODEL_YEAR)).astype(float)
+        for name in [
+            "uc_maximum_amount",
+            "child_benefit",
+            "universal_credit_pre_benefit_cap",
+            "benefit_cap_welfare_benefits",
+            "uc_benefit_cap",
+            "uc_benefit_cap_reduction",
+            "uc_benefit_cap_reduction_after_floor",
+            "universal_credit",
+        ]
+    }
+    expected = {
+        "uc_maximum_amount": [64_030.56, 64_030.56],
+        "child_benefit": [15_368.60, 15_368.60],
+        # Less the allowance in full (reg 66(1)(b)(viii)): both stay above nil.
+        "universal_credit_pre_benefit_cap": [58_030.56, 57_030.56],
+        # 58,030.56 + 15,368.60 + 6,000 = 57,030.56 + 15,368.60 + 7,000.
+        "benefit_cap_welfare_benefits": [79_399.16, 79_399.16],
+        "uc_benefit_cap": [22_020, 22_020],
+        # Reg 81: 79,399.16 - 22,020 - 0 childcare = 57,379.16 at both amounts.
+        "uc_benefit_cap_reduction": [57_379.16, 57_379.16],
+        # At 7,000 the award before the cap, 57,030.56, is all DWP can take.
+        "uc_benefit_cap_reduction_after_floor": [57_379.16, 57_030.56],
+        # 58,030.56 - 57,379.16 = 651.40, and nil.
+        "universal_credit": [651.40, 0],
+    }
+    for name, amounts in expected.items():
+        assert np.allclose(value[name], amounts, rtol=0, atol=0.01), (
+            name,
+            value[name],
+        )
+    # Universal Credit plus the allowance rises from 6,651.40 to 7,000: by
+    # 348.60 of the 1,000 more allowance, the part the award could not absorb.
+    kept = value["universal_credit"] + np.array(EDGE_ALLOWANCES)
+    assert np.allclose(kept, [6_651.40, 7_000], rtol=0, atol=0.01), kept
