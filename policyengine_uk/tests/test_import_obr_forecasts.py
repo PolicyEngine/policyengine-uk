@@ -2984,9 +2984,10 @@ def test_clearance_lines_are_read_from_their_own_tables():
 
 
 def test_clearance_growth_is_per_head_of_the_population_the_file_holds():
-    """Each year's growth is the clearances' growth over one plus that year's
-    ons.population growth in the file being written; after the forecast the
-    clearances hold flat, so the series is 1 / (1 + population) - 1."""
+    """The importer writes each year's value as one plus the clearances'
+    growth, over one plus that year's ons.population growth in the file it
+    writes, minus one; after the forecast it holds the clearances flat and
+    writes 1 / (1 + population) - 1."""
     rendered = render()
     for key, path in CLEARANCE_PATHS.items():
         published = {

@@ -3,9 +3,10 @@
 
 Each input declares its product group's index under
 ``gov.economic_assumptions.indices.obr.per_capita``, and dataset projection
-grows it by the same ``yoy_growth`` series: the growth in the OBR's clearances
-of the group (October 2026 receipts Tables 4.11 and 4.12, after the March 2026
-EFO's 2024-25 outturn) over one plus ``ons.population`` growth. Dataset
+grows it by the same ``yoy_growth`` series: one plus the growth in the OBR's
+clearances of the group (October 2026 receipts Tables 4.11 and 4.12, after the
+March 2026 EFO's 2024-25 outturn), over one plus ``ons.population`` growth,
+minus one. Dataset
 projection grows household weights by ``ons.population``, so the weighted
 quantities grow with the clearances, and a duty-rate reform moves receipts
 through the rate alone.

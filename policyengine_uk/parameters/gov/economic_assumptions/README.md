@@ -72,13 +72,14 @@ Dataset projection grows the alcohol and tobacco quantity inputs (#2596)
 by the six clearance series under `per_capita`:
 `tobacco_clearances.cigarettes`, `hand_rolling_tobacco` and
 `other_tobacco_products`, and `alcohol_clearances.beer_and_cider`, `wine`
-and `spirits`. The importer writes each as the growth in the OBR's
-clearances of a product group over one plus `ons.population` growth, to six
-decimals, because dataset projection grows household weights by
-`ons.population`. It links each series' outturn year to the previous EFO's
-outturn, as it does for the four receipts series, and holds the clearances
-flat after the OBR's forecast. It reads `ons.population` from the
-`yoy_growth.yaml` it rewrites. See
+and `spirits`. From the OBR's clearances of each product group, the
+importer writes
+`(1 + aggregate clearance growth) / (1 + ons.population growth) - 1` to six
+decimals. Dataset projection grows household weights by `ons.population`,
+so the weighted quantities grow with the clearances. The importer links each
+series' outturn year to the previous EFO's outturn, as it does for the four
+receipts series, holds the clearances flat after the OBR's forecast, and
+reads `ons.population` from the `yoy_growth.yaml` it rewrites. See
 [household excise duties](../../../../docs/engineering/excise-duties.md#projecting-alcohol-and-tobacco-quantities)
 for the mapping of inputs to groups, the arithmetic and the sources.
 

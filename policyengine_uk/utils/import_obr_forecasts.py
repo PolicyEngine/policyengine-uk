@@ -696,9 +696,10 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     note may give the line's product, lower case and without hyphens. In
     both EFOs the importer requires every unit the OBR states for the line
     to be this one (``validate_clearance_unit``). Dataset projection grows
-    household weights by ``ons.population``, so ``render_receipts_growth_yaml`` writes
-    the clearances' growth over one plus that growth (``per_head_growth``)
-    and the weighted total grows with the clearances. After the OBR's
+    household weights by ``ons.population``, so ``render_receipts_growth_yaml``
+    writes one plus the clearances' growth, over one plus that growth, minus
+    one (``per_head_growth``), and the weighted total grows with the
+    clearances. After the OBR's
     forecast the importer holds the clearances flat, as ``road_fuel_volume``
     holds road fuel volume.
     """
