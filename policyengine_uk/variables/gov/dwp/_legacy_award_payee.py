@@ -45,10 +45,11 @@ def own_report_is_paid(person, period, award, barred, capital_limit):
     "jsa_income") is paid on this person's own report, for a member who is
     neither the claimant nor the partner and so claims in their own right.
 
-    Their claim is screened on them alone. No condition of their own may bar
-    it (barred): they must not be engaged in remunerative work as its
-    claimant, and, for income-related ESA, must not have reached pensionable
-    age (Welfare Reform Act 2007 s.1(3)(c)). The award on their report alone
+    The model screens their claim on them alone. They must meet each
+    condition of their own (barred is true where they fail one): they must
+    not engage in remunerative work as its claimant, and, for income-related
+    ESA, must not have reached pensionable age (Welfare Reform Act 2007
+    s.1(3)(c)). The award on their report alone
     must be positive: the report exceeds the tariff income from the benefit
     unit's capital, within the capital limit (capital_limit). Their
     own capital is not observed, so the benefit unit's stands in for it.

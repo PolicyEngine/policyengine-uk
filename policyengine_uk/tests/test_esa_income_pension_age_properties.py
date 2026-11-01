@@ -424,8 +424,8 @@ def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
     meets the Pension Credit age conditions: a working-age claimant reporting
     the award, a couple aged 70 and 60 without the saving (case 4's kind), a
     pensioner without a report, a member outside the couple reporting beside
-    a pensioner, and a pensioner reporting the award, whose claim pensionable
-    age bars whatever Pension Credit pays."""
+    a pensioner, and a pensioner reporting the award, who has reached
+    pensionable age and so has no claim whatever Pension Credit pays."""
     log = BranchLog(monkeypatch)
     year = 2026
     adult = {"is_claimant_or_partner": True}

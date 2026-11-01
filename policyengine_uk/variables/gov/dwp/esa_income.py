@@ -15,8 +15,8 @@ def income_related_esa_award_on_reports(benunit, period, reported, members=None)
 
     The claimant and partner share one claim. Other reporters have separate
     claims, each using the existing own-work and shared-capital/tariff proxy,
-    and barred once the reporter reaches pensionable age (Welfare Reform Act
-    2007 s.1(3)(c)).
+    and the model pays none once the reporter reaches pensionable age
+    (Welfare Reform Act 2007 s.1(3)(c)).
     Selecting members changes only reports, never the original couple or
     the work/capital screen. This helper must not read payable-person status,
     which itself depends on the aggregate award.

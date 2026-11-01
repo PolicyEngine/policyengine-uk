@@ -49,7 +49,7 @@ class is_on_income_related_esa(Variable):
 
     def formula(person, period, parameters):
         # WRA 2007 s.1(3)(c): a member who has reached pensionable age cannot
-        # be the claimant, so the award is not payable to them.
+        # be the claimant, so the model pays them none of the award.
         pensionable_age = person("is_SP_age", period)
         couple_award = (
             person.benunit("claimant_or_partner_esa_income", period) > 0
@@ -57,7 +57,8 @@ class is_on_income_related_esa(Variable):
             person, period, "esa_income_reported", can_claim=~pensionable_age
         )
         # Their own claim, on their own report, work and age alone (WRA 2007
-        # s.1(3)(c): a claimant who has reached pensionable age is not entitled).
+        # s.1(3)(c): a claimant who has reached pensionable age has no
+        # entitlement).
         own_award = own_report_is_paid(
             person,
             period,
