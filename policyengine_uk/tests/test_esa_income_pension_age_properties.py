@@ -27,9 +27,11 @@ Against it, for every family drawn here:
   (is_on_income_related_esa), and a family whose every report comes from such
   a member gets none.
 
-A family that gets Pension Credit only with the award, through the higher
-earnings disregard the award brings, gets both: no state is consistent there.
-The test counts such families and asserts nothing more of them.
+DWP disregards £20 a week of earnings while the claimant or partner
+receives ESA (SPC Regs 2002 Sch VI para 4(1)(a)(vii)), so some families get
+Pension Credit only with the award. Such a family gets both: no state is
+consistent there. The test counts such families and asserts nothing more of
+them.
 
 The years are 2016, when a man born before 6 December 1953 could be over the
 qualifying age for State Pension Credit but under his pensionable age of 65
@@ -40,8 +42,9 @@ a mixed-age couple that keeps the SI 2019/37 art 4 saving
 Adults have earnings, pensions and household savings, so some families pass
 Pension Credit's means test and others fail it, and in 2016 and 2018 some
 report working tax credit, which HMRC pays without its income test to a
-family on the award (TCA 2002 s.7(2)). A member outside the couple claims in their own right: the couple's
-Pension Credit leaves their claim alone, and their pensionable age does not.
+family on the award (TCA 2002 s.7(2)). A member outside the couple claims in
+their own right and keeps that claim while below pensionable age, whatever
+the couple's Pension Credit.
 
 Each of would_claim_uc, claims_all_entitled_benefits and the mixed-age saving
 would otherwise read the ESA report, so the generator enters them, and no one

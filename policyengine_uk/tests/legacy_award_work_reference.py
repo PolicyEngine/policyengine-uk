@@ -42,9 +42,9 @@ reported awards.
   couple every member of which has reached the qualifying age can then be
   entitled, and from 2019-20 that is pensionable age for everyone (SPCA 2002
   s.1(6)), so each of them has reached pensionable age and has no claim
-  under s.1(3)(c), whether or not Pension Credit pays. Pension Credit
-  entitlement ends only the couple's claim, not that of a member claiming in
-  their own right.
+  under s.1(3)(c), whether or not Pension Credit pays. A member outside the
+  couple keeps their own claim even when the couple has an entitlement to
+  Pension Credit.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
   couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim

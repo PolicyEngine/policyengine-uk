@@ -388,8 +388,8 @@
     # The 70-year-old is a single claimant of Pension Credit: 52 x 238.00.
     meets_pension_credit_age_conditions: true
     pension_credit: 12_376
-    # The 40-year-old is not a member of the 70-year-old's couple, so para
-    # 6(1)(d) does not reach them: their own award of 5_000.
+    # The 40-year-old is not a member of the 70-year-old's couple, claims in
+    # their own right and keeps their award of 5_000 (para 6(1)(d)).
     esa_income_eligible: true
     esa_income: 5_000
     claimant_or_partner_esa_income: 0
@@ -429,7 +429,7 @@
     # payable to them.
     is_on_income_related_esa: [false, true]
 
-- name: Case 14, where only the older member of an unsaved mixed-age couple has the support component, the couple's award brings neither benefit cap exception.
+- name: Case 14, where only the older member of an unsaved mixed-age couple has the support component, the couple gets neither benefit cap exception.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -469,9 +469,10 @@
 # Regs 2002 reg 6(1)(b)), and DWP disregards £5 a week of a single claimant's
 # earnings (Sch VI para 5), or £20 a week while the claimant is on employment
 # and support allowance (para 4(1)(a)(vii)). Below 65 no savings
-# credit is due (SPCA 2002 s.3(1)). His income is below the personal
-# allowance (£11,000) and his earnings below the National Insurance primary
-# threshold (£155 a week), so neither takes anything off.
+# credit is due (SPCA 2002 s.3(1)). His income stays under the personal
+# allowance (£11,000) and his earnings under the National Insurance primary
+# threshold (£155 a week), so he owes no income tax or primary Class 1
+# contributions.
 
 - name: Case 15, where Pension Credit pays with or without the award, the man gets the Pension Credit due on his income without the award and no income-related ESA.
   period: 2016
@@ -592,9 +593,10 @@
   output:
     # B(0): 115.50 + 50 - 5 = 160.50 a week, over 155.60, so nil. B(e):
     # 115.50 + 50 - 20 = 145.50, so 155.60 - 145.50 = 10.10 a week. No state
-    # is consistent: Pension Credit would end the award, and without the
-    # award Pension Credit pays nothing. B(0) pays nothing, so the award
-    # stands, 52 x 105.60 = 5_491.20, beside B(e) = 52 x 10.10 = 525.20.
+    # is consistent: with Pension Credit in payment, the claimant could not
+    # have ESA; without ESA, he gets no Pension Credit. With B(0) nil, the
+    # model pays the award, 52 x 105.60 = 5_491.20, beside B(e) = 52 x 10.10
+    # = 525.20.
     esa_income_eligible: true
     esa_income: 5_491.20
     pension_credit_earnings_disregard: 1_040
@@ -681,10 +683,10 @@
   output:
     # In 2018-19 the couple minimum guarantee is £248.80 a week. B(0): 200 +
     # 124 - 10 = 314 a week; B(e): 200 + 124 - 20 = 304. Both exceed it, so
-    # nil either way. (Each member's income is under the £11,850 personal
-    # allowance, and £124 a week is under the £162 National Insurance primary
-    # threshold, so neither takes anything off.) The younger member meets
-    # para 6(1)(d).
+    # nil either way. (Each member's income stays under the £11,850 personal
+    # allowance, and £124 a week under the £162 National Insurance primary
+    # threshold, so neither member owes income tax or primary Class 1
+    # contributions.) The younger member meets para 6(1)(d).
     pension_credit: 0
     esa_income: 2_537.60
     claimant_or_partner_esa_income: 2_537.60
