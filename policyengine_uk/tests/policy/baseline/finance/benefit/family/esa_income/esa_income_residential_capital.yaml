@@ -1,13 +1,13 @@
-# Income-related ESA tariff income from capital: ESA Regs 2008 reg 118 (NI:
-# SR 2008/280 reg 118). Capital above the lower threshold counts as £1 a week
-# for each complete £250 (reg 118(1)-(2)) and £1 for any part of £250 left
-# over (reg 118(5)), over 52 weeks. The regulation sets the lower threshold
-# at £6,000 (reg 118(1)), or £10,000 where the claimant lives permanently in
-# prescribed accommodation (reg 118(2)-(4)). It stops counting capital at
-# £16,000, and esa_income pays nothing above the £16,000 capital limit (reg 110). The figures at £16,001
-# show the model continuing the arithmetic, which the regulation does not
-# prescribe; the award case at £16,001 shows a nil award at the configured
-# limit.
+# Income-related ESA tariff income from capital: ESA Regs 2008 reg 118 (NI: SR
+# 2008/280 reg 118). DWP and the Department for Communities count capital
+# above the lower threshold as £1 a week for each complete £250 (reg
+# 118(1)-(2)) and £1 for any part of £250 left over (reg 118(5)), over 52
+# weeks. They use a lower threshold of £6,000 (reg 118(1)), or £10,000 where
+# the claimant lives permanently in prescribed accommodation (reg 118(2)-(4)),
+# and stop counting capital at £16,000. The model pays no income-related ESA
+# above the £16,000 capital limit (reg 110). At £16,001 the model continues
+# the arithmetic, which the regulation does not prescribe, and the award case
+# checks for a nil award at the configured limit.
 
 - name: Income-related ESA ordinary capital threshold and partial steps
   period: 2025

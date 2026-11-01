@@ -1,13 +1,13 @@
 # Income-based JSA tariff income from capital: JSA Regs 1996 reg 116 (NI: SR
-# 1996/198 reg 116). Capital above the lower threshold counts as £1 a week for
-# each complete £250 (reg 116(1)-(1A)) and £1 for any part of £250 left over
-# (reg 116(2)), over 52 weeks. The regulation sets the lower threshold at
-# £6,000 (reg 116(1)), or £10,000 where the claimant lives permanently in
-# prescribed accommodation (reg 116(1A)-(1C)). It stops counting capital at
-# £16,000, and jsa_income pays nothing above the £16,000 capital limit (reg 107). The figures at £16,001
-# show the model continuing the arithmetic, which the regulation does not
-# prescribe; the award case at £16,001 shows a nil award at the configured
-# limit.
+# 1996/198 reg 116). DWP and the Department for Communities count capital
+# above the lower threshold as £1 a week for each complete £250 (reg
+# 116(1)-(1A)) and £1 for any part of £250 left over (reg 116(2)), over 52
+# weeks. They use a lower threshold of £6,000 (reg 116(1)), or £10,000 where
+# the claimant lives permanently in prescribed accommodation (reg
+# 116(1A)-(1C)), and stop counting capital at £16,000. The model pays no
+# income-based JSA above the £16,000 capital limit (reg 107). At £16,001 the
+# model continues the arithmetic, which the regulation does not prescribe, and
+# the award case checks for a nil award at the configured limit.
 
 - name: Income-based JSA ordinary capital threshold and partial steps
   period: 2025

@@ -9,16 +9,17 @@ class jsa_income_tariff_income(Variable):
     documentation = (
         "Weekly tariff income from capital under JSA Regs 1996 reg 116 (NI: SR "
         "1996/198 reg 116), over 52 weeks: £1 for each complete £250 of capital "
-        "above the lower threshold and £1 for any part left over. The regulation "
-        "sets the lower threshold at £6,000, or £10,000 where "
-        "legacy_prescribed_accommodation_capital_exception is true, and stops "
+        "above the lower threshold and £1 for any part left over. DWP and "
+        "Northern Ireland's Department for Communities use a lower threshold of "
+        "£6,000, or £10,000 where "
+        "legacy_prescribed_accommodation_capital_exception is true, and stop "
         "counting capital at £16,000. Above that amount this variable continues "
-        "the same arithmetic, though the regulation prescribes none there. "
-        "jsa_income_eligible and the own-right claims in jsa_income pay nothing "
-        "while capital exceeds the configured capital limit (reg 107, £16,000), "
-        "so at that limit no award depends on the continuation. Under a reform "
-        "that raises the limit, the model subtracts the continued tariff from "
-        "awards."
+        "the same arithmetic, which the regulation doesn't prescribe. The model "
+        "pays no JSA through jsa_income_eligible or the own-right claims in "
+        "jsa_income while capital exceeds the configured capital limit (reg 107, "
+        "£16,000), so while the limit stays at £16,000 the arithmetic above it "
+        "changes no award. Under a reform that raises the limit, the model "
+        "subtracts the continued tariff from awards."
     )
     definition_period = YEAR
     unit = GBP
@@ -31,10 +32,11 @@ class jsa_income_tariff_income(Variable):
         JSA = parameters(period).gov.dwp.JSA.income
         capital = benunit("jsa_income_assessable_capital", period)
         mt = JSA.capital
-        # Reg 116(1)-(1C) sets the lower threshold at £6,000, or £10,000 for
-        # a claimant who lives permanently in prescribed accommodation. Each
-        # branch subtracts its own scalar threshold, so both keep the stored
-        # capital's float32 precision.
+        # Under reg 116(1)-(1C), DWP and the Department for Communities use a
+        # lower threshold of £6,000, or £10,000 for a claimant who lives
+        # permanently in prescribed accommodation. Each branch subtracts its
+        # own scalar threshold, so both keep the stored capital's float32
+        # precision.
         ordinary_excess = max_(0, capital - mt.tariff_income.threshold)
         residential_excess = max_(0, capital - mt.residential_threshold)
         excess_capital = where(

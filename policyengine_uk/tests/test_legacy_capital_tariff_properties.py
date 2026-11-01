@@ -1,36 +1,37 @@
 """Property tests for tariff income from capital in the legacy means tests.
 
-Income Support (IS Regs 1987 reg 53), income-based JSA (JSA Regs 1996 reg
-116) and income-related ESA (ESA Regs 2008 reg 118), and the same regulations
-of the Northern Ireland rules, treat capital above a lower threshold as a
-weekly income of £1 for each complete £250 and £1 for any part of £250 left
-over, counting capital up to £16,000. The regulations set the lower
-threshold at £6,000, or £10,000 where the claimant lives permanently in
-prescribed accommodation (IS reg 53(1A)-(1C), JSA reg 116(1A)-(1C), ESA reg
-118(2)-(4)). Working-age
-Housing Benefit (HB Regs 2006 reg 52) uses the same figures, with its own
-residential circumstances.
+DWP and Northern Ireland's Department for Communities treat capital above a
+lower threshold as a weekly income of £1 for each complete £250 and £1 for
+any part of £250 left over, counting capital up to £16,000. They apply this
+rule in Income Support (IS Regs 1987 reg 53), income-based JSA (JSA Regs
+1996 reg 116) and income-related ESA (ESA Regs 2008 reg 118), and under the
+same regulations of the Northern Ireland rules. They use a lower threshold of
+£6,000, or £10,000 where the claimant lives permanently in prescribed
+accommodation (IS reg 53(1A)-(1C), JSA reg 116(1A)-(1C), ESA reg
+118(2)-(4)). Working-age Housing Benefit (HB Regs 2006 reg 52) uses the same
+figures, with its own residential circumstances.
 
-Statutory invariants, for any capital on a penny grid up to £16,000 and
-either exception status:
+These statutory invariants hold for any capital on a penny grid up to
+£16,000 and either exception status:
 
 1. Reference: each programme's tariff income is 52 x ceil(max(0, capital -
-   threshold) / 250) x £1, with the threshold the regulation gives.
+   threshold) / 250) x £1, with the regulation's threshold.
 2. Own parameters: each programme reads its own ordinary and prescribed
-   accommodation thresholds. With all six set to different amounts in pence,
-   each programme's tariff income follows its own two.
+   accommodation thresholds. When the test sets all six thresholds, two per
+   programme, to different amounts in pence, each programme's tariff income
+   follows its own two.
 
-Model invariants, for any capital and either exception status:
+These model invariants hold for any capital and either exception status:
 
 3. Continuation: above £16,000 the regulations prescribe no tariff income.
-   The variables continue the same arithmetic there, and the award formulas
-   pay nothing above the configured £16,000 capital limit.
+   The variables continue the same arithmetic there, and the model pays no
+   award above the configured £16,000 capital limit.
 4. Monotone: tariff income never falls as capital rises.
 5. Bounded: tariff income with the prescribed accommodation exception never
    exceeds the ordinary tariff income on the same capital.
 6. Differential: the four programmes whose tariff parameters match give the
-   same tariff income at every capital level (Housing Benefit with its own
-   exception set the same way).
+   same tariff income at every capital level (the test sets Housing
+   Benefit's own exception the same way).
 """
 
 from math import ceil
@@ -91,8 +92,9 @@ UPPER_LIMIT = 16_000
 STEP = 250
 WEEKLY_AMOUNT = 1
 
-# Capital in pence, so every value names a sum of money, biased towards the
-# thresholds and the upper capital limit, where the branches meet.
+# PENCE draws capital in pence, so every value names a sum of money, and
+# biases it towards the thresholds and the upper capital limit, where the
+# branches meet.
 BOUNDARIES = [0, 6_000, 6_250, 10_000, 10_250, 16_000]
 PENCE = st.one_of(
     st.integers(0, 4_000_000),
@@ -108,9 +110,9 @@ YEARS = st.sampled_from([2015, 2020, 2024, 2025, 2026, 2029])
 def tariff_arithmetic(capital, exception):
     """52 x £1 for each complete or part £250 of capital above the threshold.
 
-    Up to UPPER_LIMIT it returns the annual tariff income the regulations
-    give. Above it the regulations give none, and it returns the model's
-    continuation.
+    Up to UPPER_LIMIT the function returns the annual tariff income under
+    the regulations. Above UPPER_LIMIT, where the regulations prescribe no
+    tariff income, it continues the same arithmetic, as the model does.
     """
     threshold = PRESCRIBED_ACCOMMODATION_THRESHOLD if exception else ORDINARY_THRESHOLD
     return WEEKS_IN_YEAR * WEEKLY_AMOUNT * ceil(max(0, capital - threshold) / STEP)
@@ -141,7 +143,7 @@ def tariffs(simulation, capitals, exceptions, year):
     for _, capital_variable, exception_variable, _ in PROGRAMMES.values():
         simulation.set_input(capital_variable, year, capital)
         simulation.set_input(exception_variable, year, exception)
-    # Working-age Housing Benefit rules, no Pension Credit passport.
+    # Apply working-age Housing Benefit rules, with no Pension Credit passport.
     for variable in (
         "housing_benefit_pension_age_regulations_apply",
         "in_receipt_of_guarantee_credit",
@@ -273,9 +275,10 @@ def set_parameters(simulation, year, values):
 def test_each_programme_reads_its_own_thresholds(
     simulation, ordinary, residential, pence, year
 ):
-    # 2. Own parameters. Six different thresholds, each with capital a penny
-    # either side and at equality, so a programme that read another's
-    # threshold would return a different tariff next to its own.
+    # 2. Own parameters. Hypothesis draws six different thresholds, and the
+    # test puts capital at each one and a penny either side, so a programme
+    # that read another programme's threshold would return a different tariff
+    # next to its own.
     assume(len(set(ordinary + residential)) == 6)
     values = {}
     for name, own_ordinary, own_residential in zip(LEGACY, ordinary, residential):
@@ -297,9 +300,9 @@ def test_each_programme_reads_its_own_thresholds(
             excess = capital - (own_residential if exception else own_ordinary)
             # Most amounts in pence have no exact float32 value. Where capital
             # lies a whole number of £250 steps above the threshold, the stored
-            # figures can fall either side of the step, so the test skips it.
-            # Anywhere else the excess is at least a penny from a step, far
-            # more than that rounding.
+            # figures can fall either side of the step, so the test skips that
+            # point. Anywhere else the excess lies at least a penny from a
+            # step, which exceeds that rounding error.
             if excess > 0 and excess % (STEP * 100) == 0:
                 continue
             expected = (
