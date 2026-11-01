@@ -8,9 +8,11 @@ dividend rates (savings_income_tax and dividend_income_tax, ss. 11D(6) and
 13(5)). These tests read the band off that liability: they raise the rates of
 one band at a time by RISE and see which bands' rates each person pays.
 
+The people are single, so the Marriage Allowance, which the model takes off
+earned income rather than giving as a tax reduction (#1947), plays no part.
 With the starting rate for savings, the Personal Savings Allowance and the
 dividend allowance set to nothing, every pound of taxable income is charged at
-a band's rate, and for every Scottish taxpayer:
+a band's rate, and for every single Scottish taxpayer:
 
 - a person in a band pays tax at that band's rates on some income and at no
   higher band's rates, and a person with no band pays no tax;
@@ -24,8 +26,9 @@ or additional rates above their band.
 Before #2350 the band compared all taxable income with the Scottish limits.
 Against that formula, which ran from 2019-20, the band never rises, except
 from STARTER to BASIC where savings or dividends sit below the Scottish
-starter limit: they are charged at the rest-of-UK basic rates, not at the
-starter rate.
+starter limit: they sit in the rest-of-UK basic band (charged at the starting
+rate for savings, the dividend nil rate or the dividend ordinary rate), not at
+the Scottish starter rate.
 """
 
 from contextlib import contextmanager
@@ -44,9 +47,9 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 YEARS = list(range(2017, 2027))
 PEOPLE = 16
 # Raising a band's rates by 100 percentage points raises the tax by the income
-# charged at them. Taxable income comes in multiples of 50p (the personal
-# allowance taper halves pounds), so SOME separates any income in a band from
-# float32 rounding.
+# charged at them. Taxable income comes in whole pounds (the tapered personal
+# allowance is rounded up to a pound), so SOME separates any income in a band
+# from float32 rounding.
 RISE = 1.0
 SOME = 0.25
 BANDS = ["NONE", "STARTER", "BASIC", "INTERMEDIATE", "HIGHER", "ADDITIONAL"]
@@ -280,7 +283,7 @@ def test_band_never_rises_except_from_starter_to_basic(sim, drawn, period):
     for i in range(PEOPLE):
         if RANK[band[i]] <= RANK[before[i]]:
             continue
-        # Savings or dividends below the starter limit are basic, not starter.
+        # Savings or dividends below the starter limit sit in the basic band.
         case = f"{drawn[i]} in {period}: {before[i]} to {band[i]}"
         assert (before[i], band[i]) == ("STARTER", "BASIC"), case
         assert non_savings[i] < taxable[i] < starter_limit, case
