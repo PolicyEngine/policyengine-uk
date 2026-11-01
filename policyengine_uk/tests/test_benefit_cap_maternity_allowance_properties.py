@@ -6,9 +6,9 @@ s.96(1), (10)(i)), and the woman entitled to it receives it (Social Security
 Contributions and Benefits Act 1992 s.35(1)). Under UC Regs 2013 regs 79(1)
 and 80(1) and HB Regs 2006 reg 75A, DWP and councils count the welfare
 benefits "to which the single person or couple is entitled". Under regs 80(4)
-and 75C(4) they use the amount they count as income. DWP counts all of a Maternity Allowance as unearned income (UC Regs
-2013 reg 66(1)(b)(viii)), and councils disregard none of it under HB Regs 2006
-reg 40 and Schedule 5.
+and 75C(4) they use the amount they count as income. DWP counts Maternity
+Allowance in full as unearned income (UC Regs 2013 reg 66(1)(b)(viii)), and
+councils disregard none of it under HB Regs 2006 reg 40 and Schedule 5.
 
 Invariants, for families on Universal Credit or on Housing Benefit alone,
 whether a single claimant, either member of a couple, or a non-dependent
@@ -25,16 +25,17 @@ adult receives the allowance:
    of the award (reg 80(1)). For Housing Benefit the tests draw
    contribution-based JSA or ESA, which councils count at the amount of the
    award (HB Regs 2006 reg 75C(1), (4)), or severe disablement allowance,
-   which no paragraph of Schedule 5 disregards and which bears no income tax
-   (ITEPA 2003 s.677(1)). Councils disregard £15 a week of widowed parent's
-   allowance (Sch 5 para 16(b)) and any tax paid on incapacity benefit (Sch 5
-   para 1; ITEPA 2003 s.660(1)), so the tests give families on Housing
-   Benefit neither.
-2. Coefficient one: with each award before the cap entered, so that
-   Universal Credit does not taper, raising the holder's allowance by d
-   raises the total by d for a claimant or partner, and leaves it unchanged
-   for a non-dependent adult. The total therefore never falls as the
-   allowance rises, and nor does either reduction.
+   which councils count in full in these cases, with no dependant's increase
+   (Sch 5 para 52), and on which recipients pay no income tax (ITEPA 2003
+   s.677(1)). Councils disregard £15 a week of widowed parent's allowance
+   (Sch 5 para 16(b)) and any income tax a recipient pays on incapacity
+   benefit (Sch 5 para 1; ITEPA 2003 s.660(1)), so the tests give families
+   on Housing Benefit neither.
+2. Coefficient one: the tests enter each award before the cap, so Universal
+   Credit does not taper. Raising the holder's allowance by d then raises
+   the total by d for a claimant or partner, and leaves it unchanged for a
+   non-dependent adult. The total therefore never falls as the allowance
+   rises, and nor does either reduction.
 3. Differential: the total equals a reference that follows s.96(10) and
    those regulations: the listed benefits of the claimant and partner, plus
    the family's Child Benefit, Child Tax Credit, Income Support, and
@@ -46,14 +47,17 @@ adult receives the allowance:
 4. Pound for pound, through the whole model: where the model works out
    Universal Credit and the award before the cap stays above nil, raising
    the mother's allowance by d lowers that award by d (reg 66(1)(b)(viii)),
-   so the total does not move. Where DWP reduces the award at both
-   amounts, and the award absorbs the whole reduction at each, Universal
-   Credit after the cap plus the allowance does not move either: DWP holds
-   the family's capped benefits at the limit whichever of them the allowance
-   replaces. That needs an award large enough to take the whole excess and no
-   protected floor that limits the reduction. Once the reduction takes the
-   award to nil, DWP has nothing left to reduce, and each further pound of
-   allowance adds a pound to what the family keeps.
+   so the total does not move. Where DWP reduces the award at both amounts,
+   Universal Credit after the cap plus the allowance holds still too,
+   provided that at each amount the award absorbs the whole excess, no
+   protected floor limits the reduction, and DWP deducts the same for
+   debts. DWP then holds the family's capped benefits at the limit whichever
+   of them the allowance replaces. The tests' families have no debt
+   deductions, because the model makes none in a household situation unless
+   a test enters them (uc_deduction_random_draw), so the test checks the
+   first two conditions. Once the reduction takes the award to nil, DWP has
+   nothing left to reduce, and each further pound of allowance adds a pound
+   to what the family keeps.
    test_a_mother_of_16_keeps_more_allowance_once_dwp_cuts_her_award_to_nil
    checks that edge.
 
@@ -79,9 +83,9 @@ SINGLE_LIMIT, COUPLE_LIMIT = 14_753, 22_020
 HOUSING_BENEFIT_MINIMUM = 0.50 * 52
 
 # The holder's other welfare benefits that DWP and councils count in the cap
-# as theirs (WRA 2012 s.96(10)(d), (f), (h), (j), (n)), each entered as an
-# award. Each scheme's list holds those that DWP or the council counts at the
-# amount of the award, as each counts Maternity Allowance (invariant 1).
+# as theirs (WRA 2012 s.96(10)(d), (f), (h), (j), (n)), which the tests enter
+# as awards. Each scheme's list holds those that DWP or the council counts at
+# the amount of the award, as each counts Maternity Allowance (invariant 1).
 OTHER_BENEFITS = {
     "uc": [
         "jsa_contrib",
@@ -144,7 +148,7 @@ def entered_situation():
             benunits[unit] = {
                 "members": members,
                 # The tests enter the LCWRA and carer elements as nil, so
-                # neither exempts the family (UC reg 83(1)(a), (j)).
+                # DWP grants neither exemption (UC reg 83(1)(a), (j)).
                 "uc_LCWRA_element": {YEAR: 0},
                 "uc_carer_element": {YEAR: 0},
             }
@@ -517,7 +521,8 @@ def test_universal_credit_falls_by_the_allowance_inside_the_cap(modelled, drawn)
         applied = value["uc_benefit_cap_reduction_after_floor"]
         capped = reduction[lower] > 0 and reduction[higher] > 0
         # The award takes the whole reduction at both amounts: it doesn't
-        # reach nil first, and no protected floor limits the reduction.
+        # reach nil first, and no protected floor limits the reduction. The
+        # families have no debt deductions to change with the award.
         absorbed = all(
             abs(applied[i] - reduction[i]) <= tolerance(reduction[i])
             for i in (lower, higher)

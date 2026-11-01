@@ -334,7 +334,7 @@
 # and councils count the allowance of a claimant or partner and leave out
 # that of a non-dependent adult in the household. Under UC Regs 2013 reg
 # 80(4) and HB Regs 2006 reg 75C(4) they use the amount they count as income.
-# DWP counts all of it as unearned income (reg 66(1)(b)(viii)), and councils
+# DWP counts it in full as unearned income (reg 66(1)(b)(viii)), and councils
 # disregard none of it under HB Regs 2006 reg 40 and Schedule 5.
 
 - name: DWP counts the claimant's own Maternity Allowance in the capped total
@@ -481,7 +481,8 @@
 # = 17,840.64 a year.
 #
 # Child Benefit: (27.05 + 2 x 17.90) x 52 = 3,268.20 a year (Child Benefit
-# (Rates) Regulations 2006 reg 2(1), as SI 2026/232 art. 2 sets them).
+# (Rates) Regulations 2006 reg 2(1), as the Treasury set the rates through SI
+# 2026/232 art. 2).
 # DWP applies the family limit of 22,020 (reg 80A(2)(d)(ii)) and grants no
 # exception.
 
@@ -611,10 +612,12 @@
     # reg 79(4)(g) as made, and Parliament has listed it in WRA 2012
     # s.96(10)(i) since 2016.
     benefit_cap_welfare_benefits: 18_000
-    # SI 2023/335 reg 3(c) set the limit for a single claimant with no child
-    # outside London at 14,753 from 1 April 2023 (reg 80A(2)(c)). Under reg
-    # 81 DWP reduces her Universal Credit by max(15,000 + 3,000 - 14,753 - 0
-    # childcare, 0) = 3,247 and pays 15,000 - 3,247 = 11,753.
+    # The Secretary of State set the limit for a single claimant with no
+    # child outside London at 14,753 from 1 April 2023 through SI 2023/335
+    # reg 3(c), for assessment periods beginning on or after 10 April 2023
+    # (reg 1(3); UC Regs 2013 reg 80A(2)(c)). Under reg 81 DWP reduces her
+    # Universal Credit by max(15,000 + 3,000 - 14,753 - 0 childcare, 0) =
+    # 3,247 and pays 15,000 - 3,247 = 11,753.
     uc_benefit_cap: 14_753
     uc_benefit_cap_reduction: 3_247
     universal_credit: 11_753
