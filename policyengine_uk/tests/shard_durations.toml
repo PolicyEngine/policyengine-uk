@@ -580,10 +580,12 @@
 "policyengine_uk/tests/test_capital_gains_responses.py::test_revenue_falls_short_of_the_static_estimate" = 20
 "policyengine_uk/tests/test_capital_gains_response_default.py::test_employer_cost_branches_hold_the_realisation_response" = 20
 # test_person_isa_capital.py (#2729): local timings on 1 November 2026, one
-# test at a time at load 40 to 90, until CI logs replace them.
+# test at a time at load 40 to 90, and the threshold and first Pension Credit
+# nodes in one run of the file at load 90 to 165, until CI logs replace them.
 "policyengine_uk/tests/test_person_isa_capital.py::test_balances_alone_and_totals_alone_give_one_unit_the_same_capital" = 221
-"policyengine_uk/tests/test_person_isa_capital.py::test_a_pound_counts_once_in_pension_credit" = 89
+"policyengine_uk/tests/test_person_isa_capital.py::test_isas_over_a_total_leave_an_unrelated_adult_exactly_at_a_threshold" = 109
 "policyengine_uk/tests/test_person_isa_capital.py::test_household_only_data_keep_todays_capital" = 73
+"policyengine_uk/tests/test_person_isa_capital.py::test_a_pound_counts_once_in_pension_credit[households0]" = 65
 "policyengine_uk/tests/test_person_isa_capital.py::test_a_pound_counts_once_in_working_age_means_tests" = 60
 "policyengine_uk/tests/test_person_isa_capital.py::test_both_forms_in_one_dataset_add_up_to_the_stored_total" = 38
 "policyengine_uk/tests/test_person_isa_capital.py::test_person_balances_without_household_totals_count_with_their_holders" = 27
