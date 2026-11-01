@@ -29,6 +29,8 @@ CLAIMANT_OR_PARTNER_BENEFITS = [
     "esa_contrib",
     "incapacity_benefit",
     "sda",
+    # s. 96(10)(i).
+    "maternity_allowance",
     # s. 96(10)(n).
     "widowed_parents_allowance",
 ]
@@ -60,9 +62,10 @@ class benefit_cap_welfare_benefits(Variable):
         "housing_benefit_pre_benefit_cap). Universal Credit counts Housing "
         "Benefit as nil (UC Regs 2013 reg. 80(2A)), so "
         "uc_benefit_cap_reduction subtracts it; an entered total should "
-        "include it. Widowed parent's allowance counts; maternity allowance "
-        "and the other bereavement benefits, also welfare benefits, are not "
-        "modelled here."
+        "include it. Maternity Allowance and widowed parent's allowance "
+        "count. The model has no variable for three other welfare benefits "
+        "Parliament lists in Welfare Reform Act 2012 s. 96(10): bereavement "
+        "allowance, widow's pension and widowed mother's allowance."
     )
     definition_period = YEAR
     unit = GBP

@@ -327,3 +327,231 @@
     is_uc_benefit_cap_single_claimant_rate: false
     uc_benefit_cap: 22_020
     benefit_cap_reduction: 0
+
+# Maternity Allowance is a welfare benefit (WRA 2012 s.96(10)(i)). It belongs
+# to the woman entitled to it (SSCBA 1992 s.35(1)), so the cap counts it when
+# she is the claimant or partner and leaves it out when she is a
+# non-dependent adult. UC Regs
+# 2013 reg 80(4) and HB Regs 2006 reg 75C(4) take the amount each scheme
+# counts as income: all of it, as unearned income for Universal Credit (reg
+# 66(1)(b)(viii)) and as income other than earnings for Housing Benefit (reg
+# 40, with no disregard in Sch 5).
+
+- name: The claimant's own Maternity Allowance is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        maternity_allowance_reported: 3_000
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 15_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    maternity_allowance: 3_000
+    benefit_cap_welfare_benefits: 18_000
+    # Maternity Allowance starts as early as the 11th week before the
+    # expected week of confinement (SSCBA 1992 s.35(1)(a)), so a claimant
+    # can receive it before she is responsible for a child. A single
+    # claimant with no child outside London: 14,753 (UC Regs 2013 reg
+    # 80A(2)(c)). Reg 81: max(15,000 + 3,000 - 14,753 - 0 childcare, 0)
+    # = 3,247, which leaves 15,000 - 3,247 = 11,753.
+    uc_benefit_cap: 14_753
+    uc_benefit_cap_reduction: 3_247
+    housing_benefit_benefit_cap_reduction: 0
+    benefit_cap_reduction: 3_247
+    universal_credit: 11_753
+
+- name: A partner's Maternity Allowance is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 32
+      partner:
+        age: 30
+        maternity_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 20_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_assessed_claimant: [true, true]
+    maternity_allowance: [0, 4_000]
+    benefit_cap_welfare_benefits: 24_000
+    # Joint claimants outside London: 22,020 (UC Regs 2013 reg 80A(2)(d)(i)).
+    # Reg 81: max(20,000 + 4,000 - 22,020 - 0 childcare, 0) = 1,980, which
+    # leaves 20,000 - 1,980 = 18,020.
+    uc_benefit_cap: 22_020
+    uc_benefit_cap_reduction: 1_980
+    housing_benefit_benefit_cap_reduction: 0
+    benefit_cap_reduction: 1_980
+    universal_credit: 18_020
+
+- name: A non-dependent adult's Maternity Allowance is not in the family's capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        maternity_allowance_reported: 5_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 20_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    maternity_allowance: [0, 5_000]
+    benefit_cap_welfare_benefits: 20_000
+    # UC reg 81: max(20,000 - 14,753 - 0 childcare, 0) = 5,247. The adult's
+    # 5,000 is their own, not the family's.
+    uc_benefit_cap_reduction: 5_247
+    housing_benefit_benefit_cap_reduction: 0
+    benefit_cap_reduction: 5_247
+    universal_credit: 14_753
+
+- name: The claimant's own Maternity Allowance reduces Housing Benefit for a family without Universal Credit
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        maternity_allowance_reported: 6_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    universal_credit_pre_benefit_cap: 0
+    benefit_cap_welfare_benefits: 15_000
+    # A single claimant outside London: 14,753 (HB Regs 2006 reg 75CA(2)(c)).
+    # Reg 75D: min(9,000 + 6,000 - 14,753, 9,000 - 0.50 * 52) = 247, which
+    # leaves 9,000 - 247 = 8,753. No UC award: UC reg 78(1) gives no UC
+    # reduction.
+    housing_benefit_benefit_cap: 14_753
+    uc_benefit_cap_reduction: 0
+    housing_benefit_benefit_cap_reduction: 247
+    benefit_cap_reduction: 247
+    housing_benefit: 8_753
+
+# Issue #2784's family through the whole Universal Credit award, 2026-27: a
+# lone parent of 30 with children of 1, 4 and 7 renting privately for 1,500 a
+# month in Tyneside, the North East's default Broad Rental Market Area.
+#
+# Universal Credit before the cap, monthly (DWP, Benefit and pension rates
+# 2026 to 2027):
+#   standard allowance, single 25 or over         424.90
+#   child element, 3 x 303.94 (SI 2026/148 Sch 13; reg 24A, the two-child
+#     limit, revoked from 6 April 2026 by the Universal Credit (Removal of
+#     Two Child Limit) Act 2026 s.1(3)(a))         911.82
+#   housing costs element: the lower of the rent, 1,500, and the cap rent
+#     (UC Regs 2013 Sch 4 para 22), the three-bedroom rate of 650.00 (DWP,
+#     Universal Credit LHA monthly rates 2026 to 2027, Tyneside): one bedroom
+#     for the parent, one for two children under 10, one for the third child
+#     (Sch 4 para 10(1)(a), (d), (f))             650.00
+#   maximum amount                               1,986.72, or 23,840.64 a year
+# less Maternity Allowance in full (reg 66(1)(b)(viii)), so 23,840.64 - 6,000
+# = 17,840.64 a year.
+#
+# Child Benefit: (27.05 + 2 x 17.90) x 52 = 3,268.20 a year (Child Benefit
+# (Rates) Regulations 2006 reg 2(1), as SI 2026/232 art. 2 sets them).
+# The family's limit is 22,020 (reg 80A(2)(d)(ii)); no exception applies.
+
+- name: Issue 2784 family with no Maternity Allowance loses the excess over the cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child1:
+        age: 1
+      child2:
+        age: 4
+      child3:
+        age: 7
+    benunits:
+      family:
+        members: [parent, child1, child2, child3]
+    households:
+      home:
+        members: [parent, child1, child2, child3]
+        region: NORTH_EAST
+        brma: TYNESIDE
+        tenure_type: RENT_PRIVATELY
+        rent: 18_000
+  output:
+    uc_standard_allowance: 5_098.80
+    uc_child_element: 10_941.84
+    uc_housing_costs_element: 7_800
+    universal_credit_pre_benefit_cap: 23_840.64
+    child_benefit: 3_268.20
+    # 23,840.64 + 3,268.20 = 27,108.84.
+    benefit_cap_welfare_benefits: 27_108.84
+    uc_benefit_cap: 22_020
+    is_uc_benefit_cap_exempt: false
+    # Reg 81: 27,108.84 - 22,020 - 0 childcare = 5,088.84, which leaves
+    # 23,840.64 - 5,088.84 = 18,751.80.
+    uc_benefit_cap_reduction: 5_088.84
+    universal_credit: 18_751.80
+
+- name: Issue 2784 family's Maternity Allowance stays inside the cap, so Universal Credit falls by the allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        maternity_allowance_reported: 6_000
+      child1:
+        age: 1
+      child2:
+        age: 4
+      child3:
+        age: 7
+    benunits:
+      family:
+        members: [parent, child1, child2, child3]
+    households:
+      home:
+        members: [parent, child1, child2, child3]
+        region: NORTH_EAST
+        brma: TYNESIDE
+        tenure_type: RENT_PRIVATELY
+        rent: 18_000
+  output:
+    uc_maximum_amount: 23_840.64
+    uc_unearned_income: 6_000
+    universal_credit_pre_benefit_cap: 17_840.64
+    # 17,840.64 + 3,268.20 Child Benefit + 6,000 Maternity Allowance
+    # = 27,108.84, the same total as without the allowance.
+    benefit_cap_welfare_benefits: 27_108.84
+    # Reg 81: 27,108.84 - 22,020 - 0 childcare = 5,088.84, which leaves
+    # 17,840.64 - 5,088.84 = 12,751.80. With the allowance, 12,751.80 +
+    # 6,000 = 18,751.80: what the family keeps from Universal Credit alone
+    # without it.
+    uc_benefit_cap_reduction: 5_088.84
+    universal_credit: 12_751.80
