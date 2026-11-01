@@ -1,0 +1,379 @@
+# Scottish income tax on pay alone, in the tax years whose rates and limits
+# PolicyEngine/policyengine-uk#2783 corrects. Each motion sets the rates and
+# limits on taxable income, above the personal allowance:
+# https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>
+# Personal allowance: £11,850 (2018-19), £12,500 (2019-20 and 2020-21) and
+# £12,570 (2021-22), withdrawn by £1 for every £2 of income above £100,000
+# (ITA 2007 s. 35), so it is nil at £160,000. gov.scot's tables for each year
+# give the same bands with that allowance added.
+
+# 2018-19, S5M-10397: 19% to £2,000, 20% to £12,150, 21% to £31,580,
+# 41% to £150,000, 46% above.
+
+- name: Scottish 2018-19 pay of 13000 is taxed at the starter rate
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 13_000
+    region: SCOTLAND
+  output:
+    # 1,150 x 19% = 218.50.
+    earned_taxable_income: 1_150
+    income_tax: 218.50
+
+- name: Scottish 2018-19 pay of 20000 reaches the basic rate
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    region: SCOTLAND
+  output:
+    # 2,000 x 19% + 6,150 x 20% = 380 + 1,230 = 1,610.
+    earned_taxable_income: 8_150
+    income_tax: 1_610
+
+- name: Scottish 2018-19 pay of 30000 reaches the intermediate rate
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+    region: SCOTLAND
+  output:
+    # 380 + 10,150 x 20% + 6,000 x 21% = 380 + 2,030 + 1,260 = 3,670.
+    earned_taxable_income: 18_150
+    income_tax: 3_670
+
+- name: Scottish 2018-19 taxable income at the 31580 higher rate limit has no tax at 41 percent
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 43_430
+    region: SCOTLAND
+  output:
+    # gov.scot: intermediate rate "Over £24,000 to £43,430".
+    # 380 + 2,030 + 19,430 x 21% = 380 + 2,030 + 4,080.30 = 6,490.30.
+    earned_taxable_income: 31_580
+    income_tax: 6_490.30
+
+- name: Scottish 2018-19 pay of 50000 reaches the 41 percent higher rate
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    region: SCOTLAND
+  output:
+    # The issue's case: 6,490.30 + 6,570 x 41% = 6,490.30 + 2,693.70 = 9,184.
+    earned_taxable_income: 38_150
+    income_tax: 9_184
+
+- name: Scottish 2018-19 pay of 160000 reaches the 46 percent top rate
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 160_000
+    region: SCOTLAND
+  output:
+    # 6,490.30 + 118,420 x 41% + 10,000 x 46%
+    # = 6,490.30 + 48,552.20 + 4,600 = 59,642.50.
+    earned_taxable_income: 160_000
+    income_tax: 59_642.50
+
+# 2019-20, S5M-15879: 19% to £2,049, 20% to £12,444, 21% to £30,930,
+# 41% to £150,000, 46% above.
+
+- name: Scottish 2019-20 pay of 13500 is taxed at the starter rate
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 13_500
+    region: SCOTLAND
+  output:
+    # 1,000 x 19% = 190.
+    earned_taxable_income: 1_000
+    income_tax: 190
+
+- name: Scottish 2019-20 taxable income at the 2049 starter rate limit is all at 19 percent
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 14_549
+    region: SCOTLAND
+  output:
+    # gov.scot: starter rate "Over £12,500-£14,549". 2,049 x 19% = 389.31.
+    earned_taxable_income: 2_049
+    income_tax: 389.31
+
+- name: Scottish 2019-20 pay of 20000 reaches the basic rate
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    region: SCOTLAND
+  output:
+    # 389.31 + 5,451 x 20% = 389.31 + 1,090.20 = 1,479.51.
+    earned_taxable_income: 7_500
+    income_tax: 1_479.51
+
+- name: Scottish 2019-20 taxable income at the 12444 basic rate limit has no tax at 21 percent
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 24_944
+    region: SCOTLAND
+  output:
+    # gov.scot: basic rate "Over £14,549-£24,944".
+    # 389.31 + 10,395 x 20% = 389.31 + 2,079 = 2,468.31.
+    earned_taxable_income: 12_444
+    income_tax: 2_468.31
+
+- name: Scottish 2019-20 pay of 35000 reaches the intermediate rate
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 35_000
+    region: SCOTLAND
+  output:
+    # 2,468.31 + 10,056 x 21% = 2,468.31 + 2,111.76 = 4,580.07.
+    earned_taxable_income: 22_500
+    income_tax: 4_580.07
+
+- name: Scottish 2019-20 taxable income at the 30930 higher rate limit has no tax at 41 percent
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 43_430
+    region: SCOTLAND
+  output:
+    # gov.scot: intermediate rate "Over £24,944-£43,430".
+    # 2,468.31 + 18,486 x 21% = 2,468.31 + 3,882.06 = 6,350.37.
+    earned_taxable_income: 30_930
+    income_tax: 6_350.37
+
+- name: Scottish 2019-20 pay of 50000 reaches the 41 percent higher rate
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    region: SCOTLAND
+  output:
+    # 6,350.37 + 6,570 x 41% = 6,350.37 + 2,693.70 = 9,044.07.
+    earned_taxable_income: 37_500
+    income_tax: 9_044.07
+
+- name: Scottish 2019-20 pay of 160000 reaches the 46 percent top rate
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 160_000
+    region: SCOTLAND
+  output:
+    # 6,350.37 + 119,070 x 41% + 10,000 x 46%
+    # = 6,350.37 + 48,818.70 + 4,600 = 59,769.07.
+    earned_taxable_income: 160_000
+    income_tax: 59_769.07
+
+# 2020-21, S5M-21090: 19% to £2,085, 20% to £12,658, 21% to £30,930,
+# 41% to £150,000, 46% above.
+
+- name: Scottish 2020-21 pay of 13500 is taxed at the starter rate
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 13_500
+    region: SCOTLAND
+  output:
+    # 1,000 x 19% = 190.
+    earned_taxable_income: 1_000
+    income_tax: 190
+
+- name: Scottish 2020-21 taxable income at the 2085 starter rate limit is all at 19 percent
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 14_585
+    region: SCOTLAND
+  output:
+    # gov.scot: starter rate "Over £12,500 - £14,585". 2,085 x 19% = 396.15.
+    earned_taxable_income: 2_085
+    income_tax: 396.15
+
+- name: Scottish 2020-21 pay of 20000 reaches the basic rate
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    region: SCOTLAND
+  output:
+    # 396.15 + 5,415 x 20% = 396.15 + 1,083 = 1,479.15.
+    earned_taxable_income: 7_500
+    income_tax: 1_479.15
+
+- name: Scottish 2020-21 taxable income at the 12658 basic rate limit has no tax at 21 percent
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 25_158
+    region: SCOTLAND
+  output:
+    # gov.scot: basic rate "Over £14,585 - £25,158".
+    # 396.15 + 10,573 x 20% = 396.15 + 2,114.60 = 2,510.75.
+    earned_taxable_income: 12_658
+    income_tax: 2_510.75
+
+- name: Scottish 2020-21 pay of 35000 reaches the intermediate rate
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 35_000
+    region: SCOTLAND
+  output:
+    # 2,510.75 + 9,842 x 21% = 2,510.75 + 2,066.82 = 4,577.57.
+    earned_taxable_income: 22_500
+    income_tax: 4_577.57
+
+- name: Scottish 2020-21 taxable income at the 30930 higher rate limit has no tax at 41 percent
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 43_430
+    region: SCOTLAND
+  output:
+    # gov.scot: intermediate rate "Over £25,158 - £43,430".
+    # 2,510.75 + 18,272 x 21% = 2,510.75 + 3,837.12 = 6,347.87.
+    earned_taxable_income: 30_930
+    income_tax: 6_347.87
+
+- name: Scottish 2020-21 pay of 50000 reaches the 41 percent higher rate
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    region: SCOTLAND
+  output:
+    # 6,347.87 + 6,570 x 41% = 6,347.87 + 2,693.70 = 9,041.57.
+    earned_taxable_income: 37_500
+    income_tax: 9_041.57
+
+- name: Scottish 2020-21 pay of 160000 reaches the 46 percent top rate
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 160_000
+    region: SCOTLAND
+  output:
+    # 6,347.87 + 119,070 x 41% + 10,000 x 46%
+    # = 6,347.87 + 48,818.70 + 4,600 = 59,766.57.
+    earned_taxable_income: 160_000
+    income_tax: 59_766.57
+
+# 2021-22, S5M-24225: 19% to £2,097, 20% to £12,726, 21% to £31,092,
+# 41% to £150,000, 46% above.
+
+- name: Scottish 2021-22 pay of 13570 is taxed at the starter rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 13_570
+    region: SCOTLAND
+  output:
+    # 1,000 x 19% = 190.
+    earned_taxable_income: 1_000
+    income_tax: 190
+
+- name: Scottish 2021-22 taxable income at the 2097 starter rate limit is all at 19 percent
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 14_667
+    region: SCOTLAND
+  output:
+    # gov.scot: starter rate "Over £12,570* - £14,667". 2,097 x 19% = 398.43.
+    earned_taxable_income: 2_097
+    income_tax: 398.43
+
+- name: Scottish 2021-22 pay of 20000 reaches the basic rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    region: SCOTLAND
+  output:
+    # 398.43 + 5,333 x 20% = 398.43 + 1,066.60 = 1,465.03.
+    earned_taxable_income: 7_430
+    income_tax: 1_465.03
+
+- name: Scottish 2021-22 taxable income at the 12726 basic rate limit has no tax at 21 percent
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 25_296
+    region: SCOTLAND
+  output:
+    # gov.scot: basic rate "Over £14,667 - £25,296".
+    # 398.43 + 10,629 x 20% = 398.43 + 2,125.80 = 2,524.23.
+    earned_taxable_income: 12_726
+    income_tax: 2_524.23
+
+- name: Scottish 2021-22 pay of 35000 reaches the intermediate rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 35_000
+    region: SCOTLAND
+  output:
+    # 2,524.23 + 9,704 x 21% = 2,524.23 + 2,037.84 = 4,562.07.
+    earned_taxable_income: 22_430
+    income_tax: 4_562.07
+
+- name: Scottish 2021-22 pay of 50000 reaches the 41 percent higher rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    region: SCOTLAND
+  output:
+    # 2,524.23 + 18,366 x 21% + 6,338 x 41%
+    # = 2,524.23 + 3,856.86 + 2,598.58 = 8,979.67.
+    earned_taxable_income: 37_430
+    income_tax: 8_979.67
+
+- name: Scottish 2021-22 pay of 160000 reaches the 46 percent top rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 160_000
+    region: SCOTLAND
+  output:
+    # 6,381.09 + 118,908 x 41% + 10,000 x 46%
+    # = 6,381.09 + 48,752.28 + 4,600 = 59,733.37.
+    earned_taxable_income: 160_000
+    income_tax: 59_733.37
