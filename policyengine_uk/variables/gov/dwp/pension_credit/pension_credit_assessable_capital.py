@@ -10,21 +10,18 @@ class pension_credit_assessable_capital(Variable):
     entity = BenUnit
     label = "Pension Credit assessable capital"
     documentation = (
-        "Pension Credit capital counted from the configured capital sources, "
-        "split only across pension-age adults in the household so pensioner "
-        "couples pool capital together without dilution by unrelated working-"
-        "age adults. Person-level sources, such as a Lifetime ISA, count "
-        "only for the holder's own benunit, and only when the holder is its "
-        "claimant or partner (is_claimant_or_partner): a dependant's capital "
-        "is not the claimant's. The formula counts a person's cash and stocks and "
-        "shares ISA balances the same way and subtracts them from the household "
-        "capital before sharing it out. Where `pension_credit_reported_capital` records "
-        "the benefit unit's own capital (0 or more), it replaces the "
-        "household proxy and the person-level sources. Unlike "
-        "`uc_assessable_capital`, another benefit unit's recorded capital is "
-        "not subtracted from the household capital that an unrecorded unit's "
-        "proxy shares out: the recorded figure and the household sources come "
-        "from different measures, so the proxy is left as it was."
+        "Pension Credit capital counted from the configured capital sources. The "
+        "formula allocates the household remainder only across the household's "
+        "pension-age adults, so unrelated working-age adults leave a pensioner "
+        "couple's share undiluted. The formula counts person-level sources, such as a "
+        "Lifetime ISA and the cash and stocks and shares ISAs, only in the holder's "
+        "own benunit and only for its claimant or partner (is_claimant_or_partner), "
+        "and excludes dependants' capital. It subtracts the ISA balances from the "
+        "household capital before allocating the remainder. A nonnegative "
+        "`pension_credit_reported_capital` replaces the unit's calculated capital. The "
+        "formula does not subtract another unit's capital report from the household "
+        "remainder before allocating that remainder. The report and household sources "
+        "measure different amounts."
     )
     definition_period = YEAR
     unit = GBP

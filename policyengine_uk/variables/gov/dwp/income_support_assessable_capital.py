@@ -11,17 +11,15 @@ class income_support_assessable_capital(Variable):
     label = "Assessable capital for Income Support"
     documentation = (
         "Household capital apportioned to the benefit unit for the Income Support "
-        "capital test. Because the dataset only stores these stocks at household "
-        "level, the model allocates full household capital to any benunit on the "
-        "IS claim path and only falls back to a claimant-and-partner share when "
-        "nobody in the household is on that path. This allocation is a "
-        "PolicyEngine convention; the data cannot identify ownership of capital. "
-        "Person-level sources, such as a Lifetime ISA, count only for the "
-        "holder's own benunit, and only when the holder is its claimant or "
-        "partner (is_claimant_or_partner): a dependant's capital is not the "
-        "claimant's. The formula counts a person's cash and stocks and shares ISA "
-        "balances the same way and subtracts them from the household capital "
-        "before sharing it out."
+        "capital test. For capital whose owner the data do not identify, the model "
+        "allocates the full household remainder to any benunit on the IS claim path "
+        "and falls back to a claimant-and-partner share when nobody in the household "
+        "is on that path. No regulation sets that allocation; it approximates "
+        "ownership the data don't record. The formula counts person-level sources, "
+        "such as a Lifetime ISA and the cash and stocks and shares ISAs, only in the "
+        "holder's own benunit and only for its claimant or partner "
+        "(is_claimant_or_partner), and excludes dependants' capital. It subtracts the "
+        "ISA balances from the household capital before allocating the remainder."
     )
     definition_period = YEAR
     unit = GBP

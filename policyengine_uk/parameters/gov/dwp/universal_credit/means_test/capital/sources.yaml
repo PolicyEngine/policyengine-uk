@@ -1,10 +1,10 @@
 description: >
-  Ordinary cash ISA balances are separate from savings and are included at
-  their accessible cash value, without a generic cash sale-cost deduction.
+  The formulas count ordinary accessible cash ISAs separately from savings,
+  at their cash value, without a generic cash sale-cost deduction.
   Where the data tie a cash ISA or stocks and shares ISA balance to a member,
   the formulas count it through `person_sources` in the holder's own benefit
   unit and subtract it from `cash_isa` or `share_like_capital` before they
-  share the rest.
+  allocate the rest.
   Household financial proxies for Universal Credit: savings and share-like
   financial wealth. `share_like_capital` is `corporate_wealth` as supplied, or
   the sum of its itemised components (`directly_held_shares`,

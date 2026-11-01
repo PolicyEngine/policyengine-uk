@@ -1,26 +1,26 @@
 description: >
   Person-level model variables counted as Income Support capital of the
-  person's own benefit unit. They are summed over the benefit unit's claimant
-  and partner (`is_claimant_or_partner`), so they need none of the household
-  proxy that the household `sources` use, and a dependant's holding is left
-  out: regulation 47 kept a child's or young person's capital out of the
-  claimant's, and since children moved to child tax credit they are outside
-  the assessment altogether. `lifetime_isa_countable_capital` is a Lifetime
-  ISA at its surrender value: regulation 49 values capital at its current
-  market or surrender value, and DMG 29665 counts a Lifetime ISA at 75% of its
-  value under 60 and in full from 60. Lifetime ISAs exist from 6 April 2017,
-  and the formulas count them from then. `cash_isa_countable_capital` and
-  `stocks_and_shares_isa_countable_capital` hold a member's cash and stocks and
-  shares ISA balances. Each ISA has one holder, who owns its investments
+  person's own benefit unit. The formulas sum these sources over the benefit
+  unit's claimant and partner (`is_claimant_or_partner`) and exclude
+  dependants: DWP excludes children's capital under regulation 47 and, once SI
+  2003/455 applies, regulation 23(2). `lifetime_isa_countable_capital` values
+  a Lifetime ISA at its surrender value: DWP values capital at its current
+  market or surrender value under regulation 49, and DMG 29665 counts a
+  Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime ISAs
+  exist from 6 April 2017, and the formulas count them from then.
+  `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`
+  hold a member's cash and stocks and shares ISA balances, bounded by the
+  household total. Each ISA has one holder, who owns its investments
   beneficially (Individual Savings Account Regulations 1998 reg. 4(1B)(c) and
-  (6)(a)), and a child holds their own junior ISA (reg. 2B). The formulas count
-  each balance only while `sources` lists the household source that already
-  holds it (`cash_isa`, `share_like_capital`), and subtract the counted
-  balances from that source before they share the pool, so each balance counts
-  once, in its holder's own benefit unit. When `sources` drops the household
-  source, the formulas count neither balance. Household data with no balances
-  leave the whole household total in the pool. ISAs exist from 6 April 1999
-  (reg. 1).
+  (6)(a)), and a child holds their own junior ISA (reg. 2B). The formulas
+  subtract each bounded ISA balance from its household source (`cash_isa`,
+  `share_like_capital`) and count it in the holder's unit. When a household's
+  balances exceed its total, the model scales them to sum to the total
+  exactly, rounding each share down or up to a whole float32 step of the
+  total. When a reform removes a household source from `sources`, the formulas
+  exclude the corresponding ISA person source. With household totals alone,
+  the formulas leave the whole total in the pool. The ISA Regulations came
+  into force for all other purposes on 6 April 1999 (reg. 1).
 metadata:
   label: Income Support person-level capital sources
   period: year

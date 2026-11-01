@@ -7,18 +7,17 @@ from policyengine_uk.variables.gov.dwp._person_capital_pool import (
 class cash_isa_countable_capital(Variable):
     label = "Cash ISA value counted as means-tested capital"
     documentation = (
-        "The person's cash ISA balance (cash_isa_balance) as the means tests "
-        "count it, in the holder's own benefit unit. An ISA has one holder, "
-        "who owns its investments beneficially, and a child holds their own "
-        "junior ISA. The household's cash_isa already holds the balance, so "
-        "each means test subtracts it from the household pool before sharing "
-        "the pool between benefit units. Where the household's balances add up "
-        "to more than cash_isa, the total the model holds for the household, "
-        "the model scales each by cash_isa over their sum and rounds it down "
-        "to float32, so the household never counts more cash ISA than "
-        "cash_isa. Where they add up to less, the rest of cash_isa stays in "
-        "the pool, and a household with no balances keeps all of cash_isa "
-        "there."
+        "The person's cash ISA balance (cash_isa_balance) as the means tests count it, "
+        "in the holder's own benefit unit. An ISA has one holder, who owns its "
+        "investments beneficially, and a child holds their own junior ISA. The "
+        "household's cash_isa already includes the balance, so each means test "
+        "subtracts it from the household pool before allocating the pool between "
+        "benefit units. The formula bounds the person's balance by cash_isa, the "
+        "household total. When the household's stored balance sum exceeds that total, "
+        "it scales the balances to sum to the total exactly, rounding each "
+        "proportional share down or up to a whole float32 step of the total. When the "
+        "balances sum to less, the rest of cash_isa stays in the pool, and a household "
+        "with no balances keeps all of cash_isa there."
     )
     entity = Person
     definition_period = YEAR

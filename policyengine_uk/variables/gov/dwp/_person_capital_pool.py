@@ -1,12 +1,13 @@
-"""Person-level capital that a household capital source already holds."""
+"""Person-level capital that a household capital source already includes."""
 
 from policyengine_uk.model_api import *
 
-# Maps each person-level capital source to the household capital source that
-# already holds it: cash_isa holds each cash ISA balance, and
-# share_like_capital each stocks and shares ISA balance (through
-# stocks_and_shares_isa, inside corporate_wealth or the itemised sum). No
-# household source holds a person source missing here, such as a Lifetime ISA.
+# The formulas map each person source to the household source that already
+# includes it, subtract its stored household sum, and allocate the remainder.
+# cash_isa includes each cash ISA balance, and share_like_capital each stocks
+# and shares ISA balance (through stocks_and_shares_isa, inside
+# corporate_wealth or the itemised sum). No household source includes a person
+# source missing here, such as a Lifetime ISA.
 HOUSEHOLD_SOURCE_OF = {
     "cash_isa_countable_capital": "cash_isa",
     "stocks_and_shares_isa_countable_capital": "share_like_capital",
@@ -16,11 +17,11 @@ HOUSEHOLD_SOURCE_OF = {
 def counted_person_sources(capital) -> list:
     """The person sources in ``capital.person_sources`` the formulas count.
 
-    The formulas count a person source that a household source holds only
-    while ``capital.sources`` lists that household source. Counting it moves
-    the part of the household source the data tie to a person into the
-    holder's own benefit unit, so when the list drops the household source the
-    formulas count neither.
+    The formulas count a person source that a household source includes only
+    while ``capital.sources`` lists that household source. They move the part
+    of the household source the data tie to a person into the holder's own
+    benefit unit, so when the list drops the household source they count
+    neither.
     """
     sources = set(capital.sources)
     return [
@@ -31,14 +32,14 @@ def counted_person_sources(capital) -> list:
 
 
 def pooled_person_capital(benunit, source, period, capital, leaves_pool=None):
-    """The part of the household ``source`` that counted person sources hold.
+    """The part of the household ``source`` that counted person sources make up.
 
     The household sum, for each benefit unit, of the counted person sources
-    in ``capital.person_sources`` that ``source`` holds, over the members
+    in ``capital.person_sources`` that ``source`` includes, over the members
     ``leaves_pool`` selects (all members by default), as Core stores a total.
-    The formulas subtract it from ``source`` before they share the remainder
-    between benefit units, so each of those pounds counts only in its holder's
-    own unit.
+    The formulas subtract it from ``source`` before they allocate the
+    remainder between benefit units, so they count each of those pounds only
+    in its holder's own unit.
     """
     person = benunit.members
     amount = 0
