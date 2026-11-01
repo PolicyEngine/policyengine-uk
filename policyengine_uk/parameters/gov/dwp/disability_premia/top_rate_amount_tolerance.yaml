@@ -1,4 +1,4 @@
-description: The model counts a DLA care or PIP daily living amount as a top-rate award for the enhanced disability premium when the amount reaches 52 times the top weekly rate less this tolerance. policyengine-uk-data uses the same weekly tolerance when it derives award categories from reported amounts.
+description: The model counts a DLA care or PIP daily living amount as a top-rate award for the enhanced disability premium when the amount reaches 52 × (top weekly rate − this weekly tolerance). policyengine-uk-data uses the same weekly tolerance when it derives award categories from reported amounts.
 values:
   2015-01-01: 1
 metadata:

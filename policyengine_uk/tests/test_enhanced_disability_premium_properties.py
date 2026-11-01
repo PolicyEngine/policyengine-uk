@@ -11,8 +11,8 @@ rate to a person who is not a member of a couple, and one couple rate where
 either or both members meet the condition (HB Regs 2006 Sch 3 Part 4).
 
 The model counts an award only with a positive amount of the benefit, and
-takes its rate from the award category or from an amount that reaches 52
-times the top weekly rate less £1.
+takes its rate from the award category or from an amount that reaches
+52 × (top weekly rate − £1).
 
 Scottish councils count attendance allowance at either rate from 1 April 2023
 (SSI 2021/249 Sch 1 para 14), and the Scottish Ministers removed the age limit
@@ -27,26 +27,25 @@ age range below, with the listed awards. It supplies each person's entered
 DLA care and PIP daily living amount, or computes an amount from their
 category. It checks these invariants:
 
-1. Oracle: enhanced_disability_premium equals the statutory amount, which the
-   test computes from the award inputs and the parameter rates, and
+1. The test computes the statutory amount from the award inputs and the
+   parameter rates. enhanced_disability_premium equals that amount, and
    council_tax_reduction_enhanced_disability_premium equals the amount under
    the scheme's own list.
-2. No qualifying award: the model pays no premium to a family in which no
-   claimant or partner has a qualifying award.
-3. Monotone: giving a claimant or partner a qualifying benefit on top of
-   their awards never lowers either premium.
-4. Bounds: each premium equals nil, the single rate or the couple rate, and
-   never exceeds two single rates; the couple rate never exceeds two single
-   rates in any year.
-5. Each scheme against the legacy premium: the Council Tax Reduction premium
-   equals the legacy premium in Wales, Northern Ireland and English councils
+2. The model pays no premium to a family in which no claimant or partner has
+   a qualifying award.
+3. Giving a claimant or partner a qualifying benefit on top of their awards
+   never lowers either premium.
+4. Each premium equals nil, the single rate or the couple rate, and never
+   exceeds two single rates; the couple rate never exceeds two single rates
+   in any year.
+5. The Council Tax Reduction premium equals the legacy premium in Wales, Northern Ireland and English councils
    without their own list, and in Scotland before 2023. It never falls below
    the legacy premium in Scotland from 2023 or in Newham. In Merton and
    Kingston upon Thames it never falls below the legacy premium unless that
    premium rests on AFIP alone, and then the model pays none unless an
    under-age member has a PIP daily living award.
-6. Differential: for a child or young person in Great Britain, the qualifying
-   flag matches the oracle. The model pays the child's enhanced rate in the
+6. For a child or young person in Great Britain, the qualifying flag matches
+   the test's own calculation. The model pays the child's enhanced rate in the
    Housing Benefit child premiums (housing_benefit_child_disability_premiums)
    when the flag holds and pays none when it does not.
 """
@@ -213,8 +212,8 @@ def adults_of(f):
 
 
 def upgraded(f):
-    """Return the same family with one claimant or partner given a
-    qualifying benefit on top of their awards."""
+    """Add a qualifying benefit to one claimant's or partner's awards and
+    return the family."""
     adults = [dict(a) for a in f["adults"]]
     j = f["upgrade_member"] % len(adults_of(f))
     adults[j]["awards"] = adults[j]["awards"] + (f["upgrade_award"],)

@@ -8,8 +8,8 @@
 # 2026-27 weekly rates: DLA care highest £114.60, middle £76.70; PIP daily
 # living enhanced £114.60, standard £76.70 (gov.dwp parameters).
 # The model counts an award only with a positive amount, and counts an amount
-# entered without its category at the top rate when it reaches 52 times the
-# top weekly rate less £1: (114.60 - 1) * 52 = 5,907.20 in 2026-27.
+# entered without its category at the top rate when it reaches
+# 52 × (top weekly rate − £1): (114.60 - 1) * 52 = 5,907.20 in 2026-27.
 
 - name: Case 1, enhanced PIP daily living qualifies a single claimant.
   period: 2026
