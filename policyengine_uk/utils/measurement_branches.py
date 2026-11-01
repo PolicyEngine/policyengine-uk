@@ -7,7 +7,7 @@ runs in a branch of the reform simulation or of its baseline, with every
 behavioural response neutralised and those inputs set.
 """
 
-from typing import Dict
+from typing import Dict, Iterable
 
 import numpy as np
 
@@ -42,22 +42,24 @@ def retained_input_variables(simulation) -> set:
     return retained
 
 
-def drop_calculated_years(simulation, names) -> None:
+def drop_calculated_years(simulation, names: Iterable[str]) -> None:
     """Delete the values of the input variables ``names`` that the simulation
     calculated, keeping those the data or a caller supplied.
 
-    The simulation counts an input variable as an input by name, but Core
-    fills each year it holds no input for: it grows the latest earlier input
-    by the variable's ``uprating`` index, or carries the latest input over,
-    and caches the result in the variable's holder (``put_in_cache`` with
-    ``derived=True``). The simulation itself grows a stored household total
-    (``Simulation._stored_household_total``). Such a year depends on which
-    years hold inputs, so an input set later for an earlier year changes it.
-    Core's record of inputs (``_user_input_keys``, checked by
-    ``Holder._stores_user_input``) holds every value the data or a caller
-    stored through ``set_input``, whatever the year, and decides which values
-    go, as it does for ``drop_computed_arrays``. Core then calculates the
-    other years again from the inputs.
+    The simulation counts an input variable as an input by name, but it also
+    holds years of it that it calculated. For a year with no input, Core grows
+    the latest earlier input by the variable's ``uprating`` index, or carries
+    the latest input over, and caches the result in the variable's holder
+    (``put_in_cache`` with ``derived=True``). The simulation grows a stored
+    household total itself (``Simulation._stored_household_total``), and a
+    formula gives the other years of a formula variable supplied for some.
+    Such a year depends on other years' inputs, so an input set later for an
+    earlier year changes it. Core's record of inputs (``_user_input_keys``,
+    checked by ``Holder._stores_user_input``) holds every value the data or a
+    caller stored through ``set_input``, whatever the year, and decides which
+    values go, as it does for ``drop_computed_arrays``. Core then calculates
+    the other years again. Formulas read Core's cache of results by variable
+    and period, so its entries for ``names`` go too.
     """
     names = set(names)
     for name in names:
