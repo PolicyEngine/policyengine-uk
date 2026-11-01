@@ -318,5 +318,7 @@ def test_vertex_search_equals_dense_grid(sims, year, drawn):
     grid_x, grid_s, grid_v = _shares(c, grid_x, grid_x + grid_s)
     grid = step_5_tax(c, grid_x, grid_s, grid_v).min(axis=1)
     step = ((high - low) / 100 + c.savings / 100)[:, 0]
-    assert np.all(found <= grid + 1e-6)
-    assert np.all(found >= grid - 2 * step - 1e-6)
+    # The search may take a share within TIE (1e-6) of the least, for its
+    # tie-break.
+    assert np.all(found <= grid + 1e-5)
+    assert np.all(found >= grid - 2 * step - 1e-5)
