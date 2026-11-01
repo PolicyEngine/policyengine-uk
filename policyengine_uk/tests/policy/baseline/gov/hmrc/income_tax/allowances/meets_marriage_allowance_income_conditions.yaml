@@ -107,22 +107,40 @@
     savings_income_tax: 0.4
     meets_marriage_allowance_income_conditions: false
 
-- name: Under a raised starting rate limit, savings at the starting rate meet the conditions
+- name: Savings at a raised starting rate limit and the savings nil rate meet the conditions
+  period: 2026
+  input:
+    # A reform raises the starting rate limit for savings to 37,500. Pay
+    # uses the personal allowance. Section 12 charges 37,500 of interest at
+    # the starting rate, and s. 12A charges the 500 above that limit at the
+    # savings nil rate. Section 55B(2)(b) permits both.
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 37_500
+    employment_income: 12_570
+    savings_interest_income: 38_000
+    region: NORTH_EAST
+  output:
+    savings_starter_rate_income: 37_500
+    savings_allowance: 500
+    savings_income_tax: 0
+    meets_marriage_allowance_income_conditions: true
+
+- name: Savings below a raised starting rate limit above the basic rate limit fail the conditions
   period: 2026
   input:
     # A reform raises the starting rate limit for savings to 40,000. Pay
-    # takes the personal allowance, so the model taxes all 38,000 of
-    # interest. It charges the 37,700 within the basic rate band at the
-    # starting rate for savings (s. 12), and the 500 savings allowance for
-    # income above the basic rate limit (s. 12B(3)) covers the other 300 at
-    # the savings nil rate (s. 12A). Section 55B(2)(b) allows both rates.
+    # uses the personal allowance. Section 12(1)(b) charges the starting
+    # rate only on income that would otherwise bear the basic rate, so it
+    # covers 37,700 of the 38,000 of interest. Section 12A applies only to
+    # savings above the 40,000 limit, and the interest stops below it, so
+    # the other 300 bears the savings higher rate, which s. 55B(2)(b)
+    # forbids. The model's savings liability charges these 300 at the
+    # savings nil rate.
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
     employment_income: 12_570
     savings_interest_income: 38_000
     region: NORTH_EAST
   output:
-    savings_income_tax: 0
-    meets_marriage_allowance_income_conditions: true
+    meets_marriage_allowance_income_conditions: false
 
 - name: Taxable income at the basic rate limit meets the conditions
   period: 2026

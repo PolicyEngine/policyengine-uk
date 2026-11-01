@@ -53,34 +53,33 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         basic_rate_limit,
     )
     # Savings sit above non-savings income (s. 16) and take the rest-of-UK
-    # bands (s. 11D(6)). As in higher_rate_savings_income, the model charges
-    # the first of them at the starting rate for savings, which it keeps
-    # within the basic rate band, and then at the savings nil rate. Savings
-    # above those bear a positive rate, and the person fails the test once
-    # they pass the basic rate limit.
+    # limits (s. 11D(6)). Up to the basic rate limit they bear a basic rate
+    # or the starting rate for savings, both permitted: s. 12(1) charges the
+    # starting rate only on savings that would otherwise bear a basic rate
+    # (s. 12(1)(b) from 2017-18). Above the limit s. 55B(2)(b) permits only
+    # the savings nil rate. Section 12A(1) to (4) charges it on the lowest
+    # savings above the starting rate limit for savings, up to the savings
+    # allowance; dividends sit above savings (s. 16) and leave this slice
+    # where it is. The person fails the test if any savings above the basic
+    # rate limit lie outside the slice.
     savings = max_(
         0,
         person("taxable_savings_interest_income", period)
         - person("received_allowances_savings_income", period),
-    )
-    starter = rates.savings_starter_rate
-    savings_in_basic_band = clip(
-        non_savings + savings, rates.uk.thresholds[0], basic_rate_limit
-    ) - clip(non_savings, rates.uk.thresholds[0], basic_rate_limit)
-    starting_rate_savings = clip(
-        min_(savings, savings_in_basic_band),
-        0,
-        max_(0, starter.allowance - non_savings * starter.phase_out),
     )
     # FA 2016 s. 4(17) gives the savings nil rate effect from 2016-17.
     if period.start.year < 2016:
         savings_allowance = 0
     else:
         savings_allowance = person("savings_allowance", period)
-    nil_rate_savings = starting_rate_savings + savings_allowance
-    savings_above_basic = (savings > nil_rate_savings) & (
-        non_savings + savings > basic_rate_limit
+    below_dividends = non_savings + savings
+    nil_rate_start = max_(non_savings, rates.savings_starter_rate.allowance)
+    nil_rate_top = min_(below_dividends, nil_rate_start + savings_allowance)
+    savings_above_basic = max_(0, below_dividends - max_(non_savings, basic_rate_limit))
+    nil_rate_above_basic = max_(
+        0, nil_rate_top - max_(nil_rate_start, basic_rate_limit)
     )
+    savings_at_forbidden_rates = savings_above_basic - nil_rate_above_basic > 0
     # Dividends are the top slice, above all non-savings income and savings
     # (s. 16), counted before the dividend allowance. Section 13(2) charges
     # the dividend upper rate on dividends that would otherwise bear the
@@ -93,11 +92,11 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     )
     dividend_upper_limit = basic_rate_limit
     dividends_above_basic = (dividends > 0) & (
-        non_savings + savings + dividends > dividend_upper_limit
+        below_dividends + dividends > dividend_upper_limit
     )
     return (
         (non_savings <= non_savings_limit)
-        & ~savings_above_basic
+        & ~savings_at_forbidden_rates
         & ~dividends_above_basic
     )
 

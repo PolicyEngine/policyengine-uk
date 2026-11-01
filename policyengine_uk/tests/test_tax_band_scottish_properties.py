@@ -339,6 +339,7 @@ DIVIDEND_UPPER = [DIVIDENDS.format(i) for i in (1, 2, 3)]
 DIVIDEND_ALLOWANCE = "gov.hmrc.income_tax.allowances.dividend_allowance"
 BASIC_RATE_LIMIT = "gov.hmrc.income_tax.rates.uk[1].threshold"
 DIVIDEND_UPPER_START = "gov.hmrc.income_tax.rates.dividends[1].threshold"
+STARTING_RATE_LIMIT = "gov.hmrc.income_tax.rates.savings_starter_rate.allowance"
 # Rate limits and nil-rate amounts a reform might change, each drawn or left
 # at the law in force.
 LIMITS = {
@@ -346,7 +347,7 @@ LIMITS = {
         20_000, 50_000
     ),
     BASIC_RATE_LIMIT: st.integers(25_000, 50_000),
-    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance": st.integers(0, 60_000),
+    STARTING_RATE_LIMIT: st.integers(0, 60_000),
     "gov.hmrc.income_tax.allowances.personal_savings_allowance.basic": st.integers(
         0, 10_000
     ),
@@ -411,6 +412,13 @@ def test_marriage_allowance_follows_the_liability_with_nil_rates(
     # Section 13(2) starts the dividend upper rate at the basic rate limit
     # (s. 10(3)), so a reformed limit moves the model's dividend scale too.
     changes[DIVIDEND_UPPER_START] = basic_rate_limit
+    # The model's savings liability starts the savings nil rate where the
+    # starting rate for savings ends. That matches s. 12A only while the
+    # starting rate limit stays at or below the basic rate limit.
+    if STARTING_RATE_LIMIT in changes:
+        changes[STARTING_RATE_LIMIT] = min(
+            changes[STARTING_RATE_LIMIT], basic_rate_limit
+        )
     with law(sim, period, changes):
         meets = np.asarray(
             sim.calculate("meets_marriage_allowance_income_conditions", period)
