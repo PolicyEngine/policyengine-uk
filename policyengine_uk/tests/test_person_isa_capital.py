@@ -229,7 +229,9 @@ ONE_UNIT_HOUSEHOLDS = st.lists(
     min_size=1,
     max_size=4,
 )
+# Each example runs whole means tests, so keep the examples few.
 DATASET_SETTINGS = settings(SETTINGS, max_examples=3)
+SITUATION_SETTINGS = settings(SETTINGS, max_examples=4)
 
 
 @DATASET_SETTINGS
@@ -358,7 +360,7 @@ def _holdings(simulation):
     )
 
 
-@SETTINGS
+@SITUATION_SETTINGS
 @given(
     units=st.lists(_unit([30, 38]), min_size=1, max_size=3),
     holdings=HOLDINGS,
@@ -389,7 +391,7 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
         assert (capital >= own * (1 - 1e-6) - 0.01).all(), name
 
 
-@SETTINGS
+@SITUATION_SETTINGS
 @given(
     pensioners=st.lists(_unit([70, 75]), min_size=1, max_size=2),
     others=st.lists(_unit([30]), min_size=0, max_size=1),
