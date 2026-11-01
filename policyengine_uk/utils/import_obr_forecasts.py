@@ -227,16 +227,19 @@ def extract_economy_workbook_bytes(
         return Path(workbook_name).name, archive.read(workbook_name)
 
 
+def _string_text(item: ET.Element) -> str:
+    """Join the text of every ``<t>`` in a shared or inline string, so the
+    reader returns the whole text of a string split into formatting runs
+    (``<r>``)."""
+    return "".join(node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS))
+
+
 def _load_shared_strings(archive: ZipFile) -> list[str]:
     if "xl/sharedStrings.xml" not in archive.namelist():
         return []
 
     root = ET.fromstring(archive.read("xl/sharedStrings.xml"))
-    values: list[str] = []
-    for item in root.findall("main:si", WORKBOOK_NS):
-        parts = [node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS)]
-        values.append("".join(parts))
-    return values
+    return [_string_text(item) for item in root.findall("main:si", WORKBOOK_NS)]
 
 
 def _sheet_paths(archive: ZipFile) -> dict[str, str]:
@@ -264,22 +267,36 @@ def _cell_value(cell: ET.Element, shared_strings: list[str]) -> str | None:
     if cell_type == "s" and value_node is not None:
         return shared_strings[int(value_node.text)]
     if cell_type == "inlineStr" and inline_node is not None:
-        text_node = inline_node.find(".//main:t", WORKBOOK_NS)
-        return text_node.text if text_node is not None else ""
+        return _string_text(inline_node)
     if value_node is not None:
         return value_node.text
     return None
 
 
-def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[dict[str, str | None]]:
+class SheetRow(dict):
+    """A worksheet row as ``read_sheet_rows`` reads it: each cell's text by
+    column letter, and ``number``, the row's number on the worksheet."""
+
+    def __init__(self, number: int):
+        super().__init__()
+        self.number = number
+
+
+def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[SheetRow]:
+    """Read the rows a worksheet stores, in order. A worksheet can skip
+    rows, as October 2026's sheet 4.12 skips row 33, so a row's place in the
+    list can differ from its number."""
     with ZipFile(BytesIO(xlsx_bytes)) as archive:
         shared_strings = _load_shared_strings(archive)
         sheet_path = _sheet_paths(archive)[sheet_name]
         sheet = ET.fromstring(archive.read(sheet_path))
 
     rows = []
+    number = 0
     for row in sheet.findall(".//main:sheetData/main:row", WORKBOOK_NS):
-        values: dict[str, str | None] = {}
+        # A row without a number takes the one after the row before it.
+        number = int(row.attrib.get("r", number + 1))
+        values = SheetRow(number)
         for cell in row.findall("main:c", WORKBOOK_NS):
             ref = cell.attrib["r"]
             column = "".join(ch for ch in ref if ch.isalpha())
@@ -676,10 +693,10 @@ class ReceiptsSeriesSpec:
 
     @property
     def per_head(self) -> bool:
-        """Whether the series sits under ``per_capita``. Dataset projection
-        grows household weights by ``ons.population``, so
-        ``render_receipts_growth_yaml`` writes such a series as
-        (1 + aggregate growth) / (1 + ons.population growth) - 1
+        """Return whether the renderer writes this series under
+        ``per_capita``. Dataset projection grows household weights by
+        ``ons.population``, so ``render_receipts_growth_yaml`` writes such a
+        series as (1 + aggregate growth) / (1 + ons.population growth) - 1
         (``per_head_growth``, ``per_head_tail``), and the weighted total grows
         with the line in every year."""
         return self.path[0] == "per_capita"
@@ -687,8 +704,8 @@ class ReceiptsSeriesSpec:
 
 @dataclass(frozen=True)
 class ClearanceSeriesSpec(ReceiptsSeriesSpec):
-    """A line of the OBR's tobacco or alcohol clearance tables, which grows
-    household quantity inputs per head (#2596).
+    """Describe a clearance line the importer uses to grow household
+    quantity inputs per head (#2596).
 
     The OBR counts clearances in quantities, not pounds, so a clearance
     table has no "£ billion" cell. ``unit_cell`` holds the text of the cell
@@ -1260,12 +1277,26 @@ def validate_clearance_table(
     line's ``unit_cell`` among them. It interprets no words, so a note that
     states another unit, a line for another product or a unit column stops
     the run until someone reads the text and lists it.
+
+    The importer also refuses a sheet that repeats the table's number and
+    title, and names the rows (``SheetRow.number``, or a row's place in
+    ``rows`` counted from 1 for a row built as a plain dict). It would check
+    the text under one heading and could read the line under another.
     """
-    start = next(
+    starts = [
         index
         for index, row in enumerate(rows)
         if row_title(row) == (number, spec.title)
-    )
+    ]
+    if len(starts) > 1:
+        numbers = [str(getattr(rows[index], "number", index + 1)) for index in starts]
+        raise ValueError(
+            f"{where} repeats its heading, in rows "
+            f"{', '.join(numbers[:-1])} and {numbers[-1]}. The importer would "
+            "check the text under one and could read a line under another, so "
+            "keep one heading."
+        )
+    start = starts[0]
     block = [rows[start]]
     for row in rows[start + 1 :]:
         title = row_title(row)
@@ -1310,13 +1341,14 @@ def validate_clearance_table(
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
-    """The one row labelled ``spec.row`` in a table titled ``spec.title``.
+    """Find the row labelled ``spec.row`` in the table titled
+    ``spec.title``.
 
     The importer reads only that table's rows: its cash unit, its year
     headers and its "Outturn" and "Forecast" markers, which may sit on one
-    row or several. Before it reads a clearance line's values, it checks
-    every cell of the line's table against the texts someone has read
-    (``validate_clearance_table``).
+    row or several. Before it reads a clearance line's values, it checks the
+    line's table, from its title through its end, against the texts someone
+    has read (``validate_clearance_table``).
     """
     matches = []
     for sheet, rows in sheets.items():

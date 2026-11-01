@@ -1824,6 +1824,7 @@ REAL_OCTOBER_2026_RECEIPTS = (
 COMMITTED_RELEASES = {"release": ("October", 2026), "previous_release": ("March", 2026)}
 XLSX_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 XLSX_NS = {"m": XLSX_MAIN}
+XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 
 
 def mutate_real_receipts(workbook, table, unit, scale=1):
@@ -3420,11 +3421,12 @@ REAL_OCTOBER_2026_SHEETS = read_workbook_sheets(REAL_OCTOBER_2026_RECEIPTS)
 
 
 def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
-    """Set each cell in ``cells`` (as {"B6": text}) to its text, its number
-    or, for None, nothing, adding the cell and its row where the sheet lacks
-    them; multiply each cell in ``scale`` (as {"D5": 0.1}); and add each of
-    ``notes`` in column B below the sheet's last row. Every other archive
-    entry, including the shared strings, stays."""
+    """Set each cell in ``cells`` to its text, number or, for None, nothing;
+    a tuple of texts gives one string with a formatting run for each. Add
+    the cell and its row where the sheet lacks them. Multiply the cells in
+    ``scale`` by their factors, then append ``notes`` in column B below the
+    sheet's last row. Preserve every other archive entry, including the
+    shared strings."""
     cells, scale = dict(cells), dict(scale)
     output = BytesIO()
     with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
@@ -3463,6 +3465,9 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
                 ET.SubElement(
                     ET.SubElement(target, f"{{{XLSX_MAIN}}}is"), f"{{{XLSX_MAIN}}}t"
                 ).text = value
+            elif isinstance(value, tuple):
+                target.set("t", "inlineStr")
+                target.append(formatting_runs("is", value))
             elif value is not None:
                 ET.SubElement(target, f"{{{XLSX_MAIN}}}v").text = repr(float(value))
         for entry in source.infolist():
@@ -3471,6 +3476,23 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
                 ET.tostring(sheet) if entry.filename == path else source.read(entry),
             )
     return output.getvalue()
+
+
+def formatting_runs(tag, texts):
+    """Build a ``tag`` string element with a formatting run for each of
+    ``texts``, the later runs bold, as a spreadsheet writes a cell whose
+    formatting changes."""
+    string = ET.Element(f"{{{XLSX_MAIN}}}{tag}")
+    for index, part in enumerate(texts):
+        run = ET.SubElement(string, f"{{{XLSX_MAIN}}}r")
+        if index:
+            ET.SubElement(
+                ET.SubElement(run, f"{{{XLSX_MAIN}}}rPr"), f"{{{XLSX_MAIN}}}b"
+            )
+        ET.SubElement(
+            run, f"{{{XLSX_MAIN}}}t", {f"{{{XML_NAMESPACE}}}space": "preserve"}
+        ).text = part
+    return string
 
 
 def real_levels(workbook, key):
@@ -4000,6 +4022,215 @@ def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
         else:
             event("unread: named")
             assert str(refused.value) == unread(sheet, title, (text, column))
+
+
+# A spreadsheet can split a cell's text into formatting runs. The check must
+# see the whole text: each first run below passes alone, as a listed text, a
+# number or a fiscal year.
+TEN_MILLION_STICKS = "Note: Cigarette forecasts shown in ten million sticks."
+FIRST_RUNS = {
+    "rich-listed-prefix": "of which:",
+    "rich-numeric-prefix": "1",
+    "rich-fiscal-year-prefix": "2026-27",
+}
+
+
+@pytest.mark.parametrize("name", sorted(FIRST_RUNS))
+def test_the_check_reads_every_formatting_run_of_a_cell(name):
+    """The helper divides the real October 2026 cigarette forecasts by ten
+    and writes B10 of Table 4.11 as one inline string in two runs: the
+    first ("of which:", "1" or "2026-27"), then " Note: Cigarette forecasts
+    shown in ten million sticks." The reader returns both runs, and the
+    importer refuses every tobacco line, naming the whole cell, and stops
+    before it renders anything."""
+    runs = (FIRST_RUNS[name], " " + TEN_MILLION_STICKS)
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS,
+        "4.11",
+        cells={"B10": runs},
+        scale={f"{column}5": 0.1 for column in "DEFGHI"},
+    )
+    with ZipFile(BytesIO(changed)) as archive:
+        sheet = ET.fromstring(archive.read(_sheet_paths(archive)["4.11"]))
+    cell = sheet.find("m:sheetData/m:row/m:c[@r='B10']", XLSX_NS)
+    assert [
+        run.findtext("m:t", namespaces=XLSX_NS)
+        for run in cell.findall("m:is/m:r", XLSX_NS)
+    ] == list(runs)
+    rows = read_sheet_rows(changed, "4.11")
+    (note,) = [row["B"] for row in rows if row.number == 10]
+    assert note == "".join(runs)
+    expected = unread("4.11", TOBACCO_CLEARANCES, (note, "B"))
+    for key in TOBACCO_LINES:
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({"4.11": rows}, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected, key
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == expected
+
+
+def runs_workbook(texts):
+    """Build a one-sheet workbook that holds ``texts`` in A1 as an inline
+    string and in A2 as a shared string, each with a formatting run for each
+    text, and their join in A3 as an inline string of one ``<t>``."""
+    sheet = make_sheet(
+        {
+            1: [
+                '<c r="A1" t="inlineStr">'
+                + ET.tostring(formatting_runs("is", texts), encoding="unicode")
+                + "</c>"
+            ],
+            2: ['<c r="A2" t="s"><v>0</v></c>'],
+            3: [make_inline_cell("A3", "")],
+        }
+    )
+    sheet = ET.fromstring(sheet)
+    joined = sheet.find("m:sheetData/m:row/m:c[@r='A3']/m:is/m:t", XLSX_NS)
+    joined.text = "".join(texts)
+    strings = ET.Element(f"{{{XLSX_MAIN}}}sst")
+    strings.append(formatting_runs("si", texts))
+    output = BytesIO()
+    with ZipFile(BytesIO(make_workbook({"1": ET.tostring(sheet)}))) as source:
+        with ZipFile(output, "w") as dest:
+            for entry in source.infolist():
+                dest.writestr(entry, source.read(entry))
+            dest.writestr("xl/sharedStrings.xml", ET.tostring(strings))
+    return output.getvalue()
+
+
+@settings(max_examples=100, deadline=None, derandomize=True)
+@given(
+    texts=st.lists(
+        st.text(st.characters(min_codepoint=0x20, max_codepoint=0xD7FF)),
+        min_size=1,
+        max_size=4,
+    )
+)
+def test_a_string_reads_whole_in_any_formatting_runs(texts):
+    """However a spreadsheet splits a text into formatting runs, the reader
+    returns the whole text, from an inline string and from a shared string
+    alike, as it does from one ``<t>``."""
+    rows = read_sheet_rows(runs_workbook(texts), "1")
+    assert [(row.number, row["A"]) for row in rows] == [
+        (number, "".join(texts)) for number in (1, 2, 3)
+    ]
+
+
+# A sheet that repeats a clearance table's heading must stop the run: the
+# importer would check the text under one and could read a line under the
+# other.
+TEN_THOUSAND_HECTOLITRES = (
+    "Note: Spirits forecasts shown in ten thousand hectolitres of alcohol."
+)
+
+
+def repeat_alcohol_heading(workbook, sheet):
+    """Clear the lines of the real alcohol clearance table on ``sheet``, rows
+    5 to 7, and repeat its rows 2 to 10 below the sheet's last row, so a
+    second copy of its heading follows the alcohol receipts forecasts.
+    Divide the repeated spirits forecasts by ten and put a note in ten
+    thousand hectolitres below the repeated rows. Return the workbook and
+    the second heading's row."""
+    rows = read_sheet_rows(workbook, sheet)
+    shift = rows[-1].number + 1
+    cells = {f"{column}{number}": None for column in "BCDEFGHI" for number in (5, 6, 7)}
+    for row in rows:
+        if not 2 <= row.number <= 10:
+            continue
+        for column, value in row.items():
+            if not str(value or "").strip():
+                continue
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            else:
+                if row.number == 7 and column > "C":
+                    value /= 10
+            cells[f"{column}{row.number + shift}"] = value
+    cells[f"B{11 + shift}"] = TEN_THOUSAND_HECTOLITRES
+    return edit_real_table(workbook, sheet, cells=cells), 2 + shift
+
+
+def repeated(table, row):
+    """Write out the importer's refusal of real Table ``table`` with its
+    heading in rows 2 and ``row``."""
+    return (
+        f"Table {table} (sheet {table}) repeats its heading, in rows 2 and "
+        f"{row}. The importer would check the text under one and could read a "
+        "line under another, so keep one heading."
+    )
+
+
+def test_a_repeated_clearance_heading_stops_the_run(tmp_path):
+    """The helper clears the lines of the real October 2026 Table 4.12 and
+    repeats the table below the alcohol receipts forecasts, under a second
+    "4.12 Alcohol clearance forecasts" heading in row 53. It divides the
+    repeated spirits forecasts by ten and states ten thousand hectolitres in
+    a note below them. Each line then sits once, under the second heading,
+    and the first keeps the table's listed note. Read in thousand
+    hectolitres, the repeated figures give 2026-27 spirits growth of -90.1%,
+    where the published figures give -0.8%. The importer refuses every
+    alcohol line and names both headings' rows, the renderer gets no growth,
+    and a run on the real March 2026 tables changed the same way stops
+    before it writes anything. The importer reads the tobacco lines as
+    before."""
+    changed, row = repeat_alcohol_heading(REAL_OCTOBER_2026_RECEIPTS, "4.12")
+    assert row == 53
+    rows = read_sheet_rows(changed, "4.12")
+    (spirits,) = [line for line in rows if line.number == 58]
+    assert receipts_label(spirits["B"]) == "spirits"
+    published = [float(level) for level in OCTOBER_2026_CLEARANCES["spirits"][:2]]
+    assert round(float(spirits["D"]) / float(spirits["C"]) - 1, 6) == -0.900793
+    assert round(published[1] / published[0] - 1, 6) == -0.007927
+    sheets = {"4.11": REAL_OCTOBER_2026_SHEETS["4.11"], "4.12": rows}
+    for key, spec in CLEARANCE_SPECS.items():
+        if spec.title == TOBACCO_CLEARANCES:
+            assert (
+                find_receipts_line(sheets, spec).levels
+                == find_receipts_line(REAL_OCTOBER_2026_SHEETS, spec).levels
+            ), key
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line(sheets, spec)
+        assert str(refused.value) == repeated("4.12", 53), key
+    # Rows built as plain dicts carry no number, so the refusal counts their
+    # places: row 53 is the 47th row the sheet stores.
+    with pytest.raises(ValueError) as refused:
+        find_receipts_line(
+            {"4.12": [dict(line) for line in rows]}, CLEARANCE_SPECS["spirits"]
+        )
+    assert str(refused.value) == repeated("4.12", 47)
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == repeated("4.12", 53)
+    march, row = repeat_alcohol_heading(REAL_RECEIPTS[2026], "3.12")
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+    with pytest.raises(ValueError) as refused:
+        run_main(
+            tmp_path,
+            make_test_xlsx(),
+            "--yaml-path",
+            str(yoy),
+            receipts=march,
+            previous_receipts=REAL_RECEIPTS[2025],
+        )
+    assert str(refused.value) == repeated("3.12", row)
+    assert row == 38
+    assert {path: path.read_bytes() for path in before} == before
+    assert not list(yoy.parent.rglob("*.staged"))
 
 
 # per_head_growth divides each series' own growth, a duty's base for a line
