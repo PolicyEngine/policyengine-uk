@@ -1,6 +1,12 @@
 # Ordinary, unprotected purchases; annual parameters sample 30 April.
 # Sources: SDLT (Temporary Relief) Act 2023 s1; Finance Act 2025 ss50-51;
 # Finance Act 2003 s55 and Sch6ZA. No transaction-date or contract selector.
+# The 2020 and 2021 cases below add the SDLT (Temporary Relief) Act 2020 s1
+# (8 July 2020 to 30 June 2021, with s1(1)(b) as amended by Finance Act 2021
+# s87(2)(a)), Finance Act 2003 Sch4ZA para 1(2) and Sch5 para 2(3). 2020
+# samples 30 April 2020, before the relief starts; 2021 samples 30 April 2021,
+# inside it; 2022 samples 30 April 2022, after s1A's further period ends on
+# 30 September 2021.
 - name: Annual 2022 retains the pre-September standard schedule
   period: 2022
   absolute_error_margin: 0.01
@@ -148,3 +154,113 @@
     main_residential_property_purchased_is_first_home: true
   output:
     stamp_duty_land_tax: 1
+
+- name: Annual 2020 samples the standard schedules before the 8 July 2020 relief
+  # Main: 2% of £125,000 + 5% of £150,000. First-time buyer: 5% of £100,000.
+  # Additional dwelling: 3% of £125,000 + 5% of £125,000 + 8% of £150,000.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: [400_000, 400_000, 0]
+    main_residential_property_purchased_is_first_home: [false, true, false]
+    additional_residential_property_purchased: [0, 0, 400_000]
+  output:
+    stamp_duty_land_tax: [10_000, 5_000, 22_000]
+
+- name: Annual 2021 samples the £500,000 nil band, which runs to 30 June 2021
+  # Main and first-time buyer: 0% to £500,000 (2020 Act s1(2), (5)).
+  # Additional dwelling: 3% of £400,000 (s1(3)).
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: [400_000, 400_000, 0]
+    main_residential_property_purchased_is_first_home: [false, true, false]
+    additional_residential_property_purchased: [0, 0, 400_000]
+  output:
+    stamp_duty_land_tax: [0, 0, 12_000]
+
+- name: Annual 2021 nil band includes £500,000
+  period: 2021
+  input:
+    main_residential_property_purchased: 500_000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: Annual 2021 charges 5% above £500,000
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 500_020
+  output:
+    stamp_duty_land_tax: 1
+
+- name: Annual 2021 first-time buyer above £500,000 pays the relief-period main rates
+  # 5% of £100,000 (2020 Act s1(2)); s1(5) omits first-time buyers' relief.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 600_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 5_000
+
+- name: Annual 2021 additional dwelling pays 8% above £500,000
+  # 3% of £500,000 + 8% of £100,000 (2020 Act s1(3)).
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 600_000
+  output:
+    stamp_duty_land_tax: 23_000
+
+- name: Annual 2021 Northern Ireland purchase gets the £500,000 nil band
+  # 5% of £425,000 (2020 Act s1(2)).
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    main_residential_property_purchased: 925_000
+  output:
+    stamp_duty_land_tax: 21_250
+
+- name: Annual 2022 samples the standard schedules restored on 1 October 2021
+  # As in 2020: s1A's further period ends with 30 September 2021.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: [400_000, 445_000, 0]
+    main_residential_property_purchased_is_first_home: [false, true, false]
+    additional_residential_property_purchased: [0, 0, 400_000]
+  output:
+    stamp_duty_land_tax: [10_000, 7_250, 22_000]
+
+- name: Lease rent pays 1% above each year's nil band
+  # A £100,000 rent on £200,000 already paid: 1% of the rent above the nil
+  # band (Finance Act 2003 Sch5 para 2(3)). The nil band is £125,000 in
+  # 2020, 2022 and 2025, £500,000 in 2021 (2020 Act s1(4)) and £250,000 in
+  # 2023 and 2024 (2023 Act s1(4)).
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    cumulative_residential_rent:
+      2020: 200_000
+      2021: 200_000
+      2022: 200_000
+      2023: 200_000
+      2024: 200_000
+      2025: 200_000
+    rent:
+      2020: 100_000
+      2021: 100_000
+      2022: 100_000
+      2023: 100_000
+      2024: 100_000
+      2025: 100_000
+  output:
+    sdlt_on_residential_property_rent:
+      2020: 1_000
+      2021: 0
+      2022: 1_000
+      2023: 500
+      2024: 500
+      2025: 1_000
