@@ -21,7 +21,7 @@ from policyengine_uk.utils.aggregate_impact.reforms import (
     reform_parameters,
     responsiveness,
 )
-from policyengine_uk.utils.aggregate_impact.spec import load_spec
+from policyengine_uk.utils.aggregate_impact.spec import fiscal_year_label, load_spec
 
 TESTS = Path(__file__).resolve().parents[1]
 YEARS = load_spec().years
@@ -285,3 +285,49 @@ def test_calibrate_takes_the_smallest_effect_across_years_and_measurements():
     assert out["down"] == {"smallest_effect": 2e9, "year": 2026, "minimum": 4e8}
     with pytest.raises(ReformSpecError, match="wrong way"):
         calibrate(reforms, [_result({"up": {2025: -1.0}, "down": {2025: -1.0}})], 0.2)
+
+
+ONE_UP = parse_reforms(
+    {
+        "reforms": [
+            {
+                "id": "up",
+                "name": "u",
+                "parameters": {"a": 1},
+                "responds": {"variable": "v", "direction": "up", "minimum": 1},
+            }
+        ]
+    }
+)
+
+
+def test_calibrate_refuses_a_withheld_year():
+    result = _result({"up": {2025: 5e9, 2026: None}})
+    with pytest.raises(ReformSpecError, match="up: .*withholds.*2026-27"):
+        calibrate(ONE_UP, [result], 0.2)
+
+
+def test_calibrate_skips_a_reform_with_no_target_whatever_its_years_hold():
+    reforms = parse_reforms(
+        {"reforms": [{"id": "any", "name": "a", "parameters": {"a": 1}}]}
+    )
+    assert calibrate(reforms, [_result({"any": {2025: None}})], 0.2) == {}
+
+
+@given(
+    effects=st.dictionaries(
+        st.integers(2020, 2040),
+        st.one_of(st.none(), st.floats(1e6, 1e12)),
+        min_size=1,
+    )
+)
+def test_calibrate_answers_only_from_a_complete_set_of_years(effects):
+    """Any withheld year refuses, naming the first, and otherwise the
+    smallest effect comes from the years given."""
+    withheld = sorted(year for year, effect in effects.items() if effect is None)
+    if withheld:
+        with pytest.raises(ReformSpecError, match=fiscal_year_label(withheld[0])):
+            calibrate(ONE_UP, [_result({"up": effects})], 0.2)
+    else:
+        out = calibrate(ONE_UP, [_result({"up": effects})], 0.2)
+        assert out["up"]["smallest_effect"] == min(effects.values())

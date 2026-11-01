@@ -133,7 +133,8 @@ def calibrate(
     ``results`` are measurement result.json mappings, typically one per model
     version of the pair being calibrated on. An effect counts in the
     reform's declared direction, so a reform that moves the wrong way in any
-    year or measurement cannot be calibrated.
+    year or measurement cannot be calibrated. Nor can a reform with a withheld
+    year: that year may hold its smallest effect.
     """
     out = {}
     for reform in reforms:
@@ -152,6 +153,12 @@ def calibrate(
             )
             if metric is None:
                 raise ReformSpecError(f"{reform.id}: a result has no target change")
+            withheld = sorted(int(y) for y, v in metric["values"].items() if v is None)
+            if withheld:
+                raise ReformSpecError(
+                    f"{reform.id}: a result withholds its target change in "
+                    f"{fiscal_year_label(withheld[0])}"
+                )
             effects += [(sign * v, int(y)) for y, v in metric["values"].items()]
         smallest, year = min(effects)
         if not smallest > 0:
