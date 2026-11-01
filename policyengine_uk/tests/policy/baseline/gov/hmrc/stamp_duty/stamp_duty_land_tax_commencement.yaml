@@ -329,3 +329,26 @@
   output:
     stamp_duty_land_tax: 0
     land_transaction_tax: 13_950
+
+- name: A reform can charge a 2015 non-residential purchase on slices
+  # 1% x 100,000 + 3% x 250,000 + 4% x 500,000.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.non_residential.purchase_charged_on_whole_price: false
+    non_residential_property_purchased: 1_000_000
+  output:
+    stamp_duty_land_tax: 28_500
+
+- name: A reform can keep SDLT in Wales after 2018
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.applies_in_wales: true
+    country: WALES
+    main_residential_property_purchased: 300_000
+  output:
+    sdlt_liable: true
+    ltt_liable: false
+    stamp_duty_land_tax: 5_000
+    land_transaction_tax: 0
