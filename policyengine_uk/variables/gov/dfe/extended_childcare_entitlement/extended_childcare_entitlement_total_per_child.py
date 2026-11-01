@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    childcare_term_value,
+    uses_legacy_childcare_inputs,
+)
 
 
 class extended_childcare_entitlement_total_per_child(Variable):
@@ -10,11 +14,11 @@ class extended_childcare_entitlement_total_per_child(Variable):
         "parent hours, before allocating the first hours to any applicable "
         "universal or targeted programme. Limited by the statutory age "
         "schedule, the child's usage and the family's usage cap, over the "
-        "share of the year's terms the child is old enough for "
-        "(extended_childcare_entitlement_term_share) and not yet at school "
-        "(early_years_term_share_before_school). The minimum age is below "
-        "the school starting age, so the two shares never both fall short "
-        "of the whole year."
+        "terms the child is old enough for and not yet at school. Native "
+        "awards intersect those terms and use the same qualifying-age "
+        "funding proxy as base hours in each common term, with the existing "
+        "annual hours and funding-year schedules. Supplied legacy annual "
+        "shares or amounts retain their original annual calculation."
     )
     definition_period = YEAR
     unit = GBP
@@ -27,6 +31,9 @@ class extended_childcare_entitlement_total_per_child(Variable):
     )
 
     def formula(person, period, parameters):
+        if not uses_legacy_childcare_inputs(person, period):
+            return childcare_term_value(person, period, parameters, "working")
+        # Opaque annual inputs retain the complete original valuation route.
         p = parameters(period).gov.dfe
         age = person("age", period)
         qualifying_child = person(

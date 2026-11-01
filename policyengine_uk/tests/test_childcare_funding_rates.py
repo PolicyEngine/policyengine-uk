@@ -72,8 +72,8 @@ def test_april_anchors_reach_processed_annual_rates(year):
 @pytest.mark.parametrize(
     "year,universal,extended_per_child,extended_total",
     [
-        (2025, [0, 0, 0, 3488.40], [0, 6577.80, 4862.10, 3488.40], 14928.30),
-        (2026, [0, 0, 0, 3767.70], [0, 13725.60, 10146.00, 3767.70], 27639.30),
+        (2025, [0, 0, 0, 2325.60], [0, 6577.80, 5434.00, 5567.00], 17578.80),
+        (2026, [0, 0, 0, 2511.80], [0, 13725.60, 11339.20, 5893.80], 30958.60),
     ],
 )
 def test_published_rates_reach_genuine_working_family_awards(
@@ -81,7 +81,9 @@ def test_published_rates_reach_genuine_working_family_awards(
 ):
     sim = Simulation(situation=working_family(year))
     # 2025 retains the existing 15-hour under-three annual schedule; 2026
-    # gives 30. A three-year-old gets 570 universal hours plus 570 extended.
+    # gives 30. Whole ages imply 6 April birthdays: the age-three child
+    # starts universal provision in September, and age-two funding begins
+    # after the second-birthday term. Each common term uses one age-band rate.
     np.testing.assert_allclose(
         sim.calculate("universal_childcare_entitlement", year),
         universal,
@@ -102,12 +104,13 @@ def test_published_rates_reach_genuine_working_family_awards(
     )
 
 
-@pytest.mark.parametrize("year,expected", [(2025, 4862.10), (2026, 5073.00)])
+@pytest.mark.parametrize("year,expected", [(2025, 3241.40), (2026, 3382.00)])
 def test_published_rates_reach_targeted_award_for_reported_qualifying_benefit(
     year, expected
 ):
     # An ordinary reported Income Support award is an existing qualifying
     # benefit input. Eligibility and the childcare amount are calculated.
+    # Born 6 April, the child receives two targeted terms from September.
     sim = Simulation(
         situation={
             "people": {"parent": {"age": {year: 35}}, "child": {"age": {year: 2}}},

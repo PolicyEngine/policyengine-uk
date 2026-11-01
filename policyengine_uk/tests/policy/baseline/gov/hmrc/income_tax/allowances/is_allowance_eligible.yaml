@@ -25,7 +25,12 @@
     income_tax_pre_charges: 500.0
     CB_HITC: 200.0
   output:
-    capped_mcad: 700.0
+    # The reduction is deducted at Step 6 only so far as there is Step 5 tax
+    # (ITA 2007 s. 29(2)); the High Income Child Benefit Charge is added at
+    # Step 7 and is not reduced.
+    capped_mcad: 500.0
+    income_tax_reductions: 500.0
+    income_tax: 200.0
 
 - name: Annual Allowance for Pension Contributions
   period: 2024

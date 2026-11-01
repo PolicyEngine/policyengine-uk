@@ -1,11 +1,11 @@
-# extended_childcare_entitlement is the working parent hours above the universal
-# (3-4) and targeted (2) hours each child also gets: Childcare Act 2016 s.1(6)(a)
-# counts those hours towards the 30. Every child here is in England (the default)
-# and claims the universal entitlement (the default), so a 3- or 4-year-old's
-# universal 570 hours a year come off the 1,140 the parameter gives. Rates per
-# hour: 2025 £8.53 (age 2) and £6.12 (3-4); 2026 £8.90 (age 2) and
-# £6.61 (3-4).
-- name: 3-year-old gets the 15 working parent hours above the universal 15
+# Whole-age fallback birthdays are 6 April: base provision begins in September,
+# so April working-parent hours have no universal base to subtract. Each term
+# is valued at its qualifying age band within the same annual funding table.
+# Working-parent hours above base provision are allocated within each common
+# term (Childcare Act 2016 s.1(6)(a)). The 2025 annual hours schedule is kept;
+# the funding-year rates are £11.54/£8.53/£6.12 by qualifying age band, and
+# the corresponding 2026 rates are £12.04/£8.90/£6.61.
+- name: A 3-year-old gets summer working hours and two universal top-ups
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -17,9 +17,8 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    # (1,140 - 570) x 6.12
-    extended_childcare_entitlement: 3488.40
-    universal_childcare_entitlement: 3488.40
+    extended_childcare_entitlement: 5_567.00
+    universal_childcare_entitlement: 2_325.60
 
 - name: Eligible for 15 hours - 2 year old (evaluated at Jan 1, 2025 before Sept expansion)
   period: 2025
@@ -33,8 +32,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    # 15 x 38 x 8.53; no targeted hours, so nothing comes off.
-    extended_childcare_entitlement: 4862.10
+    extended_childcare_entitlement: 5_434.00
 
 - name: Not eligible (one condition not met)
   period: 2025
@@ -58,14 +56,13 @@
       child1:
         age: 2  # 15 hours at Jan 1, 2025
       child2:
-        age: 3  # 30 hours, 15 of them universal
+        age: 3  # 30 annual-schedule hours; universal starts in September
     benunits:
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    # 570 x 8.53 + (1,140 - 570) x 6.12
-    extended_childcare_entitlement: 8350.50
+    extended_childcare_entitlement: 11_001.00
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
@@ -91,17 +88,16 @@
       child1:
         age: 2  # 15 hours at Jan 1, 2025
       child2:
-        age: 3  # 30 hours, 15 of them universal
+        age: 3  # 30 annual-schedule hours; universal starts in September
       child3:
-        age: 3  # 30 hours, 15 of them universal
+        age: 3  # 30 annual-schedule hours; universal starts in September
     benunits:
       benunit1:
         members: [child1, child2, child3]
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    # 570 x 8.53 + 2 x (1,140 - 570) x 6.12
-    extended_childcare_entitlement: 11838.90
+    extended_childcare_entitlement: 16_568.00
 
 - name: No expenses for zero hours
   period: 2025
@@ -130,10 +126,8 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    # (20 x 38 - 570) x 6.12: 190 working parent hours on top of the
-    # universal 570.
-    extended_childcare_entitlement: 1162.80
-    universal_childcare_entitlement: 3488.40
+    extended_childcare_entitlement: 2_936.13
+    universal_childcare_entitlement: 2_325.60
 
 - name: Child using fewer hours than maximum entitlement - multiple children
   period: 2025
@@ -151,8 +145,7 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    # 10 x 38 x 8.53 + max(0, 15 x 38 - 570) x 6.12
-    extended_childcare_entitlement: 3241.40
+    extended_childcare_entitlement: 5_243.37
 
 - name: Benefit unit maximum hours cap applied
   period: 2025
@@ -171,10 +164,9 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 40
   output:
-    # The cap applies to each child: 2 x (1,140 - 570) x 6.12
-    extended_childcare_entitlement: 6976.80
+    extended_childcare_entitlement: 11_134.00
 
-- name: A family cap below the universal hours leaves the universal hours whole
+- name: A cap below 15 preserves later universal hours and summer working hours
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -188,12 +180,10 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 10
   output:
-    # 10 x 38 = 380 hours is under the universal 570, so no working parent
-    # hours, and the universal 570 stay.
-    extended_childcare_entitlement: 0
-    universal_childcare_entitlement: 3488.40
+    extended_childcare_entitlement: 1_080.47
+    universal_childcare_entitlement: 2_325.60
 
-- name: A family cap above 15 adds the hours between 15 and the cap
+- name: A cap above 15 adds common-term top-ups and summer working hours
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -207,10 +197,9 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 18
   output:
-    # (18 x 38 - 570) x 6.12
-    extended_childcare_entitlement: 697.68
+    extended_childcare_entitlement: 2_409.96
 
-- name: Benefit unit without maximum hours cap applied with 3 years old child
+- name: A child using 15 hours has summer working hours before universal starts
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -224,9 +213,8 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 18
   output:
-    # The child uses 15 hours, all of them universal.
-    extended_childcare_entitlement: 0
-    universal_childcare_entitlement: 3488.40
+    extended_childcare_entitlement: 1_620.70
+    universal_childcare_entitlement: 2_325.60
 
 - name: Eligible for 30 hours - 2 year old after September 2025 expansion
   period: 2026
@@ -240,8 +228,7 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    # 30 x 38 x 8.90; no targeted hours.
-    extended_childcare_entitlement: 10146.00
+    extended_childcare_entitlement: 11_339.20
 
 - name: Eligible for 30 hours - Family with multiple 2-year-olds after expansion
   period: 2026
@@ -251,18 +238,17 @@
       child1:
         age: 2  # 30 hours after September 2025
       child2:
-        age: 3  # 30 hours, 15 of them universal
+        age: 3  # 30 annual-schedule hours; universal starts in September
     benunits:
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    # 1,140 x 8.90 + (1,140 - 570) x 6.61
-    extended_childcare_entitlement: 13913.70
+    extended_childcare_entitlement: 17_233.00
 
 # SI 2022/1134 reg 13(2)(b): a child looked after by a local authority is not a
 # qualifying child, so only the other three-year-old's working parent hours
-# count (the same £3,435.39 as the single three-year-old above). The
+# count. The
 # looked-after child keeps the universal hours.
 - name: A looked-after child's hours do not count
   period: 2025
@@ -279,5 +265,5 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 3488.40
-    universal_childcare_entitlement: [3488.40, 3488.40]
+    extended_childcare_entitlement: 5_567.00
+    universal_childcare_entitlement: [2_325.60, 2_325.60]

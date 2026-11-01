@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 
 HOUSEHOLD_TAX_VARIABLES = [
+    "isa_cash_interest_flat_rate_charge",
     "expected_sdlt",
     "expected_ltt",
     "expected_lbtt",
@@ -24,7 +25,7 @@ HOUSEHOLD_TAX_VARIABLES = [
     "carbon_tax",
     "vat_change",
     "capital_gains_tax",
-    "private_school_vat",
+    "private_school_vat_change",
     "corporate_incident_tax_revenue_change",
     "consumer_incident_tax_revenue_change",
     "employer_ni_response_capital_incidence",

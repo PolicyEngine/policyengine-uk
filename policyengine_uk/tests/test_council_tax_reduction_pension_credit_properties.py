@@ -284,7 +284,10 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-MAIN_DEDUCTIONS = ["income_tax", "national_insurance"]
+# The means tests deduct income tax before the winter fuel payment charge
+# (ITEPA 2003 s.681I), which recovers a payment rather than taxing the income
+# they assess. A pensioner over £35,000 of total income is charged it.
+MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
@@ -513,6 +516,34 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
                 not_claiming["simulated_council_tax_reduction_benunit"][i]
                 <= claiming["simulated_council_tax_reduction_benunit"][i] + 0.01
             ), unit
+
+
+def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
+    """A pensioner with £39,500 of total income is charged the winter fuel
+    payment (ITEPA 2003 s.681I) through income tax. CTR deducts the tax
+    before the charge, so the routes agree with the main definition."""
+    family = dict(
+        shape="single_pension",
+        ages=[70],
+        country="ENGLAND",
+        council_tax=4_000.0,
+        savings=0.0,
+        other_property=0.0,
+        state_pension=25_000.0,
+        private_pension=5_000.0,
+        employment_income=0.0,
+        self_employment_income=0.0,
+        property_income=5_000.0,
+        carers_allowance=4_500.0,
+        child_ages=[],
+        would_claim_uc=False,
+        would_claim_pc=True,
+        non_dependant_income=None,
+    )
+    data, _ = situation([family])
+    sim = Simulation(situation=data)
+    assert sim.calculate("winter_fuel_payment_charge", YEAR).sum() > 0
+    check_routes([family], calculate([family]))
 
 
 def test_savings_credit_only_award_counts_the_frozen_savings_credit():

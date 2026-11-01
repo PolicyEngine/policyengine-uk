@@ -1,0 +1,17 @@
+description: While this parameter is true, a newly determined Northern Ireland Local Housing Allowance rate cannot fall below the rate determined on 31 March 2020 for the same Broad Rental Market Area and category. It works as gov.dwp.LHA.march_2020_minimum does for Great Britain, but follows the Northern Ireland Housing Executive's determinations under Northern Ireland regulations. The minimum applies to determinations made from 31 January 2024, so it first affects the April 2024 rates.
+values:
+  2015-01-01: false
+  2024-01-31:
+    value: true
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024, regs. 2(4) and 3(4)
+          href: https://www.legislation.gov.uk/nisr/2024/3/made
+metadata:
+  unit: bool
+  label: Northern Ireland LHA minimum at March 2020 rates
+  reference:
+    - title: The Housing Benefit (Executive Determinations) Regulations (Northern Ireland) 2008, Schedule, paragraph 3A
+      href: https://www.legislation.gov.uk/nisr/2008/100/schedule
+    - title: The Universal Credit Housing Costs (Executive Determinations) Regulations (Northern Ireland) 2016, Schedule 1, paragraph 6
+      href: https://www.legislation.gov.uk/nisr/2016/222/schedule/1

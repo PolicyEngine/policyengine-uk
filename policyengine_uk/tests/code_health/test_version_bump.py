@@ -140,6 +140,8 @@ def run_bump(tmp_path, lock_text):
     shutil.copy(SCRIPT, script)
     (tmp_path / "pyproject.toml").write_text(
         f'[project]\nname = "{PACKAGE}"\nversion = "1.2.3"\n'
+        '\n[tool.towncrier]\ndirectory = "changelog.d"\n'
+        '\n[[tool.towncrier.type]]\nname = "Fixed"\ndirectory = "fixed"\n'
     )
     (tmp_path / "changelog.d").mkdir()
     (tmp_path / "changelog.d" / "change.fixed.md").write_text("- A fix.\n")
@@ -167,7 +169,11 @@ def test_main_moves_pyproject_and_lock_together(tmp_path):
 )
 def test_main_stops_before_changing_anything(tmp_path, lock_text):
     result = run_bump(tmp_path, lock_text)
-    assert result.returncode != 0
+    assert result.returncode == 1
+    if lock_text is None:
+        assert "not found; it must move with pyproject.toml" in result.stderr
+    else:
+        assert f"Expected one {PACKAGE} entry in uv.lock, found 0" in result.stderr
     assert 'version = "1.2.3"' in (tmp_path / "pyproject.toml").read_text()
     if lock_text is not None:
         assert (tmp_path / "uv.lock").read_text() == lock_text

@@ -1,7 +1,8 @@
 """Dataset energy prices move only when their price basis is declared.
 
-The controlled CPI levels are test data for the agreed annual projection
-contract, not forecasts or an energy-specific price index.
+The controlled index levels are test data for the annual projection contract,
+not forecasts: every calendar and fiscal year energy price index is set to the
+same levels, so the expected amounts are simple ratios.
 """
 
 import json
@@ -32,7 +33,12 @@ ENERGY = (
     "electricity_consumption",
     "gas_consumption",
 )
-CPI = "gov.economic_assumptions.indices.obr.consumer_price_index"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
+INDICES = tuple(
+    f"{ENERGY_PRICES}.{kind}.{series}"
+    for kind in ("calendar_year", "fiscal_year")
+    for series in ("electricity", "gas", "electricity_gas_and_solid_fuels")
+)
 LEVELS = dict(enumerate([100, 110, 125, 150, 160, 170, 180, 190, 200], 2024))
 DECLARATION = {"period_type": "calendar_year", "period_value": 2024}
 
@@ -67,10 +73,11 @@ def energy_dataset(basis=None, year=2024):
 @pytest.fixture
 def parameters():
     parameters = CountryTaxBenefitSystem().parameters.clone()
-    index = parameters.get_child(CPI)
     # In particular, 2026 / 2024 = 125 / 100 and 2027 / 2026 = 150 / 125.
-    for year, value in LEVELS.items():
-        index.update(period=str(year), value=value)
+    for path in INDICES:
+        index = parameters.get_child(path)
+        for year, value in LEVELS.items():
+            index.update(period=str(year), value=value)
     return parameters
 
 
@@ -213,10 +220,11 @@ def test_reset_restores_original_amounts_and_original_kind(parameters):
 
 def controlled_changes(target=125):
     return {
-        CPI: {
+        path: {
             f"year:{year}-01-01:1": target if year == 2026 else value
             for year, value in LEVELS.items()
         }
+        for path in INDICES
     }
 
 
@@ -359,10 +367,11 @@ def test_index_only_reform_dict_matches_before_load_scenario():
             )
 
 
-def test_cpi_index_changes_the_projection_fingerprint(parameters):
-    assert CPI in uprating_input_paths()
+@pytest.mark.parametrize("path", INDICES)
+def test_energy_price_index_changes_the_projection_fingerprint(parameters, path):
+    assert any(path.startswith(f"{read}.") for read in uprating_input_paths())
     changed = parameters.clone()
-    changed.get_child(CPI).update(period="2026", value=160)
+    changed.get_child(path).update(period="2026", value=160)
     assert uprating_input_fingerprint(parameters) != uprating_input_fingerprint(changed)
     assert uprating_input_fingerprint(parameters) == uprating_input_fingerprint(
         parameters.clone()
@@ -447,7 +456,7 @@ def test_external_dataframe_amounts_are_authoritative():
     pd.testing.assert_frame_equal(frame, before)
 
 
-def test_direct_situation_keeps_existing_cpi_uprating():
+def test_direct_situation_uprates_by_the_fiscal_year_energy_index():
     simulation = Simulation(
         situation={
             "people": {"person": {"age": {2024: 40}}},
@@ -463,3 +472,225 @@ def test_direct_situation_keeps_existing_cpi_uprating():
     )
     for variable in ENERGY:
         np.testing.assert_allclose(simulation.calculate(variable, 2026), [125.0])
+
+
+def _controlled_energy_history(monkeypatch, history):
+    """Real, clean index leaves with only the explicitly supplied history.
+
+    Every series, calendar and fiscal year alike, gets the same history.
+    """
+    from policyengine_core.parameters import Parameter, ParameterNode
+    from policyengine_uk.data import economic_assumptions
+
+    name = "controlled_energy_index"
+    parameters = ParameterNode("", data={})
+    root = ParameterNode(name, data={})
+    parameters.add_child(name, root)
+    for kind in ("calendar_year", "fiscal_year"):
+        node = ParameterNode(f"{name}.{kind}", data={})
+        root.add_child(kind, node)
+        for series in set(economic_assumptions.ENERGY_PRICE_SERIES.values()):
+            node.add_child(
+                series, Parameter(f"{name}.{kind}.{series}", data=dict(history))
+            )
+    monkeypatch.setattr(economic_assumptions, "ENERGY_PRICES", name)
+    return parameters
+
+
+def test_declared_energy_projection_ignores_widened_generic_exclusions(
+    monkeypatch, parameters
+):
+    from policyengine_uk.data import economic_assumptions
+
+    unrelated = "food_and_non_alcoholic_beverages_consumption"
+    monkeypatch.setattr(
+        economic_assumptions,
+        "DATASET_UPRATING_EXCLUSIONS",
+        economic_assumptions.DATASET_UPRATING_EXCLUSIONS | {unrelated},
+    )
+    observed = energy_dataset(DECLARATION)
+    observed.household[unrelated] = [20.0, 30.0]
+    current = observed.copy()
+    current.time_period = "2026"
+    current.household[unrelated] = [777.0, 888.0]
+    before = observed.household.copy(deep=True)
+
+    economic_assumptions.uprate_energy(current, observed, parameters)
+
+    for variable in ENERGY:
+        # Controlled annual index oracle: 100 * 125 / 100 = 125.
+        np.testing.assert_array_equal(current.household[variable], [125.0, 0.0])
+    np.testing.assert_array_equal(current.household[unrelated], [777.0, 888.0])
+    assert current.energy_price_basis == {
+        "period_type": "fiscal_year",
+        "period_value": 2026,
+    }
+    pd.testing.assert_frame_equal(observed.household, before)
+    assert observed.energy_price_basis == DECLARATION
+
+
+@pytest.mark.parametrize(
+    "first_supported,basis_year,target_year,unsupported_year",
+    [
+        pytest.param("2031-01-01", 2030, 2033, 2030, id="basis-before-first-value"),
+        pytest.param("2031-01-01", 2033, 2030, 2030, id="target-before-first-value"),
+        pytest.param("2031-07-01", 2031, 2033, 2031, id="basis-before-midyear-start"),
+        pytest.param("2031-07-01", 2033, 2031, 2031, id="target-before-midyear-start"),
+    ],
+)
+def test_energy_projection_rejects_pre_support_basis_and_target(
+    monkeypatch, first_supported, basis_year, target_year, unsupported_year
+):
+    from policyengine_uk.data import economic_assumptions
+
+    parameters = _controlled_energy_history(
+        monkeypatch,
+        {"2028-01-01": None, first_supported: 100, "2033-01-01": 125},
+    )
+    basis = {"period_type": "calendar_year", "period_value": basis_year}
+    observed = energy_dataset(basis, year=2030)
+    current = observed.copy()
+    current.time_period = str(target_year)
+
+    with pytest.raises(ValueError, match="controlled_energy_index") as error:
+        economic_assumptions.uprate_energy(current, observed, parameters)
+    assert f"{unsupported_year}-01-01" in str(error.value)
+    assert first_supported in str(error.value)
+    for variable in ENERGY:
+        np.testing.assert_array_equal(observed.household[variable], [100.0, 0.0])
+    assert observed.energy_price_basis == basis
+
+
+@pytest.mark.parametrize(
+    "first_supported,basis_year,target_year,expected",
+    [
+        pytest.param("2031-01-01", 2031, 2031, 100, id="first-supported-boundary"),
+        pytest.param("2031-01-01", 2031, 2033, 125, id="valid-ratio"),
+        pytest.param("2031-07-01", 2032, 2033, 125, id="after-midyear-start"),
+        pytest.param(
+            "2031-01-01", 2031, 2035, 125, id="existing-terminal-carry-forward"
+        ),
+    ],
+)
+def test_energy_projection_accepts_supported_boundary_and_future_ratio(
+    monkeypatch, first_supported, basis_year, target_year, expected
+):
+    from policyengine_uk.data import economic_assumptions
+
+    parameters = _controlled_energy_history(
+        monkeypatch,
+        {
+            "2028-01-01": None,
+            first_supported: 100,
+            "2033-01-01": 125,
+            "2034-01-01": None,
+        },
+    )
+    basis = {"period_type": "calendar_year", "period_value": basis_year}
+    observed = energy_dataset(basis, year=2030)
+    current = observed.copy()
+    current.time_period = str(target_year)
+
+    economic_assumptions.uprate_energy(current, observed, parameters)
+
+    for variable in ENERGY:
+        np.testing.assert_array_equal(current.household[variable], [expected, 0.0])
+        np.testing.assert_array_equal(observed.household[variable], [100.0, 0.0])
+    assert current.energy_price_basis == {
+        "period_type": "fiscal_year",
+        "period_value": target_year,
+    }
+    assert observed.energy_price_basis == basis
+
+
+@pytest.mark.parametrize(
+    "history",
+    [
+        pytest.param({}, id="empty-history"),
+        pytest.param({"2028-01-01": None, "2034-01-01": None}, id="all-null-history"),
+    ],
+)
+def test_declared_energy_projection_rejects_unusable_index_history(
+    monkeypatch, history
+):
+    from policyengine_uk.data import economic_assumptions
+
+    parameters = _controlled_energy_history(monkeypatch, history)
+    observed = energy_dataset(DECLARATION)
+    current = observed.copy()
+    current.time_period = "2026"
+
+    with pytest.raises(ValueError, match="controlled_energy_index"):
+        economic_assumptions.uprate_energy(current, observed, parameters)
+    assert observed.energy_price_basis == DECLARATION
+
+
+@pytest.mark.parametrize("energy_kind", ["unlabelled", "absent-energy"])
+@pytest.mark.parametrize(
+    "history",
+    [
+        pytest.param({}, id="empty-history"),
+        pytest.param({"2034-01-01": None}, id="all-null-history"),
+        pytest.param({"2034-07-01": 100}, id="later-support"),
+    ],
+)
+def test_unlabelled_or_absent_energy_does_not_require_index_history(
+    monkeypatch, energy_kind, history
+):
+    from policyengine_uk.data import economic_assumptions
+
+    parameters = _controlled_energy_history(monkeypatch, history)
+    observed = energy_dataset(None if energy_kind == "unlabelled" else DECLARATION)
+    if energy_kind == "absent-energy":
+        observed.household = observed.household.drop(columns=list(ENERGY))
+    before = observed.household.copy(deep=True)
+    for year in (2026, 2032):
+        current = observed.copy()
+        current.time_period = str(year)
+        economic_assumptions.uprate_energy(current, observed, parameters)
+        pd.testing.assert_frame_equal(current.household, before)
+        assert current.energy_price_basis == observed.energy_price_basis
+    pd.testing.assert_frame_equal(observed.household, before)
+
+
+def test_energy_projection_validates_reformed_selected_index_history(monkeypatch):
+    from policyengine_uk.data import economic_assumptions
+
+    parameters = _controlled_energy_history(
+        monkeypatch, {"2030-01-01": 100, "2033-01-01": 125}
+    )
+    reformed = parameters.clone()
+    selected_index = reformed.get_child(
+        f"{economic_assumptions.ENERGY_PRICES}.calendar_year.electricity"
+    )
+    # A parameter reform withdraws the two earliest years of this clean history.
+    selected_index.update(period="year:2030:2", value=None)
+    assert (
+        min(
+            item.instant_str
+            for item in selected_index.values_list
+            if item.value is not None
+        )
+        == "2032-01-01"
+    )
+    observed = energy_dataset(
+        {"period_type": "calendar_year", "period_value": 2030}, year=2030
+    )
+    current = observed.copy()
+    current.time_period = "2033"
+    economic_assumptions.uprate_energy(current, observed, parameters)
+    for variable in ENERGY:
+        np.testing.assert_array_equal(current.household[variable], [125.0, 0.0])
+
+    with pytest.raises(ValueError, match="controlled_energy_index"):
+        economic_assumptions.uprate_energy(current.copy(), observed, reformed)
+    assert (
+        parameters.get_child(
+            f"{economic_assumptions.ENERGY_PRICES}.calendar_year.electricity"
+        )("2030-01-01")
+        == 100
+    )
+    assert observed.energy_price_basis == {
+        "period_type": "calendar_year",
+        "period_value": 2030,
+    }

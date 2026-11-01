@@ -46,8 +46,9 @@ randomly drawn families, each simulated twice (eligible and not):
    from September 2024 (SI 2023/1330 reg 2). No child gets more hours than it
    uses. These bounds are written from the law, not read from the model's
    parameters; annual simulations still evaluate the schedule at January.
-9. No child gets both universal and targeted hours, so its universal or
-   targeted floor is at most 15 hours a week.
+9. No term gets both universal and targeted hours at baseline. A child can
+   receive both programmes in different terms of a transition year; its base
+   floor is still at most 15 hours in each week (guidance A1.4).
 10. Outside England no child gets universal or working parent hours
     (Childcare Act 2006 s.7 and 2016 s.1(2)(b) are duties for England).
 11. No universal or working parent hours in the terms after a child starts
@@ -231,74 +232,118 @@ def split(values, families, n_copies):
     return out
 
 
-def reference(c, f, year, eligible):
-    """Each child's funded value, written from s.1(6) and para A1.11."""
+def reference_terms(c, f, year, eligible):
+    """Independent calendar allocation, without implementation term helpers.
+
+    A1.4 preserves targeted provision through the term before universal
+    provision begins. The same annual funding-year proxy values each term's
+    qualifying age group; January does not resample the following year's rate.
+    """
     p = system.parameters(f"{year}-01-01").gov.dfe
-    age = c["age"]
-    rate = float(p.childcare_funding_rate.calc(age))
-    weeks = p.weeks_per_year
-    under_school_age = age < 5
-    in_england = f["england"]
-    # The terms before the child starts school: none of these hours after it.
-    school = before_school(c, year)
-    universal_hours = (
-        min(c["hours_used"] * weeks, p.universal_childcare_entitlement.hours)
-        if in_england and 3 <= age < 5 and school > 0
-        else 0
+    born = born_on(c["age"], year)
+    starts = year_terms(year)
+    school_count = round(3 * before_school(c, year))
+    minimum = p.extended_childcare_entitlement.young_child_minimum_age
+    working_birthday = months_later(born, round(12 * minimum))
+    universal_birthday = months_later(
+        born, round(12 * p.universal_childcare_entitlement.age.min)
     )
-    targeted_hours = (
-        min(
-            c["hours_used"] * weeks,
-            p.targeted_childcare_entitlement.hours_entitlement
-            * float(p.targeted_childcare_entitlement.age_eligibility.calc(age)),
+
+    def calendar_scale(scale, start):
+        amount = 0
+        for threshold, next_amount in zip(scale.thresholds, scale.amounts):
+            if threshold == -math.inf or (
+                math.isfinite(threshold)
+                and months_later(born, round(12 * threshold)) < start
+            ):
+                amount = float(next_amount)
+        return amount
+
+    weekly_working = min(
+        float(p.extended_childcare_entitlement.hours.calc(max(c["age"], minimum))),
+        c["hours_used"],
+        f["cap"],
+    )
+    rows = []
+    for index, start in enumerate(starts):
+        school = index < school_count
+        universal = (
+            f["england"]
+            and c["age"] < p.universal_childcare_entitlement.age.max
+            and universal_birthday < start
+            and school
         )
-        if f["targeted"]
-        else 0
-    )
-    universal_value = universal_hours * rate * school
-    targeted_value = targeted_hours * rate
-    floor = (
-        universal_value * f["claims_universal"] + targeted_value * f["claims_targeted"]
-    )
-    minimum_age = p.extended_childcare_entitlement.young_child_minimum_age
-    share = term_share(age, year, minimum_age)
-    qualifying = (
-        in_england
-        and under_school_age
-        and not c["looked_after"]
-        and school > 0
-        and share > 0
-    )
-    weekly = (
-        min(
-            # The hours for its age, or for the minimum age if it reaches
-            # that later in the year.
-            float(p.extended_childcare_entitlement.hours.calc(max(age, minimum_age))),
-            c["hours_used"],
-            f["cap"],
+        targeted = (
+            f["targeted"]
+            and bool(
+                calendar_scale(p.targeted_childcare_entitlement.age_eligibility, start)
+            )
+            and school
         )
-        if qualifying
-        else 0
-    )
-    # A child starting school is years past the minimum age, so the terms it
-    # is old enough for include every term before it starts school.
-    working_parent_total = weekly * weeks * rate * school if eligible else 0
-    # In the terms the child is old enough for: the larger of the claimed
-    # standalone value and the working parent total, with legal eligibility,
-    # independent of standalone take-up, determining which programme funds
-    # the first hours. In the other terms: the claimed standalone value.
-    participating = max(floor, working_parent_total)
-    total = share * participating + (1 - share) * floor
+        working = (
+            eligible
+            and f["england"]
+            and c["age"] < 5
+            and not c["looked_after"]
+            and school
+            and working_birthday < start
+        )
+        u = (
+            min(
+                c["hours_used"] * p.weeks_per_year,
+                p.universal_childcare_entitlement.hours,
+            )
+            / 3
+            if universal
+            else 0
+        )
+        t = (
+            min(
+                c["hours_used"] * p.weeks_per_year,
+                p.targeted_childcare_entitlement.hours_entitlement,
+            )
+            / 3
+            if targeted
+            else 0
+        )
+        w = weekly_working * p.weeks_per_year / 3 if working else 0
+        rate = calendar_scale(p.childcare_funding_rate, start)
+        # At baseline the two base programmes occupy disjoint terms; neither
+        # is multiplied by a second annual working-parent share.
+        assert not (u > 0 and t > 0), (c, f, year, start)
+        allocations = {
+            "universal_childcare_entitlement": (
+                u if f["claims_universal"] else min(u, max(w - min(t, w), 0))
+            )
+            * rate,
+            "targeted_childcare_entitlement": (t if f["claims_targeted"] else min(t, w))
+            * rate,
+            "extended_childcare_entitlement_per_child": max(w - u - t, 0) * rate,
+        }
+        floor = (u * f["claims_universal"] + t * f["claims_targeted"]) * rate
+        rows.append(
+            {
+                "school": school,
+                "universal": universal,
+                "rate": rate,
+                "floor": floor,
+                "total": max(floor, w * rate),
+                "allocations": allocations,
+            }
+        )
+    return rows
+
+
+def reference(c, f, year, eligible):
+    """Each child's funded value, independently allocated in common terms."""
+    rows = reference_terms(c, f, year, eligible)
+    floor = sum(row["floor"] for row in rows)
+    total = sum(row["total"] for row in rows)
     allocations = {
-        "universal_childcare_entitlement": share * min(universal_value, participating)
-        + (1 - share) * universal_value * f["claims_universal"],
-        "targeted_childcare_entitlement": share * min(targeted_value, participating)
-        + (1 - share) * targeted_value * f["claims_targeted"],
+        variable: sum(row["allocations"][variable] for row in rows)
+        for variable in ENTITLEMENTS
     }
-    allocations["extended_childcare_entitlement_per_child"] = total - sum(
-        allocations.values()
-    )
-    return floor, total, participating, allocations
+    return floor, total, total, allocations
 
 
 def funded(child_values):
@@ -323,35 +368,41 @@ def assert_statutory_maximum(c, f, instant, eligible, hours):
 
 
 def assert_statutory_bounds(c, f, instant, eligible, child_values):
-    """Invariants 8 to 10 for one child, eligible or not."""
-    rate = float(
-        system.parameters(instant).gov.dfe.childcare_funding_rate.calc(c["age"])
-    )
-    hours = funded(child_values) / rate
-    context = (instant, f, c, eligible, child_values, hours)
-    # 8. At most 30 hours a week over 38 weeks; at most the universal or
-    # targeted 570 hours without the working parent hours; and never more
-    # hours than the child uses. Under-threes have a separate 15-hour limit
-    # before September 2025, independent of the model's hours schedule.
-    assert_statutory_maximum(c, f, instant, eligible, hours)
-    # 9. Never both universal and targeted hours.
-    assert not (
-        child_values["universal_childcare_entitlement"] > 0
-        and child_values["targeted_childcare_entitlement"] > 0
-    ), context
-    # 10. No universal or working parent hours outside England. (These tests
-    # supply targeted eligibility as an input, which bypasses its own England
-    # condition.)
+    """Actual award bounds valued at each source-defined term's age band.
+
+    Dividing an annual award by one snapshot rate would invent an hours
+    measure when a birthday changes its funding band during the year.
+    """
+    rows = reference_terms(c, f, int(instant[:4]), eligible)
+    annual_limit = statutory_max_hours(c, instant, eligible)
+    hourly_limit = min(annual_limit, WEEKS * max(c["hours_used"], 0)) / 3
+    maximum_value = sum(row["rate"] * hourly_limit for row in rows if row["school"])
+    context = (instant, f, c, eligible, child_values)
+    assert funded(child_values) <= maximum_value + 0.02, context
+    # Baseline base programmes cannot overlap in a term. Positive annual
+    # values in both are permitted only when the independent source calendar
+    # supplies the corresponding disjoint allocations.
+    for variable in ENTITLEMENTS[:2]:
+        ceiling = sum(row["allocations"][variable] for row in rows)
+        assert child_values[variable] <= ceiling + 0.02, context
     if not f["england"]:
         assert child_values["universal_childcare_entitlement"] == 0, context
         assert child_values["extended_childcare_entitlement_per_child"] == 0, context
-    # Legally universal children can have only the additional 15 weekly
-    # hours classified as extended, irrespective of standalone take-up.
-    if f["england"] and 3 <= c["age"] < 5:
-        extended_hours = child_values["extended_childcare_entitlement_per_child"] / rate
-        assert extended_hours <= UNIVERSAL_OR_TARGETED_MAX_HOURS + HOURS_TOLERANCE, (
-            context
+    # Only the extra 15 weekly hours can be extended in a universal term;
+    # other terms may have the full working-parent allowance.
+    extra_maximum = sum(
+        row["rate"]
+        * max(
+            annual_limit / 3
+            - (UNIVERSAL_OR_TARGETED_MAX_HOURS / 3 if row["universal"] else 0),
+            0,
         )
+        for row in rows
+        if row["school"]
+    )
+    assert (
+        child_values["extended_childcare_entitlement_per_child"] <= extra_maximum + 0.02
+    ), context
 
 
 @pytest.mark.parametrize(
@@ -548,25 +599,29 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
-            school = before_school(c, year)
-            legal_universal = f["england"] and 3 <= c["age"] < 5 and school > 0
+            calendar = reference_terms(c, f, year, True)
+            legal_universal = any(row["universal"] for row in calendar)
             assert a["universal_eligible"] == b["universal_eligible"] == legal_universal
-            # 11. A school place, not funded hours, once the child starts
-            # school: at most the terms before it.
-            rate = float(
-                system.parameters(f"{year}-01-01").gov.dfe.childcare_funding_rate.calc(
-                    c["age"]
-                )
-            )
+            # 11. A school place meets the duty after reception starts. Value
+            # the bound term by term rather than divide by a snapshot rate.
             for copy in (a, b):
-                universal_hours = copy["universal_childcare_entitlement"] / rate
-                assert universal_hours <= (
-                    school * UNIVERSAL_OR_TARGETED_MAX_HOURS + HOURS_TOLERANCE
+                universal_bound = sum(
+                    row["rate"] * UNIVERSAL_OR_TARGETED_MAX_HOURS / 3
+                    for row in calendar
+                    if row["universal"]
+                )
+                school_bound = sum(
+                    row["rate"] * WORKING_PARENT_MAX_HOURS / 3
+                    for row in calendar
+                    if row["school"]
+                )
+                assert (
+                    copy["universal_childcare_entitlement"] <= universal_bound + 0.02
                 ), (year, f, c, copy)
                 assert (
-                    universal_hours
-                    + copy["extended_childcare_entitlement_per_child"] / rate
-                    <= school * WORKING_PARENT_MAX_HOURS + HOURS_TOLERANCE
+                    copy["universal_childcare_entitlement"]
+                    + copy["extended_childcare_entitlement_per_child"]
+                    <= school_bound + 0.02
                 ), (year, f, c, copy)
             # 8-10. Statutory maximum, no double floor, England only.
             assert_statutory_bounds(c, f, f"{year}-01-01", False, b)
@@ -624,7 +679,9 @@ def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
                 assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
                 # 8. However many hours are used, never above 30 a week.
                 used = {**c, "hours_used": c["hours_used"] + hours_bump}
-                assert_statutory_bounds(used, f, f"{year}-01-01", True, b)
+                assert_statutory_bounds(
+                    used, {**f, "cap": f["cap"] + cap_bump}, f"{year}-01-01", True, b
+                )
 
 
 # The real eligibility route: a working couple with a child, one parent's

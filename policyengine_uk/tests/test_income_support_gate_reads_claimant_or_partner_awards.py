@@ -1,28 +1,14 @@
-"""income_support_eligible reads the claimant-or-partner awards.
+"""Income Support reads the current claimant/partner award value convention.
 
-Its income-related ESA and income-based JSA limbs (SSCBA 1992 s.124(1)(h)
-and (f)) used to work out the claimant's and partner's award inline, by the
-value rule that claimant_or_partner_esa_income and
-claimant_or_partner_jsa_income also apply. They now read those variables, so
-every reader shares one award, including one entered directly or set by the
-disable_simulated_benefits reform. This file checks the switch against the
-code it replaced (policyengine-uk main at e89b8abcf, with #2013, #2025
-and #2027 merged; comments removed).
-
-The two agree in formula mode, for awards entered directly, set later, set on
-a branch, and recalculated after deletion. They differ, by design, in one
-case: a stored award equal to the plain total of everyone's reports but not
-to the formula's award. The old limbs then read the claimant's and partner's
-award after the benefit's screen. The variables, and now the limbs, read the
-plain total of their reports, the reports paid in full, as the reform that
-stores plain totals pays them. That case is checked against its own
-expectation.
-
-The replaced code also ignored a claimant-or-partner award entered directly
-(review r3c on #2027). It worked the couple's award out from esa_income and
-everyone's reports, so an adult outside the couple could decide whether the
-entered award barred the claim. The last tests enter the claimant's and
-partner's award and check that it alone decides its limb.
+The helper switch once matched literal historical inline readers. Separate
+outside-claim screening intentionally changes that aggregate formula, so
+this file now checks an independent CURRENT per-claim reference. Work and
+capital are read using the existing plain-Python legal reference, with the
+original couple and separate outside claims; expected full/scoped amounts
+never call production award callbacks. Stored float32/half-penny, plain-total,
+arbitrary input, zero and explicit scoped-input conventions are retained.
+A plain total can differ from a screened-reports reading; that comparison
+is a declared counterfactual value convention, not historical-code equality.
 """
 
 import numpy as np
@@ -33,32 +19,93 @@ from policyengine_core.periods import period as as_period
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import add
+from policyengine_uk.tests import legacy_award_work_reference as reference
 from policyengine_uk.tests.test_income_support_eligibility_properties import (
     DIFFERENTIAL_SETTINGS,
     FAMILIES,
     input_settings,
     situation as property_situation,
 )
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
-from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 YEAR = 2025
 HALF_PENNY = 0.005
 LIMBS = {
     "esa_income": (
         "esa_income_reported",
-        income_related_esa_award,
+        "ESA",
         "claimant_or_partner_esa_income",
     ),
     "jsa_income": (
         "jsa_income_reported",
-        income_related_jsa_award,
+        "JSA",
         "claimant_or_partner_jsa_income",
     ),
 }
 
 
-def pre_switch_income_support_eligible(benunit, period, parameters):
+def reference_report_awards(benunit, period, award):
+    """Independent per-claim full and original-couple amounts on open reports."""
+    person = benunit.members
+    names = [
+        "age",
+        "hours_worked",
+        "employment_income",
+        "self_employment_income",
+        "employee_pension_contributions",
+        "personal_pension_contributions",
+        "statutory_sick_pay",
+        "statutory_maternity_pay",
+        "statutory_paternity_pay",
+        "receives_carer_benefit",
+        "care_hours",
+        "income_support_reported",
+        "pension_credit_reported",
+        "esa_income_reported",
+        "jsa_income_reported",
+    ]
+    arrays = {name: person(name, period) for name in names}
+    roles = person("is_claimant_or_partner", period)
+    closed_name = (
+        "esa_income_report_closed"
+        if award == "esa_income"
+        else "person_legacy_benefits_closed"
+    )
+    closed = person(closed_name, period)
+    capitals = benunit(f"{award}_assessable_capital", period)
+    parameters = benunit.simulation.tax_benefit_system.parameters(period)
+    is_esa = award == "esa_income"
+    rules = parameters.gov.dwp.ESA.income if is_esa else parameters.gov.dwp.JSA.income
+    screen = reference.esa_screen if is_esa else reference.jsa_screen
+    full, scoped = [], []
+    for unit in range(benunit.count):
+        ids = np.flatnonzero(benunit.members_entity_id == unit)
+        members = []
+        for i in ids:
+            member = {name: float(value[i]) for name, value in arrays.items()}
+            if closed[i]:
+                member[f"{award}_reported"] = 0
+            members.append((i, member))
+        couple = [member for i, member in members if roles[i]]
+        others = [member for i, member in members if not roles[i]]
+        capital = capitals[unit]
+        tariff = reference.tariff_income(capital, rules.capital)
+        active = is_esa or parameters.gov.dwp.JSA.income.active
+        couple_amount = (
+            max(0, sum(member[f"{award}_reported"] for member in couple) - tariff)
+            if active and screen(couple, [], capital, parameters)
+            else 0
+        )
+        outside_amount = sum(
+            max(0, member[f"{award}_reported"] - tariff)
+            for member in others
+            if active and screen([member], [], capital, parameters)
+        )
+        full.append(couple_amount + outside_amount)
+        scoped.append(couple_amount)
+    return np.array(full), np.array(scoped)
+
+
+def reference_income_support_eligible(benunit, period, parameters):
     IS = parameters(period).gov.dwp.income_support
     person = benunit.members
     claimant_or_partner = person("is_claimant_or_partner", period)
@@ -103,46 +150,8 @@ def pre_switch_income_support_eligible(benunit, period, parameters):
         & ~works_as_claimant
         & ~other_member_works
     )
-    esa_income = benunit("esa_income", period)
-    reported_total = add(benunit, period, ["esa_income_reported"])
-    award_on_all_reports = income_related_esa_award(benunit, period, reported_total)
-    award_on_claimant_or_partner_reports = income_related_esa_award(
-        benunit,
-        period,
-        benunit.sum(person("esa_income_reported", period) * claimant_or_partner),
-    )
-    stored = esa_income.dtype
-    half_penny = 0.005
-    as_reported = np.isclose(
-        esa_income, award_on_all_reports.astype(stored), rtol=0, atol=half_penny
-    ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=half_penny)
-    income_related_esa = (esa_income > half_penny) & (
-        ~as_reported | (award_on_claimant_or_partner_reports > half_penny)
-    )
-    jsa_income = benunit("jsa_income", period)
-    jsa_reported_total = add(benunit, period, ["jsa_income_reported"])
-    jsa_award_on_all_reports = income_related_jsa_award(
-        benunit, period, jsa_reported_total
-    )
-    jsa_award_on_claimant_or_partner_reports = income_related_jsa_award(
-        benunit,
-        period,
-        benunit.sum(person("jsa_income_reported", period) * claimant_or_partner),
-    )
-    jsa_as_reported = np.isclose(
-        jsa_income,
-        jsa_award_on_all_reports.astype(jsa_income.dtype),
-        rtol=0,
-        atol=half_penny,
-    ) | np.isclose(
-        jsa_income,
-        jsa_reported_total.astype(jsa_income.dtype),
-        rtol=0,
-        atol=half_penny,
-    )
-    income_based_jsa = (jsa_income > half_penny) & (
-        ~jsa_as_reported | (jsa_award_on_claimant_or_partner_reports > half_penny)
-    )
+    income_related_esa = reference_limb(benunit, period, "esa_income")[1]
+    income_based_jsa = reference_limb(benunit, period, "jsa_income")[1]
     on_pension_credit = benunit(
         "meets_pension_credit_age_conditions", period
     ) & benunit("would_claim_pc", period)
@@ -156,21 +165,18 @@ def pre_switch_income_support_eligible(benunit, period, parameters):
     )
 
 
-def pre_switch_limb(benunit, period, award):
-    """One of the replaced inline limbs. The ESA and JSA blocks were the same
-    code with the names swapped; returns the limb and whether the stored award
-    equals only the plain total (the case that differs by design)."""
-    reported, award_on, _ = LIMBS[award]
+def reference_limb(benunit, period, award):
+    """Current per-claim reference, plus the screened-raw counterfactual."""
+    reported, _, _ = LIMBS[award]
     person = benunit.members
     claimant_or_partner = person("is_claimant_or_partner", period)
     stored = benunit(award, period)
     reported_total = add(benunit, period, [reported])
-    on_all_reports = award_on(benunit, period, reported_total)
+    on_all_reports, on_claimant_or_partner_reports = reference_report_awards(
+        benunit, period, award
+    )
     claimant_or_partner_reported = benunit.sum(
         person(reported, period) * claimant_or_partner
-    )
-    on_claimant_or_partner_reports = award_on(
-        benunit, period, claimant_or_partner_reported
     )
     as_formula = np.isclose(
         stored, on_all_reports.astype(stored.dtype), rtol=0, atol=HALF_PENNY
@@ -199,7 +205,7 @@ def fresh(simulation, variables):
 
 
 def compare(simulation, year=YEAR):
-    """Assert the switched gate and limbs against the replaced code."""
+    """Check the current independent contract, never literal old-code equality."""
     period = as_period(year)
     benunit = simulation.populations["benunit"]
     fresh(
@@ -208,18 +214,18 @@ def compare(simulation, year=YEAR):
     )
     differs = np.zeros(benunit.count, dtype=bool)
     for award, (_, _, variable) in LIMBS.items():
-        old, intended, plain_total_only = pre_switch_limb(benunit, period, award)
+        old, intended, plain_total_only = reference_limb(benunit, period, award)
         new = simulation.calculate(variable, year) > 0
         np.testing.assert_array_equal(new, intended, err_msg=award)
         np.testing.assert_array_equal(
             new[~plain_total_only], old[~plain_total_only], err_msg=award
         )
         differs |= plain_total_only & (new != old)
-    old_gate = pre_switch_income_support_eligible(
+    old_gate = reference_income_support_eligible(
         benunit, period, simulation.tax_benefit_system.parameters
     )
     new_gate = simulation.calculate("income_support_eligible", year)
-    np.testing.assert_array_equal(new_gate[~differs], old_gate[~differs])
+    np.testing.assert_array_equal(new_gate, old_gate)
     return differs
 
 
@@ -356,12 +362,12 @@ def test_a_plain_total_reads_the_claimant_and_partner_reports_in_full():
         differs = compare(sim)
         assert differs.tolist() == [i == OVER_TARIFF for i in range(len(EXAMPLES))]
         assert sim.calculate(variable, YEAR)[OVER_TARIFF] == 200
-        old_gate = pre_switch_income_support_eligible(
+        old_gate = reference_income_support_eligible(
             sim.populations["benunit"],
             as_period(YEAR),
             sim.tax_benefit_system.parameters,
         )
-        assert old_gate[OVER_TARIFF]
+        assert not old_gate[OVER_TARIFF]
         assert not gate(sim)[OVER_TARIFF]
 
 
@@ -438,9 +444,9 @@ def test_the_limbs_read_every_stored_value_as_intended(drawn):
 @DIFFERENTIAL_SETTINGS
 @given(FAMILIES, st.data())
 def test_the_switched_gate_matches_the_replaced_code(drawn, data):
-    # Families from the eligibility properties, with adults outside the
-    # couple who report awards, and awards calculated or entered directly
-    # (£0 or £4,000, never a plain total). The gates agree exactly.
+    # The historical selector name is retained; comparison now uses the
+    # independent current per-claim contract, not the old scalar total.
+    # Families have outside reporters and formula or direct0/4000 awards.
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     units = [(*family, extra) for family, extra in drawn]
     sim = Simulation(
