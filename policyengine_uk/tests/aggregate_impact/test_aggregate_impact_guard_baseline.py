@@ -110,17 +110,18 @@ def test_a_component_nan_at_baseline_is_named_and_never_given_to_the_engine(
     assert np.isnan(sim.calculate("tax_a", YEAR)).all()
 
 
-def test_holding_a_head_nan_at_baseline_raises_nothing():
+@pytest.mark.parametrize("monthly", [False, True], ids=["yearly", "monthly"])
+def test_holding_a_head_nan_at_baseline_raises_nothing(monthly):
     """Issue #2773, case 2: tax_c is tax_b, so it moves with tax_b. To measure
     tax_c again, the check held tax_a at its baseline, NaN, and the engine
     raised the same ValueError. Now it leaves tax_a to its formula, which
-    gives it back NaN, so tax_a is held at its baseline and the check finds
-    tax_c moving with tax_b, as it does."""
+    gives it back NaN in every period, so tax_a is held at its baseline and
+    the check finds tax_c moving with tax_b, as it does."""
     formulas = {**NAN_TAX_A, "tax_c": lambda f, period: f("tax_b")}
     _, result = core_counted_once(
         formulas,
         partition(["tax_a", "tax_b", "tax_c"]),
-        False,
+        monthly,
         variables_to_check=["tax_b"],
     )
     row = by_variable(result)["tax_b"]
@@ -656,6 +657,36 @@ def test_heads_not_finite_at_baseline_are_named_and_change_nothing_else(case, re
                     if not (p[2] == "model_total" and p[0] in totals_here)
                 ],
             }
+
+
+class SetValuesSim(FakeSim):
+    """FakeSim that keeps every value given to ``set_input``. Like
+    policyengine-core, FakeSim refuses NaN but takes an infinite value."""
+
+    def __init__(self, formulas, inputs, weights):
+        super().__init__(formulas, inputs, weights)
+        self.set_values = []
+
+    def set_input(self, variable, period, values):
+        self.set_values.append(np.array(values, dtype=float))
+        super().set_input(variable, period, values)
+
+
+@settings(max_examples=40, deadline=None)
+@given(case=extra_heads(), reads=READS)
+def test_the_check_raises_and_holds_variables_only_at_finite_values(case, reads):
+    """Whatever is NaN or infinite at baseline, the check raises and holds
+    variables only at finite values. It also restores the supplied inputs,
+    which are finite here, so every value it gives the engine is finite."""
+    shapes, extra = case
+    households = len(shapes)
+    formulas, part = with_extra_heads(shapes, extra, declared_reads(reads))
+    sim = SetValuesSim(formulas, {"x": (1,) * households}, (1,) * households)
+    snapshot = guard.snapshot_inputs(sim, part.component_variables())
+    with np.errstate(divide="ignore", invalid="ignore"):
+        guard.counted_once(sim, part, YEAR, 1e-6, snapshot)
+    assert sim.set_values
+    assert all(np.isfinite(values).all() for values in sim.set_values)
 
 
 def published(check, record, publish, describe, formulas, part, x, weights):
