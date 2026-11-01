@@ -1,11 +1,10 @@
 # Income Support tariff income from capital: IS Regs 1987 reg 53 (NI: SR
 # 1987/459 reg 53). Capital above the lower threshold counts as £1 a week for
 # each complete £250 (reg 53(1)-(1A)) and £1 for any part of £250 left over
-# (reg 53(2)), over 52 weeks. The lower threshold is £6,000 (reg 53(1)), or
-# £10,000 where the claimant lives permanently in prescribed accommodation
-# (reg 53(1A)-(1C)).
-# The regulation counts capital only up to £16,000, and income_support pays
-# nothing above the £16,000 capital limit (reg 45). The figures at £16,001
+# (reg 53(2)), over 52 weeks. The regulation sets the lower threshold at
+# £6,000 (reg 53(1)), or £10,000 where the claimant lives permanently in
+# prescribed accommodation (reg 53(1A)-(1C)). It stops counting capital at
+# £16,000, and income_support pays nothing above the £16,000 capital limit (reg 45). The figures at £16,001
 # show the model continuing the arithmetic, which the regulation does not
 # prescribe; the award case at £16,001 shows a nil award at the configured
 # limit.
@@ -165,7 +164,7 @@
     # Reg 53(1): excess over £6,000.02 of 0, 0.01 and 250; 0, 1 and 1 steps.
     income_support_tariff_income: [0, 52, 52]
 
-- name: Income Support applies a fractional prescribed accommodation threshold exactly
+- name: Income Support applies a fractional prescribed accommodation threshold
   period: 2025
   absolute_error_margin: 0.01
   input:

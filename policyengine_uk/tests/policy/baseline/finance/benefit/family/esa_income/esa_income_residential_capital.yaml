@@ -1,11 +1,10 @@
 # Income-related ESA tariff income from capital: ESA Regs 2008 reg 118 (NI:
 # SR 2008/280 reg 118). Capital above the lower threshold counts as £1 a week
 # for each complete £250 (reg 118(1)-(2)) and £1 for any part of £250 left
-# over (reg 118(5)), over 52 weeks. The lower threshold is £6,000 (reg
-# 118(1)), or £10,000 where the claimant lives permanently in prescribed
-# accommodation (reg 118(2)-(4)).
-# The regulation counts capital only up to £16,000, and esa_income pays
-# nothing above the £16,000 capital limit (reg 110). The figures at £16,001
+# over (reg 118(5)), over 52 weeks. The regulation sets the lower threshold
+# at £6,000 (reg 118(1)), or £10,000 where the claimant lives permanently in
+# prescribed accommodation (reg 118(2)-(4)). It stops counting capital at
+# £16,000, and esa_income pays nothing above the £16,000 capital limit (reg 110). The figures at £16,001
 # show the model continuing the arithmetic, which the regulation does not
 # prescribe; the award case at £16,001 shows a nil award at the configured
 # limit.
@@ -51,7 +50,7 @@
     housing_benefit_pension_age_regulations_apply: false
   output:
     legacy_prescribed_accommodation_capital_exception: false
-    # HB Regs 2006 reg 52(3): £10,001 is £1 over £10,000, one step.
+    # HB Regs 2006 reg 52(3): £10,001 exceeds £10,000 by £1, one step.
     housing_benefit_tariff_income: 52
     # ESA Regs 2008 reg 118(1): £4,001 over £6,000, 17 steps.
     esa_income_tariff_income: 884
@@ -173,7 +172,7 @@
     # Reg 118(1): excess over £6,000.02 of 0, 0.01 and 250; 0, 1 and 1 steps.
     esa_income_tariff_income: [0, 52, 52]
 
-- name: Income-related ESA applies a fractional prescribed accommodation threshold exactly
+- name: Income-related ESA applies a fractional prescribed accommodation threshold
   period: 2025
   absolute_error_margin: 0.01
   input:

@@ -4,9 +4,10 @@ Income Support (IS Regs 1987 reg 53), income-based JSA (JSA Regs 1996 reg
 116) and income-related ESA (ESA Regs 2008 reg 118), and the same regulations
 of the Northern Ireland rules, treat capital above a lower threshold as a
 weekly income of £1 for each complete £250 and £1 for any part of £250 left
-over, counting capital up to £16,000. The lower threshold is £6,000, or
-£10,000 where the claimant lives permanently in prescribed accommodation (IS
-reg 53(1A)-(1C), JSA reg 116(1A)-(1C), ESA reg 118(2)-(4)). Working-age
+over, counting capital up to £16,000. The regulations set the lower
+threshold at £6,000, or £10,000 where the claimant lives permanently in
+prescribed accommodation (IS reg 53(1A)-(1C), JSA reg 116(1A)-(1C), ESA reg
+118(2)-(4)). Working-age
 Housing Benefit (HB Regs 2006 reg 52) uses the same figures, with its own
 residential circumstances.
 
@@ -82,14 +83,15 @@ PROGRAMMES = {
 }
 LEGACY = ("esa_income", "jsa_income", "income_support")
 
-# The statutory figures, read from the regulations rather than the model.
+# The statutory figures, from the regulations; the reference never reads the
+# model's parameters.
 ORDINARY_THRESHOLD = 6_000
 PRESCRIBED_ACCOMMODATION_THRESHOLD = 10_000
 UPPER_LIMIT = 16_000
 STEP = 250
 WEEKLY_AMOUNT = 1
 
-# Capital in pence, so every value is a sum of money; biased towards the
+# Capital in pence, so every value names a sum of money, biased towards the
 # thresholds and the upper capital limit, where the branches meet.
 BOUNDARIES = [0, 6_000, 6_250, 10_000, 10_250, 16_000]
 PENCE = st.one_of(
@@ -106,8 +108,9 @@ YEARS = st.sampled_from([2015, 2020, 2024, 2025, 2026, 2029])
 def tariff_arithmetic(capital, exception):
     """52 x £1 for each complete or part £250 of capital above the threshold.
 
-    Up to UPPER_LIMIT this is the annual tariff income the regulations give.
-    Above it the regulations give none, and this is the model's continuation.
+    Up to UPPER_LIMIT it returns the annual tariff income the regulations
+    give. Above it the regulations give none, and it returns the model's
+    continuation.
     """
     threshold = PRESCRIBED_ACCOMMODATION_THRESHOLD if exception else ORDINARY_THRESHOLD
     return WEEKS_IN_YEAR * WEEKLY_AMOUNT * ceil(max(0, capital - threshold) / STEP)
@@ -165,7 +168,7 @@ def parameter_key(simulation, name, year):
 
 
 def test_prescribed_accommodation_uses_higher_threshold(simulation):
-    # £10,001 is £4,001 over £6,000 (17 steps) but £1 over £10,000 (1 step).
+    # £10,001 exceeds £6,000 by £4,001 (17 steps) and £10,000 by £1 (1 step).
     result = tariffs(simulation, [10_001, 10_001], [False, True], 2025)
     for name in LEGACY:
         assert result[name].tolist() == [884, 52], name
@@ -293,7 +296,7 @@ def test_each_programme_reads_its_own_thresholds(
         for capital, exception, tariff in zip(capitals, exceptions, result[name]):
             excess = capital - (own_residential if exception else own_ordinary)
             # Most amounts in pence have no exact float32 value. Where capital
-            # is a whole number of £250 steps above the threshold, the stored
+            # lies a whole number of £250 steps above the threshold, the stored
             # figures can fall either side of the step, so the test skips it.
             # Anywhere else the excess is at least a penny from a step, far
             # more than that rounding.
