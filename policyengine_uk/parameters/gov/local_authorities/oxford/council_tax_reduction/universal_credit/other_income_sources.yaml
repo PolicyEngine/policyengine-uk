@@ -2,28 +2,28 @@ description: >
   Other (unearned) income that Oxford City Council counts, with DWP's net
   earned income and the Universal Credit awarded, for a working-age applicant
   who receives Universal Credit. In Appendix 3 the council lists the income it
-  ignores and takes "All other unearned income" into account; it applies its
+  ignores and takes "All other unearned income" into account. It applies its
   Appendix 5 disregards, Child Benefit and child maintenance among them, only
-  to applicants who "do not receive Universal Credit". The list leaves out the
-  income Oxford City Council ignores in Appendix 3 (Attendance Allowance,
-  Disability Living Allowance, Personal Independence Payment, Discretionary
-  Housing Payments, Housing Benefit, discretionary council tax reductions and
-  payments from sub-tenants and boarders). It also leaves out savings
-  interest, dividends and rent, which the council treats as capital (Part 1
-  para 30 and Annex 7). DWP deems Universal Credit's assumed yield from
-  capital (uc_tariff_income) and nobody receives it, so it stays out, and so
-  does Oxford City Council's own assumed income from capital, which the
-  council adds only under paragraphs 14 to 27 (para 15). DWP counts
+  to applicants who "do not receive Universal Credit". The model leaves out of
+  this list the income Oxford City Council ignores in Appendix 3 (Attendance
+  Allowance, Disability Living Allowance, Personal Independence Payment,
+  Discretionary Housing Payments, Housing Benefit, discretionary council tax
+  reductions and payments from sub-tenants and boarders). It also leaves out
+  savings interest, dividends and rent, which the council treats as capital
+  (Part 1 para 30 and Annex 7). DWP deems Universal Credit's assumed yield
+  from capital (uc_tariff_income) and nobody receives it, so the model leaves
+  it out, along with Oxford City Council's own assumed income from capital,
+  which the council adds only under paragraphs 14 to 27 (para 15). DWP counts
   statutory sick, maternity and paternity pay in its net earned income (UC
   Regs 2013 reg 55(4)), and the model counts miscellaneous income there too
-  (uc_individual_earned_income_before_mif), so the list leaves them out.
-  Oxford City Council names some one-off payments as capital in Appendix 6:
-  the first month's Bereavement Support Payment, Government payments to help
-  with the cost of living, such as the Household Energy Payment, and payments
-  for a personal injury. The list leaves those out. It counts bsp and afcs
-  whole, because bsp_reported and afcs_reported hold the regular payments a
-  person reports; if a situation enters a lump sum in either input, the model
-  counts it as income.
+  (uc_individual_earned_income_before_mif), so the model leaves them off this
+  list. Oxford City Council names some one-off payments as capital in Appendix
+  6: the first month's Bereavement Support Payment, Government payments to
+  help with the cost of living, such as the Household Energy Payment, and
+  payments for a personal injury. The model leaves those out. It counts bsp
+  and afcs whole, because it reads bsp_reported and afcs_reported as regular
+  payments. If a user enters a lump sum in either input, the model counts it
+  as income.
 metadata:
   economy: false
   label: Oxford Council Tax Reduction Universal Credit applicant other income sources
@@ -74,12 +74,13 @@ values:
     - widowed_parents_allowance
     - incapacity_benefit
     - sda
-    # Unearned income DWP leaves out of reg 66 and Oxford City Council does
-    # not ignore in Appendix 3. The council ignores war pensions, Armed Forces
-    # Independence Payment and Healthy Start in Appendix 5, which it applies
-    # only to applicants without Universal Credit. bsp and afcs hold regular
-    # payments; the council treats the first month's Bereavement Support
-    # Payment and personal injury payments as capital (Appendix 6).
+    # Unearned income DWP does not count under reg 66 and Oxford City Council
+    # does not ignore in Appendix 3. The council ignores war pensions, Armed
+    # Forces Independence Payment and Healthy Start in Appendix 5, which it
+    # applies only to applicants without Universal Credit. The model reads
+    # bsp and afcs as regular payments. The council treats the first month's
+    # Bereavement Support Payment and personal injury payments as capital
+    # (Appendix 6).
     - bsp
     - afcs
     - war_widows_pension
@@ -87,13 +88,14 @@ values:
     - ssmg
     - healthy_start_vouchers
     - private_transfer_income
-    # Not miscellaneous_income: the model already counts it in DWP's net
-    # earned income. DWP lists miscellaneous income as unearned income (reg
-    # 66(1)(m)); if the model moves it there (issue 1961), DWP will take it
-    # off the award pound for pound and this list must count it again.
+    # The model leaves miscellaneous_income off this list because it already
+    # counts it in DWP's net earned income. DWP counts miscellaneous income as
+    # unearned income (reg 66(1)(m)). If the model moves it there (issue
+    # 1961), the model will take it off the award pound for pound, as DWP
+    # does, and must count it here again.
     # DWP replaces these awards with Universal Credit, so a claimant receives
-    # none of them. The list names them so that no receipt escapes "All other
-    # unearned income".
+    # none of them. The model lists them so that it counts any such receipt
+    # as other unearned income.
     - income_support
     - claimant_or_partner_jsa_income
     - claimant_or_partner_esa_income
