@@ -4,11 +4,12 @@ Merton and Kingston upon Thames count "the amount of the award of universal
 credit" in their 2026-27 schemes, which reproduce SI 2012/2886 Sch para
 37(3)(a) and (4). Newham counts "the amount of entitlement to universal
 credit", and Westminster's summary compares the maximum amount "to the actual
-universal credit award plus any other income and earnings received". The award
-is the maximum amount less the income amounts (Welfare Reform Act 2012 s 8(1)),
-less the benefit cap (UC Regs 2013 reg 81(1)). The Secretary of State then pays
-part of it to third parties for the claimant's debts (SI 2013/380 Sch 6 para
-2(1)), leaving at least a penny payable (para 3(1)(a)).
+universal credit award plus any other income and earnings received".
+Parliament sets the award as the maximum amount less the income amounts
+(Welfare Reform Act 2012 s 8(1)), and the Secretary of State reduces it for the
+benefit cap (UC Regs 2013 reg 81(1)). The Secretary of State then pays part of
+it to third parties for the claimant's debts (SI 2013/380 Sch 6 para 2(1)),
+leaving at least a penny payable (para 3(1)(a)).
 
 Invariants, in 2026, for working-age single people, couples and families with
 children in the four councils, across benefit cap reductions from nil to more
@@ -25,8 +26,9 @@ above-cap excess:
    support rate - withdrawal rate x max(0, earned income + unearned income +
    award - maximum amount)).
 
-Each example sets its inputs on one simulation built for the module, which
-holds a pair of households per family: one with deductions, one without.
+Each example sets its inputs on one simulation that the module builds once.
+It holds a pair of households for each family, one with deductions and one
+without.
 """
 
 import numpy as np
@@ -193,7 +195,7 @@ def pairs(values):
 
 def calculate(simulation, fams):
     """Set each family's inputs on its pair of households and calculate."""
-    # Benefit unit k is slot k of situation(): family k // 2.
+    # situation() puts family k // 2 in benefit unit k.
     benunit_of = simulation.populations["benunit"].members_entity_id
     adult = np.asarray(simulation.calculate("is_claimant_or_partner", YEAR))
     earnings = np.zeros(len(benunit_of))
@@ -204,7 +206,7 @@ def calculate(simulation, fams):
         adults_seen[b] += 1
     with_deductions = np.arange(2 * len(fams)) % 2 == 1
     inputs = {
-        # The simulation moves employment_income here when it is built.
+        # Simulation moves employment_income here as it builds.
         "employment_income_before_lsr": earnings,
         "local_authority": pairs([f["council"] for f in fams]),
         "rent": pairs([f["rent"] for f in fams]),

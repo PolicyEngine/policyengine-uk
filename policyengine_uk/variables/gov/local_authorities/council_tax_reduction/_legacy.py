@@ -42,16 +42,19 @@ def legacy_council_tax_reduction(
     # (Default Scheme) (England) Regulations 2012, Sch. para. 37(1) and
     # (3)(a); Kingston upon Thames and Merton reproduce it, Newham refers to
     # the same calculation and counts "the amount of entitlement to universal
-    # credit", and Westminster bases its scheme on the Default Scheme). That
-    # income is earned income after tax, National Insurance and pension
-    # contributions and unearned income. The work allowance and taper are
-    # steps in the award (UC Regs 2013 reg. 22), not in the income, so this
-    # does not deduct the work allowance. The award is the amount after the
-    # benefit cap (UC Regs 2013 reg. 81(1)). The Secretary of State pays the
-    # claimant's debts out of that award, leaving at least a penny payable, so
-    # the award and the amount payable are two figures (SI 2013/380 Sch. 6
-    # paras. 2(1), 3(1)(a) and 11(5)). universal_credit is the amount payable,
-    # so this adds back the deductions it takes off.
+    # credit", and Westminster bases its scheme on the Default Scheme). The
+    # model takes that income as earned income after tax, National Insurance
+    # and pension contributions, plus unearned income. The Secretary of State
+    # applies the work allowance and taper to the award (UC Regs 2013 reg.
+    # 22), not to the income, so this does not deduct the work allowance. The
+    # Secretary of State reduces the award for the benefit cap (reg. 81(1)),
+    # then pays the claimant's liabilities to third parties out of it and
+    # leaves at least a penny payable (SI 2013/380 Sch. 6 paras. 2(1) and
+    # 3(1)(a)); in para. 11(5) the Secretary of State treats the award and the
+    # amount payable as two figures. The schemes count the award after the
+    # cap and before those deductions.
+    # universal_credit gives the amount payable, so this adds back the
+    # deductions it takes off.
     uc_award = benunit("universal_credit", period) + benunit("uc_deductions", period)
     uc_applicable_income = (
         benunit("uc_earned_income_before_work_allowance", period)

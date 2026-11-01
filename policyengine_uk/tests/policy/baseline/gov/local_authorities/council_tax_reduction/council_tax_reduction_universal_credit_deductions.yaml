@@ -9,10 +9,11 @@
 #
 # Each case: a single person aged 35 in 2026 earns 8,000 (under the personal
 # allowance and primary threshold), rents from the council at 7,800 a year and
-# owes council tax of 2,600. The maximum amount is 424.90 x 12 + 7,800 =
-# 12,898.80. With no child and no limited capability for work there is no
-# work allowance, so the income reduction is 55% x 8,000 = 4,400 and the
-# award 8,498.80. Income exceeds the applicable amount (the maximum amount) by
+# owes council tax of 2,600. The maximum amount comes to 424.90 x 12 + 7,800
+# = 12,898.80. With no child and no limited capability for work, the claimant
+# gets no work allowance (UC Regs 2013 reg 22(1)(b)(i)), so the Secretary of
+# State deducts 55% x 8,000 = 4,400 and awards 8,498.80. Income exceeds the
+# applicable amount (the maximum amount) by
 # 8,000 + 8,498.80 - 12,898.80 = 3,600. Merton, Kingston upon Thames and
 # Westminster award 2,600 - 20% x 3,600 = 1,880; Newham awards
 # 70% x 2,600 - 25% x 3,600 = 920. Counting the award net of a 600 deduction
@@ -282,9 +283,9 @@
     council_tax_reduction: 920
 
 - name: Merton counts the Universal Credit award after the benefit cap and before a deduction at the cap
-  # The benefit cap takes 1,200 (entered here) from the award, which falls to
-  # 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg 81(1)). A deduction at the
-  # 15% cap, 764.82, leaves 6,533.98 payable. Income exceeds the maximum amount
+  # The Secretary of State reduces the award by 1,200 (entered here) for the
+  # benefit cap, to 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg 81(1)). A
+  # deduction at the 15% cap, 764.82, leaves 6,533.98 payable. Income exceeds the maximum amount
   # by 8,000 + 7,298.80 - 12,898.80 = 2,400, so Merton awards
   # 2,600 - 20% x 2,400 = 2,120. Counting the amount payable would give
   # 2,272.96, and counting the award before the cap 1,880.
