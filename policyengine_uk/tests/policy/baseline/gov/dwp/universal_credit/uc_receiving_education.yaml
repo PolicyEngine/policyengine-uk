@@ -1,0 +1,575 @@
+# Universal Credit's basic condition that a claimant "is not receiving
+# education" (Welfare Reform Act 2012 s. 4(1)(d)), with the meaning in the
+# Universal Credit Regulations 2013 reg. 12, the exceptions in reg. 14(1) and
+# the couple rule in reg. 3(2)(b).
+#
+# Expected amounts use DWP's monthly rates for 2026 to 2027 (Benefit and
+# pension rates 2026 to 2027, gov.uk): standard allowance £338.58 for a single
+# claimant under 25, £424.90 for one aged 25 or over, £528.34 for joint
+# claimants both under 25 and £666.97 where one or both are 25 or over; child
+# element £351.88 for a first child born before 6 April 2017 and £303.94 for
+# any other child. The award is 12 times the monthly amount, less 55% of
+# earnings (reg. 22(1)(b)); no case has housing costs except cases 1 and 2.
+
+- name: Case 1, issue 2346, a full-time university student aged 19 gets no Universal Credit.
+  # Reg. 12(2)(a): a full-time course of advanced education (a first degree,
+  # reg. 12(3)(a)(ii)). No reg. 14(1) exception applies.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 19
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        employment_income: 4_571
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: SOUTH_WEST
+        rent: 5_857
+        tenure_type: RENT_PRIVATELY
+        brma: PLYMOUTH
+  output:
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 2, issue 2346, the same student not on a full-time course keeps the award.
+  # 12 x £338.58 = £4,062.96 standard allowance, plus the housing costs
+  # element at the Universal Credit LHA rate for Plymouth, £400 a month, so
+  # £4,800, less 55% of £4,571 of pay = £2,514.05 (no work allowance without
+  # a child or limited capability for work): £8,862.96 - £2,514.05 =
+  # £6,348.91, as on main at 2da212abc.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 19
+        current_education: TERTIARY
+        is_in_full_time_education: false
+        employment_income: 4_571
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: SOUTH_WEST
+        rent: 5_857
+        tenure_type: RENT_PRIVATELY
+        brma: PLYMOUTH
+  output:
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+    uc_standard_allowance: 4_062.96
+    uc_housing_costs_element: 4_800
+    uc_income_reduction: 2_514.05
+    universal_credit: 6_348.91
+
+- name: Case 3, a single parent on a full-time degree keeps the award.
+  # Reg. 14(1)(c): responsible for a child. 12 x (£338.58 + £303.94) =
+  # 12 x £642.52 = £7,710.24.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 22
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 3
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true, false]
+    uc_is_excepted_from_education_condition: [true, false]
+    meets_uc_education_condition: [true, true]
+    is_uc_eligible: true
+    universal_credit: 7_710.24
+
+- name: Case 4, a couple where one member is a full-time student and the other is not claim jointly.
+  # Reg. 3(2)(b): one member does not meet the condition and is not
+  # excepted, and the other meets it, so they are joint claimants at the
+  # couple rate: 12 x £666.97 = £8,003.64. The model does not count student
+  # income (reg. 68), and this couple has none.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 30
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    meets_uc_education_condition: [false, true]
+    is_uc_eligible: true
+    uc_standard_allowance: 8_003.64
+    universal_credit: 8_003.64
+
+- name: Case 5, a couple who are both full-time students with no exception get no Universal Credit.
+  # Reg. 3(2)(b) needs the other member to meet the condition or be
+  # excepted from it; neither does.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    meets_uc_education_condition: [false, false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 6, a student couple where the other member is responsible for a child keeps the award.
+  # Reg. 14(1)(e)(i): both members receive education and the other member
+  # is responsible for a child. The model places responsibility on the
+  # benefit unit, so each member is excepted under reg. 14(1)(c) too.
+  # 12 x (£528.34 + £303.94) = 12 x £832.28 = £9,987.36.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 22
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 22
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true, true, false]
+    uc_is_excepted_from_education_condition: [true, true, false]
+    is_uc_eligible: true
+    universal_credit: 9_987.36
+
+- name: Case 7, a mixed-age couple who are both full-time students keep the award.
+  # Reg. 14(1)(f) excepts the member who has reached the qualifying age for
+  # State Pension Credit; reg. 3(2)(a) relieves them of the age condition
+  # and reg. 3(2)(b) the younger member of this one. Since 15 May 2019 the
+  # couple cannot get Pension Credit (SPCA 2002 s. 4(1A)). 12 x £666.97 =
+  # £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 60
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true, true]
+    uc_is_excepted_from_education_condition: [true, false]
+    meets_uc_education_condition: [true, false]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 8, a mixed-age couple whose younger member alone is a full-time student keep the award.
+  # The older member meets the education condition (reg. 3(2)(b)) and the
+  # younger the age condition (reg. 3(2)(a)). 12 x £666.97 = £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+      person2:
+        age: 60
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    meets_uc_education_condition: [true, false]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 9, a student with PIP and limited capability for work keeps the award.
+  # Reg. 14(1)(b): entitled to PIP, with limited capability for work.
+  # 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        pip_dl_category: STANDARD
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 10, a student with PIP but not limited capability for work gets no Universal Credit.
+  # Reg. 14(1)(b) needs both.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        pip_dl_category: STANDARD
+        uc_limited_capability_for_work: false
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 11, a single foster parent on a full-time course keeps the award.
+  # Reg. 14(1)(d). A foster child is not a member of the benefit unit, so
+  # the award is the standard allowance alone: 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        uc_is_responsible_foster_parent_of_child_under_one: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 12, a student couple whose other member is a foster parent keeps the award.
+  # Reg. 14(1)(e)(ii) excepts the member whose partner is the foster
+  # parent; reg. 3(2)(b) then lets the couple claim jointly. 12 x £666.97 =
+  # £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        uc_is_foster_parent_or_new_friend_or_family_carer: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true, false]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 13, a 17-year-old qualifying young person on a full-time course gets no Universal Credit.
+  # Reg. 8(1)(a) lets them claim at 16 with limited capability for work, but
+  # reg. 12(1A) treats a qualifying young person as receiving education,
+  # and without a disability benefit reg. 14(1)(b) does not apply.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 17
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 14, the same 17-year-old not on a full-time course keeps the award.
+  # 12 x £338.58 = £4,062.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 17
+        current_education: POST_SECONDARY
+        is_in_full_time_education: false
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+    universal_credit: 4_062.96
+
+- name: Case 15, a non-advanced full-time course with a grant is receiving education.
+  # Reg. 12(2)(b): "any other full-time course ... for which a student loan
+  # or grant is provided for the person's maintenance".
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        education_grants: 2_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 16, a non-advanced full-time course with no loan or grant is not receiving education.
+  # Neither limb of reg. 12(2) applies, and at 30 the person is not a
+  # qualifying young person. 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 17, a full-time course in higher education is advanced education.
+  # Reg. 12(2)(a) and (3), read from in_HE where current_education is unset.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        in_HE: true
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+
+- name: Case 18, a member of a couple claiming as a single person must meet the condition.
+  # The other member cannot be a joint claimant (reg. 3(3)), so reg. 3(2)(b)
+  # does not apply and the student's claim fails.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 30
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    meets_uc_education_condition: [false, true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 19, a student whose family claims when DWP moves it off legacy benefits keeps the award.
+  # SI 2014/1230 reg. 60(1): the condition does not apply while the person
+  # continues the course. 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 20, a 17-year-old in full-time education does not change a parent's award.
+  # The condition applies to claimants, not to the qualifying young person
+  # they are responsible for. 12 x (£424.90 + £351.88) = 12 x £776.78 =
+  # £9,321.36: a child born in 2009 is a first child born before 6 April
+  # 2017.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 45
+      person2:
+        age: 17
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [false, true]
+    is_uc_eligible: true
+    universal_credit: 9_321.36
+
+- name: Case 21, Northern Ireland applies the same condition.
+  # Welfare Reform (Northern Ireland) Order 2015 art. 9(1)(d) and the
+  # Universal Credit Regulations (Northern Ireland) 2016 reg. 12(2)(a).
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+  output:
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 22, the condition applies in earlier years too.
+  # Reg. 12 and 14 have applied since 29 April 2013, and no parameter dates
+  # the condition.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    is_uc_eligible: false
