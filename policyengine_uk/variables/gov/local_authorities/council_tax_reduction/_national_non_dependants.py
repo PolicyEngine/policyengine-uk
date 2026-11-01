@@ -52,7 +52,7 @@ def is_qualifying_income_related_benefit_claimant(
     couple_on_benefit = claimant_or_partner & (
         person.benunit.any(on_benefit & claimant_or_partner)
     )
-    entitled_to_universal_credit = claimant_or_partner & (
+    entitled_to_universal_credit = person("is_uc_assessed_claimant", period) & (
         person.benunit("universal_credit_pre_benefit_cap", period) > 0
     )
     partner_rule = (
@@ -85,7 +85,7 @@ def non_dep_deduction_exempt(person, period, parameters, pensioner_applicant):
     # they are payable to; Universal Credit for both joint claimants.
     claimant_or_partner = person("is_claimant_or_partner", period)
     on_pension_credit = person("is_on_pension_credit", period)
-    entitled_to_universal_credit = claimant_or_partner & (
+    entitled_to_universal_credit = person("is_uc_assessed_claimant", period) & (
         person.benunit("universal_credit_pre_benefit_cap", period) > 0
     )
     qualifying_income_related_benefit_claimant = (

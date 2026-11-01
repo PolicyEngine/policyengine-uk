@@ -53,21 +53,35 @@ CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
 def non_dependant_weekly_gross_income(person, period, own_gross_income):
     """Normal weekly gross income for the deduction bands. A claimant or
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
-    para 8(4)): each member's own gross income plus the family's Universal
-    Credit, tax credits, child benefit, Income Support, income-based JSA,
-    income-related ESA and Pension Credit. Anyone else in the benefit unit is
-    a separate non-dependant, banded on their own income. own_gross_income
-    names the programme's person-level gross income variable."""
+    para 8(4)): each member's own gross income plus the family's tax credits,
+    child benefit, Income Support, income-based JSA, income-related ESA and
+    Pension Credit, and its Universal Credit where either member claims it.
+    Anyone else in the benefit unit is a separate non-dependant, banded on
+    their own income, with the Universal Credit where they alone claim it.
+    own_gross_income names the programme's person-level gross income
+    variable."""
     claimant_or_partner = person("is_claimant_or_partner", period)
     own_income = person(own_gross_income, period)
     benunit = person.simulation.populations["benunit"]
-    family_benefits = universal_credit_after_benefit_cap(benunit, period) + add(
-        benunit, period, FAMILY_GROSS_INCOME_BENEFITS
+    other_awards = benunit.project(add(benunit, period, FAMILY_GROSS_INCOME_BENEFITS))
+    # Universal Credit is the income of the claimants it assesses, the
+    # claimant and partner unless is_uc_claimant names someone else.
+    universal_credit = benunit.project(
+        universal_credit_after_benefit_cap(benunit, period)
     )
-    couple_income = person.benunit.sum(
-        own_income * claimant_or_partner
-    ) + benunit.project(family_benefits)
-    annual = where(claimant_or_partner, couple_income, own_income)
+    uc_claimant = person("is_uc_assessed_claimant", period)
+    couple_claims_universal_credit = person.benunit.any(
+        uc_claimant & claimant_or_partner
+    )
+    couple_income = (
+        person.benunit.sum(own_income * claimant_or_partner)
+        + other_awards
+        + where(couple_claims_universal_credit, universal_credit, 0)
+    )
+    single_income = own_income + where(
+        uc_claimant & ~couple_claims_universal_credit, universal_credit, 0
+    )
+    annual = where(claimant_or_partner, couple_income, single_income)
     return annual / WEEKS_IN_YEAR
 
 

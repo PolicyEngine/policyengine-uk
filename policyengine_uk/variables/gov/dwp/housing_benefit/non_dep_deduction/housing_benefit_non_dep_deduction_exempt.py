@@ -33,14 +33,14 @@ class housing_benefit_non_dep_deduction_exempt(Variable):
         full_time_student = is_full_time_student_non_dep(person, period)
         # IS, income-based JSA and SPC count for the person they are payable
         # to (reg 2(1), (3)); Universal Credit for both joint claimants.
-        claimant_or_partner = person("is_claimant_or_partner", period)
         on_pension_credit = person("is_on_pension_credit", period)
         on_legacy_income_related_benefit = person(
             "is_on_income_support", period
         ) | person("is_on_income_based_jsa", period)
         # Entitlement before the benefit cap: universal_credit itself depends on
-        # Housing Benefit through the cap.
-        entitled_to_universal_credit = claimant_or_partner & (
+        # Housing Benefit through the cap. The award is the claimants' it
+        # assesses.
+        entitled_to_universal_credit = person("is_uc_assessed_claimant", period) & (
             person.benunit("universal_credit_pre_benefit_cap", period) > 0
         )
         universal_credit_without_earned_income = (

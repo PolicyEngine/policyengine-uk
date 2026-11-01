@@ -206,3 +206,110 @@
   output:
     # HB Regs 2006 reg 74(6).
     housing_benefit_non_dep_deductions: [0, 0]
+
+- name: Universal Credit counts in the income of the claimant it assesses
+  # The non-dependant family's Universal Credit is the adult son's own claim
+  # (is_uc_claimant), so it counts in his gross income, not his parents'
+  # (HB Regs 2006 reg 74(2), (4)). The parents' joint income is the father's
+  # 180 a week, under the 192 band: 20.40, one deduction for the couple
+  # (reg 74(3)). The son works 2 hours, so he pays 20.40 (reg 74(1)(b)).
+  # (20.40 + 20.40) * 52 = 2,121.60. Counting the son's 100 a week of UC in
+  # the parents' income would give 280 a week and 64.35.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+      father:
+        age: 50
+        employment_income: 9_360 # 180 a week
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+      mother:
+        age: 48
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+      son:
+        age: 27
+        employment_income: 1_040 # 20 a week
+        weekly_hours: 2
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      non_dependant_unit:
+        members: [father, mother, son]
+        universal_credit_pre_benefit_cap: 5_200 # 100 a week
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, father, mother, son]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+  output:
+    household_benefits_individual_non_dep_deduction: [0, 1_060.80, 1_060.80, 1_060.80]
+    housing_benefit_non_dep_deductions: [2_121.60, 0]
+
+- name: Another adult's own income-related ESA stays out of the couple's income
+  # The adult son claims income-related ESA in his own right, so it is his
+  # income, not his parents' (HB Regs 2006 reg 74(4)). The parents' joint
+  # income is the father's 180 a week, under the 192 band: 20.40, one
+  # deduction for the couple. The son does no work and pays 20.40 (reg
+  # 74(1)(b)). (20.40 + 20.40) * 52 = 2,121.60. Counting his 100 a week of
+  # ESA in the parents' income would give 280 a week and 64.35.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+      father:
+        age: 50
+        employment_income: 9_360 # 180 a week
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      mother:
+        age: 48
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      son:
+        age: 27
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      non_dependant_unit:
+        members: [father, mother, son]
+        esa_income: 5_200 # the son's own award, 100 a week
+        claimant_or_partner_esa_income: 0
+        universal_credit_pre_benefit_cap: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, father, mother, son]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+  output:
+    household_benefits_individual_non_dep_deduction: [0, 1_060.80, 1_060.80, 1_060.80]
+    housing_benefit_non_dep_deductions: [2_121.60, 0]
