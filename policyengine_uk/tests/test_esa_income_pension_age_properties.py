@@ -998,6 +998,16 @@ def changes(variable):
     ]
 
 
+# The five Pension Credit variables, named apart from the model's own list.
+PENSION_CREDIT_NAMES = [
+    "pension_credit",
+    "pension_credit_entitlement",
+    "is_pension_credit_eligible",
+    "guarantee_credit",
+    "savings_credit",
+]
+
+
 def test_every_change_to_a_pension_credit_definition_drops_the_shortcut():
     """Exhaustive over the five Pension Credit variables and the attributes a
     reform can change: any change to what Core calculates a variable from
@@ -1008,8 +1018,7 @@ def test_every_change_to_a_pension_credit_definition_drops_the_shortcut():
     sim = Simulation(situation=household([MAN_40], year))
     system = sim.tax_benefit_system
     assert follows_model_formulas(sim, year)
-    for model_variable in PENSION_CREDIT_VARIABLES:
-        name = model_variable.__name__
+    for name in PENSION_CREDIT_NAMES:
         variable = system.variables[name]
         for attribute, value, calculates in changes(variable):
             changed = variable.clone()
