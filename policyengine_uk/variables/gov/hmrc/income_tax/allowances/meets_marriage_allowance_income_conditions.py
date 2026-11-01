@@ -4,21 +4,20 @@ from policyengine_uk.model_api import *
 def liable_only_at_marriage_allowance_rates(person, period, parameters):
     """Whether the person pays no income tax above the basic rates.
 
-    Apply the rates that s. 55B(2)(b) and s. 55C(1)(c) permit for the year
-    being calculated. From 2016-17 these include the savings nil rate; from
-    2018-19 the Scottish list includes rates below basic and the intermediate
-    rate. Where s. 55B(2)(ba) and s. 55C(1)(ca) apply, test dividends as if
-    s. 13A were omitted.
+    Apply the rates that s. 55B(2)(b) and s. 55C(1)(c) permit in the tax year.
+    From 2016-17 these include the savings nil rate; from 2018-19 the Scottish
+    list includes rates below basic and the intermediate rate. Where
+    s. 55B(2)(ba) and s. 55C(1)(ca) apply, test dividends as if s. 13A were
+    omitted.
 
-    Gift Aid extends the rate limits by the grossed-up gift (s. 414(2)(b));
-    it does not reduce taxable income. Before 2017-18 this test uses the
+    Section 414(2)(b) extends the rate limits by the grossed-up Gift Aid gift,
+    which does not reduce taxable income. Before 2017-18 this test uses the
     basic rate limit for Scottish taxpayers, even though the model's
     historical Scottish liability currently reads the 2017-18 schedule. The
-    test also follows the statute where the model's liability departs from
-    it: it starts the dividend upper rate at the basic rate limit (ss. 10
-    and 13), counts no savings nil rate before 2016-17 (FA 2016 s. 4(17)),
-    and places the nil-rate slice above the starting rate limit for savings
-    (s. 12A).
+    test also follows the statute where the model's liability departs from it:
+    it starts the dividend upper rate at the basic rate limit (ss. 10 and 13),
+    counts no savings nil rate before 2016-17 (FA 2016 s. 4(17)), and places
+    the nil-rate slice above the starting rate limit for savings (s. 12A).
 
     The test reads income before the Marriage Allowance. Step 4 of s. 23
     charges tax at each rate before Step 6 deducts the tax reductions, and
