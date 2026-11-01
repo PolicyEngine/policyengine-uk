@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.benefit_unit import award_of_couple
-from policyengine_uk.utils.supplied_inputs import stored_as_input
+from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.variables.gov.dwp.benefit_cap_welfare_benefits import (
     CLAIMANT_OR_PARTNER_BENEFITS,
     FAMILY_BENEFITS,
@@ -23,6 +23,18 @@ UC_FAMILY_BENEFITS = [
 ]
 
 
+def supplied_total_without_housing_benefit(period) -> str:
+    return (
+        f"The inputs supply benefit_cap_welfare_benefits for {period}, a total "
+        "that includes Housing Benefit, which the Universal Credit cap counts "
+        "as nil (UC Regs 2013 reg. 80(2A)). Supply "
+        "housing_benefit_pre_benefit_cap for the same period, for the cap to "
+        "subtract, or supply uc_benefit_cap_welfare_benefits. The model doesn't "
+        "calculate that Housing Benefit for Universal Credit, because the "
+        "Housing Benefit non-dependant deductions read universal_credit."
+    )
+
+
 class uc_benefit_cap_welfare_benefits(Variable):
     value_type = float
     entity = BenUnit
@@ -30,12 +42,14 @@ class uc_benefit_cap_welfare_benefits(Variable):
     documentation = (
         "The welfare benefits the Universal Credit cap counts: those in "
         "benefit_cap_welfare_benefits, for the same single person or couple, "
-        "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Universal "
-        "Credit then reads no Housing Benefit, so the Housing Benefit "
-        "non-dependant deductions can read universal_credit. Where the "
+        "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Where the "
         "inputs supply benefit_cap_welfare_benefits, whose total includes "
-        "Housing Benefit, this subtracts housing_benefit_pre_benefit_cap "
-        "from it, and Universal Credit reads Housing Benefit."
+        "Housing Benefit, this subtracts the supplied "
+        "housing_benefit_pre_benefit_cap. Inputs that supply the combined "
+        "total also supply housing_benefit_pre_benefit_cap or this variable; "
+        "otherwise the formula raises ValueError. No baseline formula on "
+        "Universal Credit's route calculates Housing Benefit, so the Housing "
+        "Benefit non-dependant deductions can read universal_credit."
     )
     definition_period = YEAR
     unit = GBP
@@ -46,7 +60,17 @@ class uc_benefit_cap_welfare_benefits(Variable):
     )
 
     def formula(benunit, period, parameters):
-        if stored_as_input(benunit, "benefit_cap_welfare_benefits", period):
+        # A supplied combined total includes Housing Benefit, and the inputs
+        # supply that Housing Benefit too. Calculating it here would make
+        # Universal Credit depend on Housing Benefit, whose non-dependant
+        # deductions read universal_credit. A value a scenario stores as the
+        # model's own (set_model_value) supplies neither.
+        if supplied_input(benunit, "benefit_cap_welfare_benefits", period) is not None:
+            if (
+                supplied_input(benunit, "housing_benefit_pre_benefit_cap", period)
+                is None
+            ):
+                raise ValueError(supplied_total_without_housing_benefit(period))
             return benunit("benefit_cap_welfare_benefits", period) - benunit(
                 "housing_benefit_pre_benefit_cap", period
             )

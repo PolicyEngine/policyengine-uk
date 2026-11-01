@@ -68,6 +68,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "housing_benefit_applicable_income_childcare_element",
         "housing_benefit_applicable_income_disregard",
         "housing_benefit_childcare_earnings_limit",
+        "housing_benefit_pre_benefit_cap",
         "housing_benefit_specified_or_temporary_accommodation_disregard",
         "in_HE",
         "other_local_bus_trips",

@@ -41,13 +41,6 @@ class housing_benefit_non_dep_deductions(Variable):
         non_dependant = (
             person("is_non_dependant_of_household_head", period) & ~joint_occupier
         )
-        # With no non-dependant the council deducts nothing, so the formula
-        # reads no income. Universal Credit reads Housing Benefit where the
-        # inputs supply benefit_cap_welfare_benefits
-        # (uc_benefit_cap_welfare_benefits); a household of one family can
-        # then still calculate both.
-        if not non_dependant.any():
-            return benunit.empty_array()
         deductions = (
             person("household_benefits_individual_non_dep_deduction", period)
             * non_dependant

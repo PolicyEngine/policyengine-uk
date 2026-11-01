@@ -68,9 +68,12 @@ and a non-dependant family of one or two adults:
    income and that award. The test skips incomes within a penny a week of an
    edge, since the inputs hold float32 values.
 12. The Universal Credit cap counts the Housing Benefit cap's welfare
-   benefits other than Housing Benefit (UC Regs 2013 reg 80(2A)), so
-   universal_credit reads no Housing Benefit unless the inputs supply
-   benefit_cap_welfare_benefits. A non-dependant family's gross income
+   benefits other than Housing Benefit (UC Regs 2013 reg 80(2A)), and no
+   baseline formula on universal_credit's route calculates Housing Benefit:
+   its traced calculation reads no Housing Benefit variable but the reported
+   award. Inputs that supply benefit_cap_welfare_benefits, a total that
+   includes Housing Benefit, also supply housing_benefit_pre_benefit_cap,
+   or the basket raises ValueError. A non-dependant family's gross income
    counts its award after the cap and before debt deductions: universal_credit
    plus uc_deductions, which equals the award before the cap less the cap
    reduction applied, under current law and under an 85% protected minimum
@@ -78,9 +81,9 @@ and a non-dependant family of one or two adults:
    universal_credit, each household's deductions equal those of the same
    household with the reformed award supplied, and the Housing Benefit
    deduction is the band of wages plus that award, so it moves when the
-   award crosses a band. With a supplied total, a calculated Housing
-   Benefit and a non-dependant on Universal Credit, the engine raises
-   CycleError.
+   award crosses a band. (test_non_dependant_cycle_contracts.py checks the
+   supplied-total contract over mixed populations, and that a reform making
+   Universal Credit read calculated Housing Benefit raises CycleError.)
 13. Differential: the Universal Credit exemption's earned-income test agrees
    with Universal Credit's own calculation (uc_individual_earned_income)
    across employment expenses, trading losses, company income attributed to
@@ -1132,19 +1135,16 @@ def award_households(households, awards=None, scaled=True):
     )
 
 
-def test_universal_credit_reads_housing_benefit_only_in_a_supplied_total():
-    """Invariant 12: Universal Credit's calculation reads no Housing Benefit,
-    so the deductions can read universal_credit. A supplied
-    benefit_cap_welfare_benefits includes Housing Benefit, so Universal
-    Credit takes out housing_benefit_pre_benefit_cap. Where the simulation
-    calculates that Housing Benefit for a household with a non-dependant on
-    Universal Credit, the award and the deduction depend on each other, and
-    the engine raises."""
-    from policyengine_core.errors import CycleError
-
+def test_universal_credit_reads_no_calculated_housing_benefit():
+    """Invariant 12: Universal Credit's traced calculation reads no Housing
+    Benefit variable but the reported award, so the deductions can read
+    universal_credit. Inputs that supply benefit_cap_welfare_benefits, a
+    total that includes Housing Benefit, also supply
+    housing_benefit_pre_benefit_cap, and Universal Credit reads that input
+    without calculating Housing Benefit. A supplied total without it raises
+    ValueError."""
     year = 2025
-    households = [BAND_CROSSING]
-    situation = award_households(households, scaled=False)
+    situation = award_households([BAND_CROSSING], scaled=False)
     sim = core_simulation(situation, year, trace=True)
     sim.calculate("universal_credit", year)
     read = {key.split("<")[0] for key in sim.tracer.get_serialized_flat_trace()}
@@ -1158,8 +1158,19 @@ def test_universal_credit_reads_housing_benefit_only_in_a_supplied_total():
         unit["benefit_cap_welfare_benefits"] = {
             str(year): unit["universal_credit_pre_benefit_cap"][str(year)]
         }
-    with pytest.raises(CycleError):
+    with pytest.raises(ValueError, match="housing_benefit_pre_benefit_cap"):
         core_simulation(situation, year).calculate("housing_benefit", year)
+    for unit in situation["benunits"].values():
+        unit["housing_benefit_pre_benefit_cap"] = {str(year): 0.0}
+    sim = core_simulation(situation, year, trace=True)
+    sim.calculate("universal_credit", year)
+    read = {key.split("<")[0] for key in sim.tracer.get_serialized_flat_trace()}
+    assert not [
+        name
+        for name in read
+        if name.startswith("housing_benefit")
+        and name not in ("housing_benefit_reported", "housing_benefit_pre_benefit_cap")
+    ], read
 
 
 @PROPERTY_SETTINGS
