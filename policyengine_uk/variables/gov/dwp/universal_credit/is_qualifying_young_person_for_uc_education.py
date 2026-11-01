@@ -53,7 +53,7 @@ class is_qualifying_young_person_for_uc_education(Variable):
         # Credit Regulations".
         own_award = add(person, period, EXISTING_BENEFITS) > 0
         # Tax Credits Act 2002 s. 3(3)(a): the members of a couple claim a
-        # tax credit jointly, so both are entitled to the award.
+        # tax credit jointly, so the award belongs to both.
         claimant_or_partner = person("is_claimant_or_partner", period)
         joint_tax_credits = claimant_or_partner & (
             person.benunit.sum(claimant_or_partner * add(person, period, TAX_CREDITS))

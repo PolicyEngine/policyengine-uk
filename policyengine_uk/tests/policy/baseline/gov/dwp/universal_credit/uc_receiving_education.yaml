@@ -438,7 +438,7 @@
     is_uc_eligible: true
     universal_credit: 5_098.80
 
-- name: Case 17, a full-time course in higher education is advanced education.
+- name: Case 17, the model reads a full-time course in higher education as advanced education.
   # Reg. 12(2)(a) and (3): the model reads in_HE when current_education has
   # no input.
   period: 2026
@@ -842,9 +842,9 @@
     universal_credit: 0
 
 - name: Case 33, a couple of 18-year-olds on a joint Working Tax Credit award both leave the qualifying young person route.
-  # Tax Credits Act 2002 s. 3(3)(a): a couple claims jointly, so both
-  # members are entitled to the award, and SI 2014/1230 reg. 28 applies to
-  # each, whichever member reports it.
+  # Tax Credits Act 2002 s. 3(3)(a): a couple claims jointly, so the award
+  # belongs to both members, and SI 2014/1230 reg. 28 applies to each,
+  # whichever member reports it.
   period: 2024
   input:
     people:
