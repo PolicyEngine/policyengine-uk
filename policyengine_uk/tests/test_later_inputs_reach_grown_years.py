@@ -4,17 +4,18 @@ For a year an input variable holds no input for, Core grows the latest earlier
 input by the variable's ``uprating`` index, or carries the latest input over,
 and caches the result in the variable's holder. Simulation grows a stored
 household total the same way. An input a caller sets afterwards for a year in
-between changes what that year should be. On a named branch Core drops the values that
-may depend on the input. On the default branch Simulation drops what it
-calculated before its next calculation (``drop_calculated_values``), and keeps
-only the years Core records as supplied, through the data or ``set_input``, of
-each input variable.
+between changes what that year should be. On a named branch Core drops the
+values that may depend on the input. On the default branch Simulation drops
+what it calculated before its next calculation (``drop_calculated_values``),
+and keeps only the years Core records as supplied, through the data or
+``set_input``, of each input variable.
 
 Invariants, for any amounts and any order of inputs and calculations:
 
-- the default branch, a named branch and a new simulation given the same inputs
-  give the same value for each of the three input variables the property sets,
-  and for a formula that reads them, in every year from 2025 to 2040;
+- the default branch, a named branch and a new simulation that gets the same
+  inputs give the same value for each of the three input variables the
+  property sets, and for a formula that reads them, in every year from 2025 to
+  2040;
 - the simulation keeps the value of every year the data, a caller or a
   scenario's modifier supplied, whether that year comes before or after a year
   a caller sets later;
@@ -240,10 +241,11 @@ def _sets_a_later_balance(simulation):
 
 @pytest.mark.parametrize("route", ["modifier", "simulation", "holder"])
 def test_a_year_set_for_later_than_a_later_input_keeps_its_value(route):
-    # A scenario's modifier, which runs once the data are built, or a caller,
-    # through the simulation or straight through the holder, sets £7,000 for
-    # 2038 before the simulation calculates anything. After Core grows 2040
-    # from it, an input for 2030 replaces only the years before 2038.
+    # A scenario's modifier, which runs once Simulation has built the data, or
+    # a caller, through the simulation or straight through the holder, sets
+    # £7,000 for 2038 before the simulation calculates anything. After Core
+    # grows 2040 from it, an input for 2030 replaces only the years before
+    # 2038.
     data = _frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
     if route == "modifier":
         simulation = Simulation(

@@ -200,7 +200,7 @@ input by the variable's uprating index, carried an earlier input into them,
 ran the variable's formula for them or, for a stored household total, grew
 them from an earlier total. So when a caller sets an input for an earlier year
 after a calculation, the later years the simulation had already filled follow
-it, as they do on a named branch and in a new simulation given the same
+it, as they do on a named branch and in a new simulation that gets the same
 inputs. The simulation keeps a later year that the data or `set_input`
 supplied.
 
