@@ -262,6 +262,7 @@
         members: [claimant]
         would_claim_uc: true
         claims_all_entitled_benefits: true
+        uc_has_deduction: true
         uc_latent_deduction_rate: 0.15
         uc_deduction_combination: THIRD_PARTY_ONLY
     households:
@@ -300,6 +301,7 @@
         would_claim_uc: true
         claims_all_entitled_benefits: true
         uc_benefit_cap_reduction: 1_200
+        uc_has_deduction: true
         uc_latent_deduction_rate: 0.15
         uc_deduction_combination: THIRD_PARTY_ONLY
     households:

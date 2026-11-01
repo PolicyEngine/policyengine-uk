@@ -112,6 +112,7 @@ def situation():
                 "would_claim_uc": {YEAR: True},
                 "claims_all_entitled_benefits": {YEAR: True},
                 "uc_benefit_cap_reduction": {YEAR: 0.0},
+                "uc_has_deduction": {YEAR: False},
                 "uc_latent_deduction_rate": {YEAR: 0.0},
                 "uc_deduction_combination": {YEAR: "NONE"},
             }
@@ -209,6 +210,7 @@ def calculate(simulation, fams):
         "rent": pairs([f["rent"] for f in fams]),
         "council_tax": pairs([f["council_tax"] for f in fams]),
         "uc_benefit_cap_reduction": pairs([f["cap_reduction"] for f in fams]),
+        "uc_has_deduction": with_deductions,
         "uc_latent_deduction_rate": np.where(
             with_deductions, pairs([f["latent_rate"] for f in fams]), 0.0
         ),
