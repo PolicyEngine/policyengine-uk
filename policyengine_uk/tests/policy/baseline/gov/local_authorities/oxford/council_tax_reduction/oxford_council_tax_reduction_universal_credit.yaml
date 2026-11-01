@@ -1166,6 +1166,350 @@
     oxford_council_tax_reduction_universal_credit_income: 25_052.04
     oxford_council_tax_reduction: 1_350
 
+# Oxford City Council counts "the income of the applicant and, where
+# appropriate, their partner" (Appendix 3), whichever of them receives it, and
+# no one else's. The model heads a benefit unit with its eldest member
+# (is_benunit_head). Child Benefit, at HMRC's 2026-27 rates, is 1,406.60 a
+# year for one child and 2,337.40 for two. On 15,600 of pay, income tax is
+# 20% x (15,600 - 12,570) = 606, National Insurance 8% x (15,600 - 12,570) =
+# 242.40 and DWP's net earned income 15,600 - 606 - 242.40 = 14,751.60.
+
+- name: Oxford counts the younger partner's receipt in a Universal Credit couple's income
+  # An unmarried couple, 38 and 35, with a child aged 5 and housing of 7,000.
+  # The elder partner earns 15,600 and heads the benefit unit. The younger partner
+  # receives child maintenance of 2,600 (50 a week) for the child, which DWP
+  # does not count (reg 66(1)(d) reaches only maintenance from a spouse or
+  # former spouse). UC: maximum amount 666.97 x 12 + 303.94 x 12 + 7,000 =
+  # 18,650.92, lower work allowance 427 x 12 = 5,124, reduction 55% x
+  # (14,751.60 - 5,124) = 5,295.18, award 13,355.74. Other income 1,406.60
+  # Child Benefit + 2,600 = 4,006.60. Appendix 3: 14,751.60 + 13,355.74 +
+  # 4,006.60 = 32,113.94 a year, 617.58 a week: band 4, 25% of 1,800.
+  # Leaving out the younger partner's maintenance would give 567.58 a week,
+  # band 3 (900).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 38
+        employment_income: 15_600
+      person2:
+        age: 35
+        maintenance_income: 2_600
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        is_married: false
+        uc_housing_costs_element: 7_000
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_benunit_head: [true, false, false]
+    is_council_tax_reduction_applicant_or_partner: [true, true, false]
+    uc_earned_income_before_work_allowance: 14_751.60
+    uc_unearned_income: 0
+    universal_credit: 13_355.74
+    child_benefit: 1_406.60
+    oxford_council_tax_reduction_universal_credit_other_income: 4_006.60
+    oxford_council_tax_reduction_universal_credit_income: 32_113.94
+    oxford_council_tax_reduction: 450
+
+- name: Oxford leaves a 17-year-old's receipt out of a Universal Credit applicant's income
+  # A lone parent, 35, earns 15,600 and has children aged 5 and 17. The
+  # 17-year-old, in non-advanced education, receives private transfers of
+  # 2,600 a year. DWP gives the higher first-child amount, 351.88 a month,
+  # for the elder child, born before 6 April 2017. UC: maximum amount 424.90
+  # x 12 + (351.88 + 303.94) x 12 = 12,968.64, higher work allowance 710 x 12
+  # = 8,520, reduction 55% x (14,751.60 - 8,520) = 3,427.38, award 9,541.26.
+  # The 17-year-old is neither the applicant nor the partner, so other income
+  # is the Child Benefit alone, 2,337.40. Appendix 3: 14,751.60 + 9,541.26 +
+  # 2,337.40 = 26,630.26 a year, 512.12 a week: band 2, 75% of 1,800.
+  # Counting the 17-year-old's receipt would give 562.12 a week, band 3 (900).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 15_600
+      person2:
+        age: 5
+      person3:
+        age: 17
+        is_in_non_advanced_education: true
+        private_transfer_income: 2_600
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    uc_earned_income_before_work_allowance: 14_751.60
+    universal_credit: 9_541.26
+    child_benefit: 2_337.40
+    oxford_council_tax_reduction_universal_credit_other_income: 2_337.40
+    oxford_council_tax_reduction_universal_credit_income: 26_630.26
+    oxford_council_tax_reduction: 1_350
+
+# In Appendix 3 Oxford City Council ignores "Attendance Allowance,
+# Disability Living Allowance, Personal Independence Payments", and DWP
+# counts none of them as unearned income (reg 66(1)).
+
+- name: Oxford ignores Personal Independence Payment in a Universal Credit applicant's income
+  # The Child Benefit case's lone parent, earning 15,600 with children 5 and
+  # 8, receives Personal Independence Payment of 2,600 a year. The award
+  # stays 8,965.98 and other income 2,337.40. Appendix 3: 14,751.60 +
+  # 8,965.98 + 2,337.40 = 26,054.98 a year, 501.06 a week: band 2, 75% of
+  # 1,800. Counting the payment would give 551.06 a week, band 3 (900).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 15_600
+        pip: 2_600
+      person2:
+        age: 5
+      person3:
+        age: 8
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 0
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    pip: [2_600, 0, 0]
+    universal_credit: 8_965.98
+    oxford_council_tax_reduction_universal_credit_other_income: 2_337.40
+    oxford_council_tax_reduction_universal_credit_income: 26_054.98
+    oxford_council_tax_reduction: 1_350
+
+# An unmarried couple, 67 and 60, with no children and housing of 9,000, claim
+# Universal Credit as joint claimants, which reg 3(2)(a) allows when one of
+# them is under the qualifying age for State Pension Credit. The elder
+# receives a State Pension of 5,000 a year, below the personal allowance, and
+# heads the benefit unit; the younger earns 15,600. DWP counts the State Pension in full (reg 66(1)(a)). UC:
+# maximum amount 666.97 x 12 + 9,000 = 17,003.64, no work allowance,
+# reduction 55% x 14,751.60 = 8,113.38, award 17,003.64 - 8,113.38 - 5,000
+# = 3,890.26. Other income is the State Pension, 5,000. Appendix 3:
+# 14,751.60 + 3,890.26 + 5,000 = 23,641.86 a year, 454.65 a week: band 1,
+# 100% of 1,800. Counting another 2,600 would give 504.65 a week, band 2
+# (1,350).
+
+- name: Oxford ignores Attendance Allowance in a Universal Credit couple's income
+  # The elder partner, 67, also receives Attendance Allowance of 2,600 a
+  # year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 67
+        state_pension: 5_000
+        attendance_allowance: 2_600
+      person2:
+        age: 60
+        employment_income: 15_600
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        is_married: false
+        uc_housing_costs_element: 9_000
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    attendance_allowance: [2_600, 0]
+    uc_earned_income_before_work_allowance: 14_751.60
+    uc_unearned_income: 5_000
+    universal_credit: 3_890.26
+    oxford_council_tax_reduction_universal_credit_other_income: 5_000
+    oxford_council_tax_reduction_universal_credit_income: 23_641.86
+    oxford_council_tax_reduction: 1_800
+
+- name: Oxford ignores Disability Living Allowance in a Universal Credit couple's income
+  # As above, but the elder partner is 70 and receives Disability Living
+  # Allowance of 2,600 a year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 5_000
+        dla: 2_600
+      person2:
+        age: 60
+        employment_income: 15_600
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        is_married: false
+        uc_housing_costs_element: 9_000
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    dla: [2_600, 0]
+    uc_earned_income_before_work_allowance: 14_751.60
+    uc_unearned_income: 5_000
+    universal_credit: 3_890.26
+    oxford_council_tax_reduction_universal_credit_other_income: 5_000
+    oxford_council_tax_reduction_universal_credit_income: 23_641.86
+    oxford_council_tax_reduction: 1_800
+
+- name: Oxford counts the earned income the minimum income floor gives a self-employed claimant
+  # A single claimant, 35, with no children and housing of 12,500, has
+  # self-employed profits of 5,000. DWP treats them as in gainful
+  # self-employment outside a start-up period, so the minimum income floor
+  # applies (reg 62; uc_mif_applies). Their individual threshold is 35
+  # hours (reg 88(1)) at the 2026-27 National Living Wage of 12.71:
+  # 12.71 x 35 x 52 = 23,132.20 a year (reg 90(2)(b)). The model converts it
+  # to a net amount with income tax, 20% x (23,132.20 - 12,570) = 2,112.44,
+  # and the Class 4 contributions on profits of that size, 6% x (23,132.20 -
+  # 12,570) = 633.73 (reg 62(4)(b); means_test.minimum_income_floor.
+  # self_employed_national_insurance): 23,132.20 - 2,112.44 - 633.73 =
+  # 20,386.03. Their own earned income, 5,000, falls short of it, so DWP
+  # treats them as having 20,386.03 (reg 62(2)). UC: maximum amount 424.90 x
+  # 12 + 12,500 = 17,598.80, no work allowance, reduction 55% x 20,386.03 =
+  # 11,212.32, award 6,386.48. Appendix 3 adds the net earned income DWP uses:
+  # 20,386.03 + 6,386.48 = 26,772.51 a year, 514.86 a week: band 2, 75% of
+  # 1,800. Adding the 5,000 they earn would give 218.97 a week, band 1
+  # (1,800).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        self_employment_income: 5_000
+        uc_mif_applies: true
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 12_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_minimum_income_floor_gross: 23_132.20
+    uc_minimum_income_floor: 20_386.03
+    uc_individual_earned_income: 20_386.03
+    uc_earned_income_before_work_allowance: 20_386.03
+    universal_credit: 6_386.48
+    oxford_council_tax_reduction_universal_credit_other_income: 0
+    oxford_council_tax_reduction_universal_credit_income: 26_772.51
+    oxford_council_tax_reduction: 1_350
+
+- name: Oxford counts the Carer's Allowance DWP pays after Widowed Parent's Allowance
+  # A widowed lone parent, 35, whose spouse died before 6 April 2017, has
+  # children aged 10 and 12, no earnings and housing of 7,500. They care for
+  # someone 40 hours a week and receive Widowed Parent's Allowance of 2,600 a
+  # year. The model computes their Carer's Allowance: 86.45 x 52 = 4,495.40,
+  # reduced by the Widowed Parent's Allowance (Overlapping Benefits Regs 1979
+  # reg 12) to 4,495.40 - 2,600 = 1,895.40. DWP counts both as unearned
+  # income, 1,895.40 + 2,600 = 4,495.40 (reg 66(1)(b)(iii) and (vi)), and
+  # includes the carer element, 209.34 x 12 = 2,512.08, so no benefit cap
+  # applies (reg 83(1)(i) and (j)). UC: maximum amount 424.90 x 12 + (351.88
+  # + 303.94) x 12 + 2,512.08 + 7,500 = 22,980.72, award 22,980.72 - 4,495.40
+  # = 18,485.32. Other income 2,337.40 Child Benefit + 1,895.40 + 2,600 =
+  # 6,832.80, as it would be with the whole 4,495.40 of Carer's Allowance
+  # and no Widowed Parent's Allowance. Appendix 3: 18,485.32 - 2,503.80 +
+  # 6,832.80 = 22,814.32 a year, 438.74 a week: band 1, 100% of 1,800.
+  # Counting Carer's Allowance before the reduction would give 488.74 a week,
+  # band 2 (1,350).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        care_hours: 40
+        is_carer_for_benefits: true
+        would_claim_carers_allowance: true
+        widowed_parents_allowance_reported: 2_600
+      person2:
+        age: 10
+      person3:
+        age: 12
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_housing_costs_element: 7_500
+        uc_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    carers_allowance_pre_overlap: [4_495.40, 0, 0]
+    carers_allowance: [1_895.40, 0, 0]
+    widowed_parents_allowance: [2_600, 0, 0]
+    uc_carer_element: 2_512.08
+    uc_unearned_income: 4_495.40
+    uc_benefit_cap_reduction: 0
+    universal_credit: 18_485.32
+    child_benefit: 2_337.40
+    oxford_council_tax_reduction_universal_credit_other_income: 6_832.80
+    oxford_council_tax_reduction_universal_credit_income: 22_814.32
+    oxford_council_tax_reduction: 1_800
+
 - name: A household head who applies alone keeps the income for applicants without Universal Credit
   # A grandmother, 50, heads the household and shares a benefit unit with
   # parents aged 17 and their baby, who claim Universal Credit. The award and
