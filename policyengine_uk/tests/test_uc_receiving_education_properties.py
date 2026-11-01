@@ -13,14 +13,14 @@ own: a single adult or a couple, up to two children or young people, and
 inputs that reach every limb the model applies (course level, loans and
 grants, PIP with or without limited capability for work, foster flags, an
 ineligible partner, a legacy closure claim, earnings, rent and savings). The
-same people are calculated four ways: as drawn; with the eligibility formula
+test calculates the same people four ways: as drawn; with the eligibility formula
 on main before this change (BEFORE, kept verbatim below); with no one flagged;
 and with the flags of members who are neither claimant nor partner reversed.
 Invariants:
 
 1. Never raises: each family's Universal Credit is either what it is under
    BEFORE or nil, so setting the input never raises it.
-2. Unflagged families are unchanged: with no one flagged, every output listed
+2. Unflagged families don't change: with no one flagged, every output listed
    in OUTPUTS equals its value under BEFORE.
 3. Differential: is_uc_eligible equals BEFORE's eligibility and a reference
    implementation of regs. 3(2)(b), 12 and 14 that reads the drawn inputs.
@@ -36,7 +36,7 @@ Invariants:
 A family in a household with other families can lose Universal Credit
 because of another family's student: when the household head's family cannot
 claim, its non-dependants count in the next claim by a family liable for the
-rent (UC Regs 2013 Sch 4 para 9(2)(e) and (f)). That is intended, and
+rent (UC Regs 2013 Sch 4 para 9(2)(e) and (f)). The law intends that, and
 test_student_head_moves_non_dependant_to_joint_tenant pins it; the invariants
 above hold for families with households of their own.
 """
@@ -423,7 +423,7 @@ def check(case):
     unchanged = np.isclose(uc, uc_before, atol=0.005)
     assert np.all(unchanged | (uc == 0)), context
     assert np.all(uc <= uc_before + 0.005), context
-    # 2. Unflagged families are unchanged.
+    # 2. Unflagged families don't change.
     for name in OUTPUTS:
         np.testing.assert_allclose(
             unflagged[name].astype(float),

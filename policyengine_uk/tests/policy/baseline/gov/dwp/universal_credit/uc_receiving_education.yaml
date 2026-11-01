@@ -156,7 +156,7 @@
 - name: Case 6, a student couple where the other member is responsible for a child keeps the award.
   # Reg. 14(1)(e)(i): both members receive education and the other member
   # is responsible for a child. The model places responsibility on the
-  # benefit unit, so each member is excepted under reg. 14(1)(c) too.
+  # benefit unit, so reg. 14(1)(c) excepts each member too.
   # 12 x (£528.34 + £303.94) = 12 x £832.28 = £9,987.36.
   period: 2026
   absolute_error_margin: 0.01
@@ -438,7 +438,8 @@
     universal_credit: 5_098.80
 
 - name: Case 17, a full-time course in higher education is advanced education.
-  # Reg. 12(2)(a) and (3), read from in_HE where current_education is unset.
+  # Reg. 12(2)(a) and (3): the model reads in_HE when current_education has
+  # no input.
   period: 2026
   input:
     people:

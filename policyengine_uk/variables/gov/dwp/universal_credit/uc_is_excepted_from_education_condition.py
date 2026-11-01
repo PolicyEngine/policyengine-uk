@@ -30,7 +30,7 @@ class uc_is_excepted_from_education_condition(Variable):
         "lists (Scottish disability assistance, constant attendance "
         "allowance and war pension attendance payments), which the model "
         "has no variables for; and reg. 60(2), which ends the transitional "
-        "protection. A foster parent is one flagged by either input, "
+        "protection. A foster parent is a person either input flags, "
         "uc_is_responsible_foster_parent_of_child_under_one or "
         "uc_is_foster_parent_or_new_friend_or_family_carer. The second also "
         "holds a foster parent between placements, with no child placed, "
