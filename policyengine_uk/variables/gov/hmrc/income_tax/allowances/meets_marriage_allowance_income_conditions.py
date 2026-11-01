@@ -95,8 +95,8 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
 class meets_marriage_allowance_income_conditions(Variable):
     label = "Meets Marriage Allowance income conditions"
     documentation = (
-        "Whether this person pays income tax only at the rates that let them "
-        "receive the Marriage Allowance (ITA 2007 s. 55B(2)(b) and (ba))."
+        "Whether this person pays income tax only at rates that ITA 2007 "
+        "s. 55B(2)(b) and (ba) allow for receiving the Marriage Allowance."
     )
     entity = Person
     definition_period = YEAR

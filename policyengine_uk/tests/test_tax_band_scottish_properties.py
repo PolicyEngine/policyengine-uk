@@ -388,7 +388,9 @@ def mixed_sim():
 @given(people, st.sampled_from(MA_YEARS), limits)
 @example(NIL_RATE, 2025, WITNESS_LIMITS)
 @example(NIL_RATE, 2025, {})
-def test_nil_rates_never_stop_the_marriage_allowance(mixed_sim, drawn, period, changes):
+def test_marriage_allowance_follows_the_liability_with_nil_rates(
+    mixed_sim, drawn, period, changes
+):
     sim = mixed_sim
     set_people(sim, drawn, period)
     parameters = sim.tax_benefit_system.parameters

@@ -256,9 +256,9 @@ REMOVED_PARAMETERS = {
     ),
     "gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands": RemovedParameter(
         "removed Marriage Allowance eligible tax bands",
-        "The Marriage Allowance income conditions no longer read tax_band. "
-        "They apply the rate conditions of ITA 2007 s. 55B(2)(b) and (ba) to "
-        "the person's income directly, so they follow the rate limits: change "
+        "The model no longer reads tax_band for the Marriage Allowance income "
+        "conditions. It applies the rate conditions of ITA 2007 s. 55B(2)(b) "
+        "and (ba) to the person's income directly, so change "
         "gov.hmrc.income_tax.rates.uk[1].threshold (the basic rate limit) or "
         "gov.hmrc.income_tax.rates.scotland.rates[3].threshold (the start of "
         "the Scottish higher rate).",
