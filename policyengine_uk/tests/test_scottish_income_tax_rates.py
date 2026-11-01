@@ -1,7 +1,10 @@
+import math
+
 import numpy as np
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+from policyengine_core.parameters import Parameter
 
 from policyengine_uk import Simulation
 from policyengine_uk.system import system
@@ -100,7 +103,7 @@ YEARS = sorted(SCOTTISH_RATE_RESOLUTIONS)
 
 
 def resolution_scale(year):
-    """The marginal rate schedule a resolution sets: thresholds and rates."""
+    """Build thresholds and rates from Parliament's schedule for the year."""
     bands = SCOTTISH_RATE_RESOLUTIONS[year][1]
     thresholds = [0] + [limit for _, limit in bands[:-1]]
     return thresholds, [rate for rate, _ in bands]
@@ -161,14 +164,41 @@ def statutory_scottish_rates():
     return statutory_parameters().gov.hmrc.income_tax.rates.scotland.rates
 
 
+def dated_values(scale):
+    """Every rate and limit the scale's YAML dates, as (date, value) pairs."""
+    return [
+        (value.instant_str, value.value)
+        for parameter in scale.get_descendants()
+        if isinstance(parameter, Parameter)
+        for value in parameter.values_list
+    ]
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_each_resolution_holds_for_its_whole_tax_year(year, statutory_scottish_rates):
-    """A resolution applies for the whole of one tax year (SA 1998 s. 80C(3))."""
+    """A resolution applies for the whole of one tax year (SA 1998 s. 80C(3)),
+    6 April to the following 5 April (ITA 2007 s. 4). The scale changes only on
+    the dates its YAML gives, so read it on 6 April, on every such date within
+    the year and on 5 April."""
     thresholds, rates = resolution_scale(year)
-    for instant in (f"{year}-04-06", f"{year + 1}-04-05"):
+    start, end = f"{year}-04-06", f"{year + 1}-04-05"
+    changes = {date for date, _ in dated_values(statutory_scottish_rates)}
+    for instant in sorted({start, end} | {d for d in changes if start < d <= end}):
         scale = statutory_scottish_rates(instant)
         assert list(scale.thresholds) == pytest.approx(thresholds, abs=0), instant
         assert list(scale.rates) == pytest.approx(rates, abs=0), instant
+
+
+def test_scottish_rates_take_effect_on_6_april_2017(statutory_scottish_rates):
+    """Parliament set the first Scottish rates and limits, S5M-03912, for
+    2017-18, which starts on 6 April 2017. The scale dates no rate or limit
+    earlier."""
+    numeric = [
+        date
+        for date, value in dated_values(statutory_scottish_rates)
+        if value is not None
+    ]
+    assert min(numeric) == f"{YEARS[0]}-04-06"
 
 
 @pytest.mark.parametrize("year", YEARS)
@@ -200,7 +230,6 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
 )
-# Above £100,000 the draws are even, so the allowance taper is in whole pounds.
 pay = st.one_of(
     st.integers(0, 300_000),
     st.sampled_from(
@@ -213,15 +242,19 @@ pay = st.one_of(
             | {ALLOWANCE_TAPER_START, 160_000}
         )
     ),
-).map(lambda amount: amount - amount % 2 if amount > ALLOWANCE_TAPER_START else amount)
+)
 pays = st.lists(pay, min_size=PEOPLE // 2, max_size=PEOPLE // 2)
 raises = st.lists(st.integers(0, 20_000), min_size=PEOPLE // 2, max_size=PEOPLE // 2)
 
 
 def reference_tax(year, amount):
     """Income tax on pay alone, from the resolution and gov.scot's allowance."""
+    # s. 35(3) rounds the tapered allowance up to a whole pound.
     allowance = max(
-        0, GOV_SCOT_TABLES[year][0] - max(0, amount - ALLOWANCE_TAPER_START) / 2
+        0,
+        math.ceil(
+            GOV_SCOT_TABLES[year][0] - max(0, amount - ALLOWANCE_TAPER_START) / 2
+        ),
     )
     taxable = max(0, amount - allowance)
     thresholds, rates = resolution_scale(year)
@@ -276,8 +309,7 @@ def test_scottish_pay_is_taxed_as_each_resolution_sets(scottish_sim, drawn, extr
     """Every year's income tax on pay equals the resolution's bands applied to
     pay less the allowance, and it never falls as pay rises."""
     lower = np.array(drawn, dtype=float)
-    upper = lower + np.array(extra) * 2
-    upper = np.where(upper > ALLOWANCE_TAPER_START, upper - upper % 2, upper)
+    upper = lower + np.array(extra)
     amounts = np.concatenate([lower, upper])
     taxes = income_tax_by_year(scottish_sim, amounts)
     for year, tax in taxes.items():
