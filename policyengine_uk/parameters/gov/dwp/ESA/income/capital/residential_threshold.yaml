@@ -1,0 +1,13 @@
+description: Income-related Employment and Support Allowance capital tariff threshold where the claimant lives permanently in prescribed accommodation.
+metadata:
+  label: Income-related ESA prescribed accommodation capital tariff threshold
+  unit: currency-GBP
+  period: year
+values:
+  2008-10-27:
+    value: 10000
+    reference:
+      - title: The Employment and Support Allowance Regulations 2008, regulation 118(2)-(4)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/118
+      - title: The Employment and Support Allowance Regulations (Northern Ireland) 2008, regulation 118(2)-(4)
+        href: https://www.legislation.gov.uk/nisr/2008/280/regulation/118

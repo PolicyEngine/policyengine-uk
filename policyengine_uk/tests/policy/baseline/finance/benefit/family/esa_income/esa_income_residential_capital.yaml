@@ -1,0 +1,149 @@
+# Income-related ESA tariff income from capital: ESA Regs 2008 reg 118 (NI:
+# SR 2008/280 reg 118). Capital above the lower threshold counts as £1 a week
+# for each complete £250 (reg 118(1)-(2)) and £1 for any part of £250 left
+# over (reg 118(5)), over 52 weeks. The lower threshold is £6,000 (reg
+# 118(1)), or £10,000 where the claimant lives permanently in prescribed
+# accommodation (reg 118(2)-(4)). Capital above £16,000 bars the award
+# (reg 110), so the figures at £16,001 continue the formula past the limit.
+# No award turns on them: the last case shows the award is nil there.
+
+- name: Income-related ESA ordinary capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    esa_income_assessable_capital: [6000, 6001, 10000, 10001, 10251, 16000, 16001]
+    legacy_prescribed_accommodation_capital_exception: [false, false, false, false, false, false, false]
+  output:
+    # Excess over £6,000: 0, 1, 4,000, 4,001, 4,251, 10,000, 10,001.
+    # Steps of £250 or part: 0, 1, 16, 17, 18, 40, 41; each £1 x 52.
+    esa_income_tariff_income: [0, 52, 832, 884, 936, 2080, 2132]
+
+- name: Income-related ESA prescribed accommodation capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    esa_income_assessable_capital: [6000, 6001, 10000, 10001, 10251, 16000, 16001]
+    legacy_prescribed_accommodation_capital_exception: [true, true, true, true, true, true, true]
+  output:
+    # Excess over £10,000: 0, 0, 0, 1, 251, 6,000, 6,001.
+    # Steps of £250 or part: 0, 0, 0, 1, 2, 24, 25; each £1 x 52.
+    esa_income_tariff_income: [0, 0, 0, 52, 104, 1248, 1300]
+
+- name: Omitted prescribed accommodation status retains the ordinary ESA threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    esa_income_assessable_capital: 10001
+  output:
+    legacy_prescribed_accommodation_capital_exception: false
+    esa_income_tariff_income: 884
+
+- name: Housing Benefit's residential exception does not set the ESA threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    esa_income_assessable_capital: 10001
+    housing_benefit_assessable_capital: 10001
+    housing_benefit_residential_capital_exception: true
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    legacy_prescribed_accommodation_capital_exception: false
+    # HB Regs 2006 reg 52(3): £10,001 is £1 over £10,000, one step.
+    housing_benefit_tariff_income: 52
+    # ESA Regs 2008 reg 118(1): £4,001 over £6,000, 17 steps.
+    esa_income_tariff_income: 884
+
+- name: The ESA prescribed accommodation exception does not set Housing Benefit's threshold
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    esa_income_assessable_capital: 10001
+    legacy_prescribed_accommodation_capital_exception: true
+    housing_benefit_assessable_capital: 10001
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_residential_capital_exception: false
+    # HB Regs 2006 reg 52(1): £4,001 over £6,000, 17 steps.
+    housing_benefit_tariff_income: 884
+    # ESA Regs 2008 reg 118(2): £1 over £10,000, one step.
+    esa_income_tariff_income: 52
+
+- name: Income-related ESA in prescribed accommodation is paid at the upper capital limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: claimant
+        would_claim_uc: false
+        esa_income_assessable_capital: 16_000
+        legacy_prescribed_accommodation_capital_exception: true
+    households:
+      household:
+        members: claimant
+  output:
+    esa_income_eligible: true
+    # Reg 118(2): £6,000 over £10,000 is 24 steps, £24 x 52 = £1,248.
+    esa_income_tariff_income: 1_248
+    # £3,000 reported award less £1,248 tariff income.
+    esa_income: 1_752
+
+- name: Income-related ESA outside prescribed accommodation is paid at the upper capital limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: claimant
+        would_claim_uc: false
+        esa_income_assessable_capital: 16_000
+        legacy_prescribed_accommodation_capital_exception: false
+    households:
+      household:
+        members: claimant
+  output:
+    esa_income_eligible: true
+    # Reg 118(1): £10,000 over £6,000 is 40 steps, £40 x 52 = £2,080.
+    esa_income_tariff_income: 2_080
+    # £3,000 reported award less £2,080 tariff income.
+    esa_income: 920
+
+- name: Income-related ESA is not paid above the capital limit with or without the exception
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant_1:
+        age: 40
+        esa_income_reported: 3_000
+      claimant_2:
+        age: 40
+        esa_income_reported: 3_000
+    benunits:
+      benunit_1:
+        members: claimant_1
+        would_claim_uc: false
+        esa_income_assessable_capital: 16_001
+        legacy_prescribed_accommodation_capital_exception: true
+      benunit_2:
+        members: claimant_2
+        would_claim_uc: false
+        esa_income_assessable_capital: 16_001
+        legacy_prescribed_accommodation_capital_exception: false
+    households:
+      household_1:
+        members: claimant_1
+      household_2:
+        members: claimant_2
+  output:
+    # Reg 110: capital above £16,000 bars the award.
+    esa_income_eligible: [false, false]
+    esa_income: [0, 0]

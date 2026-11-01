@@ -1,0 +1,15 @@
+description: Income Support capital tariff threshold where the claimant lives permanently in prescribed accommodation.
+metadata:
+  label: Income Support prescribed accommodation capital tariff threshold
+  unit: currency-GBP
+  period: year
+values:
+  1996-04-08:
+    value: 10000
+    reference:
+      - title: The Income Support (General) Regulations 1987, regulation 53(1A)-(1C)
+        href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/53
+      - title: The Income-related Benefits Schemes (Miscellaneous Amendments) Regulations 1996, regulation 12(1)(b)
+        href: https://www.legislation.gov.uk/uksi/1996/462/regulation/12
+      - title: The Income-Related Benefits (Miscellaneous Amendments) Regulations (Northern Ireland) 1996, regulation 11(1)(b)
+        href: https://www.legislation.gov.uk/nisr/1996/93/regulation/11/made
