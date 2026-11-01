@@ -1226,3 +1226,357 @@
     # 502.50 a week: the HB 485 band (119.85) and the CTR 485 band (13.30).
     housing_benefit_non_dep_deductions: [6_232.20, 0]
     council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+# Round 7 of the independent review: the Universal Credit exemption reads
+# Universal Credit's own calculation of earned income (uc_individual_earned_income).
+
+- name: Employment expenses that cancel the wages leave no earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+      non_dependant:
+        age: 24
+        current_education: NOT_IN_EDUCATION
+        employment_income: 1_000
+        employment_expenses: 1_000
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 5000
+        uc_benefit_cap: 100_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # UC Regs 2013 reg 55(3)(a): allowable employment expenses come off
+    # employed earnings, leaving none (HB reg 74(8)(b), (11); WSI 2013/3029
+    # Sch 1 para 3(8)(c), (10)).
+    housing_benefit_non_dep_deduction_exempt: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: A trading loss that cancels the profit leaves no earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+      non_dependant:
+        age: 24
+        current_education: NOT_IN_EDUCATION
+        self_employment_income: 1_000
+        trading_loss: 1_000
+        uc_mif_applies: false
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 5000
+        uc_benefit_cap: 100_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # UC Regs 2013 reg 57(2): the trades' profits and losses are added
+    # together before any nil floor, so the loss cancels the profit. The
+    # minimum income floor is held off, so only the loss rule decides.
+    housing_benefit_non_dep_deduction_exempt: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: A company's income attributed to its owner is earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        current_education: NOT_IN_EDUCATION
+      non_dependant:
+        age: 24
+        current_education: NOT_IN_EDUCATION
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_share: 1_000
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 5000
+        uc_benefit_cap: 100_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # UC Regs 2013 reg 77(3)(b): the company's income is treated as the
+    # owner's self-employed earnings, so the exemption doesn't apply. Outside
+    # remunerative work the non-dependant pays the lowest amounts: HB 20.40
+    # and the Welsh pensioner scale's 6.70 a week.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [348.40, 0]
+
+- name: The minimum income floor doesn't apply where a partner's earnings meet the couple threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+      non_dependant:
+        age: 24
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        employment_income: 0
+        uc_mif_applies: true
+        uc_minimum_income_floor: 10_000
+      partner:
+        age: 30
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 15
+        employment_income: 30_000
+        uc_mif_applies: false
+        uc_minimum_income_floor: 10_000
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant, partner]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 5000
+        uc_benefit_cap: 100_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant, partner]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # UC Regs 2013 reg 62(3): a member of a couple is treated as having the
+    # floor only while the couple's earned income is below the couple
+    # threshold. The partner's earned income exceeds it, so the non-dependant
+    # has none and is exempt. The Welsh working-age scheme deducts for each
+    # member of a Universal Credit couple (Sch 6 para 5(3)): the exempt
+    # non-dependant's nil and the partner's 6.70 a week, as the partner works
+    # under 16 hours.
+    housing_benefit_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_individual_non_dep_deduction: [0, 0, 348.40]
+    council_tax_reduction_non_dep_deductions: [348.40, 0]
+
+- name: A third adult's Universal Credit leaves a Welsh non-dependant couple one deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        current_education: NOT_IN_EDUCATION
+      first:
+        age: 35
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        employment_income: 10_400
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+      second:
+        age: 34
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        employment_income: 5_200
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+      third:
+        age: 25
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+        employment_income: 0
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        would_claim_uc: false
+        universal_credit_pre_benefit_cap: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+      non_dependant_unit:
+        members: [first, second, third]
+        universal_credit_pre_benefit_cap: 3_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      home:
+        members: [applicant, first, second, third]
+        country: WALES
+        local_authority: CARDIFF
+        rent: 6_000
+        council_tax: 2_000
+        tenure_type: RENT_PRIVATELY
+        savings: 0
+  output:
+    # WSI 2013/3029 Sch 6 para 5(3): only the couple's own Universal Credit
+    # award takes it out of the one-deduction rule. Here the third adult
+    # claims alone, so the couple, banded on 15,600 a year (300 a week), pays
+    # one 13.35 deduction, and the third adult, on Universal Credit with no
+    # earned income, pays none (para 5(8)(c)).
+    council_tax_reduction_individual_non_dep_deduction: [0, 694.20, 694.20, 0]
+    council_tax_reduction_non_dep_deductions: [694.20, 0]
+
+- name: A third adult's Universal Credit leaves the couple one deduction from each Welsh applicant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 30
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        current_education: NOT_IN_EDUCATION
+      first:
+        age: 35
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        employment_income: 10_400
+        hours_worked: 832
+        current_education: NOT_IN_EDUCATION
+      second:
+        age: 34
+        is_claimant_or_partner: true
+        is_uc_claimant: false
+        employment_income: 5_200
+        hours_worked: 832
+        current_education: NOT_IN_EDUCATION
+      third:
+        age: 25
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+        employment_income: 9_100
+        hours_worked: 1_040
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+      non_dependant_family:
+        members: [first, second, third]
+        would_claim_uc: false
+        universal_credit_pre_benefit_cap: 3_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 520
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      home:
+        members: [head, sharer, first, second, third]
+        country: WALES
+        local_authority: CARDIFF
+        rent: 12_000
+        council_tax: 2_000
+        tenure_type: RENT_PRIVATELY
+        savings: 0
+  output:
+    # The pensioner head and the working-age sharer each apply under their
+    # own Welsh scheme and share the deductions equally (Sch 1 para 3(5); Sch
+    # 6 para 5(5)). The couple, banded on 15,600 + 520 = 16,120 a year (310
+    # a week), pays one deduction under either scheme, as the Universal
+    # Credit is the third adult's; the third adult, banded on 9,100 + 3,000
+    # (232.69 a week), pays their own.
+    council_tax_reduction_non_dep_deductions: [521.30, 521.30, 0]
