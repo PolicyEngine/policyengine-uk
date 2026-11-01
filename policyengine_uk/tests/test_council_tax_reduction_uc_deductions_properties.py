@@ -221,7 +221,8 @@ def calculate(simulation, fams):
         ),
     }
     for name, value in inputs.items():
-        possible_values = simulation.tax_benefit_system.variables[name].possible_values
+        variable = simulation.tax_benefit_system.variables[name]
+        possible_values = getattr(variable, "possible_values", None)
         if possible_values is not None:
             value = possible_values.encode(np.asarray(value))
         simulation.set_input(name, YEAR, value)
