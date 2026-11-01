@@ -63,6 +63,14 @@ Change `verified_start_year` or `verified_end_year` only after verifying that
 parameters and tests cover the stated years. Current entries use the status
 values `complete` and `partial`.
 
+The registry also defines the budget totals `household_tax` and
+`household_benefits`, and `policyengine_uk.programs.budget_programs()` serves
+their terms to downstream code. The `Program registry` section of
+`.github/CONTRIBUTING.md` defines the budget fields (`budget`, `group`,
+`budget_dropped_when`, `budget_uprating`), the `budget_terms` section and
+`budget_order`. Add or remove a term of either total there, never in the
+formula modules.
+
 ## Refactoring Recovery Lessons
 
 During the 2025-05-31 variable refactor recovery, a script that split

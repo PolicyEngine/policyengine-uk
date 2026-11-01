@@ -52,6 +52,36 @@ and add `verified_end_year` when verified coverage has a defined end. Change the
 verified year fields only after confirming that parameters and tests cover the
 stated years.
 
+The registry also defines the budget totals. `household_tax` adds every entry
+flagged `budget: tax` and `household_benefits` every entry flagged
+`budget: benefit`, in the order the file's `budget_order` lists them.
+`policyengine_uk.programs.budget_programs()` returns those terms with their
+labels, `tax` or `benefit` and `group`; downstream code reads that function, or
+`HOUSEHOLD_TAX_VARIABLES` and `HOUSEHOLD_BENEFIT_VARIABLES`, rather than its own
+copy. The budget fields are:
+
+- `budget`: `tax` or `benefit` on each entry whose `variable` a total adds;
+  leave it off the rest.
+- `group`: an optional key shared by terms that move together, such as the
+  childcare entitlements.
+- `budget_dropped_when`: the path of a boolean parameter that removes the term
+  from its total while true (`gov.contrib.abolish_council_tax` on council tax,
+  the High Value Council Tax Surcharge and Council Tax Reduction).
+- `budget_uprating`: which of `gov.contrib.benefit_uprating`'s `all` and
+  `non_sp` rates scale a benefit term; absent means both. The State Pension
+  takes `[all]` and basic income `[]`.
+
+A total's term that no programme entry carries goes under `budget_terms`, with a
+`kind`: `programme_measure` (the amount counted for the programme that `program`
+names, such as `esa_income` for ESA), `programme` (a programme the coverage list
+does not carry yet), `reform_measure` (not a programme: a hypothetical tax or
+benefit, or a change from baseline such as `vat_change`, zero unless a reform
+sets it) or `public_service` (public services in kind). These entries stay out
+of `programs`, so the coverage page never lists them, and they carry no
+verified-year fields. To add a term to a total, flag its entry and append its
+variable to the end of `budget_order`'s list; the package refuses to load when
+the flags and `budget_order` disagree.
+
 ## Axiom parity
 
 Every policy change here must also be correct in [rulespec-uk](https://github.com/TheAxiomFoundation/rulespec-uk). That covers a new programme, a parameter or threshold update, an eligibility rule and a bug fix. The shared guide, [Mirror policy changes in Axiom](https://github.com/PolicyEngine/.github/blob/main/CONTRIBUTING.md#mirror-policy-changes-in-axiom), defines the `axiom:` line your PR description needs and what a `queued` issue must contain. UK specifics:
