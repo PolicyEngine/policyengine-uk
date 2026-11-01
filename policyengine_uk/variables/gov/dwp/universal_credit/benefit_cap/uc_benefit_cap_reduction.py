@@ -1,19 +1,6 @@
 from policyengine_uk.model_api import *
 
 
-def benefit_cap_reduction_of(benunit, period, welfare_benefits):
-    """The regulation 81 reduction for welfare benefits that already count
-    Housing Benefit as nil (reg. 80(2A)): the excess over the Universal Credit
-    cap, minus the childcare costs element, and nothing where that element
-    exceeds the excess or the family has no award (reg. 78(1)). The
-    non-dependant deductions call this too, with their own total of welfare
-    benefits (housing_benefit/non_dep_deduction/_non_dependants.py)."""
-    excess = max_(welfare_benefits - benunit("uc_benefit_cap", period), 0)
-    reduction = max_(excess - benunit("uc_childcare_element", period), 0)
-    has_award = benunit("universal_credit_pre_benefit_cap", period) > 0
-    return where(has_award, reduction, 0)
-
-
 class uc_benefit_cap_reduction(Variable):
     value_type = float
     entity = BenUnit
@@ -42,9 +29,11 @@ class uc_benefit_cap_reduction(Variable):
     def formula(benunit, period, parameters):
         # Reg 80(2A): where the welfare benefit is Housing Benefit, "the
         # amount to be used is nil". benefit_cap_welfare_benefits counts it
-        # for the Housing Benefit cap (HB Regs 2006 reg 75C(2)(b)), so it is
-        # taken out here; a family paid both is capped on its other benefits.
-        welfare_benefits = benunit("benefit_cap_welfare_benefits", period) - benunit(
-            "housing_benefit_pre_benefit_cap", period
-        )
-        return benefit_cap_reduction_of(benunit, period, welfare_benefits)
+        # for the Housing Benefit cap (HB Regs 2006 reg 75C(2)(b));
+        # uc_benefit_cap_welfare_benefits leaves it out, so a family paid
+        # both is capped on its other benefits.
+        welfare_benefits = benunit("uc_benefit_cap_welfare_benefits", period)
+        excess = max_(welfare_benefits - benunit("uc_benefit_cap", period), 0)
+        reduction = max_(excess - benunit("uc_childcare_element", period), 0)
+        has_award = benunit("universal_credit_pre_benefit_cap", period) > 0
+        return where(has_award, reduction, 0)

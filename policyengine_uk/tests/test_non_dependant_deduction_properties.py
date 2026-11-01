@@ -81,6 +81,7 @@ and a non-dependant family of one or two adults:
    without the tax and National Insurance calculation.
 """
 
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -90,6 +91,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.model_api import YEAR, BenUnit, Variable
 
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -884,8 +886,8 @@ def test_ctr_scales_match_enacted_sums():
 
 
 def capped_universal_credit_families(families, year, **extra):
-    """One household per family: the generated awards, no Housing Benefit,
-    no Maternity Allowance and no deductions from the award."""
+    """One household per family: the generated awards and debt deduction
+    rate, no Housing Benefit and no Maternity Allowance."""
     people, benunits, households_ = {}, {}, {}
     for f, family in enumerate(families):
         members = [f"adult_{f}_{k}" for k in range(2 if family["couple"] else 1)]
@@ -896,6 +898,7 @@ def capped_universal_credit_families(families, year, **extra):
                 esa_contrib=family["esa_contrib"] if k == 0 else 0.0,
                 maternity_allowance=0.0,
             )
+        rate = family.get("uc_deduction_rate", 0.0)
         benunits[f"family_{f}"] = dict(
             members=members,
             **{
@@ -912,8 +915,8 @@ def capped_universal_credit_families(families, year, **extra):
             jsa_income=0.0,
             esa_income=0.0,
             housing_benefit_pre_benefit_cap=0.0,
-            uc_deduction_rate=0.0,
-            uc_deductions=0.0,
+            uc_deduction_rate=rate,
+            **(dict() if rate else dict(uc_deductions=0.0)),
             **extra,
         )
         households_[f"household_{f}"] = dict(members=members, country="ENGLAND")
@@ -924,12 +927,10 @@ def capped_universal_credit_families(families, year, **extra):
 
 def capped_universal_credit(sim, year):
     from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
-        universal_credit_after_benefit_cap,
+        universal_credit_award,
     )
 
-    return universal_credit_after_benefit_cap(
-        sim.populations["benunit"], year, sim.tax_benefit_system.parameters
-    )
+    return universal_credit_award(sim.populations["benunit"], year)
 
 
 CAPPED_FAMILY = st.fixed_dictionaries(
@@ -942,6 +943,7 @@ CAPPED_FAMILY = st.fixed_dictionaries(
         uc_childcare_element=st.sampled_from([0.0, 2_000.0, 12_000.0]),
         jsa_contrib=st.sampled_from([0.0, 4_000.0]),
         esa_contrib=st.sampled_from([0.0, 5_000.0]),
+        uc_deduction_rate=st.sampled_from([0.0, 0.05, 0.15]),
     )
 )
 ONE_CAPPED_FAMILY = dict(
@@ -964,112 +966,88 @@ PROTECTED_FLOOR = "gov.dwp.universal_credit.deductions.protected_floor"
     families=st.lists(CAPPED_FAMILY, min_size=1, max_size=8),
     year=st.integers(2025, 2030),
 )
-@example(families=[ONE_CAPPED_FAMILY], year=2025)
+@example(
+    # Under the 85% floor the 15% debt deduction comes first and the cap
+    # reduction goes, so the award before deductions is the full 20,000.
+    families=[ONE_CAPPED_FAMILY, dict(ONE_CAPPED_FAMILY, uc_deduction_rate=0.15)],
+    year=2025,
+)
 def test_capped_universal_credit_matches_the_model(families, year):
-    """Invariant 12: the after-cap Universal Credit counted in a
-    non-dependant family's gross income equals universal_credit for a family
-    with no Housing Benefit, Maternity Allowance or deductions, under current
-    law and under an 85% protected minimum floor. The test sets the floor in
-    place on the same simulation, which costs far less than a reformed one."""
+    """Invariant 12: the Universal Credit cap counts the welfare benefits
+    other than Housing Benefit, and a non-dependant family's gross income
+    counts its award after the cap and before debt deductions, under current
+    law and under an 85% protected minimum floor. The test changes the floor
+    in place on the same simulation."""
     sim = Simulation(situation=capped_universal_credit_families(families, year))
-    current_law = np.asarray(sim.calculate("universal_credit", year))
-    np.testing.assert_allclose(
-        capped_universal_credit(sim, year), current_law, atol=0.01
-    )
+
+    def check():
+        # UC Regs 2013 reg 80(2A), with no Housing Benefit to take out.
+        np.testing.assert_array_equal(
+            sim.calculate("uc_benefit_cap_welfare_benefits", year),
+            sim.calculate("benefit_cap_welfare_benefits", year)
+            - sim.calculate("housing_benefit_pre_benefit_cap", year),
+        )
+        award = np.asarray(sim.calculate("universal_credit", year))
+        np.testing.assert_allclose(
+            capped_universal_credit(sim, year),
+            np.maximum(
+                sim.calculate("universal_credit_pre_benefit_cap", year)
+                - sim.calculate("uc_benefit_cap_reduction_after_floor", year),
+                0,
+            ),
+            atol=0.01,
+        )
+        return award
+
+    current_law = check()
     sim.tax_benefit_system.parameters.get_child(PROTECTED_FLOOR).update(
         period=str(year), value=0.85
     )
     sim.tax_benefit_system.reset_parameter_caches()
     sim.reset_calculations()
-    floored = np.asarray(sim.calculate("universal_credit", year))
-    np.testing.assert_allclose(capped_universal_credit(sim, year), floored, atol=0.01)
-    # The floor only limits the reduction, so no award falls.
+    try:
+        floored = check()
+    finally:
+        sim.tax_benefit_system.parameters.get_child(PROTECTED_FLOOR).update(
+            period=str(year), value=0.0
+        )
+        sim.tax_benefit_system.reset_parameter_caches()
+    # The floor only limits the reductions, so no award falls.
     assert np.all(floored >= current_law - 0.01)
 
 
-def test_capped_universal_credit_reads_stored_and_replaced_values():
-    """Invariant 12: a stored award, cap reduction or welfare-benefit total,
-    and a replaced universal_credit formula, reach the gross income. The
-    family's Universal Credit before the cap is 20,000 against a 14,753 cap."""
-    from policyengine_core.reforms import Reform
-    from policyengine_core.simulations import Simulation as CoreSimulation
-
-    from policyengine_uk.variables.gov.dwp.universal_credit.universal_credit import (
-        universal_credit as current_law,
-    )
+def test_a_supplied_benefit_cap_total_with_a_non_dependant_cycles():
+    """A supplied benefit_cap_welfare_benefits includes Housing Benefit, so
+    Universal Credit takes out housing_benefit_pre_benefit_cap. Where the
+    simulation calculates that Housing Benefit for a household with a
+    non-dependant on Universal Credit, the award and the deduction depend on
+    each other, and the engine raises."""
+    from policyengine_core.errors import CycleError
 
     year = 2025
-    for stored, expected in [
-        (dict(), 14_753),
-        (dict(universal_credit=15_000.0), 15_000),
-        (dict(uc_benefit_cap_reduction=0.0), 20_000),
-        (dict(uc_benefit_cap_reduction_after_floor=1_000.0), 19_000),
-        (dict(benefit_cap_welfare_benefits=10_000.0), 20_000),
-    ]:
-        sim = Simulation(
-            situation=capped_universal_credit_families(
-                [ONE_CAPPED_FAMILY], year, **stored
-            )
-        )
-        helper = capped_universal_credit(sim, year)
-        assert helper == pytest.approx([expected], abs=0.01), stored
-        assert helper == pytest.approx(
-            sim.calculate("universal_credit", year), abs=0.01
-        ), stored
-
-    constant_award = type(
-        "universal_credit",
-        (current_law,),
-        dict(formula=lambda benunit, period, parameters: benunit.filled_array(12_345)),
-    )
-
-    class ConstantAward(Reform):
-        def apply(self):
-            self.update_variable(constant_award)
-
-    sim = CoreSimulation(
-        tax_benefit_system=ConstantAward(SYSTEM),
-        situation=capped_universal_credit_families([ONE_CAPPED_FAMILY], year),
-        default_input_period=year,
-        default_calculation_period=year,
-    )
-    assert capped_universal_credit(sim, year) == pytest.approx([12_345], abs=0.01)
-
-    # A replacement that scales the current-law award still reads the cap
-    # reduction, and so Housing Benefit and this deduction. The gross income
-    # then uses the award calculated without Housing Benefit, and nothing
-    # cycles: the non-dependant's deduction matches current law's.
-    scaled_award = type(
-        "universal_credit",
-        (current_law,),
-        dict(
-            formula=lambda benunit, period, parameters: (
-                0.9 * current_law.formula(benunit, period, parameters)
-            )
-        ),
-    )
-
-    class ScaledAward(Reform):
-        def apply(self):
-            self.update_variable(scaled_award)
-
     situation = for_years(
         dict(
             people=dict(
                 claimant=dict(age=70),
                 non_dependant=dict(
-                    age=24,
+                    age=40,
                     current_education="NOT_IN_EDUCATION",
-                    employment_income=5_000.0,
+                    employment_income=4_000.0,
                     weekly_hours=20.0,
                 ),
             ),
             benunits=dict(
-                claimant_unit=dict(members=["claimant"], benunit_is_rent_liable=True),
+                claimant_unit=dict(
+                    members=["claimant"],
+                    benunit_is_rent_liable=True,
+                    benefit_cap_welfare_benefits=0.0,
+                ),
                 non_dependant_unit=dict(
                     members=["non_dependant"],
                     benunit_is_rent_liable=False,
                     would_claim_uc=True,
+                    universal_credit_pre_benefit_cap=15_000.0,
+                    benefit_cap_welfare_benefits=15_000.0,
                 ),
             ),
             households=dict(
@@ -1084,20 +1062,157 @@ def test_capped_universal_credit_reads_stored_and_replaced_values():
         ),
         [year],
     )
-    current = Simulation(situation=situation)
-    scaled = CoreSimulation(
-        tax_benefit_system=ScaledAward(SYSTEM),
-        situation=situation,
+    with pytest.raises(CycleError):
+        Simulation(situation=situation).calculate("housing_benefit", year)
+
+
+class uc_award_scale(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Scale on the Universal Credit award, for a test reform"
+    definition_period = YEAR
+    default_value = 1.0
+
+
+@lru_cache(maxsize=None)
+def scaled_award_system():
+    """Current law, with universal_credit replaced by uc_award_scale times
+    current law's formula. The replacement still reads the cap reduction."""
+    from policyengine_core.reforms import Reform
+
+    from policyengine_uk.variables.gov.dwp.universal_credit.universal_credit import (
+        universal_credit as current_law,
+    )
+
+    def formula(benunit, period, parameters):
+        return benunit("uc_award_scale", period) * current_law.formula(
+            benunit, period, parameters
+        )
+
+    class ScaledAward(Reform):
+        def apply(self):
+            self.add_variable(uc_award_scale)
+            self.update_variable(
+                type("universal_credit", (current_law,), dict(formula=formula))
+            )
+
+    return ScaledAward(SYSTEM)
+
+
+AWARD_YEAR = 2025
+AWARD_HOUSEHOLD = st.fixed_dictionaries(
+    dict(
+        employment_income=st.floats(0, 20_000),
+        universal_credit_pre_benefit_cap=st.floats(0, 25_000),
+        scale=st.floats(0, 1),
+    )
+)
+# 4,000 of wages plus the 14,753 capped award is 360.63 a week, in the 348
+# band; a tenth less award gives 332.26 a week, in the 266 band.
+BAND_CROSSING = dict(
+    employment_income=4_000.0, universal_credit_pre_benefit_cap=15_000.0, scale=0.9
+)
+
+
+def award_households(households, awards=None):
+    """Each generated household twice, with the generated scale and then
+    with none: a 70-year-old claimant paying 6,000 rent, and a 40-year-old
+    non-dependant working 20 hours who claims Universal Credit under a 14,753
+    cap. awards supplies each family's universal_credit."""
+    people, benunits, households_ = {}, {}, {}
+    no_awards = {benefit: 0.0 for benefit in BENEFITS + OTHER_FAMILY_BENEFITS}
+    for copy, scaled in enumerate([True, False]):
+        for h, household in enumerate(households):
+            claimant, non_dependant = f"claimant_{copy}_{h}", f"non_dep_{copy}_{h}"
+            people[claimant] = dict(age=70, current_education="NOT_IN_EDUCATION")
+            people[non_dependant] = dict(
+                age=40,
+                current_education="NOT_IN_EDUCATION",
+                employment_income=household["employment_income"],
+                weekly_hours=20.0,
+            )
+            benunits[f"claimant_unit_{copy}_{h}"] = dict(
+                members=[claimant], benunit_is_rent_liable=True, **no_awards
+            )
+            benunits[f"non_dep_unit_{copy}_{h}"] = dict(
+                members=[non_dependant],
+                benunit_is_rent_liable=False,
+                would_claim_uc=True,
+                uc_benefit_cap=14_753.0,
+                uc_childcare_element=0.0,
+                **{
+                    **no_awards,
+                    "universal_credit_pre_benefit_cap": household[
+                        "universal_credit_pre_benefit_cap"
+                    ],
+                },
+            )
+            if awards is None:
+                benunits[f"non_dep_unit_{copy}_{h}"]["uc_award_scale"] = (
+                    household["scale"] if scaled else 1.0
+                )
+            households_[f"household_{copy}_{h}"] = dict(
+                members=[claimant, non_dependant],
+                country="ENGLAND",
+                local_authority="MAIDSTONE",
+                rent=6_000.0,
+                tenure_type="RENT_PRIVATELY",
+            )
+    if awards is not None:
+        for name, award in zip(benunits, awards):
+            benunits[name]["universal_credit"] = float(award)
+    return for_years(
+        dict(people=people, benunits=benunits, households=households_), [AWARD_YEAR]
+    )
+
+
+@PROPERTY_SETTINGS
+@given(households=st.lists(AWARD_HOUSEHOLD, min_size=1, max_size=3))
+@example(households=[BAND_CROSSING])
+def test_deduction_follows_a_reformed_award(households):
+    """Invariant 12: under a reform that scales the Universal Credit award,
+    each household's Housing Benefit and CTR deductions equal those of the
+    same household with the reformed award supplied, and the Housing Benefit
+    deduction is the band of the non-dependant's wages plus that award, so
+    an award that crosses a band moves the deduction."""
+    from policyengine_core.simulations import Simulation as CoreSimulation
+
+    year = AWARD_YEAR
+    reformed = CoreSimulation(
+        tax_benefit_system=scaled_award_system(),
+        situation=award_households(households),
         default_input_period=year,
         default_calculation_period=year,
     )
-    assert scaled.calculate("universal_credit", year) == pytest.approx(
-        0.9 * current.calculate("universal_credit", year), abs=0.01
+    awards = np.asarray(reformed.calculate("universal_credit", year))
+    supplied = Simulation(situation=award_households(households, awards))
+    for name in [
+        "housing_benefit_non_dep_deductions",
+        "council_tax_reduction_non_dep_deductions",
+        "housing_benefit",
+    ]:
+        np.testing.assert_allclose(
+            reformed.calculate(name, year),
+            supplied.calculate(name, year),
+            atol=0.01,
+            err_msg=name,
+        )
+    # Reg 74(1)(a), (2): the non-dependant works 20 hours and has no other
+    # income, so the deduction is the band of wages plus the award.
+    scale = SYSTEM.parameters(str(year)).gov.dwp.housing_benefit.non_dep_deduction
+    deductions = np.asarray(
+        reformed.calculate("housing_benefit_non_dep_deductions", year)
     )
-    for name in ["household_benefits_individual_non_dep_deduction", "housing_benefit"]:
-        assert scaled.calculate(name, year) == pytest.approx(
-            current.calculate(name, year), abs=0.01
-        ), name
+    wages = [h["employment_income"] for h in households] * 2
+    for i, (wage, award) in enumerate(zip(wages, awards[1::2])):
+        weekly = (wage + award) / WEEKS
+        edges = [bracket.threshold for bracket in scale.amount.brackets]
+        if min(abs(weekly - edge) for edge in edges) < 0.01:
+            continue
+        expected = scale.amount.calc(np.array([weekly]))[0] * WEEKS
+        assert deductions[2 * i] == pytest.approx(expected, abs=0.01), (i, weekly)
+    if households == [BAND_CROSSING]:
+        assert deductions[0] < deductions[2], deductions
 
 
 # Earned-income cases for invariant 13. Each sets the person's earnings

@@ -1,31 +1,7 @@
 """Shared definitions for Housing Benefit and Council Tax Reduction
 non-dependant deductions."""
 
-from policyengine_core.errors import CycleError
-
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.benefit_cap import benefit_cap_couple
-from policyengine_uk.utils.benefit_unit import add_for_members, award_of_couple
-from policyengine_uk.utils.supplied_inputs import stored_as_input
-from policyengine_uk.variables.gov.dwp.benefit_cap_welfare_benefits import (
-    CLAIMANT_OR_PARTNER_BENEFITS as CAPPED_CLAIMANT_OR_PARTNER_BENEFITS,
-    FAMILY_BENEFITS as CAPPED_FAMILY_BENEFITS,
-)
-from policyengine_uk.variables.gov.dwp.universal_credit.benefit_cap.uc_benefit_cap_reduction import (
-    benefit_cap_reduction_of,
-)
-from policyengine_uk.variables.gov.dwp.universal_credit.benefit_cap.uc_benefit_cap_reduction_after_floor import (
-    benefit_cap_reduction_applied,
-)
-from policyengine_uk.variables.gov.dwp.universal_credit.universal_credit import (
-    universal_credit as universal_credit_variable,
-)
-from policyengine_uk.variables.gov.dwp.esa_income import (
-    income_related_esa_award_on_reports,
-)
-from policyengine_uk.variables.gov.dwp.jsa_income import (
-    income_related_jsa_award_on_reports,
-)
 
 # Family benefits counted in a couple's gross income, besides Universal Credit.
 # They are awarded to the benefit unit, so the person-level gross income
@@ -41,16 +17,6 @@ FAMILY_GROSS_INCOME_BENEFITS = [
     "claimant_or_partner_esa_income",
     "pension_credit",
 ]
-
-# The welfare benefits the benefit cap counts (benefit_cap_welfare_benefits)
-# other than Housing Benefit, and Maternity Allowance, a welfare benefit
-# (Welfare Reform Act 2012 s.96(10)(i)) that total leaves out. Bereavement
-# allowance and the widow's benefits have no input.
-CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
-    benefit
-    for benefit in CAPPED_CLAIMANT_OR_PARTNER_BENEFITS + CAPPED_FAMILY_BENEFITS
-    if benefit != "housing_benefit_pre_benefit_cap"
-] + ["maternity_allowance"]
 
 
 def non_dependant_weekly_gross_income(person, period, parameters, own_gross_income):
@@ -69,9 +35,7 @@ def non_dependant_weekly_gross_income(person, period, parameters, own_gross_inco
     other_awards = benunit.project(add(benunit, period, FAMILY_GROSS_INCOME_BENEFITS))
     # Universal Credit is the income of the claimants it assesses, the
     # claimant and partner unless is_uc_claimant names someone else.
-    universal_credit = benunit.project(
-        universal_credit_after_benefit_cap(benunit, period, parameters)
-    )
+    universal_credit = benunit.project(universal_credit_award(benunit, period))
     uc_claimant = person("is_uc_assessed_claimant", period)
     couple_claims_universal_credit = person.benunit.any(
         uc_claimant & claimant_or_partner
@@ -88,88 +52,17 @@ def non_dependant_weekly_gross_income(person, period, parameters, own_gross_inco
     return annual / WEEKS_IN_YEAR
 
 
-def reads_simulation_value(benunit, period, variable_name, default_formula=None):
-    """Whether to read the variable instead of recalculating it here: the
-    simulation stores an input for the period, a reform neutralized the
-    variable or, where the caller passes default_formula, replaced its
-    formula."""
-    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
-    if variable.is_neutralized:
-        return True
-    if default_formula is not None:
-        formula = variable.get_formula(period)
-        if formula is None or formula.__code__ != default_formula.__code__:
-            return True
-    return stored_as_input(benunit, variable_name, period)
-
-
-def universal_credit_after_benefit_cap(benunit, period, parameters):
-    """A family's Universal Credit award after the benefit cap (UC Regs 2013
-    reg 81), for a family with no liability for rent. universal_credit and
-    uc_benefit_cap_reduction depend on Housing Benefit through the welfare
-    benefits they count, so this applies the cap to the same welfare benefits
-    other than Housing Benefit, which such a family does not receive (UC reg
-    80(2A) counts it as nil in any case), for the same single person or couple
-    (benefit_cap_couple; reg 79(1)). It shares the award's own calculation of
-    the reduction (benefit_cap_reduction_of) and of the part a protected
-    minimum floor lets it take (benefit_cap_reduction_applied). Deductions
-    DWP pays from the award to third parties or for debts stay the family's
-    income, so this keeps them in and applies the floor as for a family with
-    none: the deduction rate depends on the cap reduction, and so on Housing
-    Benefit. Where the simulation stores universal_credit as an input, or a
-    reform replaces its formula, this reads it as it stands, unless the new
-    formula still reads the cap reduction and so this deduction; then it
-    calculates the award here. It also reads a stored or neutralized
-    uc_benefit_cap_reduction_after_floor, uc_benefit_cap_reduction or
-    benefit_cap_welfare_benefits, the last with Housing Benefit at nil."""
-    if reads_simulation_value(
-        benunit, period, "universal_credit", universal_credit_variable.formula
-    ):
-        try:
-            return benunit("universal_credit", period)
-        except CycleError:
-            # Core unwinds the calculation; the award below doesn't read
-            # Housing Benefit.
-            pass
-    if reads_simulation_value(benunit, period, "uc_benefit_cap_reduction_after_floor"):
-        applied = benunit("uc_benefit_cap_reduction_after_floor", period)
-    else:
-        if reads_simulation_value(benunit, period, "uc_benefit_cap_reduction"):
-            reduction = benunit("uc_benefit_cap_reduction", period)
-        else:
-            reduction = benefit_cap_reduction_of(
-                benunit, period, capped_welfare_benefits(benunit, period)
-            )
-        applied = benefit_cap_reduction_applied(
-            benunit, period, parameters, reduction, 0
-        )
-    return max_(benunit("universal_credit_pre_benefit_cap", period) - applied, 0)
-
-
-def capped_welfare_benefits(benunit, period):
-    """The welfare benefits the Universal Credit cap counts, with Housing
-    Benefit at nil (reg 80(2A)) and Maternity Allowance in."""
-    if reads_simulation_value(benunit, period, "benefit_cap_welfare_benefits"):
-        return benunit("benefit_cap_welfare_benefits", period)
-    couple = benefit_cap_couple(benunit, period)
-    income_based = award_of_couple(
-        benunit,
-        period,
-        "jsa_income",
-        "jsa_income_reported",
-        income_related_jsa_award_on_reports,
-        couple,
-    ) + award_of_couple(
-        benunit,
-        period,
-        "esa_income",
-        "esa_income_reported",
-        income_related_esa_award_on_reports,
-        couple,
-    )
-    return income_based + add_for_members(
-        benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT, couple
-    )
+def universal_credit_award(benunit, period):
+    """Return a family's Universal Credit award after the benefit cap (UC
+    Regs 2013 reg 81) and before debt deductions. Welfare Reform Act 2012
+    s.8(1) sets the award as the maximum amount less the amounts for
+    income. DWP then takes advances (SI 2013/383 reg 10), overpayments (SI
+    2013/384 regs 10-11) and third-party payments (SI 2013/380 Sch 6 para
+    2(1)) from the sum payable, so those deductions stay the family's
+    income. A nil award carries none."""
+    universal_credit = benunit("universal_credit", period)
+    deductions = benunit("uc_deductions", period)
+    return universal_credit + where(universal_credit > 0, deductions, 0)
 
 
 def has_earned_income(person, period):

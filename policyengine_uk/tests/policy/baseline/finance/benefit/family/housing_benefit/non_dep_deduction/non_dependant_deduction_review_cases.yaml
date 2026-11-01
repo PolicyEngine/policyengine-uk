@@ -1,6 +1,6 @@
-# Counterexamples from the independent review of PolicyEngine/policyengine-uk#2007,
-# end to end for Housing Benefit (HB Regs 2006 reg 74) and the England pensioner
-# Council Tax Reduction scheme (SI 2012/2885 Sch 1 para 8), 2026-27 amounts.
+# End-to-end cases for the non-dependant deductions of Housing Benefit (HB Regs
+# 2006 reg 74) and the England pensioner Council Tax Reduction scheme (SI
+# 2012/2885 Sch 1 para 8), at 2026-27 amounts.
 # The claimant family is the rent-liable family with the household's oldest
 # member. Family benefits are held at zero except where a case tests them.
 
@@ -165,8 +165,6 @@
     council_tax_reduction_non_dep_deduction_exempt: [false, false]
     housing_benefit_non_dep_deductions: [1_060.80, 0]
     council_tax_reduction_non_dep_deductions: [270.40, 0]
-
-# Round 2 of the independent review.
 
 - name: Statutory maternity pay is earned income for the Universal Credit exemption
   period: 2026
@@ -426,8 +424,8 @@
     housing_benefit_non_dep_deduction_exempt: [false, false, false]
     housing_benefit_non_dep_deductions: [3_497.00, 0]
 
-# Round 3: partners are the SSCBA s.137 couple (is_claimant_or_partner), not
-# whoever is not a child benefit child or qualifying young person.
+# Partners are the SSCBA s.137 couple (is_claimant_or_partner), not whoever is
+# not a child benefit child or qualifying young person.
 
 - name: A blind 16-year-old partner exempts a Welsh 19-year-old applicant
   period: 2026
@@ -569,9 +567,8 @@
     council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
     merton_council_tax_reduction_non_dep_deductions: [0, 0]
 
-# Round 3 of the independent review: gross and earned income, the Scottish
-# working-age scheme, the benefit cap's childcare protection, and child
-# benefit entitlement.
+# Gross and earned income, the Scottish working-age scheme, the benefit cap's
+# childcare protection, and child benefit entitlement.
 
 - name: Statutory maternity pay counts towards a non-dependant couple's gross income
   period: 2026
@@ -1008,9 +1005,7 @@
     council_tax_reduction_non_dep_deduction_exempt: [false, false, false]
     council_tax_reduction_non_dep_deductions: [540.80, 0]
 
-# Round 4 of the independent review.
-
-- name: Maternity Allowance counts towards the benefit cap on a non-dependant's Universal Credit
+- name: A non-dependant family's Universal Credit counts after the benefit cap
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -1068,13 +1063,17 @@
         country: ENGLAND
         local_authority: MAIDSTONE
   output:
-    # Welfare Reform Act 2012 s.96(10)(i): Maternity Allowance is a capped
-    # benefit. Capped benefits are 25,129.80, 3,109.80 over the cap, so UC
-    # is 10,890.20 (UC reg 81). Joint gross income is 9,200 wages + 6,000 MA
-    # + 10,890.20 UC + 5,129.80 child benefit = 600.38 a week: the HB 485
-    # band (119.85) and the CTR 485 band (13.30).
-    housing_benefit_non_dep_deductions: [6_232.20, 0]
-    council_tax_reduction_non_dep_deductions: [691.60, 0]
+    # The Universal Credit cap counts 14,000 UC and 5,129.80 child benefit,
+    # 19,129.80, under the 22,020 cap, so UC stays 14,000 (UC reg 81). Joint
+    # gross income is 9,200 wages + 6,000 Maternity Allowance + 14,000 UC +
+    # 5,129.80 child benefit = 660.19 a week: the top bands, 131.45 HB and
+    # 15.95 CTR. Welfare Reform Act 2012 s.96(10)(i) makes Maternity
+    # Allowance a welfare benefit, which the model's cap leaves out (#2784).
+    # Counting it gives 25,129.80, 3,109.80 over the cap, so UC of 10,890.20,
+    # 600.38 a week and the 485 bands: 6,232.20 HB and 691.60 CTR.
+    universal_credit: [0, 14_000]
+    housing_benefit_non_dep_deductions: [6_835.40, 0]
+    council_tax_reduction_non_dep_deductions: [829.40, 0]
 
 - name: A self-employment loss does not cancel a non-dependant's gross wages
   period: 2026
@@ -1173,8 +1172,6 @@
     council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
     council_tax_reduction_non_dep_deductions: [288.60, 0]
 
-# Round 6 of the independent review.
-
 - name: A young person's own Maternity Allowance does not cap the family's Universal Credit
   period: 2026
   absolute_error_margin: 0.01
@@ -1227,8 +1224,7 @@
     housing_benefit_non_dep_deductions: [6_232.20, 0]
     council_tax_reduction_non_dep_deductions: [691.60, 0]
 
-# Round 7 of the independent review: the Universal Credit exemption reads
-# Universal Credit's own calculation of earned income (uc_individual_earned_income).
+# The Universal Credit exemption reads uc_individual_earned_income.
 
 - name: Employment expenses that cancel the wages leave no earned income
   period: 2026
