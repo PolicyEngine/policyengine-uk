@@ -10,14 +10,15 @@ class cash_isa_countable_capital(Variable):
         "The person's cash ISA balance (cash_isa_balance) as the means tests "
         "count it, in the holder's own benefit unit. An ISA has one holder, "
         "who owns its investments beneficially, and a child holds their own "
-        "junior ISA. The household's cash_isa already counts the balance, so "
-        "each means test takes it out of the household pool it shares between "
-        "benefit units. Where the household's balances add up to more than "
-        "cash_isa, the total the model holds for the household, each is "
-        "scaled down by the same proportion, so no household counts more cash "
-        "ISA than cash_isa. Where they add up to less, the rest of cash_isa "
-        "stays in the pool. A household with no balances keeps all of "
-        "cash_isa in the pool."
+        "junior ISA. The household's cash_isa already holds the balance, so "
+        "each means test subtracts it from the household pool before sharing "
+        "the pool between benefit units. Where the household's balances add up "
+        "to more than cash_isa, the total the model holds for the household, "
+        "the model scales each by cash_isa over their sum and rounds it down "
+        "to float32, so the household never counts more cash ISA than "
+        "cash_isa. Where they add up to less, the rest of cash_isa stays in "
+        "the pool, and a household with no balances keeps all of cash_isa "
+        "there."
     )
     entity = Person
     definition_period = YEAR

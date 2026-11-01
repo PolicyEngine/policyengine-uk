@@ -9,17 +9,18 @@ description: >
   ISA at its surrender value: regulation 49 values capital at its current
   market or surrender value, and DMG 29665 counts a Lifetime ISA at 75% of its
   value under 60 and in full from 60. Lifetime ISAs exist from 6 April 2017,
-  and the list counts them from then. `cash_isa_countable_capital` and
-  `stocks_and_shares_isa_countable_capital` are a member's cash and stocks and
-  shares ISA balances. An ISA has one holder, who owns its investments
+  and the formulas count them from then. `cash_isa_countable_capital` and
+  `stocks_and_shares_isa_countable_capital` hold a member's cash and stocks and
+  shares ISA balances. Each ISA has one holder, who owns its investments
   beneficially (Individual Savings Account Regulations 1998 reg. 4(1B)(c) and
-  (6)(a)), and a child holds their own junior ISA (reg. 2B). Each counts only
-  while `sources` lists the household source that already holds it
-  (`cash_isa`, `share_like_capital`), and the household pool then leaves it
-  out of that source, so it counts once, in its holder's own benefit unit, and
-  a list without the household source counts neither. Household data with no
-  balances keep the whole household total in the pool. ISAs exist from 6 April
-  1999 (reg. 1).
+  (6)(a)), and a child holds their own junior ISA (reg. 2B). The formulas count
+  each balance only while `sources` lists the household source that already
+  holds it (`cash_isa`, `share_like_capital`), and subtract the counted
+  balances from that source before they share the pool, so each balance counts
+  once, in its holder's own benefit unit. When `sources` drops the household
+  source, the formulas count neither balance. Household data with no balances
+  leave the whole household total in the pool. ISAs exist from 6 April 1999
+  (reg. 1).
 metadata:
   label: Income Support person-level capital sources
   period: year

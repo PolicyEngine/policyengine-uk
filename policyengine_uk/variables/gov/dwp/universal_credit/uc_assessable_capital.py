@@ -29,9 +29,11 @@ class uc_assessable_capital(Variable):
         "independent of other units' financial reports. These "
         "allocations are assumptions about unobserved ownership, not law. "
         "Person-level proxies count only claimants/partners, not dependants. "
-        "A cash or stocks and shares ISA balance tied to a person leaves the "
-        "financial pool, unless a report or override of the holder's own unit "
-        "already covers it. "
+        "The formula subtracts each person's cash and stocks and shares ISA "
+        "balances from the financial pool and counts them in the holder's "
+        "unit, except where the holder's unit reports its capital: there it "
+        "leaves its claimant's and partner's ISAs in the pool and subtracts "
+        "the report instead. "
         "Under regulation 77, disregarded company holdings are replaced by "
         "the claimant/partner's share of company capital."
     )
@@ -50,9 +52,9 @@ class uc_assessable_capital(Variable):
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         person = benunit.members
         claimant_or_partner = person("is_uc_claimant", period)
-        # A report or complete override already covers its claimant's and
-        # partner's ISAs, as it does their company holdings, and consumes
-        # them from the pool. Every other person's ISA leaves the pool here.
+        # For a unit with a report or complete override, leave its claimant's
+        # and partner's ISAs in the pool and subtract the report, as for their
+        # company holdings. Subtract every other person's ISA here.
         covered = claimant_or_partner & (
             (person.benunit("benunit_reported_capital", period) >= 0)
             | (person.benunit("uc_reported_capital", period) >= 0)

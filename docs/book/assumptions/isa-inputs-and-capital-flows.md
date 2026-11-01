@@ -109,19 +109,27 @@ changes what the total sums or stops a person balance reading its inputs. A
 household input in a situation applies only to its own year; the person
 balances carry the variable-level uprating to later years.
 
-Each means test counts a member's cash and stocks and shares ISA balances in
-the member's own benefit unit, through `cash_isa_countable_capital` and
-`stocks_and_shares_isa_countable_capital` in its `person_sources`, and only for
-the claimant and partner. A dependant's balance, a child's junior ISA among
-them, counts in no benefit unit. The household pool leaves those balances out
-of `cash_isa` and `share_like_capital` and shares the rest between benefit
-units. Where the balances add up to less than the total the model holds for
-the year, the rest stays in the pool. Where they add up to more, each counts in
-proportion, so the household counts no more than that total. Data that store
-only household totals hold no balances, so the pool keeps the whole total, as
-before. A balance counts only while the programme's `sources` lists the
-household source that holds it, so a reform that drops `cash_isa` or
-`share_like_capital` from `sources` drops the balances with it.
+Each means-test formula counts the claimant's and partner's cash and stocks and
+shares ISA balances in their own benefit unit, through
+`cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital` in
+its `person_sources`. A dependant's balance, a child's junior ISA among them,
+counts in no benefit unit. The formulas subtract a household's counted balances
+from `cash_isa` and `share_like_capital` before they share the remainder
+between benefit units. Where the balances add up to less than the total the
+model holds for the year, the remainder stays in the pool. Where they add up to
+more, the model scales each balance by the total over their sum and rounds it
+down to the float32 value it stores, so the household never counts more than
+the total and the pool never falls below zero; a sole holder whose balance
+reaches the total counts exactly the total. For stocks and shares ISAs the
+model takes the smaller of `stocks_and_shares_isa` and `share_like_capital` as
+the total. Data that store only household totals hold no balances, so the pool
+keeps the whole total. The formulas count a balance only while the programme's
+`sources` lists the household source that holds it, so a reform that drops
+`cash_isa` or `share_like_capital` from `sources` drops the balances with it.
+In Universal Credit, a unit that reports its capital
+(`benunit_reported_capital` or `uc_reported_capital`, zero or more) leaves its
+claimant's and partner's ISAs in the pool, and the formula subtracts the report
+from the pool instead, as it does for company holdings.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and

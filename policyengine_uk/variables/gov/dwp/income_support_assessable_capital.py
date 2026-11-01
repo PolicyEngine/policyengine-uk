@@ -19,9 +19,9 @@ class income_support_assessable_capital(Variable):
         "Person-level sources, such as a Lifetime ISA, count only for the "
         "holder's own benunit, and only when the holder is its claimant or "
         "partner (is_claimant_or_partner): a dependant's capital is not the "
-        "claimant's. A cash or stocks and shares ISA balance tied to a person "
-        "counts the same way, and leaves the household capital the proxy shares "
-        "out."
+        "claimant's. The formula counts a person's cash and stocks and shares ISA "
+        "balances the same way and subtracts them from the household capital "
+        "before sharing it out."
     )
     definition_period = YEAR
     unit = GBP
