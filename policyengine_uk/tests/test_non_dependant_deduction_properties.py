@@ -247,8 +247,8 @@ def households(draw):
 
 def build(population, year, raise_income=False, explicit_uc_claimants=False):
     """The generated population as a simulation. With explicit_uc_claimants,
-    every person's is_uc_claimant is an input: True for each claimant and the
-    generated flag for each non-dependant. (An input for some people stores
+    the inputs name each family's UC claimants: is_uc_claimant is True for
+    each claimant and the generated flag for each non-dependant. (An input for some people stores
     the default, False, for the rest.) Otherwise the model's default applies:
     the claimant and partner of each family."""
     people, benunits, households_, persons = {}, {}, {}, []
@@ -1335,10 +1335,11 @@ def test_earned_income_exemption_reads_universal_credit(families, year):
         if case is None:
             continue
         member, settled = case
-        # The predicate is Universal Credit's earned income, for a claimant
-        # the award assesses (the model pairs claimant and partner, and may
-        # leave a second adult outside the couple): the Welsh pensioner
-        # scheme at any age, Housing Benefit under 25.
+        # For each claimant the award assesses, compare the exemption with
+        # Universal Credit's earned-income calculation (the model pairs
+        # claimant and partner, and may leave a second adult outside the
+        # couple): the Welsh pensioner scheme at any age, Housing Benefit
+        # under 25.
         on_universal_credit = bool(assessed[i])
         uc_without_earnings = on_universal_credit and not earned[i]
         assert bool(ctr_exempt[i]) == uc_without_earnings, (i, member)

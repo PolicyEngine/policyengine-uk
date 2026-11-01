@@ -5,8 +5,8 @@
 # pays the lowest amount (England 5.20, SI 2026/27; Scotland 5.55, SSI
 # 2026/56; Wales 6.70, WSI 2026/13), and 403.85/week of income in work falls
 # in the band from £279 in England (10.60) and Wales (13.35) and from £286 in
-# Scotland (10.95). Family awards, which a single non-dependant's gross income
-# would count, are held at zero. English cases give the household a
+# Scotland (10.95). The cases hold the family's awards, which a single
+# non-dependant's gross income would count, at zero. English cases give the household a
 # pension-age applicant, since England's national scheme covers pension-age
 # applicants only, and the model works out each family's scheme.
 

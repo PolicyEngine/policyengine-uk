@@ -24,7 +24,8 @@ def non_dependant_weekly_gross_income(person, period, parameters, own_gross_inco
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
     para 8(4)): each member's own gross income plus the family's tax credits,
     child benefit, Income Support, income-based JSA, income-related ESA and
-    Pension Credit, and its Universal Credit where either member claims it.
+    Pension Credit, and its Universal Credit award (universal_credit_award)
+    where either member claims it.
     Anyone else in the benefit unit is a separate non-dependant, banded on
     their own income, with the Universal Credit where they alone claim it.
     own_gross_income names the programme's person-level gross income
@@ -66,14 +67,13 @@ def universal_credit_award(benunit, period):
 
 
 def has_earned_income(person, period):
-    """Whether the person has earned income as Universal Credit calculates it
-    (HB Regs 2006 reg 74(8)(b), (11) and the CTR schemes' equivalents give
-    "earned income" the meaning in UC Regs 2013 reg 52):
-    uc_individual_earned_income, which takes off allowable expenses, tax,
-    National Insurance and relievable pension contributions (reg 55(3), (5)),
-    counts a company's income attributed to its owner and sets trading losses
-    against profits (regs 57(2), 77(3)), and applies the minimum income floor
-    only where reg 62 does, a couple's floor included."""
+    """Read whether Universal Credit counts positive earned income for the
+    person (uc_individual_earned_income). HB Regs 2006 reg 74(8)(b), (11) and
+    the CTR schemes' equivalents give "earned income" the meaning in UC Regs
+    2013 reg 52. UC deducts allowable expenses, tax, National Insurance and
+    relievable pension contributions (reg 55(3), (5)); attributes company
+    income to its owner (reg 77(3)); offsets trading losses (reg 57(2)); and
+    applies the floor under reg 62, a couple's floor included."""
     return person("uc_individual_earned_income", period) > 0
 
 

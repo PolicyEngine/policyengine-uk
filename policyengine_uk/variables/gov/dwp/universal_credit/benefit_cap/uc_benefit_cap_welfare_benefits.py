@@ -31,11 +31,11 @@ class uc_benefit_cap_welfare_benefits(Variable):
         "The welfare benefits the Universal Credit cap counts: those in "
         "benefit_cap_welfare_benefits, for the same single person or couple, "
         "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Universal "
-        "Credit therefore reads no Housing Benefit, and the Housing Benefit "
+        "Credit then reads no Housing Benefit, so the Housing Benefit "
         "non-dependant deductions can read universal_credit. Where the "
         "inputs supply benefit_cap_welfare_benefits, whose total includes "
         "Housing Benefit, this subtracts housing_benefit_pre_benefit_cap "
-        "from it."
+        "from it, and Universal Credit reads Housing Benefit."
     )
     definition_period = YEAR
     unit = GBP

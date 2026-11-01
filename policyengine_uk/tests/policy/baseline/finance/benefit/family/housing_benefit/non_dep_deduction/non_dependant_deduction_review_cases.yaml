@@ -1262,9 +1262,9 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 55(3)(a): allowable employment expenses come off
-    # employed earnings, leaving none (HB reg 74(8)(b), (11); WSI 2013/3029
-    # Sch 1 para 3(8)(c), (10)).
+    # DWP subtracts allowable employment expenses from employed earnings
+    # (UC Regs 2013 reg 55(3)(a)), leaving none (HB reg 74(8)(b), (11); WSI
+    # 2013/3029 Sch 1 para 3(8)(c), (10)).
     housing_benefit_non_dep_deduction_exempt: [false, true]
     council_tax_reduction_non_dep_deduction_exempt: [false, true]
     housing_benefit_non_dep_deductions: [0, 0]
@@ -1307,9 +1307,9 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 57(2): the trades' profits and losses are added
-    # together before any nil floor, so the loss cancels the profit. The case
-    # holds the minimum income floor off, so only the loss rule decides.
+    # DWP adds the trades' profits and losses before applying the nil floor
+    # (UC Regs 2013 reg 57(2)), so the loss cancels the profit. The inputs
+    # turn off the minimum income floor.
     housing_benefit_non_dep_deduction_exempt: [false, true]
     council_tax_reduction_non_dep_deduction_exempt: [false, true]
     housing_benefit_non_dep_deductions: [0, 0]
@@ -1352,8 +1352,8 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 77(3)(b) treats the company's income as the owner's
-    # self-employed earnings, so the exemption doesn't apply. Outside
+    # DWP attributes the company's income to its owner as self-employed
+    # earnings (UC Regs 2013 reg 77(3)(b)), so the exemption doesn't apply. Outside
     # remunerative work the councils deduct the lowest amounts: HB 20.40 and
     # the Welsh pensioner scale's 6.70 a week.
     housing_benefit_non_dep_deduction_exempt: [false, false]
@@ -1405,9 +1405,9 @@
         country: WALES
         local_authority: CARDIFF
   output:
-    # UC Regs 2013 reg 62(3) treats a member of a couple as having the floor
-    # only while the couple's earned income falls short of the couple
-    # threshold. The partner's earned income exceeds it, so the non-dependant
+    # DWP applies the minimum income floor to a member of a couple only while
+    # the couple's earnings fall below the couple threshold (UC Regs 2013 reg
+    # 62(3)). The partner's earned income exceeds it, so the non-dependant
     # has none, and the exemption applies. The Welsh working-age scheme
     # deducts for each member of a Universal Credit couple (Sch 6 para 5(3)):
     # nil for the exempt non-dependant and 6.70 a week for the partner, who

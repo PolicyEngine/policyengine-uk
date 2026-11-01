@@ -723,7 +723,8 @@
     council_tax_reduction_non_dep_gross_income: 1_000
 
 - name: council_tax_reduction_non_dep_gross_income counts other investment income
-  # Gross income is earnings and any other income (DWP HB guidance A5.542).
+  # DWP tells councils to count earnings and any other income (HB guidance
+  # A5.542).
   period: 2025
   input:
     social_security_income: 0
@@ -746,9 +747,9 @@
     council_tax_reduction_non_dep_gross_income: 5_000
 
 - name: council_tax_reduction_non_dep_gross_income counts ISA interest and dividends
-  # Gross income is earnings and any other income (DWP HB guidance A5.542),
-  # savings interest included (A5.570). The supplied exempt-interest total
-  # includes the ISA interest, which counts once.
+  # DWP tells councils to count earnings and other income (HB guidance
+  # A5.542), including savings interest (A5.570). This case supplies an
+  # exempt-interest total, so the model counts that total once.
   period: 2025
   input:
     social_security_income: 0
