@@ -894,12 +894,11 @@ def test_a_reform_that_pays_outside_the_age_conditions_bars_the_award(
     """In 2016 the man aged 63 who would not claim Pension Credit gets none
     and keeps his £5,000 award, and the man aged 63 who would claim gets the
     £8,091.20 minimum guarantee (52 x £155.60) and no award. The man aged 40
-    does not meet the age conditions. Under each reform but the last, a
-    family outside the definition's defined_for gets something other than
-    the model's: Pension Credit pays him £2,000 or the minimum guarantee, so
-    he has an entitlement to it (Sch 1 para 6(1)(c)) and gets no award. The
-    model's own definitions, registered again, keep the shortcut, and he
-    keeps his £5,000."""
+    does not meet the age conditions. Under each reform but the last, the
+    model pays him £2,000 of Pension Credit or the minimum guarantee outside
+    the definition's defined_for, so he has an entitlement to it (Sch 1 para
+    6(1)(c)) and gets no award. The model's own definitions, registered
+    again, keep the shortcut, and he keeps his £5,000."""
     year = 2016
     sim = Simulation(
         situation=combine(

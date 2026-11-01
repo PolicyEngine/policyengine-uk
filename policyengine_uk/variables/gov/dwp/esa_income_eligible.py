@@ -48,9 +48,9 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
     Core calculates one of them from (replaces_definition), such as the
     default a family outside its defined_for gets, or freeze Pension Credit
     at the baseline's award (gov.contrib.freeze_pension_credit) whatever the
-    reform's age conditions. Pension Credit can then pay a family that does
-    not meet the age conditions or would not claim. A reform can also give
-    would_claim_pc a formula, which could read the couple's ESA; the screen
+    reform's age conditions. The model can then pay Pension Credit to a
+    family that does not meet the age conditions or would not claim. A
+    reform can also give would_claim_pc a formula, which could read the couple's ESA; the screen
     would then close a cycle if it read take-up in the simulation itself.
     """
     simulation = benunit.simulation

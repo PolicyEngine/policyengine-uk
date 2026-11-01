@@ -59,9 +59,9 @@ model's reported or proxy inputs; it reads the qualifying age
 (has_attained_state_pension_credit_qualifying_age) and the model's proxy for
 being on Pension Credit (meets_pension_credit_age_conditions and
 would_claim_pc) from the model, and, for the income-related ESA screen,
-pensionable age (is_SP_age; WRA 2007 s.1(3)(c)) and whether Pension Credit
-pays the couple (Sch 1 para 6(1)(c) and (d)): no one drawn here has earnings,
-and in 2025 no one has tax credits, so the model's pension_credit is the same
+pensionable age (is_SP_age; WRA 2007 s.1(3)(c)) and whether the model pays
+the couple Pension Credit (Sch 1 para 6(1)(c) and (d)): no one drawn here has
+earnings, and in 2025 no one has tax credits, so the model's pension_credit is the same
 with or without the couple's income-related ESA; and the means test is out of
 scope. No
 claimant or partner drawn here reports Pension Credit or Housing Benefit
@@ -406,9 +406,9 @@ def reference_eligibility(
     """The model's Income Support gate, read family by family.
 
     on_pension_credit is the model's proxy for s.124(1)(g);
-    entitled_to_pension_credit is whether Pension Credit pays the couple,
-    which the income-related ESA screen reads (WRA 2007 Sch 1 para 6(1)(c)
-    and (d))."""
+    entitled_to_pension_credit records whether the model pays the couple
+    Pension Credit, which the income-related ESA screen reads (WRA 2007 Sch 1
+    para 6(1)(c) and (d))."""
     IS = parameters.gov.dwp.income_support
     WORK = IS.eligibility.remunerative_work
     JSA = parameters.gov.dwp.JSA.income
