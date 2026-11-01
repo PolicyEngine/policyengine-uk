@@ -58,6 +58,11 @@ Invariants, for any generated population of working-age families in
     for each £250 or part above it and the £16,000 limit, ESA Regs 2008 regs
     110 and 118), the dates and the saving, without the model's code. This
     bounds a couple's claim by one share and keeps a saved claim whole.
+12. Held awards: with no reform holding esa_income, both of its held
+    amounts, the award and the claimant's and partner's part, match the
+    formula on open reports for every benefit unit (holds_formula_award), so
+    the report closure decides each outside member's status in
+    own_report_is_paid.
 """
 
 import datetime
@@ -68,7 +73,12 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+from policyengine_core.periods import period
+
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
+    holds_formula_award,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -114,6 +124,8 @@ BENUNIT_OUTPUTS = [
     "esa_income_abolition_reached",
     "legacy_benefits_closed",
 ]
+# Benefit-unit outputs of the payee helpers rather than variables.
+HELPER_OUTPUTS = ["holds_formula_award"]
 PERSON_OUTPUTS = [
     "esa_contrib",
     "esa_income_payable_share",
@@ -230,13 +242,18 @@ def situation(units):
 
 def calculate(units, reform=None):
     sim = Simulation(situation=situation(units), reform=reform)
-    return {
+    values = {
         year: {
             v: np.asarray(sim.calculate(v, year))
             for v in BENUNIT_OUTPUTS + PERSON_OUTPUTS
         }
         for year in YEARS
     }
+    for year in YEARS:
+        values[year]["holds_formula_award"] = holds_formula_award(
+            sim.populations["benunit"], period(year), "esa_income"
+        )
+    return values
 
 
 def calculate_each_mode(units, modes=MODES):
@@ -248,8 +265,8 @@ def calculate_each_mode(units, modes=MODES):
     values = calculate(combined)
     out = {mode: {year: {} for year in YEARS} for mode in modes}
     for year in YEARS:
-        for name in BENUNIT_OUTPUTS + PERSON_OUTPUTS:
-            size = n if name in BENUNIT_OUTPUTS else p
+        for name in BENUNIT_OUTPUTS + HELPER_OUTPUTS + PERSON_OUTPUTS:
+            size = n if name not in PERSON_OUTPUTS else p
             for k, mode in enumerate(modes):
                 out[mode][year][name] = values[year][name][k * size : (k + 1) * size]
     return out
@@ -482,6 +499,9 @@ def test_abolition_invariants(units):
             ), year
         assert not np.any(k["esa_income_abolition_reached"]), year
         assert not np.any(k["legacy_benefits_closed"]), year
+        # 12. Without a reform, both held amounts match the formula.
+        for v in (a, k, w, f, n):
+            assert np.all(v["holds_formula_award"]), year
     # 5. Before 2026-27 every output matches, whatever the saving and claim.
     for year in BEFORE:
         for name in BENUNIT_OUTPUTS + PERSON_OUTPUTS:
