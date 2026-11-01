@@ -868,3 +868,75 @@
     is_qualifying_young_person_for_universal_credit: [true, true]
     is_qualifying_young_person_for_uc_education: [false, false]
     uc_receiving_education: [false, false]
+
+- name: Case 34, the 18-year-old of case 32 claims when DWP moves them off legacy benefits and keeps the award.
+  # Reg. 28 takes the claimant out of the qualifying young person route, so
+  # they receive education under reg. 12(2)(b), not reg. 12(1A). SI 2014/1230
+  # reg. 60(1) lifts the condition from a person who doesn't meet it on the
+  # migration day "because the person is undertaking a full-time course (see
+  # regulation 12(2) and 13 ...)".
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        has_education_maintenance_funding: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    meets_uc_education_condition: [true]
+    is_uc_eligible: true
+
+- name: Case 35, Working Tax Credit reported by another adult in the benefit unit doesn't lift the condition from a qualifying young person.
+  # The model's benefit unit can hold an adult who is neither claimant,
+  # partner, child nor qualifying young person, and the model sums reported
+  # Working Tax Credit over every member, so this family takes the reg. 60A
+  # route. Reg. 60A(1) waives only "the condition in section 4(1)(b) of the
+  # Act (claimant has not reached the qualifying age for state pension
+  # credit)". The claimant, an 18-year-old qualifying young person on a
+  # full-time non-advanced course, receives education under reg. 12(1A), so
+  # reg. 60(1), which covers reg. 12(2), doesn't apply, and no reg. 14(1)
+  # exception does: the other adult isn't a child or qualifying young
+  # person (reg. 14(1)(c)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        is_claimant_or_partner: true
+      person2:
+        age: 25
+        working_tax_credit_reported: 1_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_uc_education: [true, false]
+    uc_receiving_education: [true, false]
+    uc_is_excepted_from_education_condition: [false, false]
+    meets_uc_education_condition: [false, true]
+    is_uc_eligible: false
+    universal_credit: 0
