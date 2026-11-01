@@ -742,9 +742,10 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
 
 
 # Households for Pension Credit's pool: each a list of benefit units of
-# (age, person columns), with household columns. A dataset that stores a
-# total for one household stores it for all, so households with no stored
-# totals take a dataset of their own.
+# (age, person columns), with household columns. _dataset gives every
+# household each column any household has, and #2781 keeps a stored zero
+# over the balances, so households with no stored totals take a dataset of
+# their own.
 NO_STORED_TOTALS = [
     # A pensioner couple, both with ISAs, and an unrelated working-age holder.
     {
