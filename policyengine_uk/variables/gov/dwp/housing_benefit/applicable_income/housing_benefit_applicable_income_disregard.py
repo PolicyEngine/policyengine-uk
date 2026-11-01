@@ -23,10 +23,11 @@ def hb_capped_accommodation(benunit, period, accommodation):
 
 
 def hb_segment_earnings_disregard(benunit, period, parameters, accommodation):
-    """Apply the childcare and earnings limits to one full accommodation
-    amount. Return the earnings disregard, with its defined_for condition
-    applied, and the childcare deduction. Calculate no WTC disregard, so a
-    condition on that disregard can read the earnings disregard."""
+    """Apply childcare and earnings limits to one full accommodation amount.
+    Return the earnings disregard and childcare deduction. Use an annual
+    override for the earnings disregard where present; otherwise apply its
+    defined_for condition. Leave WTC to hb_segment_deductions so a condition
+    on WTC can read the earnings disregard."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     accommodation = hb_capped_accommodation(benunit, period, accommodation)
@@ -58,9 +59,9 @@ def hb_segment_earnings_disregard(benunit, period, parameters, accommodation):
 
 
 def hb_segment_deductions(benunit, period, parameters, accommodation):
-    """Return the earnings disregard, the WTC disregard and the childcare
-    deduction for one full accommodation amount, each with its variable's
-    defined_for condition applied."""
+    """Return the earnings disregard, WTC disregard and childcare deduction
+    for one full accommodation amount. Use annual overrides where present;
+    otherwise apply each variable's defined_for condition."""
     disregard, childcare = hb_segment_earnings_disregard(
         benunit, period, parameters, accommodation
     )

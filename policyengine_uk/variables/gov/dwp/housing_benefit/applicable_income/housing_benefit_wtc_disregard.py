@@ -16,12 +16,11 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 
 
 def hb_fixed_childcare_deduction(benunit, period, parameters):
-    """The annual childcare deduction where it, or the limit it reads, is
-    supplied (by a dataset, set_input or a scenario), neutralized or
-    calculated by a formula a reform put in place of the model's. Where the
-    limit is supplied or replaced, apply the deduction's defined_for
-    condition. Otherwise None: each accommodation segment calculates its own
-    deduction."""
+    """Return the annual childcare deduction when an input or reform
+    overrides it or its limit. If the deduction keeps the model's formula
+    but its limit takes an annual override, cap the charges at that limit
+    and apply the deduction's defined_for condition. Otherwise return None
+    so each accommodation segment calculates its own deduction."""
     childcare = housing_benefit_applicable_income_childcare_element
     if hb_uses_annual_override(benunit, period, childcare.__name__, childcare.formula):
         return benunit(childcare.__name__, period)

@@ -18,18 +18,17 @@ M1. Each annual disregard equals the day-weighted sum of its segment amounts.
 M2. Where a condition fails, its amount takes the variable's default in the
     annual output and in every segment, unless the population supplies the
     amount as an input, which applies as supplied, as core applies it.
-    Where applicable income's condition fails, the award equals the
-    maximum benefit less 65% of any excess of that default over the
-    applicable amount.
+    Where applicable income's condition fails, the award equals
+    max(0, maximum benefit - 0.65 * max(0, default - applicable amount)).
 M3. A benefit unit whose conditions all hold has the model's outputs, award
     included.
-M4. The award equals an independent calculation that applies the
-    regulations within each segment, with each failed condition's amount
-    nil, and combines the segments' awards by days. The calculation settles
-    the childcare deduction before it removes a failed earnings or WTC
-    disregard from income, as the model does: the limit still counts the
-    standard and accommodation disregards and keeps back the WTC the model
-    would disregard (test_a_failed_disregard_still_limits_childcare).
+M4. For the generated cases, whose variables default to nil, the award
+    agrees with an independent scalar calculation within each segment,
+    combined by days. The calculation settles the childcare deduction
+    before it removes a failed earnings or WTC disregard from income, as
+    the model does: the limit still counts the standard and accommodation
+    disregards and keeps back the WTC the model would disregard
+    (test_a_failed_disregard_still_limits_childcare).
 M5. Each year but 2026-27 has one segment, and the award built from it
     equals the award the model builds from annual income.
 

@@ -66,7 +66,8 @@ def hb_reads_no_other_variable(benunit, period, variable_name):
 
 def hb_accommodation_segments(benunit, period, parameters):
     """Yield full annual accommodation amounts and fiscal-year weights.
-    Apply the disregard's defined_for condition to each amount."""
+    Preserve an annual override where present; otherwise apply the
+    disregard's defined_for condition to each amount."""
     name = "housing_benefit_specified_or_temporary_accommodation_disregard"
     if hb_uses_annual_override(
         benunit,
