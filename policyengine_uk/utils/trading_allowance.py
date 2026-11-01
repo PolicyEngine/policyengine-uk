@@ -28,12 +28,16 @@ def _data_year(person, period):
     - Other data without years, such as a policyengine-core Dataset: the
       earliest year self_employment_income was supplied for, for the same
       reason.
-    - A situation: the latest year, up to the one simulated, for which
-      self_employment_income was supplied. A profit carried from an earlier
-      year keeps that year's allowance: a 2025-26 profit simulated in
-      2027-28 deducted £1,000, and gains from the raise to £3,000. The
-      builder stores a year's inputs for everyone in the situation, giving
-      anyone not set the default, so one year serves them all.
+    - A situation: the latest year, up to the one simulated, for which the
+      situation gave self_employment_income, as recorded when it was built
+      (Simulation.build_from_situation), so that a later write of the
+      profit, by a scenario's modifier or a derivative, does not move it. A
+      profit carried from an earlier year keeps that year's allowance: a
+      2025-26 profit simulated in 2027-28 deducted £1,000, and gains from
+      the raise to £3,000. The builder stores a year's inputs for everyone
+      in the situation, giving anyone not set the default, so one year
+      serves them all. A simulation built some other way reads the profit's
+      supplied years as they stand.
     With no profit supplied, the year simulated.
 
     Not handled: data cannot declare the year their incomes were measured
@@ -43,20 +47,24 @@ def _data_year(person, period):
     from policyengine_uk.data import UKMultiYearDataset
 
     simulation = person.simulation
-    supplied = supplied_input_periods(person, "self_employment_income")
     if built_from_data(simulation):
         # Checked by type: a policyengine-core Dataset loads any attribute
         # it is asked for as a table, so it cannot be asked for years.
         dataset = getattr(simulation, "dataset", None)
         if isinstance(dataset, UKMultiYearDataset):
             return min(dataset.years)
+        supplied = supplied_input_periods(person, "self_employment_income")
         return (supplied[0] if supplied else period).start.year
-    earlier = [
-        supplied_period
-        for supplied_period in supplied
-        if supplied_period.start <= period.start
-    ]
-    return (earlier[-1] if earlier else period).start.year
+    years = getattr(simulation, "_situation_profit_years", None)
+    if years is None:
+        years = [
+            supplied_period.start.year
+            for supplied_period in supplied_input_periods(
+                person, "self_employment_income"
+            )
+        ]
+    earlier = [year for year in years if year <= period.start.year]
+    return earlier[-1] if earlier else period.start.year
 
 
 def trading_allowance_reliefs(person, period, parameters):
@@ -123,8 +131,11 @@ def trading_allowance_reliefs(person, period, parameters):
       are the allowance, which leaves receipts less the allowance (nil
       within it), and ordinary treatment, which leaves receipts less those
       expenses and lets a supplied current loss be claimed. They make the
-      same election as everyone else: the allowance, unless its saving over
-      their expenses is negative or smaller than such a loss. So under the
+      same election as everyone else: the allowance, if it covers their
+      expenses and its saving over them is at least such a loss. (Covering
+      them matters where losses brought forward absorb both options: the
+      saving then ties at nil, and the allowance below their expenses would
+      charge Class 4, which does not see those losses, more.) So under the
       default share a claimant with no loss keeps the allowance at or above
       the input allowance, where the deduction is its excess over the input
       allowance, capped at profit, and a cut leaves their profit as
@@ -172,7 +183,7 @@ def trading_allowance_reliefs(person, period, parameters):
     claimant_expenses = min_(
         max_(
             round_(min_(max_(expense_share, 0), 1) * input_allowance, 2),
-            claimant_capital_allowances,
+            round_(claimant_capital_allowances, 2),
         ),
         input_allowance,
     )
@@ -261,8 +272,14 @@ def trading_allowance_reliefs(person, period, parameters):
     # A claimant makes the same election against their own options: the
     # allowance unless it does worse than their expenses, or than a larger
     # supplied current loss. Ties take the allowance.
+    # The allowance must also cover their expenses: where losses brought
+    # forward absorb both options the saving ties at nil, and the allowance
+    # would then charge Class 4, which does not see those losses, more.
     claimant_takes_allowance = (
-        claimant & (allowance > 0) & ~(current_loss > claimant_saving)
+        claimant
+        & (allowance > 0)
+        & (allowance >= claimant_expenses)
+        & ~(current_loss > claimant_saving)
     )
     return (
         where(

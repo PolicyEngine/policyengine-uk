@@ -95,6 +95,7 @@ from policyengine_uk.utils.supplied_inputs import (
     forget_replaced_model_values,
     keep_population_records,
     model_value_input_records,
+    supplied_input_periods,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -686,6 +687,7 @@ class Simulation(CoreSimulation):
         clone._savings_income_projection = getattr(
             self, "_savings_income_projection", None
         )
+        clone._situation_profit_years = getattr(self, "_situation_profit_years", None)
         return clone
 
     def _isa_latest_input(self, name, period, *, earlier=False):
@@ -1084,6 +1086,17 @@ class Simulation(CoreSimulation):
         builder.build_from_dict(self.tax_benefit_system, situation, self)
         self.has_axes = builder.has_axes
         self._capture_cgt_supplied_inputs()
+        # The years the situation gave a self-employment profit for, as
+        # supplied: the trading allowance reads the year a claimant's profit
+        # was measured from them (utils/trading_allowance.py, _data_year), so
+        # a later write of the profit, by a scenario or a derivative, must
+        # not move it.
+        self._situation_profit_years = tuple(
+            period.start.year
+            for period in supplied_input_periods(
+                self.populations["person"], "self_employment_income"
+            )
+        )
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period
@@ -1474,6 +1487,7 @@ class Simulation(CoreSimulation):
         self._cgt_warned_unused = False
         self._isa_income_contracts = {}
         self._savings_income_projection = None
+        self._situation_profit_years = None
 
     def build_from_ids(
         self,

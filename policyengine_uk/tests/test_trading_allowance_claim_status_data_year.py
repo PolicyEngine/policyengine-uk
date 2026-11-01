@@ -180,10 +180,12 @@ def test_a_situation_reads_the_year_of_the_profit_not_of_the_status():
     assert deduction(earlier_profit, 2027) == pytest.approx([2_000])
 
 
-def test_a_raise_never_withdraws_a_situation_claimants_loss_relief():
+def test_a_raise_never_withdraws_a_situation_claimants_carried_loss():
     # The situation's inputs are for 2025, so in 2027 the raise to £3,000
-    # gives this claimant £2,000. Their claim gave the loss up at £1,000 and
-    # still does at £3,000, so the raise only lowers their tax.
+    # gives this claimant £2,000. The 2025 loss carried into 2027 is not a
+    # supplied 2027 loss, so it does not enter the election, for a claimant
+    # as for anyone: they take the allowance at £1,000 and at £3,000 alike,
+    # and the raise only adds its £2,000.
     person = {
         "age": {2025: 40},
         "employment_income": {2025: 30_000},
@@ -196,3 +198,111 @@ def test_a_raise_never_withdraws_a_situation_claimants_loss_relief():
     at_1000 = Simulation(situation=situation(person), reform=kept)
     tax = law.calculate("income_tax", 2027)[0]
     assert tax == pytest.approx(at_1000.calculate("income_tax", 2027)[0] - 400, abs=1)
+
+
+def test_a_situation_claimants_supplied_loss_meets_the_allowance_in_the_election():
+    # A £1,000 loss supplied for 2027 itself enters the election. At £1,000
+    # the allowance saves nothing over the claimant's expenses, so they
+    # claim the loss; at £3,000 it saves £2,000, more than the loss, so they
+    # take the allowance and give the loss up.
+    person = {
+        "age": {2025: 40},
+        "employment_income": {2025: 30_000},
+        "self_employment_income": {2025: 5_000},
+        "trading_loss": {2027: 1_000},
+        "trading_allowance_claim_status": {2025: "CLAIMANT"},
+    }
+    kept = {ALLOWANCE: {"2027": 1_000}}
+    law = Simulation(situation=situation(person))
+    at_1000 = Simulation(situation=situation(person), reform=kept)
+    assert law.calculate("uses_trading_allowance", 2027).tolist() == [True]
+    assert at_1000.calculate("uses_trading_allowance", 2027).tolist() == [False]
+    assert at_1000.calculate("trade_loss_relief_against_general_income", 2027)[
+        0
+    ] == pytest.approx(1_000)
+    assert (
+        law.calculate("income_tax", 2027)[0] < at_1000.calculate("income_tax", 2027)[0]
+    )
+
+
+def claimant_with_2025_inputs():
+    return situation(
+        {
+            "age": {2025: 40},
+            "employment_income": {2025: 30_000},
+            "self_employment_income": {2025: 5_000},
+            "trading_allowance_claim_status": {2025: "CLAIMANT"},
+        }
+    )
+
+
+def test_a_derivative_of_the_profit_leaves_the_data_year():
+    # calculate_derivative steps the 2027 profit and sets it back, but the
+    # situation's profit was given for 2025, and stays read as measured then.
+    from policyengine_uk.dynamics.progression import calculate_derivative
+
+    simulation = Simulation(situation=claimant_with_2025_inputs())
+    before = simulation.calculate("income_tax", 2027)[0]
+    assert deduction(simulation, 2027) == pytest.approx([2_000])
+    calculate_derivative(
+        simulation,
+        input_variable="self_employment_income",
+        year=2027,
+        count_adults=1,
+    )
+    assert deduction(simulation, 2027) == pytest.approx([2_000])
+    assert simulation.calculate("income_tax", 2027)[0] == pytest.approx(before)
+
+
+def test_a_modifier_that_writes_the_profit_back_changes_nothing():
+    from policyengine_uk.utils.scenario import Scenario
+
+    def write_back(simulation):
+        simulation.set_input(
+            "self_employment_income",
+            2027,
+            simulation.calculate("self_employment_income", 2027),
+        )
+
+    reformed = Simulation(
+        situation=claimant_with_2025_inputs(),
+        scenario=Scenario(simulation_modifier=write_back),
+    )
+    assert reformed.calculate("income_tax", 2027)[0] == pytest.approx(
+        reformed.baseline.calculate("income_tax", 2027)[0]
+    )
+    assert deduction(reformed, 2027) == pytest.approx([2_000])
+
+
+def test_a_core_simulation_over_data_reads_the_first_year_of_the_profit():
+    # Data stored for every year, as a policyengine-core simulation over a
+    # data frame holds them, were measured in their first year: 2025, under
+    # £1,000, so the 2027 raise gives the claimant £2,000.
+    from policyengine_core.simulations import Simulation as CoreSimulation
+
+    from policyengine_uk.system import system
+
+    record = pd.DataFrame(
+        {
+            "person_id": [1],
+            "person_benunit_id": [1],
+            "person_household_id": [1],
+            "benunit_id": [1],
+            "household_id": [1],
+            "age": [40],
+            "self_employment_income": [5_000.0],
+            "trading_allowance_claim_status": ["CLAIMANT"],
+            "household_weight": [1.0],
+        }
+    )
+    frame = pd.concat(
+        [
+            record.rename(columns=lambda column: f"{column}__{year}")
+            for year in range(2025, 2029)
+        ],
+        axis=1,
+    )
+    simulation = CoreSimulation(tax_benefit_system=system, dataset=frame)
+    assert simulation.calculate("trading_allowance_deduction", 2027).tolist() == (
+        pytest.approx([2_000])
+    )

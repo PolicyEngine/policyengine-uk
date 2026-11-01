@@ -602,6 +602,40 @@
     # (30,000 + 1,500 - 12,570) x 20%
     income_tax: 3_786
 
+- name: Losses brought forward do not keep a claimant on the allowance below their expenses.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 1
+    self_employment_income: 20_000
+    loss_relief: 25_000
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # The £25,000 of losses absorb either option, so income tax cannot tell
+    # them apart; a £1 allowance does not cover the £1,000 of expenses, so
+    # they deduct those, and Class 4, which does not see these losses,
+    # charges the profit as reported.
+    trading_allowance_deduction: 0
+    uses_trading_allowance: false
+    ni_class_4_profits_before_losses: 20_000
+    # (20,000 - 12,570) x 6%
+    ni_class_4: 445.80
+
+- name: An allowance equal to a claimant's capital allowances keeps the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 726.21
+    gov.simulation.trading_allowance_claimant_expense_share: 0
+    self_employment_income: 2_500
+    capital_allowances: 726.21
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Their expenses are the £726.21 of capital allowances, to the penny:
+    # a tie, which takes the allowance. Receipts 3,500 less 726.21.
+    uses_trading_allowance: true
+    taxable_self_employment_income: 2_773.79
+
 - name: A claimant's capital allowances above the share's expenses count as expenses.
   period: 2026
   absolute_error_margin: 0

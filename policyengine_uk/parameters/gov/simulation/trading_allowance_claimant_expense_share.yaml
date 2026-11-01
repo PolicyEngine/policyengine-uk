@@ -16,9 +16,11 @@ description: >-
 # claim, or they would deduct them instead, but no survey records them. With
 # a share of 1, the default, they equal it, so a cut leaves a claimant's
 # taxable profit as reported: the lower bound of its yield. With 0 they have
-# none, so every claimant keeps claiming and a cut adds its full amount: the
-# upper bound. 1 is a convention, not an estimate, kept so that the model
-# books no yield it cannot support (PolicyEngine/policyengine-uk#2764).
+# none beyond any capital allowances supplied for them, so a claimant with
+# no capital allowances and no current loss keeps claiming and a cut adds its
+# full amount: the upper bound. 1 is a convention, not an estimate, kept so
+# that the model books no yield it cannot support
+# (PolicyEngine/policyengine-uk#2764).
 values:
   2005-04-01: 1
 metadata:
