@@ -1,7 +1,8 @@
 # Universal Credit's basic condition that a claimant "is not receiving
 # education" (Welfare Reform Act 2012 s. 4(1)(d)), with the meaning in the
 # Universal Credit Regulations 2013 reg. 12, the exceptions in reg. 14(1) and
-# the couple rule in reg. 3(2)(b).
+# the couple rule in reg. 3(2), which DWP's Advice for Decision Making E2016
+# applies where one member of a couple meets all the basic conditions.
 #
 # Expected amounts use DWP's monthly rates for 2026 to 2027 (Benefit and
 # pension rates 2026 to 2027, gov.uk): standard allowance £338.58 for a single
@@ -185,14 +186,14 @@
     is_uc_eligible: true
     universal_credit: 9_987.36
 
-- name: Case 7, a mixed-age couple who are both full-time students keep the award.
+- name: Case 7, a mixed-age couple who are both full-time students get no Universal Credit under ADM E2016.
   # Reg. 14(1)(f) excepts the member who has reached the qualifying age for
-  # State Pension Credit; reg. 3(2)(a) relieves them of the age condition
-  # and reg. 3(2)(b) the younger member of this one. Since 15 May 2019 the
-  # couple cannot get Pension Credit (SPCA 2002 s. 4(1A)). 12 x £666.97 =
-  # £8,003.64.
+  # State Pension Credit, but that member doesn't meet the age condition.
+  # The younger member meets the age condition but receives education with
+  # no exception. ADM E2016 needs one member to meet all the basic
+  # conditions, and neither does. Since 15 May 2019 the couple cannot get
+  # Pension Credit either (SPCA 2002 s. 4(1A)).
   period: 2026
-  absolute_error_margin: 0.01
   input:
     people:
       person1:
@@ -214,14 +215,13 @@
     uc_receiving_education: [true, true]
     uc_is_excepted_from_education_condition: [true, false]
     meets_uc_education_condition: [true, false]
-    is_uc_eligible: true
-    universal_credit: 8_003.64
+    is_uc_eligible: false
+    universal_credit: 0
 
-- name: Case 8, a mixed-age couple whose younger member alone is a full-time student keep the award.
-  # The older member meets the education condition (reg. 3(2)(b)) and the
-  # younger the age condition (reg. 3(2)(a)). 12 x £666.97 = £8,003.64.
+- name: Case 8, a mixed-age couple whose younger member alone is a full-time student get no Universal Credit under ADM E2016.
+  # The older member meets the education condition and the younger the age
+  # condition, but neither meets both, as ADM E2016 needs one member to do.
   period: 2026
-  absolute_error_margin: 0.01
   input:
     people:
       person1:
@@ -239,8 +239,8 @@
         region: NORTH_EAST
   output:
     meets_uc_education_condition: [true, false]
-    is_uc_eligible: true
-    universal_credit: 8_003.64
+    is_uc_eligible: false
+    universal_credit: 0
 
 - name: Case 9, a student with PIP and limited capability for work keeps the award.
   # Reg. 14(1)(b): entitled to PIP, with limited capability for work.
@@ -391,7 +391,7 @@
     is_uc_eligible: true
     universal_credit: 4_062.96
 
-- name: Case 15, a non-advanced full-time course with a grant is receiving education.
+- name: Case 15, a claimant on a non-advanced full-time course with a maintenance grant receives education.
   # Reg. 12(2)(b): "any other full-time course ... for which a student loan
   # or grant is provided for the person's maintenance".
   period: 2026
@@ -401,7 +401,7 @@
         age: 30
         current_education: POST_SECONDARY
         is_in_full_time_education: true
-        education_grants: 2_000
+        has_education_maintenance_funding: true
     benunits:
       benunit:
         members: [person1]
@@ -414,7 +414,7 @@
     is_uc_eligible: false
     universal_credit: 0
 
-- name: Case 16, a non-advanced full-time course with no loan or grant is not receiving education.
+- name: Case 16, a claimant on a non-advanced full-time course with no loan or grant does not receive education.
   # Neither limb of reg. 12(2) applies, and at 30 the person is not a
   # qualifying young person. 12 x £424.90 = £5,098.80.
   period: 2026
@@ -425,6 +425,7 @@
         age: 30
         current_education: POST_SECONDARY
         is_in_full_time_education: true
+        has_education_maintenance_funding: false
     benunits:
       benunit:
         members: [person1]
@@ -574,3 +575,296 @@
         region: NORTH_EAST
   output:
     is_uc_eligible: false
+
+- name: Case 23, a mixed-age couple whose older member alone is a full-time student keep the award.
+  # Reg. 14(1)(f) excepts the older member, and the younger member meets
+  # the age condition and the education condition, so reg. 3(2)(a) lets the
+  # couple claim jointly (ADM E2016). 12 x £666.97 = £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        current_education: TERTIARY
+        is_in_full_time_education: true
+      person2:
+        age: 60
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true, false]
+    meets_uc_education_condition: [true, true]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 24, a mixed-age couple where neither member studies keep the award.
+  # The younger member meets every basic condition (reg. 3(2)(a)).
+  # 12 x £666.97 = £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+      person2:
+        age: 60
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    meets_uc_education_condition: [true, true]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 25, a mixed-age couple whose younger student claims when DWP moves them off legacy benefits keep the award.
+  # SI 2014/1230 reg. 60(1) lifts the condition from the younger member
+  # while they continue the course, so that member meets both conditions.
+  # 12 x £666.97 = £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+      person2:
+        age: 60
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true, true]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 26, a pension-age student couple on Working Tax Credit claim under reg. 60A when DWP moves them.
+  # SI 2014/1230 reg. 60A waives the upper age condition, and reg. 60(1)
+  # lifts the education condition from both members. 12 x £666.97 =
+  # £8,003.64.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 72
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+      person2:
+        age: 70
+        current_education: TERTIARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [true, true]
+    meets_uc_education_condition: [true, true]
+    is_uc_eligible: true
+    universal_credit: 8_003.64
+
+- name: Case 27, a student with Attendance Allowance and limited capability for work keeps the award.
+  # Reg. 14(1)(b) names attendance allowance. The case gives a working-age
+  # claimant Attendance Allowance and no other listed benefit, to test that
+  # benefit on its own. 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        aa_category: LOWER
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 28, a student with Armed Forces Independence Payment and limited capability for work keeps the award.
+  # Reg. 2 counts Armed Forces Independence Payment as attendance allowance
+  # for reg. 14(1)(b), and reg. 66 doesn't count it as unearned income.
+  # 12 x £424.90 = £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        armed_forces_independence_payment: 8_000
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 29, a student with Disability Living Allowance and limited capability for work keeps the award.
+  # Reg. 14(1)(b) names disability living allowance. 12 x £424.90 =
+  # £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        dla_sc_category: MIDDLE
+        uc_limited_capability_for_work: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 30, a claimant on a non-advanced full-time course with an equipment grant and no maintenance funding keeps the award.
+  # Reg. 12(2)(b) needs a loan or grant for the person's maintenance.
+  # Learner Support can help with materials and equipment (gov.uk/learner-
+  # support), and the claimant's student loan doesn't fund maintenance
+  # here, so the claimant doesn't receive education. 12 x £424.90 =
+  # £5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        education_grants: 100
+        student_loans: 3_000
+        has_education_maintenance_funding: false
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 31, an 18-year-old on Housing Benefit and a non-advanced full-time course takes the ordinary route.
+  # SI 2014/1230 reg. 28: a person entitled to an existing benefit, here
+  # Housing Benefit (reg. 2(1)), is not a qualifying young person for the
+  # Universal Credit Regulations. With no maintenance funding, reg. 12(2)
+  # doesn't apply either, so the claimant doesn't receive education.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 32, the same 18-year-old with a maintenance grant receives education under reg. 12(2)(b).
+  # Reg. 28 sends the claimant to reg. 12(2), and the grant for their
+  # maintenance meets reg. 12(2)(b). No exception applies.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        has_education_maintenance_funding: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 33, a couple of 18-year-olds on a joint Working Tax Credit award both leave the qualifying young person route.
+  # Tax Credits Act 2002 s. 3(3)(a): a couple claims jointly, so both
+  # members are entitled to the award, and SI 2014/1230 reg. 28 applies to
+  # each, whichever member reports it.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+      person2:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, true]
+    is_qualifying_young_person_for_uc_education: [false, false]
+    uc_receiving_education: [false, false]
