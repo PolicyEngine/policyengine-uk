@@ -193,6 +193,15 @@ response values. Inputs stored only on another clone or branch do not become
 the parent's inputs. Formula and framework writes during a calculation keep
 their existing selective invalidation.
 
+The cleanup, like `reset_calculations`, keeps only the years the data, a
+modifier or a caller supplied for each input variable. The model calculates
+the other years again: those it grew from an earlier input by the variable's
+uprating index, carried over from one, or (for a stored household total)
+grew from an earlier total. So an input set for an earlier year after a
+calculation reaches the later years the simulation had already filled, as on
+a named branch and in a new simulation given the same inputs. A later year
+that the data or `set_input` supplied keeps its value.
+
 Direct edits of the parameter tree require a separate array-cache boundary.
 After calling a parameter's `update` method on a built simulation, call
 `simulation.drop_computed_arrays()` before reading its results. This public

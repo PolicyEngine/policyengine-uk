@@ -42,21 +42,30 @@ def retained_input_variables(simulation) -> set:
     return retained
 
 
-def drop_calculated_totals(simulation, name: str) -> None:
-    """Delete the values of a stored household total that the simulation
+def drop_calculated_years(simulation, names) -> None:
+    """Delete the values of the input variables ``names`` that the simulation
     calculated, keeping those the data or a caller supplied.
 
-    A total in STORED_HOUSEHOLD_TOTALS that the data store counts as an input
-    by name, but the simulation calculates it for the years the data do not
-    hold, from the stored years and the parts. Core's own record of inputs
-    (``_user_input_keys``, checked by ``Holder._stores_user_input``) decides
-    which values go, as it does for ``drop_computed_arrays``.
+    The simulation counts an input variable as an input by name, but Core
+    fills each year it holds no input for: it grows the latest earlier input
+    by the variable's ``uprating`` index, or carries the latest input over,
+    and caches the result in the variable's holder (``put_in_cache`` with
+    ``derived=True``). The simulation itself grows a stored household total
+    (``Simulation._stored_household_total``). Such a year depends on which
+    years hold inputs, so an input set later for an earlier year changes it.
+    Core's record of inputs (``_user_input_keys``, checked by
+    ``Holder._stores_user_input``) holds every value the data or a caller
+    stored through ``set_input``, whatever the year, and decides which values
+    go, as it does for ``drop_computed_arrays``. Core then calculates the
+    other years again from the inputs.
     """
-    simulation.get_holder(name)._drop_computed()
+    names = set(names)
+    for name in names:
+        simulation.get_holder(name)._drop_computed()
     cache = getattr(simulation, "_fast_cache", None)
-    if cache:
+    if cache and names:
         simulation._fast_cache = {
-            key: value for key, value in cache.items() if key[0] != name
+            key: value for key, value in cache.items() if key[0] not in names
         }
 
 
@@ -65,12 +74,10 @@ def drop_calculated_values(simulation) -> None:
 
     Inputs are variables without a formula, variables the simulation was built
     from, and variables set since through set_input, as a scenario's
-    simulation modifier does to formula variables. A stored household total
-    keeps only the years supplied for it (see drop_calculated_totals). It
-    visits only the variables the simulation holds values for.
+    simulation modifier does to formula variables. An input variable keeps
+    only the years supplied for it (see drop_calculated_years). It visits only
+    the variables the simulation holds values for.
     """
-    from policyengine_uk.data.economic_assumptions import STORED_HOUSEHOLD_TOTALS
-
     supplied = retained_input_variables(simulation)
     variables = simulation.tax_benefit_system.variables
     held = {
@@ -78,15 +85,16 @@ def drop_calculated_values(simulation) -> None:
         for population in simulation.populations.values()
         for name in getattr(population, "_holders", {})
     }
+    inputs = set()
     for name in held:
         variable = variables.get(name)
         if variable is None:
             continue
         if name in supplied or variable.is_input_variable():
-            if name in STORED_HOUSEHOLD_TOTALS:
-                drop_calculated_totals(simulation, name)
+            inputs.add(name)
             continue
         simulation.delete_arrays(name)
+    drop_calculated_years(simulation, inputs)
 
 
 def held_behavioural_responses(person, period) -> dict:

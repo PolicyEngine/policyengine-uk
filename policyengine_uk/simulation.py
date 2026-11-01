@@ -85,8 +85,8 @@ from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
-    drop_calculated_totals,
     drop_calculated_values,
+    drop_calculated_years,
     retained_input_variables,
 )
 from policyengine_uk.utils.supplied_inputs import (
@@ -1119,8 +1119,9 @@ class Simulation(CoreSimulation):
         for variable in self.tax_benefit_system.variables:
             if variable not in retained:
                 self.delete_arrays(variable)
-            elif variable in STORED_HOUSEHOLD_TOTALS:
-                drop_calculated_totals(self, variable)
+        drop_calculated_years(
+            self, retained.intersection(self.tax_benefit_system.variables)
+        )
 
     def get_known_variables(self):
         variables = []
