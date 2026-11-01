@@ -418,13 +418,14 @@ def reference(case, result):
 
 
 def person(age, **inputs):
-    return dict(
+    values = dict(
         age=age,
         is_in_full_time_education=False,
         current_education="NOT_IN_EDUCATION",
         is_claimant_or_partner=True,
-        **inputs,
     )
+    values.update(inputs)
+    return values
 
 
 def student(age, **inputs):
