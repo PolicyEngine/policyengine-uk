@@ -92,22 +92,26 @@ ISSUE_ROWS = {
 def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
     # The issue's reproduction: the data supply £3,000 for 2025. Each path
     # grows it to 2035, then gets £10,000 for 2030, and grows that instead,
-    # as a new simulation given both inputs does. A branch made before the
-    # input keeps the value its parent held then.
+    # as a new simulation given both inputs does. A copy of the simulation is
+    # a default branch too, one that also keeps Core's cache of results by
+    # variable and period. A branch made before the input keeps the value its
+    # parent held then.
     expected = ISSUE_ROWS[row]
     simulation = Simulation(
         dataset=_frame(**{f"{name}__{DATA_YEAR}": 3_000.0 for name in expected})
     )
+    copy = simulation.clone()
     named = simulation.get_branch("edited")
     untouched = simulation.get_branch("untouched")
+    paths = (simulation, copy, named)
     for name, (grown, _) in expected.items():
-        for path in (simulation, named, untouched):
+        for path in (*paths, untouched):
             assert path.calculate(name, 2035)[0] == pytest.approx(grown, abs=0.005)
             assert path.calculate(name, 2035)[0] == pytest.approx(
                 3_000 * _growth(simulation, name, 2035, DATA_YEAR), rel=1e-6
             )
     for name in expected:
-        for path in (simulation, named):
+        for path in paths:
             path.set_input(name, 2030, np.array([10_000.0]))
     new = Simulation(
         dataset=_frame(
@@ -116,14 +120,14 @@ def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
         )
     )
     for name, (grown, regrown) in expected.items():
-        values = [path.calculate(name, 2035)[0] for path in (simulation, named, new)]
-        assert values == [values[-1]] * 3, name
+        values = [path.calculate(name, 2035)[0] for path in (*paths, new)]
+        assert values == [values[-1]] * 4, name
         assert values[-1] == pytest.approx(regrown, abs=0.005)
         assert values[-1] == pytest.approx(
             10_000 * _growth(simulation, name, 2035, 2030), rel=1e-6
         )
         assert untouched.calculate(name, 2035)[0] == pytest.approx(grown, abs=0.005)
-        for path in (simulation, named):
+        for path in paths:
             assert path.calculate(name, DATA_YEAR)[0] == 3_000
             assert path.calculate(name, 2030)[0] == 10_000
 
@@ -364,35 +368,34 @@ DATA = st.fixed_dictionaries(
 )
 def test_every_path_gives_what_a_new_simulation_gives(data, steps):
     # The same inputs and calculations, in the same order, on the default
-    # branch and on a named branch, made before either: each calculation
-    # gives the same value on both, and afterwards every input variable in
-    # every year equals what a new simulation built from all the inputs
-    # gives. Every supplied year keeps its value.
+    # branch, on a copy of it (which keeps Core's cache of results by variable
+    # and period) and on a named branch, each made before any step: each
+    # calculation gives the same value on all three, and afterwards every
+    # input variable in every year equals what a new simulation built from
+    # all the inputs gives. Every supplied year keeps its value.
     columns = {}
     for name, (amount, later) in data.items():
         columns[f"{name}__{DATA_YEAR}"] = amount
         if later is not None:
             columns[f"{name}__{later[0]}"] = later[1]
     simulation = Simulation(dataset=_frame(**columns))
-    named = simulation.get_branch("edited")
+    paths = (simulation, simulation.clone(), simulation.get_branch("edited"))
     for step in steps:
         if step[0] == "calculate":
             _, name, year = step
-            default_value = simulation.calculate(name, year)[0]
-            assert default_value == named.calculate(name, year)[0], (step, steps)
+            values = [path.calculate(name, year)[0] for path in paths]
+            assert values == [values[0]] * 3, (step, steps)
         else:
             _, name, year, amount = step
-            for path in (simulation, named):
+            for path in paths:
                 path.set_input(name, year, np.array([amount]))
             columns[f"{name}__{year}"] = amount
     new = Simulation(dataset=_frame(**columns))
     for name in VARIABLES:
         for year in YEARS:
-            values = [
-                path.calculate(name, year)[0] for path in (simulation, named, new)
-            ]
-            assert values == [values[-1]] * 3, (name, year, steps)
+            values = [path.calculate(name, year)[0] for path in (*paths, new)]
+            assert values == [values[-1]] * 4, (name, year, steps)
     for column, amount in columns.items():
         name, year = column.rsplit("__", 1)
-        for path in (simulation, named):
+        for path in paths:
             assert path.calculate(name, int(year))[0] == np.float32(amount), column
