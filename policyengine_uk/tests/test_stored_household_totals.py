@@ -57,6 +57,7 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.model_api import MONTH, YEAR, Household, Person, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.utils.scenario import Scenario
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -706,6 +707,86 @@ def test_core_sums_a_total_whose_sum_or_part_a_reform_changes(sum_change, part_c
             ), (name, year)
             grown = stored * _growth(simulation, "savings", year)
             assert total != pytest.approx(grown, rel=1e-3), (name, year)
+
+
+@pytest.mark.parametrize("value_type", [int, bool], ids=["integer", "boolean"])
+def test_core_sums_a_total_whose_part_a_reform_casts(value_type):
+    # Core casts each part to its declared type after uprating it, and growing
+    # the total can't round each part as that cast does.
+    reform = _reform(
+        lambda system: system.replace_variable(
+            _redeclared(
+                "cash_isa_balance",
+                value_type=value_type,
+                default_value=value_type(0),
+                uprating=PART_INDEX,
+            )
+        )
+    )
+    simulation = Simulation(
+        reform=reform,
+        dataset=_dataset(
+            [{"cash_isa": 1.0, "cash_isa_balance": 1.0, "share": 0.25}],
+            person_columns=["cash_isa_balance"],
+            household_columns=["cash_isa"],
+        ),
+    )
+    year = PROJECTION_END_YEAR + 1
+    total = simulation.calculate("cash_isa", year)[0]
+    assert total == _core_sum(simulation, "cash_isa", year)[0]
+    assert total == int(total)
+
+
+def test_a_part_that_needs_an_earlier_calculation_still_raises():
+    # Core refuses a variable whose prerequisite hasn't run, and growing the
+    # total must not hide that refusal.
+    reform = _reform(
+        lambda system: system.update_variable(
+            _updated("cash_isa_balance", requires_computation_after="income_tax")
+        )
+    )
+    simulation = Simulation(
+        reform=reform,
+        dataset=_dataset(
+            [{"cash_isa": 5_000.0, "share": 0.25}], household_columns=["cash_isa"]
+        ),
+    )
+    with pytest.raises(ValueError, match="income_tax"):
+        simulation.calculate("cash_isa", PROJECTION_END_YEAR + 1)
+
+
+def _keep_input_unit(holder, requested_period, values):
+    holder._set(requested_period, values)
+
+
+@pytest.mark.parametrize(
+    "handler", [None, _keep_input_unit], ids=["no_handler", "custom_handler"]
+)
+def test_a_balance_stored_in_another_unit_leaves_the_total_to_core(handler):
+    # Core uprates only earlier inputs in the part's own unit, so it carries a
+    # monthly balance flat where the total would grow.
+    class keep_units(Reform):
+        def apply(self):
+            self.replace_variable(
+                _redeclared(
+                    "cash_isa_balance",
+                    quantity_type=QuantityType.STOCK,
+                    uprating=PART_INDEX,
+                    set_input=handler,
+                )
+            )
+
+    scenario = Scenario.from_reform(keep_units)
+    scenario.applied_before_data_load = True
+    simulation = Simulation(
+        dataset=_one_person_frame(cash_isa__2025=3_000.0), scenario=scenario
+    )
+    simulation.set_input("cash_isa_balance", "2025-01", np.array([3_000.0]))
+    year = PROJECTION_END_YEAR + 1
+    assert simulation.calculate("cash_isa", year)[0] == pytest.approx(3_000)
+    assert simulation.calculate("cash_isa", year)[0] == pytest.approx(
+        _core_sum(simulation, "cash_isa", year)[0]
+    )
 
 
 def _abolish_part_after_the_horizon(system):

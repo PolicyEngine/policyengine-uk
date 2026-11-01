@@ -763,8 +763,9 @@ class Simulation(CoreSimulation):
         # A stored total means the sum of the parts STORED_HOUSEHOLD_TOTALS
         # names for it, each a plain input. Grow it only while the variable
         # still sums exactly those parts, each once, with nothing subtracted,
-        # and each part still reads its inputs: the total's own period, no
-        # formula, sum or subtraction for this period, no defined_for mask, not
+        # and each part still reads its inputs: the total's own period, a
+        # float Core doesn't round, no computation prerequisite, no formula,
+        # sum or subtraction for this period, no defined_for mask, not
         # neutralized or abolished, and an index or Core's carry-over to bring
         # an earlier input forward. Anything a reform changes there leaves the
         # total to Core, as in data with no stored total.
@@ -782,6 +783,8 @@ class Simulation(CoreSimulation):
             if (
                 part is None
                 or part.definition_period != variable.definition_period
+                or part.value_type is not float
+                or part.requires_computation_after
                 or part.get_formula(period) is not None
                 or part.adds
                 or part.subtracts
@@ -808,9 +811,14 @@ class Simulation(CoreSimulation):
             return None
         for part in variable.adds:
             part_source = self._isa_latest_input(part, period)
-            if part_source is not None and part_source.start > source.start:
+            if part_source is None:
+                continue
+            native = self.tax_benefit_system.variables[part].definition_period
+            if part_source.start > source.start or part_source.unit != native:
                 # Person balances stored for a later year than the total are
-                # the newer observation, so their sum stands.
+                # the newer observation, and Core carries a balance stored in
+                # another unit flat rather than uprating it, so their sum
+                # stands.
                 return None
         try:
             index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
