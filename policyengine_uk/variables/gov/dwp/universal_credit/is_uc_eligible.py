@@ -45,10 +45,10 @@ class is_uc_eligible(Variable):
             "has_attained_state_pension_credit_qualifying_age", period
         )
         # WRA 2012 s.4(1)(d): "is not receiving education", or excepted from
-        # it. UC Regs 2013 reg 3(2) lets a couple claim jointly where (a) one
-        # member has reached the qualifying age for State Pension Credit "if
-        # the other member does meet that condition", "or" (b) one member
-        # receives education and is not excepted "if the other member does
+        # it. Under UC Regs 2013 reg 3(2), a couple can claim jointly where (a)
+        # one member has reached the qualifying age for State Pension Credit
+        # "if the other member does meet that condition", "or" (b) one member
+        # receives education with no exception "if the other member does
         # meet that condition or is excepted from it". DWP's Advice for
         # Decision Making E2016 applies both "where one member of a couple
         # meets all the basic UC conditions", so one claimant must meet the
