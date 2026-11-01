@@ -147,7 +147,7 @@ def test_scottish_announced_threshold_freeze_then_cpi_projection(year):
 
 @pytest.mark.parametrize("year", YEARS)
 def test_scottish_rates_and_limits_match_each_resolution(year):
-    """The model year's schedule is the one that year's resolution sets.
+    """Each model year carries the schedule its year's resolution sets.
 
     The model reads each tax year's parameters at 30 April, so the year
     label 2019 carries the 2019-20 resolution.
@@ -203,9 +203,9 @@ def test_scottish_rates_take_effect_on_6_april_2017(statutory_scottish_rates):
 
 @pytest.mark.parametrize("year", YEARS)
 def test_scottish_limits_plus_personal_allowance_match_gov_scot_tables(year):
-    """The resolution's limits of taxable income are gov.scot's bands less the
-    standard personal allowance. Above the point where the allowance is
-    withdrawn in full, taxable income and income are the same."""
+    """gov.scot adds the standard personal allowance to each limit of taxable
+    income in its table. Above the point where s. 35(2) withdraws the
+    allowance in full, taxable income equals income."""
     allowance, band_tops = GOV_SCOT_TABLES[year]
     parameters = system.parameters(year).gov.hmrc.income_tax
     scale = parameters.rates.scotland.rates
