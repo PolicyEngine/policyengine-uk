@@ -246,7 +246,6 @@ def situation(case, variants):
                 index += 1
             benunits[f"b{v}_{f}"] = {
                 "members": members,
-                "uses_main_eligibility": {year: uses_main},
                 **{k: {year: x} for k, x in fam["benunit"].items()},
             }
             households[f"h{v}_{f}"] = {
@@ -292,6 +291,12 @@ def run(case, variants=(DRAWN,)):
     simulation = Simulation(situation=situation(case, variants))
     simulation.apply_reform(with_main_eligibility)
     year = case["year"]
+    # Benefit units follow the situation's order: each variant's families.
+    simulation.set_input(
+        "uses_main_eligibility",
+        year,
+        np.array([uses_main for _, uses_main in variants for _ in case["families"]]),
+    )
     values = {name: simulation.calculate(name, year) for name in VARIABLES}
     limit = simulation.tax_benefit_system.parameters(
         f"{year}-01-01"
