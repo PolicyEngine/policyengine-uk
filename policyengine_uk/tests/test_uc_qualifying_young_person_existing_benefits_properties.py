@@ -51,25 +51,42 @@ SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 
-amount = st.one_of(st.just(0.0), st.floats(0.01, 20_000))
-young_member = st.fixed_dictionaries(
-    {
-        "age": st.integers(15, 20),
-        "current_education": st.sampled_from(EDUCATIONS),
-        "is_in_approved_training": st.booleans(),
-        "receives_benefits_in_own_right": st.booleans(),
-        **{name: amount for name in REG_5_5_REPORTS + EXISTING_BENEFITS},
+amount = st.floats(0.01, 20_000)
+
+
+@st.composite
+def sometimes(draw):
+    """A positive amount one time in three, otherwise zero."""
+    return draw(amount) if draw(st.sampled_from((False, False, True))) else 0.0
+
+
+@st.composite
+def member(draw, ages, training):
+    """A person who usually reports no reg. 5(5) award.
+
+    Reg. 5(5) excludes anyone with such a report, so drawing them rarely
+    leaves people for reg. 28 to exclude. Each existing benefit report is
+    positive one time in three.
+    """
+    reg_5_5_report = draw(st.sampled_from((None,) * 4 + REG_5_5_REPORTS))
+    return {
+        "age": draw(ages),
+        "current_education": draw(st.sampled_from(EDUCATIONS)),
+        "is_in_approved_training": draw(training),
+        "receives_benefits_in_own_right": draw(
+            st.sampled_from((False, False, False, True))
+        ),
+        **{
+            name: draw(amount) if name == reg_5_5_report else 0.0
+            for name in REG_5_5_REPORTS
+        },
+        **{name: draw(sometimes()) for name in EXISTING_BENEFITS},
     }
-)
-adult = st.fixed_dictionaries(
-    {
-        "age": st.integers(16, 70),
-        "current_education": st.sampled_from(EDUCATIONS),
-        "is_in_approved_training": st.just(False),
-        "receives_benefits_in_own_right": st.just(False),
-        **{name: amount for name in REG_5_5_REPORTS + EXISTING_BENEFITS},
-    }
-)
+
+
+young_member = member(st.integers(15, 20), st.booleans())
+# Claimants and partners aged 16 to 19 can be qualifying young people.
+adult = member(st.one_of(st.integers(16, 19), st.integers(20, 70)), st.just(False))
 INPUTS = (
     (
         "age",
