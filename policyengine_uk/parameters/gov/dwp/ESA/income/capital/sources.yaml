@@ -26,8 +26,8 @@ description: >
   dataset does not isolate those states or asset holdings. For capital whose
   owner the data do not identify, the model allocates the full household
   remainder to benunits with a reported income-related ESA award and falls
-  back to claimant and partner shares when nobody in the household is on that
-  reported claim path. That allocation is a data approximation, not a
+  back to claimant and partner shares when nobody in the household reports
+  such an award. That allocation is a data approximation, not a
   legislated ownership rule.
 metadata:
   label: Income-related ESA countable capital sources

@@ -86,16 +86,16 @@ def bounded_holdings(balance, household_total, household_sum, household_rank):
     total in whole steps of the total's float32 spacing. It rounds each
     proportional share down to a step, then gives the steps left over one
     each to the members whose shares lost the most in rounding, the first of
-    them on a tie. Every multiple of the step up to the total is an exact
-    float32, so the holdings sum to the total exactly. For every float32
-    balance and finite total:
+    them on a tie. Float32 represents every multiple of the step up to the
+    total exactly, so the holdings sum to the total exactly. For every
+    float32 balance and finite total:
 
-    - no holding exceeds the household total, and none is negative;
+    - no holding exceeds the household total, and none falls below zero;
     - where the balances' stored sum exceeds the total, the holdings' float64
       sum equals the total, so the pool keeps nothing of it;
     - where it doesn't, each holding equals the balance;
     - a sole holder whose balance reaches the total holds exactly the total;
-    - each holding is its proportional share, computed in float64, rounded
+    - each holding equals its proportional share, computed in float64, rounded
       down or up to a whole step, so it lies within one step of that share
       and passes a multiple of the step, such as a whole-pound capital
       limit, only where the share does;
@@ -110,7 +110,7 @@ def bounded_holdings(balance, household_total, household_sum, household_rank):
     if not over.any():
         return held
     # A household that doesn't scale takes a total of 0 and a step of 1 here,
-    # so an infinite total there stays quiet. Elsewhere the step is the
+    # so an infinite total there stays quiet. Elsewhere the step equals the
     # total's own float32 spacing, as float64.
     scaled = np.where(over, total, np.float32(0))
     step = np.spacing(np.where(over, total, np.float32(1))).astype(np.float64)
@@ -119,10 +119,10 @@ def bounded_holdings(balance, household_total, household_sum, household_rank):
     share = held * scaled.astype(np.float64) / np.where(over, held_sum, 1)
     steps = np.floor(share / step)
     lost = share / step - steps
-    # The total over its spacing is a whole number, and the shares' whole
-    # steps never sum above it, so the steps left over are a whole number at
-    # or above zero, and no more than the members whose shares lost part of a
-    # step.
+    # The total over its spacing gives a whole number, and the shares' whole
+    # steps never sum above it, so the steps left over come to a whole number
+    # at or above zero, and no more than the members whose shares lost part
+    # of a step.
     left_over = scaled / step - household_sum(steps)
     takes_a_step = over & (household_rank(-lost) < left_over)
     return np.where(over, ((steps + takes_a_step) * step).astype(np.float32), held)

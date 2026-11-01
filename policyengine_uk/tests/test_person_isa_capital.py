@@ -36,7 +36,7 @@ calculated capital; the YAML cases cover both. The invariants:
    the balances' stored sum exceeds the total, the holdings' float64 sum
    equals it; where it doesn't, each holding equals the balance; a sole
    holder whose balance reaches the total holds exactly the total; each
-   holding is its proportional share rounded down or up to a whole step,
+   holding equals its proportional share rounded down or up to a whole step,
    the total's float32 spacing, allowing for float64 sum and division
    rounding, so it lies within one step of the share and passes a capital
    limit only where the share does; and the same input gives the same
@@ -290,11 +290,11 @@ def test_holdings_stay_within_the_household_total(allocation):
     holders = household_sum((held > 0).astype(np.float32))
     sole = (held > 0) & (holders == 1) & (held >= cap)
     assert np.array_equal(holding[sole], cap[sole])
-    # Over a total, each holding is its exact proportional share rounded down
-    # or up to a whole step, the total's float32 spacing, allowing for float64
-    # sum and division rounding. So it lies within one step of the share and
-    # passes a multiple of the step, such as a capital limit, only where the
-    # share does.
+    # Over a total, each holding equals its exact proportional share rounded
+    # down or up to a whole step, the total's float32 spacing, allowing for
+    # float64 sum and division rounding. So it lies within one step of the
+    # share and passes a multiple of the step, such as a capital limit, only
+    # where the share does.
     for i in np.flatnonzero(scales):
         same = np.flatnonzero(household_of == household_of[i])
         exact = (
@@ -959,7 +959,7 @@ def test_isas_over_a_total_leave_an_unrelated_adult_exactly_at_a_threshold():
     assert outputs["uc_tariff_income"][0] == 0
     assert outputs["is_uc_eligible"][4]
     assert outputs["pension_credit_deemed_income"][8] == 0
-    # The three holders' shares come to 15,999.9987 each. Each holding is
+    # The three holders' shares come to 15,999.9987 each. Each holding equals
     # that share rounded down or up to a step of 1/256, so none passes the
     # 16,000 limit its share stays under, and the three sum to cash_isa.
     holders = cash[-3:]

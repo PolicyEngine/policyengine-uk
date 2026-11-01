@@ -14,7 +14,7 @@ class income_support_assessable_capital(Variable):
         "capital test. For capital whose owner the data do not identify, the model "
         "allocates the full household remainder to any benunit on the IS claim path "
         "and falls back to a claimant-and-partner share when nobody in the household "
-        "is on that path. No regulation sets that allocation; it approximates "
+        "claims on that path. No regulation sets that allocation; it approximates "
         "ownership the data don't record. The formula counts person-level sources, "
         "such as a Lifetime ISA and the cash and stocks and shares ISAs, only in the "
         "holder's own benunit and only for its claimant or partner "
