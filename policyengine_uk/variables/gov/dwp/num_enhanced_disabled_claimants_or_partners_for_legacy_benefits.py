@@ -6,19 +6,20 @@ class num_enhanced_disabled_claimants_or_partners_for_legacy_benefits(Variable):
     entity = BenUnit
     label = "Enhanced-disabled claimants or partners for legacy benefits"
     documentation = (
-        "Claimants and partners who meet the enhanced disability premium "
-        "condition: they receive a qualifying benefit (receives_enhanced_"
-        "disability_premium_qualifying_benefit) and have not attained the "
-        "qualifying age for State Pension Credit. Housing Benefit, "
-        "Jobseeker's Allowance, the Welsh Council Tax Reduction scheme and "
-        "England's Default Scheme limit both the claimant and their family or "
-        "partner by age. Income Support and Employment and Support Allowance "
-        "name only the partner, as their claimants must be under that age "
-        "(SSCBA 1992 s.124(1)(aa) and SSCBA (NI) 1992 s.123(1)(aa); WRA 2007 "
-        "s.1(3)(c) and WRA (NI) 2007 s.1(3)(c), pensionable age). This count "
-        "excludes children and young persons, whose separate enhanced premium "
-        "the model computes for Housing Benefit only "
-        "(housing_benefit_child_disability_premiums)."
+        "The model counts the claimants and partners who meet the enhanced "
+        "disability premium condition: they receive a qualifying benefit "
+        "(receives_enhanced_disability_premium_qualifying_benefit) and have "
+        "not attained the qualifying age for State Pension Credit. Under the "
+        "Housing Benefit and Jobseeker's Allowance Regulations, the Welsh "
+        "Council Tax Reduction scheme and England's Default Scheme, the age "
+        "limit applies to the claimant and to family members or partners. "
+        "Parliament limits Income Support and Employment and Support "
+        "Allowance to claimants under that age (SSCBA 1992 s.124(1)(aa) and "
+        "SSCBA (NI) 1992 s.123(1)(aa); WRA 2007 s.1(3)(c) and WRA (NI) 2007 "
+        "s.1(3)(c), pensionable age), so their Regulations state the age "
+        "limit only for the partner. The count leaves out children and young "
+        "persons, whose separate enhanced premium the model computes for "
+        "Housing Benefit only (housing_benefit_child_disability_premiums)."
     )
     definition_period = YEAR
     reference = (

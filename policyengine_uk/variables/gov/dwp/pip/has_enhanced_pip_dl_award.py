@@ -4,16 +4,15 @@ from policyengine_uk.model_api import *
 class has_enhanced_pip_dl_award(Variable):
     label = "Has an award of the PIP daily living component at the enhanced rate"
     documentation = (
-        "Whether the person has an award of the daily living component of "
-        "personal independence payment at the enhanced rate. An award needs a "
-        "positive amount (pip_dl), so an amount of zero, including one a "
-        "reform sets by neutralising pip_dl, is no award. The rate comes from "
-        "the award category (pip_dl_category) or from the amount: an amount "
-        "entered without its category counts when it reaches the enhanced "
+        "The model counts an award of the daily living component of personal "
+        "independence payment at the enhanced rate when the person has a "
+        "positive amount (pip_dl) and either the enhanced-rate category "
+        "(pip_dl_category) or an amount that reaches 52 times the enhanced "
         "weekly rate less a tolerance (gov.dwp.disability_premia.top_rate_"
-        "amount_tolerance), times 52. The Regulations also count an award "
-        "whose payment stops while the person is in hospital; the model has no "
-        "input for that."
+        "amount_tolerance). It rejects an amount of zero, including one that "
+        "a reform sets by neutralising pip_dl. Claimants also qualify when the "
+        "hospital in-patient rules end payment of the award (HB Regs 2006 Sch "
+        "3 para 15(1)(c)); the model has no input for that."
     )
     entity = Person
     definition_period = YEAR

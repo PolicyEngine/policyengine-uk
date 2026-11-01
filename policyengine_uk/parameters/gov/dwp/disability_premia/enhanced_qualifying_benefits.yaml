@@ -1,19 +1,20 @@
 description: >
-  Awards that meet the qualifying-benefit condition of the legacy enhanced
-  disability premium for a claimant or partner in Great Britain: the care
-  component of disability living allowance at the highest rate
-  (has_highest_dla_sc_award), the daily living component of personal
-  independence payment at the enhanced rate (has_enhanced_pip_dl_award) and
-  armed forces independence payment. Each programme adds its own conditions,
-  such as the age limit. The Regulations also name the Scottish equivalents
-  (the care components of child disability payment and Scottish adult
-  disability living allowance at the highest rate, and the daily living
-  component of adult disability payment at the enhanced rate); the model has
-  no separate variables for them. From 8 April 2013, S.I. 2013/388 added the
-  PIP daily living component and S.I. 2013/591 added armed forces independence
-  payment. The enhanced_qualifying_benefits_northern_ireland parameter holds
-  Northern Ireland's list. The model reads the list as at 30 April of each
-  year from 2015 and does not prorate a change made during a year.
+  Claimants and partners in Great Britain qualify for the legacy enhanced
+  disability premium through the care component of disability living allowance
+  at the highest rate (has_highest_dla_sc_award), the daily living component
+  of personal independence payment at the enhanced rate
+  (has_enhanced_pip_dl_award) and armed forces independence payment. The model
+  applies each programme's further conditions, such as the age limit,
+  elsewhere. Claimants also qualify through the Scottish equivalents (the care
+  components of child disability payment and Scottish adult disability living
+  allowance at the highest rate, and the daily living component of adult
+  disability payment at the enhanced rate), for which the model has no
+  separate variables. Claimants qualify through the PIP daily living component
+  from 8 April 2013 under S.I. 2013/388, and through armed forces independence
+  payment from the same date under S.I. 2013/591. The
+  enhanced_qualifying_benefits_northern_ireland parameter holds Northern
+  Ireland's list. The model reads the list as at 30 April of each year from
+  2015 and does not prorate a change made during a year.
 metadata:
   label: Legacy benefit enhanced disability premium qualifying benefits
   period: year

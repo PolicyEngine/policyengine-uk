@@ -1,56 +1,54 @@
 """Property-based tests for the legacy enhanced disability premium.
 
-The premium's condition for a claimant or partner (HB Regs 2006 Sch 3 para
-15(1)(b)-(d); IS Regs 1987 Sch 2 para 13A; HB Regs (NI) 2006 Sch 4 para 15):
-an award of the highest-rate DLA care component, the enhanced-rate PIP daily
-living component or armed forces independence payment, for a person who has
-not attained the qualifying age for State Pension Credit. Northern Ireland
-counts AFIP from 24 December 2013 and PIP from 20 June 2016, which the model
-reads at 30 April, so from 2017. The single rate applies to a person who is
-not a member of a couple, and one couple rate applies where the condition is
-met in respect of either or both members (HB Regs 2006 Sch 3 Part 4).
+A claimant or partner meets the premium's condition (HB Regs 2006 Sch 3 para
+15(1)(b)-(d); IS Regs 1987 Sch 2 para 13A; HB Regs (NI) 2006 Sch 4 para 15)
+with an award of the highest-rate DLA care component, the enhanced-rate PIP
+daily living component or armed forces independence payment, while under the
+qualifying age for State Pension Credit. Claimants in Northern Ireland qualify
+through AFIP from 24 December 2013 and through PIP from 20 June 2016, which
+the model reads at 30 April, so from 2017. Housing Benefit pays the single
+rate to a person who is not a member of a couple, and one couple rate where
+either or both members meet the condition (HB Regs 2006 Sch 3 Part 4).
 
-An award needs a positive amount of the benefit. Its rate comes from the
-award category or, for an amount entered without its category, from the
-amount: one that reaches the top weekly rate less £1, times 52, counts.
+The model counts an award only with a positive amount of the benefit, and
+takes its rate from the award category or from an amount that reaches 52
+times the top weekly rate less £1.
 
-Council Tax Reduction schemes name their own awards. Scotland's working-age
-scheme (SSI 2021/249 Sch 1 para 14) adds attendance allowance at either rate
-from 1 April 2023 and has no age limit from 20 June 2022, which the model
-reads from 2023. Merton's and Kingston upon Thames's schemes (Sch 3 para 12)
-count the PIP daily living component at either rate and no AFIP; Newham's
-counts the PIP daily living component at either rate and AFIP. Wales,
-Westminster and every other scheme take the Housing Benefit condition.
+Scottish councils count attendance allowance at either rate from 1 April 2023
+(SSI 2021/249 Sch 1 para 14), and the Scottish Ministers removed the age limit
+from 20 June 2022, which the model reads from 2023. Merton and Kingston upon
+Thames (Sch 3 para 12) count the PIP daily living component at either rate
+and omit AFIP; Newham counts the PIP daily living component at either rate
+and AFIP. The model applies the Housing Benefit condition in Wales,
+Westminster and every other scheme.
 
-Invariants, for the generated populations: single people, couples and lone
-parents in each UK nation and in five English councils besides the default
-one, at adult ages from 20 to 85, each holding up to two awards drawn from
-DLA care and PIP daily living categories, amounts entered without a category,
-categories with an explicit amount (zero or part of the rate), attendance
-allowance and AFIP. Each person gets explicit DLA care and PIP daily living
-amounts: the amount the award enters, or the rate for its category:
+The test generates single people, couples and lone parents in the places and
+age range below, with the listed awards. It supplies each person's entered
+DLA care and PIP daily living amount, or computes an amount from their
+category. It checks these invariants:
 
-1. Oracle: enhanced_disability_premium equals the amount the law gives,
-   computed here from the award inputs and the parameter rates, and
-   council_tax_reduction_enhanced_disability_premium equals the scheme's.
-2. No qualifying award: a family in which no claimant or partner has a
-   qualifying award gets no premium.
+1. Oracle: enhanced_disability_premium equals the statutory amount, which the
+   test computes from the award inputs and the parameter rates, and
+   council_tax_reduction_enhanced_disability_premium equals the amount under
+   the scheme's own list.
+2. No qualifying award: the model pays no premium to a family in which no
+   claimant or partner has a qualifying award.
 3. Monotone: giving a claimant or partner a qualifying benefit on top of
    their awards never lowers either premium.
-4. Bounds: each premium is nil, the single rate or the couple rate, and never
-   exceeds two single rates; the couple rate never exceeds two single rates
-   in any year.
+4. Bounds: each premium equals nil, the single rate or the couple rate, and
+   never exceeds two single rates; the couple rate never exceeds two single
+   rates in any year.
 5. Each scheme against the legacy premium: the Council Tax Reduction premium
    equals the legacy premium in Wales, Northern Ireland and English councils
-   without their own list; in Scotland before 2023; never falls below it in
-   Scotland from 2023 or in Newham; and in Merton and Kingston upon Thames
-   never falls below it unless the legacy premium rests on AFIP alone, in
-   which case it is nil unless an under-age member has a PIP daily living
-   award.
+   without their own list, and in Scotland before 2023. It never falls below
+   the legacy premium in Scotland from 2023 or in Newham. In Merton and
+   Kingston upon Thames it never falls below the legacy premium unless that
+   premium rests on AFIP alone, and then the model pays none unless an
+   under-age member has a PIP daily living award.
 6. Differential: for a child or young person in Great Britain, the qualifying
-   flag matches the oracle, and the enhanced rate in the Housing Benefit
-   child premiums (housing_benefit_child_disability_premiums) is paid
-   exactly when the flag holds.
+   flag matches the oracle. The model pays the child's enhanced rate in the
+   Housing Benefit child premiums (housing_benefit_child_disability_premiums)
+   when the flag holds and pays none when it does not.
 """
 
 import numpy as np
@@ -67,12 +65,12 @@ PROPERTY_SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 WEEKS_IN_YEAR = 52
-# The weekly tolerance an amount entered without its category gets below the
-# top rate (policyengine-uk-data's CATEGORY_THRESHOLD_WEEKLY_TOLERANCE).
+# The test allows this weekly tolerance below the top rate
+# (policyengine-uk-data's CATEGORY_THRESHOLD_WEEKLY_TOLERANCE).
 TOLERANCE = 1
-# Each example builds one simulation with inputs for every year here, so the
-# Northern Ireland PIP date (2017) and the Scottish changes (2023) are on
-# both sides of their boundaries in every example.
+# Each example builds one simulation with inputs for every year here, so
+# every example tests both sides of the Northern Ireland PIP date (2017) and
+# the Scottish changes (2023).
 YEARS = [2016, 2017, 2022, 2023, 2026]
 # (country, local authority): None keeps the default local authority.
 PLACES = [
@@ -86,10 +84,10 @@ PLACES = [
     ("SCOTLAND", "CITY_OF_EDINBURGH"),
     ("NORTHERN_IRELAND", None),
 ]
-# Award inputs for each kind of award a person can be drawn with. The amounts
-# entered without a category clear (6,000) or miss (3,000) the top-rate
-# threshold in every year here: (82.30 - 1) * 52 = 4,227.60 in 2016 and
-# (114.60 - 1) * 52 = 5,907.20 in 2026.
+# The generator assigns the award inputs below. The reported amounts of 6,000
+# and 3,000 respectively exceed and fall below each tested year's threshold:
+# (82.30 - 1) * 52 = 4,227.60 in 2016 and (114.60 - 1) * 52 = 5,907.20 in
+# 2026.
 AWARDS = {
     "dla_care_lowest": {"dla_sc_category": "LOWER"},
     "dla_care_middle": {"dla_sc_category": "MIDDLE"},
@@ -117,8 +115,8 @@ system = CountryTaxBenefitSystem()
 
 
 def award_inputs(awards):
-    """Model inputs for a tuple of awards; a later award's input replaces an
-    earlier one's."""
+    """Return the model inputs for a tuple of awards, letting a later award's
+    input replace an earlier one's."""
     inputs = {}
     for award in awards:
         inputs.update(AWARDS[award])
@@ -126,8 +124,8 @@ def award_inputs(awards):
 
 
 def amount(inputs, benefit, year):
-    """The annual amount of DLA care (dla_sc) or PIP daily living (pip_dl):
-    the amount entered, or the rate for the award category."""
+    """Return the entered annual amount of DLA care (dla_sc) or PIP daily
+    living (pip_dl), or compute it from the award category."""
     if benefit in inputs:
         return inputs[benefit]
     dwp = system.parameters(year).gov.dwp
@@ -139,9 +137,9 @@ def amount(inputs, benefit, year):
 
 
 def top_rate_award(inputs, benefit, year):
-    """An award at the highest DLA care or enhanced PIP daily living rate: a
-    positive amount, and the top category or an amount within the
-    tolerance of the top rate."""
+    """Check for an award at the highest DLA care or enhanced PIP daily living
+    rate: a positive amount and either the top category or an amount within
+    the tolerance of the top rate."""
     dwp = system.parameters(year).gov.dwp
     if benefit == "dla_sc":
         top_category, top_rate = "HIGHER", dwp.dla.self_care.higher
@@ -159,7 +157,8 @@ def afip(inputs):
 
 
 def qualifies(inputs, country, year):
-    """The legacy premium's qualifying awards, from the Regulations."""
+    """Check for the legacy premium's qualifying awards under the
+    Regulations."""
     if top_rate_award(inputs, "dla_sc", year) or afip(inputs):
         return True
     if top_rate_award(inputs, "pip_dl", year):
@@ -168,7 +167,7 @@ def qualifies(inputs, country, year):
 
 
 def qualifies_for_scheme(inputs, place, year):
-    """The scheme's own awards, before its age limit."""
+    """Check for the scheme's own awards, before its age limit."""
     country, council = place
     any_pip = amount(inputs, "pip_dl", year) > 0
     dla_highest = top_rate_award(inputs, "dla_sc", year)
@@ -214,8 +213,8 @@ def adults_of(f):
 
 
 def upgraded(f):
-    """The same family with one claimant or partner given a qualifying
-    benefit on top of their awards."""
+    """Return the same family with one claimant or partner given a
+    qualifying benefit on top of their awards."""
     adults = [dict(a) for a in f["adults"]]
     j = f["upgrade_member"] % len(adults_of(f))
     adults[j]["awards"] = adults[j]["awards"] + (f["upgrade_award"],)
@@ -227,11 +226,11 @@ def every_year(inputs):
 
 
 def person_inputs(age, awards, **extra):
-    """A person's inputs for every year. A situation that supplies an amount
-    for one person supplies the default, zero, for everyone else, as it does
-    for categories (utils/pip.py). So every person gets both amounts: the
-    amount entered, or the rate for the award category, which the amount
-    formulas would give."""
+    """Return a person's inputs for every year. A situation that supplies an
+    amount for one person supplies the default, zero, for everyone else, as
+    it does for categories (utils/pip.py). So the test gives every person
+    both amounts: the amount entered, or the rate for the award category,
+    which the amount formulas would give."""
     inputs = award_inputs(awards)
     person = every_year(dict(age=age, **extra, **inputs))
     for benefit in ("dla_sc", "pip_dl"):
@@ -247,9 +246,9 @@ def household_inputs(country, council):
 
 
 def build(families, children):
-    """One household and one benefit unit per family, and one per child with
-    a parent aged 35. Claimants and partners are marked as such, so no age
-    gap reads one as the other's child."""
+    """Build one household and one benefit unit per family, and one per child
+    with a parent aged 35. The test marks claimants and partners as such, so
+    the model never reads an age gap as making one the other's child."""
     people, benunits, households = {}, {}, {}
     for i, f in enumerate(families):
         members = []
@@ -282,9 +281,9 @@ def build(families, children):
 
 
 def oracle(f, year, attained):
-    """The two annual premiums from the law for one family. attained[j] is
-    whether adult j has attained the qualifying age for State Pension
-    Credit."""
+    """Compute the two annual premiums under the law for one family.
+    attained[j] holds when adult j has attained the qualifying age for State
+    Pension Credit."""
     p = system.parameters(year).gov.dwp.disability_premia
     rate = p.enhanced_couple if f["shape"] == "couple" else p.enhanced_single
     country = f["place"][0]
@@ -301,7 +300,8 @@ def oracle(f, year, attained):
 
 
 def check_scheme_against_legacy(f, year, attained, edp, ctr):
-    """5. Each scheme's premium against the legacy premium."""
+    """Check invariant 5: each scheme's premium against the legacy
+    premium."""
     country, council = f["place"]
     if country == "SCOTLAND":
         if year < 2023:
@@ -323,7 +323,7 @@ def check_scheme_against_legacy(f, year, attained, edp, ctr):
         if not rests_on_afip:
             assert ctr >= edp - 0.01
         elif not any(amount(x, "pip_dl", year) > 0 for x in under_age):
-            # AFIP adds nothing to these schemes.
+            # These councils do not count AFIP.
             assert ctr == 0
     else:
         assert np.isclose(ctr, edp, atol=0.01)
@@ -365,8 +365,8 @@ def check_families(sim, person, benunit, families, year):
             )
             assert annual <= 2 * single_annual + 0.01
         check_scheme_against_legacy(f, year, member_attained, edp[b], ctr[b])
-    # 3. Monotone: the second half are the first half's twins, each with a
-    # qualifying benefit added.
+    # 3. Monotone: the test pairs each family in the first half with its twin
+    # in the second half, which has a qualifying benefit added.
     assert all(t >= s - 0.01 for s, t in zip(family_edp[:n], family_edp[n:]))
     assert all(t >= s - 0.01 for s, t in zip(family_ctr[:n], family_ctr[n:]))
 
@@ -385,7 +385,8 @@ def check_children(sim, person, benunit, children, year):
             continue
         inputs = award_inputs(c["awards"])
         assert bool(qualifying[k]) == qualifies(inputs, c["country"], year), (c, year)
-        # The disabled child rate: a positive DLA or PIP amount, or AFIP.
+        # A child qualifies for the disabled child rate with a positive DLA or
+        # PIP amount, or AFIP.
         disabled = (
             amount(inputs, "dla_sc", year) > 0
             or amount(inputs, "pip_dl", year) > 0
@@ -425,8 +426,9 @@ class NeutraliseDlaCareAndPipDailyLiving(Reform):
 
 def test_neutralised_awards_pay_no_enhanced_premium():
     """A reform that neutralises DLA care and PIP daily living leaves their
-    categories in place but sets both amounts to zero, so no award remains:
-    neither premium nor the child's enhanced rate is paid."""
+    categories in place but sets both amounts to zero, so no award remains.
+    The model then pays neither adult premium nor the child's disability
+    premiums."""
     year = 2026
     people = dict(
         dla=dict(age=30, dla_sc_category="HIGHER"),

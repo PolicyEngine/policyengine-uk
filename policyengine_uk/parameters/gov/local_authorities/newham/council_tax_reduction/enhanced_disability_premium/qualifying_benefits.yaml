@@ -1,13 +1,14 @@
 description: >
-  Awards to the applicant or a member of the applicant's family that meet the
-  enhanced disability premium condition of Newham's working-age Council Tax
-  Reduction scheme: the care component of disability living allowance at the
-  highest rate, the daily living component of personal independence payment
-  at either rate and armed forces independence payment. Each award counts
-  only for a person under the qualifying age for State Pension Credit. The
-  scheme also names the care component of child disability payment at the
-  highest rate, for which the model has no separate variable. The model reads
-  the list as at 30 April of each year and backdates it to 2015.
+  The London Borough of Newham counts the care component of disability living
+  allowance at the highest rate, the daily living component of personal
+  independence payment at either rate and armed forces independence payment,
+  for the applicant or a member of the applicant's family, toward the enhanced
+  disability premium in its working-age Council Tax Reduction scheme. It
+  counts each award only for a person under the qualifying age for State
+  Pension Credit. It also counts the care component of child disability
+  payment at the highest rate, for which the model has no separate variable.
+  The model reads the list as at 30 April of each year and backdates it to
+  2015.
 metadata:
   label: Newham Council Tax Reduction enhanced disability premium qualifying benefits
   period: year

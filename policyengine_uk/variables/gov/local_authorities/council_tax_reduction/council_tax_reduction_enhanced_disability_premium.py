@@ -6,16 +6,24 @@ class council_tax_reduction_enhanced_disability_premium(Variable):
     entity = BenUnit
     label = "Working-age CTR enhanced disability premium"
     documentation = (
-        "The enhanced disability premium in a working-age Council Tax "
-        "Reduction applicable amount: the single rate, or the couple rate "
-        "where either or both members of a couple meet the scheme's condition "
+        "The model includes the enhanced disability premium in a working-age "
+        "Council Tax Reduction applicable amount at the single rate, or at the "
+        "couple rate where either or both members of a couple meet the "
+        "scheme's condition "
         "(meets_council_tax_reduction_enhanced_disability_premium_condition). "
-        "It differs from the legacy premium (enhanced_disability_premium) in "
-        "Scotland, Merton, Kingston upon Thames and Newham, whose schemes name "
-        "their own awards. The model pays the Housing Benefit amounts in every "
-        "scheme, though Kingston upon Thames's 2026-27 scheme sets lower ones "
-        "(£17.10 single, £24.50 couple). Pension-age Council Tax Reduction has "
-        "no adult enhanced disability premium."
+        "It pays a different premium from the legacy one "
+        "(enhanced_disability_premium) in Scotland, Merton, Kingston upon "
+        "Thames and Newham, where the councils count their own awards. The "
+        "model pays the Housing Benefit amounts in every scheme. Both 2026-27 "
+        "editions of Kingston upon Thames's scheme print £17.10 single and "
+        "£24.50 couple (Sch 3 para 17(5)). In 2014 the council adopted an "
+        "annual uprating mechanism (Annex 3), which takes working-age "
+        "premiums from the Government's and DWP's uprating documents where "
+        "the pension-age uprating omits them, and delegated each year's "
+        "uprating to its Director of Finance. The model follows that "
+        "mechanism, which gives the Housing Benefit amounts; we found no "
+        "decision that sets Kingston's own 2026-27 amounts. Pension-age "
+        "Council Tax Reduction includes no adult enhanced disability premium."
     )
     definition_period = YEAR
     unit = GBP

@@ -76,9 +76,8 @@ SHAPES = ["alone", "couple", "young_parents"]
 # disability, the enhanced PIP daily living component (an enhanced disability
 # premium qualifying benefit), Attendance Allowance (a severe disability
 # premium qualifying benefit, which also exempts her from non-dependant
-# deductions, and in Scotland's working-age scheme from 2023 an enhanced
-# disability premium one), Carer's Allowance (the carer premium) and
-# blindness.
+# deductions, and an enhanced disability premium one for Scottish councils
+# from 2023), Carer's Allowance (the carer premium) and blindness.
 head_circumstances = st.fixed_dictionaries(
     dict(
         is_disabled_for_benefits=st.booleans(),

@@ -1,16 +1,15 @@
 description: >
-  Awards that meet the qualifying-benefit condition of the legacy enhanced
-  disability premium for a claimant or partner in Northern Ireland. The care
-  component of disability living allowance at the highest rate qualifies. S.I.
-  2013/3021 added armed forces independence payment from 24 December 2013, and
-  S.R. 2016/228 added the daily living component of personal independence
-  payment at the enhanced rate from 20 June 2016, to the Northern Ireland
-  Income Support, Jobseeker's Allowance, Housing Benefit and Employment and
-  Support Allowance regulations. The model reads the list as at 30 April of
-  each year from 2015 and does not prorate a change made during a year, so it
-  adds the daily living component from 2017. The first value's date follows
-  the Great Britain list rather than the commencement of S.R. 2006/405 on 20
-  November 2006.
+  Claimants and partners in Northern Ireland qualify for the legacy enhanced
+  disability premium through the care component of disability living allowance
+  at the highest rate. In Income Support, Jobseeker's Allowance, Housing
+  Benefit and Employment and Support Allowance, they also qualify through
+  armed forces independence payment from 24 December 2013 under S.I.
+  2013/3021, and through the daily living component of personal independence
+  payment at the enhanced rate from 20 June 2016 under S.R. 2016/228. The
+  model reads the list as at 30 April of each year from 2015 and does not
+  prorate a change made during a year, so it counts the daily living component
+  from 2017. The model dates the first value from the Great Britain list's
+  start, not from the commencement of S.R. 2006/405 on 20 November 2006.
 metadata:
   label: Northern Ireland legacy benefit enhanced disability premium qualifying benefits
   period: year

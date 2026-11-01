@@ -222,9 +222,9 @@
         savings: 0
   output:
     # Disability (44.85) and severe disability (86.05) premiums at the single
-    # rate, and the enhanced disability premium (22.00), which Scotland's
-    # working-age scheme pays for attendance allowance from 1 April 2023 (SSI
-    # 2021/249 Sch 1 para 14(1)(g)): (44.85 + 86.05 + 22.00) * 52. The young
+    # rate, and the enhanced disability premium (22.00), which Scottish
+    # councils pay for attendance allowance from 1 April 2023 (SSI 2021/249
+    # Sch 1 para 14(1)(g)): (44.85 + 86.05 + 22.00) * 52. The young
     # mother's disability does not give the grandmother a premium, and at 17
     # neither parent is a non-dependant who bars the severe disability
     # premium.
