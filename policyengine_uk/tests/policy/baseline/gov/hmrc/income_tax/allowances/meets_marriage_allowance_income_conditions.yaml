@@ -124,7 +124,7 @@
     savings_income_tax: 0
     meets_marriage_allowance_income_conditions: true
 
-- name: Savings below a raised starting rate limit above the basic rate limit fail the conditions
+- name: Under a starting rate limit above the basic rate limit, savings past the basic rate limit fail the conditions
   period: 2026
   input:
     # A reform raises the starting rate limit for savings to 40,000. Pay
@@ -312,9 +312,9 @@
     # 42,600 - 10,600 = 32,000 of pay, at the model's basic rate limit, then
     # 1 of dividends. Section 13(2) charges the dividend upper rate on
     # dividends that would otherwise bear the higher rate, which starts at
-    # the basic rate limit (s. 10(3)). The 2015-16 s. 55B(2)(b) permits the
-    # dividend ordinary rate only. The model's dividend scale starts the
-    # upper rate at 37,500 that year.
+    # the basic rate limit (s. 10(3)). Among the dividend rates, the 2015-16
+    # s. 55B(2)(b) permits only the dividend ordinary rate. The model's
+    # dividend scale starts the upper rate at 37,500 that year.
     employment_income: 42_600
     dividend_income: 1
     region: NORTH_EAST
@@ -338,9 +338,9 @@
   period: 2015
   input:
     # 32,000 of pay, then 1 of interest. FA 2016 s. 4(17) gives the savings
-    # nil rate effect from 2016-17, so the 2015-16 s. 55B(2)(b) permits no
-    # savings nil rate, and the pound bears the higher rate. The model
-    # applies its Personal Savings Allowance in 2015-16 too.
+    # nil rate effect from 2016-17, so in 2015-16 the pound bears the higher
+    # rate, which s. 55B(2)(b) forbids. The model applies its Personal
+    # Savings Allowance in 2015-16 too.
     employment_income: 42_600
     savings_interest_income: 1
     region: NORTH_EAST
@@ -350,8 +350,8 @@
 - name: At the statutory 2015-16 basic rate limit a pound of savings fails the conditions
   period: 2015
   input:
-    # As above with 1 of interest, which bears the higher rate: 2015-16 has
-    # no savings nil rate.
+    # As above with 1 of interest, which bears the higher rate in a year
+    # before the savings nil rate.
     gov.hmrc.income_tax.rates.uk[1].threshold: 31_785
     employment_income: 42_385
     savings_interest_income: 1
