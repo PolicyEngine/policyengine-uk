@@ -1,59 +1,81 @@
-- name: Dividend income less than remaining allowance
+# The allowances and trade loss relief go to non-savings, savings and dividend
+# income in the way that gives the least tax (ITA 2007 s. 25(2)). 2024-25:
+# Personal Allowance £12,570, starting rate limit for savings £5,000 (s. 12),
+# dividend allowance £500 (s. 13A).
+
+- name: Dividend income less than the allowances left
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 8_000
-    received_allowances_savings_income: 2_000
+    taxable_employment_income: 8_000
+    taxable_savings_interest_income: 2_000
+    taxable_dividend_income: 2_000
+  output:
+    # The £12,000 of income is all within the allowances.
+    received_allowances_dividend_income: 2_000
+
+- name: Dividend income equal to the allowances left
+  period: 2024
+  input:
+    allowances: 12_570
+    taxable_employment_income: 10_000
+    taxable_savings_interest_income: 570
     taxable_dividend_income: 2_000
   output:
     received_allowances_dividend_income: 2_000
 
-- name: Dividend income equal to remaining allowance
+- name: Dividend income greater than the allowances left
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_000
-    received_allowances_savings_income: 570
-    taxable_dividend_income: 2_000
-  output:
-    received_allowances_dividend_income: 2_000
-
-- name: Dividend income greater than remaining allowance
-  period: 2024
-  input:
-    allowances: 12_570
-    received_allowances_earned_income: 11_000
-    received_allowances_savings_income: 1_000
+    taxable_employment_income: 11_000
+    taxable_savings_interest_income: 1_000
     taxable_dividend_income: 1_000
   output:
+    # The pay takes £11,000. Of the £430 of income left, savings would be
+    # in the starting rate band and dividends within the dividend
+    # allowance, both taxed at 0%, so the allowances keep the order
+    # savings then dividends: £1,000 and £570.
     received_allowances_dividend_income: 570
 
-- name: No remaining allowance
+- name: Allowances go to dividends beyond the dividend allowance
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_570
-    received_allowances_savings_income: 2_000
+    taxable_employment_income: 10_570
+    taxable_savings_interest_income: 2_000
     taxable_dividend_income: 1_000
   output:
-    received_allowances_dividend_income: 0
+    # After the pay, £1,000 of income is left. Left as £1,000 of dividends,
+    # £500 would be taxed at 8.75% (s. 13A nil rate on the first £500). Left
+    # as £500 of savings, in the starting rate band, and £500 of dividends,
+    # within the nil rate, it is all taxed at 0%.
+    received_allowances_savings_income: 1_500
+    received_allowances_dividend_income: 500
+    dividend_income_tax: 0
 
 - name: Negative taxable dividend income
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_000
-    received_allowances_savings_income: 1_000
+    taxable_employment_income: 10_000
+    taxable_savings_interest_income: 1_000
     taxable_dividend_income: -500
   output:
     received_allowances_dividend_income: 0
 
-- name: Negative remaining allowance
+- name: Allowances keep the dividends left within the dividend allowance
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 11_000
-    received_allowances_savings_income: 2_000
+    taxable_employment_income: 11_000
+    taxable_savings_interest_income: 2_000
     taxable_dividend_income: 1_000
   output:
-    received_allowances_dividend_income: 0
+    # £1,430 is left after the pay. Up to £500 of dividends are taxed at 0%
+    # (s. 13A) and savings in the starting rate band at 0% (s. 12), so £930
+    # of savings and £500 of dividends are left: £1,070 of the allowances
+    # go to savings and £500 to dividends.
+    received_allowances_savings_income: 1_070
+    received_allowances_dividend_income: 500
+    dividend_income_tax: 0

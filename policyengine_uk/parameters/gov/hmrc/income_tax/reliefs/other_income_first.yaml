@@ -1,0 +1,14 @@
+description: Income Tax deducts reliefs and allowances from income other than property, savings and dividend income before it deducts them from property, savings or dividend income, and then in the way that gives the least tax.
+values:
+  # Before 2027-28, s. 25(2) alone decides how they are deducted.
+  0000-01-01: false
+  2027-04-06: true
+metadata:
+  unit: bool
+  period: year
+  label: Reliefs and allowances deducted from other income first
+  reference:
+    - title: Income Tax Act 2007 s. 25(2) and (3A)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/25
+    - title: Finance Act 2026 s. 6(6) and (8) (s. 25(3A) has effect from 2027-28)
+      href: https://www.legislation.gov.uk/ukpga/2026/11/section/6/enacted

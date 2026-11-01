@@ -20,12 +20,20 @@
     employment_income: 40_000
     savings_interest_income: 15_000
   output:
-    basic_rate_savings_income_pre_starter: 10_000
+    # ITA 2007 s. 25(2): of the £12,500 Personal Allowance, £2,500 comes off
+    # the pay and £10,000 off the savings. The pay left is £37,500, the basic
+    # rate limit, so the £500 savings allowance (s. 12B(3)) covers savings
+    # that would otherwise be taxed at 40% rather than 20%: £100 less tax
+    # than the allowance all against the pay. Savings of £5,000 run from
+    # £37,500 to £42,500: £500 at the nil rate and £4,500 at 40%. Setting
+    # more against the pay or the savings would not change the tax.
+    received_allowances_savings_income: 10_000
+    basic_rate_savings_income_pre_starter: 0
     savings_starter_rate_income: 0
-    basic_rate_savings_income: 9_500
+    basic_rate_savings_income: 0
     savings_allowance: 500
-    higher_rate_savings_income: 5_000
-    taxed_savings_income: 14_500
+    higher_rate_savings_income: 4_500
+    taxed_savings_income: 4_500
 
 - name: Dividends taxed at the marginal rates
   period: 2020
@@ -55,7 +63,7 @@
     dividend_income_tax: 178.75
     income_tax: 7_884.75
 
-- name: Personal allowance caps savings starter rate before dividends.
+- name: Personal allowance goes to dividends rather than savings at the starting rate.
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -63,14 +71,20 @@
     savings_interest_income: 5_000
     dividend_income: 5_000
   output:
-    received_allowances_savings_income: 2_570
-    basic_rate_savings_income_pre_starter: 2_430
-    savings_starter_rate_income: 2_430
+    # The pay takes £10,000 of the allowance first (ITA 2007 s. 25(3A)). The
+    # £5,000 of savings is all in the starting rate band (s. 12), so the
+    # other £2,570 saves tax only against dividends (s. 25(2)). Dividends of
+    # £2,430: (2,430 - 500) x 10.75% = 207.475. Setting the £2,570 against
+    # savings first would leave £5,000 of dividends and charge 483.75.
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 2_570
+    basic_rate_savings_income_pre_starter: 5_000
+    savings_starter_rate_income: 5_000
     savings_allowance: 1_000
     savings_income_tax: 0
-    taxed_dividend_income: 4_500
-    dividend_income_tax: 483.75
-    income_tax: 483.75
+    taxed_dividend_income: 1_930
+    dividend_income_tax: 207.475
+    income_tax: 207.475
 
 - name: Starter-rate savings applies before personal savings allowance.
   period: 2027

@@ -58,8 +58,13 @@ def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=Tr
     )
     # The income left in earned_taxable_income before allowances. The
     # part of it above earnings is the person's other non-savings income.
-    income_in_base = person("net_income", period) - add(
-        person, period, excluded_incomes
+    # Trade loss relief comes off that other income first; net_income
+    # deducts all of it, so add back the part set against savings and
+    # dividends, as earned_taxable_income does.
+    income_in_base = (
+        person("net_income", period)
+        + person("trade_loss_relief_against_savings_and_dividends", period)
+        - add(person, period, excluded_incomes)
     )
     other_income = max_(0, income_in_base - earnings)
     taxable_earnings = max_(0, person("earned_taxable_income", period) - other_income)

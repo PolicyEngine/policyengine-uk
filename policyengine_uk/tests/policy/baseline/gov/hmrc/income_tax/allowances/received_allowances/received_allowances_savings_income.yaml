@@ -1,53 +1,66 @@
-- name: Savings income less than remaining allowance
+# The allowances and trade loss relief go to non-savings, savings and dividend
+# income in the way that gives the least tax (ITA 2007 s. 25(2)). 2024-25:
+# Personal Allowance £12,570, starting rate limit for savings £5,000 (s. 12),
+# personal savings allowance £1,000 for a basic rate taxpayer (s. 12B).
+
+- name: Savings income less than the allowances left after earnings
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_000
+    taxable_employment_income: 10_000
+    taxable_savings_interest_income: 2_000
+  output:
+    # The £12,000 of income is all within the allowances.
+    received_allowances_savings_income: 2_000
+
+- name: Savings income equal to the allowances left after earnings
+  period: 2024
+  input:
+    allowances: 12_570
+    taxable_employment_income: 10_570
     taxable_savings_interest_income: 2_000
   output:
     received_allowances_savings_income: 2_000
 
-- name: Savings income equal to remaining allowance
+- name: Savings income greater than the allowances left after earnings
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_570
-    taxable_savings_interest_income: 2_000
-  output:
-    received_allowances_savings_income: 2_000
-
-- name: Savings income greater than remaining allowance
-  period: 2024
-  input:
-    allowances: 12_570
-    received_allowances_earned_income: 11_570
+    taxable_employment_income: 11_570
     taxable_savings_interest_income: 3_000
   output:
+    # The pay takes £11,570, which would otherwise be taxed at 20%. The
+    # £2,000 of savings left is within the £5,000 starting rate band, so
+    # it is taxed at 0% whichever £1,000 of the allowances it takes.
     received_allowances_savings_income: 1_000
 
-- name: No remaining allowance
+- name: No allowances go to savings that the starting rate leaves untaxed
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 12_570
+    taxable_employment_income: 12_570
     taxable_savings_interest_income: 1_000
   output:
+    # Against the savings the allowances would save nothing: the £1,000 is
+    # in the starting rate band. Against the pay they save 20%.
     received_allowances_savings_income: 0
 
 - name: Negative taxable savings interest income
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 10_000
+    taxable_employment_income: 10_000
     taxable_savings_interest_income: -500
   output:
     received_allowances_savings_income: 0
 
-- name: Negative remaining allowance
+- name: Earnings above the allowances leave none for savings
   period: 2024
   input:
     allowances: 12_570
-    received_allowances_earned_income: 13_000
+    taxable_employment_income: 13_000
     taxable_savings_interest_income: 1_000
   output:
+    # £430 of pay is taxed at 20% and the savings above it at the starting
+    # rate of 0%, so the allowances are worth most against the pay.
     received_allowances_savings_income: 0

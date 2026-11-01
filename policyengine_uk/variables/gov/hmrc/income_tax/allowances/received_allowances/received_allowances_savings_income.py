@@ -1,31 +1,25 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax_allocation import allocate_deductions
 
 
 class received_allowances_savings_income(Variable):
     value_type = float
     entity = Person
-    label = "The portion of all allowances (minus those only applicable to one income type) calculated after earned taxable income, but before dividends. This is applied to savings interest income."
+    label = "Allowances and reliefs deducted from savings income"
+    documentation = (
+        "The part of the allowances and trade loss relief against general "
+        "income that Income Tax deducts from savings income. ITA 2007 s. 25(2) "
+        "deducts reliefs and allowances in the way that gives the least tax, "
+        "and from 2027-28 s. 25(3A) deducts them from income other than "
+        "property, savings and dividend income first. "
+        "policyengine_uk.utils.income_tax_allocation finds that share."
+    )
     unit = GBP
     definition_period = YEAR
-    reference = "Income Tax Act 2007 s. 35"
+    reference = dict(
+        title="Income Tax Act 2007 s. 25",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/25",
+    )
 
     def formula(person, period, parameters):
-        all_allowances = person("allowances", period)
-        received_allowances_earned_income = person(
-            "received_allowances_earned_income", period
-        )
-        # Trade loss relief beyond non-savings income comes off savings income
-        # next, then dividends in the model's fixed allowance order (#2106).
-        remaining_allowance = (
-            all_allowances
-            + person("trade_loss_relief_against_savings_and_dividends", period)
-            - received_allowances_earned_income
-        )
-
-        savings_income = person("taxable_savings_interest_income", period)
-
-        return where(
-            savings_income < remaining_allowance,
-            max_(0, savings_income),
-            max_(0, remaining_allowance),
-        )
+        return allocate_deductions(person, period, parameters).savings

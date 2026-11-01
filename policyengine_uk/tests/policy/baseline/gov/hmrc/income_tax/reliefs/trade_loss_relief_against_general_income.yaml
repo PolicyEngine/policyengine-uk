@@ -110,7 +110,7 @@
     # (40,000 - 12,570 - 500) x 10.75%: the tax on £40,000 of dividends.
     income_tax: 2_894.98
 
-- name: Relief takes non-savings income first, then savings, then dividends
+- name: Relief and allowances leave savings that the starting rate and savings allowance cover
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -121,13 +121,16 @@
   output:
     trade_loss_relief_against_general_income: 20_000
     trade_loss_relief_against_savings_and_dividends: 15_000
-    # The £15,000 of relief left after the pay, with the Personal
-    # Allowance, takes all £10,000 of savings and £17,570 of dividends.
+    # ITA 2007 s. 25(2) sets the £32,570 of relief and Personal Allowance
+    # against income in the way that gives the least tax. The pay takes
+    # £5,000. Of Step 3 income of £12,430, savings up to £6,000 are taxed at
+    # 0%: £5,000 at the starting rate (s. 12) and £1,000 within the savings
+    # allowance (s. 12A). So savings take £4,000 and dividends £23,570.
     received_allowances_earned_income: 0
-    received_allowances_savings_income: 10_000
-    received_allowances_dividend_income: 17_570
-    # £25,000 of dividends is left: (25,000 - 12,570 - 500) x 10.75%.
-    income_tax: 1_282.48
+    received_allowances_savings_income: 4_000
+    received_allowances_dividend_income: 23_570
+    # £6,430 of dividends is left: (6,430 - 500) x 10.75%.
+    income_tax: 637.475
 
 - name: Adjusted total income is total income after employment expenses
   period: 2026

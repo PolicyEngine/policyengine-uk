@@ -16,6 +16,11 @@ class earned_taxable_income(Variable):
         exclusion_list = parameters(
             period
         ).gov.hmrc.income_tax.earned_taxable_income_exclusions
-        ani = person("net_income", period)
+        # net_income deducts all trade loss relief against general income.
+        # Add back the part set against savings and dividends, which the
+        # exclusions take off at their full amounts (ITA 2007 s. 25).
+        income = person("net_income", period) + person(
+            "trade_loss_relief_against_savings_and_dividends", period
+        )
         exclusions = add(person, period, exclusion_list)
-        return max_(0, ani - exclusions)
+        return max_(0, income - exclusions)

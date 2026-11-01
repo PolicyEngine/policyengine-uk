@@ -1,0 +1,203 @@
+# ITA 2007 s. 25(2): "At Steps 2 and 3, deduct the reliefs and allowances in
+# the way which will result in the greatest reduction in the taxpayer's
+# liability to income tax." From 2027-28, s. 25(3A) (Finance Act 2026 s. 6)
+# deducts them from income other than property, savings and dividend income
+# first. Savings sit above non-savings income and dividends above savings
+# (s. 16), and from 2027-28 property income sits just below savings (s. 16A).
+# 2026-27 and 2027-28: Personal Allowance £12,570, tapered away by £1 for each
+# £2 of adjusted net income above £100,000 (s. 35); basic rate limit £37,700
+# and higher rate limit £125,140; starting rate limit for savings £5,000
+# (s. 12); personal savings allowance £1,000 for a basic rate taxpayer and £500
+# with higher rate income (s. 12B); dividend allowance £500 (s. 13A); dividend
+# rates 10.75%, 35.75% and 39.35%. The model's 2027-28 property basic rate is
+# 24% (Budget 2026, paragraph 6.246).
+
+- name: Case 1, dividends of £20,000 take the whole Personal Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    dividend_income: 20_000
+  output:
+    received_allowances_dividend_income: 12_570
+    # (20,000 - 12,570 - 500) x 10.75%.
+    income_tax: 744.975
+
+- name: Case 2, savings in the starting rate band leave the Personal Allowance to dividends
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    savings_interest_income: 4_000
+    dividend_income: 20_000
+  output:
+    # The £4,000 of savings is the lowest part of Step 3 income, within the
+    # £5,000 starting rate band, so it is taxed at 0% (s. 12). Set against
+    # it, the allowance would save nothing; set against dividends it saves
+    # 10.75%. So all £12,570 comes off dividends, and the tax is as in case 1:
+    # (20,000 - 12,570 - 500) x 10.75%.
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 12_570
+    savings_income_tax: 0
+    income_tax: 744.975
+
+- name: Case 3, a trading loss is set against dividends rather than savings at the starting rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    savings_interest_income: 4_000
+    dividend_income: 200_000
+    trading_loss: 1_000
+  output:
+    # Adjusted net income of £203,000 removes the Personal Allowance. The
+    # £1,000 of relief (s. 64) comes off dividends: the savings stay at 0%
+    # in the starting rate band, and the dividends start £1,000 higher, at
+    # £4,000. Dividends of £199,000 run from £4,000 to £203,000:
+    # £500 nil rate, (37,700 - 4,500) x 10.75% = 3,569,
+    # (125,140 - 37,700) x 35.75% = 31,259.80 and
+    # (203,000 - 125,140) x 39.35% = 30,637.91, so 65,466.71. Set against
+    # savings, £1,000 more dividends would fall in the ordinary rate band:
+    # £107.50 more.
+    personal_allowance: 0
+    trade_loss_relief_against_general_income: 1_000
+    trade_loss_relief_against_savings_and_dividends: 1_000
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 1_000
+    savings_income_tax: 0
+    income_tax: 65_466.71
+
+- name: Case 4, in 2027-28 a trading loss is set against property income rather than dividends
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    property_income: 20_000
+    dividend_income: 200_000
+    trading_loss: 1_000
+  output:
+    # No other income, so s. 25(3A) leaves the choice between property and
+    # dividends to s. 25(2). Property income sits below dividends (s. 16A).
+    # Against property, the £1,000 of relief saves 24% on property income in
+    # the basic rate band, and moves £1,000 of dividends down into the
+    # ordinary rate band at 10.75%: a net saving of £132.50 over setting it
+    # against dividends, which would leave Step 3 income and the dividends'
+    # top of £219,000 unchanged. Property: 19,000 x 24% = 4,560. Dividends of
+    # £200,000 from £19,000 to £219,000: £500 nil rate,
+    # (37,700 - 19,500) x 10.75% = 1,956.50, 87,440 x 35.75% = 31,259.80 and
+    # (219,000 - 125,140) x 39.35% = 36,933.91, so 70,150.21.
+    personal_allowance: 0
+    trade_loss_relief_against_savings_and_dividends: 0
+    received_allowances_dividend_income: 0
+    property_income_tax: 4_560
+    dividend_income_tax: 70_150.21
+    income_tax: 74_710.21
+
+- name: Case 5, a Scottish taxpayer's savings and dividends follow the UK rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 3_000
+    savings_interest_income: 4_000
+    dividend_income: 20_000
+    region: SCOTLAND
+  output:
+    # Scottish rates apply only to non-savings income (s. 11A). The pay
+    # takes £3,000 of the allowance, saving the 19% starter rate. The
+    # savings stay whole at 0% in the starting rate band (s. 12) and the
+    # dividends take the other £9,570. Dividends of £10,430 from £4,000:
+    # (10,430 - 500) x 10.75% on the UK bands (s. 13(5)) = 1,067.475.
+    # Setting the allowance against savings before dividends would leave
+    # £14,430 of dividends: £430 more tax.
+    received_allowances_earned_income: 3_000
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 9_570
+    earned_income_tax: 0
+    savings_income_tax: 0
+    income_tax: 1_067.475
+
+- name: Case 6, a Scottish higher rate taxpayer keeps the allowance against pay
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    savings_interest_income: 10_000
+    region: SCOTLAND
+  output:
+    # Pay of £37,430 after the allowance is taxed at the Scottish rates:
+    # 3,967 x 19% + 12,989 x 20% + 14,136 x 21% + 6,338 x 42% = 8,982.05.
+    # Savings run from £37,430 to £47,430. Step 3 income would be higher
+    # rate income outside Scotland, so the savings allowance is £500
+    # (s. 12B(8)(b)(iv)), and the other £9,500 is above the UK basic rate
+    # limit, at 40% (s. 11D(6)): 3,800. Moving £270 of the allowance to
+    # savings, as in case 7, would tax £270 more pay at 42% to take £270 of
+    # savings out of the 40% band: £5.40 more.
+    received_allowances_earned_income: 12_570
+    received_allowances_savings_income: 0
+    earned_income_tax: 8_982.05
+    savings_income_tax: 3_800
+    income_tax: 12_782.05
+
+- name: Case 7, savings across the basic rate limit take part of the allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    savings_interest_income: 10_000
+  output:
+    # With all £12,570 against pay, pay of £37,430 is taxed at 20% and the
+    # £500 savings allowance covers savings from £37,430 to £37,930, all but
+    # £230 of it below the basic rate limit, where savings would be taxed
+    # at 20% anyway. Setting £270 against savings instead puts the pay at
+    # £37,700 and the savings allowance above the limit, where it saves 40%:
+    # pay 37,700 x 20% = 7,540; savings (47,430 - 38,200) x 40% = 3,692.
+    # The order pay, savings, dividends charges 7,486 + 3,800 = 11,286.
+    received_allowances_earned_income: 12_300
+    received_allowances_savings_income: 270
+    earned_income_tax: 7_540
+    savings_income_tax: 3_692
+    income_tax: 11_232
+
+- name: Case 8, dividends across the basic rate limit take part of the allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    dividend_income: 20_000
+  output:
+    # As in case 7, the dividend allowance saves most above the basic rate
+    # limit. Pay 37,700 x 20% = 7,540; dividends of £19,730 from £37,700:
+    # £500 nil rate and (57,430 - 38,200) x 35.75% = 6,874.725. The order
+    # pay, savings, dividends charges 7,486 + 19,500 x 35.75% = 14,457.25.
+    received_allowances_earned_income: 12_300
+    received_allowances_dividend_income: 270
+    dividend_income_tax: 6_874.725
+    income_tax: 14_414.725
+
+- name: Case 9, a person with only savings sets the whole allowance against them
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    savings_interest_income: 20_000
+  output:
+    # Step 3 income of £7,430: £5,000 at the starting rate, £1,000 within
+    # the savings allowance and (7,430 - 6,000) x 20% = 286.
+    received_allowances_savings_income: 12_570
+    income_tax: 286
+
+- name: Case 10, a person with only property income in 2027-28 sets the whole allowance against it
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    property_income: 30_000
+  output:
+    # (30,000 - 12,570) x 24%.
+    received_allowances_earned_income: 12_570
+    property_income_tax: 4_183.2
+    income_tax: 4_183.2
