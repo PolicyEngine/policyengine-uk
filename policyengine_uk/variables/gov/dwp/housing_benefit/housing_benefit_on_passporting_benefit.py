@@ -54,8 +54,8 @@ class housing_benefit_on_passporting_benefit(Variable):
             p.northern_ireland,
             p.great_britain,
         )
-        # Universal Credit before the benefit cap and deductions: entitlement
-        # counts whether or not it is paid. The amount paid
+        # Read Universal Credit before the benefit cap and deductions:
+        # entitlement counts whether or not DWP pays it. The amount paid
         # (universal_credit) reads Housing Benefit where the inputs supply
         # benefit_cap_welfare_benefits (uc_benefit_cap_welfare_benefits).
         on_universal_credit = benunit("is_uc_entitled", period) & universal_credit_limb

@@ -1072,8 +1072,8 @@ AWARD_HOUSEHOLD = st.fixed_dictionaries(
         scale=st.floats(0, 1),
     )
 )
-# 4,000 of wages plus the 14,753 capped award is 360.63 a week, in the 348
-# band; a tenth less award gives 332.26 a week, in the 266 band.
+# 4,000 of wages plus the 14,753 capped award come to 360.63 a week, in the
+# 348 band; a tenth less award gives 332.26 a week, in the 266 band.
 BAND_CROSSING = dict(
     employment_income=4_000.0, universal_credit_pre_benefit_cap=15_000.0, scale=0.9
 )
