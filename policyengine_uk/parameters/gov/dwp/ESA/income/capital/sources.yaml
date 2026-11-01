@@ -27,8 +27,8 @@ description: >
   owner the data do not identify, the model allocates the full household
   remainder to benunits with a reported income-related ESA award and falls
   back to claimant and partner shares when nobody in the household is on that
-  reported claim path. No regulation sets that allocation; it approximates
-  ownership the data don't record.
+  reported claim path. That allocation is a data approximation, not a
+  legislated ownership rule.
 metadata:
   label: Income-related ESA countable capital sources
   period: year

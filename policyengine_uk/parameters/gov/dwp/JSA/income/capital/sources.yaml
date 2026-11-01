@@ -27,9 +27,8 @@ description: >
   states or asset holdings. For capital whose owner the data do not identify,
   the model allocates the full household remainder to benunits with a
   reported income-based JSA award and falls back to claimant and partner
-  shares when nobody in the household is on that reported claim path. No
-  regulation sets that allocation; it approximates ownership the data don't
-  record.
+  shares when nobody in the household is on that reported claim path. That
+  allocation is a data approximation, not a legislated ownership rule.
 metadata:
   label: Income-based JSA countable capital sources
   period: year
