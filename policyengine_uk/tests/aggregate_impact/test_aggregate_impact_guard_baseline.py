@@ -6,8 +6,8 @@ Such a value has no change to read. The check names each variable it could
 not read once, as a failure of a ``finite:`` check; it fails no component for
 it, never gives the engine NaN, and judges every other reading as before.
 ``counted_once_base_reference`` holds the check as it stood before: every
-model whose heads and totals are finite at baseline must publish exactly what
-it published.
+model whose heads, totals and checked components are finite at baseline must
+publish exactly what it published.
 """
 
 import json
@@ -364,6 +364,51 @@ def test_a_held_head_that_moves_leaves_only_those_households_unjudged():
     assert row["heads_not_held"] == {} and row["heads_held_skipped"]
 
 
+@pytest.mark.parametrize(
+    "entity, people",
+    [
+        ("person", [(0, 0), (1, 1), (1, 1)]),
+        ("benunit", [(0, 0), (1, 1), (2, 1)]),
+    ],
+)
+def test_units_that_cancel_within_a_household_still_count_as_moved(entity, people):
+    """tax_n, a head of people or benefit units, is NaN at baseline in the
+    first household. In the second it moves with tax_b, up in one unit and
+    down in the other, so the household's sum stays the same. The head still
+    moved, so the second household's failures stay and name tax_n."""
+    formulas = {
+        "tax_b": lambda f: np.ones(2) * 5,
+        "tax_d": lambda f: 0.2 * f("tax_b"),
+        "tax_a": lambda f: 0.5 * f("tax_d"),
+        "tax_n": lambda f: np.array([np.nan, f("tax_b")[1], -f("tax_b")[1]]),
+        "gov_tax": lambda f: (
+            f("tax_b")
+            + f("tax_d")
+            + f("tax_a")
+            + sim.map_result(f("tax_n"), entity, "household")
+        ),
+    }
+    sim = EntitySim(formulas, {"x": (1, 1)}, (1, 1), {"tax_n": entity}, people)
+    part = partition(
+        ["tax_b", "tax_d", "tax_a", "tax_n"],
+        reads={"tax_d": ["tax_b"]},
+        entities={"tax_n": entity},
+    )
+    with np.errstate(all="ignore"):
+        result = guard.counted_once(
+            sim,
+            part,
+            YEAR,
+            1e-6,
+            guard.snapshot_inputs(sim, part.component_variables()),
+            variables_to_check=("tax_b",),
+        )
+    problems = by_variable(result)["tax_b"]["problems"]
+    assert {p["head"]: p["households"] for p in problems} == {"tax_a": 1, "tax_d": 1}
+    assert all(p["heads_not_held_at_baseline"] == ["tax_n"] for p in problems)
+    assert result["reset_reproduces_baseline"]
+
+
 def test_a_problem_names_heads_the_check_could_not_hold_for_either_reason():
     """One household: ben_c turns NaN once tax_b rises, and tax_n, NaN at
     baseline, turns 0. tax_a's failure names both, each with its reason."""
@@ -634,8 +679,9 @@ def test_heads_not_finite_at_baseline_are_named_and_change_nothing_else(case, re
         assert all(p["head"] not in bad for p in row["problems"])
         if row["variable"] in bad:
             assert row["status"] != "fail"
-        assert row["heads_held_skipped"] == bool(row["heads_not_held"]) or any(
-            p.get("heads_not_held_at_baseline") for p in row["problems"]
+        assert row["heads_held_skipped"] == (
+            bool(row["heads_not_held"])
+            or any(p.get("heads_not_held_at_baseline") for p in row["problems"])
         )
     assert result["reset_reproduces_baseline"]
 

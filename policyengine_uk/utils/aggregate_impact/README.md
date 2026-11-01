@@ -124,12 +124,12 @@ The checks are:
   every other head held at baseline, and fails only where it still breaks
   it; a response carried by another head (Incapacity Benefit lowers Carer's
   Allowance, which Universal Credit counts as income) is reported as
-  mediated. A declared double count must still be contained in its head. A
-  head, total or component that is NaN or infinite at baseline fails its
-  `finite:` check (`finite:metrics` for a total or a double count), and the
-  counted-once check fails no component for it: it reads no change where
-  the value is not finite, and holds such a head by leaving it to its
-  formula, judging each household where the formula gives back its baseline;
+  mediated. A declared double count must still be contained in its head. The
+  check records a NaN or infinite baseline value under a blocking `finite:`
+  check (`finite:metrics` for a total or a double count) and continues
+  judging readable households. It holds such a head by leaving it to its
+  formula, and judges each household where the formula gives back the held
+  value;
 - **signs, bounds and finiteness**, and **determinism:** a rebuilt
   simulation reproduces the baseline exactly;
 - **inert heads:** a head that is zero for every unit is a warning, unless the
