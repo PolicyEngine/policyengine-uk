@@ -20,9 +20,10 @@ class council_tax_reduction_non_dep_deductions(Variable):
         "Deductions for the non-dependants in other benefit units of the "
         "household: one per couple, the higher of the two members' amounts "
         "(both, in the Welsh scheme for people who are not pensioners, when "
-        "the couple has a Universal Credit award), one for each other member, "
-        "each under the applicant family's own scheme and apportioned between "
-        "jointly liable applicants; none if the applicant or partner is exempt."
+        "the couple's own Universal Credit award assesses either member), one "
+        "for each other member, each under the applicant family's own scheme "
+        "and apportioned between jointly liable applicants; none if the "
+        "applicant or partner is exempt."
     )
     definition_period = YEAR
     unit = GBP
@@ -39,9 +40,17 @@ class council_tax_reduction_non_dep_deductions(Variable):
         country = benunit.household("country", period)
         # WSI 2013/3029 Sch 6 para 5(3): a working-age applicant's deduction is
         # for each member of a non-dependant couple with a Universal Credit
-        # award.
-        universal_credit_couple = is_wales_scheme(country) & (
-            benunit("universal_credit_pre_benefit_cap", period) > 0
+        # award. The award is the couple's own: one that assesses the
+        # claimant or partner. Another member's award, as a single claimant,
+        # leaves the couple with one deduction.
+        couple_claims_universal_credit = benunit.any(
+            person("is_uc_assessed_claimant", period)
+            & person("is_claimant_or_partner", period)
+        )
+        universal_credit_couple = (
+            is_wales_scheme(country)
+            & couple_claims_universal_credit
+            & (benunit("universal_credit_pre_benefit_cap", period) > 0)
         )
         # council_tax_reduction_individual_non_dep_deduction is each person's
         # deduction under the scheme of the household head's family. A jointly
