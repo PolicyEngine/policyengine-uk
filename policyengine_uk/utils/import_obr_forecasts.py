@@ -1105,9 +1105,9 @@ def growth_ratio(
 
 @dataclass(frozen=True)
 class ReceiptsLine:
-    """A receipts line as the OBR publishes it in one EFO: £bn, or a
+    """Hold a receipts line as the OBR publishes it in one EFO: £bn, or a
     clearance line's own unit, by the calendar year in which each fiscal year
-    starts, and which of those years are outturn."""
+    starts, and which of those years the OBR marks as outturn."""
 
     table: str
     label: str
@@ -1119,9 +1119,10 @@ class ReceiptsLine:
 class ReceiptsGrowth:
     """Growth in a receipts line, by year, rounded to six decimals.
 
-    The first year is outturn growth: this EFO's first (outturn) year over
-    the year before in the previous EFO, where it is outturn. Each later
-    year is the ratio of this EFO's consecutive levels. A line with its own
+    The first year holds outturn growth: this EFO's first (outturn) year
+    over the year before in the previous EFO, which marks that year as
+    outturn. Each later year holds the ratio of this EFO's consecutive
+    levels. A line with its own
     outturn starts at that outturn's second year and has no previous line;
     one with rates grows its base instead (see ``ReceiptsSeriesSpec``). A
     clearance line holds the clearances' growth, which
@@ -1565,8 +1566,9 @@ def growth_in_effect(series: dict[int, float], year: int) -> float:
 def per_head_growth(
     growth: ReceiptsGrowth, population: dict[int, float]
 ) -> ReceiptsGrowth:
-    """A series' growth per head, to six decimals: one plus each year's
-    growth, over one plus that year's ``ons.population`` growth, minus one.
+    """Return a series' growth per head, to six decimals: one plus each
+    year's growth, over one plus that year's ``ons.population`` growth,
+    minus one.
 
     It divides the series' own growth, before rounding where
     ``growth.ratios`` holds it: a duty's base for a line with rates, whether
@@ -1733,9 +1735,9 @@ def render_receipts_values(
 
 
 def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
-    """How a line's growth is measured, for its comments: nothing for
-    receipts, the rates taken out for a base, and population for clearances
-    and for a base per head."""
+    """Return what the importer takes out of a line's growth, for its
+    comments: nothing for receipts, the rates for a base, and population for
+    clearances and for a base per head."""
     if isinstance(spec, ClearanceSeriesSpec):
         return "; per head: clearance growth over one plus ons.population growth"
     if spec is None or not spec.rates:
@@ -1822,10 +1824,11 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
 
 
 def clearance_tail(content: str, last: int) -> tuple[dict[int, float], str]:
-    """A clearance series after the OBR's forecast, and its comment. The
-    clearances hold flat, so per head they grow by 1 / (1 + population) - 1,
-    to six decimals, in each year to ``ons.population``'s last, written where
-    the value changes."""
+    """Return a clearance series after the OBR's forecast, and its
+    comment. The importer holds the clearances flat, so per head they grow
+    by 1 / (1 + population) - 1, to six decimals, in each year to
+    ``ons.population``'s last. It writes a year only where the value
+    changes."""
     population = population_growth(content)
     yearly = {
         year: round(1 / (1 + growth_in_effect(population, year)) - 1, 6) + 0.0

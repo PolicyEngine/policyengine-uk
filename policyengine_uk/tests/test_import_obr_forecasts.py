@@ -544,9 +544,10 @@ def clearance_table(
     start: int = 2,
     unit: str | None = None,
 ) -> dict[int, list[str]]:
-    """A table laid out as the OBR's Tables 4.11 and 4.12: title in column B,
-    the "Outturn" and "Forecast" markers on the next row, fiscal years on the
-    row after, then one row per line and any notes. A clearance table has no
+    """Build a table in the layout of the OBR's Tables 4.11 and 4.12: title
+    in column B, the "Outturn" and "Forecast" markers on the next row, fiscal
+    years on the row after, then one row per line and any notes. A clearance
+    table has no
     unit cell, since the OBR states the unit in a label or a note; ``unit``
     adds one on a row of its own below the title, as a receipts table has."""
     years = max(len(levels) for _, levels in rows)
@@ -583,8 +584,8 @@ def clearance_table(
 
 
 def tobacco_table(chapter, first_year, levels, outturn_years=1):
-    """Table 4.11 (3.11 to March 2026): cigarettes in million sticks, then
-    non-cigarette clearances in thousand kg and their "of which" split."""
+    """Build Table 4.11 (3.11 to March 2026): cigarettes in million sticks,
+    then non-cigarette clearances in thousand kg and their "of which" split."""
     non_cigarette = tuple(
         float(hand_rolled) + float(other)
         for hand_rolled, other in zip(
@@ -611,8 +612,9 @@ def tobacco_table(chapter, first_year, levels, outturn_years=1):
 
 
 def alcohol_table(chapter, first_year, levels, outturn_years=1, note=None):
-    """Table 4.12 (3.12 to March 2026): clearances in thousand hectolitres of
-    alcohol, which the OBR states in a note, then the duties' receipts in
+    """Build Table 4.12 (3.12 to March 2026): clearances in thousand
+    hectolitres of alcohol, which the OBR states in a note, then the duties'
+    receipts in
     £ billion under the same labels, which the importer must not read for
     the clearance lines."""
     labels = {
@@ -1783,7 +1785,7 @@ MARCH_2026_CLEARANCES = {
 
 
 def test_october_2026_tables_reproduce_the_committed_series():
-    """yoy_growth.yaml holds exactly what the importer writes from the
+    """yoy_growth.yaml holds, byte for byte, what the importer writes from the
     October 2026 receipts tables (Tables 4.7, 4.8, 4.2, 4.10, 4.11 and 4.12)
     and the March 2026 ones (3.7, 3.8, 3.2, 3.11 and 3.12): rerunning it on
     the committed file changes nothing."""
@@ -3092,9 +3094,9 @@ def test_a_clearance_spec_needs_a_read_unit_cell_and_takes_no_rates_or_outturn()
 
 
 def test_real_october_2026_clearance_series():
-    """The committed series, from the real October 2026 Tables 4.11 and 4.12
-    over the real March 2026 Tables 3.11 and 3.12, per head of the committed
-    ons.population, by hand."""
+    """Check the committed series by hand: the real October 2026 Tables
+    4.11 and 4.12 over the real March 2026 Tables 3.11 and 3.12, per head of
+    the committed ons.population."""
     population = population_growth(get_yoy_growth_path().read_text())
     assert (population[2025], population[2026]) == (0.0033, 0.002)
     growth = compute_receipts_growth(
@@ -3182,8 +3184,9 @@ POPULATION_GROWTH = st.floats(min_value=-0.02, max_value=0.03, allow_nan=False).
 @given(years=st.integers(2, 7), data=st.data())
 def test_rendered_clearances_grow_the_weighted_total_with_the_clearances(years, data):
     """For any clearances and population growth: in every year the household
-    quantity's growth times the household weight's growth is the clearances'
-    growth, to the series' six decimals, and after the forecast it is 1; the
+    quantity's growth times the household weight's growth equals the
+    clearances' growth, to the series' six decimals, and equals 1 after the
+    forecast; the
     series stays above -100%, so its index stays positive; a second run
     changes nothing."""
     base, levels = {}, {}
@@ -3364,7 +3367,7 @@ def test_real_tables_with_a_kg_cell_beside_a_line_are_refused(tmp_path):
     """The helper writes other tobacco in kg beside its line in the real
     October 2026 Table 4.11 and multiplies its values by 1,000. Reading them
     in the total's thousand kg gives growth of 862.8112. The renderer refuses
-    it, and a run on the real March 2026 tables changed the same way stops
+    it, and a run on the real March 2026 tables, changed the same way, stops
     before it writes anything."""
     changed = put_unit_beside_real_line(
         REAL_OCTOBER_2026_RECEIPTS, "4.11", "Other tobacco products", "kg"
@@ -3959,7 +3962,8 @@ UNIT_SHAPED = st.one_of(
 @given(table=st.sampled_from(sorted(REAL_CLEARANCE_TABLES)), data=st.data())
 def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
     """Put one text in a real table, in an empty cell of any row from its
-    title down, in any column, or on a new row. Any text outside the table's
+    title through the table's end, in any column, or on a new row. Any text
+    outside the table's
     list, from st.text() or shaped like a unit, stops every line of the
     table: the importer names the cell, or finds no line or table where the
     text took a label's or the title's place. A text from the list, other

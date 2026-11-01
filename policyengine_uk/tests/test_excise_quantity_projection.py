@@ -91,8 +91,9 @@ def index(parameters, group, year):
 
 
 def household_frame(year, households):
-    """One adult in each household, with the given household inputs. Each
-    household is a dict of inputs; ``household_weight`` defaults to 1."""
+    """Build a dataset with one adult in each household, from the given
+    household inputs. Pass each household as a dict of inputs;
+    ``household_weight`` defaults to 1."""
     count = len(households)
     columns = sorted({name for household in households for name in household})
     return UKSingleYearDataset(
@@ -215,8 +216,8 @@ def test_indices_are_positive_from_the_2024_base_year(parameters):
 
 
 def test_each_series_is_its_clearances_per_head(parameters):
-    """Each year's growth, to six decimals, is the clearances' growth over
-    one plus that year's population growth, the growth of household
+    """Each year's growth equals, to six decimals, the clearances' growth
+    over one plus that year's population growth, the growth of household
     weights."""
     for group, levels in CLEARANCES.items():
         assert growth(parameters, f"{GROWTH}.{group}", 2024) == 0
@@ -295,7 +296,7 @@ QUANTITY = st.floats(min_value=0, max_value=1e4, allow_nan=False)
 def test_projected_quantities_are_the_base_times_the_index(quantities, weight):
     """For any quantities and weight: dataset projection gives each year's
     quantity as the 2024 quantity times its series' growth compounded, which
-    is its index to the index's five decimals; Core's uprating of a 2024
+    matches its index to the index's five decimals; Core's uprating of a 2024
     situation input (the other route to a later year) agrees; the weight
     grows by population alone."""
     parameters = current_law()
@@ -349,8 +350,8 @@ def test_a_later_year_charges_duty_on_the_uprated_quantity(parameters):
 
 
 def rate_leaves(parameters):
-    """Every alcohol and tobacco duty rate the duty formulas read, without
-    the wine strength easement's true-or-false switch."""
+    """Return every alcohol and tobacco duty rate the duty formulas read,
+    without the wine strength easement's true-or-false switch."""
     leaves = [
         leaf
         for node in (ALCOHOL_RATES, TOBACCO_RATES)
@@ -414,8 +415,8 @@ UNTOUCHED = (
 
 
 def test_the_change_touches_only_the_quantity_inputs(parameters):
-    """Differential against the projection without this change, which
-    leaves the quantity inputs out of the uprating map and out of Core's
+    """Compare with the projection without this change, which leaves the
+    quantity inputs out of the uprating map and out of Core's
     fallback: every other stored input keeps its value in every year, the
     quantity inputs differ by their index alone, and outputs differ only
     through the two duties."""
