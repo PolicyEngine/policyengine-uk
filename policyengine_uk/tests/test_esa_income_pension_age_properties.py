@@ -909,16 +909,16 @@ def test_a_reform_that_pays_outside_the_age_conditions_bars_the_award(
         ),
         reform=reform,
     )
-    assert follows_model_formulas(sim, year) is follows
+    assert sim.calculate("esa_income", year).tolist() == esa
+    assert sim.calculate("pension_credit", year) == pytest.approx(
+        [0, pension_credit_at_40, 8_091.20], abs=0.01
+    )
     assert sim.calculate("meets_pension_credit_age_conditions", year).tolist() == [
         True,
         False,
         True,
     ]
-    assert sim.calculate("pension_credit", year) == pytest.approx(
-        [0, pension_credit_at_40, 8_091.20], abs=0.01
-    )
-    assert sim.calculate("esa_income", year).tolist() == esa
+    assert follows_model_formulas(sim, year) is follows
 
 
 class take_up_without_income_related_esa(Reform):
@@ -962,12 +962,12 @@ def test_a_take_up_formula_makes_the_model_read_pension_credit_for_every_couple(
         ),
         reform=reform,
     )
-    assert not follows_model_formulas(sim, year)
     assert sim.calculate("esa_income", year).tolist() == [0, 5_000, 0]
     assert sim.calculate("pension_credit", year) == pytest.approx(
         [8_091.20, 0, 8_091.20], abs=0.01
     )
     assert sim.calculate("would_claim_pc", year).tolist() == [True, False, True]
+    assert not follows_model_formulas(sim, year)
 
 
 def wrapped(formula):
