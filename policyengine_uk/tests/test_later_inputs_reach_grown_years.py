@@ -31,6 +31,7 @@ from policyengine_core.simulations.simulation import _uprating_index_value
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
+from policyengine_uk.model_api import YEAR, Person, Variable
 from policyengine_uk.scenarios import no_economic_assumptions
 from policyengine_uk.utils.scenario import Scenario
 
@@ -264,6 +265,37 @@ def test_a_year_set_for_later_than_a_later_input_keeps_its_value(route):
     assert simulation.calculate("cash_isa_balance", 2040)[0] == pytest.approx(
         grown, rel=1e-6
     )
+
+
+class twice_car_list_price(Variable):
+    value_type = float
+    entity = Person
+    label = "Twice the car list price"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return 2 * person("car_list_price", period)
+
+
+def test_a_formula_variable_supplied_for_one_year_is_recalculated_for_others():
+    # A caller supplies a formula variable for 2025 only, so the simulation
+    # keeps it as an input variable. Its formula gives 2030 from the list
+    # price carried from 2025; a list price then set for 2030 changes it on
+    # every path, and the supplied year keeps its value.
+    data = {f"car_list_price__{DATA_YEAR}": 3_000.0}
+    simulation = Simulation(dataset=_frame(**data))
+    new = Simulation(dataset=_frame(**data, car_list_price__2030=5_000.0))
+    for path in (simulation, new):
+        path.tax_benefit_system.add_variable(twice_car_list_price)
+    named = simulation.get_branch("edited")
+    for path in (simulation, named, new):
+        path.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))
+    for path in (simulation, named):
+        assert path.calculate("twice_car_list_price", 2030)[0] == 6_000
+        path.set_input("car_list_price", 2030, np.array([5_000.0]))
+    for path in (simulation, named, new):
+        assert path.calculate("twice_car_list_price", 2030)[0] == 10_000
+        assert path.calculate("twice_car_list_price", DATA_YEAR)[0] == 1
 
 
 def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
