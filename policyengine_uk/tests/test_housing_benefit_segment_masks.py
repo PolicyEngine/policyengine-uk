@@ -35,10 +35,10 @@ M5. Each year but 2026-27 has one segment, and the award built from it
 
 The fixture supplies the conditions as inputs, and its variables default
 to nil. It sets the eligible rent to ``RENT`` and non-dependant deductions
-to nil, so the maximum benefit equals the whole rent. The annual childcare deduction and
-its limit keep their single annual calculation. Populations use core
-situations, as in test_housing_benefit_wtc_disregard.py; they never load a
-survey dataset.
+to nil, so the maximum benefit equals the whole rent. The annual childcare
+deduction and its limit keep their single annual calculation. Populations
+use core situations, as in test_housing_benefit_wtc_disregard.py; they
+never load a survey dataset.
 """
 
 from functools import cache
