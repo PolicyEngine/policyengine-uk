@@ -14,7 +14,7 @@ class uc_limited_capability_for_WRA(Variable):
         "and Universal Credit takes the ESA determination (UC Regs 2013 reg "
         "40(1)(a)(ii)). So a person whose own ESA award (has_own_esa_award), "
         "current or ended, did not include the support component "
-        "(esa_includes_support_component) is taken not to have it, whatever "
+        "(esa_includes_support_component) counts as not having it, whatever "
         "the flag, though someone "
         "still in the ESA assessment phase may yet be found to. The model does "
         "not infer it the other way, from the support component alone. Users "

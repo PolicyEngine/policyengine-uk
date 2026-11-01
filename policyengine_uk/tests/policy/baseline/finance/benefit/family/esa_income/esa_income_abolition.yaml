@@ -16,13 +16,13 @@
 #
 # When the abolition reaches the claimant's or partner's award, the family
 # claims Universal Credit if would_claim_uc_at_legacy_closure (default true),
-# and the claim ends the award. From 2027-28 the award has ended and the
-# family is moved off its legacy benefits (legacy_benefits_closed). Cases
+# and the claim ends the award. From 2027-28 the award has ended and DWP
+# moves the family off its legacy benefits (legacy_benefits_closed). Cases
 # that test the 2026-27 share set would_claim_uc_at_legacy_closure to false.
 #
 # Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
-# A couple's award is one award, saved when either member who reports it is
-# saved. Art. 3A(3): a Universal Credit claim still ends a saved award. A
+# A saving for either member who reports a couple's award keeps the whole
+# award. Art. 3A(3): a Universal Credit claim still ends a saved award. A
 # contributory allowance continues as new style ESA (esa_contrib).
 #
 # Unless a case says otherwise, nobody has capital, so there is no tariff
@@ -472,8 +472,8 @@
         members: [claimant, other]
         region: LONDON
   output:
-    # The adult claims in their own right, so their report neither prompts
-    # the family's claim nor is ended by it.
+    # The adult claims in their own right, so the family's claim neither
+    # depends on their report nor ends it.
     esa_income_abolition_reached: false
     claims_universal_credit: false
     esa_income_report_closed: [false, false]
@@ -872,8 +872,9 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # The couple claims jointly (UC Regs 2013 reg 3(2)(a)) and is entitled,
-    # so it leaves the pension-age route and its Housing Benefit ends.
+    # The couple claims jointly (UC Regs 2013 reg 3(2)(a)) and has a
+    # positive award, so it leaves the pension-age route and its Housing
+    # Benefit ends.
     meets_pension_credit_age_conditions: true
     esa_income_abolition_reached: true
     claims_uc_at_legacy_closure: true

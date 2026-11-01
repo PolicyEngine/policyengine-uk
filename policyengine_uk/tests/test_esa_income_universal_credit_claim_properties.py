@@ -10,8 +10,8 @@ income-related ESA in their own right and is not part of it.
 
 Invariants, for any generated population of working-age families in 2025
 and 2027 (either side of income-related ESA's 1 July 2026 abolition date)
-with no other legacy benefit, so none is moved off legacy benefits. Every
-award is saved for an appointee (SI 2025/1148 art. 3A(2)), so the abolition
+with no other legacy benefit, so DWP moves none off legacy benefits. Every
+member has the appointee saving (SI 2025/1148 art. 3A(2)), so the abolition
 leaves it in place in 2027 and only the claim ends it (art. 3A(3)):
 
 1. Exclusive: a family that claims Universal Credit pays its claimant and

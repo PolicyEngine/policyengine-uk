@@ -23,9 +23,9 @@ class esa_income_payable_share(Variable):
         "date. This annual share does not track deadlines or claim dates, so "
         "it pays every award to the general date. A claim saved for an "
         "appointee has a share of 1 in "
-        "every year: a couple's claim is saved when either member who reports "
-        "the award is saved (esa_income_appointee_saving), and saving a member "
-        "who reports nothing saves nothing. esa_income pays each claim for "
+        "every year: a saving for either member who reports a couple's award "
+        "keeps the whole claim (esa_income_appointee_saving), and a saving for "
+        "a member who reports nothing keeps nothing. esa_income pays each claim for "
         "this share of the year, and esa_income_report_closed ends its reports "
         "in a year where it is 0. A contributory allowance continues as new "
         "style ESA (esa_contrib)."
@@ -51,8 +51,8 @@ class esa_income_payable_share(Variable):
             payable.great_britain,
         )
         # Art. 3A(2) saves an award for an appointee in every year. The
-        # claimant's and partner's award is one award, saved if either of
-        # them reports it and is saved; another member's is their own.
+        # claimant and partner share one award, which a saving for either of
+        # them who reports it keeps; another member's award is their own.
         reports_saved = (person("esa_income_reported", period) > 0) & person(
             "esa_income_appointee_saving", period
         )

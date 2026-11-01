@@ -187,8 +187,8 @@ def esa_abolition_claim(couple, parameters):
     reports (esa_income_report_closed).
 
     The abolition reaches every remaining award on 1 July 2026 in England
-    (SI 2025/1148 art. 3A), the households' default country, and no award
-    here is saved for an appointee, so it reaches any award reported in a
+    (SI 2025/1148 art. 3A), the households' default country, and no member
+    here has the appointee saving, so it reaches any award reported in a
     year with less than all of it payable. would_claim_uc_at_legacy_closure
     keeps its default, true. The conditions are those of the other
     working-age closures: no Pension Credit report, and not all pension age.

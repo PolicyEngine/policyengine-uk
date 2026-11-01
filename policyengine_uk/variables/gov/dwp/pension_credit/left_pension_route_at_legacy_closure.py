@@ -30,8 +30,8 @@ class left_pension_route_at_legacy_closure(Variable):
     )
 
     def formula(benunit, period, parameters):
-        # A protected mixed-age couple whose income-related ESA award the
-        # abolition reaches is moved too (esa_income_abolition_reached).
+        # DWP also moves a protected mixed-age couple whose income-related ESA
+        # award the abolition reaches (esa_income_abolition_reached).
         moved = (
             benunit("legacy_benefits_closed", period)
             | benunit("esa_income_abolition_reached", period)

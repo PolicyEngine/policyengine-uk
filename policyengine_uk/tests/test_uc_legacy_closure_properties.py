@@ -3,7 +3,7 @@
 Tax credits closed from 6 April 2025 and Income Support and income-based JSA
 from 1 April 2026. The abolition of income-related ESA reached every remaining
 award on 1 July 2026 (SI 2025/1148 art. 3A), so a family whose award it
-reaches can claim from 2026-27 and is moved from 2027-28, when none of the
+reaches can claim from 2026-27, and DWP moves it from 2027-28, when none of the
 award is payable. DWP moved each family off its legacy benefits with a notice
 covering all of them. A Universal Credit migration notice ends the awards on a
 claim (SI 2014/1230 reg 8) or at its deadline (reg 46). A tax credit closure

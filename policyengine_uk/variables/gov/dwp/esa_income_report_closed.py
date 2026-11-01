@@ -30,7 +30,7 @@ class esa_income_report_closed(Variable):
         "postcode districts named in the commencement orders are not "
         "modelled. The abolition reaches every other award on 1 July 2026, "
         "or 1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A; SR "
-        "2025/176 art. 3A), so the report is closed in a year where none of "
+        "2025/176 art. 3A), so the model closes the report in a year where none of "
         "its claim is payable (esa_income_payable_share is 0, from 2027-28). "
         "In 2026-27 the report stays open and esa_income pays it for the "
         "share of the year before that date, unless the family claims "

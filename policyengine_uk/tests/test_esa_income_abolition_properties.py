@@ -5,15 +5,15 @@ income-related ESA (Welfare Reform Act 2012 s.33(1)(b)) to reach every
 remaining old style ESA award in Great Britain (SI 2025/1148 art. 3A,
 inserted by SI 2026/409), and the Department appointed 1 October 2026 in
 Northern Ireland (SR 2025/176 art. 3A, inserted by SR 2026/115). Art. 3A(2)
-saves an award for an appointee (esa_income_appointee_saving); a couple's
-award is one award, saved when either member who reports it is saved.
+saves an award for an appointee (esa_income_appointee_saving); a saving
+for either member who reports a couple's award keeps the whole award.
 Art. 3A(3) lets a Universal Credit claim end a saved award. A contributory
 allowance continues as new style ESA.
 
 When the abolition reaches the claimant's or partner's award
 (esa_income_abolition_reached, from 2026-27), the family claims Universal
 Credit if would_claim_uc_at_legacy_closure. From 2027-28 the award has ended
-and the family is moved off its legacy benefits (legacy_benefits_closed).
+and DWP moves the family off its legacy benefits (legacy_benefits_closed).
 
 Each generated population runs in one simulation five times over: with the
 saving and claim flag as drawn; with every award saved; with none saved;
@@ -36,7 +36,7 @@ Invariants, for any generated population of working-age families in
    outside the couple whose claim is unsaved is not on income-related ESA,
    and with no saving nobody gets any.
 4. Contributory ESA never changes, whatever is saved or claimed.
-5. Before 2026-27 every output is the same whatever is saved or claimed;
+5. Before 2026-27 every output matches, whatever the saving and claim flags;
    the abolition never raises anyone's income-related ESA; and a family
    that claims nothing and saves nothing gets exactly its jurisdiction's
    share of the award before the abolition.
@@ -268,7 +268,7 @@ def couple_claim_saved(unit):
 
 
 def claim_saved(member, unit):
-    """Whether the claim this member belongs to is saved."""
+    """Whether a saving keeps the claim this member belongs to."""
     if member["role"] in COUPLE:
         return couple_claim_saved(unit)
     return member["esa_income_reported"] > 0 and member["saved"]
@@ -316,7 +316,7 @@ def independent_reading(unit, year):
     couple_saved = couple_claim_saved(unit)
     couple_share = 1.0 if couple_saved else share
     # The abolition reaches an unsaved couple claim from the year less than
-    # all of it is payable; from the year none is, the family is moved.
+    # all of it is payable; from the year none is, DWP moves the family.
     reached = couple_reported > 0 and not couple_saved and share < 1
     claims = unit["would_claim_uc"] or (reached and unit["claims_when_moved"])
     # A claim ends the couple's reports; the abolition pays the rest for
@@ -482,7 +482,7 @@ def test_abolition_invariants(units):
             ), year
         assert not np.any(k["esa_income_abolition_reached"]), year
         assert not np.any(k["legacy_benefits_closed"]), year
-    # 5. Before 2026-27 every output is the same whatever is saved or claimed.
+    # 5. Before 2026-27 every output matches, whatever the saving and claim.
     for year in BEFORE:
         for name in BENUNIT_OUTPUTS + PERSON_OUTPUTS:
             for mode in ("drawn", "none", "flipped", "no_claim"):

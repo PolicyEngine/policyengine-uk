@@ -30,7 +30,7 @@ the claim ends the couple's award; outside claims carry on. From 2027–28
 `esa_income_report_closed` closes every report and `legacy_benefits_closed`
 moves the family, except for a claim saved for an appointee
 (`esa_income_appointee_saving`), which a Universal Credit claim still ends.
-Contributory ESA is unchanged.
+Contributory ESA carries on as new style ESA.
 
 All formula readers use the same original claim groups. A scope mask selects
 reports; it does not change claimant or partner roles. Claimant-or-partner awards
