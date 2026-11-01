@@ -13,7 +13,7 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
         "England's to two children or young persons, unless the applicant's "
         "Child Tax Credit award included the individual element for more of "
         "them. We read an award from a positive final child_tax_credit, "
-        "worked out or entered, or, while the tax credit scheme pays awards "
+        "worked out or entered, or, while HMRC pays tax credit awards "
         "(gov.dwp.tax_credits.active), from the claim and eligibility the "
         "model reads from reports, which keeps an award at a nil rate. We do "
         "not model the transitional protection for families "
@@ -62,7 +62,7 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
             # positive final child_tax_credit, worked out or entered, as an
             # award, and also the claim and eligibility read from reports,
             # whatever amount is payable. As in has_tax_credit_award, we infer
-            # no award from reports once the scheme stops paying awards.
+            # no award from reports once HMRC stops paying awards.
             child_tax_credit_award = benunit("child_tax_credit", period) > 0
             if parameters(period).gov.dwp.tax_credits.active:
                 child_tax_credit_award = child_tax_credit_award | (

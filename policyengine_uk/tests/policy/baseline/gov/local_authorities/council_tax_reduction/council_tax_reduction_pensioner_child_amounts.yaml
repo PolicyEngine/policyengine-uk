@@ -655,8 +655,8 @@
         council_tax: 2_000
         savings: 0
   output:
-    # Eligibility without a claim is no award (TCA 2002 s.3(1)), and the
-    # family has no final award either.
+    # Entitlement depends on a claim (TCA 2002 s.3(1)), so eligibility
+    # without one gives no award, and the family has no final award either.
     child_tax_credit: 0
     is_CTC_child_element_included: [false, true, true, true]
     # Para 6(1)(b): up to two. 2 * 83.24 * 52 = 8,656.96.
