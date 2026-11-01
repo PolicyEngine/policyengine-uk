@@ -95,7 +95,11 @@ from policyengine_uk.utils.supplied_inputs import (
     forget_replaced_model_values,
     keep_population_records,
     model_value_input_records,
-    supplied_input_periods,
+)
+from policyengine_uk.utils.trading_allowance import (
+    branch_root,
+    data_profit_year,
+    supplied_profit_years,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -312,6 +316,11 @@ class Simulation(CoreSimulation):
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
         self._defer_uc_health_warning = True
+        # Construction calculates the trading allowance (the Universal Credit
+        # reform's set-up below) before a user can set the profits it reads,
+        # so the years it reads them for are kept only from the first
+        # calculation after (utils/trading_allowance.py, _data_year).
+        self._constructing = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
@@ -469,6 +478,7 @@ class Simulation(CoreSimulation):
         self.baseline._defer_uc_health_warning = False
         self.baseline._building_dated_reforms = None
         self.baseline._construction_reform_state = None
+        self.baseline._constructing = False
 
         self.calculated_periods = []
 
@@ -489,6 +499,7 @@ class Simulation(CoreSimulation):
         self._building_dated_reforms = None
         self._construction_reform_state = None
         warn_shadowed_lcwra_reform(self)
+        self._constructing = False
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
@@ -636,8 +647,10 @@ class Simulation(CoreSimulation):
         # The new populations bring their own self-employment profits, and
         # with them the years those were measured in (see
         # build_from_situation).
-        self._situation_profit_years = (
-            profit_years if profit_years is not None else self._supplied_profit_years()
+        self._situation_profit_years, self._first_read_profit_years = (
+            profit_years
+            if profit_years is not None
+            else (supplied_profit_years(self), None)
         )
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
@@ -677,16 +690,6 @@ class Simulation(CoreSimulation):
         hold_identifiers_in(self, variable_name, period)
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
-        if (
-            variable_name == "self_employment_income"
-            and not self.built_from_dataset
-            and not getattr(self, "_situation_profit_years", None)
-        ):
-            # A situation that gave no profit when it was built takes the
-            # years of the first profit set afterwards, which later writes (a
-            # modifier's, a derivative's) then leave alone, as they leave the
-            # years a situation gives (see build_from_situation).
-            self._situation_profit_years = self._supplied_profit_years()
 
     def clone(self, *args, **kwargs) -> "Simulation":
         clone = super().clone(*args, **kwargs)
@@ -707,6 +710,7 @@ class Simulation(CoreSimulation):
             self, "_savings_income_projection", None
         )
         clone._situation_profit_years = getattr(self, "_situation_profit_years", None)
+        clone._first_read_profit_years = getattr(self, "_first_read_profit_years", None)
         return clone
 
     def _isa_latest_input(self, name, period, *, earlier=False):
@@ -1088,34 +1092,24 @@ class Simulation(CoreSimulation):
             # recompute them under the rebuilt parameters.
             self._invalidate_all_caches()
 
-    def _supplied_profit_years(self) -> tuple:
-        """The years self_employment_income is supplied for, earliest first."""
-        return tuple(
-            period.start.year
-            for period in supplied_input_periods(
-                self.populations["person"], "self_employment_income"
-            )
-        )
-
     def _profit_years_of(self, donor) -> Optional[tuple]:
-        """The recorded profit years that populations taken from ``donor``
-        bring: its own record, or for data its first year, since data hold
-        a projected profit for every year. None for populations no other
-        simulation made, or a simulation rebuilding from its own."""
+        """The record of profit years that populations taken from ``donor``
+        bring (see utils/trading_allowance.py, _data_year): the years
+        recorded at its build and those taken when it was first calculated,
+        or for data, their first year, since data hold a projected profit
+        for every year. A branch's record is that of the simulation it was
+        made from, and a simulation rebuilding from its own populations
+        keeps its own. None for populations no simulation made."""
         if donor is None:
             return None
-        if donor is self:
-            return getattr(self, "_situation_profit_years", None)
+        donor = branch_root(donor)
         if built_from_data(donor):
-            dataset = getattr(donor, "dataset", None)
-            if isinstance(dataset, UKMultiYearDataset):
-                return (min(dataset.years),)
-            supplied = supplied_input_periods(
-                donor.populations[donor.tax_benefit_system.person_entity.key],
-                "self_employment_income",
-            )
-            return (supplied[0].start.year,) if supplied else ()
-        return getattr(donor, "_situation_profit_years", None)
+            year = data_profit_year(donor)
+            return (() if year is None else (year,)), None
+        return (
+            getattr(donor, "_situation_profit_years", None),
+            getattr(donor, "_first_read_profit_years", None),
+        )
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
@@ -1139,7 +1133,7 @@ class Simulation(CoreSimulation):
         # was measured from them (utils/trading_allowance.py, _data_year), so
         # a later write of the profit, by a scenario or a derivative, must
         # not move it.
-        self._situation_profit_years = self._supplied_profit_years()
+        self._situation_profit_years = supplied_profit_years(self)
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period
@@ -1531,6 +1525,7 @@ class Simulation(CoreSimulation):
         self._isa_income_contracts = {}
         self._savings_income_projection = None
         self._situation_profit_years = None
+        self._first_read_profit_years = None
 
     def build_from_ids(
         self,

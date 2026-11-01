@@ -602,6 +602,26 @@
     # (30,000 + 1,500 - 12,570) x 20%
     income_tax: 3_786
 
+- name: At today's allowance a smaller expense share raises the tax of a claimant with a loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.simulation.trading_allowance_claimant_expense_share: 0
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Ordinary treatment deducts no expenses: 3,500 of profit. The allowance
+    # saves 1,000 over that, less than the loss, which is claimed. So the
+    # share matters without a cut: £200 more than at the default share (At
+    # the input allowance a claimant claims a current loss instead).
+    taxable_self_employment_income: 3_500
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    # (30,000 + 3,500 - 1,500 - 12,570) x 20%
+    income_tax: 3_886
+
 - name: Losses brought forward do not keep a claimant on the allowance below their expenses.
   period: 2026
   absolute_error_margin: 0.01
@@ -766,3 +786,71 @@
     taxable_self_employment_income: 500
     miscellaneous_income_trading_allowance_deduction: 0
     taxable_miscellaneous_income: 900
+
+- name: A claimant's pinned deduction leaves a raise to £3,000 their loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 3_000
+    employment_income: 30_000
+    self_employment_income: 2_500
+    trading_loss: 1_500
+    trading_allowance_claim_status: CLAIMANT
+    trading_allowance_deduction: 0
+  output:
+    # The deduction applied is the input, not the claimant's election, so
+    # the flag follows it, as for anyone, and the loss is still claimed.
+    # Unpinned, the raise takes the loss for £2,000 of relief (A raise to
+    # £3,000 beats a claimant's smaller current loss).
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 1_500
+    # (30,000 + 2,500 - 1,500 - 12,570) x 20%, as at £1,000
+    income_tax: 3_686
+
+- name: A claimant gives up a loss for the allowance's relief on casual income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 3_000
+    employment_income: 30_000
+    self_employment_income: 500
+    capital_allowances: 600
+    miscellaneous_income: 1_000
+    income_not_otherwise_charged: 1_000
+    trading_loss: 800
+    trading_allowance_claim_status: CLAIMANT
+  output:
+    # Receipts of 500 + 1,000 and casual income of 1,000 are within £3,000,
+    # so both are fully relieved. That saves 500 of trade profit over their
+    # £1,000 of expenses, and the 1,000 of casual income, more than the
+    # loss. The trade deduction gives back the capital allowances, so it is
+    # below nil: only the claimant's election marks them as taking it.
+    trading_allowance_deduction: -100
+    miscellaneous_income_trading_allowance_deduction: 1_000
+    uses_trading_allowance: true
+    trade_loss_relief_against_general_income: 0
+    # (30,000 - 12,570) x 20%
+    income_tax: 3_486
+
+- name: A claimant's pinned casual-income deduction leaves them their loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.allowances.trading_allowance: 3_000
+    employment_income: 30_000
+    self_employment_income: 500
+    capital_allowances: 600
+    miscellaneous_income: 1_000
+    income_not_otherwise_charged: 1_000
+    trading_loss: 800
+    trading_allowance_claim_status: CLAIMANT
+    miscellaneous_income_trading_allowance_deduction: 0
+  output:
+    # The casual-income relief the election counted on is not applied, so
+    # the flag follows the deductions applied, neither of them positive, and
+    # the loss is claimed rather than given up for nothing.
+    trading_allowance_deduction: -100
+    uses_trading_allowance: false
+    trade_loss_relief_against_general_income: 800
+    # (30,000 + 1,000 - 800 - 12,570) x 20%
+    income_tax: 3_526

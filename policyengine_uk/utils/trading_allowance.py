@@ -1,5 +1,6 @@
 """The trading allowance (ITTOIA 2005 Part 6A Chapter 1), shared by
-trading_allowance_deduction and miscellaneous_income_trading_allowance_deduction.
+trading_allowance_deduction, miscellaneous_income_trading_allowance_deduction
+and uses_trading_allowance.
 
 One allowance covers an individual's "relevant income": the receipts of
 their relevant trades and their miscellaneous income, which s. 783AB defines
@@ -18,8 +19,26 @@ from policyengine_uk.utils.supplied_inputs import (
 )
 
 
-def _data_year(person, period):
-    """The year the input self-employment profit was measured.
+def branch_root(simulation):
+    """The simulation a branch was made from, through every level of
+    branching; a simulation that is not a branch is its own."""
+    while getattr(simulation, "parent_branch", None) is not None:
+        simulation = simulation.parent_branch
+    return simulation
+
+
+def supplied_profit_years(simulation) -> tuple:
+    """The years self_employment_income is supplied for, earliest first."""
+    person = simulation.populations[simulation.tax_benefit_system.person_entity.key]
+    return tuple(
+        period.start.year
+        for period in supplied_input_periods(person, "self_employment_income")
+    )
+
+
+def data_profit_year(simulation):
+    """The year a simulation built from data measured self-employment profit
+    in, or None if the data supply none.
 
     - A UK dataset: its first year, which the engine projects to later
       years, as the State Pension variables read it. Its inputs are stored
@@ -28,50 +47,83 @@ def _data_year(person, period):
     - Other data without years, such as a policyengine-core Dataset: the
       earliest year self_employment_income was supplied for, for the same
       reason.
-    - A situation: the latest year, up to the one simulated, of those it
-      gave self_employment_income for, as recorded (Simulation):
-      - when it was built from a dictionary (build_from_situation);
-      - if it gave no profit then, when a profit is first set;
-      - when its populations are replaced (build_from_populations), with
-        the record of the simulation they come from, or a data-built one's
-        first year.
-      A profit set after the record does not move it, so neither does a
-      scenario's modifier or a derivative that writes the profit. A profit
-      carried from an earlier year keeps that year's allowance: a 2025-26
-      profit simulated in 2027-28 deducted £1,000, and gains from the raise
-      to £3,000. The builder stores a year's inputs for everyone in the
-      situation, giving anyone not set the default, so one year serves them
-      all.
-    Where no recorded year is at or before the one simulated, as for a
-    simulation built some other way, the profit's supplied years as they
-    stand; with none, the year simulated.
-
-    Not handled: data cannot declare the year their incomes were measured
-    in, so a file saved from a later projected year, or a situation saved
-    over several years, is read as measured in its first year.
     """
     from policyengine_uk.data import UKMultiYearDataset
 
-    simulation = person.simulation
+    # Checked by type: a policyengine-core Dataset loads any attribute it is
+    # asked for as a table, so it cannot be asked for years.
+    dataset = getattr(simulation, "dataset", None)
+    if isinstance(dataset, UKMultiYearDataset):
+        return min(dataset.years)
+    supplied = supplied_profit_years(simulation)
+    return supplied[0] if supplied else None
+
+
+def _profit_years_when_first_read(simulation) -> tuple:
+    """The years self_employment_income was supplied for when the trading
+    allowance was first calculated with a profit supplied after the
+    simulation was built, kept from then on. Calculations while
+    Simulation builds itself read the years as they stand."""
+    years = getattr(simulation, "_first_read_profit_years", None)
+    if years is None:
+        years = supplied_profit_years(simulation)
+        if years and not getattr(simulation, "_constructing", False):
+            simulation._first_read_profit_years = years
+    return years
+
+
+def _data_year(person, period):
+    """The year the input self-employment profit was measured.
+
+    - Data: data_profit_year, or with no profit supplied the year simulated.
+    - A situation: the latest year, up to the one simulated, of those it
+      gave self_employment_income for:
+      - as recorded when it was built from a dictionary
+        (Simulation.build_from_situation), or when it took another
+        simulation's populations (Simulation.build_from_populations), which
+        bring that simulation's record, or a data-built one's first year;
+      - failing one, as supplied when the trading allowance was first
+        calculated, with a profit supplied, after the simulation was
+        built: a situation built without a profit, or given one only for
+        later years, reads the profits set before then, in whatever order,
+        as a dictionary giving them all would.
+      A profit written later (after the build for the first, after that
+      calculation for the second), such as a scenario modifier's or a
+      derivative's, does not move the year. A branch reads the record of
+      the simulation it was made from, so its own writes never move it
+      either. A profit carried from
+      an earlier year keeps that year's allowance: a 2025-26 profit
+      simulated in 2027-28 deducted £1,000, and gains from the raise to
+      £3,000. The builder stores a year's inputs for everyone in the
+      situation, giving anyone not set the default, so one year serves
+      them all.
+    Failing both, the year simulated.
+
+    Not handled:
+    - data cannot declare the year their incomes were measured in, so a
+      file saved from a later projected year, or a situation saved over
+      several years, is read as measured in its first year;
+    - a write before that first calculation counts as supplied, such as a
+      derivative's on a situation not yet given a profit, or one made on a
+      copy (Simulation.clone, as policyengine-core's derivative makes)
+      before the original was calculated.
+    """
+    year = period.start.year
+    simulation = branch_root(person.simulation)
     if built_from_data(simulation):
-        # Checked by type: a policyengine-core Dataset loads any attribute
-        # it is asked for as a table, so it cannot be asked for years.
-        dataset = getattr(simulation, "dataset", None)
-        if isinstance(dataset, UKMultiYearDataset):
-            return min(dataset.years)
-        supplied = supplied_input_periods(person, "self_employment_income")
-        return (supplied[0] if supplied else period).start.year
-    recorded = getattr(simulation, "_situation_profit_years", None) or ()
-    earlier = [year for year in recorded if year <= period.start.year]
-    if not earlier:
-        earlier = [
-            supplied_period.start.year
-            for supplied_period in supplied_input_periods(
-                person, "self_employment_income"
-            )
-            if supplied_period.start.year <= period.start.year
-        ]
-    return earlier[-1] if earlier else period.start.year
+        data_year = data_profit_year(simulation)
+        return year if data_year is None else data_year
+    # Taken at the first calculation even where the build's record answers,
+    # so that later writes stay out of it.
+    first_read = _profit_years_when_first_read(simulation)
+    for years in (
+        getattr(simulation, "_situation_profit_years", None) or (),
+        first_read,
+    ):
+        earlier = [recorded for recorded in years if recorded <= year]
+        if earlier:
+            return earlier[-1]
+    return year
 
 
 def trading_allowance_reliefs(person, period, parameters):
@@ -146,18 +198,19 @@ def trading_allowance_reliefs(person, period, parameters):
       default share a claimant with no loss keeps the allowance at or above
       the input allowance, where the deduction is its excess over the input
       allowance, capped at profit, and a cut leaves their profit as
-      reported, the lower bound of its yield; a claimant with a loss claims
-      it until the allowance saves more. The election weighs the loss
-      against the saving in taxable trade profit, so other figures can step
-      where it switches, under the convention every status shares: Class 4,
-      where losses brought forward absorb that saving and any supplied
-      current loss wins; and income tax itself where a relief reads trade
-      profit, such as pension relief limited by relevant UK earnings or the
-      s. 24A cap on loss relief. The deduction
-      is negative where it
-      gives back capital allowances or charges what a cut adds. Their
-      receipts take up the allowance before income not otherwise charged,
-      as other receipts do.
+      reported, the lower bound of its yield. A claimant with a loss claims
+      it only where it is worth more than the allowance's saving, ties going
+      to the allowance, and the share sets that saving at any allowance, the
+      input allowance included. The election weighs the loss against the
+      saving in taxable trade profit and income not otherwise charged, so
+      other figures can step where it switches, under the convention every
+      status shares: Class 4, where losses brought forward absorb that
+      saving and any supplied current loss wins; and income tax itself
+      where a relief reads trade profit, such as pension relief limited by
+      relevant UK earnings or the s. 24A cap on loss relief. The deduction
+      is negative where it gives back capital allowances or charges what a
+      cut adds. Their receipts take up the allowance before income not
+      otherwise charged, as other receipts do.
     - A non-claimant does not elect for partial relief, which would be a
       change in behaviour after a raise, so takes ordinary treatment unless
       their relevant income is within the allowance: full relief needs no

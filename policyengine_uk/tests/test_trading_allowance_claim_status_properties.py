@@ -31,7 +31,10 @@ simulation per draw:
    and with the default share a cut leaves their profit as reported.
 3. A larger allowance never raises taxable trade profit, nor Class 4
    profits, for any status.
-4. A smaller expense share never lowers a claimant's taxable trade profit.
+4. A smaller expense share never lowers the taxable trade profit of a
+   claimant with no supplied current loss. With one, it can move them from
+   claiming the loss to the allowance, which lowers that profit but gives
+   the loss up; the YAML cases check their income tax.
 """
 
 import numpy as np
@@ -315,11 +318,15 @@ def test_every_status_matches_the_act_and_more_allowance_never_charges_more(
             figures = [results[(a, share)][name] for a in levels]
             for smaller, larger in zip(figures, figures[1:]):
                 assert (larger <= smaller + tolerance(smaller)).all(), (name, share)
-    # 4. A smaller expense share never lowers a claimant's taxable profit.
+    # 4. A smaller expense share never lowers the taxable profit of a
+    # claimant with no supplied current loss.
     for allowance in (0, 300, 500):
+        no_loss = results[(allowance, 1.0)]["loss"] == 0
         taxable = [results[(allowance, share)]["taxable"] for share in (1.0, 0.5, 0.0)]
         for larger_share, smaller_share in zip(taxable, taxable[1:]):
-            assert (smaller_share >= larger_share - tolerance(larger_share)).all()
+            assert (smaller_share >= larger_share - tolerance(larger_share))[
+                no_loss
+            ].all()
 
 
 @pytest.mark.parametrize(

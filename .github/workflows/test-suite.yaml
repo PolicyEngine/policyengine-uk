@@ -87,10 +87,12 @@ jobs:
     # was then not enough either: on 29 October jobs were cancelled at it
     # after every test had passed, with the process still alive 11 and 18
     # minutes after pytest's summary (runs 40895005971 and 40917254004).
-    # The runner most likely runs short of memory, because every case's
-    # simulation is kept to the end (#2741). 90 minutes matches the Python
-    # shards, which Result waits for anyway, until the cases are released.
-    timeout-minutes: 90
+    # The runner most likely ran short of memory, because every case's
+    # simulation was kept to the end (#2741). 75 minutes was set to match
+    # the Python shards until the cases were released. #2742 released them,
+    # and the job has since taken about 9 minutes (8.7 to 9.3 in six pull
+    # request runs on 1 November).
+    timeout-minutes: 75
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
