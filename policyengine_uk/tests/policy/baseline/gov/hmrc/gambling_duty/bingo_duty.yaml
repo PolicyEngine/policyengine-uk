@@ -1,0 +1,33 @@
+- name: Case 1, attributed dutiable bingo profits use ten percent in FY2024.
+  period: 2024
+  input:
+    bingo_net_receipts: 1_000
+  output:
+    bingo_duty: 100 # BGDA 1981 section 17(1)(b).
+
+- name: Case 2, bingo abolition affects the final five days of FY2025.
+  period: 2025
+  input:
+    bingo_net_receipts: 36_500
+  output:
+    bingo_duty: 3_600 # FA 2026 section 88: 100 * 360 * .10.
+
+- name: Case 3, bingo duty is abolished throughout FY2026.
+  period: 2026
+  input:
+    bingo_net_receipts: 36_500
+  output:
+    bingo_duty: 0
+
+- name: Case 4, missing bingo input defaults to zero.
+  period: 2024
+  input: {}
+  output:
+    bingo_duty: 0
+
+- name: Case 5, a negative bingo base gives no duty.
+  period: 2024
+  input:
+    bingo_net_receipts: -1_000
+  output:
+    bingo_duty: 0

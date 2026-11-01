@@ -19,7 +19,9 @@ Counting the savings credit, Housing Benefit falls by 65% of the rise net of
 the savings credit withdrawn, or 39%, and the combined withdrawal is 91%.
 
 Invariants, for single people and couples aged 80 or over (so State Pension
-age was reached before April 2016 and savings credit is possible), who rent
+age was reached before April 2016 and savings credit is possible; a couple's
+members supply is_claimant_or_partner, since the age presumption would read a
+partner 20 or more years younger as the claimant's child), who rent
 from the council in England, Wales or Scotland and have no children, carers
 or earnings, with private pension on a £250 grid:
 
@@ -27,25 +29,31 @@ or earnings, with private pension on a £250 grid:
    award at both ends, household net income, excluding the TV licence, does
    not fall.
 2. Boundary: on the step where savings credit ends, household net income does
-   not fall, excluding the TV licence, the Winter Fuel Payment and the
-   Scottish Pension Age Winter Heating Payment, which the model makes depend
-   on receiving Pension Credit (the free licence at 75, the Scottish payment's
-   Pension Credit rates, and the Winter Fuel Payment above £35,000 of taxable
-   income). Housing Benefit switches from the Secretary of State's figure to
-   its own rules there.
+   not fall, excluding the TV licence, the Scottish Pension Age Winter
+   Heating Payment and the winter fuel payment charge, which the model makes
+   depend on receiving Pension Credit (the free licence at 75, the Scottish
+   payment's Pension Credit rates, and the charge, from which Pension Credit
+   exempts a person with more than £35,000 of total income: ITEPA 2003 s.
+   681I), and the Winter Fuel Payment, whose amount depends on it (one
+   payment for a couple on a relevant benefit, shared amounts otherwise).
+   Housing Benefit switches from the Secretary of State's figure to its own
+   rules there.
 3. Differential: a savings-credit-only family's Housing Benefit income is the
    Pension Credit income, recomputed here from pensions, income tax and the
    deemed income on savings, plus the savings credit, less the earnings
    disregard; its tariff income is zero and its capital is its savings. Other
    families keep the Housing Benefit rules: zero income with a guarantee
    credit, otherwise pensions less income tax plus tariff income less the
-   earnings disregard.
+   earnings disregard. The income tax both routes deduct is the liability
+   before the winter fuel payment charge (ITEPA 2003 s. 681I), which recovers
+   the Winter Fuel Payment or the Scottish payment rather than taxing the
+   pensions.
 
 Carers are not drawn.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -127,6 +135,7 @@ def situation(families):
                 name = f"p{i}_{k}_{j}"
                 person = {
                     "age": {YEAR: a["age"]},
+                    "is_claimant_or_partner": {YEAR: True},
                     "state_pension": {YEAR: a["state_pension"]},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
@@ -176,7 +185,12 @@ def grid(families):
         variable: np.asarray(simulation.calculate(variable, YEAR)).reshape(shape)
         for variable in BENUNIT_VARIABLES + HOUSEHOLD_VARIABLES
     }
-    for variable in ["state_pension", "private_pension_income", "income_tax"]:
+    for variable in [
+        "state_pension",
+        "private_pension_income",
+        "income_tax_before_winter_fuel_payment_charge",
+        "winter_fuel_payment_charge",
+    ]:
         values[variable] = np.asarray(
             simulation.calculate(variable, YEAR, map_to="benunit")
         ).reshape(shape)
@@ -203,8 +217,25 @@ def describe(fam, g, i, k):
     )
 
 
+# Couples 20 years apart, the pension on the younger and then the elder.
+WIDE_GAP_COUPLES = [
+    dict(
+        adults=[
+            dict(age=first, disability={}, blind=False, state_pension=6_000.0),
+            dict(age=second, disability={}, blind=False, state_pension=6_000.0),
+        ],
+        country="ENGLAND",
+        rent=6_000.0,
+        council_tax=1_500.0,
+        savings=0.0,
+    )
+    for first, second in [(80, 100), (100, 80)]
+]
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_net_income_rises_with_private_pension_on_savings_credit_only(families):
     g = grid(families)
     net = g["household_net_income"] + g["tv_licence"]
@@ -223,6 +254,7 @@ def test_net_income_rises_with_private_pension_on_savings_credit_only(families):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_net_income_does_not_fall_where_savings_credit_ends(families):
     g = grid(families)
     net = (
@@ -230,6 +262,7 @@ def test_net_income_does_not_fall_where_savings_credit_ends(families):
         + g["tv_licence"]
         - g["winter_fuel_allowance"]
         - g["pawhp"]
+        + g["winter_fuel_payment_charge"]
     )
     step = np.diff(net, axis=1)
     ends = g["savings_credit_only"][:, :-1] & (g["pension_credit"][:, 1:] <= 0)
@@ -249,12 +282,15 @@ def deemed_income(capital):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example(WIDE_GAP_COUPLES)
 def test_income_follows_the_route_for_the_award(families):
     g = grid(families)
     savings = np.array([fam["savings"] for fam in families])[:, None]
     capital_income = deemed_income(savings)
     pensions_after_tax = (
-        g["state_pension"] + g["private_pension_income"] - g["income_tax"]
+        g["state_pension"]
+        + g["private_pension_income"]
+        - g["income_tax_before_winter_fuel_payment_charge"]
     )
     disregard = g["housing_benefit_applicable_income_disregard"]
     sc_only = g["savings_credit_only"]

@@ -1,6 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
-from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
+from policyengine_uk.variables.gov.dwp.jsa_income import (
+    income_related_jsa_award_on_reports,
+)
 
 
 class claimant_or_partner_jsa_income(Variable):
@@ -46,5 +48,5 @@ class claimant_or_partner_jsa_income(Variable):
             period,
             "jsa_income",
             "jsa_income_reported",
-            income_related_jsa_award,
+            income_related_jsa_award_on_reports,
         )

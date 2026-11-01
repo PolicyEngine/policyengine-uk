@@ -538,3 +538,36 @@
   output:
     carers_allowance: [0, 0, 0]
     extended_childcare_entitlement_work_condition: [true, false, false]
+
+# Reg 29(4): where a working parent who cares also has LCWRA and the other
+# parent cares too, the award's LCWRA element is the working parent's and its
+# carer element the other parent's. Before December 2022 the partner exclusion
+# (SI 2016/1257 reg 9(3)) applied to a working partner receiving the carer
+# element; the working parent does not receive it, so both meet the condition.
+- name: Carer with LCWRA working, partner the carer on the UC award - the carer element is the partner's (2021)
+  period: 2021
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        is_carer_for_benefits: true
+        uc_limited_capability_for_WRA: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        is_carer_for_benefits: true
+        minimum_wage: 10
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        universal_credit: 3_000
+        uc_carer_element: 2_400
+  output:
+    receives_uc_carer_element: [false, true, false]
+    extended_childcare_entitlement_work_condition: [true, true, false]

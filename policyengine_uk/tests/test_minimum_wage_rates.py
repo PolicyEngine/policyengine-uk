@@ -23,8 +23,9 @@ and 25 or over. The national living wage applied from age 25 from 1 April 2016
 the parameters used to get wrong: with no 1 April 2023 entry, 2023 read the
 April 2022 rates, for example £9.50 instead of the £10.42 national living wage.
 
-The model reads ``is_apprentice`` as "the apprenticeship rate applies"
-(2015 Regs reg. 5: an apprentice under 19 or in the first 12 months). Ages
+The apprenticeship rate applies to an apprentice under 19 or in the first
+12 months (2015 Regs reg. 5). The adult apprenticeship-rate fixture therefore
+sets both ``is_apprentice`` and ``is_in_first_year_of_apprenticeship``. Ages
 under 16 are not checked: the Act does not cover workers of compulsory school
 age, and the model gives them the under-18 rate.
 
@@ -36,13 +37,14 @@ Properties:
 2. For every year from 2015 to 2040, no rate falls as age rises, and the
    apprenticeship rate is never above the rate for any age from 16.
 3. No rate falls from one year to the next, 2015 to 2040. This holds for
-   every rate set from October 2011 to April 2026; it is a property of the
-   enacted rates, not a rule in the Act, so a future cut would need this test
-   changing.
+   every rate set from October 2010 to April 2026 and every rate announced
+   for April 2027; it is a property of the rates, not a rule in the Act, so
+   a future cut would need this test changing.
 
-Rates dated after the last row of ``RATES_FROM_COMMENCEMENT`` (for example
-announced rates whose S.I. is not yet made) need a reference but are not
-checked against the tables until a row is added for them.
+Rates announced but not yet set by an S.I. are in ``ANNOUNCED_RATES``, checked
+against the parameter files and the model from the date they take effect.
+They need a reference, but not to an S.I.; move a row to
+``RATES_FROM_COMMENCEMENT``, citing the S.I., once it is made.
 """
 
 import datetime
@@ -86,6 +88,11 @@ BAND_AGES = {
 # (commencement date, S.I. and provisions, rates by band). Where an S.I. left a
 # rate unchanged the row repeats the rate then in force.
 RATES_FROM_COMMENCEMENT = [
+    # 1999 Regs reg. 11 (21 and over) and reg. 13 as substituted by reg. 5:
+    # 13(1) 18 to 20 (the adult rate now starts at 21, not 22), 13(2) under
+    # 18 and 13(3) the new apprenticeship rate.
+    ("2010-10-01", "S.I. 2010/1901 regs. 3, 5", (2.50, 3.64, 4.92, 5.93, 5.93, 5.93)),
+    ("2011-10-01", "S.I. 2011/2345 regs. 3, 5", (2.60, 3.68, 4.98, 6.08, 6.08, 6.08)),
     # 1999 Regs reg. 11 (21 and over) and reg. 13(3) (apprentices); the
     # 18 to 20 and under 18 rates (reg. 13(1), (2)) stayed at the levels set
     # by S.I. 2011/2345 reg. 5 from 1 October 2011.
@@ -160,6 +167,16 @@ RATES_FROM_COMMENCEMENT = [
     ),
 ]
 
+# (date in force, announcement, rates by band) for rates announced whose
+# amending S.I. is not yet made.
+ANNOUNCED_RATES = [
+    (
+        "2027-04-01",
+        "Budget 2026, paragraph 6.128",
+        (8.31, 8.31, 11.27, 13.21, 13.21, 13.21),
+    ),
+]
+
 # Rates in force on 30 April of each year, and the S.I. that set them.
 RATES_AT_30_APRIL = {
     # 2015 Regs reg. 4(1) as made (in force 6 April 2015), carrying over the
@@ -216,8 +233,17 @@ def _in_force(pairs, date):
 
 
 RAW_APPRENTICE = _dated_values(_load_raw("apprentice")["values"])
+
+
+def _amount_values(bracket):
+    """A bracket's dated amounts: under ``values`` when the amount carries
+    metadata (the uprating that projects later years)."""
+    amount = bracket["amount"]
+    return amount["values"] if "values" in amount else amount
+
+
 RAW_BRACKETS = [
-    (_dated_values(bracket["threshold"]), _dated_values(bracket["amount"]))
+    (_dated_values(bracket["threshold"]), _dated_values(_amount_values(bracket)))
     for bracket in _load_raw("non_apprentice")["brackets"]
 ]
 LATEST_DATED_YEAR = max(
@@ -258,10 +284,11 @@ def test_minimum_wage_variable_matches_statutory_instruments():
         for age in ages
     }
     # The apprenticeship rate displaces the age rates (2015 Regs reg. 4A(2)).
-    # is_apprentice stands for "the apprenticeship rate applies" (reg. 5).
+    # At age 19, the first-12-month condition is needed (reg. 5).
     people["apprentice_19"] = {
         "age": {str(year): 19 for year in years},
         "is_apprentice": {str(year): True for year in years},
+        "is_in_first_year_of_apprenticeship": {str(year): True for year in years},
     }
     names = list(people)
     sim = Simulation(
@@ -301,17 +328,37 @@ def test_parameter_files_match_each_instrument_from_commencement(
             )
 
 
+@pytest.mark.parametrize(
+    "start, announcement, row",
+    ANNOUNCED_RATES,
+    ids=[announcement for _, announcement, _ in ANNOUNCED_RATES],
+)
+def test_parameter_files_and_model_match_each_announced_rate(start, announcement, row):
+    date = datetime.date.fromisoformat(start)
+    expected = _rates(row)
+    assert _in_force(RAW_APPRENTICE, date) == pytest.approx(expected["apprentice"])
+    assert _model_apprentice_rate(date.year) == pytest.approx(expected["apprentice"])
+    for band, ages in BAND_AGES.items():
+        for age in ages:
+            assert _raw_rate(date, age) == pytest.approx(expected[band]), (
+                f"{announcement}, age {age} ({band})"
+            )
+            assert _model_rate(date.year, age) == pytest.approx(expected[band]), (
+                f"{announcement}, {date.year}, age {age} ({band})"
+            )
+
+
 def test_parameter_files_change_only_on_commencement_dates():
     commencements = {
-        datetime.date.fromisoformat(date) for date, _, _ in RATES_FROM_COMMENCEMENT
+        datetime.date.fromisoformat(date)
+        for date, _, _ in [*RATES_FROM_COMMENCEMENT, *ANNOUNCED_RATES]
     }
     series = [RAW_APPRENTICE]
     for thresholds, amounts in RAW_BRACKETS:
         series += [thresholds, amounts]
     for pairs in series:
         for start, _ in pairs:
-            if start <= LAST_TRANSCRIBED:
-                assert start in commencements, f"{start} is not a commencement date"
+            assert start in commencements, f"{start} is not a commencement date"
 
 
 def test_30_april_table_agrees_with_commencement_table():
@@ -337,7 +384,7 @@ def test_fiscal_year_value_is_the_value_in_force_on_30_april(year):
 def test_every_rate_cites_a_statutory_instrument():
     entries = list(_load_raw("apprentice")["values"].items())
     for bracket in _load_raw("non_apprentice")["brackets"]:
-        entries += list(bracket["amount"].items())
+        entries += list(_amount_values(bracket).items())
     for instant, entry in entries:
         assert isinstance(entry, dict), f"{instant} has no reference"
         hrefs = [reference["href"] for reference in entry.get("reference", [])]
@@ -369,3 +416,51 @@ def test_rates_do_not_fall_with_age(year, younger, older):
 def test_rates_do_not_fall_from_year_to_year(year, age):
     assert _model_rate(year, age) <= _model_rate(year + 1, age)
     assert _model_apprentice_rate(year) <= _model_apprentice_rate(year + 1)
+
+
+@pytest.mark.parametrize("instant", ["2010-10-01", "2011-01-01", "2012-01-01"])
+def test_apprentice_age_limit_covers_the_extended_wage_history(instant):
+    # S.I. 2010/1901 reg. 5 inserted the under-19/first-12-month rule into
+    # the 1999 Regulations from 1 October 2010, before the 2015 restatement.
+    assert system.parameters(instant).gov.hmrc.minimum_wage.apprentice_age_limit == 19
+
+
+@pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+@pytest.mark.parametrize(
+    "year, expected_rates",
+    [
+        # January 2011 still reads S.I. 2010/1901 regs. 3 and 5; January
+        # 2012 reads the rates introduced by S.I. 2011/2345 regs. 3 and 5.
+        (2011, [3.64, 4.92, 5.93, 5.93, 2.50]),
+        (2012, [3.68, 4.98, 6.08, 6.08, 2.60]),
+    ],
+)
+def test_historical_minimum_wage_and_category_remain_available(year, expected_rates):
+    people = {
+        "under_18": {"age": 16},
+        "young_adult": {"age": 20},
+        "adult_21": {"age": 21},
+        "adult_40": {"age": 40},
+        "apprentice": {"age": 18, "is_apprentice": True},
+    }
+    names = list(people)
+    simulation = Simulation(
+        situation={
+            "people": {
+                name: {variable: {year: value} for variable, value in inputs.items()}
+                for name, inputs in people.items()
+            },
+            "benunits": {f"b_{name}": {"members": [name]} for name in names},
+            "households": {"household": {"members": names}},
+        }
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("minimum_wage", year), expected_rates, rtol=0, atol=0.001
+    )
+    categories = simulation.calculate("minimum_wage_category", year)
+    if hasattr(categories, "decode_to_str"):
+        categories = categories.decode_to_str()
+    np.testing.assert_array_equal(
+        categories,
+        ["UNDER_18", "BETWEEN_18_20", "BETWEEN_21_22", "OVER_24", "APPRENTICE"],
+    )

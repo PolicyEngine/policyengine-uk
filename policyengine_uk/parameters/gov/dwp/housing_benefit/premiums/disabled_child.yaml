@@ -1,0 +1,82 @@
+description: Weekly Housing Benefit disabled-child premium per qualifying child or young person.
+values:
+  2015-04-01:
+    value: 60.06
+    metadata:
+      reference:
+        title: Housing Benefit 2015 premium rate
+        href: https://www.legislation.gov.uk/uksi/2015/457/schedule/6/made
+  2017-04-01:
+    value: 60.9
+    metadata:
+      reference:
+        title: Housing Benefit 2017 premium rate
+        href: https://www.legislation.gov.uk/uksi/2017/260/schedule/6/made
+  2018-04-01:
+    value: 62.86
+    metadata:
+      reference:
+        title: Housing Benefit 2018 premium rate
+        href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/697069/proposed-benefit-and-pension-rates-2018-to-2019.pdf
+  2019-04-01:
+    value: 64.19
+    metadata:
+      reference:
+        title: Housing Benefit 2019 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2019-to-2020/proposed-benefit-and-pension-rates-2019-to-2020
+  2020-04-01:
+    value: 65.52
+    metadata:
+      reference:
+        title: Housing Benefit 2020 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+  2021-04-01:
+    value: 65.94
+    metadata:
+      reference:
+        title: Housing Benefit 2021 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2021-to-2022/benefit-and-pension-rates-2021-to-2022
+  2022-04-01:
+    value: 68.04
+    metadata:
+      reference:
+        title: Housing Benefit 2022 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+  2023-04-01:
+    value: 74.69
+    metadata:
+      reference:
+        title: Housing Benefit 2023 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+  2024-04-01:
+    value: 80.01
+    metadata:
+      reference:
+        title: Housing Benefit 2024 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+  2025-04-01:
+    value: 81.37
+    metadata:
+      reference:
+        title: Housing Benefit 2025 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  2026-04-01:
+    value: 84.46
+    metadata:
+      reference:
+        title: Housing Benefit 2026 premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Housing Benefit disabled-child premium
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: GB working-age Housing Benefit Schedule 3
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3
+    - title: GB pension-age Housing Benefit Schedule 3
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3
+    - title: NI working-age Housing Benefit Schedule 4
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4
+    - title: NI pension-age Housing Benefit Schedule 4
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/4

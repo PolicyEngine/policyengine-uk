@@ -1,11 +1,17 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   PolicyEngine approximation of Pension Credit capital sources that count
   toward deemed income from capital, excluding the claimant's main home.
   `private_pension_wealth` is excluded because Schedule V paragraphs 22 and 23
   (Part I) disregard the value of the right to receive income from an
   occupational or personal pension scheme or under a retirement annuity
   contract; the notional income rule for undrawn money purchase pots
-  (regulation 18) is not modelled.
+  (regulation 18) is not modelled. `share_like_capital` is `corporate_wealth`
+  as supplied, or the sum of its itemised components (`directly_held_shares`,
+  `unit_and_investment_trusts`, `stocks_and_shares_isa`) where they exceed it
+  beyond float32 rounding (see `share_like_capital`), so a household given
+  only the components has them counted and no holding counts twice.
 metadata:
   label: Pension Credit capital sources
   unit: list
@@ -22,7 +28,8 @@ metadata:
 values:
   2003-10-06:
     - savings
+    - cash_isa
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth
+    - share_like_capital

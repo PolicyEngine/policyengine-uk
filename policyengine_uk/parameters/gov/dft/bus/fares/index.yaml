@@ -1,2 +1,6 @@
 metadata:
+  # The formula day-weights the cap over 6 April to 5 April itself, so the
+  # leaves keep their calendar dates instead of fiscal-year annualisation.
+  # Leaves only see node metadata that is propagated.
   preserve_calendar_dates: true
+  propagate_metadata_to_children: true

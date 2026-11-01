@@ -29,4 +29,4 @@ class household_uc_unreported_claimants(Variable):
         financial_capital = person.benunit("benunit_reported_capital", period)
         has_reported_capital = (reported_capital >= 0) | (financial_capital >= 0)
         is_uc_claimant = person("is_uc_claimant", period)
-        return household.sum(is_uc_claimant * ~has_reported_capital)
+        return household.sum(is_uc_claimant & ~has_reported_capital)

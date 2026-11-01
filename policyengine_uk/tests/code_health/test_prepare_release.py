@@ -12,13 +12,16 @@ stand-in for towncrier, and hold them to:
 2. After a release, the remote branch's tip is the version commit, whose only
    parent is the tip the run fetched: history is extended, never rewritten.
    The commit deletes the fragments, adds them to the changelog and raises
-   the version, and changes nothing else.
+   the version, in pyproject.toml and in uv.lock's entry for the package,
+   and changes nothing else (a dependency sharing the old version keeps it).
 3. Race: when another commit reaches main after the run fetched it, the run
    tries again on the new tip. The version and changelog then describe the
    new tip, and the other commit stays in history.
 4. The guard refuses a version commit that changes another file, adds a
-   file, changes more of pyproject.toml than the version, or does not raise
-   the version.
+   file, changes more of pyproject.toml than the version, does not raise
+   the version, or changes uv.lock beyond moving the package's own entry to
+   the new version. A version commit that leaves uv.lock alone (as they
+   all did before it moved with the version) passes.
 5. A push rejected for any reason other than main moving fails at once.
 6. ``--github-output`` appends ``key=value`` lines and keeps what was there.
 7. The tag script tags the given commit, not HEAD, with an annotated tag;
@@ -99,6 +102,32 @@ if fragments:
 """
 
 
+# The project's own entry, as uv writes it, and a dependency that happens to
+# share its version.
+LOCK = """version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[[package]]
+name = "demo"
+version = "1.2.3"
+source = { editable = "." }
+dependencies = [
+    { name = "lib" },
+]
+
+[[package]]
+name = "lib"
+version = "1.2.3"
+source = { registry = "https://pypi.org/simple" }
+"""
+
+
+def lock_versions(repo, ref):
+    lock = tomllib.loads(git(repo, "show", f"{ref}:uv.lock"))
+    return {package["name"]: package["version"] for package in lock["package"]}
+
+
 @pytest.fixture(autouse=True)
 def git_env(monkeypatch):
     for name, value in GIT_ENV.items():
@@ -126,6 +155,7 @@ def remote(tmp_path):
         '[[tool.towncrier.type]]\ndirectory = "fixed"\nname = "Fixed"\n'
     )
     (seed / "CHANGELOG.md").write_text("## [1.2.3]\n")
+    (seed / "uv.lock").write_text(LOCK)
     (seed / "changelog.d").mkdir()
     (seed / "changelog.d" / ".gitkeep").write_text("")
     (seed / "changelog.d" / "one.fixed.md").write_text("- Fixed one.\n")
@@ -239,8 +269,10 @@ def test_a_release_extends_main_by_one_version_commit(remote, tmp_path, monkeypa
         "D\tchangelog.d/one.fixed.md",
         "M\tCHANGELOG.md",
         "M\tpyproject.toml",
+        "M\tuv.lock",
     ]
     assert version_at(remote, tip) == "1.2.4"
+    assert lock_versions(remote, tip) == {"demo": "1.2.4", "lib": "1.2.3"}
     assert "- Fixed one." in git(remote, "show", f"{tip}:CHANGELOG.md")
     # Reading the tip's bump_version.py leaves nothing behind in the checkout.
     assert git(work, "status", "--porcelain", "--untracked-files=all") == ""
@@ -308,21 +340,50 @@ def test_a_rejected_push_that_is_not_a_race_fails_at_once(remote, tmp_path):
     assert len(attempts) == 1
 
 
-@pytest.mark.parametrize(
-    "fault",
-    ["another file", "a new file", "more of pyproject", "no version rise"],
-)
-def test_the_guard_refuses_more_than_versioning(remote, tmp_path, fault):
-    work = clone(remote, tmp_path / "work")
+def version_by_hand(work, version="1.2.4", lock=None):
+    """Commit a version commit made by hand on HEAD; returns the base."""
     base = git(work, "rev-parse", "HEAD")
     git(work, "rm", "-q", "changelog.d/one.fixed.md")
     (work / "CHANGELOG.md").write_text("## [1.2.4]\n- Fixed one.\n## [1.2.3]\n")
     pyproject = (work / "pyproject.toml").read_text()
-    version = "1.2.3" if fault == "no version rise" else "1.2.4"
     pyproject = pyproject.replace('version = "1.2.3"', f'version = "{version}"')
-    if fault == "more of pyproject":
-        pyproject = pyproject.replace("keep = 1", "keep = 2")
     (work / "pyproject.toml").write_text(pyproject)
+    if lock is not None:
+        (work / "uv.lock").write_text(lock)
+    return base
+
+
+DEMO = 'name = "demo"\nversion = "1.2.3"'
+LIB = 'name = "lib"\nversion = "1.2.3"'
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        "another file",
+        "a new file",
+        "more of pyproject",
+        "no version rise",
+        "a dependency in the lock",
+        "another version in the lock",
+        "more of the lock",
+    ],
+)
+def test_the_guard_refuses_more_than_versioning(remote, tmp_path, fault):
+    work = clone(remote, tmp_path / "work")
+    lock = LOCK.replace(DEMO, DEMO.replace("1.2.3", "1.2.4"))
+    if fault == "a dependency in the lock":
+        lock = lock.replace(LIB, LIB.replace("1.2.3", "1.2.4"))
+    if fault == "another version in the lock":
+        lock = LOCK.replace(DEMO, DEMO.replace("1.2.3", "1.2.5"))
+    if fault == "more of the lock":
+        lock = lock.replace('{ name = "lib" },\n', "")
+    base = version_by_hand(
+        work, "1.2.3" if fault == "no version rise" else "1.2.4", lock=lock
+    )
+    if fault == "more of pyproject":
+        pyproject = (work / "pyproject.toml").read_text()
+        (work / "pyproject.toml").write_text(pyproject.replace("keep = 1", "keep = 2"))
     if fault == "another file":
         (work / "towncrier.py").write_text("# changed\n")
     if fault == "a new file":
@@ -332,6 +393,19 @@ def test_the_guard_refuses_more_than_versioning(remote, tmp_path, fault):
 
     with pytest.raises(prepare.ReleaseError, match="more than versioning"):
         prepare.check_release_diff(prepare.Git(work), base, "HEAD")
+
+
+@pytest.mark.parametrize("lock_moves", [True, False])
+def test_the_guard_accepts_the_lock_moving_with_the_version_or_not(
+    remote, tmp_path, lock_moves
+):
+    work = clone(remote, tmp_path / "work")
+    lock = LOCK.replace(DEMO, DEMO.replace("1.2.3", "1.2.4")) if lock_moves else None
+    base = version_by_hand(work, lock=lock)
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "Update package version")
+
+    prepare.check_release_diff(prepare.Git(work), base, "HEAD")
 
 
 def test_github_output_is_appended(remote, tmp_path, capsys, monkeypatch):

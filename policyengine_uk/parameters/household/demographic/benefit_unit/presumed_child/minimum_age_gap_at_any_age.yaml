@@ -1,0 +1,6 @@
+description: Minimum age gap below the claimant at which a younger member is presumed to be the claimant's child rather than their partner at any age, even when the claimant is not flagged as a parent, when relationships are not supplied. A member flagged as a parent can still be the partner. This is a PolicyEngine modelling presumption, not a statutory rule.
+values:
+  0001-01-01: 20
+metadata:
+  unit: year
+  label: presumed child minimum age gap at any age

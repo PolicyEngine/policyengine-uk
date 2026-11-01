@@ -11,7 +11,8 @@ followed the Universal Credit rule unless the family claimed legacy
 benefits. ``REFERENCE`` re-adds those formulas from the parent commit
 under ``reference_`` names, so one simulation computes the old and the new
 values for the same families. They are verbatim except for the names they
-read, the inlined stopgap helpers and the earnings exception's dead code.
+read, the inlined stopgap helpers, the earnings exception's dead code and its
+threshold, which now follows the national living wage (#2523).
 The reference awards read the current ``uc_deductions``, which these
 single-household simulations leave at nil.
 
@@ -189,7 +190,11 @@ class reference_is_benefit_cap_exempt_earnings(Variable):
             - benunit.members("income_tax", period)
             - benunit.members("national_insurance", period)
         )
-        return uc_earned >= 10_152
+        # The old rule's fixed 10,152 is replaced by the current threshold
+        # (#2523), so this compares the split, not the threshold.
+        return uc_earned >= benunit(
+            "uc_benefit_cap_earnings_exception_threshold", period
+        )
 
 
 class reference_is_benefit_cap_exempt(Variable):
@@ -523,6 +528,9 @@ def example_families():
             region="LONDON",
             benunit_inputs=dict(income_support=24_000.0),
         ),
+        # A single claimant earning between the 2025-26 and 2026-27 earnings
+        # thresholds (10,152 and 10,572): no earnings exception in 2026.
+        family(adult_inputs(40, employment_income=10_400.0)),
     ]
 
 
@@ -845,7 +853,8 @@ def test_examples_reach_the_cases():
         mixed_age,
         hb_lcwra,
         hb_floor,
-    ) = range(8)
+        earner_in_gap,
+    ) = range(9)
     # Reg. 3(3): single for UC, a couple for HB, whatever the legacy claim.
     for i in (uc_family, legacy_family):
         assert v["uc_member_of_couple_claims_as_single_person"][i]
@@ -903,3 +912,7 @@ def test_examples_reach_the_cases():
     )
     assert abs(v["housing_benefit"][hb_floor] - 0.5 * 52) < 0.01
     assert v["reference_housing_benefit"][hb_floor] == 0
+    # Earnings of 10,400 are under 2026's threshold of 10,572 (#2523), and
+    # the reference reads the same threshold, so neither is exempt.
+    assert not v["is_uc_benefit_cap_exempt"][earner_in_gap]
+    assert not v["reference_is_benefit_cap_exempt"][earner_in_gap]

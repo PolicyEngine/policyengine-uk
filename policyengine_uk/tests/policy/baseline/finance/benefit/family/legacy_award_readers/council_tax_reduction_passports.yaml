@@ -36,6 +36,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -187,6 +188,7 @@
       nondep_unit:
         members: [nondep, other]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, nondep, other]
@@ -217,6 +219,7 @@
       nondep_unit:
         members: [payee, partner]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, payee, partner]
@@ -254,6 +257,7 @@
       nondep_unit:
         members: [payee, partner]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, payee, partner]

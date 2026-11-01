@@ -42,7 +42,7 @@ class trade_loss_relief_against_general_income(Variable):
         # Allowance treatment cannot retain a current expense-generated loss
         # on another trade in the same individual's tax year.
         loss = where(
-            person("trading_allowance_deduction", period) > 0,
+            person("uses_trading_allowance", period),
             0,
             person("trading_loss", period),
         )

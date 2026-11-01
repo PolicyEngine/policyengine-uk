@@ -1,18 +1,20 @@
-description: Fixed national cap schedule for the bus-fare yield benchmark. Read in reference_year; leave unchanged when reforming fares.cap.
+description: National single bus fare cap that the published local bus fares index already
+  reflects. It follows gov.dft.bus.fares.cap up to the last published quarter of
+  gov.dft.bus.local_bus_fares_index and holds the cap then in force after it. The model adds
+  the effect of any difference between the two schedules, so the scheduled 2027 GBP 2 cap and
+  its end in 2028 enter the baseline, and a reform of fares.cap adds its own effect. Leave
+  this schedule unchanged in reforms; extend it when a newly published quarter is added to
+  the index.
 values:
   0001-01-01: .inf
   2023-01-01: 2
   2025-01-01: 3
-  2027-01-01: 2
-  2028-01-01: .inf
 metadata:
   unit: currency-GBP
   period: year
-  label: benchmark single bus fare cap
+  label: single bus fare cap in the published fares index
   reference:
     - title: DfT evaluation of the two-pound bus fare cap, 2023 to 2024
       href: https://www.gov.uk/government/publications/evaluation-of-the-2-bus-fare-cap
     - title: DfT three-pound national bus fare cap, through December 2026
       href: https://www.gov.uk/guidance/3-national-bus-fare-cap
-    - title: DfT two-pound bus fares from January to December 2027
-      href: https://www.gov.uk/government/speeches/2-bus-fares-from-january-2027

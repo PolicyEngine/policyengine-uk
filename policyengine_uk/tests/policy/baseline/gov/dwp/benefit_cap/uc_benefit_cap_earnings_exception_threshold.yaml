@@ -1,0 +1,110 @@
+# The Universal Credit benefit cap's earnings threshold (UC Regs 2013 reg
+# 82(1)(a)). From 1 April 2017 (SI 2017/138) it is the pay for 16 hours a week
+# at the national living wage (NMW Regs 2015 reg 4), times 52 and divided by
+# 12, with any fraction of a pound disregarded (reg 6(1A)(za)). Before then it
+# was a fixed 430 a month. The model compares a year's earned income with
+# twelve times the monthly threshold.
+# Sources: https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/6
+# https://www.legislation.gov.uk/uksi/2017/138/made
+#
+# The boundary cases are a single claimant aged 40 outside London with an
+# entered award of 18,000 before the cap. Their earnings are under the
+# personal allowance and the primary threshold, so no tax or NI comes off, and
+# the cap of 14,753 takes 3,247 unless the exception applies.
+
+- name: Before April 2017 the threshold is a fixed 430 a month
+  period: 2016
+  output:
+    # 430 x 12 = 5,160.
+    uc_benefit_cap_earnings_exception_threshold: 5_160
+
+- name: The threshold in 2017-18 is 16 hours at the 7.50 national living wage
+  period: 2017
+  output:
+    # 16 x 7.50 x 52 / 12 = 520.00 a month; x 12 = 6,240.
+    uc_benefit_cap_earnings_exception_threshold: 6_240
+
+- name: The threshold in 2023-24 is 16 hours at the 10.42 national living wage
+  period: 2023
+  output:
+    # 16 x 10.42 x 52 / 12 = 722.45, disregarding the fraction 722 a month;
+    # x 12 = 8,664.
+    uc_benefit_cap_earnings_exception_threshold: 8_664
+
+- name: The threshold in 2024-25 is 16 hours at the 11.44 national living wage
+  period: 2024
+  output:
+    # 16 x 11.44 x 52 / 12 = 793.17, so 793 a month; x 12 = 9,516.
+    uc_benefit_cap_earnings_exception_threshold: 9_516
+
+- name: The threshold in 2025-26 is 16 hours at the 12.21 national living wage
+  period: 2025
+  output:
+    # 16 x 12.21 x 52 / 12 = 846.56, so 846 a month; x 12 = 10,152.
+    uc_benefit_cap_earnings_exception_threshold: 10_152
+
+- name: The threshold in 2026-27 is 16 hours at the 12.71 national living wage
+  period: 2026
+  output:
+    # 16 x 12.71 x 52 / 12 = 881.23, so 881 a month; x 12 = 10,572.
+    uc_benefit_cap_earnings_exception_threshold: 10_572
+
+- name: Earnings equal to the 2024-25 threshold lift the cap
+  period: 2024
+  input:
+    age: 40
+    employment_income: 9_516
+    universal_credit_pre_benefit_cap: 18_000
+    region: NORTH_EAST
+  output:
+    uc_individual_earned_income_before_mif: 9_516
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+
+- name: Earnings a pound under the 2024-25 threshold leave the cap in place
+  period: 2024
+  input:
+    age: 40
+    employment_income: 9_515
+    universal_credit_pre_benefit_cap: 18_000
+    region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_earnings: false
+    benefit_cap_reduction: 3_247
+
+- name: Earnings between the 2024-25 threshold and the 2025-26 figure lift the cap in 2024-25
+  period: 2024
+  input:
+    age: 40
+    employment_income: 10_000
+    universal_credit_pre_benefit_cap: 18_000
+    region: NORTH_EAST
+  output:
+    # 10,000 is at least 9,516. A threshold of 10,152 would leave the cap.
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+
+- name: Earnings equal to the 2026-27 threshold lift the cap
+  period: 2026
+  input:
+    age: 40
+    employment_income: 10_572
+    universal_credit_pre_benefit_cap: 18_000
+    region: NORTH_EAST
+  output:
+    uc_individual_earned_income_before_mif: 10_572
+    is_uc_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+
+- name: Earnings between the 2025-26 figure and the 2026-27 threshold leave the cap in 2026-27
+  period: 2026
+  input:
+    age: 40
+    employment_income: 10_571
+    universal_credit_pre_benefit_cap: 18_000
+    region: NORTH_EAST
+  output:
+    # 10,571 is under 10,572, although it is above 10,152.
+    is_uc_benefit_cap_exempt_earnings: false
+    benefit_cap_reduction: 3_247

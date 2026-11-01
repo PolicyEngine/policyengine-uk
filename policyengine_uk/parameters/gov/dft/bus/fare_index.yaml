@@ -1,5 +1,6 @@
 description: Proportional multiplier on bus fares; a neutral reform lever, not a measured
-  historical fare index.
+  historical fare index. The published DfT fares index that moves the baseline is
+  gov.dft.bus.local_bus_fares_index.
 values:
   '0001-01-01': 1
 metadata:

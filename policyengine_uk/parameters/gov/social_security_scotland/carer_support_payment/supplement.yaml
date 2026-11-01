@@ -7,10 +7,30 @@ metadata:
   period: week
   unit: currency-GBP
   label: Scottish Carer Supplement rate
+  # September CPI and nearest-5p rounding follow Scottish Ministers' current
+  # policy; s86A leaves the choice of relevant prices to Ministers.
+  # Apply each year's rise to the previous rounded rate each April.
+  uprating:
+    parameter: gov.benefit_uprating_cpi
+    at_defined_interval:
+      start: "0001-01-01"
+      end: "0002-01-01"
+      enactment: "0002-04-01"
+    rounding:
+      type: nearest
+      interval: 0.05
   reference:
-    - title: New rates for carer and disability payments in 2026
-      href: https://www.socialsecurity.gov.scot/news-events/news/new-payment-rates-from-april-2026
     - title: The Carer's Assistance (Miscellaneous and Consequential Amendments, Revocation, Transitional and Saving Provisions) (Scotland) Regulations 2025 reg. 3
       href: https://www.legislation.gov.uk/ssi/2025/340/made
     - title: The Social Security (Up-rating) (Miscellaneous Amendments) (Scotland) Regulations 2026 reg. 12(3)(b)
       href: https://www.legislation.gov.uk/ssi/2026/170/regulation/12/made
+    - title: Social Security (Scotland) Act 2018 s. 86A (inflation-adjusted level)
+      href: https://www.legislation.gov.uk/asp/2018/9/section/86A
+    - title: Social Security (Scotland) Act 2018 s. 86B (duty to uprate assistance)
+      href: https://www.legislation.gov.uk/asp/2018/9/section/86B
+    - title: Social Security Assistance in Scotland - up-rating for inflation in 2026-27, section 2.1 (12 months to September CPI, rounded to the nearest five pence)
+      href: https://www.gov.scot/publications/social-security-assistance-scotland-up-rating-inflation-2026-27/pages/3/
+    - title: Social Security Assistance in Scotland - up-rating for inflation in 2026-27, section 3 (12 months to September CPI)
+      href: https://www.gov.scot/publications/social-security-assistance-scotland-up-rating-inflation-2026-27/pages/4/
+    - title: Social Security Assistance in Scotland - up-rating for inflation in 2026-27, table 5 (2026-27 rates)
+      href: https://www.gov.scot/publications/social-security-assistance-scotland-up-rating-inflation-2026-27/pages/7/

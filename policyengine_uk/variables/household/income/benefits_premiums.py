@@ -11,7 +11,9 @@ WORKING_AGE_PREMIUMS = [
 # Requirements) (England) Regs 2012 Sch 2 Part 3; the Scottish and Welsh
 # pension-age CTR schedules) have only the severe disability, enhanced
 # disability (children only), disabled child and carer premiums. The two
-# child premiums are not modelled.
+# child premiums are modelled for Housing Benefit only, by
+# housing_benefit_child_disability_premiums in the applicable amount;
+# Council Tax Reduction does not model them.
 PENSION_AGE_PREMIUMS = [
     "pension_age_severe_disability_premium",
     "carer_premium",

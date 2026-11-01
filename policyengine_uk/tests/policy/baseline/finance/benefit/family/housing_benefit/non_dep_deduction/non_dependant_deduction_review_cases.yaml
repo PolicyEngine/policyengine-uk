@@ -347,7 +347,6 @@
       non_dependant:
         age: 40
         employment_income: 52 # 1 a week, so not exempt as UC without earnings
-        total_income: 52
         weekly_hours: 35
         current_education: NOT_IN_EDUCATION
     benunits:

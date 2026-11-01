@@ -1,0 +1,45 @@
+description: Maximum appropriate percentage for a company car, which caps both the graduated rate and a diesel car's rate after its supplement.
+# Two provisions set this figure: s. 139(3)(b) for the graduated rate and
+# s. 141(2) step 3(b) for a diesel car. They have moved together, so the
+# model holds one figure. For s. 141, legislation.gov.uk prints 35%: Finance
+# Act 2015 s. 9 substituted 37% for the tax year 2015-16 only, when Finance
+# Act 2014 s. 24(11) was to omit s. 141 from 2016-17, and Finance Act 2016
+# s. 10 then kept s. 141 without restating the cap. Finance Act 2025 s. 5(6)
+# substitutes 38% "for '37%'" in step 3, and HMRC 480 (paragraph 12.29, note
+# 2) applies the 37% maximum to diesel cars from 2015-16, so the model uses
+# 37% for both to 2027-28.
+# The tax year 2030-31 keeps 2029-30's 39%. Budget 2026 announced 40%, for
+# s. 139(3)(b) and s. 141 alike; the company_car_tax_rise_2030 scenario
+# applies it.
+values:
+  2020-04-06:
+    value: 0.37
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2017 s. 2(2), substituting ITEPA 2003 s. 139(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/2017/32/section/2/enacted
+        - title: Finance Act 2015 s. 9 (ITEPA 2003 s. 141(2) step 3, 37% for 2015-16)
+          href: https://www.legislation.gov.uk/ukpga/2015/11/section/9/enacted
+        - title: "HMRC 480 Chapter 12, paragraph 12.29, note 2: overall maximum of 37% from 2015-16"
+          href: https://www.gov.uk/guidance/how-to-work-out-the-benefit-of-a-company-car-480-chapter-12
+  2028-04-06:
+    value: 0.38
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 5(3)(b), (6) and (9) (tax year 2028-29)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/5/enacted
+  2029-04-06:
+    value: 0.39
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 6(3)(b), (6) and (9) (tax year 2029-30 and subsequent tax years)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/6/enacted
+metadata:
+  unit: /1
+  period: year
+  label: Company car maximum appropriate percentage
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(3)(b)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 141(2), step 3(b)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/141

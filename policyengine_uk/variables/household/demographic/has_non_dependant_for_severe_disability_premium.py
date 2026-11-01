@@ -28,11 +28,20 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         "(looked after in Scotland) are also under 18 (S.I. 2004/747 reg "
         "2(2)(a)). The care-leaver bursary and current local-authority care "
         "inputs do not identify the historical care status needed for "
-        "section 6. The model cannot "
-        "identify the other people the "
-        "Regulations exclude from the definition (for example joint "
-        "occupiers, commercial lodgers or landlords, and carers engaged by a "
-        "charity), apply the 12-week rule for someone who moves in to care "
+        "section 6. Joint or separately landlord-liable occupiers can be "
+        "excluded through the explicit, false-default "
+        "severe_disability_premium_joint_occupier_exclusion_applies input. "
+        "The caller must establish the relevant conditions for every other "
+        "modelled liable claimant or partner, relative to this family and "
+        "year, for every applicable programme using this shared test. This "
+        "includes the different Housing Benefit reg 9 and Income Support "
+        "close-relative/history conditions; unknown facts or a partial subset "
+        "leave the input false. Rent liability alone never establishes it. "
+        "Only a family with a modelled liable claimant or partner uses the "
+        "assertion. Other family members and non-paying adults retain their "
+        "existing treatment. The model cannot infer co-ownership, commercial "
+        "lodger or landlord arrangements, or carers engaged by a charity, "
+        "apply the 12-week rule for someone who moves in to care "
         "(IS, ESA and JSA only), or treat someone as blind for 28 weeks after "
         "regaining their sight."
     )
@@ -66,4 +75,22 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         )
         # Counted residents of the household, less the claimant's family.
         in_household = benunit.max(person.household.sum(counted))
-        return in_household > benunit.sum(counted & family)
+        ordinary_blocker = in_household > benunit.sum(counted & family)
+
+        liable = person("is_liable_for_household_rent", period)
+        apply_occupier_exclusion = benunit(
+            "severe_disability_premium_joint_occupier_exclusion_applies", period
+        ) & benunit.any(liable)
+        # The assertion is relative to this family and year. It is never
+        # inferred from rent liability or another family's assertion.
+        # Own liable claimants and partners are already family: removing
+        # them from both counts cancels exactly, leaving only other liable
+        # claimants and partners excluded. Non-family adults remain counted.
+        counted_after_exclusion = counted & ~liable
+        filtered_in_household = benunit.max(
+            person.household.sum(counted_after_exclusion)
+        )
+        filtered_blocker = filtered_in_household > benunit.sum(
+            counted_after_exclusion & family
+        )
+        return where(apply_occupier_exclusion, filtered_blocker, ordinary_blocker)

@@ -60,6 +60,7 @@
   input:
     age: 21
     is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
   output:
     minimum_wage: 8
 
@@ -102,5 +103,6 @@
   input:
     age: 19
     is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
   output:
     minimum_wage: 5.28

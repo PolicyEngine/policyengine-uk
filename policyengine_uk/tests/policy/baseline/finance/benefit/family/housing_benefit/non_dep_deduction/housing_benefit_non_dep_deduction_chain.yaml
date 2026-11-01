@@ -11,10 +11,8 @@
     people:
       tenant:
         age: 40
-        total_income: 0
       student:
         age: 20
-        total_income: 0
         employment_status: STUDENT
         current_education: TERTIARY
     benunits:
@@ -56,10 +54,8 @@
     people:
       tenant:
         age: 40
-        total_income: 0
       son:
         age: 30
-        total_income: 0
         current_education: NOT_IN_EDUCATION
     benunits:
       tenant_unit:

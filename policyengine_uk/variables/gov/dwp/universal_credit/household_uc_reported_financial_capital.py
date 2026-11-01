@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
+)
 
 
 class household_uc_reported_financial_capital(Variable):
@@ -14,10 +17,10 @@ class household_uc_reported_financial_capital(Variable):
         "so it includes its claimant's and partner's disregarded holdings. "
         "Consume the larger of the override and those holdings after applying "
         "household_uc_company_holding_pool_scale. Each person's holding is "
-        "first clipped to [0, max(0, corporate_wealth)], with positive infinity "
+        "first clipped to [0, max(0, share_like_capital)], with positive infinity "
         "mapped to the upper bound and negative infinity to zero before any "
         "multiplication. All household holdings share "
-        "one nonnegative corporate_wealth budget: if their total exceeds it, "
+        "one nonnegative share_like_capital budget: if their total exceeds it, "
         "scale each person's holding proportionally before either this "
         "override floor or the separate pool deduction. This is a defensive "
         "rule for inconsistent inputs, not a statutory determination. "
@@ -38,7 +41,7 @@ class household_uc_reported_financial_capital(Variable):
         financial_capital = person.benunit("benunit_reported_capital", period)
         complete_override = person.benunit("uc_reported_capital", period)
         holding = person("uc_company_holding_disregard", period)
-        upper_bound = max_(0, person.household("corporate_wealth", period))
+        upper_bound = max_(0, person.household(HOLDINGS_SOURCE, period))
         finite_holding = np.where(
             np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
         )

@@ -1,0 +1,400 @@
+# VAT on private school fees. VATA 1994 Sch 9 Group 6 exempted education by
+# an eligible body, which included registered independent schools. Finance Act
+# 2025 s.47 inserts Sch 9 Part 3, which removes private school education,
+# vocational training and closely related board and lodging from the
+# exemption, for supplies on or after 1 January 2025 (s.49), so the fees bear
+# VAT at the standard rate. The tests fix the mean fee and the share of fees
+# that bears VAT so the expected values are exact.
+
+- name: No pupils, no VAT
+  period: 2025
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 25
+    households:
+      household:
+        members: [adult]
+  output:
+    private_school_vat: 0
+
+- name: Fees were exempt in 2024
+  period: 2024
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat: 0
+
+- name: Standard rate on one pupil's fees from 2025
+  period: 2025
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    # 10,000 x 1 x 20%
+    private_school_vat: 2_000
+
+- name: Two pupils, three quarters of fees bearing VAT
+  period: 2026
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 0.75
+    people:
+      adult:
+        age: 40
+      child1:
+        age: 10
+        attends_private_school: true
+      child2:
+        age: 12
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child1, child2]
+  output:
+    # 2 x 10,000 x 0.75 x 20%
+    private_school_vat: 3_000
+
+- name: Only pupils count
+  period: 2025
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child1:
+        age: 10
+        attends_private_school: true
+      child2:
+        age: 7
+        attends_private_school: false
+    households:
+      household:
+        members: [adult, child1, child2]
+  output:
+    private_school_vat: 2_000
+
+- name: The reform rate at the standard rate does not charge the fees twice
+  period: 2025
+  input:
+    gov.contrib.labour.private_school_vat: 0.2
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    # max(20%, 20%), not 20% + 20%
+    private_school_vat: 2_000
+
+- name: A reform rate below the standard rate leaves the statutory charge
+  period: 2025
+  input:
+    gov.contrib.labour.private_school_vat: 0.1
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat: 2_000
+
+- name: A reform rate above the standard rate replaces it
+  period: 2025
+  input:
+    gov.contrib.labour.private_school_vat: 0.25
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    # max(20%, 25%) = 25%
+    private_school_vat: 2_500
+
+- name: The reform rate applies while the fees are exempt
+  period: 2024
+  input:
+    gov.contrib.labour.private_school_vat: 0.2
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat: 2_000
+
+- name: Restoring the exemption removes the charge
+  period: 2025
+  input:
+    gov.hmrc.vat.private_school_fees_exempt: true
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat: 0
+
+- name: The fees follow a change in the standard rate
+  period: 2025
+  input:
+    gov.hmrc.vat.standard_rate: 0.22
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat: 2_200
+
+- name: No change from baseline at current law
+  period: 2026
+  input:
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+        attends_private_school: true
+    households:
+      household:
+        members: [adult, child]
+  output:
+    private_school_vat_change: 0
+
+- name: Household taxes include the change, government taxes the level
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    people:
+      adult:
+        age: 40
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+      child:
+        age: 10
+        attends_private_school: true
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+    households:
+      household:
+        members: [adult, child]
+        # Every other head of the two totals is zero.
+        LVT: 0
+        alcohol_duty: 0
+        business_rates: 0
+        carbon_tax: 0
+        consumer_incident_tax_revenue_change: 0
+        corporate_incident_tax_revenue_change: 0
+        corporate_sdlt: 0
+        council_tax: 0
+        domestic_rates: 0
+        expected_lbtt: 0
+        expected_ltt: 0
+        expected_sdlt: 0
+        fuel_duty: 0
+        high_value_council_tax_surcharge: 0
+        non_primary_residence_wealth_tax: 0
+        tobacco_duty: 0
+        tv_licence: 0
+        vat: 0
+        vat_change: 0
+        vehicle_excise_duty: 0
+        wealth_tax: 0
+  output:
+    # The baseline applies baseline policy to this simulation's fee and share, so changing those assumptions is not a tax change.
+    private_school_vat: 2_000
+    baseline_private_school_vat: 2_000
+    private_school_vat_change: 0
+    gov_tax: 2_000
+    household_tax: 0
+
+- name: A higher reform rate is a household tax rise
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    gov.contrib.labour.private_school_vat: 0.25
+    people:
+      adult:
+        age: 40
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+      child:
+        age: 10
+        attends_private_school: true
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+    households:
+      household:
+        members: [adult, child]
+        # Every other head of the two totals is zero.
+        LVT: 0
+        alcohol_duty: 0
+        business_rates: 0
+        carbon_tax: 0
+        consumer_incident_tax_revenue_change: 0
+        corporate_incident_tax_revenue_change: 0
+        corporate_sdlt: 0
+        council_tax: 0
+        domestic_rates: 0
+        expected_lbtt: 0
+        expected_ltt: 0
+        expected_sdlt: 0
+        fuel_duty: 0
+        high_value_council_tax_surcharge: 0
+        non_primary_residence_wealth_tax: 0
+        tobacco_duty: 0
+        tv_licence: 0
+        vat: 0
+        vat_change: 0
+        vehicle_excise_duty: 0
+        wealth_tax: 0
+  output:
+    # 10,000 x (25% - 20%)
+    private_school_vat: 2_500
+    baseline_private_school_vat: 2_000
+    private_school_vat_change: 500
+    gov_tax: 2_500
+    household_tax: 500
+
+- name: Restoring the exemption is a household tax cut
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.simulation.private_school_vat.private_school_fees: 10_000
+    gov.simulation.private_school_vat.private_school_vat_basis: 1
+    gov.hmrc.vat.private_school_fees_exempt: true
+    people:
+      adult:
+        age: 40
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+      child:
+        age: 10
+        attends_private_school: true
+        capital_gains_tax: 0
+        employer_ni_response_capital_incidence: 0
+        employer_ni_response_consumer_incidence: 0
+        income_tax: 0
+        national_insurance: 0
+        ni_employer: 0
+        student_loan_repayments: 0
+    households:
+      household:
+        members: [adult, child]
+        # Every other head of the two totals is zero.
+        LVT: 0
+        alcohol_duty: 0
+        business_rates: 0
+        carbon_tax: 0
+        consumer_incident_tax_revenue_change: 0
+        corporate_incident_tax_revenue_change: 0
+        corporate_sdlt: 0
+        council_tax: 0
+        domestic_rates: 0
+        expected_lbtt: 0
+        expected_ltt: 0
+        expected_sdlt: 0
+        fuel_duty: 0
+        high_value_council_tax_surcharge: 0
+        non_primary_residence_wealth_tax: 0
+        tobacco_duty: 0
+        tv_licence: 0
+        vat: 0
+        vat_change: 0
+        vehicle_excise_duty: 0
+        wealth_tax: 0
+  output:
+    private_school_vat: 0
+    baseline_private_school_vat: 2_000
+    private_school_vat_change: -2_000
+    gov_tax: 0
+    household_tax: -2_000

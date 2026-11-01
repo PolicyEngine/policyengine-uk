@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
 
+# The capital source that holds a disregarded company holding: the share-like
+# capital the UC financial pool counts, so holdings are budgeted against it.
+HOLDINGS_SOURCE = "share_like_capital"
+
 
 class household_uc_company_holding_pool_scale(Variable):
     value_type = float
@@ -8,10 +12,11 @@ class household_uc_company_holding_pool_scale(Variable):
     documentation = (
         "Common proportional scale for disregarded company holdings when "
         "deducting them from the household financial pool. Before budgeting, "
-        "clip each person's holding to [0, max(0, corporate_wealth)], mapping "
+        "clip each person's holding to [0, max(0, share_like_capital)], mapping "
         "positive infinity to the upper bound and negative infinity to zero. "
         "Total bounded holdings "
-        "share one budget of nonnegative corporate_wealth across override "
+        "share one budget of nonnegative share_like_capital (the share-like "
+        "capital the pool counts) across override "
         "floors and separate pool deductions. This allocation is independent "
         "of row order and treats holders equally. It is a defensive rule for "
         "inconsistent inputs, not a statutory determination. It does not "
@@ -21,16 +26,16 @@ class household_uc_company_holding_pool_scale(Variable):
     unit = "/1"
 
     def formula(household, period, parameters):
-        corporate_wealth = max_(0, household("corporate_wealth", period))
+        share_like = max_(0, household(HOLDINGS_SOURCE, period))
         person = household.members
         holding = person("uc_company_holding_disregard", period)
-        upper_bound = max_(0, person.household("corporate_wealth", period))
+        upper_bound = max_(0, person.household(HOLDINGS_SOURCE, period))
         finite_holding = np.where(
             np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
         )
         holdings = household.sum(np.clip(finite_holding, 0, upper_bound))
         return where(
             holdings > 0,
-            min_(1, corporate_wealth / where(holdings > 0, holdings, 1)),
+            min_(1, share_like / where(holdings > 0, holdings, 1)),
             1,
         )

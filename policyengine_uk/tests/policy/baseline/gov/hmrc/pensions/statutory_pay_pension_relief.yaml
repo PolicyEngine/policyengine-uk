@@ -140,7 +140,14 @@
     employee_pension_contributions: 22000
     pension_contributions_relief: 0
     personal_pension_contributions_tax: 0
-    income_tax: 5886.0
+    # Nothing is relieved from age 75 (FA 2004 s.188(3)(a)), so total income
+    # is the full £42,000, over £35,000: income tax includes the £200 winter
+    # fuel payment charge (ITEPA 2003 s.681I).
+    net_pay_pension_relief: 0
+    total_income_charged_to_tax: 42000
+    income_tax_before_winter_fuel_payment_charge: 5886.0
+    winter_fuel_payment_charge: 200
+    income_tax: 6086.0
 
 - name: RAS basic amount retained
   period: 2026

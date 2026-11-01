@@ -160,17 +160,22 @@
     is_pension_credit_eligible: true
 
 - name: Case 4, mixed-age couple without protected exception is ineligible.
+  # The couple is 25 years apart, so the roles are supplied: without them the
+  # 54-year-old would be presumed the claimant's child.
   period: 2026
   input:
     people:
       person1:
         age: 79
+        is_claimant_or_partner: true
       person2:
         age: 54
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [person1, person2]
   output:
+    is_claimant_or_partner: [true, true]
     is_pension_credit_eligible: false
 
 - name: Case 5, child in benefit unit does not block pension-age adult eligibility.

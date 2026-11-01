@@ -1,0 +1,147 @@
+# expected_lbtt is the household's own LBTT, with no further scaling (issue 2246).
+#
+# Residential rates: The Land and Buildings Transaction Tax (Tax Rates and Tax
+# Bands) (Scotland) Order 2015 (SSI 2015/126) schedule, Table A, in force again
+# from 1 April 2021 (the temporary nil band in SSI 2020/215 art. 2 ran to the end
+# of 31 March 2021): 0% to £145,000; 2% to £250,000; 5% to £325,000; 10% to
+# £750,000; 12% above.
+#   https://www.legislation.gov.uk/ssi/2015/126/schedule/made
+# First-time buyer relief: tax is not chargeable on the first £175,000
+# (Land and Buildings Transaction Tax (Scotland) Act 2013 schedule 4A para 3).
+#   https://www.legislation.gov.uk/asp/2013/11/schedule/4A
+# Non-residential rates: SSI 2015/126 schedule, Table B as substituted by SSI
+# 2018/372 from 25 January 2019: 0% to £150,000; 1% to £250,000; 5% above.
+#   https://www.legislation.gov.uk/ssi/2015/126/schedule
+- name: No purchase means no LBTT in the tax totals (Scotland)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 0
+    expected_lbtt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: Expected LBTT on a main-residence purchase equals the LBTT liability
+  # £400,000, not a first home:
+  # 2% x (250,000 - 145,000) = 2,100
+  # 5% x (325,000 - 250,000) = 3,750
+  # 10% x (400,000 - 325,000) = 7,500
+  # Total 13,350.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 400_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    lbtt_on_residential_property_transactions: 13_350
+    land_and_buildings_transaction_tax: 13_350
+    expected_lbtt: 13_350
+    household_tax: 13_350
+    gov_tax: 13_350
+    pre_budget_change_household_tax: 13_350
+- name: Expected LBTT on a purchase above £750,000 includes the 12% band
+  # £1,000,000, not a first home:
+  # 2,100 + 3,750 + 10% x (750,000 - 325,000) = 42,500
+  # + 12% x (1,000,000 - 750,000) = 30,000
+  # Total 78,350.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 1_000_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 78_350
+    expected_lbtt: 78_350
+    gov_tax: 78_350
+- name: A purchase at the top of the nil band pays no LBTT
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 145_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 0
+    expected_lbtt: 0
+    gov_tax: 0
+- name: A purchase at the top of the 2% band pays 2% of the band
+  # 2% x (250,000 - 145,000) = 2,100.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 250_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 2_100
+    expected_lbtt: 2_100
+    gov_tax: 2_100
+- name: First-time buyer relief takes the first £175,000 out of charge
+  # £200,000 first home: 2% x (200,000 - 175,000) = 500.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 200_000
+    main_residential_property_purchased_is_first_home: true
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 500
+    expected_lbtt: 500
+    household_tax: 500
+    gov_tax: 500
+- name: Expected LBTT on a non-residential purchase equals the LBTT liability
+  # £300,000: 1% x (250,000 - 150,000) = 1,000
+  # 5% x (300,000 - 250,000) = 2,500
+  # Total 3,500.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    non_residential_property_purchased: 300_000
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    lbtt_on_non_residential_property_transactions: 3_500
+    land_and_buildings_transaction_tax: 3_500
+    expected_lbtt: 3_500
+    household_tax: 3_500
+    gov_tax: 3_500
+- name: No LBTT outside Scotland, even on a purchase (Wales)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    main_residential_property_purchased: 400_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 0
+    expected_lbtt: 0
+- name: No LBTT outside Scotland, even on a purchase (England)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    main_residential_property_purchased: 400_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    land_and_buildings_transaction_tax: 0
+    expected_lbtt: 0

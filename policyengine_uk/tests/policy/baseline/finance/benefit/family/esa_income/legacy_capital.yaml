@@ -64,6 +64,7 @@
     benunits:
       claimant_benunit:
         members: [claimant]
+        would_claim_uc: false
       unrelated_benunit:
         members: [unrelated_claimant]
     households:

@@ -1,0 +1,30 @@
+description: Statutory council tax band proportions for Wales, relative to Band D. Wales has nine bands (A to I) from 1 April 2005.
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  unit: /1
+  period: year
+  label: Wales council tax band ratios
+  reference:
+    - title: Local Government Finance Act 1992, section 5
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/5
+    - title: The Council Tax (Valuation Bands) (Wales) Order 2003
+      href: https://www.legislation.gov.uk/wsi/2003/3046/made
+A:
+  2005-04-01: 0.666666667  # 2/3
+B:
+  2005-04-01: 0.777777778  # 7/9
+C:
+  2005-04-01: 0.888888889  # 8/9
+D:
+  2005-04-01: 1.000000000  # 1/1
+E:
+  2005-04-01: 1.222222222  # 11/9
+F:
+  2005-04-01: 1.444444444  # 13/9
+G:
+  2005-04-01: 1.666666667  # 5/3
+H:
+  2005-04-01: 2.000000000  # 2/1
+I:
+  2005-04-01: 2.333333333  # 7/3

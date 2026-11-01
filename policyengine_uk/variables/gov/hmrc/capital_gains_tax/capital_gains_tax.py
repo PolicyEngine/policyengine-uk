@@ -1,3 +1,5 @@
+import numpy as np
+
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.capital_gains import badr_gains_before_response
 
@@ -15,6 +17,12 @@ def _take(amount, band_left):
     return inside, above, band_left - inside
 
 
+# Each pass of the exemption allocation ends where a schedule's gains cross a
+# band boundary, so a handful is enough; four schedules in three bands give at
+# most twelve boundaries.
+_MAX_EXEMPTION_PASSES = 16
+
+
 class capital_gains_tax(Variable):
     label = "capital gains tax"
     documentation = (
@@ -29,8 +37,8 @@ class capital_gains_tax(Variable):
         "other two in proportion with the rest of the gains. All three are "
         "clipped so that together they never exceed capital_gains. The annual "
         "exempt amount is set "
-        "against the schedule with the highest top rate first (TCGA 1992 "
-        "s. 1K(5)); the unused basic rate band goes to relief gains first, as "
+        "against the gains where it saves most tax, pound by pound "
+        "(TCGA 1992 s. 1K(5)); the unused basic rate band goes to relief gains first, as "
         "s. 1I(4)-(6) requires, and then to the schedule with the widest gap "
         "between its higher and basic rates (s. 1I(7)-(9)). Gains above the "
         "basic rate band are split at the income tax higher rate limit only so "
@@ -68,7 +76,13 @@ class capital_gains_tax(Variable):
         basic_rate_limit = it.rates.uk.thresholds[1] + basic_rate_band_extension
         remaining_basic_rate_band = max_(basic_rate_limit - taxable_income, 0)
         higher_rate_limit = it.rates.uk.thresholds[2] + basic_rate_band_extension
-        higher_rate_band = higher_rate_limit - basic_rate_limit
+        # Gains are the top slice of income (TCGA 1992 s. 1H), so the gains
+        # above the basic rate band start at the basic rate limit or at
+        # taxable income, whichever is higher. Only the rest of the band up to
+        # the higher rate limit is left for them.
+        remaining_higher_rate_band = max_(
+            higher_rate_limit - max_(taxable_income, basic_rate_limit), 0
+        )
 
         # The schedule inputs describe gains before any realisation response.
         # Relief gains move by their own response, which has its own
@@ -132,19 +146,6 @@ class capital_gains_tax(Variable):
             "main": main,
             "badr": badr,
         }
-        top_rate = {name: rates[name].higher_rate for name in rates}
-        top_rate["badr"] = cgt.badr.rate
-
-        # Annual exempt amount, TCGA 1992 s. 1K(5): deducted in the way most
-        # beneficial to the taxpayer, which is against the highest top rate
-        # first. Relief gains carry the lowest rate and come last.
-        after_aea = {}
-        aea_left = aea
-        for name in sorted(amounts, key=lambda name: -top_rate[name]):
-            used = min_(amounts[name], aea_left)
-            after_aea[name] = amounts[name] - used
-            aea_left = aea_left - used
-
         # Basic rate band. Relief gains take it first, TCGA 1992 s. 1I(4)-(6).
         # The taxpayer then allocates the rest, s. 1I(7)-(9), which saves most
         # on the schedule with the widest higher-minus-basic gap. Carried
@@ -154,26 +155,118 @@ class capital_gains_tax(Variable):
             rates,
             key=lambda name: -(rates[name].higher_rate - rates[name].basic_rate),
         )
-        inside_basic, above_basic = {}, {}
-        band_left = remaining_basic_rate_band
-        for name in basic_order:
-            inside_basic[name], above_basic[name], band_left = _take(
-                after_aea[name], band_left
-            )
-
-        # Gains above the basic rate band are split at the higher rate limit
-        # so reforms can charge an additional rate; in law the two rates are
-        # equal. Relief gains are the lowest part of the gains here too.
+        # Gains above the basic rate band are split at the higher rate limit,
+        # stacked on top of taxable income, so reforms can charge an
+        # additional rate; in law the two rates are equal. Relief gains are
+        # the lowest part of the gains here too.
         higher_order = ["badr"] + sorted(
             rates,
             key=lambda name: -(rates[name].additional_rate - rates[name].higher_rate),
         )
-        inside_higher, above_higher = {}, {}
-        band_left = higher_rate_band
-        for name in higher_order:
-            inside_higher[name], above_higher[name], band_left = _take(
-                above_basic[name], band_left
-            )
+
+        def allocate_bands(schedule_amounts):
+            inside_basic, above_basic = {}, {}
+            band_left = remaining_basic_rate_band
+            for name in basic_order:
+                inside_basic[name], above_basic[name], band_left = _take(
+                    schedule_amounts[name], band_left
+                )
+            inside_higher, above_higher = {}, {}
+            band_left = remaining_higher_rate_band
+            for name in higher_order:
+                inside_higher[name], above_higher[name], band_left = _take(
+                    above_basic[name], band_left
+                )
+            return inside_basic, inside_higher, above_higher
+
+        # Annual exempt amount, TCGA 1992 s. 1K(5): deducted in the way most
+        # beneficial to the taxpayer. Each pound saves the tax it would have
+        # borne at the margin, which depends on the schedule it comes off and,
+        # where removing it frees band for another schedule, on that schedule
+        # too. So the exemption is set greedily: in each pass, against the
+        # schedule where a pound saves most, up to the point where any
+        # schedule's gains cross a band boundary and the saving can change.
+        # Ties keep declaration order. Under current law, where the higher and
+        # additional rates are equal, this gives the same allocation as
+        # ranking the schedules by rate, apart from float rounding where the
+        # exemption is split across schedules.
+        names = list(amounts)
+        flat_rate = {"badr": cgt.badr.rate}
+
+        def slices(schedule_amounts):
+            inside_basic, inside_higher, above_higher = allocate_bands(schedule_amounts)
+            result = []
+            for name in names:
+                if name in flat_rate:
+                    band_rates = [flat_rate[name]] * 3
+                else:
+                    band_rates = [
+                        rates[name].basic_rate,
+                        rates[name].higher_rate,
+                        rates[name].additional_rate,
+                    ]
+                parts = [inside_basic[name], inside_higher[name], above_higher[name]]
+                result += list(zip(parts, band_rates))
+            return result
+
+        left = {name: amounts[name].astype(float) for name in names}
+        used = {name: np.zeros_like(left[name]) for name in names}
+        aea_left = np.full_like(left["main"], aea)
+        step = 1e-6
+        for _ in range(_MAX_EXEMPTION_PASSES):
+            if not np.any(aea_left > 0):
+                break
+            base = slices(left)
+            savings, room = [], []
+            for name in names:
+                nudged = dict(left)
+                nudged[name] = left[name] - step
+                saving = np.zeros_like(aea_left)
+                distance = np.full_like(aea_left, np.inf)
+                for (part, rate), (moved, _) in zip(base, slices(nudged)):
+                    slope = np.round((moved - part) / step)
+                    saving = saving - slope * rate
+                    shrinking = (slope < 0) & (part > 0)
+                    distance = where(
+                        shrinking,
+                        min_(distance, part / where(shrinking, -slope, 1)),
+                        distance,
+                    )
+                active = (left[name] > 0) & (aea_left > 0)
+                savings.append(where(active, np.round(saving, 9), -np.inf))
+                room.append(min_(left[name], distance))
+            savings = np.stack(savings)
+            best = np.argmax(savings, axis=0)
+            can_take = np.max(savings, axis=0) > -np.inf
+            for i, name in enumerate(names):
+                taken = where(can_take & (best == i), min_(aea_left, room[i]), 0)
+                left[name] = left[name] - taken
+                used[name] = used[name] + taken
+                aea_left = aea_left - taken
+        # Any exemption left after the passes, which only happens when gains
+        # cross more band boundaries than there are passes, goes in
+        # declaration order.
+        for name in names:
+            taken = min_(aea_left, left[name])
+            used[name] = used[name] + taken
+            aea_left = aea_left - taken
+        # Where the whole exemption went against one schedule, deduct it in a
+        # single step so that the passes add no rounding of their own.
+        schedules_used = sum((used[name] > 0).astype(int) for name in names)
+        after_aea = {
+            name: where(
+                schedules_used <= 1,
+                where(
+                    used[name] > 0,
+                    amounts[name] - min_(amounts[name], aea),
+                    amounts[name],
+                ),
+                amounts[name] - used[name],
+            ).astype(amounts[name].dtype)
+            for name in names
+        }
+
+        inside_basic, inside_higher, above_higher = allocate_bands(after_aea)
 
         def schedule_tax(name):
             schedule = rates[name]

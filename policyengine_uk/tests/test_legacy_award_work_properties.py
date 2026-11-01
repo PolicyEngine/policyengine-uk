@@ -23,10 +23,9 @@ in remunerative work. For every family:
   JSA regulations have no exception for carers doing unrelated paid work);
 - when the claimant or partner reports the award, adding a member outside
   the family (a non-dependent adult, with any award and any work) never
-  changes either screen's work and capital tests. It can change a screen
-  only through the closure, which the model reads from every member's
-  reports: the screen with them is the screen without them, while their
-  report has not closed the family's legacy benefits.
+  changes an open couple claim's screen or award. If the couple's own
+  reports have closed, an outside member's separate open claim may pass
+  the aggregate screen without reopening the couple's award.
 
 Adults are employees (pay within the basic rate band), self-employed (a
 profit within the Class 4 upper limit) or employees with a self-employment
@@ -152,10 +151,13 @@ def situation(units, year):
             people[name]["is_claimant_or_partner"] = {year: claimant_or_partner}
             people[name]["is_parent"] = {year: claimant_or_partner and bool(children)}
             names.append(name)
+        # Legacy claimants: a Universal Credit claim would end the couple's
+        # income-related ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "esa_income_assessable_capital": {year: capital},
             "jsa_income_assessable_capital": {year: capital},
+            "would_claim_uc": {year: False},
         }
         households[f"h{i}"] = {"members": names}
     return {"people": people, "benunits": benunits, "households": households}
@@ -318,11 +320,20 @@ def test_member_outside_the_family_never_changes_the_couples_screen(units, year,
         for i, (couple, *_rest) in enumerate(without):
             assert not flags[ends[n + i] - 1]
             if any(a[reported] > 0 for a in couple):
-                # The closure reads every member's reports (#2119).
-                closes = legacy_benefits_closed(couple, [extras[i]], parameters)
-                if closes and not legacy_benefits_closed(couple, [], parameters):
-                    event("an outside member's report closes the family's")
-                assert eligible[n + i] == (eligible[i] and not closes), (
+                closed = legacy_benefits_closed(couple, [], parameters)
+                # An open couple report still selects the same work screen.
+                # Once closed, only an outside member's separate claim can
+                # be a candidate, so the aggregate screen may then change.
+                if not closed:
+                    assert eligible[n + i] == eligible[i], (
+                        variable,
+                        units[i],
+                        extras[i],
+                    )
+                couple_award = sim.calculate(
+                    "claimant_or_partner_" + reported.removesuffix("_reported"), year
+                )
+                assert couple_award[n + i] == couple_award[i], (
                     variable,
                     units[i],
                     extras[i],

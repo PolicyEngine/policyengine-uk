@@ -8,31 +8,23 @@ class jsa_income_eligible(Variable):
         "Whether a reported income-based JSA award passes the capital and work tests"
     )
     documentation = (
-        "Bounded screen applied to reported income-based JSA awards: the "
-        "capital test (Jobseekers Act 1995 s.13(1) and (2A); JSA Regs 1996 "
-        "reg 107) and the remunerative work conditions. The claimant must not "
-        "be engaged in remunerative work, paid work of 16 hours a week or "
-        "more (s.1(2)(e); reg 51(1)(a)), and the claimant's partner must not "
-        "work 24 hours or more (s.3(1)(e); reg 51(1)(b)). A couple without "
-        "children of the prescribed description claim jointly, and each of "
-        "them is then a claimant held to 16 hours (s.1(2B)(b), s.35(1)). But "
-        "a member of a joint-claim couple may claim alone when the other "
-        "works 16 hours or more but less than 24 (reg 3E(1) and (2)(g), since "
-        "joint claims began on 19 March 2001), and is then tested under s.3, "
-        "so an award survives in either case unless the other member works "
-        "24 hours or more. The JSA regulations do not take a carer out of "
-        "remunerative work for unrelated paid work. The claimant is a member "
-        "who reports the award. When the claimant or partner reports one, "
-        "only they are candidates: a member outside the family, such as a "
-        "non-dependent adult, claims in their own right, and is tested on "
-        "their own work only when neither the claimant nor the partner "
-        "reports an award. This one screen decides the benefit unit's award "
-        "(jsa_income) on every report in it, so when the claimant or partner "
-        "reports, another member's report is paid or not with their claim. "
-        "Whether that member is on the award themselves "
-        "(is_on_income_based_jsa) is tested on their own claim. The award "
-        "also ends once one of the family's legacy benefits has closed "
-        "(legacy_benefits_closed). This is not a full entitlement model."
+        "Bounded work/capital screen for reported income-based JSA, not a full "
+        "entitlement model. When an original claimant or partner reports an open "
+        "award, only they are candidate claimants; otherwise other open reporters "
+        "are candidates. The reporting claimant must work less than 16 hours a week "
+        "(Jobseekers Act 1995 s.1(2)(e); JSA Regs 1996 reg 51(1)(a)), and the other "
+        "member of the couple less than 24 hours (s.3(1)(e); reg 51(1)(b)). Each "
+        "member of a joint-claim couple is tested as a claimant (s.1(2B)(b); "
+        "s.35(1)), but reg 3E(1) and (2)(g) permits one member to claim alone when "
+        "the other works 16 hours or more but less than 24, subject to s.3. "
+        "Assessable capital must remain within the existing limit (s.13(1) and "
+        "(2A); reg 107). The aggregate jsa_income uses this screen for its original "
+        "couple's part; each outside reporter's claim is paid separately on their "
+        "own existing work/capital screen and tariff. The benefit unit's capital is "
+        "an explicit proxy for unobserved outside-claim capital. Reports whose "
+        "owner has closed legacy benefits are excluded before choosing candidates "
+        "(person_legacy_benefits_closed). This variable's candidate rules are "
+        "unchanged by the separate aggregation."
     )
     definition_period = YEAR
     reference = (
@@ -48,7 +40,9 @@ class jsa_income_eligible(Variable):
         JSA = parameters(period).gov.dwp.JSA
         person = benunit.members
         capital = benunit("jsa_income_assessable_capital", period)
-        reports_award = person("jsa_income_reported", period) > 0
+        reports_award = (person("jsa_income_reported", period) > 0) & ~person(
+            "person_legacy_benefits_closed", period
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         # The candidate claimants: the claimant or partner who reports the
         # award, or, if neither does, whoever in the benefit unit does.
@@ -67,11 +61,4 @@ class jsa_income_eligible(Variable):
             (benunit.project(benunit.sum(works_as_partner)) - works_as_partner) > 0
         )
         claimant = candidate & ~works_as_claimant & ~other_member_works
-        # Once one of the family's legacy benefits has closed, DWP's
-        # migration notice ends this award too: a Universal Credit claim
-        # brings the abolition of income-based JSA (Welfare Reform Act
-        # 2012 s. 33(1)) into force for the claimant (see SI 2025/1148
-        # art. 3A(3)), and a family that does not claim loses the award at the
-        # notice's deadline (SI 2014/1230 reg 46(1)(a)).
-        closed = benunit("legacy_benefits_closed", period)
-        return benunit.any(claimant) & ~closed & (capital <= JSA.income.capital.limit)
+        return benunit.any(claimant) & (capital <= JSA.income.capital.limit)

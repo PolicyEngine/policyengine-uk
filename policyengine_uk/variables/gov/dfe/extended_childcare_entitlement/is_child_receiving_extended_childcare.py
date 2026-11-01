@@ -26,11 +26,13 @@ class is_child_receiving_extended_childcare(Variable):
         calculated_family_amount = person.benunit.sum(child_amount)
 
         # A supplied family amount that no child's calculated hours account
-        # for: attribute it to every qualifying child with hours at its age.
+        # for: attribute it to every qualifying child with hours at its age,
+        # or at the minimum age for one who reaches it later in the year.
         p = parameters(period).gov.dfe.extended_childcare_entitlement
+        hours_age = max_(person("age", period), p.young_child_minimum_age)
         qualifying_child = person(
             "extended_childcare_entitlement_qualifying_child", period
-        ) & (p.hours.calc(person("age", period)) > 0)
+        ) & (p.hours.calc(hours_age) > 0)
         supplied_only = calculated_family_amount <= 0
 
         return (family_amount > 0) & (

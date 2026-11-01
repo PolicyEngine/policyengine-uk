@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.student_loans import student_loan_income
 from policyengine_uk.variables.gov.hmrc.student_loans.student_loan_plan import (
     StudentLoanPlan,
 )
@@ -19,7 +20,8 @@ class student_loan_repayment(Variable):
 
     def formula(person, period, parameters):
         plan = person("student_loan_plan", period)
-        income = person("net_income", period)
+        # Net income less benefits in kind (SI 2009/470 regs. 29(4)(e), 41).
+        income = student_loan_income(person, period)
         balance = max_(0, person("student_loan_balance", period))
         p = parameters(period).gov.hmrc.student_loans
 

@@ -241,11 +241,11 @@
     pension_annual_allowance_threshold_income: 220_000
     pension_annual_allowance: 40_000
 
-# The NICs cap redirects 28,000 to employee contributions and the broad-base
-# haircut reduces pay by 280. Threshold income still adds back all 30,000:
-# 202,720 - 28,000 + 30,000 = 204,720. Pension input remains 130,000,
-# adjusted income is 202,720 + 130,000 - 28,000 = 304,720, and the charge
-# is (130,000 - 37,640) * 45% = 41,562.
+# The unchanged broad-base haircut reduces actual pay by 280. The 28,000
+# NICs excess creates neither ordinary pay nor a member payment. Threshold
+# income still adds back all 30,000: 174,720 + 30,000 = 204,720. Pension
+# input remains 130,000, adjusted income is 174,720 + 130,000 = 304,720,
+# and the charge is (130,000 - 37,640) * 45% = 41,562.
 - name: The 2029 NICs cap does not limit the salary sacrifice threshold income addback
   period: 2029
   input:
@@ -254,8 +254,10 @@
     pension_contributions_via_salary_sacrifice: 30_000
     employer_pension_contributions: 100_000
   output:
-    employment_income: 202_720
-    pension_contributions_relief: 28_000
+    employment_income: 174_720
+    pension_contributions_relief: 0
+    salary_sacrifice_pension_ni_excess: 28_000
+    ni_class_1_income: 202_720
     pension_contributions_for_annual_allowance: 130_000
     pension_annual_allowance_threshold_income: 204_720
     pension_annual_allowance_adjusted_income: 304_720

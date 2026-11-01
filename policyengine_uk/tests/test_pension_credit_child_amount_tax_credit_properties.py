@@ -158,8 +158,9 @@ SETTINGS = settings(
 FAMILIES = st.lists(families(), min_size=1, max_size=6)
 
 # The YAML households (child_amount_tax_credit_award.yaml), run on every
-# invocation. Pension Credit earnings are net of SPC Regs Sch VI para 5, and
-# the CTC family element is entered at its statutory £545. The last two pay
+# invocation. Wages are gross: the first three families' £2,600 less the
+# SPC Regs Sch VI para 5 couple disregard of £10 x 52 gives £2,080 once.
+# The CTC family element is entered at its statutory £545. The last two pay
 # rent, so the order and differential checks reach Housing Benefit; they
 # enter the Housing Benefit claim, which the model otherwise infers from
 # reported benefits across the whole simulation.
@@ -170,10 +171,12 @@ _GRANDPARENT = {
     "state_pension": 4_000,
     "savings_interest_income": 300,
 }
-_INPUTS = {"would_claim_uc": False, "pension_credit_earnings": 2_080}
+_INPUTS = {"would_claim_uc": False}
 _RENTED = {"savings": 18_000, "rent": 12_000, "tenure_type": "RENT_FROM_COUNCIL"}
 YAML_FAMILIES = [
-    # CTC and WTC with Pension Credit: passported, no child amount.
+    # CTC and WTC with PC: pensions 8,000 + net earnings 2,080 + passported
+    # WTC 4,935 = income 15,015; GC is 332.95 x 52 - 15,015 = 2,298.40.
+    # A tax-credit award excludes the 76.79 x 52 = 3,993.08 child amount.
     (
         [
             {
@@ -187,14 +190,16 @@ YAML_FAMILIES = [
         {**_INPUTS, "CTC_family_element": 545},
         {"savings": 10_000},
     ),
-    # No tax credit claim: the child amount.
+    # No tax credit claim: pensions 8,000 + net earnings 2,080 = 10,080.
+    # With the child amount, GC is 17,313.40 + 3,993.08 - 10,080 = 11,226.48.
     (
         [_GRANDPARENT, {"age": 70, "state_pension": 4_000}],
         [{"age": 10}],
         _INPUTS,
         {"savings": 10_000},
     ),
-    # WTC alone.
+    # WTC alone also excludes the child amount; the first family's income
+    # 15,015 and GC 2,298.40 are unchanged because CTC is not PC income.
     (
         [
             {**_GRANDPARENT, "working_tax_credit_reported": 1},
@@ -204,7 +209,11 @@ YAML_FAMILIES = [
         _INPUTS,
         {"savings": 10_000},
     ),
-    # A WTC award at a nil rate.
+    # Gross wages 3,500 - Sch VI 520 = 2,980, not a pre-netted earnings
+    # input. With pensions 17,000, income 19,980 exceeds guarantee 17,313.40.
+    # WTC is max(0, 4,935 - 41% x (20,500 - 7,955)) = 0, still an award.
+    # Without that award the child amount gives GC 21,306.48 - 19,980 =
+    # 1,326.48, satisfying the existing positive-award boundary assertion.
     (
         [
             {
@@ -216,7 +225,7 @@ YAML_FAMILIES = [
             {"age": 70, "state_pension": 8_000},
         ],
         [{"age": 10}],
-        {**_INPUTS, "pension_credit_earnings": 2_980},
+        _INPUTS,
         {"savings": 10_000},
     ),
     # A CTC award ends the Guarantee Credit and its Housing Benefit passport.

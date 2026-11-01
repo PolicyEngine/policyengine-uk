@@ -39,12 +39,11 @@
 # credit (SPCA 2002 s.3(1)(a)). The 2018-19 and 2019-20 couples have no
 # income, so no savings credit either. The Housing Benefit cases' couple is
 # aged 80, so savings credit applies to it. The grandchild is 10 (11 in
-# 2025-26), born before 6 April 2017. Pension Credit earnings are entered net
-# of the SPC Regs Sch VI para 5 disregard (£10 a week for a couple), which
-# the model does not apply. £10,000 of savings gives no Pension Credit tariff
-# income, and £300 of interest uses up the £300 step-one disregard of tax
-# credit income (SI 2002/2006 reg 3). No one pays income tax or National
-# Insurance.
+# 2025-26), born before 6 April 2017. Employment income is gross: the model
+# applies the SPC Regs Sch VI para 5 disregard (£10 a week for a couple)
+# once. £10,000 of savings gives no Pension Credit tariff income, and £300
+# of interest uses up the £300 step-one disregard of tax credit income
+# (SI 2002/2006 reg 3). No one pays income tax or National Insurance.
 
 - name: A Pension Credit couple awarded CTC and WTC gets no child amount
   # Tax credit income: State Pension 8,000 + interest (300 - 300) + earnings
@@ -83,7 +82,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_080  # 2,600 - 10 x 52
+        # Gross wages are 2,600; Sch VI deducts 10 x 52, leaving 2,080.
         CTC_family_element: 545
     households:
       household:
@@ -125,7 +124,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_080
+        # Gross wages are 2,600; Sch VI deducts 520, leaving 2,080 once.
     households:
       household:
         members: [grandparent_1, grandparent_2, grandchild]
@@ -166,7 +165,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_080
+        # As in the first case, gross wages 2,600 become 2,080 after Sch VI.
     households:
       household:
         members: [grandparent_1, grandparent_2, grandchild]
@@ -213,7 +212,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_980  # 3,500 - 10 x 52
+        # Gross wages 3,500 become 2,980 after Sch VI, even with no PC paid.
     households:
       household:
         members: [grandparent_1, grandparent_2, grandchild]
@@ -254,7 +253,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_080
+        # Gross wages 2,600 less one Sch VI disregard of 520 give 2,080.
         has_tax_credit_award: true
     households:
       household:
@@ -381,7 +380,8 @@
   # SI 2014/1230 reg 60A waives that only for a Working Tax Credit claimant
   # who "is not entitled to an award of state pension credit"
   # (reg 60A(1)(a)(iii)), which this couple is (the first case). The model's
-  # closure routing does not test that condition, so the case enters that the
+  # closure routing reads reported Pension Credit, not the award (see
+  # is_uc_eligible), and this couple reports none, so the case enters that the
   # couple does not claim Universal Credit then.
   period: 2025
   absolute_error_margin: 0.01
@@ -407,7 +407,7 @@
       benunit:
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
-        pension_credit_earnings: 2_080
+        # Tax-credit closure does not alter gross wages 2,600 less Sch VI 520.
         standard_minimum_guarantee: 18_023.20  # 346.60 x 52
         would_claim_uc_at_legacy_closure: false
     households:

@@ -1,0 +1,21 @@
+description: Legal closure dates for Housing Benefit family premiums on new claims, written as YYYYMMDD numbers, with existing qualifying awards protected.
+great_britain:
+  description: GB new-claim closure date.
+  values:
+    2015-01-01: 20160501
+  metadata:
+    unit: date
+    label: Housing Benefit family premium GB new-claim closure date
+    reference:
+      title: SI 2015/1857 regulations 1, 2 and 4
+      href: https://www.legislation.gov.uk/uksi/2015/1857/made
+northern_ireland:
+  description: NI new-claim closure date.
+  values:
+    2015-01-01: 20160905
+  metadata:
+    unit: date
+    label: Housing Benefit family premium NI new-claim closure date
+    reference:
+      title: SR 2016/310 regulations 1, 3 and 5
+      href: https://www.legislation.gov.uk/nisr/2016/310/made

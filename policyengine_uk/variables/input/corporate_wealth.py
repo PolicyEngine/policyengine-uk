@@ -4,11 +4,11 @@ from policyengine_uk.model_api import *
 class corporate_wealth(Variable):
     label = "corporate wealth"
     documentation = (
-        "Wealth held in corporations directly or through investment funds: UK "
-        "shares, employee shares and options, unit and investment trusts, and "
-        "stocks and shares ISAs, imputed from the Wealth and Assets Survey. The "
-        "stocks and shares ISA component is also exported on its own as "
-        "stocks_and_shares_isa, so the two must never be summed. Private pension "
+        "Wealth held in corporations directly or through investment funds, "
+        "outside pensions: directly_held_shares (UK shares and employee shares "
+        "and options), unit_and_investment_trusts and stocks_and_shares_isa. "
+        "Datasets that carry those components build this variable as their "
+        "exact sum, so it must never be summed with any of them. Private pension "
         "wealth is carried separately in private_pension_wealth; datasets built "
         "before that split folded it into this variable."
     )

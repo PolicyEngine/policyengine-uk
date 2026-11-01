@@ -6,7 +6,6 @@ class is_pension_credit_eligible(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = bool
-    unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/1",
         "https://www.legislation.gov.uk/ukpga/2002/16/section/4",

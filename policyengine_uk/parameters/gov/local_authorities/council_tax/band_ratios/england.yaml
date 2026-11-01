@@ -1,0 +1,26 @@
+description: Statutory council tax band proportions for England, relative to Band D.
+metadata:
+  economy: false
+  propagate_metadata_to_children: true
+  unit: /1
+  period: year
+  label: England council tax band ratios
+  reference:
+    - title: Local Government Finance Act 1992, section 5
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/5
+A:
+  1993-04-01: 0.666666667  # 2/3
+B:
+  1993-04-01: 0.777777778  # 7/9
+C:
+  1993-04-01: 0.888888889  # 8/9
+D:
+  1993-04-01: 1.000000000  # 1/1
+E:
+  1993-04-01: 1.222222222  # 11/9
+F:
+  1993-04-01: 1.444444444  # 13/9
+G:
+  1993-04-01: 1.666666667  # 5/3
+H:
+  1993-04-01: 2.000000000  # 2/1

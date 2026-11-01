@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     has_earned_income,
-    is_award_payee,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
     is_full_time_student_non_dep,
@@ -33,14 +32,12 @@ class housing_benefit_non_dep_deduction_exempt(Variable):
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         full_time_student = is_full_time_student_non_dep(person, period)
         # IS, income-based JSA and SPC count for the person they are payable
-        # to; Universal Credit for both joint claimants.
+        # to (reg 2(1), (3)); Universal Credit for both joint claimants.
         claimant_or_partner = person("is_claimant_or_partner", period)
-        on_pension_credit = is_award_payee(
-            person, period, "pension_credit", "pension_credit_reported"
-        )
-        on_legacy_income_related_benefit = is_award_payee(
-            person, period, "income_support", "income_support_reported"
-        ) | is_award_payee(person, period, "jsa_income", "jsa_income_reported")
+        on_pension_credit = person("is_on_pension_credit", period)
+        on_legacy_income_related_benefit = person(
+            "is_on_income_support", period
+        ) | person("is_on_income_based_jsa", period)
         # Entitlement before the benefit cap: universal_credit itself depends on
         # Housing Benefit through the cap.
         entitled_to_universal_credit = claimant_or_partner & (

@@ -1,0 +1,11 @@
+description: The appropriate percentage for council tax discounts in Scotland, applied where there is one resident who is not disregarded.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: Scotland council tax appropriate percentage
+  reference:
+    - title: "Local Government Finance Act 1992, section 79(3)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/79
+values:
+  1993-04-01: 0.25

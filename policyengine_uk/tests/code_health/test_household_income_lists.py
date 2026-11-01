@@ -1,4 +1,4 @@
-"""Government spending on households is household income.
+"""Current government transfers to households reach household income.
 
 gov_spending counted the Pension Age Winter Heating Payment (pawhp), but
 household_benefits and the HBAI income lists did not: when the Winter Fuel
@@ -18,8 +18,12 @@ from policyengine_uk.variables.household.income.household_benefits import (
 
 SYSTEM = CountryTaxBenefitSystem()
 
-# Spending in gov_spending that is not a benefit received by the household.
+# Spending in gov_spending that is not current household benefit income.
 NOT_HOUSEHOLD_BENEFITS = {
+    "lifetime_isa_bonus": (
+        "a capital transfer into a Lifetime ISA, outside household current "
+        "income; supplied account balances remain separate stocks"
+    ),
     "other_public_spending_budget_change": (
         "the contrib lever gov.contrib.policyengine.budget.other_public_spending, "
         "spread across households by income decile; zero unless set"

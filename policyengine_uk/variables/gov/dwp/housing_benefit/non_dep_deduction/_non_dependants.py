@@ -2,9 +2,22 @@
 non-dependant deductions."""
 
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.benefit_cap import benefit_cap_couple
+from policyengine_uk.utils.benefit_unit import add_for_members, award_of_couple
+from policyengine_uk.variables.gov.dwp.benefit_cap_welfare_benefits import (
+    CLAIMANT_OR_PARTNER_BENEFITS as CAPPED_CLAIMANT_OR_PARTNER_BENEFITS,
+    FAMILY_BENEFITS as CAPPED_FAMILY_BENEFITS,
+)
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
+from policyengine_uk.variables.gov.dwp.jsa_income import (
+    income_related_jsa_award_on_reports,
+)
 
 # Family benefits counted in a couple's gross income, besides Universal Credit.
-# None is taxable, so total_income leaves them out.
+# They are awarded to the benefit unit, so the person-level gross income
+# variables leave them out.
 FAMILY_GROSS_INCOME_BENEFITS = [
     "child_tax_credit",
     "working_tax_credit",
@@ -13,17 +26,6 @@ FAMILY_GROSS_INCOME_BENEFITS = [
     "jsa_income",
     "esa_income",
     "pension_credit",
-]
-
-# A person's gross income outside total_income: statutory payments, which are
-# earnings (HB Regs 2006 reg 35(1)(i); UC Regs 2013 reg 55(4)) the model
-# keeps apart from employment income, and Maternity Allowance, which is
-# untaxed.
-PERSONAL_GROSS_INCOME_OUTSIDE_TOTAL_INCOME = [
-    "statutory_sick_pay",
-    "statutory_maternity_pay",
-    "statutory_paternity_pay",
-    "maternity_allowance",
 ]
 
 # Statutory payments treated as employed earnings (UC Regs 2013 reg 55(4)).
@@ -35,51 +37,27 @@ STATUTORY_PAY_EARNINGS = [
     "statutory_paternity_pay",
 ]
 
-# Benefits the benefit cap counts (Welfare Reform Act 2012 s.96(10)), other than
-# Housing Benefit, awarded to the family. Bereavement allowance and the
-# widow's benefits have no input.
-CAPPED_FAMILY_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
-    "child_benefit",
-    "child_tax_credit",
-    "jsa_income",
-    "income_support",
-    "esa_income",
-    "universal_credit_pre_benefit_cap",
-]
-
-# Capped benefits a person receives in their own right. Only the single person's
-# or couple's count (UC Regs 2013 reg 79(1)).
-CAPPED_PERSONAL_BENEFITS = [
-    "jsa_contrib",
-    "incapacity_benefit",
-    "esa_contrib",
-    "sda",
-    "maternity_allowance",
-]
+# The welfare benefits the benefit cap counts (benefit_cap_welfare_benefits)
+# other than Housing Benefit, and Maternity Allowance, a welfare benefit
+# (Welfare Reform Act 2012 s.96(10)(i)) that total leaves out. Bereavement
+# allowance and the widow's benefits have no input.
+CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
+    benefit
+    for benefit in CAPPED_CLAIMANT_OR_PARTNER_BENEFITS + CAPPED_FAMILY_BENEFITS
+    if benefit != "housing_benefit_pre_benefit_cap"
+] + ["maternity_allowance"]
 
 
-def non_dependant_weekly_gross_income(person, period):
+def non_dependant_weekly_gross_income(person, period, own_gross_income):
     """Normal weekly gross income for the deduction bands. A claimant or
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
-    para 8(4)): each member's own income plus the family's Universal Credit,
-    tax credits, child benefit, Income Support, income-based JSA,
-    income-related ESA and Pension Credit. Anyone else in the benefit unit is a
-    separate non-dependant, banded on their own income. A person's own income
-    is their taxable income, with any self-employment or property loss added
-    back, plus statutory sick, maternity and paternity pay and Maternity
-    Allowance. It leaves out the disability benefits HB reg
-    74(9) disregards, which are untaxed."""
+    para 8(4)): each member's own gross income plus the family's Universal
+    Credit, tax credits, child benefit, Income Support, income-based JSA,
+    income-related ESA and Pension Credit. Anyone else in the benefit unit is
+    a separate non-dependant, banded on their own income. own_gross_income
+    names the programme's person-level gross income variable."""
     claimant_or_partner = person("is_claimant_or_partner", period)
-    # Gross income: a self-employment or property loss does not reduce other
-    # income, as it does in taxable income. DWP HB guidance A5.551 takes a
-    # self-employed non-dependant's gross income as "their total income with no
-    # deductions for business expenses"; the model has profit, not turnover.
-    losses = max_(0, -person("self_employment_income", period)) + max_(
-        0, -person("property_income", period)
-    )
-    own_income = max_(0, person("total_income", period) + losses) + add(
-        person, period, PERSONAL_GROSS_INCOME_OUTSIDE_TOTAL_INCOME
-    )
+    own_income = person(own_gross_income, period)
     family_benefits = universal_credit_after_benefit_cap(person.benunit, period) + sum(
         person.benunit(benefit, period) for benefit in FAMILY_GROSS_INCOME_BENEFITS
     )
@@ -95,16 +73,31 @@ def universal_credit_after_benefit_cap(benunit, period):
     reg 81), for a family that is not liable for rent. universal_credit and
     uc_benefit_cap_reduction depend on Housing Benefit through the welfare
     benefits they count, so the cap (uc_benefit_cap) is applied here to the
-    capped benefits other than Housing Benefit, which such a family does not
-    receive (UC reg 80(2A) counts it as nil in any case). The award is
+    same welfare benefits other than Housing Benefit, which such a family does
+    not receive (UC reg 80(2A) counts it as nil in any case), for the same
+    single person or couple (benefit_cap_couple; reg 79(1)). The award is
     reduced by the excess minus the childcare costs element, and not at all
-    where that element is greater than the excess (reg 81(1)-(2))."""
-    person = benunit.members
-    capped = add(benunit, period, CAPPED_FAMILY_BENEFITS_EXCEPT_HOUSING_BENEFIT) + (
-        benunit.sum(
-            add(person, period, CAPPED_PERSONAL_BENEFITS)
-            * person("is_claimant_or_partner", period)
-        )
+    where that element is greater than the excess (reg 81(1)-(2)). Deductions
+    paid from the award to third parties or for debts are still the family's
+    income, so they are not taken off."""
+    couple = benefit_cap_couple(benunit, period)
+    income_based = award_of_couple(
+        benunit,
+        period,
+        "jsa_income",
+        "jsa_income_reported",
+        income_related_jsa_award_on_reports,
+        couple,
+    ) + award_of_couple(
+        benunit,
+        period,
+        "esa_income",
+        "esa_income_reported",
+        income_related_esa_award_on_reports,
+        couple,
+    )
+    capped = income_based + add_for_members(
+        benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT, couple
     )
     excess = max_(0, capped - benunit("uc_benefit_cap", period))
     reduction = max_(0, excess - benunit("uc_childcare_element", period))
@@ -140,20 +133,16 @@ def has_earned_income(person, period):
     return (employed + self_employed + other) > 0
 
 
-def is_award_payee(person, period, award, reported):
-    """Whether a family award is payable to this person: Housing Benefit's
-    test for being "on" income-based JSA or income-related ESA (HB Regs 2006
-    reg 2(3) and (3A)), applied also to Income Support and State Pension
-    Credit, which are paid to the claimant. The payee is the member who
-    reports the award, or the benefit unit's head where none does. Both
-    members of a joint-claim jobseeker's allowance couple are on it (reg
-    2(3)(c)), but the model has no joint-claim input, so only the payee is."""
-    has_award = person.benunit(award, period) > 0
-    reports = person(reported, period) > 0
-    payee = where(
-        person.benunit.any(reports), reports, person("is_benunit_head", period)
+def is_on_legacy_income_related_benefit(person, period):
+    """Whether the person is on Income Support, income-based JSA or
+    income-related ESA: the award is payable to them (HB Regs 2006 reg 2(1),
+    (3) and (3A); the Council Tax Reduction schemes use the same
+    definitions)."""
+    return (
+        person("is_on_income_support", period)
+        | person("is_on_income_based_jsa", period)
+        | person("is_on_income_related_esa", period)
     )
-    return has_award & payee
 
 
 def deduction_per_family(benunit, period, deductions, both_members_of_couple):

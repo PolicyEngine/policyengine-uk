@@ -20,9 +20,11 @@ values:
   2023-09-01: 0.067
   2024-09-01: 0.017
   2025-09-01: 0.038
+  # ONS CPI release of 21 October 2026.
+  2026-09-01: 0.035
   # Not yet published. From here the value is calendar-year CPI growth
   # (yoy_growth.obr.consumer_price_index) plus forecast_gap.cpi_september.
-  2026-09-01: null
+  2027-09-01: null
 metadata:
   unit: /1
   label: September CPI inflation

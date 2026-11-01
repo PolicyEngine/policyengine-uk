@@ -1,0 +1,150 @@
+# Ordinary, unprotected purchases; annual parameters sample 30 April.
+# Sources: SDLT (Temporary Relief) Act 2023 s1; Finance Act 2025 ss50-51;
+# Finance Act 2003 s55 and Sch6ZA. No transaction-date or contract selector.
+- name: Annual 2022 retains the pre-September standard schedule
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 300000
+  output:
+    stamp_duty_land_tax: 5000
+
+- name: Annual 2023 main-home purchase uses temporary standard bands
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    main_residence_value: 300000
+    property_purchased: true
+  output:
+    stamp_duty_land_tax: 2500
+    main_residential_property_purchased: 300000
+
+- name: Temporary first-time-buyer maximum is inclusive
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 625000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 10000
+
+- name: Restored first-time-buyer maximum is inclusive
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 500000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 10000
+
+- name: Annual 2025 additional purchase uses restored bands with five-point surcharge
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 30000
+
+- name: Annual 2024 still samples the three-point additional surcharge
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 19500
+
+- name: First-time purchase above temporary maximum loses all relief
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 625020
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 18751
+
+- name: First-time purchase above restored maximum loses all relief
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 500020
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 15001
+
+- name: Northern Ireland combines independent temporary main and additional purchases
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    main_residential_property_purchased: 925000
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 53250
+
+- name: An additional purchase below forty thousand is outside the higher schedule
+  period: 2025
+  input:
+    additional_residential_property_purchased: 39999
+  output:
+    stamp_duty_land_tax: 0
+
+- name: An additional purchase at forty thousand pays the full higher schedule
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 40000
+  output:
+    stamp_duty_land_tax: 2000
+
+- name: Restored purchase schedules persist in later annual simulations
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 300000
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 35000
+
+- name: Property stocks without a purchase do not incur SDLT
+  period: 2025
+  input:
+    main_residence_value: 600000
+    property_purchased: false
+    other_residential_property_value: 400000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: Scottish purchases do not incur SDLT
+  period: 2025
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 300000
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: Welsh purchases do not incur SDLT
+  period: 2025
+  input:
+    region: WALES
+    main_residential_property_purchased: 300000
+    additional_residential_property_purchased: 400000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: Temporary first-time-buyer nil band includes its upper boundary
+  period: 2024
+  input:
+    main_residential_property_purchased: 425000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 0
+
+- name: Restored first-time-buyer tax starts above three hundred thousand
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 300020
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 1

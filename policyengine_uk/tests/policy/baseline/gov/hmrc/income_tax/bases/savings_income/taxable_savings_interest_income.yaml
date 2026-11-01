@@ -1,3 +1,7 @@
+# Canonicalized legacy examples: new non-ISA interest N=old gross G−T.
+# T is an exempt-interest aggregate, not the personal savings allowance.
+# Taxable outputs are unchanged from the gross-input examples.
+
 - name: No savings interest income
   period: 2024
   input:
@@ -6,31 +10,31 @@
   output:
     taxable_savings_interest_income: 0
 
-- name: Savings interest income fully covered by tax-free allowance
+- name: Canonicalized entirely exempt legacy interest has no non-ISA amount
   period: 2024
   input:
-    savings_interest_income: 1000
+    savings_interest_income: 0
     tax_free_savings_income: 1000
   output:
     taxable_savings_interest_income: 0
 
-- name: Savings interest income partially taxable
+- name: Canonicalized legacy1500 gross and1000 exempt leaves500 taxable
   period: 2024
   input:
-    savings_interest_income: 1500
+    savings_interest_income: 500
     tax_free_savings_income: 1000
   output:
     taxable_savings_interest_income: 500
 
-- name: High savings interest income, standard tax-free allowance
+- name: Canonicalized legacy10000 gross and1000 exempt leaves9000 taxable
   period: 2024
   input:
-    savings_interest_income: 10000
+    savings_interest_income: 9000
     tax_free_savings_income: 1000
   output:
     taxable_savings_interest_income: 9000
 
-- name: Savings interest income, no tax-free allowance
+- name: Ordinary savings interest with no exempt-interest aggregate
   period: 2024
   input:
     savings_interest_income: 5000
@@ -38,7 +42,7 @@
   output:
     taxable_savings_interest_income: 5000
 
-- name: Very low positive savings interest income
+- name: Very low positive ordinary savings interest
   period: 2024
   input:
     savings_interest_income: 1
@@ -46,26 +50,27 @@
   output:
     taxable_savings_interest_income: 1
 
-- name: Tax-free allowance exceeds savings interest income
+- name: Signed canonicalized legacy interest is floored only at the taxable base
   period: 2024
   input:
-    savings_interest_income: 500
+    savings_interest_income: -500
     tax_free_savings_income: 1000
   output:
     taxable_savings_interest_income: 0
 
-- name: High values for both inputs
+- name: Canonicalized legacy100000 gross and50000 exempt leaves50000 taxable
   period: 2024
   input:
-    savings_interest_income: 100000
+    savings_interest_income: 50000
     tax_free_savings_income: 50000
   output:
     taxable_savings_interest_income: 50000
 
-- name: Decimal values
+- name: Canonicalized legacy decimal amounts preserve the taxable amount
   period: 2024
+  absolute_error_margin: 0.01
   input:
-    savings_interest_income: 1234.56
+    savings_interest_income: 234.56
     tax_free_savings_income: 1000.00
   output:
     taxable_savings_interest_income: 234.56

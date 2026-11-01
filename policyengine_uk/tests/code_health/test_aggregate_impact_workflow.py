@@ -17,6 +17,11 @@ fetch depth, and hold the job to:
    base the job chose.
 4. A manual dispatch compares the commits it names, as before.
 
+No data access. A Dependabot run cannot read the certified dataset, so it
+measures nothing. The comparison still runs, reports the run as skipped and
+passes. (It used to fail every Dependabot pull request: the measure step
+stopped before it set up the tool the comparison runs.)
+
 Data protection. Only aggregates may leave the job. The certified dataset
 is licensed survey microdata. The measurement keeps household-level detail
 for the decile comparison under ``private/``; these tests fail if the
@@ -27,7 +32,9 @@ can read it.
 import json
 import os
 import re
+import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -359,3 +366,64 @@ def test_no_commit_of_the_base_branch_counts_as_the_pull_requests(before, events
         assert process.returncode == 0, process.stdout + process.stderr
         assert outputs == {"sha": main}
         assert origin.attributed(outputs["sha"], merge) == own | {merge}
+
+
+# Runs with no data access.
+
+
+def test_a_dependabot_run_is_reported_as_skipped_and_passes(tmp_path):
+    """Dependabot gets no secrets, so nothing is measured, and the job passes.
+
+    Runs the measure and compare steps as a Dependabot run does, with the
+    head's own tool and a Python that can import its dependencies.
+    """
+    head = tmp_path / "head"
+    shutil.copytree(
+        REPO / "policyengine_uk" / "utils" / "aggregate_impact",
+        head / "policyengine_uk" / "utils" / "aggregate_impact",
+    )
+    python = head / ".venv" / "bin" / "python"
+    python.parent.mkdir(parents=True)
+    python.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
+    python.chmod(0o755)
+    (tmp_path / "runner_temp").mkdir()
+    runner = {
+        "RUNNER_TEMP": str(tmp_path / "runner_temp"),
+        "GITHUB_STEP_SUMMARY": str(tmp_path / "step_summary.md"),
+        "GITHUB_SERVER_URL": "https://github.com",
+        "GITHUB_REPOSITORY": "PolicyEngine/policyengine-uk",
+        "GITHUB_RUN_ID": "1",
+    }
+
+    measured, _ = run_step(
+        "Measure base, then head", tmp_path, ACTOR="dependabot[bot]", **runner
+    )
+    assert measured.returncode == 0, measured.stdout + measured.stderr
+    assert "Dependabot runs have no data access" in measured.stdout
+
+    compared, outputs = run_step("Compare base with head", tmp_path, **runner)
+    assert compared.returncode == 0, compared.stdout + compared.stderr
+    assert outputs["status"] == "0", compared.stdout + compared.stderr
+    comment = (tmp_path / "report" / "comment.md").read_text()
+    assert "## Aggregate impact on certified data: skipped" in comment
+    assert step_named("Fail on a structural failure")["if"] == (
+        "steps.compare.outputs.status != '0'"
+    )
+
+
+def test_only_dependabot_may_skip_a_run_with_no_data_access(tmp_path):
+    """Any other run with no token fails the job instead of skipping."""
+    shutil.copytree(
+        REPO / "policyengine_uk" / "utils" / "aggregate_impact",
+        tmp_path / "head" / "policyengine_uk" / "utils" / "aggregate_impact",
+    )
+    (tmp_path / "runner_temp").mkdir()
+    measured, _ = run_step(
+        "Measure base, then head",
+        tmp_path,
+        ACTOR="a-maintainer",
+        RUNNER_TEMP=str(tmp_path / "runner_temp"),
+    )
+    assert measured.returncode != 0
+    assert "::error::HUGGING_FACE_TOKEN is not available" in measured.stdout
+    assert not (tmp_path / "measured" / "head" / "result.json").exists()

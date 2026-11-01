@@ -1,0 +1,113 @@
+# The total pension input amount (FA 2004 s. 229) adds each arrangement's
+# input amount. A money purchase arrangement's is the contributions paid
+# (s. 233); a defined-benefit arrangement's is the increase in the value of
+# the member's rights (s. 234), whatever was paid in. defined_benefit_pension_share
+# says how much of the workplace contributions (employer, net pay and salary
+# sacrifice) go to defined-benefit arrangements; defined_benefit_pension_input_amount
+# replaces them, and defaults to them times a ratio of 1. Unused allowance
+# brought forward is set to nil where a case tests the charge.
+# Sources: https://www.legislation.gov.uk/ukpga/2004/12/section/229
+# https://www.legislation.gov.uk/ukpga/2004/12/section/233
+# https://www.legislation.gov.uk/ukpga/2004/12/section/234
+
+- name: Without a scheme type every workplace contribution is money purchase
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 2_000
+  output:
+    defined_benefit_pension_contributions: 0
+    defined_benefit_pension_input_amount: 0
+    # 20,000 + 5,000 + 2,000.
+    pension_contributions_for_annual_allowance: 27_000
+
+- name: A defined-benefit member's contributions count at face value by default
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 2_000
+    defined_benefit_pension_share: 1
+  output:
+    # The employer's 20,000 and the 5,000 of net pay go to the defined-benefit
+    # scheme; the 2,000 of relief at source is money purchase.
+    defined_benefit_pension_contributions: 25_000
+    defined_benefit_pension_input_amount: 25_000
+    pension_contributions_for_annual_allowance: 27_000
+
+- name: A supplied defined-benefit input amount replaces the contributions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 2_000
+    defined_benefit_pension_share: 1
+    defined_benefit_pension_input_amount: 45_000
+  output:
+    # 2,000 of money purchase input plus the 45,000 statement value.
+    pension_contributions_for_annual_allowance: 47_000
+
+- name: Half the workplace contributions go to a defined-benefit arrangement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 2_000
+    defined_benefit_pension_share: 0.5
+    defined_benefit_pension_input_amount: 30_000
+  output:
+    # Half of 25,000 goes to the defined-benefit scheme. Money purchase input
+    # is 2,000 + 2,500 of net pay + 10,000 from the employer, plus 30,000.
+    defined_benefit_pension_contributions: 12_500
+    pension_contributions_for_annual_allowance: 44_500
+
+- name: From age 75 the defined-benefit input still counts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 76
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    personal_pension_contributions: 2_000
+    defined_benefit_pension_share: 1
+    defined_benefit_pension_input_amount: 30_000
+  output:
+    # The 2,000 paid personally from 75 is unrelievable and not a money
+    # purchase input (s. 188(3)(a)); the net pay is in the defined-benefit
+    # input instead, which is not excluded.
+    pension_contributions_for_annual_allowance: 30_000
+
+- name: The charge falls on the defined-benefit input above the allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employer_pension_contributions: 20_000
+    employee_pension_contributions_reported: 5_000
+    defined_benefit_pension_share: 1
+    defined_benefit_pension_input_amount: 80_000
+    unused_pension_annual_allowance: 0
+  output:
+    pension_contributions_for_annual_allowance: 80_000
+    # Adjusted income 100,000 + 80,000 - 5,000 of member contributions is
+    # under 260,000, so the allowance is 60,000.
+    pension_annual_allowance: 60_000
+    pension_annual_allowance_chargeable_amount: 20_000
+    # Reduced net income is 100,000 - 5,000 - 12,570 = 82,430, in the higher
+    # rate band, so the 20,000 is charged at 40%.
+    personal_pension_contributions_tax: 8_000

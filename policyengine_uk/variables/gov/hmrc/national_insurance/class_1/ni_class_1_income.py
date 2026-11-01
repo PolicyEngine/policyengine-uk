@@ -10,6 +10,7 @@ class ni_class_1_income(Variable):
     unit = GBP
     adds = [
         "employment_income",
+        "salary_sacrifice_pension_ni_excess",
         "statutory_sick_pay",
         "statutory_maternity_pay",
         "statutory_paternity_pay",

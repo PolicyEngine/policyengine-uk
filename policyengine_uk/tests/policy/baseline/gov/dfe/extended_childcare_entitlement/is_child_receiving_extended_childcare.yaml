@@ -1,3 +1,5 @@
+# A whole-age three-year-old starts universal provision in September. Even
+# below 15 weekly hours it may receive working-parent-only hours in April.
 # A supplied family amount (extended_childcare_entitlement as an input) with no
 # working parent hours calculated for any child counts for every qualifying
 # child of an eligible age, as before; a supplied zero means nobody receives it.
@@ -80,9 +82,9 @@
     is_child_receiving_extended_childcare: false
 
 # A child is receiving the working parent entitlement when it gets working
-# parent hours beyond any universal or targeted hours, so a 3- or 4-year-old
-# whose family uses no more than 15 hours a week is on the universal
-# entitlement only.
+# parent hours beyond any universal or targeted hours in the same terms.
+# Universal provision begins after the third birthday, so a transition year
+# can include working-parent-only hours before its first universal term.
 - name: Child age 2 in an eligible family is receiving
   period: 2025
   input:
@@ -106,7 +108,7 @@
     is_child_receiving_extended_childcare: true
     is_child_receiving_universal_childcare: true
 
-- name: Child age 3 in an eligible family using 10 hours is on the universal hours only
+- name: Child age 3 using 10 hours receives working hours before universal starts
   period: 2025
   input:
     person:
@@ -116,7 +118,7 @@
       extended_childcare_entitlement_eligible: true
       maximum_extended_childcare_hours_usage: 10
   output:
-    is_child_receiving_extended_childcare: false
+    is_child_receiving_extended_childcare: true
     is_child_receiving_universal_childcare: true
 
 - name: Child age 3 in a family that is not eligible
@@ -177,9 +179,7 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 10
   output:
-    # The 1-year-old gets 10 working parent hours; the 3-year-old's 10 hours
-    # are within its universal 15.
-    is_child_receiving_extended_childcare: [true, false]
+    is_child_receiving_extended_childcare: [true, true]
     is_child_receiving_universal_childcare: [false, true]
 
 # Benefit units of different sizes, so person-level and benefit unit-level
@@ -209,9 +209,7 @@
       household2:
         members: [child3]
   output:
-    # Family 1 as in the case above. Family 2's 4-year-old uses 30 hours:
-    # 15 universal plus 15 working parent hours.
-    is_child_receiving_extended_childcare: [true, false, true]
+    is_child_receiving_extended_childcare: [true, true, true]
 
 - name: A supplied family amount counts for each qualifying child, not an older sibling
   period: 2026

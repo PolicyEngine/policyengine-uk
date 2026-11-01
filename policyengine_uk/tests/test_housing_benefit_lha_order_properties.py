@@ -317,9 +317,9 @@ def pension_age_households(draw):
 
 # The single pensioner from the issue (State Pension 16,000, above the
 # minimum guarantee; rent 30,000 against an LHA of 9,467.64), alone and with
-# a working-age non-dependant, and a pension-age couple in the same flat.
-# Each has rent above the LHA and income above the applicable amount, where
-# the two orders differ.
+# a working-age non-dependant, and a pension-age couple in the same flat,
+# also 22 years apart. Each has rent above the LHA and income above the
+# applicable amount, where the two orders differ.
 END_TO_END_EXAMPLE = [
     dict(
         ages=[70],
@@ -333,7 +333,7 @@ END_TO_END_EXAMPLE = [
     for non_dependant_earnings in [None, 20_000.0]
 ] + [
     dict(
-        ages=[70, 68],
+        ages=ages,
         state_pension=12_000.0,
         private_pension=0.0,
         tenure="RENT_PRIVATELY",
@@ -341,6 +341,7 @@ END_TO_END_EXAMPLE = [
         lha_rate=9_467.64,
         non_dependant_earnings=None,
     )
+    for ages in [[70, 68], [90, 68]]
 ]
 
 
@@ -353,6 +354,9 @@ def end_to_end(population):
             name = f"p{i}_{j}"
             people[name] = {
                 "age": {YEAR: age},
+                # The drawn pensioners are the claimant and partner, however
+                # far apart their ages.
+                "is_claimant_or_partner": {YEAR: True},
                 "state_pension_reported": {YEAR: unit["state_pension"]},
                 "private_pension_income": {YEAR: unit["private_pension"]},
             }
@@ -368,6 +372,8 @@ def end_to_end(population):
             name = f"n{i}"
             people[name] = {
                 "age": {YEAR: 30},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: unit["non_dependant_earnings"]},
             }
             benunits[f"n{i}"] = {"members": [name]}

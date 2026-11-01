@@ -313,14 +313,19 @@ def determination(
     determined: int,
     universal_credit: bool = False,
     adjustment: np.ndarray | None = None,
+    lha=None,
 ):
     """The rates determined in ``determined`` for every BRMA and category.
 
     ``adjustment`` is added to the percentile rents before the rules apply
-    (see ``restatement``). Returns (percentile, rate) as [BRMA, category]
-    arrays, weekly for Housing Benefit and monthly for Universal Credit.
+    (see ``restatement``). ``lha`` is the parameter node holding the
+    percentile, maxima and minimum to determine under: ``gov.dwp.LHA``
+    (Great Britain, the default) or ``gov.dfc.LHA`` (Northern Ireland).
+    Returns (percentile, rate) as [BRMA, category] arrays, weekly for Housing
+    Benefit and monthly for Universal Credit.
     """
-    lha = parameters.gov.dwp.LHA
+    if lha is None:
+        lha = parameters.gov.dwp.LHA
     rates = published_rates()
 
     if determined < FIRST_RULES_YEAR:
@@ -399,16 +404,69 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
         minimum rules) and ``rate`` (the LHA in force), both [BRMA, category]
         arrays, weekly for Housing Benefit and monthly for Universal Credit.
     """
-    lha = parameters.gov.dwp.LHA
+    great_britain = parameters.gov.dwp.LHA
+    northern_ireland = parameters.gov.dfc.LHA
+    percentile, rate = _rates_in_force(
+        parameters, year, universal_credit, great_britain
+    )
+    # The Rent Officers Orders behind gov.dwp.LHA cover Great Britain; the
+    # Northern Ireland Housing Executive determines Northern Ireland's rates
+    # under Northern Ireland regulations, which gov.dfc.LHA follows. Where
+    # the two would give the same determination, the Great Britain table
+    # already holds Northern Ireland's rates.
+    if _determination_rules(great_britain, year, universal_credit) != (
+        _determination_rules(northern_ireland, year, universal_credit)
+    ):
+        ni_percentile, ni_rate = _rates_in_force(
+            parameters, year, universal_credit, northern_ireland
+        )
+        in_ni = northern_ireland_brmas()[:, None]
+        percentile = np.where(in_ni, ni_percentile, percentile)
+        rate = np.where(in_ni, ni_rate, rate)
+    return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
+
+
+def _determination_rules(lha, year: int, universal_credit: bool) -> tuple:
+    """Everything one nation's parameters set for the rates in force in ``year``.
+
+    The determination year, and the percentile, maxima and minimum it is made
+    under. Two nations with the same rules have the same rates.
+    """
+    determined = determination_year(lha, year)
+    if determined < FIRST_RULES_YEAR:
+        # Taken as published, whatever the parameters say.
+        return (determined,)
+    instant = str(determined)
+    maxima = lha.maximum_monthly if universal_credit else lha.maximum
+    return (
+        determined,
+        lha.percentile(instant),
+        tuple(maxima.children[category](instant) for category in CATEGORIES),
+        bool(lha.march_2020_minimum(instant)),
+    )
+
+
+def _rates_in_force(parameters, year: int, universal_credit: bool, lha) -> tuple:
+    """(percentile, rate) in force in ``year`` under one nation's parameters.
+
+    ``lha`` is the parameter node holding ``freeze``, ``percentile``,
+    ``maximum``, ``maximum_monthly`` and ``march_2020_minimum``:
+    ``gov.dwp.LHA`` for Great Britain or ``gov.dfc.LHA`` for Northern Ireland.
+    """
     determined = determination_year(lha, year)
     adjustment = None
     if determined != year and determined >= FIRST_RULES_YEAR:
         measure = "uc_rate" if universal_credit else "rate"
         adjustment = restatement(measure, determined, year)
-    percentile, rate = determination(
-        parameters, determined, universal_credit, adjustment
-    )
-    return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
+    return determination(parameters, determined, universal_credit, adjustment, lha)
+
+
+@lru_cache(maxsize=1)
+def northern_ireland_brmas() -> np.ndarray:
+    """Whether each BRMA in the published tables is in Northern Ireland."""
+    households = pd.read_csv(LHA_DIRECTORY / "brma_private_rented_households.csv.gz")
+    names = households.brma[households.region == "NORTHERN_IRELAND"].unique()
+    return published_rates().brmas.isin(names)
 
 
 def benunit_lha(

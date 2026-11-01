@@ -7,7 +7,7 @@ class consumption_shareholding(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = GBP
+    unit = "/1"
 
     def formula(household, period, parameters):
         consumption = household("consumption", period)

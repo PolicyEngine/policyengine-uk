@@ -4,10 +4,10 @@ from policyengine_uk.model_api import *
 class pension_contributions_via_salary_sacrifice_adjusted(Variable):
     label = "Adjusted salary sacrifice pension contributions (capped)"
     documentation = (
-        "The actual amount of salary sacrifice pension contributions after "
+        "The NIC-exempt amount of salary sacrifice pension contributions after "
         "counting them only for people with pay and applying the cap. "
-        "Contributions above the cap are redirected to "
-        "regular employee pension contributions and subject to NI."
+        "Contributions above the cap remain employer pension contributions, "
+        "but are subject to NICs through salary_sacrifice_pension_ni_excess."
     )
     entity = Person
     definition_period = YEAR
@@ -28,5 +28,5 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
             return intended_ss
 
         # Cap the salary sacrifice at the limit
-        # Excess is redirected to regular pension contributions
+        # The excess is separately included in NIC earnings only.
         return min_(intended_ss, cap)

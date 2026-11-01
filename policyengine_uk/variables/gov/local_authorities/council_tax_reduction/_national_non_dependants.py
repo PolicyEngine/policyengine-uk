@@ -10,7 +10,7 @@ working-age scheme (SSI 2021/249 reg 90(8)(a))."""
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     has_earned_income,
-    is_award_payee,
+    is_on_legacy_income_related_benefit,
     non_dependant_weekly_gross_income,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
@@ -31,6 +31,42 @@ def household_head_family_is_pensioner(person, period):
     return person.household.any(head_family & pensioner)
 
 
+def is_qualifying_income_related_benefit_claimant(
+    person, period, parameters, pensioner_applicant
+):
+    """Whether the person is on Income Support, income-based JSA or
+    income-related ESA for a scheme's non-dependant rules, under the claim of
+    an applicant who is (pensioner_applicant) or is not a pensioner. Such a
+    person is not in remunerative work (SI 2012/2885 reg 10(6); WSI 2013/3029
+    reg 10(6); SSI 2012/319 reg 6(6); SSI 2021/249 reg 10(6)) and has no
+    deduction (Sch 1 para 8(8)(a) and equivalents). In Scotland's working-age
+    scheme from April 2022 this is a "qualifying income-related benefit
+    claimant", defined in SSI 2021/249 reg 4(1) as one "who is, or who has a
+    partner who is," on one of those benefits "and is not on universal
+    credit". It is read for the non-dependant, as the definition's
+    "applicant" would leave reg 90(8)(a) no application."""
+    scotland = parameters(period).gov.local_authorities.scotland.council_tax_reduction
+    country = person.household("country", period)
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    on_benefit = is_on_legacy_income_related_benefit(person, period)
+    couple_on_benefit = claimant_or_partner & (
+        person.benunit.any(on_benefit & claimant_or_partner)
+    )
+    entitled_to_universal_credit = claimant_or_partner & (
+        person.benunit("universal_credit_pre_benefit_cap", period) > 0
+    )
+    partner_rule = (
+        is_scotland_scheme(country)
+        & ~pensioner_applicant
+        & scotland.non_dep_deduction.working_age_exempt_partner_of_income_related_benefit_claimant
+    )
+    return where(
+        partner_rule,
+        (on_benefit | couple_on_benefit) & ~entitled_to_universal_credit,
+        on_benefit,
+    )
+
+
 def non_dep_deduction_exempt(person, period, parameters, pensioner_applicant):
     """Whether a national scheme makes no deduction for this person from the
     claim of an applicant who is (pensioner_applicant) or is not a pensioner."""
@@ -39,9 +75,8 @@ def non_dep_deduction_exempt(person, period, parameters, pensioner_applicant):
     scotland = local_authorities.scotland.council_tax_reduction
     wales = local_authorities.wales.council_tax_reduction
     country = person.household("country", period)
-    has_pensioner = pensioner_applicant
     schemes = [
-        is_england_pensioner_scheme(country, has_pensioner),
+        is_england_pensioner_scheme(country, pensioner_applicant),
         is_scotland_scheme(country),
         is_wales_scheme(country),
     ]
@@ -49,35 +84,14 @@ def non_dep_deduction_exempt(person, period, parameters, pensioner_applicant):
     # IS, income-based JSA, income-related ESA and SPC count for the person
     # they are payable to; Universal Credit for both joint claimants.
     claimant_or_partner = person("is_claimant_or_partner", period)
-    on_legacy_income_related_benefit = (
-        is_award_payee(person, period, "income_support", "income_support_reported")
-        | is_award_payee(person, period, "jsa_income", "jsa_income_reported")
-        | is_award_payee(person, period, "esa_income", "esa_income_reported")
-    )
-    on_pension_credit = is_award_payee(
-        person, period, "pension_credit", "pension_credit_reported"
-    )
+    on_pension_credit = person("is_on_pension_credit", period)
     entitled_to_universal_credit = claimant_or_partner & (
         person.benunit("universal_credit_pre_benefit_cap", period) > 0
     )
-    # SSI 2021/249 reg 90(8)(a): a "qualifying income-related benefit
-    # claimant", defined in reg 4(1) as one "who is, or who has a partner
-    # who is," on IS, income-based JSA or income-related ESA "and is not on
-    # universal credit". Read for the non-dependant, as the definition's
-    # "applicant" would leave the limb no application.
-    couple_on_legacy_income_related_benefit = claimant_or_partner & (
-        person.benunit.any(on_legacy_income_related_benefit & claimant_or_partner)
-    )
-    partner_rule = (
-        is_scotland_scheme(country)
-        & ~has_pensioner
-        & scotland.non_dep_deduction.working_age_exempt_partner_of_income_related_benefit_claimant
-    )
-    qualifying_income_related_benefit_claimant = where(
-        partner_rule,
-        (on_legacy_income_related_benefit | couple_on_legacy_income_related_benefit)
-        & ~entitled_to_universal_credit,
-        on_legacy_income_related_benefit,
+    qualifying_income_related_benefit_claimant = (
+        is_qualifying_income_related_benefit_claimant(
+            person, period, parameters, pensioner_applicant
+        )
     )
     # LGFA 1992 Sch 1 para 3 (via para 8(8)(b) and equivalents): an adult
     # "in respect of whom another person is entitled to child benefit".
@@ -118,7 +132,9 @@ def individual_non_dep_deduction(person, period, parameters, pensioner_applicant
     """A person's annual deduction from the claim of an applicant who is
     (pensioner_applicant) or is not a pensioner, before eligibility. Each
     scheme's own weekly scale; the band containing normal gross weekly income
-    in remunerative work, the lowest amount otherwise; nothing if exempt."""
+    in remunerative work, bands including their lower edge ("not less than");
+    the lowest amount otherwise (Sch 1 para 8(1)(b) and equivalents); nothing
+    if exempt."""
     local_authorities = parameters(period).gov.local_authorities
     england = (
         local_authorities.england.council_tax_reduction.pensioners.non_dep_deduction
@@ -131,7 +147,9 @@ def individual_non_dep_deduction(person, period, parameters, pensioner_applicant
         is_scotland_scheme(country),
         is_wales_scheme(country),
     ]
-    weekly_income = non_dependant_weekly_gross_income(person, period)
+    weekly_income = non_dependant_weekly_gross_income(
+        person, period, "council_tax_reduction_non_dep_gross_income"
+    )
     no_income = np.zeros_like(weekly_income)
     remunerative_work_hours = select(
         schemes,
@@ -142,7 +160,11 @@ def individual_non_dep_deduction(person, period, parameters, pensioner_applicant
         ],
         default=np.inf,
     )
-    in_remunerative_work = person("weekly_hours", period) >= remunerative_work_hours
+    in_remunerative_work = (
+        person("weekly_hours", period) >= remunerative_work_hours
+    ) & ~is_qualifying_income_related_benefit_claimant(
+        person, period, parameters, pensioner_applicant
+    )
     banded = select(
         schemes,
         [

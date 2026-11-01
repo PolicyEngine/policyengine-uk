@@ -13,7 +13,7 @@ class pension_credit_reported_capital(Variable):
         "the benefit unit's recorded capital (benunit_reported_capital) unless "
         "set directly. When this is 0 or more it replaces every capital source "
         "in Pension Credit assessable capital: the household proxy (savings, "
-        "land, property and corporate_wealth) and the person-level sources such "
+        "land, property and share_like_capital) and the person-level sources such "
         "as a Lifetime ISA. The model applies neither the Schedule V disregards "
         "nor the reg. 19 valuation to it, so it must already be the countable "
         "figure, and reforms to the capital source parameters do not reach a "

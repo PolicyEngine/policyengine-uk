@@ -1,0 +1,88 @@
+# Bonus sacrifice is read summed with salary sacrifice. This runner does not
+# copy an employment_income input to employment_income_before_lsr (which
+# policyengine_uk.Simulation does), so each case with pay sets both. The
+# broad-base haircut is set to zero so pay stays at the input.
+
+- name: The 2029 cap charges NICs on bonus sacrifice above £2,000
+  period: 2029
+  absolute_error_margin: 0.1
+  input:
+    employment_income: 80_000
+    employment_income_before_lsr: 80_000
+    pension_contributions_via_bonus_sacrifice: 10_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 10_000
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+    salary_sacrifice_pension_ni_excess: 8_000
+    ni_class_1_income: 88_000
+    # Above the upper earnings limit, so the £8,000 excess adds 2% employee
+    # and 15% employer NICs: £160 and £1,200 more than on £80,000 alone.
+    ni_class_1_employee: (50_270 - 12_570) * 0.08 + (88_000 - 50_270) * 0.02
+    ni_class_1_employer: (88_000 - 5_000) * 0.15
+    salary_sacrifice_pension_ni_employee: 8_000 * 0.02
+    salary_sacrifice_pension_ni_employer: 8_000 * 0.15
+
+- name: The £2,000 threshold applies to salary and bonus sacrifice together
+  period: 2029
+  absolute_error_margin: 0.1
+  input:
+    employment_income: 40_000
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 1_500
+    pension_contributions_via_bonus_sacrifice: 1_500
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 3_000
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+    salary_sacrifice_pension_ni_excess: 1_000
+    ni_class_1_income: 41_000
+    salary_sacrifice_pension_ni_employee: 1_000 * 0.08
+    salary_sacrifice_pension_ni_employer: 1_000 * 0.15
+
+- name: Before the cap, bonus sacrifice is free of NICs
+  period: 2028
+  input:
+    employment_income: 80_000
+    employment_income_before_lsr: 80_000
+    pension_contributions_via_bonus_sacrifice: 10_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 10_000
+    pension_contributions_via_salary_sacrifice_adjusted: 10_000
+    salary_sacrifice_pension_ni_excess: 0
+    ni_class_1_income: 80_000
+
+# FA 2004 s. 228ZA(5)(b) adds back pay given up under relevant flexible
+# remuneration arrangements, as it does salary sacrifice. The same case with
+# the £30,000 entered as salary sacrifice is in pension_annual_allowance.yaml.
+- name: Bonus sacrifice raises threshold income and adjusted income
+  period: 2024
+  input:
+    age: 45
+    employment_income: 190_000
+    employment_income_before_lsr: 190_000
+    pension_contributions_via_bonus_sacrifice: 30_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_contributions_for_annual_allowance: 110_000
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 220_000
+    pension_annual_allowance: 40_000
+
+- name: A person without pay has no bonus to sacrifice
+  period: 2029
+  input:
+    pension_contributions_via_bonus_sacrifice: 27_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 0
+    salary_sacrifice_pension_ni_excess: 0
+
+- name: A negative salary sacrifice input does not offset a bonus sacrifice
+  period: 2029
+  input:
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: -500
+    pension_contributions_via_bonus_sacrifice: 1_000
+  output:
+    pension_contributions_via_salary_sacrifice_from_pay: 1_000

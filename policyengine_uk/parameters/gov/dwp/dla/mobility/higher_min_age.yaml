@@ -1,0 +1,12 @@
+description: Minimum age for the higher DLA mobility component.
+values:
+  2001-04-09: 3
+metadata:
+  unit: year
+  period: year
+  label: Higher DLA mobility minimum age
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992, section 73(1A)(a) and (11)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/73
+    - title: Social Security Contributions and Benefits (Northern Ireland) Act 1992, section 73(1A)(a) and (11)
+      href: https://www.legislation.gov.uk/ukpga/1992/7/section/73

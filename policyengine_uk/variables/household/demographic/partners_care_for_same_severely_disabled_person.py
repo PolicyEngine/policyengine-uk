@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.couple_carer_award import unlimited_carer_benefit_entitlement
 
 
 class partners_care_for_same_severely_disabled_person(Variable):
@@ -29,19 +30,22 @@ class partners_care_for_same_severely_disabled_person(Variable):
         "would claim is not read as an award. "
         "With more than two members supplied as claimant or partner, "
         "two awards make the default false for all of them. The model's "
-        "Carer's Allowance and Carer Support Payment entitlements follow "
-        "caring hours or a reported award, and do not read this variable."
+        "Carer's Allowance and Carer Support Payment candidate amounts follow "
+        "caring hours or a reported award. The default uses those candidates "
+        "and directly supplied awards before the same-person couple limit, "
+        "so it does not depend on the final awards it restricts."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/ukpga/1992/4/section/70",
+        "https://www.legislation.gov.uk/ukpga/1992/7/section/70",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/5",
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/5",
     )
 
     def formula(benunit, period, parameters):
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
-        entitled = benunit.members("is_entitled_to_carer_benefit", period)
+        entitled = unlimited_carer_benefit_entitlement(benunit.members, period)
         reported_award = benunit.members("carers_allowance_reported", period) > 0
         # The model makes someone entitled to a carer benefit only on a
         # reported award or the qualifying hours, each for someone who would

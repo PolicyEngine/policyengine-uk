@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class in_poverty_ahc(Variable):
     value_type = bool
     entity = Household
-    label = "Whether the household is in absolute poverty, after housing costs"
+    label = "Whether the household is in absolute poverty on HBAI's current reference line, after housing costs"
     documentation = (
         "Absolute poverty: equivalised HBAI net income after housing costs "
         "below 60% of the reference-year median held constant in real terms "
@@ -13,6 +13,7 @@ class in_poverty_ahc(Variable):
         "is the HBAI absolute low income "
         "measure; the relative measure (60% of the contemporary median) is "
         "in_relative_poverty_ahc."
+        " The FYE 2011 reference line in every year is in_absolute_poverty_fye2011_ahc."
     )
     definition_period = YEAR
 

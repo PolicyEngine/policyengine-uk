@@ -1,0 +1,23 @@
+description: >
+  Limit on a person's total subscriptions in the tax year to ISAs other than
+  Junior ISAs: cash, stocks-and-shares, innovative finance and new Lifetime ISA
+  payments together. It was £15,000 from 1 July 2014 and £15,240 from 6 April
+  2015. The annual model reads it from 2015-16; 2014-15 and earlier years, with
+  their lower limits and cash sub-limits, are not modelled.
+values:
+  2014-07-01: 15000
+  2015-04-06: 15240
+  2017-04-06: 20000
+metadata:
+  label: ISA annual subscription limit
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA
+    - title: Individual Savings Account (Amendment No. 2) Regulations 2014 regulation 6(a)(i)
+      href: https://www.legislation.gov.uk/uksi/2014/1450/regulation/6/made
+    - title: Individual Savings Account (Amendment) Regulations 2015 regulation 3(1)
+      href: https://www.legislation.gov.uk/uksi/2015/608/regulation/3/made
+    - title: Individual Savings Account (Amendment) Regulations 2017 regulation 5
+      href: https://www.legislation.gov.uk/uksi/2017/186/regulation/5/made

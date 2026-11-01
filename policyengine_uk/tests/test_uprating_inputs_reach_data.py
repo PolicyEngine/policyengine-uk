@@ -46,10 +46,13 @@ from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
 from policyengine_uk.utils.scenario import Scenario
 
 AVERAGE_EARNINGS = "gov.economic_assumptions.yoy_growth.obr.average_earnings"
+# The index employee_pension_contributions_reported declares. The YAML does
+# not list that variable, so only the post-2030 fallback reads its index.
+UNMAPPED_INDEX = "gov.economic_assumptions.indices.obr.average_earnings"
 PERSONAL_ALLOWANCE = "gov.hmrc.income_tax.allowances.personal_allowance.amount"
 HF_URL = "hf://policyengine/policyengine-uk-data-private/mock_frs_2025_26.h5"
 GCS_URL = "gs://policyengine-uk-data-private/mock_frs_2025_26.h5"
-CURRENT_LAW_2027 = 0.024  # yoy_growth.obr.average_earnings for 2027
+CURRENT_LAW_2027 = 0.0299  # yoy_growth.obr.average_earnings for 2027
 
 PROPERTY_SETTINGS = settings(
     max_examples=8,
@@ -104,6 +107,8 @@ def mock_dataset_with_every_uprated_input() -> UKSingleYearDataset:
     uprating = economic_assumptions._uprating_index_map()
     names = set(economic_assumptions._unmapped_uprating_indices(uprating))
     names |= {name for variables in uprating.values() for name in variables}
+    # Uprated by country rather than through the index map (#2501).
+    names |= economic_assumptions.COUNTRY_UPRATED_INPUTS
     for name in sorted(names):
         variable = system.variables.get(name)
         if variable is None or variable.value_type is not float:
@@ -392,7 +397,7 @@ def test_the_fingerprint_covers_every_parameter_the_uprating_reads(monkeypatch):
 
     covered = uprating_input_paths()
     # The unmapped indices, read past the legacy horizon, are in the set.
-    assert "gov.dft.rail.ridership_index" in read
+    assert UNMAPPED_INDEX in read
     for name in read:
         assert any(name == path or name.startswith(f"{path}.") for path in covered), (
             name
@@ -401,7 +406,7 @@ def test_the_fingerprint_covers_every_parameter_the_uprating_reads(monkeypatch):
 
 def test_the_read_set_names_inputs_outside_the_growth_rates():
     paths = uprating_input_paths()
-    assert "gov.dft.rail.ridership_index" in paths
+    assert UNMAPPED_INDEX in paths
     assert economic_assumptions.CGT_INDEX_PATH in paths
     assert AVERAGE_EARNINGS in paths
 

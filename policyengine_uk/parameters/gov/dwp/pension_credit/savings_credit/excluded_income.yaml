@@ -12,9 +12,10 @@ values:
   # Reg. 9(c) and (g).
   - jsa_contrib
   - esa_contrib
-  # Reg. 9(a), (b), (d) and (e). Reg. 9(f) maintenance is not modelled:
-  # maintenance_income does not separate spousal from child maintenance.
+  # Reg. 9(a), (b), (d) and (e).
   - working_tax_credit
   - incapacity_benefit
   - sda
   - maternity_allowance
+  # Reg. 9(f): the reg. 15(5)(d) maintenance payments.
+  - spousal_maintenance_income

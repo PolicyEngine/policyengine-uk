@@ -302,9 +302,11 @@
 # sent families on Pension Credit, and families on Child Tax Credit but not
 # Working Tax Credit that meet the Pension Credit age conditions, to Pension
 # Credit (SI 2019/167 art. 3A(1)). Families on Working Tax Credit got a
-# Universal Credit migration notice, and a pension-age one not entitled to
-# Pension Credit has the Universal Credit upper age condition waived
-# (SI 2014/1230 reg 60A; DWP HB circular A9/2024 paras 5-14).
+# Universal Credit migration notice, and a pension-age one not entitled to an
+# award of Pension Credit has the Universal Credit upper age condition waived
+# (SI 2014/1230 reg 60A; DWP HB circular A9/2024 paras 5-14). The model reads
+# reported Pension Credit, not entitlement, for this (legacy_award_is_closed;
+# see the comment in is_uc_eligible).
 
 - name: A protected mixed-age couple on Working Tax Credit claims Universal Credit at the closure and leaves the pension-age route
   period: 2025
