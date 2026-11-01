@@ -4206,11 +4206,15 @@ def falling_after_2028(content):
     lines = content.split("\n")
     start, end = import_obr_forecasts._series_block(lines, ("obr", "average_earnings"))
     first, last = import_obr_forecasts._yaml_block(lines, "values", 4, start, end)
-    for number in range(first + 1, last):
-        match = import_obr_forecasts.VALUE_LINE_RE.match(lines[number])
-        if match and int(match.group(1)) > 2028:
-            lines[number] = lines[number].split(":", 1)[0] + ": -0.5100"
-    falling = "\n".join(lines)
+
+    def falls(number, line):
+        match = import_obr_forecasts.VALUE_LINE_RE.match(line)
+        return first < number < last and match and int(match.group(1)) > 2028
+
+    falling = "\n".join(
+        line.split(":", 1)[0] + ": -0.5100" if falls(number, line) else line
+        for number, line in enumerate(lines)
+    )
     assert falling != content
     return falling
 
