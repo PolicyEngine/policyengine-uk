@@ -10,7 +10,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._lega
 class housing_benefit_non_dep_deduction_exempt(Variable):
     value_type = bool
     entity = Person
-    label = "Housing Benefit makes no non-dependant deduction for this person"
+    label = "Exempt from Housing Benefit non-dependant deductions"
     documentation = (
         "Modelled exemptions: a full-time student (SI 2006/213 reg 74(7)(c)-(e); "
         "SI 2006/214 reg 55(7)(e)); a non-dependant on State Pension Credit "

@@ -8,7 +8,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._nati
 class council_tax_reduction_non_dep_deduction_exempt(Variable):
     value_type = bool
     entity = Person
-    label = "national Council Tax Reduction makes no non-dependant deduction for this person"
+    label = "Exempt from national Council Tax Reduction non-dependant deductions"
     documentation = (
         "Modelled exemptions in the England pensioner, Scottish and Welsh "
         "schemes: a full-time student; a non-dependant on Income Support, "

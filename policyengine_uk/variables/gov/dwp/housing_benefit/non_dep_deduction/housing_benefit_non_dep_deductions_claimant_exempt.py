@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class housing_benefit_non_dep_deductions_claimant_exempt(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Housing Benefit claimant exempt from all non-dependant deductions"
+    label = "Exempt from all Housing Benefit non-dependant deductions"
     documentation = (
         "No deduction is made for any non-dependant if the claimant or partner "
         "is blind or receives Attendance Allowance, the DLA care component, the "
