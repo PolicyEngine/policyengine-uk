@@ -448,7 +448,7 @@
     council_tax_reduction_pensioner_child_amounts: 66.90 * 52
     council_tax_reduction_pensioner_family_premium: 17.45 * 52
 
-- name: Case 16, a pensioner household head who applies alone has no children in her family.
+- name: Case 16, a pensioner household head who applies alone has no children in their family.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -512,3 +512,115 @@
     council_tax_reduction_pensioner_family_premium: 0
     # Lone parent aged 18 or over, 95.55 * 52, as before.
     council_tax_reduction_applicable_amount: 4_968.60
+
+- name: Case 18, England's 2024-25 scheme counts all three where a final Child Tax Credit award is entered without a report.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 23_000
+      child_1:
+        age: 10
+      child_2:
+        age: 12
+      child_3:
+        age: 14
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        child_tax_credit: 9_800.95
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # No child_tax_credit_reported, so the model reads no eligibility from
+    # reports; the entered final award is the award.
+    is_CTC_eligible: false
+    child_tax_credit: 9_800.95
+    # Each child was born before 6 April 2017, so the model includes each
+    # one's individual element (is_CTC_child_limit_exempt).
+    is_CTC_child_element_included: [false, true, true, true]
+    # SI 2012/2885 Sch 1 para 6(1B) and (1C): an award with individual
+    # elements for three, more than the two under para 6(1)(b).
+    # 3 * 83.24 * 52 = 12,985.44.
+    council_tax_reduction_pensioner_child_amounts: 12_985.44
+
+- name: Case 19, England's 2024-25 scheme counts two of three where the family would claim Child Tax Credit but has no award.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 23_000
+      child_1:
+        age: 10
+      child_2:
+        age: 12
+      child_3:
+        age: 14
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_CTC: true
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # A claim without eligibility is no award: is_CTC_eligible needs a
+    # report, and child_tax_credit is nil without eligibility.
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    is_CTC_child_element_included: [false, true, true, true]
+    # Para 6(1)(b): up to two. 2 * 83.24 * 52 = 8,656.96.
+    council_tax_reduction_pensioner_child_amounts: 8_656.96
+
+- name: Case 20, England's 2024-25 scheme counts all three on a nil-rate Child Tax Credit award.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 60_000
+      child_1:
+        age: 10
+      child_2:
+        age: 12
+      child_3:
+        age: 14
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_CTC: true
+        is_CTC_eligible: true
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Income of 60,000 withdraws the whole credit, so nothing is payable.
+    child_tax_credit: 0
+    is_CTC_child_element_included: [false, true, true, true]
+    # Para 6(1B)(a): an award "whether or not any amount is payable". The
+    # individual elements for three give 3 * 83.24 * 52 = 12,985.44.
+    council_tax_reduction_pensioner_child_amounts: 12_985.44

@@ -9,15 +9,18 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
     documentation = (
         "The amounts for the children and young persons in a pensioner's "
         "family in the Council Tax Reduction applicable amount, one weekly "
-        "amount for each. England's prescribed requirements limited them to "
-        "two children or young persons for the 2018-19 to 2024-25 schemes, "
-        "unless the applicant's Child Tax Credit award included the "
-        "individual element for more of them. The transitional protection "
-        "for families with more than two on 31 March 2018 is not modelled. "
-        "Nil where the household head applies alone "
-        "(council_tax_reduction_head_applies_alone), since the head's family "
-        "then has no children, and for working-age families, whose child "
-        "amounts are not modelled."
+        "amount for each. For the 2018-19 to 2024-25 schemes the Secretary of "
+        "State limited England's to two children or young persons, unless "
+        "the applicant's Child Tax Credit award included the individual "
+        "element for more of them. We read an award from a positive final "
+        "child_tax_credit, worked out or entered, or from the claim and "
+        "eligibility the model reads from reports, which keeps an award at a "
+        "nil rate. We do not model the transitional protection for families "
+        "with more than two on 31 March 2018. Where the household head "
+        "applies alone (council_tax_reduction_head_applies_alone), we assume "
+        "the head has no children in their family, because we cannot "
+        "identify their relationships. Nil for working-age families: we do "
+        "not model their child amounts here."
     )
     definition_period = YEAR
     unit = GBP
@@ -27,6 +30,7 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
         "https://www.legislation.gov.uk/uksi/2017/1305/regulation/7/made",
         "https://www.legislation.gov.uk/uksi/2017/1305/regulation/17/made",
         "https://www.legislation.gov.uk/uksi/2025/39/regulation/5/made",
+        "https://www.legislation.gov.uk/ukpga/2002/21/section/14",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/1",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/paragraph/2",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/20",
@@ -51,8 +55,13 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
             # an award of Child Tax Credit includes where that gives more.
             # Every child or young person has the same amount, so the
             # greatest total is the greatest count.
-            child_tax_credit_award = benunit("would_claim_CTC", period) & benunit(
-                "is_CTC_eligible", period
+            # Para 6(1B)(a) needs an award of Child Tax Credit "whether or
+            # not any amount is payable", and HMRC may award it at a nil rate
+            # (TCA 2002 s.14(3)). A positive final child_tax_credit, worked
+            # out or entered, is an award; so are the claim and eligibility
+            # read from reports, whatever amount is payable.
+            child_tax_credit_award = (benunit("child_tax_credit", period) > 0) | (
+                benunit("would_claim_CTC", period) & benunit("is_CTC_eligible", period)
             )
             child_tax_credit_children = benunit.sum(
                 child & person("is_CTC_child_element_included", period)
