@@ -76,20 +76,27 @@ rates, then `average_earnings`' long-run growth, year for year. HM Treasury
 costed Budget 2026's Carer's Allowance taper on the OBR's estimates.
 
 `utils/import_obr_forecasts.py` writes the series with the other economy
-series. It finds the table by its title, reads the level under each year
-across the table's one row of years, and writes each year's level over the
-year before's, to six decimals. The OBR identifies in its note the last year
-the government has set, and the importer labels the growth into those years
-and into the OBR's estimates with separate comments. The model projects the
-national living wage, the last bracket of
-`gov/hmrc/minimum_wage/non_apprentice.yaml`, from that bracket's last rate,
-through the index it builds from this series, to the nearest penny. The
-importer projects each later year of the table from the same rate in the same
-way, and where a year's ratio would leave the model a penny off the OBR's
-level, it writes the six-decimal growth that keeps the OBR's penny. It then
-runs the model's own generation steps on the file it would write, and checks
-that the model's index reaches the table's last year and matches the index
-the importer compounded.
+series. It finds the table by its title and reads the level under each year
+across the table's one row of years. The importer divides each year's level
+by the previous year's level, subtracts one, and rounds to six decimals. The
+OBR identifies in its note the last year the government has set, and the
+importer labels the growth into those years and into the OBR's estimates with
+separate comments.
+
+The model projects the national living wage from the last rate in the last
+bracket of `gov/hmrc/minimum_wage/non_apprentice.yaml`. It carries that rate
+through the index it builds from this series and rounds each projected rate
+to the nearest penny. The importer reads the same rate from the same file, as
+policyengine-core reads it, and projects each later year of the table from it
+in the same way. Where a year's ratio would leave the model a penny off the
+OBR's level, the importer writes the six-decimal growth that keeps the OBR's
+penny. Where the OBR publishes no level for the year of that rate or earlier,
+the importer keeps the series' earlier growth into the table's first year and
+checks the model's penny there against the OBR's. The importer
+then runs the model's own generation steps on the file it would write. It
+checks that the model's index reaches the table's last year, stays above zero
+and finite in every year the model builds it, and matches the index the
+importer compounded.
 
 The importer stops before writing any file when:
 
@@ -101,7 +108,10 @@ The importer stops before writing any file when:
   statements name different years;
 - the OBR's level in the year of the file's last rate differs from that rate
   at the penny;
-- the table's growth takes the model's index to zero or infinity; or
+- the OBR publishes no level for the year of that rate or earlier, and the
+  model carries the rate to another penny in the table's first year;
+- the model's index, built from the series the importer would write, reaches
+  zero or infinity in a year the model builds it; or
 - no six-decimal growth keeps an estimate's penny.
 
 `test_minimum_wage_projection.py` holds the October 2026 table, checks it
