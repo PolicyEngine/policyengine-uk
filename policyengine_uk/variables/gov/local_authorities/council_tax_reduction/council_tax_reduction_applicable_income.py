@@ -13,7 +13,9 @@ class council_tax_reduction_applicable_income(Variable):
         "use the Secretary of State's Pension Credit assessment of income, plus "
         "the savings credit payable, where the award is savings credit only. "
         "Otherwise a pension-age family's net earnings are reduced by the "
-        "pensioner earnings disregards. Great Britain's pensioner schemes "
+        "pensioner earnings disregards and its tariff income from capital "
+        "(council_tax_reduction_pensioner_tariff_income) is added. Great "
+        "Britain's pensioner schemes "
         "also exclude Child Benefit from general-rule income; statutory sick "
         "and maternity pay remain counted as earnings. The other adjustments those "
         "provisions allow (childcare charges, the £20 earnings disregards "
@@ -46,6 +48,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/37",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/31",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
@@ -298,9 +303,12 @@ class council_tax_reduction_applicable_income(Variable):
         earnings_disregard = benunit(
             "council_tax_reduction_pensioner_earnings_disregard", period
         )
+        # SI 2012/2885 Sch 1 para 37, WSI 2013/3029 Sch 1 para 31 and SSI
+        # 2012/319 reg 27(2): a pensioner's tariff income from capital, a
+        # separate source that the deductions above do not reduce.
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions - earnings_disregard
-        )
+        ) + benunit("council_tax_reduction_pensioner_tariff_income", period)
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases

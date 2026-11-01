@@ -1,0 +1,65 @@
+description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the England Council Tax Reduction prescribed requirements. The amounts equal the Housing Benefit pension-age child or young person amounts in every year from 2013-14 to 2026-27.
+values:
+  # Each value is the paragraph 2 amount in the version of Schedule 2 in
+  # force on 30 April of that year. The prescribed requirements set it for
+  # schemes for the financial year from 1 April.
+  2013-04-01:
+    value: 65.62
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2013
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2013-04-30
+  2014-04-01:
+    value: 66.33
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2014
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2014-04-30
+  2015-04-01:
+    value: 66.9
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2015 (unchanged to 2019-20)
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2015-04-30
+  2020-04-01:
+    value: 68.27
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2020
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2020-04-30
+  2021-04-01:
+    value: 68.6
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2021
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2021-04-30
+  2022-04-01:
+    value: 70.8
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2022
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2022-04-30
+  2023-04-01:
+    value: 77.78
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2023
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2023-04-30
+  2024-04-01:
+    value: 83.24
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2024
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2024-04-30
+  2025-04-01:
+    value: 84.66
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as in force on 30 April 2025
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2025-04-30
+  2026-04-01:
+    value: 87.88
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 2, as amended by SI 2026/27 for schemes for 2026-27
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2026-04-30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: England Council Tax Reduction pensioner child or young person amount
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 6(1)(b) and Sch. 2 para. 2
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Sch. 3 para. 2 (the same amounts)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3

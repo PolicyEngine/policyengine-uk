@@ -1,6 +1,8 @@
 # Current GB pensioner income exclusions: England Sch1 para16(1)(j)(vi),
 # Wales Sch1 para10(1)(j)(vi), Scotland reg27(1)(j)(vii).
 # Model2026: eldest Child Benefit27.05*52=1406.60; aged allowance256*52=13312.
+# An English pensioner's applicable amount adds 87.88*52=4569.76 for the
+# child (SI 2012/2885 Sch 1 para 6(1)(b) and Sch 2 para 2).
 # These genuine claim/takeup inputs use the general rules, not PC overrides.
 - name: England pensioner Child Benefit is excluded before the CTR taper
   # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
@@ -31,10 +33,11 @@
     in_receipt_of_guarantee_credit: false
     in_receipt_of_savings_credit_only: false
     council_tax_reduction_applicable_income: 15314
-    council_tax_reduction_applicable_amount: 13312
-    # 3000 - .2*(16000 - 686 - 13312) = 2599.60.
-    council_tax_benefit: 2599.60
-    council_tax_reduction: 2599.60
+    # 13312 + 4569.76 for the child.
+    council_tax_reduction_applicable_amount: 17881.76
+    # 16000 - 686 = 15314 is below 17881.76, so the award is the whole 3000.
+    council_tax_benefit: 3000
+    council_tax_reduction: 3000
 
 - name: Scottish pensioner Child Benefit does not reduce the final CTR award
   period: 2026
@@ -110,7 +113,7 @@
   output:
     child_benefit: 0
     council_tax_reduction_applicable_income: 15314
-    council_tax_reduction: 2599.60
+    council_tax_reduction: 3000
 
 - name: Excluding pensioner Child Benefit retains the zero floor and liability cap
   period: 2026

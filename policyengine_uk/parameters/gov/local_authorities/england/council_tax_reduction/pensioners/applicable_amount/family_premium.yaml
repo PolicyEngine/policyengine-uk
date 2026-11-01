@@ -1,0 +1,26 @@
+description: Weekly family premium in the applicable amount of a pensioner whose family includes a child or young person, under the England Council Tax Reduction prescribed requirements. It is nil for reduction weeks beginning after 1 May 2016.
+values:
+  2013-04-01:
+    value: 17.4
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 3, as in force on 30 April 2013
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2013-04-30
+  2014-04-01:
+    value: 17.45
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 3, as in force on 30 April 2014
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2014-04-30
+  # Reduction weeks begin on a Monday; the first after 1 May 2016 began on
+  # 2 May 2016.
+  2016-05-02:
+    value: 0
+    reference:
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) (Amendment) Regulations 2015 (SI 2015/2041) reg. 2(4)(b), substituting Sch. 2 para. 3
+        href: https://www.legislation.gov.uk/uksi/2015/2041/regulation/2/made
+metadata:
+  unit: currency-GBP
+  period: week
+  label: England Council Tax Reduction pensioner family premium
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 6(1)(c) and Sch. 2 para. 3
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2

@@ -1,0 +1,366 @@
+# Pensioner tariff income from capital. A pensioner's capital counts as a
+# weekly income of £1 for each £500 over £10,000, and £1 for any part of £500:
+# England SI 2012/2885 Sch 1 para 37 and Wales WSI 2013/3029 Sch 1 para 31
+# (each "not exceeding £16,000"), Scotland SSI 2012/319 reg 27(2). Capital
+# over £16,000 ends entitlement (SI 2012/2885 reg 11(2); WSI 2013/3029 reg
+# 30; SSI 2012/319 reg 40). A guarantee credit recipient's whole capital and
+# income are disregarded (Sch 1 para 13; Sch 1 para 7; reg 24), and on a
+# savings-credit-only award the Secretary of State's assessment of income is
+# used (Sch 1 para 14; Sch 1 para 8; reg 25).
+#
+# Each 72-year-old reached State Pension age before 1 April 2021, so the
+# applicable amount is 256.00 * 52 = 13,312. A State Pension of 12,570 is
+# within the personal allowance, so it bears no income tax. The council tax is
+# 2,000 and the pensioner schemes withdraw 20% of income above the applicable
+# amount.
+
+- name: Case 1, England, capital of 10,000 gives no tariff income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 10_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_applicable_income: 12_570
+
+- name: Case 2, England, capital of 10,001 gives 1 a week for the part of 500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 10_001
+  output:
+    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_applicable_income: 12_570 + 52
+
+- name: Case 3, England, capital of 16,000 gives 12 a week.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    # (16,000 - 10,000) / 500 = 12; 12 * 52 = 624.
+    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_applicable_income: 13_194
+    # 13,194 is below 13,312, so the whole council tax.
+    council_tax_reduction: 2_000
+
+- name: Case 4, Scotland, capital of 10,000 gives no tariff income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 10_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_applicable_income: 12_570
+
+- name: Case 5, Scotland, capital of 10,001 gives 1 a week for the part of 500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 10_001
+  output:
+    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_applicable_income: 12_570 + 52
+
+- name: Case 6, Scotland, capital of 16,000 gives 12 a week.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 12 * 52
+    council_tax_reduction_applicable_income: 12_570 + 12 * 52
+    council_tax_reduction: 2_000
+
+- name: Case 7, Wales, capital of 10,000 gives no tariff income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 10_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_applicable_income: 12_570
+
+- name: Case 8, Wales, capital of 10,001 gives 1 a week for the part of 500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 10_001
+  output:
+    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_applicable_income: 12_570 + 52
+
+- name: Case 9, Wales, capital of 16,000 gives 12 a week.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 12 * 52
+    council_tax_reduction_applicable_income: 12_570 + 12 * 52
+    council_tax_reduction: 2_000
+
+- name: Case 10, England, tariff income reduces an award above the applicable amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 15_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    # Income tax: (15,000 - 12,570) * 0.2 = 486. Income 15,000 - 486 + 624
+    # = 15,138. Award 2,000 - 0.2 * (15,138 - 13,312) = 1,634.80.
+    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_applicable_income: 15_138
+    council_tax_reduction: 1_634.80
+
+- name: Case 11, England, capital over 16,000 ends entitlement and the tariff stops at 16,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction: 0
+
+- name: Case 12, a guarantee credit recipient's capital is wholly disregarded.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 8_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    in_receipt_of_guarantee_credit: true
+    council_tax_reduction_assessable_capital: 0
+    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction: 2_000
+
+- name: Case 13, a savings-credit-only award uses the Pension Credit assessment, with no tariff income on top.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    # The same as the savings-credit-only case at 16,000 in
+    # council_tax_reduction_pension_credit.yaml: the Secretary of State's
+    # income already counts Pension Credit's deemed income from capital.
+    in_receipt_of_savings_credit_only: true
+    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_applicable_income: 14_247.02
+
+- name: Case 14, a working-age Welsh earner's capital gives no tariff income here.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 15_000
+    benunits:
+      benunit:
+        members: [earner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [earner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 12_000
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_tariff_income: 0

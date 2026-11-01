@@ -1,0 +1,24 @@
+description: Weekly family premium in the applicable amount of an applicant whose family includes a child or young person, under the Scottish State Pension Credit Council Tax Reduction regulations. Scotland removed it from 1 May 2016.
+values:
+  2013-04-01:
+    value: 17.4
+    reference:
+      - title: SSI 2012/319 Sch. 1 Part 2, as in force on 30 April 2013
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/1/2013-04-30
+  2014-04-01:
+    value: 17.45
+    reference:
+      - title: SSI 2012/319 Sch. 1 Part 2, as in force on 30 April 2014
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/1/2014-04-30
+  2016-05-01:
+    value: 0
+    reference:
+      - title: The Council Tax Reduction (Scotland) Amendment Regulations 2016 (SSI 2016/81) regs. 1(3) and 18, omitting reg. 20(c) and Sch. 1 Part 2
+        href: https://www.legislation.gov.uk/ssi/2016/81/made
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Scotland Council Tax Reduction pensioner family premium
+  reference:
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 20
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/20

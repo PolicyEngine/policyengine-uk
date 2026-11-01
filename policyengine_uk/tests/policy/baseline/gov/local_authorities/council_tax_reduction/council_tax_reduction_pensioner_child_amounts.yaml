@@ -1,0 +1,514 @@
+# A pensioner's Council Tax Reduction applicable amount includes an amount for
+# each child or young person in the family and, where the scheme still has one,
+# a family premium:
+#
+# - England: SI 2012/2885 Sch 1 para 6(1)(b) and (c), Sch 2 paras 2 and 3.
+#   2026-27 child or young person amount 87.88 a week (SI 2026/27); the family
+#   premium is nil for reduction weeks beginning after 1 May 2016. From
+#   2018-19 to 2024-25 para 6(1)(b) counted up to two children or young
+#   persons, or those an award of Child Tax Credit included if more (SI
+#   2017/1305 reg 7; removed by SI 2025/39 reg 5(2)).
+# - Wales: WSI 2013/3029 Sch 1 para 1(1)(b) and (c), Sch 2 paras 2 and 3.
+#   2026-27 amounts 87.88 and a family premium of 20.22.
+# - Scotland: SSI 2012/319 reg 20(b), Sch 1 para 3. 2026-27 amount 109.85;
+#   the family premium was removed from 1 May 2016 (SSI 2016/81 reg 18).
+#
+# Each amount runs from birth to the day before the 20th birthday, for a
+# Child Benefit qualifying young person. Every person aged 72 or 80 here
+# reached State Pension age before 1 April 2021, so the single or lone parent
+# personal allowance is 256.00 a week and the couple allowance 383.35 (SI
+# 2012/2885 Sch 2 para 1; WSI 2013/3029 Sch 2 para 1; SSI 2012/319 Sch 1
+# para 2). Annual amounts are 52 weeks.
+
+- name: Case 1, an English 72-year-old alone gets the personal allowance only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_pensioner_child_amounts: 0
+    council_tax_reduction_pensioner_family_premium: 0
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: Case 2, an English 72-year-old with a ten-year-old gets the child amount but no family premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    # 87.88 * 52 = 4,569.76.
+    council_tax_reduction_pensioner_child_amounts: 4_569.76
+    council_tax_reduction_pensioner_family_premium: 0
+    # 13,312 + 4,569.76.
+    council_tax_reduction_applicable_amount: 17_881.76
+
+- name: Case 3, an English 72-year-old with a 17-year-old at school gets the young person's amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+    benunits:
+      benunit:
+        members: [pensioner, student]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, student]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_pensioner_child_amounts: 87.88 * 52
+    council_tax_reduction_applicable_amount: (256.00 + 87.88) * 52
+
+- name: Case 4, a Scottish 72-year-old alone gets the personal allowance only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_amounts: 0
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: Case 5, a Scottish 72-year-old with a ten-year-old gets Scotland's higher child amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 109.85 * 52 = 5,712.20; no family premium.
+    council_tax_reduction_pensioner_child_amounts: 5_712.20
+    council_tax_reduction_pensioner_family_premium: 0
+    # 13,312 + 5,712.20.
+    council_tax_reduction_applicable_amount: 19_024.20
+
+- name: Case 6, a Welsh 72-year-old alone gets the personal allowance only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_amounts: 0
+    council_tax_reduction_pensioner_family_premium: 0
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: Case 7, a Welsh 72-year-old with a ten-year-old gets the child amount and the family premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 87.88 * 52 = 4,569.76.
+    council_tax_reduction_pensioner_child_amounts: 4_569.76
+    # 20.22 * 52 = 1,051.44.
+    council_tax_reduction_pensioner_family_premium: 1_051.44
+    # 13,312 + 4,569.76 + 1,051.44.
+    council_tax_reduction_applicable_amount: 18_933.20
+
+- name: Case 8, an English pensioner couple with two children get two child amounts.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 74
+        state_pension: 12_000
+      younger:
+        age: 72
+        state_pension: 9_000
+      child_1:
+        age: 8
+      child_2:
+        age: 12
+    benunits:
+      benunit:
+        members: [older, younger, child_1, child_2]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [older, younger, child_1, child_2]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 2 * 87.88 * 52 = 9,139.52.
+    council_tax_reduction_pensioner_child_amounts: 9_139.52
+    # (383.35 + 2 * 87.88) * 52 = 19,934.20 + 9,139.52.
+    council_tax_reduction_applicable_amount: 29_073.72
+
+- name: Case 9, England's 2024-25 scheme counts two of three children without a Child Tax Credit award.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_CTC: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # SI 2012/2885 Sch 1 para 6(1)(b) as in force for 2024-25: up to two.
+    # 2 * 83.24 * 52 = 8,656.96.
+    council_tax_reduction_pensioner_child_amounts: 8_656.96
+
+- name: Case 10, England's 2024-25 scheme counts all three where Child Tax Credit includes all three.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child_1:
+        age: 5
+        is_CTC_child_element_included: true
+      child_2:
+        age: 7
+        is_CTC_child_element_included: true
+      child_3:
+        age: 9
+        is_CTC_child_element_included: true
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+        would_claim_CTC: true
+        is_CTC_eligible: true
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Para 6(1B) and (1C): the award includes the individual element for
+    # three, which is more than two. 3 * 83.24 * 52 = 12,985.44.
+    council_tax_reduction_pensioner_child_amounts: 12_985.44
+
+- name: Case 11, England's 2025-26 scheme counts every child.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # SI 2025/39 reg 5(2) removed the limit. 3 * 84.66 * 52 = 13,206.96.
+    council_tax_reduction_pensioner_child_amounts: 13_206.96
+
+- name: Case 12, Scotland has no two-child limit in 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child_1:
+        age: 5
+      child_2:
+        age: 7
+      child_3:
+        age: 9
+    benunits:
+      benunit:
+        members: [pensioner, child_1, child_2, child_3]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # SSI 2012/319 reg 20(b): any child or young person. 3 * 104.05 * 52.
+    council_tax_reduction_pensioner_child_amounts: 16_231.80
+
+- name: Case 13, Wales kept its 2019-20 child amount and family premium in 2021-22.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # WSI 2021/34 reg 5 leaves Sch 2 paras 2 and 3 at 66.90 and 17.45.
+    council_tax_reduction_pensioner_child_amounts: 66.90 * 52
+    council_tax_reduction_pensioner_family_premium: 17.45 * 52
+
+- name: Case 14, England's 2021-22 child amount follows the 2021 amending regulations.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_amounts: 68.60 * 52
+    council_tax_reduction_pensioner_family_premium: 0
+
+- name: Case 15, England's 2015-16 scheme still had the family premium.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_amounts: 66.90 * 52
+    council_tax_reduction_pensioner_family_premium: 17.45 * 52
+
+- name: Case 16, a pensioner household head who applies alone has no children in her family.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      mother:
+        age: 45
+        is_parent: true
+        is_household_head: false
+      father:
+        age: 46
+        is_parent: true
+        is_household_head: false
+      child:
+        age: 10
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, mother, father, child]
+        would_claim_uc: false
+        would_claim_pc: false
+    households:
+      home:
+        members: [grandmother, mother, father, child]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_pensioner_child_amounts: 0
+    council_tax_reduction_pensioner_family_premium: 0
+
+- name: Case 17, a working-age Welsh parent's applicable amount is unchanged.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 15_000
+      child:
+        age: 7
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_child_amounts: 0
+    council_tax_reduction_pensioner_family_premium: 0
+    # Lone parent aged 18 or over, 95.55 * 52, as before.
+    council_tax_reduction_applicable_amount: 4_968.60

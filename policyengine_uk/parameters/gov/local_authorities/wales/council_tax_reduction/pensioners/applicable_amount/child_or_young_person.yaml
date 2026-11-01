@@ -1,0 +1,56 @@
+description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the Welsh Council Tax Reduction prescribed requirements. Wales did not raise it for 2020-21 or 2021-22, so it differs from the Housing Benefit amount in those years.
+values:
+  # Each value is the paragraph 2 amount in the version of Schedule 2 in
+  # force on 30 April of that year.
+  2013-04-01:
+    value: 64.99
+    reference:
+      - title: WSI 2012/3144 Sch. 2 para. 2 (schemes for 2013-14), as in force on 30 April 2013
+        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/2/2013-04-30
+  2014-04-01:
+    value: 66.33
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as amended by WSI 2014/66 for schemes for 2014-15
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2014-04-30
+  2015-04-01:
+    value: 66.9
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2015
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2015-04-30
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Wales) (Amendment) Regulations 2020 (WSI 2020/16) reg. 8, which leaves para. 2 unchanged for 2020-21
+        href: https://www.legislation.gov.uk/wsi/2020/16/made
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Wales) (Amendment) Regulations 2021 (WSI 2021/34) reg. 5, which leaves para. 2 unchanged for 2021-22
+        href: https://www.legislation.gov.uk/wsi/2021/34/made
+  2022-04-01:
+    value: 70.8
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2022
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2022-04-30
+  2023-04-01:
+    value: 77.78
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2023
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2023-04-30
+  2024-04-01:
+    value: 83.24
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2024
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2024-04-30
+  2025-04-01:
+    value: 84.66
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2025
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2025-04-30
+  2026-04-01:
+    value: 87.88
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 2, as in force on 30 April 2026
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2026-04-30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Wales Council Tax Reduction pensioner child or young person amount
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 1 para. 1(1)(b) and Sch. 2 para. 2
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2
