@@ -287,3 +287,31 @@
     region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true
+
+- name: In 2015-16 dividends above the basic rate limit fail the conditions
+  period: 2015
+  input:
+    # 42,600 - 10,600 = 32,000 of pay, at the model's basic rate limit, then
+    # 1 of dividends. Section 13(2) charges the dividend upper rate on
+    # dividends that would otherwise bear the higher rate, which starts at
+    # the basic rate limit (s. 10(3)). The 2015-16 s. 55B(2)(b) permits the
+    # dividend ordinary rate only. The model's dividend scale starts the
+    # upper rate at 37,500 that year.
+    employment_income: 42_600
+    dividend_income: 1
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: At the statutory 2015-16 basic rate limit a pound of dividends fails the conditions
+  period: 2015
+  input:
+    # A reform sets the basic rate limit to the statutory 31,785 (s. 10(5)
+    # for 2015-16). 42,385 - 10,600 = 31,785 of pay, then 1 of dividends,
+    # which s. 13(2) charges at the dividend upper rate.
+    gov.hmrc.income_tax.rates.uk[1].threshold: 31_785
+    employment_income: 42_385
+    dividend_income: 1
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false

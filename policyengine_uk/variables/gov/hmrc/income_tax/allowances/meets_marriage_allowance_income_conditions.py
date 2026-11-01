@@ -77,15 +77,16 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         non_savings + savings > basic_rate_limit
     )
     # Dividends are the top slice, above all non-savings income and savings
-    # (s. 16), counted before the dividend allowance. The dividend upper rate
-    # starts at the basic rate limit (s. 13(2)), extended by the gross gift;
-    # dividend_income_tax reads that limit from the dividend scale.
+    # (s. 16), counted before the dividend allowance. Section 13(2) charges
+    # the dividend upper rate on dividends that would otherwise bear the
+    # higher rate, which starts at the basic rate limit (s. 10(3)), extended
+    # by the gross gift.
     dividends = max_(
         0,
         person("taxable_dividend_income", period)
         - person("received_allowances_dividend_income", period),
     )
-    dividend_upper_limit = rates.dividends.thresholds[1] + gross_gift
+    dividend_upper_limit = basic_rate_limit
     dividends_above_basic = (dividends > 0) & (
         non_savings + savings + dividends > dividend_upper_limit
     )
