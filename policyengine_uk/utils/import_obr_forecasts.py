@@ -1282,7 +1282,7 @@ def validate_clearance_table(
             )
             if receipts_label(value)
         ]
-        # The first text on the title's row is the title.
+        # Skip the title, the first text on the title's row.
         for column, value in cells[1:] if index == 0 else cells:
             text = receipts_label(value)
             if column in years or NUMBER_RE.fullmatch(text):
