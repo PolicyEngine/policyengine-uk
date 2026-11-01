@@ -14,12 +14,12 @@ The model reads the award from its conditions and an upper bound on it
 disability carer test, since the award itself reads Pension Credit, unless the
 simulation stores the award. Scotland's carer premium reads the positive award
 (receives_uc_carer_element), or from 1 April 2022 to 31 March 2025, when the
-model counts a nil award as one with a value of zero, the award's conditions. Each example simulates the
-households as drawn, and
-again with has_uc_award_with_carer_element supplied as false for everyone, the
-attribution as it ran before the limb (its carers are then
-receives_carer_benefit alone). The Scottish premium's counterpart without the
-limb is carer_premium.
+model counts a nil award as one with a value of zero, the award's conditions.
+Each example simulates the households as drawn, and again with
+has_uc_award_with_carer_element supplied as false for everyone, the
+attribution as it ran before the limb (its carers then come from
+receives_carer_benefit alone). carer_premium gives the Scottish premium's
+counterpart without the limb.
 
 Invariants, on generated households under baseline law:
 
@@ -31,22 +31,24 @@ Invariants, on generated households under baseline law:
 2. Never raises: no carer element raises the severe disability premium (the
    shared, council tax reduction and pension-age premiums) or the Pension
    Credit addition.
-3. Never lowers, and only in Scotland: council_tax_reduction_carer_premium is
-   never below carer_premium, and differs from it only for a Scottish
+3. Never lowers, and only in Scotland: council_tax_reduction_carer_premium
+   never falls below carer_premium, and differs from it only for a Scottish
    working-age family.
-4. Bounds: the Scottish premium is a whole number of weekly amounts, at most
+4. Bounds: the Scottish premium comes to a whole number of weekly amounts, at most
    the number of claimants and partners, and at most one where partners care
    for the same person; a person with both an allowance and a carer element
    counts once.
-5. Where the bound is nil, the award is nil: uc_award_upper_bound is at least
-   universal_credit_pre_benefit_cap, which is at least universal_credit, so
-   receives_uc_carer_element implies has_uc_award_with_carer_element. That
-   implication also holds where the simulation stores the award.
-6. Attribution: no one is their own carer, everyone cared for is severely
-   disabled for Carer's Allowance, and a household has no more people cared
-   for than carers (carer benefit recipients and carer element holders).
-7. No cycle: every reader calculates on one simulation, whichever is requested
-   first, and also where the simulation stores the award.
+5. A nil bound leaves a nil award: uc_award_upper_bound >=
+   universal_credit_pre_benefit_cap >= universal_credit for awards the
+   model's formulas calculate, so receives_uc_carer_element implies
+   has_uc_award_with_carer_element. That implication also holds where the
+   simulation stores the award, which can exceed the bound.
+6. Attribution: the attribution makes no one their own carer, everyone it
+   counts as cared for meets Carer's Allowance's severe disability test, and
+   no household has more people cared for than carers (carer benefit
+   recipients and carer element holders).
+7. No cycle: every reader calculates on one simulation, whichever the test
+   requests first, and also where the simulation stores the award.
 8. Endpoint parity: uc_award_upper_bound equals, exactly, the larger of two
    awards the model's own formulas calculate, one with non-dependant
    deductions supplied as nil and one with the housing costs element supplied
@@ -223,9 +225,9 @@ def situation(population, without_limb=()):
 def with_and_without_limb(population, variables):
     """Each variable for the households as drawn, and without the limb.
 
-    Without the limb, has_uc_award_with_carer_element is supplied as false
-    for everyone, in a second simulation: a variable supplied for some people
-    takes its default, not its formula, for the rest.
+    Without the limb, a second simulation supplies
+    has_uc_award_with_carer_element as false for everyone: a variable supplied
+    for some people takes its default, not its formula, for the rest.
     """
     sim = Simulation(situation=situation(population))
     sim_without = Simulation(
@@ -315,8 +317,8 @@ def test_issue_households_read_the_carer_element_award():
     # #2120: the blind carer's award includes the carer element, 209.34 x 12,
     # so the disabled person has no severe disability premium (86.05 x 52
     # without it). #2124: the Scottish carer's applicable amount includes the
-    # carer premium, (95.55 + 48.15) x 52, not 95.55 x 52. Only variables
-    # that predate the fix are read, so the test also runs on the old code.
+    # carer premium, (95.55 + 48.15) x 52, not 95.55 x 52. The test reads
+    # only variables that predate the fix, so it also runs on the old code.
     sim = Simulation(situation=situation(EXAMPLES[:1] + EXAMPLES[2:3]))
     severe = sim.calculate("severe_disability_premium", YEAR)
     carer_element = sim.calculate("uc_carer_element", YEAR)
@@ -353,8 +355,8 @@ def test_the_carer_element_limb_moves_only_its_readers_and_only_one_way(populati
     benunit_household = household_index(sim, "benunit")
     person_household = household_index(sim, "person")
 
-    # 5. Where the bound is nil the award is nil, exactly, so the carer test
-    # misses no award.
+    # 5. A nil bound leaves a nil award, exactly, so the carer test misses no
+    # award.
     bound = drawn["uc_award_upper_bound"]
     award = drawn["universal_credit_pre_benefit_cap"]
     assert (bound >= award).all()
@@ -411,9 +413,9 @@ def test_the_carer_element_limb_moves_only_its_readers_and_only_one_way(populati
     same_person = drawn["partners_care_for_same_severely_disabled_person"]
     assert (np.round(weekly[same_person]) <= 1).all()
 
-    # 6. Everyone cared for is severely disabled for Carer's Allowance; no
-    # household has more people cared for than carers, and a lone carer is
-    # not cared for.
+    # 6. Everyone cared for meets Carer's Allowance's severe disability test; no
+    # household has more people cared for than carers, and the attribution
+    # never counts a lone carer as cared for.
     assert not (cared_for & ~drawn["is_severely_disabled_for_carers_allowance"]).any()
     carer = drawn["receives_carer_benefit"] | has_award
     for h in np.unique(person_household):
@@ -445,8 +447,8 @@ def test_every_reader_calculates_on_one_simulation_in_any_order(population, orde
 
 def stored_award_situation(stored=True):
     """The issue's blind carer on £20,000, which tapers the award the model
-    works out to nil, with neither family claiming; the award is supplied
-    instead: nil for the disabled person's family, £100 for the carer's."""
+    works out to nil, with neither family claiming; the situation supplies
+    the award instead: nil for the disabled person's family, £100 for the carer's."""
     sim_situation = situation(
         [
             dict(
@@ -496,7 +498,7 @@ def test_a_stored_award_is_the_award_and_reads_no_cycle(order):
 
 
 def test_a_reform_that_abolishes_universal_credit_leaves_no_carer_element_award():
-    # A neutralized award reads no other variable and is nil, so no one has
+    # A neutralized award reads no other variable and comes to nil, so no one has
     # an award and the blind carer of the issue no longer bars the premium.
     from policyengine_core.reforms import Reform
 
@@ -817,7 +819,8 @@ def parity_situation(rows, endpoint=None):
     """One household per (family, earned income, unearned income) row. Each
     family claims and takes no Tax-Free Childcare instead, with no benefit cap
     reduction or debt deduction, so the final award equals the award before
-    the cap. endpoint, a variable in ENDPOINTS, is supplied as nil."""
+    the cap. The situation supplies endpoint, a variable in ENDPOINTS, as
+    nil."""
     people, benunits, households = {}, {}, {}
     for i, (family, earned, unearned) in enumerate(rows):
         members = []

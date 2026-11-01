@@ -30,8 +30,8 @@
 
 - name: The issue's Scottish carer aged 40 with 35 hours and no Carer's Allowance claim gets the carer premium
   # Para 6(1)(c): the award includes the carer element, 209.34 x 12 =
-  # 2,512.08, so the applicable amount is (95.55 + 48.15) x 52 = 7,472.40,
-  # not 95.55 x 52 = 4,968.60.
+  # 2,512.08, so the applicable amount comes to (95.55 + 48.15) x 52 =
+  # 7,472.40, not 95.55 x 52 = 4,968.60.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -58,7 +58,7 @@
     council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
 
 - name: The Scottish carer premium for a carer element starts with the 2021 Regulations on 1 April 2022
-  # Model year 2022 is 2022-23, read at 30 April 2022. Carer element
+  # The model reads model year 2022 (2022-23) at 30 April 2022. Carer element
   # 168.81 x 12 = 2,025.72; carer premium 38.85 x 52 = 2,020.20; applicable
   # amount (77.00 + 38.85) x 52.
   period: 2022
@@ -83,8 +83,8 @@
     council_tax_reduction_applicable_amount: (77.00 + 38.85) * 52
 
 - name: Before 1 April 2022 the Scottish scheme for persons under pension age tested Carer's Allowance only
-  # SSI 2012/303 Sch 1 para 14: "entitled to a carer's allowance". Model
-  # year 2021 is 2021-22, read at 30 April 2021, so the carer element,
+  # SSI 2012/303 Sch 1 para 14: "entitled to a carer's allowance". The model
+  # reads model year 2021 (2021-22) at 30 April 2021, so the carer element,
   # 163.73 x 12 = 1,964.76, gives no premium.
   period: 2021
   absolute_error_margin: 0.01
@@ -155,8 +155,8 @@
     council_tax_reduction_applicable_amount: 95.55 * 52
 
 - name: A Scottish carer whose income tapers the award to nil has no award and no carer premium
-  # With £20,000 of earnings the award is nil, so in 2026 there is no award
-  # (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17) and para 6(1)(c)
+  # With £20,000 of earnings the award comes to nil, which in 2026 leaves no
+  # award (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17), and para 6(1)(c)
   # does not apply, though the maximum amount still includes the carer
   # element.
   period: 2026
@@ -185,7 +185,7 @@
 - name: In 2024 the model counts a Scottish carer's nil award as an award with the carer element
   # The same carer in 2024-25. The maximum amount is (393.45 + 198.31) x 12
   # = 7,101.12, and the taper on £20,000 of earnings less income tax and
-  # National Insurance takes more, so the award is nil. Until 31 March 2025
+  # National Insurance takes more, so the award comes to nil. Until 31 March 2025
   # an "award of universal credit" included one "with a value of zero" (reg
   # 4). The model reads that as reaching this nil award, a reading the
   # sources leave open (see the header), so para 6(1)(c) applies: carer
@@ -215,11 +215,11 @@
     carer_premium: 0
     council_tax_reduction_carer_premium: 45.60 * 52
 
-- name: From 1 April 2025 the same Scottish carer's nil award is no award
+- name: From 1 April 2025 the same Scottish carer's nil award leaves no award
   # The same carer in 2025-26. The maximum amount is (400.14 + 201.68) x 12 =
-  # 7,221.84, and the taper again takes more, so the award is nil. From 1
-  # April 2025 an award of universal credit is one "made under Part 1 of the
-  # 2012 Act" (SSI 2025/24 reg 8), and an income that tapers it to nil leaves
+  # 7,221.84, and the taper again takes more, so the award comes to nil. From
+  # 1 April 2025 reg 4 defines an award of universal credit as one "made under
+  # Part 1 of the 2012 Act" (SSI 2025/24 reg 8), and an income that tapers it to nil leaves
   # no award, so para 6(1)(c) does not apply: no carer premium. Neither of
   # reg 10A's nil awards (a sanction, or a reclaim under the UC Claims and
   # Payments Regs 2013 reg 32A) arises.
@@ -248,8 +248,8 @@
     council_tax_reduction_carer_premium: 0
 
 - name: A Scottish carer with both Carer Support Payment and the carer element gets one premium
-  # The premium is paid in respect of each person who qualifies (para 5(3)),
-  # not for each award: 48.15 x 52 = 2,503.80, not twice that.
+  # Councils pay the premium in respect of each person who qualifies (para
+  # 5(3)), not for each award: 48.15 x 52 = 2,503.80, not twice that.
   period: 2026
   absolute_error_margin: 0.01
   input:

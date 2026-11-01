@@ -33,7 +33,7 @@ class council_tax_reduction_carer_premium(Variable):
         "having an award, but calls reg 10A an expansion that gives the "
         "intention effect. Ipswich BC v TD [2024] UKUT 117 (AAC) holds that "
         "a nil award carries no Universal Credit entitlement, without "
-        "construing the Scottish definition. So while the earlier definition "
+        "construing the Scottish definition. While the earlier definition "
         "holds (uc_award_includes_zero_value_award), this variable reads limb "
         "(c) from the award's conditions: the family claims Universal Credit, "
         "meets its basic conditions and does not take Tax-Free Childcare "

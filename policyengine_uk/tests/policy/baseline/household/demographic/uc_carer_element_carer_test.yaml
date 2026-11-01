@@ -2,11 +2,12 @@
 # carer benefit in the carer condition of the legacy severe disability premium
 # (HB Regs 2006 Sch 3 para 14(2)(a)(iii) and (b); HB(SPC) Regs 2006 Sch 3
 # para 6(2)) and of the Pension Credit severe disability addition (SPC Regs
-# 2002 Sch I para 1(1)(a)(iii) and (b), with para 1(4)): no premium or
-# addition is paid for a person someone "has an award of universal credit which
-# includes the carer element in respect of caring for". The carer element is
-# for regular and substantial caring for a severely disabled person, whether or
-# not the carer claims Carer's Allowance (UC Regs 2013 regs 29 and 30(2)).
+# 2002 Sch I para 1(1)(a)(iii) and (b), with para 1(4)): DWP and councils
+# withhold the premium or addition when a carer "has an award of universal
+# credit which includes the carer element in respect of caring for" the
+# claimant. DWP includes the carer element for regular and substantial caring
+# for a severely disabled person, whether or not the carer claims Carer's
+# Allowance (UC Regs 2013 regs 29 and 30(2)).
 #
 # Amounts for 2026-27 (DWP benefit and pension rates 2026 to 2027; the Social
 # Security Benefits Up-rating Order 2026, SI 2026/148): severe disability
@@ -18,7 +19,8 @@
   # The carer is a non-dependant who is blind, so the non-dependant condition
   # ignores them (para 14(4)(b)); their award bars the premium instead.
   # Carer element 209.34 x 12 = 2,512.08; award (424.90 + 209.34) x 12 =
-  # 7,610.88. Without the limb the premium was 86.05 x 52 = 4,474.60.
+  # 7,610.88. Without the limb the model paid the premium, 86.05 x 52 =
+  # 4,474.60.
   period: 2026
   input:
     people:
@@ -79,9 +81,9 @@
 
 - name: A son's Universal Credit carer element in another benefit unit bars a pensioner's severe disability addition
   # SPC Regs 2002 Sch I para 1(1)(a)(iii) and (4). The son is blind, so the
-  # residence condition ignores him (para 2). Without the limb the addition
-  # was 86.05 x 52 = 4,474.60, and so was the pension-age Housing Benefit
-  # premium (HB(SPC) Regs 2006 Sch 3 para 6(2)(a)(iii)).
+  # residence condition ignores him (para 2). Without the limb the model paid
+  # the addition, 86.05 x 52 = 4,474.60, and the pension-age Housing Benefit
+  # premium at the same amount (HB(SPC) Regs 2006 Sch 3 para 6(2)(a)(iii)).
   period: 2026
   input:
     people:
@@ -109,7 +111,7 @@
     severe_disability_minimum_guarantee_addition: [0, 0]
     pension_age_severe_disability_premium: [0, 0]
 
-- name: A carer on both Carer's Allowance and Universal Credit is one carer
+- name: A carer on both Carer's Allowance and Universal Credit counts once
   # The carer receives Carer's Allowance, 86.45 x 52 = 4,495.40, and a
   # Universal Credit award with the carer element, (424.90 + 209.34) x 12 -
   # 4,495.40 = 3,115.48. They care for one person (SSCBA 1992 s.70(7) and
@@ -147,7 +149,7 @@
     is_cared_for_by_carer_benefit_recipient: [true, false, false]
     severe_disability_minimum_guarantee_addition: [4_474.60, 0]
 
-- name: A partner's carer element is not a second carer where the other partner receives the allowance for the same person
+- name: A partner's carer element adds no second carer where the other partner receives the allowance for the same person
   # Both partners care 35 hours; the younger claims Carer's Allowance and the
   # joint award includes the carer element for the elder (UC Regs 2013 reg
   # 29(3); the model takes the elder). Partners caring for the same severely
@@ -194,8 +196,8 @@
   # exceeds the maximum amount even with no non-dependant deduction
   # (uc_award_upper_bound; the disabled person's family, which does not
   # claim, has a bound of its standard allowance, 424.90 x 12 = 5,098.80), so
-  # the award is nil and there is no award (Welfare Reform Act 2012 s.5(1)(b);
-  # UC Regs 2013 reg 17). No one has an award in
+  # the award comes to nil, which leaves no award (Welfare Reform Act 2012
+  # s.5(1)(b); UC Regs 2013 reg 17). No one has an award in
   # respect of caring for the disabled person, who keeps the premium, 86.05 x
   # 52 = 4,474.60.
   period: 2026
@@ -310,10 +312,10 @@
     severe_disability_minimum_guarantee_addition: [4_474.60, 0]
     pension_age_severe_disability_premium: [4_474.60, 0]
 
-- name: A stored award is read as the award, even without a claim
+- name: The carer test reads a stored award as the award, even without a claim
   # The carer of the first case earns £20,000, which tapers the award the
-  # model would work out to nil, and neither family claims. Universal Credit
-  # is supplied instead: nil for the disabled person's family and £100 for
+  # model would work out to nil, and neither family claims. The case supplies
+  # Universal Credit instead: nil for the disabled person's family and £100 for
   # the carer's. A stored award reads no other variable, so the carer test
   # reads it (receives_uc_carer_element): the carer's award includes the
   # carer element and bars the premium.
@@ -349,7 +351,7 @@
     is_cared_for_by_carer_benefit_recipient: [true, false]
     severe_disability_premium: [0, 0]
 
-- name: Without a Universal Credit claim there is no carer element award
+- name: Without a Universal Credit claim no one has a carer element award
   # The same carer as in the first case, in a family that does not claim
   # Universal Credit and does not claim Carer's Allowance: no one has an award
   # in respect of caring for the disabled person, who keeps the premium,

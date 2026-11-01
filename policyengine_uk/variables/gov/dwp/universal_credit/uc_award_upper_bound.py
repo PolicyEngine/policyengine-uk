@@ -32,10 +32,10 @@ class uc_award_upper_bound(Variable):
         "This amount reads neither, so that test can read it. It can exceed "
         "a nil award (#2795). A non-dependant deduction can take the award "
         "to nil. A family that takes Tax-Free Childcare instead gets no award "
-        "(forgoes_universal_credit_for_tax_free_childcare). And for a family "
+        "(forgoes_universal_credit_for_tax_free_childcare). For a family "
         "with a work allowance and a small housing costs element, the "
         "calculation without housing costs applies the higher work "
-        "allowance, whose extra earnings disregard can outweigh the housing "
+        "allowance. Its extra earnings disregard can outweigh the housing "
         "costs it drops, so it can stay positive when the award comes to nil, "
         "even with no non-dependant deduction."
     )

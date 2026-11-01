@@ -29,19 +29,19 @@ why = "Known bug #1947 (Marriage Allowance booked on the recipient), pinned by a
 nodeid = "policyengine_uk/tests/test_uc_carer_element_award_properties.py::test_a_non_dependant_deduction_that_takes_the_award_to_nil_leaves_no_award"
 outcome = "xfailed"
 reason = "#2795"
-why = "Known bug #2795 (a carer whose award a non-dependant deduction takes to nil still bars the severe disability premium), pinned by a strict xfail until it is fixed."
+why = "Known bug #2795: a carer whose award a non-dependant deduction takes to nil still bars the severe disability premium. A strict xfail pins it until the model pays the premium."
 
 [[allow]]
 nodeid = "policyengine_uk/tests/test_uc_carer_element_award_properties.py::test_a_family_that_takes_tax_free_childcare_instead_has_no_award"
 outcome = "xfailed"
 reason = "#2795"
-why = "Known bug #2795 (a carer whose family takes Tax-Free Childcare instead of Universal Credit still bars the severe disability premium), pinned by a strict xfail until it is fixed."
+why = "Known bug #2795: a carer whose family takes Tax-Free Childcare instead of Universal Credit still bars the severe disability premium. A strict xfail pins it until the model pays the premium."
 
 [[allow]]
 nodeid = "policyengine_uk/tests/test_uc_carer_element_award_properties.py::test_small_housing_costs_with_a_work_allowance_leave_no_award"
 outcome = "xfailed"
 reason = "#2795"
-why = "Known bug #2795 (a carer with a work allowance and a small housing costs element whose award comes to nil still bars the severe disability premium), pinned by a strict xfail until it is fixed."
+why = "Known bug #2795: a carer with a work allowance and a small housing costs element whose award comes to nil still bars the severe disability premium. A strict xfail pins it until the model pays the premium."
 
 [[allow]]
 nodeid = "policyengine_uk/tests/test_build_metadata.py::test_runtime_metadata_uses_bundle_contract_when_available"
