@@ -1,0 +1,376 @@
+# Legacy enhanced disability premium for a claimant or partner.
+# Conditions: HB Regs 2006 Sch 3 para 15(1)(b)-(d); IS Regs 1987 Sch 2 para
+# 13A(1), (1ZA); ESA Regs 2008 Sch 4 para 7(1)(b)-(d); JSA Regs 1996 Sch 1
+# para 15A(1), (1ZA); HB Regs (NI) 2006 Sch 4 para 15(1)(aa)-(c).
+# Amounts (HB Regs 2006 Sch 3 Part 4, enhanced disability premium row (9),
+# 2026-27): £22.00 for a person who is not a member of a couple, £31.40 where
+# the condition is met in respect of a member of a couple.
+# 2026-27 weekly rates: DLA care highest £114.60, middle £76.70; PIP daily
+# living enhanced £114.60, standard £76.70 (gov.dwp parameters).
+
+- name: Case 1, enhanced PIP daily living qualifies a single claimant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 114.60 * 52 = 5,959.20 (HB para 15(1)(c); IS para 13A(1ZA)(c)).
+    pip_dl: 5_959.20
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 1
+    # 22.00 * 52 = 1,144.00.
+    enhanced_disability_premium: 1_144
+
+- name: Case 2, the highest DLA care rate qualifies a single claimant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc_category: HIGHER
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 114.60 * 52 = 5,959.20 (HB para 15(1)(b); IS para 13A(1ZA)(b)).
+    dla_sc: 5_959.20
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 3, standard PIP daily living does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: STANDARD
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 76.70 * 52 = 3,988.40; para 15(1)(c) needs the enhanced rate.
+    pip_dl: 3_988.40
+    receives_enhanced_disability_premium_qualifying_benefit: false
+    enhanced_disability_premium: 0
+
+- name: Case 4, the middle DLA care rate does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc_category: MIDDLE
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 76.70 * 52 = 3,988.40; para 15(1)(b) needs the highest rate.
+    dla_sc: 3_988.40
+    receives_enhanced_disability_premium_qualifying_benefit: false
+    enhanced_disability_premium: 0
+
+- name: Case 5, armed forces independence payment qualifies a single claimant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # HB para 15(1)(d); IS para 13A(1ZA)(a): any payment of AFIP.
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    enhanced_disability_premium: 1_144
+
+- name: Case 6, attendance allowance at the higher rate does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        aa_category: HIGHER
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # None of HB para 15(1), IS para 13A(1ZA), ESA para 7(1) or JSA para
+    # 15A(1ZA) names attendance allowance.
+    receives_enhanced_disability_premium_qualifying_benefit: false
+    enhanced_disability_premium: 0
+
+- name: Case 7, a single claimant over the State Pension Credit qualifying age gets no premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        dla_sc_category: HIGHER
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    has_attained_state_pension_credit_qualifying_age: true
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    # HB para 15(1)(b): "who has not attained the qualifying age for state
+    # pension credit".
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 0
+    enhanced_disability_premium: 0
+
+- name: Case 8, a couple where one member qualifies gets the couple rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+      person2:
+        age: 31
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    receives_enhanced_disability_premium_qualifying_benefit: [true, false]
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 1
+    # 31.40 * 52 = 1,632.80.
+    enhanced_disability_premium: 1_632.80
+
+- name: Case 9, a couple where both members qualify still gets one couple rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+      person2:
+        age: 31
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 2
+    # Row (9)(c) pays £31.40 "where the claimant is a member of a couple and
+    # the conditions ... are satisfied in respect of a member of that
+    # couple": 31.40 * 52 = 1,632.80, not two single rates (2 * 1,144.00).
+    enhanced_disability_premium: 1_632.80
+
+- name: Case 10, a couple whose only qualifying member is over the qualifying age gets no premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    is_couple: true
+    has_attained_state_pension_credit_qualifying_age: [false, true]
+    # IS para 13A(1)(b): "the claimant's partner, if any, who has not
+    # attained the qualifying age for state pension credit".
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 0
+    enhanced_disability_premium: 0
+
+- name: Case 11, a couple with a qualifying member under the qualifying age gets the couple rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+        pip_dl_category: ENHANCED
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    is_couple: true
+    num_enhanced_disabled_claimants_or_partners_for_legacy_benefits: 1
+    enhanced_disability_premium: 1_632.80
+
+- name: Case 12, Northern Ireland reads enhanced PIP daily living from 2017.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: NORTHERN_IRELAND
+  output:
+    # S.R. 2016/228 added the PIP limb from 20 June 2016; the model reads the
+    # list at 30 April, so 2016 has no PIP limb in Northern Ireland.
+    receives_enhanced_disability_premium_qualifying_benefit: false
+    enhanced_disability_premium: 0
+
+- name: Case 13, enhanced PIP daily living qualifies in Northern Ireland in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: NORTHERN_IRELAND
+  output:
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    # 2017-18 single rate £15.90: 15.90 * 52 = 826.80.
+    enhanced_disability_premium: 826.80
+
+- name: Case 14, Northern Ireland already counts armed forces independence payment in 2016.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: NORTHERN_IRELAND
+  output:
+    # S.I. 2013/3021 added the AFIP limb from 24 December 2013. 2016-17
+    # single rate £15.75: 15.75 * 52 = 819.00.
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    enhanced_disability_premium: 819
+
+- name: Case 15, Great Britain counts enhanced PIP daily living in 2016.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # S.I. 2013/388 added the PIP limb from 8 April 2013.
+    receives_enhanced_disability_premium_qualifying_benefit: true
+    enhanced_disability_premium: 819
+
+- name: Case 16, Housing Benefit premiums include the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    housing_benefit_pension_age_regulations_apply: false
+    enhanced_disability_premium: 1_144
+    # Enhanced PIP daily living is also on the severe disability premium
+    # list (gov.dwp.disability_premia.severe_qualifying_benefits); the
+    # claimant lives alone and no one is paid a carer benefit for them:
+    # 86.05 * 52 = 4,474.60.
+    severe_disability_premium: 4_474.60
+    # 1,144.00 + 4,474.60 = 5,618.60.
+    benefits_premiums: 5_618.60
+
+- name: Case 17, Housing Benefit for an over-age partner in the working-age regulations has no premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    is_couple: true
+    # Income-based Jobseeker's Allowance keeps the claim in the working-age
+    # regulations (housing_benefit_pension_age_regulations_apply), whose
+    # para 15(1)(b) excludes a family member who has attained the
+    # qualifying age.
+    housing_benefit_pension_age_regulations_apply: false
+    enhanced_disability_premium: 0
+    # Only one partner receives a severe disability premium qualifying
+    # benefit and the other is not blind, so the model pays no severe
+    # disability premium either (severe_disability_premium).
+    benefits_premiums: 0
+
+- name: Case 18, the Income Support applicable amount includes the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # Personal allowance for a single claimant aged 25 or over, £95.55
+    # (2026-27 DWP rates): 95.55 * 52 = 4,968.60. Premiums 1,144.00 +
+    # 4,474.60 = 5,618.60. Total 10,587.20.
+    income_support_applicable_amount: 10_587.20

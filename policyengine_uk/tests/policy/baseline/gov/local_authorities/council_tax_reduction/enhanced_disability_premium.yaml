@@ -1,0 +1,239 @@
+# Enhanced disability premium in working-age Council Tax Reduction.
+# Wales: CTR (Prescribed Requirements) (Wales) Regs 2013 Sch 7 para 12(1):
+# DLA care highest, PIP daily living enhanced or AFIP, for an applicant or
+# family member "who has not attained the qualifying age for state pension
+# credit". Scotland: CTR (Scotland) Regs 2021 Sch 1 para 14(1): the same
+# benefits for the applicant or partner with no age limit from 20 June 2022
+# (S.S.I. 2022/161), and attendance allowance at either rate from 1 April
+# 2023 (para 14(1)(g), S.S.I. 2023/38). The model reads each year's rules at
+# 30 April.
+# 2026-27 amounts: enhanced disability premium £22.00 single, £31.40 couple;
+# severe disability premium £86.05 single.
+
+- name: Case 1, Welsh working-age CTR premiums include the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    council_tax_reduction_pensioner: false
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: 1_144
+    # Plus the severe disability premium, 86.05 * 52 = 4,474.60: 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 2, Scottish working-age CTR counts attendance allowance at either rate from 2023.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        aa_category: LOWER
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    council_tax_reduction_pensioner: false
+    # The shared legacy premium does not count attendance allowance.
+    enhanced_disability_premium: 0
+    # Para 14(1)(g): 22.00 * 52 = 1,144.00.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+    council_tax_reduction_enhanced_disability_premium: 1_144
+    # Severe disability premium 4,474.60 + 1,144.00 = 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 3, Scottish working-age CTR does not count attendance allowance in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        aa_category: LOWER
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    council_tax_reduction_enhanced_disability_premium: 0
+    # Only the severe disability premium, 2022-23 single rate £69.40:
+    # 69.40 * 52 = 3,608.80.
+    council_tax_reduction_premiums: 3_608.80
+
+- name: Case 4, Scottish working-age CTR pays the couple rate for an over-age partner from 2023.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    is_couple: true
+    # Income-based Jobseeker's Allowance keeps the couple in the working-age
+    # scheme.
+    council_tax_reduction_pensioner: false
+    # The shared legacy premium applies the age limit.
+    enhanced_disability_premium: 0
+    # Para 14(1)(b) has no age limit: 31.40 * 52 = 1,632.80.
+    council_tax_reduction_enhanced_disability_premium: 1_632.80
+    # No other premium: only one partner has a severe disability premium
+    # qualifying benefit.
+    council_tax_reduction_premiums: 1_632.80
+
+- name: Case 5, Scottish working-age CTR applied the age limit in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    is_couple: true
+    council_tax_reduction_pensioner: false
+    # Para 14(1)(b) as in force on 30 April 2022: "the applicant's partner,
+    # who has not attained pensionable age".
+    council_tax_reduction_enhanced_disability_premium: 0
+    council_tax_reduction_premiums: 0
+
+- name: Case 6, Welsh working-age CTR keeps the age limit for an over-age partner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    is_couple: true
+    council_tax_reduction_pensioner: false
+    # Sch 7 para 12(1)(b): "who has not attained the qualifying age for state
+    # pension credit".
+    council_tax_reduction_enhanced_disability_premium: 0
+    council_tax_reduction_premiums: 0
+
+- name: Case 7, a household head who applies alone gets the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 50
+        is_household_head: true
+        pip_dl_category: ENHANCED
+      person2:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person3:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person4:
+        age: 0
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    council_tax_reduction_pensioner: false
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false, false, false]
+    # The head's own single-rate premium 1,144.00, plus the severe disability
+    # premium 4,474.60 (the other residents are under 18): 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 8, a Scottish household head who applies alone and receives attendance allowance gets the premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 50
+        is_household_head: true
+        aa_category: LOWER
+      person2:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person3:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person4:
+        age: 0
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    council_tax_reduction_pensioner: false
+    # Para 14(1)(g) 1,144.00 plus the severe disability premium 4,474.60:
+    # 5,618.60.
+    council_tax_reduction_premiums: 5_618.60

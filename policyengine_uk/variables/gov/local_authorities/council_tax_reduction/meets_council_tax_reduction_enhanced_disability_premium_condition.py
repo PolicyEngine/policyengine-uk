@@ -38,7 +38,7 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         scotland = is_scotland_scheme(person.household("country", period))
         under_age = ~person("has_attained_state_pension_credit_qualifying_age", period)
         scottish = (add(person, period, p.qualifying_benefits) > 0) & (
-            under_age | ~p.age_limit_applies
+            under_age | (not p.age_limit_applies)
         )
         elsewhere = (
             person("receives_enhanced_disability_premium_qualifying_benefit", period)
