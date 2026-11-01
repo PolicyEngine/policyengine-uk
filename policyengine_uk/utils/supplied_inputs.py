@@ -55,6 +55,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "receives_carer_benefit",
         "receives_carers_allowance",
         "receives_carer_support_payment",
+        "benefit_cap_welfare_benefits",
         "bus_fare_spending",
         "bus_in_london_trips",
         "current_education",
@@ -83,9 +84,12 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "tenure_type",
         "targeted_childcare_entitlement",
         "trading_loss",
+        "uc_benefit_cap_reduction",
+        "uc_benefit_cap_reduction_after_floor",
         "uc_carer_element",
         "uc_LCWRA_element",
         "universal_childcare_entitlement",
+        "universal_credit",
     }
 )
 

@@ -148,7 +148,7 @@ def individual_non_dep_deduction(person, period, parameters, pensioner_applicant
         is_wales_scheme(country),
     ]
     weekly_income = non_dependant_weekly_gross_income(
-        person, period, "council_tax_reduction_non_dep_gross_income"
+        person, period, parameters, "council_tax_reduction_non_dep_gross_income"
     )
     no_income = np.zeros_like(weekly_income)
     remunerative_work_hours = select(

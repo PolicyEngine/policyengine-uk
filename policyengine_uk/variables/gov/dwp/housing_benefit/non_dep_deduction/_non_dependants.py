@@ -4,9 +4,19 @@ non-dependant deductions."""
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.benefit_unit import add_for_members, award_of_couple
+from policyengine_uk.utils.supplied_inputs import stored_as_input
 from policyengine_uk.variables.gov.dwp.benefit_cap_welfare_benefits import (
     CLAIMANT_OR_PARTNER_BENEFITS as CAPPED_CLAIMANT_OR_PARTNER_BENEFITS,
     FAMILY_BENEFITS as CAPPED_FAMILY_BENEFITS,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.benefit_cap.uc_benefit_cap_reduction import (
+    benefit_cap_reduction_of,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.benefit_cap.uc_benefit_cap_reduction_after_floor import (
+    benefit_cap_reduction_applied,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.universal_credit import (
+    universal_credit as universal_credit_variable,
 )
 from policyengine_uk.variables.gov.dwp.esa_income import (
     income_related_esa_award_on_reports,
@@ -30,15 +40,6 @@ FAMILY_GROSS_INCOME_BENEFITS = [
     "pension_credit",
 ]
 
-# Statutory payments treated as employed earnings (UC Regs 2013 reg 55(4)).
-# Statutory adoption, shared parental, parental bereavement and neonatal care
-# pay have no input.
-STATUTORY_PAY_EARNINGS = [
-    "statutory_sick_pay",
-    "statutory_maternity_pay",
-    "statutory_paternity_pay",
-]
-
 # The welfare benefits the benefit cap counts (benefit_cap_welfare_benefits)
 # other than Housing Benefit, and Maternity Allowance, a welfare benefit
 # (Welfare Reform Act 2012 s.96(10)(i)) that total leaves out. Bereavement
@@ -50,7 +51,7 @@ CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
 ] + ["maternity_allowance"]
 
 
-def non_dependant_weekly_gross_income(person, period, own_gross_income):
+def non_dependant_weekly_gross_income(person, period, parameters, own_gross_income):
     """Normal weekly gross income for the deduction bands. A claimant or
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
     para 8(4)): each member's own gross income plus the family's tax credits,
@@ -67,7 +68,7 @@ def non_dependant_weekly_gross_income(person, period, own_gross_income):
     # Universal Credit is the income of the claimants it assesses, the
     # claimant and partner unless is_uc_claimant names someone else.
     universal_credit = benunit.project(
-        universal_credit_after_benefit_cap(benunit, period)
+        universal_credit_after_benefit_cap(benunit, period, parameters)
     )
     uc_claimant = person("is_uc_assessed_claimant", period)
     couple_claims_universal_credit = person.benunit.any(
@@ -85,18 +86,61 @@ def non_dependant_weekly_gross_income(person, period, own_gross_income):
     return annual / WEEKS_IN_YEAR
 
 
-def universal_credit_after_benefit_cap(benunit, period):
+def reads_simulation_value(benunit, period, variable_name, default_formula=None):
+    """Whether to read the variable rather than recalculate it here: a value
+    stored as an input for the period, a neutralized variable, or, where
+    default_formula is given, a formula a reform has replaced."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.is_neutralized:
+        return True
+    if default_formula is not None:
+        formula = variable.get_formula(period)
+        if formula is None or formula.__code__ != default_formula.__code__:
+            return True
+    return stored_as_input(benunit, variable_name, period)
+
+
+def universal_credit_after_benefit_cap(benunit, period, parameters):
     """A family's Universal Credit award after the benefit cap (UC Regs 2013
     reg 81), for a family that is not liable for rent. universal_credit and
     uc_benefit_cap_reduction depend on Housing Benefit through the welfare
-    benefits they count, so the cap (uc_benefit_cap) is applied here to the
-    same welfare benefits other than Housing Benefit, which such a family does
-    not receive (UC reg 80(2A) counts it as nil in any case), for the same
-    single person or couple (benefit_cap_couple; reg 79(1)). The award is
-    reduced by the excess minus the childcare costs element, and not at all
-    where that element is greater than the excess (reg 81(1)-(2)). Deductions
+    benefits they count, so this applies the cap to the same welfare benefits
+    other than Housing Benefit, which such a family does not receive (UC reg
+    80(2A) counts it as nil in any case), for the same single person or couple
+    (benefit_cap_couple; reg 79(1)). It shares the award's own calculation of
+    the reduction (benefit_cap_reduction_of) and of the part a protected
+    minimum floor lets it take (benefit_cap_reduction_applied). Deductions
     paid from the award to third parties or for debts are still the family's
-    income, so they are not taken off."""
+    income, so they are not taken off, and the floor is applied as for a
+    family with none: the deduction rate depends on the cap reduction, and so
+    on Housing Benefit. A universal_credit stored as an input or given a new
+    formula by a reform is read as it is, and so is a stored or neutralized
+    uc_benefit_cap_reduction_after_floor, uc_benefit_cap_reduction or
+    benefit_cap_welfare_benefits, the last with Housing Benefit at nil."""
+    if reads_simulation_value(
+        benunit, period, "universal_credit", universal_credit_variable.formula
+    ):
+        return benunit("universal_credit", period)
+    if reads_simulation_value(benunit, period, "uc_benefit_cap_reduction_after_floor"):
+        applied = benunit("uc_benefit_cap_reduction_after_floor", period)
+    else:
+        if reads_simulation_value(benunit, period, "uc_benefit_cap_reduction"):
+            reduction = benunit("uc_benefit_cap_reduction", period)
+        else:
+            reduction = benefit_cap_reduction_of(
+                benunit, period, capped_welfare_benefits(benunit, period)
+            )
+        applied = benefit_cap_reduction_applied(
+            benunit, period, parameters, reduction, 0
+        )
+    return max_(benunit("universal_credit_pre_benefit_cap", period) - applied, 0)
+
+
+def capped_welfare_benefits(benunit, period):
+    """The welfare benefits the Universal Credit cap counts, with Housing
+    Benefit at nil (reg 80(2A)) and Maternity Allowance in."""
+    if reads_simulation_value(benunit, period, "benefit_cap_welfare_benefits"):
+        return benunit("benefit_cap_welfare_benefits", period)
     couple = benefit_cap_couple(benunit, period)
     income_based = award_of_couple(
         benunit,
@@ -113,41 +157,21 @@ def universal_credit_after_benefit_cap(benunit, period):
         income_related_esa_award_on_reports,
         couple,
     )
-    capped = income_based + add_for_members(
+    return income_based + add_for_members(
         benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT, couple
     )
-    excess = max_(0, capped - benunit("uc_benefit_cap", period))
-    reduction = max_(0, excess - benunit("uc_childcare_element", period))
-    return max_(0, benunit("universal_credit_pre_benefit_cap", period) - reduction)
 
 
 def has_earned_income(person, period):
-    """Whether the person has earned income (UC Regs 2013 reg 52): employed
-    earnings, including statutory sick, maternity and paternity pay and less
-    relievable pension contributions (reg 55(4)-(5)); self-employed earnings,
-    a loss counting as nil and less any relievable pension contributions not
-    already deducted from employed earnings (reg 57(2), steps 3-4), with the
-    minimum income floor applying where the Universal Credit model applies it
-    (reg 62); and other paid work."""
-    pension_contributions = person("pension_contributions", period)
-    employed_gross = add(person, period, ["employment_income", *STATUTORY_PAY_EARNINGS])
-    has_employed_earnings = employed_gross > 0
-    employed = max_(0, employed_gross - pension_contributions)
-    # Contributions are deducted from employed earnings where there are any
-    # (reg 55(5)(a)), and otherwise from self-employed earnings (reg 57(2),
-    # step 4).
-    self_employed = max_(
-        0,
-        max_(0, person("self_employment_income", period))
-        - where(has_employed_earnings, 0, pension_contributions),
-    )
-    self_employed = where(
-        person("uc_mif_applies", period),
-        max_(self_employed, person("uc_minimum_income_floor", period)),
-        self_employed,
-    )
-    other = max_(0, person("miscellaneous_income", period))
-    return (employed + self_employed + other) > 0
+    """Whether the person has earned income as Universal Credit calculates it
+    (HB Regs 2006 reg 74(8)(b), (11) and the CTR schemes' equivalents give
+    "earned income" the meaning in UC Regs 2013 reg 52):
+    uc_individual_earned_income, which takes off allowable expenses, tax,
+    National Insurance and relievable pension contributions (reg 55(3), (5)),
+    counts a company's income attributed to its owner and sets trading losses
+    against profits (regs 57(2), 77(3)), and applies the minimum income floor
+    only where reg 62 does, a couple's floor included."""
+    return person("uc_individual_earned_income", period) > 0
 
 
 def is_on_legacy_income_related_benefit(person, period):

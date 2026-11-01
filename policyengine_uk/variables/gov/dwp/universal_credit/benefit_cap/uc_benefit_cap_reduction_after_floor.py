@@ -4,6 +4,24 @@ from policyengine_uk.variables.gov.dwp.universal_credit.deductions._reduction_al
 )
 
 
+def benefit_cap_reduction_applied(
+    benunit, period, parameters, cap_reduction, deduction_demand
+):
+    """The part of a regulation 81 reduction taken off the award, given the
+    deductions demanded from it, under any protected minimum floor. The
+    non-dependant deductions call this too
+    (housing_benefit/non_dep_deduction/_non_dependants.py)."""
+    p = parameters(period).gov.dwp.universal_credit.deductions
+    _, applied = allocate_uc_reductions(
+        benunit("universal_credit_pre_benefit_cap", period),
+        cap_reduction,
+        deduction_demand,
+        benunit("uc_maximum_reduction", period),
+        p.minimum_payable * MONTHS_IN_YEAR,
+    )
+    return applied
+
+
 class uc_benefit_cap_reduction_after_floor(Variable):
     label = "UC benefit cap reduction applied"
     documentation = (
@@ -24,18 +42,16 @@ class uc_benefit_cap_reduction_after_floor(Variable):
     defined_for = "claims_universal_credit"
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.universal_credit.deductions
         # JRF's September 2026 example (standard allowance £98 a week, a £15
         # Fair Repayment Rate deduction, an £80 cap reduction, an 85% floor)
         # limits the total to £15. Meeting the deduction first, as here,
         # removes the whole cap reduction.
-        _, cap_reduction = allocate_uc_reductions(
-            benunit("universal_credit_pre_benefit_cap", period),
+        return benefit_cap_reduction_applied(
+            benunit,
+            period,
+            parameters,
             benunit("uc_benefit_cap_reduction", period),
             benunit("uc_deduction_rate", period)
             * benunit("uc_standard_allowance", period)
             * benunit("uc_award_carries_deductions", period),
-            benunit("uc_maximum_reduction", period),
-            p.minimum_payable * MONTHS_IN_YEAR,
         )
-        return cap_reduction

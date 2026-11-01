@@ -30,7 +30,7 @@ class household_benefits_individual_non_dep_deduction(Variable):
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         weekly_income = non_dependant_weekly_gross_income(
-            person, period, "housing_benefit_non_dep_gross_income"
+            person, period, parameters, "housing_benefit_non_dep_gross_income"
         )
         # Reg 6(6), or pension-age reg 6(6): a person on Income Support,
         # income-based JSA or income-related ESA is not in remunerative work.
