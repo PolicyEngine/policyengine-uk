@@ -20,11 +20,11 @@ above-cap excess:
    cap, max(universal_credit_pre_benefit_cap - uc_benefit_cap_reduction, 0),
    and a family with deductions keeps at least a penny a month payable.
 2. Deduction invariance: while the award exceeds nil, each council's reduction
-   is the same with and without the deductions.
+   stays the same with and without the deductions.
 3. Differential: where the award exceeds nil, the reduction equals a reference
-   written from para 37 and each scheme's rates: max(0, liability x maximum
-   support rate - withdrawal rate x max(0, earned income + unearned income +
-   award - maximum amount)).
+   that the test writes from para 37 and each scheme's rates: max(0, liability
+   x maximum support rate - withdrawal rate x max(0, earned income + unearned
+   income + award - maximum amount)).
 
 Each example sets its inputs on one simulation that the module builds once.
 It holds a pair of households for each family, one with deductions and one
