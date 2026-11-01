@@ -419,3 +419,30 @@
     # Reg 30: capital over 16,000, so no reduction.
     council_tax_reduction: 0
 
+- name: Case 17, England, pension contributions do not reduce tariff income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 0
+        pension_contributions: 3_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 10_001
+  output:
+    council_tax_reduction_pensioner_tariff_income: 52
+    # Cash income nil; half the contributions, 0.5 * 3,000 = 1,500, is
+    # deducted from it, floored at nil: max(0, 0 - 1,500) = 0. Tariff income
+    # is a separate source, added after the floor: 0 + 1 * 52 = 52.
+    council_tax_reduction_applicable_income: 52
