@@ -11,13 +11,15 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         "apply to a mixed-age couple, because on 14 May 2019 the couple was "
         "entitled, as that couple, to Pension Credit or pension-age Housing "
         "Benefit, and has been entitled to one of them ever since. Set it as "
-        "an input where it is known. By default it is inferred from current "
+        "an input where it is known. By default it is inferred from reported "
         "receipt: reported Pension Credit, or Housing Benefit reported by the "
-        "pension-age member without Income Support, income-based JSA or "
-        "income-related ESA (which would "
+        "pension-age member without a report of Income Support, income-based "
+        "JSA or income-related ESA (which would have "
         "put the couple under the working-age Housing Benefit Regulations), "
         "with no reported Universal Credit, where the older member was born "
-        "early enough to have reached the qualifying age by 14 May 2019."
+        "early enough to have reached the qualifying age by 14 May 2019. The "
+        "reports record history: an income-related ESA report still rules the "
+        "saving out after the award has ended."
     )
     definition_period = YEAR
     reference = (

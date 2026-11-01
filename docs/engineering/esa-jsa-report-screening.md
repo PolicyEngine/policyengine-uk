@@ -14,15 +14,23 @@ screen passes. The couple's part stays £2,792. A working outside reporter canno
 raise the total; failure of the couple's own screen cannot erase another eligible
 person's separate award. These examples presume separate preassessed claims.
 
-The abolition of income-related ESA reached every remaining award on 1 July 2026
-in Great Britain and 1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A;
-SR 2025/176 art. 3A). The model pays each claim for `esa_income_payable_share`
-of the year: the couple's claim at the highest share among its reporters, and
-each outside claim at its own. In 2026–27 that is 86/365 in Great Britain and
-178/365 in Northern Ireland, so the £3,876 above becomes £913.25 in Great Britain.
-From 2027–28 `esa_income_report_closed` closes every report, except one saved
-for an appointee (`esa_income_appointee_saving`); a Universal Credit claim
-still ends a saved award. Contributory ESA is unchanged.
+The Secretary of State appointed 1 July 2026 for the abolition of income-related
+ESA to reach every remaining award in Great Britain, and the Department appointed
+1 October 2026 in Northern Ireland (SI 2025/1148 art. 3A; SR 2025/176 art. 3A).
+An award already due to end at the end of a two-week run-on ends on that
+schedule instead: with a migration notice deadline of 22 June 2026 and no claim,
+SI 2014/1230 reg 46(1)(a) ends the award on 5 July. The model has no deadline or
+claim dates, so it pays each claim for `esa_income_payable_share` of the year, to
+the general date: one share for the couple's claim and one for each outside
+claim. In 2026–27 that is 86/365 in Great Britain and 178/365 in Northern
+Ireland, so for a couple that does not claim Universal Credit the £3,876 above
+becomes £913.25 in Great Britain. When the abolition reaches the couple's award,
+the family claims Universal Credit if `would_claim_uc_at_legacy_closure`, and
+the claim ends the couple's award; outside claims carry on. From 2027–28
+`esa_income_report_closed` closes every report and `legacy_benefits_closed`
+moves the family, except for a claim saved for an appointee
+(`esa_income_appointee_saving`), which a Universal Credit claim still ends.
+Contributory ESA is unchanged.
 
 All formula readers use the same original claim groups. A scope mask selects
 reports; it does not change claimant or partner roles. Claimant-or-partner awards
