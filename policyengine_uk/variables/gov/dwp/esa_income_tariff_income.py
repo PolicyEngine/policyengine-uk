@@ -17,10 +17,11 @@ class esa_income_tariff_income(Variable):
         ESA = parameters(period).gov.dwp.ESA.income
         capital = benunit("esa_income_assessable_capital", period)
         mt = ESA.capital
-        # ESA Regs 2008 reg 118(2)-(4) (NI: SR 2008/280 reg 118(2)-(4)): a
-        # claimant who lives permanently in prescribed accommodation has the
-        # higher lower threshold. The capital limit (reg 110) bars the award
-        # above the upper limit, so no award turns on tariff income there.
+        # ESA Regs 2008 reg 118(2)-(4) (NI: SR 2008/280 reg 118(2)-(4)): for a
+        # claimant who lives permanently in prescribed accommodation the lower
+        # threshold is £10,000, not £6,000. The capital limit (reg 110) bars
+        # the award above the upper limit, so no award turns on tariff income
+        # there.
         threshold = where(
             benunit("legacy_prescribed_accommodation_capital_exception", period),
             mt.residential_threshold,

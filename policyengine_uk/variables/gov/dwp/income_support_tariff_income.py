@@ -18,10 +18,10 @@ class income_support_tariff_income(Variable):
         capital = benunit("income_support_assessable_capital", period)
         mt = IS.means_test.capital
         # IS Regs 1987 reg 53(1A)-(1C) (NI: the same regulation of SR
-        # 1987/459): a claimant who lives permanently in prescribed
-        # accommodation has the higher lower threshold. The capital limit
-        # (reg 45) bars the award above the upper limit, so no award turns
-        # on tariff income there.
+        # 1987/459): for a claimant who lives permanently in prescribed
+        # accommodation the lower threshold is £10,000, not £6,000. The
+        # capital limit (reg 45) bars the award above the upper limit, so no
+        # award turns on tariff income there.
         threshold = where(
             benunit("legacy_prescribed_accommodation_capital_exception", period),
             mt.residential_threshold,
