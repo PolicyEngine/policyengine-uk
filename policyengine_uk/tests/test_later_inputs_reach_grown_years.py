@@ -1,10 +1,10 @@
-"""An input set for an earlier year reaches a year already grown (#2774).
+"""An input a caller sets for an earlier year reaches a year Core grew (#2774).
 
 For a year an input variable holds no input for, Core grows the latest earlier
 input by the variable's ``uprating`` index, or carries the latest input over,
 and caches the result in the variable's holder. Simulation grows a stored
-household total the same way. An input set afterwards for a year in between
-changes what that year should be. On a named branch Core drops the values that
+household total the same way. An input a caller sets afterwards for a year in
+between changes what that year should be. On a named branch Core drops the values that
 may depend on the input. On the default branch Simulation drops what it
 calculated before its next calculation (``drop_calculated_values``), and keeps
 only the years Core records as supplied, through the data or ``set_input``, of
@@ -15,8 +15,9 @@ Invariants, for any amounts and any order of inputs and calculations:
 - the default branch, a named branch and a new simulation given the same inputs
   give the same value for each of the three input variables the property sets,
   and for a formula that reads them, in every year from 2025 to 2040;
-- every year the data, a caller or a scenario's modifier supplied keeps the
-  value supplied, whether it comes before or after a year set later;
+- the simulation keeps the value of every year the data, a caller or a
+  scenario's modifier supplied, whether that year comes before or after a year
+  a caller sets later;
 - a branch that a caller takes before its parent changes keeps the values it
   held then.
 """
@@ -41,9 +42,9 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 DATA_YEAR = 2025
 LAST_YEAR = 2040
 YEARS = range(DATA_YEAR, LAST_YEAR + 1)
-# A person balance grown by GDP per capita, a person income the uprating map
-# grows by the private pension index, and a person input with no index, which
-# Core carries over flat.
+# A person balance that Core grows by GDP per capita, a person income the
+# uprating map grows by the private pension index, and a person input with no
+# index, which Core carries over flat.
 VARIABLES = ("cash_isa_balance", "private_pension_income", "car_list_price")
 PROPERTY_SETTINGS = settings(
     max_examples=6,
@@ -77,9 +78,9 @@ def _growth(simulation, name, year, base):
     )
 
 
-# Each row of the issue: the variables the test grows to 2035 from £3,000 in
-# 2025, and then from £10,000 in 2030. savings_interest_income depends on the
-# ISA balances, so it has a simulation of its own.
+# The issue's rows hold the variables Core grows to 2035 from £3,000 in 2025,
+# and then from £10,000 in 2030. savings_interest_income depends on the ISA
+# balances, so it has a simulation of its own.
 ISSUE_ROWS = {
     "balances": ("cash_isa_balance", "savings"),
     "savings interest": ("savings_interest_income",),
@@ -88,11 +89,12 @@ ISSUE_ROWS = {
 
 @pytest.mark.parametrize("row", ISSUE_ROWS)
 def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
-    # The issue's reproduction: the data supply £3,000 for 2025. Each path
-    # grows it to 2035, then gets £10,000 for 2030, and grows that instead,
-    # as a new simulation given both inputs does. A copy of the simulation,
-    # made as its baseline is, is a default branch too. A branch made before
-    # the input keeps the value its parent held then.
+    # As in the issue, the data supply £3,000 for 2025. Core grows it to 2035
+    # on each path. Each path then gets £10,000 for 2030, and Core grows that
+    # instead, as it does in a new simulation that gets both inputs. A copy,
+    # which Simulation.__init__ also makes for a baseline, works as a default
+    # branch too. A branch that the test takes before the input keeps the
+    # value its parent held then.
     names = ISSUE_ROWS[row]
     simulation = Simulation(
         dataset=_frame(**{f"{name}__{DATA_YEAR}": 3_000.0 for name in names})
@@ -156,11 +158,12 @@ def _two_adults_with_a_stored_cash_isa():
 
 
 def test_a_balance_set_for_an_earlier_year_reaches_a_total_already_summed():
-    # The issue's total: the data store cash_isa through PROJECTION_END_YEAR.
-    # A balance of £100 for 2034, newer than the stored total, gives cash_isa
-    # in 2040 grown from it. A balance of £200 then set for 2035 gives
-    # cash_isa grown from that on the default branch, as on a named branch
-    # and in a simulation given both balances before calculating anything.
+    # As in the issue, the data store cash_isa through PROJECTION_END_YEAR. A
+    # balance of £100 for 2034, newer than the stored total, gives cash_isa in
+    # 2040 grown from it. A balance of £200 that the test then sets for 2035
+    # gives cash_isa grown from that on the default branch, as on a named
+    # branch and in a new simulation that gets both balances before it
+    # calculates anything.
     assert PROJECTION_END_YEAR < 2034
     simulation = Simulation(dataset=_two_adults_with_a_stored_cash_isa())
     named = simulation.get_branch("edited")
@@ -183,7 +186,7 @@ def test_a_balance_set_for_an_earlier_year_reaches_a_total_already_summed():
 
 
 def test_years_the_data_supply_after_a_later_input_keep_their_values():
-    # The frame supplies 2025 and 2033. After 2030 and 2035 are grown, an
+    # The frame supplies 2025 and 2033. After Core grows 2030 and 2035, an
     # input for 2028 replaces what 2030 grew from, but not 2033, nor 2035,
     # which grows from 2033.
     data = {
@@ -216,8 +219,8 @@ def test_years_the_data_supply_after_a_later_input_keep_their_values():
 def test_years_a_dataset_projects_under_a_reform_before_data_load_stay():
     # no_economic_assumptions applies before data load, so the dataset holds
     # cash_isa flat at £3,000 in each year it projects, through
-    # PROJECTION_END_YEAR. A balance set after a calculation for the first of
-    # those years replaces none of the others.
+    # PROJECTION_END_YEAR. A balance the test sets after a calculation for the
+    # first of those years replaces none of the others.
     simulation = Simulation(
         scenario=no_economic_assumptions,
         dataset=_two_adults_with_a_stored_cash_isa(),
@@ -284,12 +287,13 @@ class twice_car_list_price(Variable):
 def test_a_formula_variable_supplied_for_one_year_is_recalculated_for_others():
     # A caller supplies a formula variable for 2025 only, so the simulation
     # keeps it as an input variable. Its formula gives 2030 from the list
-    # price carried from 2025. A list price then set for 2028 changes both on
-    # every path, and the supplied year keeps its value. The formula reads the
-    # list price as formulas do, through Core's cache of results by variable
-    # and period, which a call from outside the simulation does not read
-    # (nor does Core's sum of a variable's adds, which maps the result to
-    # the variable's entity), so the drop clears that cache too.
+    # price carried from 2025. A list price the caller then sets for 2028
+    # changes both on every path, and the simulation keeps the supplied year.
+    # The formula reads the list price as formulas do, through Core's cache of
+    # results by variable and period. A call from outside the simulation
+    # doesn't read that cache, and nor does Core's sum of a variable's adds,
+    # which maps the result to the variable's entity. So the drop clears that
+    # cache too.
     data = {f"car_list_price__{DATA_YEAR}": 3_000.0}
     simulation = Simulation(dataset=_frame(**data))
     new = Simulation(dataset=_frame(**data, car_list_price__2028=5_000.0))
@@ -311,7 +315,7 @@ def test_a_formula_variable_supplied_for_one_year_is_recalculated_for_others():
 def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
     # reset_calculations keeps what the drop before a calculation keeps: the
     # years the data or a caller supplied, here 2025 and 2038, and not the
-    # years grown from them.
+    # years Core grew from them.
     simulation = Simulation(
         dataset=_frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
     )
@@ -329,11 +333,12 @@ def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
 
 def test_a_reset_after_a_later_input_recalculates_a_supplied_formula_variable():
     # A caller supplies the formula variable for 2025, and its formula gives
-    # 2030 from the list price carried from 2025. After a list price set for
-    # 2028, reset_calculations keeps the supplied year and drops the year the
-    # formula gave, so 2030 follows the new list price, as a new simulation
-    # given both list prices does. The reset clears the drop the input queued
-    # for the next calculation, so it has to drop that year itself.
+    # 2030 from the list price carried from 2025. After the caller sets a list
+    # price for 2028, reset_calculations keeps the supplied year and drops the
+    # year the formula gave, so 2030 follows the new list price, as it does in
+    # a new simulation that gets both list prices. The reset clears the drop
+    # the input queued for the next calculation, so it has to drop that year
+    # itself.
     simulation = Simulation(dataset=_frame(**{f"car_list_price__{DATA_YEAR}": 3_000.0}))
     simulation.tax_benefit_system.add_variable(twice_car_list_price)
     simulation.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))
@@ -369,7 +374,7 @@ STEPS = st.lists(
     min_size=1,
     max_size=8,
 )
-# What the data supply: each variable in 2025, and maybe in one later year.
+# The data supply each variable in 2025, and maybe in one later year.
 DATA = st.fixed_dictionaries(
     {
         name: st.tuples(AMOUNTS, st.none() | st.tuples(LATER_YEARS, AMOUNTS))
@@ -398,13 +403,13 @@ DATA = st.fixed_dictionaries(
     ],
 )
 def test_every_path_gives_what_a_new_simulation_gives(data, steps):
-    # The same inputs and calculations, in the same order, on the default
-    # branch, on a copy of it and on a named branch, each made before any
-    # step: each calculation gives the same value on all three. Afterwards
-    # every input variable in every year, and a formula that reads them all
-    # through Core's cache of results by variable and period, equal what a
-    # new simulation built from all the inputs gives. Every supplied year
-    # keeps its value.
+    # The test runs the same inputs and calculations, in the same order, on the
+    # default branch, on a copy of it and on a named branch, which it takes
+    # before any step, and each calculation gives the same value on all three.
+    # Afterwards each input variable in every year, and a formula that reads
+    # them all through Core's cache of results by variable and period, equal
+    # what a new simulation that gets all the inputs gives. The simulation
+    # keeps the value of every supplied year.
     columns = {}
     for name, (amount, later) in data.items():
         columns[f"{name}__{DATA_YEAR}"] = amount
