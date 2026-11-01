@@ -47,7 +47,9 @@ from policyengine_uk.utils.import_obr_forecasts import (
     format_growth,
     get_yoy_growth_path,
     infer_workbook_release,
+    level_text,
     main,
+    nearest_units,
     projected_rate_units,
     read_calendar_values,
     read_level_anchor,
@@ -3347,6 +3349,46 @@ def nlw_comments(rendered):
     block = rendered[rendered.index("  national_living_wage:") :]
     block = block[: block.index("    metadata:")]
     return [line.strip() for line in block.split("\n") if line.strip().startswith("#")]
+
+
+def test_a_comment_names_the_penny_the_model_projects():
+    """The OBR's £13.525 for 2028 after £13.21 for 2027. policyengine-core
+    divides by the penny first, which gives exactly 1,352.5 pennies, and
+    Python's round() takes the half to the even 1,352, so the model
+    projects £13.52. The comment on the estimate names £13.52, not the
+    £13.53 that formatting the level to two places gives."""
+    workbook = nlw_workbook(nlw_rows((13.21, 13.525), 2027, 2027))
+    rendered = render_level_series_yaml(
+        get_yoy_growth_path().read_text(),
+        compute_level_growth(workbook),
+        ("October", 2026),
+    )
+    assert (13.525 / 0.01, f"{13.525:.2f}") == (1352.5, "13.53")
+    assert nlw_comments(rendered)[-2] == (
+        "# The OBR estimates the rates for 2028: £13.21 in 2027 to £13.52 in "
+        '2028 (OBR EFO October 2026, economy Table 1.13 "National Living Wage '
+        '(NLW)")'
+    )
+    assert wages_in_the_model(rendered)[2028] == pytest.approx(13.52, abs=1e-9)
+
+
+@pytest.mark.parametrize(
+    "level, pennies, text",
+    [
+        (13.525, 1352, "13.52"),
+        (13.535, 1354, "13.54"),
+        (2.675, 268, "2.68"),
+        (13.5250001, 1353, "13.53"),
+        (1e-100, 0, "0.00"),
+    ],
+)
+def test_level_text_writes_the_penny_check_s_penny(level, pennies, text):
+    """level_text writes the penny nearest_units, the penny check's
+    rounding, gives. Over £0.01, £13.525, £13.535 and £2.675 each give a
+    float ending in exactly .5, which round() takes to the even penny:
+    formatting to two places gives £13.53 and £2.67 instead."""
+    assert nearest_units(level, 0.01) == pennies
+    assert level_text(level, 0.01) == text
 
 
 def test_a_note_a_year_after_the_files_rate_leaves_the_file_to_anchor():

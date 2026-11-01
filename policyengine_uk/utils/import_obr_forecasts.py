@@ -2353,7 +2353,8 @@ def render_level_values(
 ) -> list[str]:
     """Render a level series' values entries: the earlier years it keeps,
     then the growth into the rates the government has set, then into the
-    OBR's estimates, then the average_earnings path."""
+    OBR's estimates, then the average_earnings path. Each comment writes the
+    OBR's levels to the penny the model rounds a rate to (level_text)."""
     first_year = min(growth.values)
     kept: list[str] = []
     pending: list[str] = []
@@ -2389,9 +2390,12 @@ def render_level_values(
             continue
         span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
         start, end = years[0] - 1, years[-1]
+        first, last = (
+            level_text(published.levels[year], growth.spec.rounding)
+            for year in (start, end)
+        )
         lines.append(
-            f"{pad}# {kind} {span}: £{published.levels[start]:.2f} in {start} "
-            f"to £{published.levels[end]:.2f} in {end} ({source})"
+            f"{pad}# {kind} {span}: £{first} in {start} to £{last} in {end} ({source})"
         )
         lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
     lines.append(
