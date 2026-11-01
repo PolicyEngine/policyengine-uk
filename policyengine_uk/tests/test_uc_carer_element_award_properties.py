@@ -626,3 +626,54 @@ def test_a_family_that_takes_tax_free_childcare_instead_has_no_award():
     require(forgoes[0] and award[0] == 0 and bound[0] > 0, "the family claims")
     severe = sim.calculate("severe_disability_premium", YEAR)
     assert severe[1] == pytest.approx(86.05 * WEEKS)
+
+
+def test_the_bound_reads_neither_the_award_nor_pension_credit():
+    # The carer test reads uc_award_upper_bound because the award reads
+    # Pension Credit (through the non-dependant deduction's exemption), whose
+    # addition reads the attribution. A pensioner on Attendance Allowance
+    # shares a privately rented home with her blind son, who claims Universal
+    # Credit with the carer element; the trace of the bound reaches none of
+    # those variables.
+    forbidden = {
+        "pension_credit",
+        "uc_housing_costs_element",
+        "uc_non_dep_deductions",
+        "uc_non_dep_deduction_exempt",
+        "uc_maximum_amount",
+        "uc_income_reduction",
+        "universal_credit_pre_benefit_cap",
+        "universal_credit",
+        "is_cared_for_by_carer_benefit_recipient",
+    }
+    sim = Simulation(
+        situation=situation(
+            [
+                dict(
+                    country="ENGLAND",
+                    tenure="RENT_PRIVATELY",
+                    rent=9_000,
+                    units=[
+                        dict(adults=[single(75, disability="aa_higher")], children=[]),
+                        dict(
+                            adults=[single(40, blind=True, care_hours=35)],
+                            children=[],
+                        ),
+                    ],
+                )
+            ]
+        )
+    )
+    sim.trace = True
+    sim.calculate("uc_award_upper_bound", YEAR)
+    reached = set()
+
+    def visit(node):
+        reached.add(node.name)
+        for child in node.children:
+            visit(child)
+
+    for tree in sim.tracer.trees:
+        visit(tree)
+    assert "uc_carer_element" in reached
+    assert not reached & forbidden, reached & forbidden
