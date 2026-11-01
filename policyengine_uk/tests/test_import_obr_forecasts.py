@@ -2,7 +2,7 @@ import math
 import os
 from contextlib import contextmanager
 from dataclasses import replace
-from datetime import date
+from datetime import date, timedelta
 from functools import partial
 from pathlib import Path
 from io import BytesIO
@@ -3171,6 +3171,95 @@ def test_the_anchor_is_the_last_national_living_wage_rate_in_its_file():
     assert amount.values_list[0].value == anchor.rate
 
 
+def nlw_parameter_file(tmp_path, monkeypatch, entry):
+    """Copy non_apprentice.yaml under ``tmp_path`` with ``entry``, YAML text,
+    added after the last dated value of its last bracket, point the
+    importer's repo root there, and return the copy's text."""
+    text = (MINIMUM_WAGE_DIR / "non_apprentice.yaml").read_text()
+    assert text.count("\n\nmetadata:") == 1
+    text = text.replace("\n\nmetadata:", f"\n{entry}\nmetadata:")
+    path = tmp_path / MINIMUM_WAGE_DIR.relative_to(MINIMUM_WAGE_DIR.parents[4])
+    path.mkdir(parents=True, exist_ok=True)
+    (path / "non_apprentice.yaml").write_text(text)
+    monkeypatch.setattr(import_obr_forecasts, "get_repo_root", lambda: tmp_path)
+    return text
+
+
+@pytest.mark.parametrize(
+    "entry, instant, rate",
+    [
+        ("      '2028-04-01':\n        value: 13.51\n", date(2028, 4, 1), 13.51),
+        ("      2028-10:\n        value: 13.6\n", date(2028, 10, 1), 13.6),
+        ("      2028-04-01: expected\n", date(2027, 4, 1), 13.21),
+    ],
+    ids=["quoted_date", "year_and_month", "expected_value"],
+)
+def test_the_anchor_is_the_last_rate_core_reads(
+    tmp_path, monkeypatch, entry, instant, rate
+):
+    """An entry after the file's £13.21 from 2027-04-01: £13.51 keyed by the
+    quoted date '2028-04-01', which yaml.safe_load reads as text beside the
+    other keys' dates; £13.60 keyed by 2028-10, which policyengine-core reads
+    as 1 October 2028; or a 2028 value marked expected, which core drops. In
+    each case the importer anchors on the rate core reads from the same
+    file, from the same day, and core reads no later rate."""
+    text = nlw_parameter_file(tmp_path, monkeypatch, entry)
+    assert read_level_anchor(NLW_SPEC) == LevelAnchor(instant, rate, NLW_UPRATING)
+    tree = ParameterNode("", data={"wage": yaml.load(text, Loader=config.Loader)})
+    amount = tree.wage.brackets[-1].amount
+    assert amount(instant.isoformat()) == rate
+    assert amount((instant - timedelta(days=1)).isoformat()) != rate
+    assert amount(date(2074, 12, 31).isoformat()) == rate
+
+
+def test_the_quoted_date_mixes_key_types_for_yaml_safe_load(tmp_path, monkeypatch):
+    """The quoted '2028-04-01' gives yaml.safe_load a text key beside the date
+    keys of the file's other entries, which max() cannot compare; core's
+    loader reads every key as text."""
+    text = nlw_parameter_file(
+        tmp_path, monkeypatch, "      '2028-04-01':\n        value: 13.51\n"
+    )
+    keys = yaml.safe_load(text)["brackets"][-1]["amount"]["values"]
+    assert {type(key) for key in keys} == {date, str}
+    with pytest.raises(TypeError):
+        max(keys)
+    core = yaml.load(text, Loader=config.Loader)["brackets"][-1]["amount"]["values"]
+    assert {type(key) for key in core} == {str}
+
+
+def test_a_day_keyed_twice_is_refused(tmp_path, monkeypatch):
+    """A quoted '2027-04-01' beside the unquoted 2027-04-01 the file holds:
+    policyengine-core's loader refuses the duplicate key, and the importer,
+    which loads the file with it, refuses it too."""
+    text = nlw_parameter_file(
+        tmp_path, monkeypatch, "      '2027-04-01':\n        value: 13.22\n"
+    )
+    for read in (
+        lambda: yaml.load(text, Loader=config.Loader),
+        lambda: read_level_anchor(NLW_SPEC),
+    ):
+        with pytest.raises(yaml.YAMLError, match="duplicate key '2027-04-01'"):
+            read()
+
+
+def test_a_day_spelled_twice_is_refused(tmp_path, monkeypatch):
+    """2028-04 and 2028-04-01 after the file's last rate: two keys that
+    policyengine-core reads as two values from 1 April 2028. The importer
+    refuses the file rather than choose between them."""
+    text = nlw_parameter_file(
+        tmp_path,
+        monkeypatch,
+        "      2028-04:\n        value: 13.5\n      2028-04-01:\n        value: 13.51\n",
+    )
+    tree = ParameterNode("", data={"wage": yaml.load(text, Loader=config.Loader)})
+    instants = [
+        entry.instant_str for entry in tree.wage.brackets[-1].amount.values_list
+    ]
+    assert instants[:2] == ["2028-04-01", "2028-04"]
+    with pytest.raises(ValueError, match="dates two values on 2028-04-01"):
+        read_level_anchor(NLW_SPEC)
+
+
 def test_a_table_level_the_file_rounds_to_its_rate_projects_from_the_file():
     """£13.210001 for 2027, the year the parameter file sets £13.21, and an
     estimate of £13.595001 for 2028. From the table's unrounded 2027 level
@@ -3198,6 +3287,59 @@ def test_a_table_that_disagrees_with_the_rate_set_is_refused():
         r"2027-04-01",
     ):
         projected_from_committed(edit_real_table_1_13({"J5": 13.22}))
+
+
+def test_a_table_that_starts_after_the_files_rate_projects_its_first_year():
+    """The OBR publishes £13.51 for 2028 and £13.85 for 2029, from the year
+    after the parameter file's £13.21 for 2027. With no 2027 level, the
+    importer has no ratio into 2028: the model carries £13.21 to 2028
+    through the growth the importer keeps, 0.022984, and projects £13.51,
+    the OBR's penny. The importer writes the ratio into 2029, and the model
+    projects £13.85."""
+    workbook = nlw_workbook(nlw_rows((13.51, 13.85), 2028, 2028))
+    assert compute_level_growth(workbook)[NLW_PATH].values == {2029: 0.025167}
+    values, wages = projected_from_committed(workbook)
+    assert values[2028] == OCTOBER_2026_NLW_GROWTH[2028]
+    assert values[2029] == 0.025167
+    assert [wages[2028], wages[2029]] == pytest.approx([13.51, 13.85], abs=1e-9)
+
+
+def test_a_first_level_the_files_growth_misses_is_refused():
+    """£13.55 for 2028, the table's first year, after the parameter file's
+    £13.21 for 2027: the growth the importer keeps for 2028 takes £13.21 to
+    £13.51, and no earlier level in the table sets a growth into 2028 that
+    could reach £13.55. The importer refuses the table and names the year,
+    the OBR's level, the projected rate and the file's rate."""
+    workbook = nlw_workbook(nlw_rows((13.55, 13.85), 2028, 2028))
+    with pytest.raises(
+        ValueError,
+        match=r"^national_living_wage: the OBR publishes Table 1\.13 from 2028, "
+        r"after 2027, the year of the last rate "
+        r"gov\.hmrc\.minimum_wage\.non_apprentice holds: 13\.21 from "
+        r"2027-04-01\. The model carries that rate to 2028 through the growth "
+        r"the importer keeps and projects 13\.51, but the OBR publishes 13\.55, "
+        r"which rounds to 13\.55 to the nearest 0\.01$",
+    ):
+        projected_from_committed(workbook)
+
+
+def test_a_table_two_years_after_the_files_rate_projects_from_it():
+    """The OBR publishes £13.85 for 2029 and £14.23 for 2030, from two years
+    after the parameter file's £13.21 for 2027. The growth the importer
+    keeps for 2028 and 2029 takes £13.21 to £13.85, the OBR's penny. The
+    ratio into 2030, 0.027437, would take the model to £14.24, so the
+    importer writes the growth from the model's 2029 level to £14.23,
+    0.027073, and the model projects £14.23."""
+    workbook = nlw_workbook(nlw_rows((13.85, 14.23), 2029, 2029))
+    assert compute_level_growth(workbook)[NLW_PATH].values == {2030: 0.027437}
+    values, wages = projected_from_committed(workbook)
+    assert {year: values[year] for year in (2028, 2029)} == {
+        year: OCTOBER_2026_NLW_GROWTH[year] for year in (2028, 2029)
+    }
+    assert values[2030] == 0.027073
+    assert [wages[2029], wages[2030]] == pytest.approx([13.85, 14.23], abs=1e-9)
+    ratio = model_wages({**values, 2030: 0.027437}, 2027, 13.21)
+    assert ratio[2030] == pytest.approx(14.24, abs=1e-9)
 
 
 def nlw_comments(rendered):

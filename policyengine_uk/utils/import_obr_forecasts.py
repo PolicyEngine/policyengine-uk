@@ -1975,17 +1975,40 @@ def compute_level_growth(
     return result
 
 
+def dated_values(name: str, values: dict) -> dict[date, float]:
+    """Return a parameter's values by the day each takes effect.
+    policyengine-core's Parameter reads ``values`` (keys as text, as core's
+    YAML loader gives them) and drops any value marked expected; each key
+    then becomes the day core's instant() reads from it, so 2028-04-01,
+    quoted or not, and 2028-04 both name 1 April 2028. It refuses two keys
+    that name the same day."""
+    from policyengine_core.parameters import Parameter
+    from policyengine_core.periods import instant
+
+    dated = {}
+    for entry in Parameter(name, {"values": values}).values_list:
+        day = instant(entry.instant_str).date
+        if day in dated:
+            raise ValueError(f"{name} dates two values on {day}")
+        dated[day] = entry.value
+    return dated
+
+
 def read_level_anchor(spec: LevelSeriesSpec) -> LevelAnchor:
     """Read the last dated value of ``spec.anchor``'s last bracket's amount,
     and its uprating metadata, from its file in the model's parameter tree.
-    It refuses an amount that the series' index does not uprate to the
-    nearest ``spec.rounding``."""
+    It loads the file with policyengine-core's YAML loader, which refuses a
+    key the file repeats, and takes the latest day dated_values reads, so
+    it anchors where core does. It refuses an amount that the series' index
+    does not uprate to the nearest ``spec.rounding``."""
+    from policyengine_core.parameters import config
+
     path = (
         get_repo_root() / "policyengine_uk/parameters" / Path(*spec.anchor.split("."))
     )
-    amount = yaml.safe_load(path.with_suffix(".yaml").read_text())["brackets"][-1][
-        "amount"
-    ]
+    amount = yaml.load(path.with_suffix(".yaml").read_text(), Loader=config.Loader)[
+        "brackets"
+    ][-1]["amount"]
     uprating = amount["metadata"]["uprating"]
     expected = {
         "parameter": "gov.economic_assumptions.indices.obr." + ".".join(spec.path),
@@ -1996,13 +2019,9 @@ def read_level_anchor(spec: LevelSeriesSpec) -> LevelAnchor:
             f"{spec.anchor}'s last bracket must uprate by {expected['parameter']} "
             f"to the nearest {spec.rounding}; its metadata gives {uprating}"
         )
-    instant = max(amount["values"])
-    value = amount["values"][instant]
-    return LevelAnchor(
-        instant=date.fromisoformat(str(instant)),
-        rate=float(value["value"] if isinstance(value, dict) else value),
-        uprating=uprating,
-    )
+    values = dated_values(f"{spec.anchor}'s last bracket", amount["values"])
+    instant = max(values)
+    return LevelAnchor(instant=instant, rate=float(values[instant]), uprating=uprating)
 
 
 def compound_model_index(values: dict, last_year: int) -> dict[int, float]:
@@ -2020,16 +2039,35 @@ def compound_model_index(values: dict, last_year: int) -> dict[int, float]:
     return index
 
 
+def nearest_units(amount: float, rounding: float) -> float:
+    """Return ``amount`` as a whole number of ``rounding``, as
+    uprate_parameters (policyengine-core) rounds a projected rate to the
+    nearest interval: it divides by the interval first and rounds the
+    quotient with Python's round(), which takes a half to the even number.
+    £13.525 over £0.01 gives exactly 1,352.5 as a float, so £13.525 becomes
+    1,352 pennies. Infinity if the division overflows."""
+    units = amount / rounding
+    return round(units) if math.isfinite(units) else math.inf
+
+
+def level_text(level: float, rounding: float) -> str:
+    """Write ``level`` to the nearest ``rounding`` as the model rounds it
+    (nearest_units), with the interval's decimal places: "13.52" for
+    £13.525. If the division overflows, it formats the level itself to
+    those places."""
+    places = max(0, -Decimal(repr(rounding)).as_tuple().exponent)
+    units = nearest_units(level, rounding)
+    return f"{units * rounding if math.isfinite(units) else level:.{places}f}"
+
+
 def projected_rate_units(
     index: dict[int, float], start: int, rate: float, year: int, rounding: float
 ) -> float:
     """Return the rate uprate_parameters (policyengine-core) projects for
     ``year`` from ``rate``, in force in ``start``, as a whole number of
-    ``rounding``: the rate times the index's growth since, over
-    ``rounding``, rounded to the nearest whole number. Infinity if that
-    overflows."""
-    projected = rate * (index[year] / index[start]) / rounding
-    return round(projected) if math.isfinite(projected) else math.inf
+    ``rounding``: the rate times the index's growth since, rounded to the
+    nearest ``rounding`` (nearest_units). Infinity if that overflows."""
+    return nearest_units(rate * (index[year] / index[start]), rounding)
 
 
 def _level_growth_series(series: LevelGrowth, kept: dict) -> dict[str, float]:
@@ -2067,20 +2105,24 @@ def penny_preserving_growth(
     rate from the anchor's rate (projected_rate_units). The importer refuses
     a table whose level in the anchor's year differs from the anchor's rate
     at that rounding, and one whose index starts after the anchor's year.
-    Each later year keeps its growth if the projection rounds to the table's
-    level. Otherwise the importer takes the growth, to six decimals, from
-    the level the index carries the rate to in the year before to the
-    table's level, or else the nearest six-decimal growth to that which does
-    round to the table's level. It refuses a year that no six-decimal growth
-    can reproduce.
+    Where the OBR publishes the table's first level for a year after the
+    anchor's, the importer has no ratio into that year: the model carries
+    the anchor's rate there through the growth the importer keeps
+    (``kept``), and the importer refuses the table if that projection rounds
+    to another level than the OBR's. Each later year keeps its growth if the
+    projection rounds to the table's level. Otherwise the importer takes the
+    growth, to six decimals, from the level the index carries the rate to in
+    the year before to the table's level, or else the nearest six-decimal
+    growth to that which does round to the table's level. It refuses a year
+    that no six-decimal growth can reproduce.
     """
     name = ".".join(path)
     line = series.line
     rounding = series.spec.rounding
     start, rate, last = anchor.instant.year, anchor.rate, max(line.levels)
-    if start in line.levels and round(line.levels[start] / rounding) != round(
-        rate / rounding
-    ):
+    if start in line.levels and nearest_units(
+        line.levels[start], rounding
+    ) != nearest_units(rate, rounding):
         raise ValueError(
             f"{name}: the OBR's {start} level, {line.levels[start]!r}, differs "
             f"to the nearest {rounding} from {rate!r}, the rate "
@@ -2110,7 +2152,22 @@ def penny_preserving_growth(
         )
         if not math.isfinite(line.levels[year] / rounding):
             raise refusal
-        target = round(line.levels[year] / rounding)
+        target = nearest_units(line.levels[year], rounding)
+        if year not in values:
+            projected = projected_rate_units(index, start, rate, year, rounding)
+            if projected != target:
+                raise ValueError(
+                    f"{name}: the OBR publishes Table {line.table} from {year}, "
+                    f"after {start}, the year of the last rate "
+                    f"{series.spec.anchor} holds: {rate!r} from "
+                    f"{anchor.instant}. The model carries that rate to {year} "
+                    "through the growth the importer keeps and projects "
+                    f"{level_text(projected * rounding, rounding)}, but the OBR "
+                    f"publishes {line.levels[year]!r}, which rounds to "
+                    f"{level_text(line.levels[year], rounding)} to the nearest "
+                    f"{rounding}"
+                )
+            continue
 
         def units(micros: int) -> float:
             try:
