@@ -208,6 +208,30 @@
   output:
     meets_marriage_allowance_income_conditions: false
 
+- name: In 2015-16 a Scottish taxpayer's limit is the basic rate limit
+  period: 2015
+  input:
+    # 2015-16 had no Scottish rate, and the 2015-16 s. 55B(2)(b) allows the
+    # basic rate. 42,200 - 10,600 = 31,600, below the basic rate limit,
+    # though above the 31,500 the model's Scottish scale carries back from
+    # 2017-18.
+    employment_income: 42_200
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: In 2016-17 a Scottish taxpayer's limit is the basic rate limit
+  period: 2016
+  input:
+    # SI 2015/1810 art. 14(3) adds the Scottish basic rate to s. 55B(2)(b),
+    # and the 2016-17 s. 11A(1) charges it on non-savings income that would
+    # otherwise bear the basic rate. 42,700 - 11,000 = 31,700, below the
+    # basic rate limit.
+    employment_income: 42_700
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
 - name: In 2017-18 the Scottish higher rate fails the conditions
   period: 2017
   input:

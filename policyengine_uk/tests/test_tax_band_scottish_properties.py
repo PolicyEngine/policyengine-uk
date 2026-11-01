@@ -26,11 +26,12 @@ their band.
 
 The Marriage Allowance income conditions do not read the band. With the nil
 rates in force, under the law in force or with its rate limits and nil-rate
-amounts changed, for every single person in Scotland or England they hold
-exactly when the liability charges no income at a rate s. 55B(2)(b) forbids
-and, with the dividend allowance removed (s. 55B(2)(ba)), none at the
-dividend upper or additional rate. So savings at the savings nil rate or the
-starting rate for savings never stop the allowance.
+amounts changed, for every single person in England, and in Scotland from
+2017-18, they hold exactly when the liability charges no income at a rate
+s. 55B(2)(b) forbids and, with the dividend allowance removed
+(s. 55B(2)(ba)), none at the dividend upper or additional rate. So savings at
+the savings nil rate or the starting rate for savings never stop the
+allowance.
 
 Before #2350 the band compared all taxable income with the Scottish limits.
 Against that formula, which ran from 2019-20, the band never rises, except
@@ -317,9 +318,13 @@ def test_savings_allowance_does_not_read_the_band():
 
 # The Marriage Allowance income conditions against the liability, with the nil
 # rates in force: people alternate between Scotland and England, from 2016-17,
-# the first year of the savings and dividend nil rates.
+# the first year of the savings and dividend nil rates. Before 2017-18 the
+# model charges a Scottish taxpayer's non-savings income on the Scottish scale
+# it carries back from 2017-18, where s. 11A(1) charged it on the rest-of-UK
+# limits. The conditions follow the law, so the test leaves those people out.
 MA_YEARS = list(range(2016, 2027))
 MA_COUNTRIES = ["SCOTLAND", "ENGLAND"]
+FIRST_SCOTTISH_LIMITS_YEAR = 2017
 # The rates s. 55B(2)(b) forbids, other than the dividend rates: the Scottish
 # higher, advanced and top rates, the higher and additional rates, and the
 # savings higher and additional rates. Each person pays at most one of the
@@ -339,9 +344,7 @@ LIMITS = {
     ),
     "gov.hmrc.income_tax.rates.uk[1].threshold": st.integers(25_000, 50_000),
     "gov.hmrc.income_tax.rates.dividends[1].threshold": st.integers(25_000, 50_000),
-    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance": st.integers(
-        0, 60_000
-    ),
+    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance": st.integers(0, 60_000),
     "gov.hmrc.income_tax.allowances.personal_savings_allowance.basic": st.integers(
         0, 10_000
     ),
@@ -407,8 +410,15 @@ def test_marriage_allowance_follows_the_liability_with_nil_rates(
         forbidden = charged_at(sim, period, FORBIDDEN)
         with law(sim, period, {DIVIDEND_ALLOWANCE: 0}):
             dividends_above_basic = charged_at(sim, period, DIVIDEND_UPPER)
+    checked = np.array(
+        [
+            period >= FIRST_SCOTTISH_LIMITS_YEAR
+            or MA_COUNTRIES[i % len(MA_COUNTRIES)] != "SCOTLAND"
+            for i in range(PEOPLE)
+        ]
+    )
     np.testing.assert_array_equal(
-        meets,
-        (forbidden < SOME) & (dividends_above_basic < SOME),
+        meets[checked],
+        ((forbidden < SOME) & (dividends_above_basic < SOME))[checked],
         err_msg=f"{drawn} in {period} with {changes}",
     )
