@@ -339,8 +339,8 @@ SYNTHETIC_PEOPLE = 2_000
 LIMITS = [500, 1_000, 5_000, 6_000, 12_570, 17_570, 37_700, 50_270, 100_000, 125_140]
 # Curated people at the edges of each test: other non-savings income, property,
 # savings, dividends, trade loss relief, allowances beyond the Personal
-# Allowance, Marriage Allowance received, grossed-up Gift Aid, Scottish, and
-# personal savings allowance.
+# Allowance, an exclusion from earned income, grossed-up Gift Aid, Scottish,
+# and personal savings allowance.
 EDGES = [
     # Pay and savings across the basic rate limit: the search moves £270.
     (50_000, 0, 10_000, 0, 0, 0, 0, 0, False, 500),
@@ -351,7 +351,8 @@ EDGES = [
     (50_269, 0, 10_000, 0, 0, 0, 0, 0, False, 500),
     # Savings and dividends with no other income.
     (0, 0, 4_000, 20_000, 0, 0, 0, 0, False, 1_000),
-    # Marriage Allowance moves the savings below the basic rate limit.
+    # An exclusion from earned income moves the savings below the basic rate
+    # limit.
     (51_000, 0, 10_000, 0, 0, 0, 1_260, 0, False, 500),
     (49_000, 0, 0, 20_000, 0, 0, 1_260, 0, False, 500),
     # Savings exactly at the savings allowance, dividends at the allowance.

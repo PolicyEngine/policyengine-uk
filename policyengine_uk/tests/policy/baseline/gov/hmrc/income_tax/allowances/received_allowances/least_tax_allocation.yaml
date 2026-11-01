@@ -244,3 +244,34 @@
     earned_income_tax: 7_540
     dividend_income_tax: 6_874.725
     income_tax: 14_414.725
+
+- name: Case 13, the share leaves out the Marriage Allowance a recipient receives
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 5_000
+        property_income: 15_000
+        savings_interest_income: 15_000
+      partner:
+        age: 40
+    benunit:
+      members: [recipient, partner]
+      is_married: true
+  output:
+    # The partner's unused allowance gives the recipient a Marriage Allowance
+    # of £1,260: 10% of £12,570, rounded up to a multiple of £10 (s. 55B(4)
+    # and (5)). Section 55B(1) gives it as a tax reduction, which Step 6 of
+    # s. 23 deducts, not as a deduction at Step 3, so the model leaves it out
+    # of the share. Pay, property income and the savings above the £1,000
+    # savings allowance all bear 20%, and the starting rate band has gone
+    # (s. 12), so no share lowers the Step 5 tax, and the allowance comes off
+    # the pay and then the property income. Property 7,430 x 20% = 1,486;
+    # savings of £15,000 from £7,430: £1,000 at the savings nil rate and
+    # 14,000 x 20% = 2,800.
+    marriage_allowance: [1_260, 0]
+    received_allowances_earned_income: [12_570, 0]
+    received_allowances_savings_income: [0, 0]
+    income_tax_pre_charges: [4_286, 0]

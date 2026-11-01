@@ -53,13 +53,16 @@ the search evaluates the tax at all of them for all people at once.
 
 That argument needs the starting rate limit at or below the basic rate limit
 and a phase-out of one pound of starting rate band for each pound of
-non-savings income (s. 12), as in every year modelled. Before 2027-28 it also
-needs no Marriage Allowance: the model subtracts that allowance from earned
-income (#1947) rather than giving the s. 55B tax reduction, which moves the
-savings and dividends down by up to that amount. The search still evaluates
-every candidate with the full tax, so with Marriage Allowance it takes the best
-of them. In every case it keeps the order non-savings, savings, dividends
-unless another share gives less tax, so it never charges more than that order.
+non-savings income (s. 12), as in every year modelled. The search keeps the
+order non-savings, savings, dividends unless another share gives less tax, so
+it never charges more than that order.
+
+The search ignores the Marriage Allowance. Section 55B(1) gives it as a tax
+reduction, which Step 6 deducts, not as a deduction at Step 3, and its rate
+test (s. 55B(2)(b)) reads the share. The model still subtracts the allowance
+from earned income (#1947), which moves a recipient's savings and dividends
+down by up to that amount, so for a recipient the search's tax can differ from
+the model's.
 
 Who cannot gain
 ---------------
@@ -90,8 +93,9 @@ first component, so that any other share leaves more of it (``x`` rises).
    because the starting rate band shrinks by at most a pound for each pound of
    non-savings income (s. 12) and the savings and dividend nil rates cover
    fixed amounts (ss. 12A and 13A). Before 2027-28 the test also needs no
-   Marriage Allowance or no property income: with property income, the
-   model's Marriage Allowance breaks the rising rate on the first component.
+   property income or no exclusion from earned income that the search reads:
+   with property income, such an exclusion breaks the rising rate on the
+   first component.
 
 Where any test holds, the search would keep the old order too, since it
 changes the share only for a saving above ``TOLERANCE``. So the result is the
@@ -119,6 +123,10 @@ ALLOCATED_EXCLUSIONS = (
     "taxable_property_income",
     "received_allowances_earned_income",
 )
+# The exclusions the search leaves out. s. 55B(1) gives the Marriage Allowance
+# as a tax reduction, not a deduction at Step 3, and its rate test reads the
+# share, so the search shares a recipient's deductions as if they had none.
+IGNORED_EXCLUSIONS = ("marriage_allowance",)
 
 
 def _schedule(scale, gift, first=1, last=3):
@@ -148,7 +156,7 @@ def _inputs(person, period, income_tax):
     exclusions = [
         variable
         for variable in income_tax.earned_taxable_income_exclusions
-        if variable not in ALLOCATED_EXCLUSIONS
+        if variable not in ALLOCATED_EXCLUSIONS + IGNORED_EXCLUSIONS
     ]
     savings = values("taxable_savings_interest_income")
     return dict(
@@ -517,8 +525,8 @@ def _old_order_is_least(c, to_savings, to_dividends):
         )
         in_reach = in_first
     else:
-        # With no property income, Marriage Allowance only moves every band
-        # position down by its amount.
+        # With no property income, an exclusion from earned income only moves
+        # every band position down by its amount.
         position = x - c.earned_exclusions
         rho_n = np.where(c.scottish, _rate(c.scotland, position), _rate(c.uk, position))
         in_reach = in_first & ((c.earned_exclusions == 0) | (c.property == 0))
