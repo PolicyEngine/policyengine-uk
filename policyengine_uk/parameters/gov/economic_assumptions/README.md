@@ -511,18 +511,23 @@ the forecast levels, though not their growth.
    The same run also refreshes the six alcohol and tobacco clearance series
    under `per_capita` from the new EFO's tobacco clearances and alcohol
    clearance forecasts, and the previous EFO's for the outturn year's base.
-   The importer interprets no words in these tables. It checks every cell
-   of both EFOs' tables, but numbers and fiscal years, against the texts
-   someone has read (`CLEARANCE_TABLE_TEXTS`). It also needs the cell that
+   The importer interprets no words in these tables. From each table's
+   title through its configured end, the row above a title
+   `CLEARANCE_TABLE_ENDS` lists or the sheet's last row, the importer
+   compares text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. It skips
+   the title cell, numbers and fiscal years. It also needs the cell that
    states each line's unit: million sticks in the cigarette label,
    thousand kilograms in the non-cigarette total's label and thousand
    hectolitres of alcohol in Table 4.12's note. It stops before writing on
    any other text and names the table and the cell. Read that text, convert
    the table's figures to these units if it states another, and add the
    text to the list. The importer also stops on any cell beside a line's
-   label and values. The list holds each EFO's footnotes as the OBR wrote
-   them, and the importer does not compare the products one EFO's line
-   covers with another's. Check that each alcohol line covers the same
+   label and values. When a sheet repeats a clearance table's heading, it
+   stops and names the rows. It checks no cell above a table's title or
+   below its end, so read any note there yourself. The list holds each
+   EFO's footnotes as the OBR wrote them, and the importer does not compare
+   the products one EFO's line covers with another's. Check that each
+   alcohol line covers the same
    products in both EFOs: in March 2026 the OBR added "Includes other
    fermented products" to the wine line. The importer writes
    `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,

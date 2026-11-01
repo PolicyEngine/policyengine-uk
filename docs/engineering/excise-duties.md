@@ -283,20 +283,26 @@ labels, the "Outturn" and "Forecast" markers, the "of which:" row, Table
 its footnotes. On Table 4.12's sheet the OBR follows the alcohol clearances
 with the alcohol receipts forecasts. The importer ends the clearance table
 at their title (`CLEARANCE_TABLE_ENDS`), so its check leaves out the
-receipts table's "£ billion" cell and note. The importer checks every cell
-of each clearance table it reads, in every column, skips numbers and fiscal
-years, and stops before writing anything when:
+receipts table's "£ billion" cell and note. From each clearance table's
+title through that configured end, or the sheet's last row, the importer
+compares text cells in every column with the list. It skips the title cell,
+numbers and fiscal years, and stops before writing anything when:
 
 - a cell holds any other text, such as a note that states another unit or
   scale, a line for another product or a unit column's heading;
 - the table lacks the cell that states a line's unit: the cigarette label's
   "(million sticks)", the non-cigarette total's "('000s kg)" for hand-rolled
   and other tobacco, or Table 4.12's note for alcohol;
-- the OBR puts any cell beside a line's label and values.
+- the OBR puts any cell beside a line's label and values;
+- the sheet repeats the table's heading, since the importer would check the
+  text under one heading and could read a line under another.
 
-The importer names the table and each unread cell. Whoever runs it reads
-the text, converts the table's figures to the listed units if it states
-another, and adds the text to the list.
+The importer reads every formatting run of a cell's text. It names the
+table and each unread cell, or the rows that repeat the heading. Whoever
+runs it reads the text, converts the table's figures to the listed units if
+it states another, and adds the text to the list. The importer checks no
+cell above a table's title or below its end, so that person reads any note
+there too.
 
 ### Budget measures and reforms
 
@@ -341,12 +347,12 @@ UK's 2024-25 clearances shows the effect. It treats beer and cider as beer
 at 4% with no draught relief, wine and other fermented products as wine at
 12%, spirits at 40%, other tobacco products as other smoking tobacco, and
 cigarettes at the default price. On that mix the model's duty per unit
-cleared rises 5.7% for alcohol by 2026-27 and 19.0% for tobacco by 2027-28,
-with the rate rises of February 2025 and February 2026 for alcohol and of
-October 2024, November 2025 and October 2026 for tobacco, each of which
-reaches its first full model year after 2024-25, and then holds. The OBR's
-receipts per unit cleared keep rising, by 22.1% for alcohol and 48.2% for
-tobacco by 2031-32.
+cleared rises 5.7% for alcohol by 2026-27 and 19.0% for tobacco by 2027-28.
+The alcohol increases take effect in February 2025 and February 2026, and
+the tobacco increases in October 2024, November 2025 and October 2026. Each
+reaches its first full model year after 2024-25. After that, product mix
+alone moves model duty per unit. The OBR's receipts per unit cleared keep
+rising, by 22.1% for alcohol and 48.2% for tobacco by 2031-32.
 
 On this construct, the model's alcohol duty exceeds the OBR's receipts by
 7.6% in 2024-25 and 7.9% in 2026-27, then by less each year: by 3.5% in
