@@ -72,7 +72,12 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         0,
         max_(0, starter.allowance - non_savings * starter.phase_out),
     )
-    nil_rate_savings = starting_rate_savings + person("savings_allowance", period)
+    # FA 2016 s. 4(17) gives the savings nil rate effect from 2016-17.
+    if period.start.year < 2016:
+        savings_allowance = 0
+    else:
+        savings_allowance = person("savings_allowance", period)
+    nil_rate_savings = starting_rate_savings + savings_allowance
     savings_above_basic = (savings > nil_rate_savings) & (
         non_savings + savings > basic_rate_limit
     )

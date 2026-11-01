@@ -315,3 +315,28 @@
     region: NORTH_EAST
   output:
     meets_marriage_allowance_income_conditions: false
+
+- name: In 2015-16 savings above the basic rate limit fail the conditions
+  period: 2015
+  input:
+    # 32,000 of pay, then 1 of interest. FA 2016 s. 4(17) gives the savings
+    # nil rate effect from 2016-17, so the 2015-16 s. 55B(2)(b) permits no
+    # savings nil rate, and the pound bears the higher rate. The model
+    # applies its Personal Savings Allowance in 2015-16 too.
+    employment_income: 42_600
+    savings_interest_income: 1
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: At the statutory 2015-16 basic rate limit a pound of savings fails the conditions
+  period: 2015
+  input:
+    # As above with 1 of interest, which bears the higher rate: 2015-16 has
+    # no savings nil rate.
+    gov.hmrc.income_tax.rates.uk[1].threshold: 31_785
+    employment_income: 42_385
+    savings_interest_income: 1
+    region: NORTH_EAST
+  output:
+    meets_marriage_allowance_income_conditions: false
