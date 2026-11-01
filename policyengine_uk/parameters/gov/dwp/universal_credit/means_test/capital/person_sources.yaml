@@ -1,15 +1,15 @@
 description: >
   Person-level model variables counted as Universal Credit capital of the
   person's own benefit unit. The formulas sum these sources over the benefit
-  unit's claimant and partner (`is_uc_claimant`) and exclude dependants:
-  section 5 of the Welfare Reform Act 2012 tests the claimant's, or the joint
-  claimants' combined, capital. `lifetime_isa_countable_capital` values a
-  Lifetime ISA at its surrender value: DWP values capital at its current
-  market or surrender value under regulation 49(1), and ADM H1659 counts a
-  Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime ISAs
-  exist from 6 April 2017, and the formulas count them from then. A
-  nonnegative `benunit_reported_capital` replaces these financial sources for
-  its unit, so the formula counts no ISA twice, and a complete
+  unit's claimant and partner (`is_uc_claimant`) and exclude dependants: DWP
+  tests the claimant's, or the joint claimants' combined, capital under
+  section 5 of the Welfare Reform Act 2012. `lifetime_isa_countable_capital`
+  values a Lifetime ISA at its surrender value: DWP values capital at its
+  current market or surrender value under regulation 49(1), and ADM H1659
+  counts a Lifetime ISA at 75% of its value under 60 and in full from 60.
+  Lifetime ISAs exist from 6 April 2017, and the formulas count them from
+  then. A nonnegative `benunit_reported_capital` replaces these financial
+  sources for its unit, so the formula counts no ISA twice, and a complete
   `uc_reported_capital` override replaces them together with property and the
   household financial proxy, before the regulation 77 company substitution.
   `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`

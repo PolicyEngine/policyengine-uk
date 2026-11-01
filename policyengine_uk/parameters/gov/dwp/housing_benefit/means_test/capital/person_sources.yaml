@@ -5,26 +5,27 @@ description: >
   dependants: local authorities exclude children's capital under regulation
   45. `lifetime_isa_countable_capital` values a Lifetime ISA at its surrender
   value: local authorities value capital at its current market or surrender
-  value under regulation 47 (regulation 45 of the pension-age regulations), in
-  the words of the DWP benefits' regulations, for which DWP guidance counts a
-  Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime ISAs
-  exist from 6 April 2017, and the formulas count them from then.
-  `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`
-  hold a member's cash and stocks and shares ISA balances, bounded by the
-  household total. The account investor beneficially owns an ordinary ISA's
-  investments, and the named child owns a junior ISA's investments (Individual
-  Savings Account Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). In the
-  ordinary calculation, the formula subtracts each bounded ISA balance from
-  its household source (`cash_isa`, `share_like_capital`) and counts it in the
-  holder's unit. For a family on a passporting benefit, or at pension age on a
-  guarantee credit, the formula returns zero capital, and for a
-  savings-credit-only award it uses the Pension Credit capital assessment.
-  When a household's balances exceed its total, the model scales them to sum
-  to the total exactly, rounding each share down or up to a whole float32 step
-  of the total. When a reform removes a household source from `sources`, the
-  formulas exclude the corresponding ISA person source. With household totals
-  alone, the formulas leave the whole total in the pool. The ISA Regulations
-  came into force for all other purposes on 6 April 1999 (reg. 1).
+  value under regulation 47 (regulation 45 of the pension-age regulations),
+  whose words match the DWP benefits' valuation rules, and DWP guidance on
+  those rules counts a Lifetime ISA at 75% of its value under 60 and in full
+  from 60. Lifetime ISAs exist from 6 April 2017, and the formulas count them
+  from then. `cash_isa_countable_capital` and
+  `stocks_and_shares_isa_countable_capital` hold a member's cash and stocks
+  and shares ISA balances, bounded by the household total. The account
+  investor beneficially owns an ordinary ISA's investments, and the named
+  child owns a junior ISA's investments (Individual Savings Account
+  Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). In the ordinary calculation,
+  the formula subtracts each bounded ISA balance from its household source
+  (`cash_isa`, `share_like_capital`) and counts it in the holder's unit. For a
+  family on a passporting benefit, or at pension age on a guarantee credit,
+  the formula returns zero capital, and for a savings-credit-only award it
+  uses the Pension Credit capital assessment. When a household's balances
+  exceed its total, the model scales them to sum to the total exactly,
+  rounding each share down or up to a whole float32 step of the total. When a
+  reform removes a household source from `sources`, the formulas exclude the
+  corresponding ISA person source. With household totals alone, the formulas
+  leave the whole total in the pool. The ISA Regulations came into force for
+  all other purposes on 6 April 1999 (reg. 1).
 metadata:
   label: Housing Benefit person-level capital sources
   period: year

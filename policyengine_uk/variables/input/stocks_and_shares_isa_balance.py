@@ -10,7 +10,7 @@ class stocks_and_shares_isa_balance(Variable):
         "stores stocks_and_shares_isa itself keeps that stored total instead. "
         "Like that total, it is part of corporate_wealth, so the two must "
         "never be summed. A child owns their own junior stocks and shares "
-        "ISA. The means tests count the balance in its holder's "
+        "ISA. The means-test formulas count the balance in its holder's "
         "benefit unit, for the claimant and partner only "
         "(stocks_and_shares_isa_countable_capital)."
     )

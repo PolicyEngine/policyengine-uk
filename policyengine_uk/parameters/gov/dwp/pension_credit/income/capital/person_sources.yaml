@@ -2,15 +2,16 @@ description: >
   Person-level model variables counted as Pension Credit capital of the
   person's own benefit unit. The formulas sum these sources over the benefit
   unit's claimant and partner (`is_claimant_or_partner`) and exclude
-  dependants: section 5 of the State Pension Credit Act 2002 treats only the
-  partner's capital as the claimant's. `lifetime_isa_countable_capital` values
-  a Lifetime ISA at its surrender value: DWP values capital at its current
-  market or surrender value under regulation 19, and DMG 84751 counts a
-  Lifetime ISA at 75% of its value under 60 and in full from 60, so a
-  claimant's own Lifetime ISA counts in full. Lifetime ISAs exist from 6 April
-  2017, and the formulas count them from then. `cash_isa_countable_capital`
-  and `stocks_and_shares_isa_countable_capital` hold a member's cash and
-  stocks and shares ISA balances, bounded by the household total. The account
+  dependants: DWP treats only the partner's capital as the claimant's under
+  section 5 of the State Pension Credit Act 2002.
+  `lifetime_isa_countable_capital` values a Lifetime ISA at its surrender
+  value: DWP values capital at its current market or surrender value under
+  regulation 19, and DMG 84751 counts a Lifetime ISA at 75% of its value under
+  60 and in full from 60, so a claimant's own Lifetime ISA counts in full.
+  Lifetime ISAs exist from 6 April 2017, and the formulas count them from
+  then. `cash_isa_countable_capital` and
+  `stocks_and_shares_isa_countable_capital` hold a member's cash and stocks
+  and shares ISA balances, bounded by the household total. The account
   investor beneficially owns an ordinary ISA's investments, and the named
   child owns a junior ISA's investments (Individual Savings Account
   Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). Where no unit reports

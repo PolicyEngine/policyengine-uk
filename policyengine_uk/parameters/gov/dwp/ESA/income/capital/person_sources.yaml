@@ -2,12 +2,12 @@ description: >
   Person-level model variables counted as income-related Employment and
   Support Allowance capital of the person's own benefit unit. The formulas sum
   these sources over the benefit unit's claimant and partner
-  (`is_claimant_or_partner`) and exclude dependants: regulation 83 treats only
-  the partner's capital as the claimant's. `lifetime_isa_countable_capital`
-  values a Lifetime ISA at its surrender value: DWP values capital at its
-  current market or surrender value under regulation 113, and DMG 52665 counts
-  a Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime
-  ISAs exist from 6 April 2017, and the formulas count them from then.
+  (`is_claimant_or_partner`) and exclude dependants: DWP excludes children's
+  capital under regulation 83(2). `lifetime_isa_countable_capital` values a
+  Lifetime ISA at its surrender value: DWP values capital at its current
+  market or surrender value under regulation 113, and DMG 52665 counts a
+  Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime ISAs
+  exist from 6 April 2017, and the formulas count them from then.
   `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`
   hold a member's cash and stocks and shares ISA balances, bounded by the
   household total. The account investor beneficially owns an ordinary ISA's
