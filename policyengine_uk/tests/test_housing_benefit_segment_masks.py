@@ -18,9 +18,9 @@ M1. Each annual disregard equals the day-weighted sum of its segment amounts.
 M2. Where a condition fails, its amount takes the variable's default in the
     annual output and in every segment, unless the population supplies the
     amount as an input, which applies as supplied, as core applies it.
-    Where applicable income's condition fails, the award is the maximum
-    benefit less 65% of any excess of that default over the applicable
-    amount.
+    Where applicable income's condition fails, the award equals the
+    maximum benefit less 65% of any excess of that default over the
+    applicable amount.
 M3. A benefit unit whose conditions all hold has the model's outputs, award
     included.
 M4. The award equals an independent calculation that applies the
@@ -33,9 +33,9 @@ M4. The award equals an independent calculation that applies the
 M5. Each year but 2026-27 has one segment, and the award built from it
     equals the award the model builds from annual income.
 
-The fixture's conditions are inputs, and its variables default to nil. Its
-eligible rent is the rent, ``RENT``, with no non-dependant deductions, so
-the maximum benefit is the whole rent. The annual childcare deduction and
+The fixture supplies the conditions as inputs, and its variables default
+to nil. It sets the eligible rent to ``RENT`` and non-dependant deductions
+to nil, so the maximum benefit equals the whole rent. The annual childcare deduction and
 its limit keep their single annual calculation. Populations use core
 situations, as in test_housing_benefit_wtc_disregard.py; they never load a
 survey dataset.
@@ -122,8 +122,8 @@ def condition_of(name):
 
 
 def masking_reform(conditions, entity=BenUnit):
-    """A reform that adds each condition as an input of ``entity``, true
-    unless set, and makes it the defined_for of each variable it maps to,
+    """Return a reform that adds each condition as an input of ``entity``,
+    true unless set, and makes it the defined_for of each variable it maps to,
     keeping the model's formula."""
 
     class mask(Reform):
@@ -152,14 +152,15 @@ def masking_reform(conditions, entity=BenUnit):
 
 @cache
 def conditioned(active):
-    """The model under a reform that gives each variable in ``MASKED`` its own
-    benefit-unit condition."""
+    """Return the model under a reform that gives each variable in
+    ``MASKED`` its own benefit-unit condition."""
     reform = masking_reform({condition_of(name): [name] for name in MASKED})
     return reform(baseline(active))
 
 
 def masked_simulation(units, year, active, **options):
-    """``units`` under ``conditioned``, each with the conditions it lists."""
+    """Build ``units`` under ``conditioned``, each with the conditions it
+    lists."""
     sim = simulation(
         units,
         year,
@@ -177,7 +178,7 @@ def masked_simulation(units, year, active, **options):
 
 
 def holding(unit, *failing):
-    """``unit`` with every condition holding but those named."""
+    """Return ``unit`` with every condition holding but those named."""
     return {**unit, "conditions": {name: name not in failing for name in MASKED}}
 
 
@@ -190,7 +191,8 @@ def outputs(sim, year):
 
 
 def segments(sim, year):
-    """Each segment's share of the year and the amounts its helpers give."""
+    """Return each segment's share of the year and the amounts its helpers
+    give."""
     benunit = sim.populations["benunit"]
     period = period_(year)
     parameters = sim.tax_benefit_system.parameters
@@ -269,8 +271,8 @@ def legal_masked_award(unit, active):
 
 @st.composite
 def masked_populations(draw):
-    """A population from the segment tests, each benefit unit with its own
-    draw of the six conditions."""
+    """Draw a population from the segment tests, each benefit unit with its
+    own draw of the six conditions."""
     return [
         {
             **unit,
@@ -283,14 +285,15 @@ def masked_populations(draw):
 
 
 def rotating(units):
-    """Each unit with one condition failing, in turn, and the others holding."""
+    """Return each unit with one condition failing, in turn, and the others
+    holding."""
     return [
         holding(unit, MASKED[index % len(MASKED)]) for index, unit in enumerate(units)
     ]
 
 
 def failing(units):
-    """Each unit with every condition but income's failing."""
+    """Return each unit with every condition but income's failing."""
     return [holding(unit, *MASKED[:-1]) for unit in units]
 
 
@@ -301,8 +304,8 @@ SUPPLIED_LIMIT_MASKED_EDGE_CASES = rotating(SUPPLIED_LIMIT_SEGMENT_EDGE_CASES)
 
 
 class issue_reform(Reform):
-    """The issue's reform: the earnings and WTC disregards apply only in
-    specified or temporary accommodation."""
+    """Apply the earnings and WTC disregards only in specified or temporary
+    accommodation, as the issue's reform does."""
 
     def apply(self):
         for name in (EARNINGS, WTC_DISREGARD):
@@ -536,7 +539,7 @@ def test_a_condition_holding_for_one_of_two_benefit_units_in_a_household(entity)
 @example(units=SUPPLIED_MASKED_EDGE_CASES, active=True)
 @example(units=SUPPLIED_LIMIT_MASKED_EDGE_CASES, active=True)
 def test_masked_segments_add_up_and_match_the_regulations(units, active):
-    """M1, M2 and M4 in 2026-27."""
+    """Check M1, M2 and M4 in 2026-27."""
     sim = masked_simulation(units, YEAR_WITH_SEGMENTS, active)
     actual = outputs(sim, YEAR_WITH_SEGMENTS)
     segment_list = segments(sim, YEAR_WITH_SEGMENTS)
@@ -580,8 +583,9 @@ def test_masked_segments_add_up_and_match_the_regulations(units, active):
 @example(units=MASKED_EDGE_CASES, active=True)
 @example(units=SUPPLIED_MASKED_EDGE_CASES, active=True)
 def test_benefit_units_whose_conditions_hold_keep_the_models_outputs(units, active):
-    """M3, against the model without the reform. Benefit units are assessed
-    separately, so a failed condition in one does not reach another."""
+    """Check M3 against the model without the reform. The model assesses
+    each benefit unit separately, so a failed condition in one doesn't
+    reach another."""
     sim = masked_simulation(units, YEAR_WITH_SEGMENTS, active)
     model = simulation(
         units,
@@ -596,8 +600,8 @@ def test_benefit_units_whose_conditions_hold_keep_the_models_outputs(units, acti
 
 
 def segment_route_award(sim, units, year):
-    """The award built from each segment's income, as entitlement builds it
-    in 2026-27, applying the income condition from the units directly."""
+    """Build the award from each segment's income, as entitlement does in
+    2026-27, and apply the income condition from the units directly."""
     benunit = sim.populations["benunit"]
     period = period_(year)
     parameters = sim.tax_benefit_system.parameters
@@ -641,9 +645,10 @@ def segment_route_award(sim, units, year):
 @example(units=SUPPLIED_MASKED_EDGE_CASES, year=2027, active=True)
 @example(units=SUPPLIED_LIMIT_MASKED_EDGE_CASES, year=2024, active=False)
 def test_one_segment_gives_the_annual_routes_award(units, year, active):
-    """M5: outside 2026-27 the accommodation amounts do not change within
-    the year. The single segment's amounts are the annual outputs, and the
-    award built from them is the model's, which reads annual income."""
+    """Check M5. Outside 2026-27 the accommodation amounts don't change
+    within the year, so the single segment's amounts equal the annual
+    outputs, and the award built from them equals the model's, which reads
+    annual income."""
     sim = masked_simulation(units, year, active)
     actual = outputs(sim, year)
     (segment,) = segments(sim, year)
@@ -654,8 +659,8 @@ def test_one_segment_gives_the_annual_routes_award(units, year, active):
 
 
 class wtc_disregard_reads_earnings(Reform):
-    """The WTC disregard applies only where the earnings disregard is
-    positive."""
+    """Apply the WTC disregard only where the earnings disregard exceeds
+    zero."""
 
     def apply(self):
         class masked(Variable):
@@ -666,12 +671,13 @@ class wtc_disregard_reads_earnings(Reform):
 
 
 def test_a_wtc_condition_can_read_the_earnings_disregard():
-    """The annual earnings disregard calculates no WTC disregard, so a
-    condition on the WTC disregard can read it. Assessed inputs for 2024:
-    £500 of net earnings, a £260 standard disregard, no accommodation
-    disregard or childcare deduction, the work condition met and £2,000 of
-    WTC. The earnings disregard is the £260 standard disregard, with the
-    condition and without it."""
+    """The earnings disregard's annual formula calculates no WTC
+    disregard, so a condition on the WTC disregard can read it. The
+    situation supplies assessed inputs for 2024: £500 of net earnings, a
+    £260 standard disregard, no accommodation disregard or childcare
+    deduction, the work condition met and £2,000 of WTC. With the condition
+    and without it, the earnings disregard comes to the £260 standard
+    disregard."""
     inputs = {
         "housing_benefit_net_earnings": 500,
         "housing_benefit_applied_standard_earnings_disregard": 260,
@@ -699,13 +705,14 @@ def test_a_wtc_condition_can_read_the_earnings_disregard():
 @pytest.mark.parametrize(
     "year,active,unit,earnings,wtc,award",
     [
-        # The issue's claimant in 2024. The earnings disregard is £260, so
-        # the condition holds and the model's figures apply: income is 2,500
-        # - 260 - 889.20 = 1,350.80 and the award 10,400 - 0.65 * 1,350.80.
+        # The issue's claimant in 2024. The £260 earnings disregard exceeds
+        # zero, so the condition holds and the model's figures apply: income
+        # of 2,500 - 260 - 889.20 = 1,350.80 and an award of 10,400 - 0.65 *
+        # 1,350.80.
         (2024, False, ISSUE_CLAIMANT, 260, 889.20, 9_521.98),
-        # Without earnings the disregard is nil and the condition fails, so
-        # the WTC disregard is nil too: income is the £2,000 of WTC and the
-        # award 10,400 - 0.65 * 2,000.
+        # Without earnings the earnings disregard comes to nil and the
+        # condition fails, so the WTC disregard falls to nil too: income of
+        # the £2,000 of WTC and an award of 10,400 - 0.65 * 2,000.
         (2024, False, specified_claimant(specified=False, net=0), 0, 0, 9_100),
         # In 2026-27 in specified accommodation, with tax credits kept: £260
         # before 5 October and £500 after, weighted by 182 and 183 days, so
@@ -723,9 +730,9 @@ def test_a_wtc_condition_can_read_the_earnings_disregard():
 def test_a_wtc_condition_reading_the_earnings_disregard_runs(
     year, active, unit, earnings, wtc, award
 ):
-    """The issue's claimant, with every component the model calculates,
-    under a condition that gives the WTC disregard only where the earnings
-    disregard is positive."""
+    """The model calculates every component for the issue's claimant, under
+    a condition that gives the WTC disregard only where the earnings
+    disregard exceeds zero."""
     sim = simulation(
         [unit],
         year,
@@ -742,9 +749,9 @@ PROBE = "housing_benefit_reform_probe_amount"
 
 
 class numeric_conditions(Reform):
-    """A numeric benefit-unit condition. A probe amount of £99, with a
-    default of £7, and applicable income, with a default of £17, apply where
-    it exceeds zero."""
+    """Add a numeric benefit-unit condition. Apply a probe amount of £99,
+    with a default of £7, and applicable income, with a default of £17,
+    where the condition exceeds zero."""
 
     def apply(self):
         class condition(Variable):
@@ -781,9 +788,9 @@ def test_a_numeric_condition_applies_where_it_exceeds_zero():
     variable's default elsewhere, negative conditions included, and so does
     hb_apply_defined_for. Three of the issue's claimants in 2026-27, with
     tax credits kept, have conditions of -1, 1 and 0. Where income's
-    condition fails, each segment's income is its £17 default, and the award
-    is 10,400 - 0.65 * 17 = 10,388.95; where it holds, the model's
-    £1,350.80 gives 9,521.98."""
+    condition fails, each segment's income takes its £17 default, and the
+    award comes to 10,400 - 0.65 * 17 = 10,388.95; where it holds, the
+    model's £1,350.80 gives 9,521.98."""
     sim = simulation(
         [ISSUE_CLAIMANT] * 3,
         YEAR_WITH_SEGMENTS,
@@ -803,9 +810,9 @@ def test_a_numeric_condition_applies_where_it_exceeds_zero():
 
 
 class limit_follows_conditions(Variable):
-    """The earnings and tax-credit limit, releasing to childcare the
-    earnings a failed earnings condition no longer disregards and the WTC a
-    failed WTC condition no longer reserves."""
+    """Release to childcare the earnings a failed earnings condition no
+    longer disregards and the WTC a failed WTC condition no longer
+    reserves."""
 
     value_type = float
     entity = BenUnit
@@ -879,10 +886,11 @@ def test_a_failed_disregard_still_limits_childcare(
     fails, unit, active, limit, award, released_limit, released_award
 ):
     """hb_childcare_wtc_reserve ignores a condition on the WTC disregard,
-    and the limit counts the standard disregard whatever the earnings
-    disregard's condition. A reform author who wants a failed condition to
-    fund childcare changes the limit too. In 2026-27, for a claimant with
-    one child outside specified accommodation."""
+    and the limit subtracts the standard disregard whatever the earnings
+    disregard's condition gives. A reform author who wants a failed
+    condition to fund childcare changes the limit too. Each case runs in
+    2026-27 for a claimant with one child outside specified
+    accommodation."""
     unit = holding(unit, fails)
     sim = masked_simulation([unit], YEAR_WITH_SEGMENTS, active)
     benunit = sim.populations["benunit"]

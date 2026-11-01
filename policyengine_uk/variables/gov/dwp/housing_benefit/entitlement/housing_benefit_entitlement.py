@@ -29,9 +29,9 @@ class housing_benefit_entitlement(Variable):
         "ages and household status remain constant. Other parameters keep "
         "the model's annual convention. Supplied annual income/deductions "
         "and replacement formulas retain their normal override semantics. "
-        "A defined_for condition that a reform adds to the income, a "
-        "disregard, the childcare deduction or its limit applies in each "
-        "segment. "
+        "Apply in each segment any defined_for condition a reform author "
+        "adds to applicable income, a disregard, the childcare deduction or "
+        "its limit. "
         "Annual income intermediates are not period-specific assessments."
     )
     entity = BenUnit

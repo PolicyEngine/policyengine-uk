@@ -6,8 +6,8 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
     """Keep annual inputs, replacement formulas and computed aggregates out of
-    recalculation. A defined_for mask on the model's formula is none of
-    these: the segment helpers apply it themselves (hb_apply_defined_for)."""
+    recalculation. A defined_for condition on the model's own formula takes
+    no annual route: each segment helper applies it (hb_apply_defined_for)."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
     if formula is None or formula.__code__ != default_formula.__code__:
@@ -16,13 +16,13 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
 
 
 def hb_apply_defined_for(benunit, period, variable_name, amount):
-    """The amount a segment helper rebuilt for the variable where the
-    variable's defined_for condition holds, and the variable's default
-    elsewhere. Core masks the annual output the same way
-    (Simulation._calculate): it maps the condition to the variable's entity
-    and keeps the amount where the condition exceeds zero. The condition
-    comes from the variable the simulation holds, so one that a reform adds
-    reaches each segment, as it reaches the annual output."""
+    """Return the amount a segment helper rebuilt where the variable's
+    defined_for condition exceeds zero, and the variable's default
+    elsewhere, as Core masks the annual output (Simulation._calculate).
+    Calculate the condition for the helper's annual period and map it to
+    the variable's entity, as Core does. Read the condition from the
+    variable the simulation holds, so a condition a reform author adds
+    reaches each segment."""
     variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     if variable.defined_for is None:
         return amount
@@ -65,8 +65,8 @@ def hb_reads_no_other_variable(benunit, period, variable_name):
 
 
 def hb_accommodation_segments(benunit, period, parameters):
-    """Full annual-equivalent accommodation amounts and fiscal-year weights.
-    Each amount is nil where the disregard's defined_for condition fails."""
+    """Yield full annual accommodation amounts and fiscal-year weights.
+    Apply the disregard's defined_for condition to each amount."""
     name = "housing_benefit_specified_or_temporary_accommodation_disregard"
     if hb_uses_annual_override(
         benunit,
