@@ -4118,6 +4118,71 @@ def test_the_model_projects_the_published_levels_to_the_penny(
             assert kind == ("set" if year <= set_until else "estimate"), year
 
 
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(
+    set_year=st.integers(2021, 2029),
+    gap=st.integers(1, 3),
+    pennies=st.integers(500, 2000),
+    changes=st.lists(NLW_CHANGES, min_size=1, max_size=6),
+    miss=st.sampled_from((0, 0, 1, -1)),
+    jitter=st.floats(min_value=-0.0045, max_value=0.0045, allow_nan=False),
+)
+def test_a_table_after_the_rate_set_keeps_every_penny(
+    set_year, gap, pennies, changes, miss, jitter
+):
+    """For generated tables the OBR publishes from 1 to 3 years after the
+    rate set (£5 to £20, set in a year from 2021 to 2029; then up to 6
+    more levels, each changing by -5% to +10%): the model carries the rate
+    set to the table's first year through the growth the importer keeps.
+    The test puts the OBR's first level within 0.45p of the penny the model
+    projects there, or a penny above or below it. The importer accepts the
+    table only where the first level rounds to that penny, and the model
+    then projects every later level to its penny too. Otherwise it refuses
+    the table and names the table's first year."""
+    anchor = LevelAnchor(date(set_year, 4, 1), pennies / 100, NLW_UPRATING)
+    first_year = set_year + gap
+    kept = {
+        year: value
+        for year, value in _values(EARLY_EARNINGS_FIXTURE, NLW_PATH).items()
+        if year <= first_year
+    }
+    # The index to the table's first year depends only on the kept growth;
+    # a 2039 entry runs it past the table on any builder.
+    carried = uprated_wages(model_index({**kept, 2039: 0.0}), anchor)[first_year]
+    levels = [carried + miss / 100 + jitter]
+    for change in changes:
+        levels.append(levels[-1] * (1 + change))
+    workbook = nlw_workbook(nlw_rows(tuple(levels), first_year, first_year))
+    render = partial(
+        render_level_series_yaml,
+        EARLY_EARNINGS_FIXTURE,
+        compute_level_growth(workbook),
+        ("March", 2026),
+        {NLW_PATH: anchor},
+        fixture_index,
+    )
+    if miss:
+        event("refused: the first level")
+        with pytest.raises(
+            ValueError,
+            match=f"the OBR publishes Table 1.13 from {first_year}, after {set_year}",
+        ):
+            render()
+        return
+    try:
+        rendered = render()
+    except ValueError as error:
+        event("refused: a later level")
+        assert "growth to six decimals" in str(error), error
+        return
+    event("written")
+    wages = uprated_wages(fixture_index(rendered, NLW_PATH), anchor)
+    for offset, level in enumerate(levels):
+        assert wages[first_year + offset] == pytest.approx(
+            round(level / 0.01) * 0.01, abs=1e-9
+        ), first_year + offset
+
+
 def test_a_tail_that_rounds_the_level_index_to_zero_is_refused():
     """Growth through the table keeps the index above zero; the falling
     average_earnings tail then takes the index the builder writes to zero
