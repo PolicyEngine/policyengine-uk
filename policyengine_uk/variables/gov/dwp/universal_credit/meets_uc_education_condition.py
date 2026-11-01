@@ -12,8 +12,9 @@ class meets_uc_education_condition(Variable):
         "(uc_receiving_education), or an exception applies "
         "(uc_is_excepted_from_education_condition). The Welfare Reform "
         "(Northern Ireland) Order 2015 art. 9(1)(d) sets the same condition. "
-        "is_uc_eligible applies it to each claimant, as the Universal Credit "
-        "Regulations 2013 reg. 3(2)(b) provides for a couple."
+        "is_uc_eligible needs one claimant to meet it and the age condition "
+        "together, as DWP's Advice for Decision Making E2016 reads the "
+        "Universal Credit Regulations 2013 reg. 3(2) for a couple."
     )
     definition_period = YEAR
     reference = (

@@ -20,29 +20,40 @@ class uc_is_excepted_from_education_condition(Variable):
         "(f) the member of a mixed-age couple who has reached the qualifying "
         "age for State Pension Credit; and reg. 60(1), a member of a family "
         "that claims Universal Credit when DWP moves it off its legacy "
-        "benefits (claims_uc_at_legacy_closure) and is not a qualifying young "
-        "person. Limb (e)(i) needs no rule of its own: the model places "
-        "responsibility for a child on the benefit unit, so both members of "
-        "the couple meet (c). Not modelled: (a), a person under 21 in "
+        "benefits (claims_uc_at_legacy_closure) and whom the education "
+        "condition does not treat as a qualifying young person "
+        "(is_qualifying_young_person_for_uc_education, which applies reg. 28 "
+        "of the 2014 Regulations). Limb (e)(i) needs no rule of its own: the "
+        "model places responsibility for a child on the benefit unit, so "
+        "both members of the couple meet (c). Under (b), the decision maker "
+        "must determine limited capability for work before the course "
+        "starts. uc_limited_capability_for_work can derive from disability "
+        "status (is_disabled_for_benefits) without an assessment. The model "
+        "can therefore retain students who have never received a limited "
+        "capability for work determination, as well as students assessed "
+        "after their course began. The model does not infer the "
+        "determination from an ESA award, so an ESA assessment reaches this "
+        "limb only where a user sets uc_limited_capability_for_work or a "
+        "dataset sets is_disabled_for_benefits. Not modelled: (a), a person "
+        "under 21, or 21 having reached that age during the course, in "
         "non-advanced education without parental support, which the model "
-        "does not observe; under (b), whether the limited capability for "
-        "work was determined before the course began, the other benefits it "
-        "lists (Scottish disability assistance, constant attendance "
-        "allowance and war pension attendance payments), which the model "
-        "has no variables for; and reg. 60(2), which ends the transitional "
-        "protection. A foster parent is a person either input flags, "
+        "does not observe; under (b), the other benefits it lists (Scottish "
+        "disability assistance, constant attendance allowance and war "
+        "pension attendance payments), which the model has no variables "
+        "for; and reg. 60(2), which ends the transitional protection. The "
+        "model identifies foster parents through either input, "
         "uc_is_responsible_foster_parent_of_child_under_one or "
         "uc_is_foster_parent_or_new_friend_or_family_carer. The second also "
         "holds a foster parent between placements, with no child placed, "
         "and a friend or family carer, who is responsible for the child and "
-        "so meets (c) under the law. The "
-        "Universal Credit Regulations (Northern Ireland) 2016 reg. 14(1) "
-        "lists the same exceptions."
+        "so meets (c) under the law. The Universal Credit Regulations "
+        "(Northern Ireland) 2016 reg. 14(1) lists the same exceptions."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
     )
@@ -52,8 +63,8 @@ class uc_is_excepted_from_education_condition(Variable):
         claimant_or_partner = person("is_uc_assessed_claimant", period)
         in_couple = benunit.sum(claimant_or_partner) == 2
         # Reg. 14(1)(b): "entitled to attendance allowance, ... disability
-        # living allowance, ... or personal independence payment" and
-        # determined to have limited capability for work.
+        # living allowance, ... or personal independence payment", and the
+        # decision maker has determined limited capability for work.
         disability_benefit = (
             (person("attendance_allowance", period) > 0)
             | (person("armed_forces_independence_payment", period) > 0)
@@ -103,11 +114,13 @@ class uc_is_excepted_from_education_condition(Variable):
         # undertaking a full-time course (see regulation 12(2) and 13 ...),
         # that condition is not to apply ... while they are continuing to
         # undertake that course". A qualifying young person receives
-        # education under reg. 12(1A), not reg. 12(2).
+        # education under reg. 12(1A), not reg. 12(2); reg. 28 applies
+        # first, so a person entitled to an existing benefit takes reg.
+        # 12(2) and keeps the protection.
         migrated_student = (
             claimant_or_partner
             & benunit("claims_uc_at_legacy_closure", period)
-            & ~person("is_qualifying_young_person_for_universal_credit", period)
+            & ~person("is_qualifying_young_person_for_uc_education", period)
         )
         return (
             disabled_with_limited_capability_for_work
