@@ -1,0 +1,500 @@
+# The abolition of income-related ESA (Welfare Reform Act 2012 s.33(1)(b);
+# NI: Welfare Reform (NI) Order 2015 art. 39(1)(b)) comes into force for every
+# remaining old style ESA award on 1 July 2026 in Great Britain (SI 2025/1148
+# art. 3A(1), inserted by SI 2026/409) and on 1 October 2026 in Northern
+# Ireland (SR 2025/176 art. 3A(1), inserted by SR 2026/115).
+#
+# Each model year is the fiscal year from 6 April to 5 April; 2026-27 has 365
+# days. A Great Britain award is payable for the 86 days from 6 April to 30
+# June 2026 (25 + 31 + 30) and a Northern Ireland award for the 178 days from
+# 6 April to 30 September 2026 (25 + 31 + 30 + 31 + 31 + 30). So 2026-27 pays
+# the annual award times 86/365 = 0.235616 or 178/365 = 0.487671, and
+# 2027-28 pays nothing.
+#
+# Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
+# Art. 3A(3): a Universal Credit claim still ends a saved award. A
+# contributory allowance continues as new style ESA (esa_contrib).
+#
+# Unless a case says otherwise, nobody has capital, so there is no tariff
+# income and the annual award is the reported amount, and the family does
+# not claim Universal Credit.
+
+- name: Great Britain 2025-26, before the abolition, pays the whole award
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    esa_income_payable_share: 1
+    esa_income_report_closed: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    is_on_income_related_esa: true
+
+- name: Great Britain 2026-27 pays the award until 30 June 2026 (86 of 365 days)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    esa_income_payable_share: 0.235616
+    esa_income_report_closed: false
+    esa_income_eligible: true
+    # 5,000 x 86 / 365 = 1,178.08
+    esa_income: 1_178.08
+    claimant_or_partner_esa_income: 1_178.08
+    is_on_income_related_esa: true
+
+- name: Great Britain 2027-28 pays no income-related ESA
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    esa_income_payable_share: 0
+    esa_income_report_closed: true
+    esa_income_eligible: false
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+    is_on_income_related_esa: false
+    # The family does not claim Universal Credit, so nothing replaces it.
+    claims_universal_credit: false
+    universal_credit: 0
+
+- name: Scotland follows the Great Britain date
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+  output:
+    esa_income_payable_share: 0.235616
+    esa_income: 1_178.08
+
+- name: Wales follows the Great Britain date
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+  output:
+    esa_income_payable_share: 0.235616
+    esa_income: 1_178.08
+
+- name: Northern Ireland 2025-26 pays the whole award
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+  output:
+    esa_income_payable_share: 1
+    esa_income: 5_000
+
+- name: Northern Ireland 2026-27 pays the award until 30 September 2026 (178 of 365 days)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+  output:
+    esa_income_payable_share: 0.487671
+    esa_income_report_closed: false
+    # 5,000 x 178 / 365 = 2,438.36
+    esa_income: 2_438.36
+    claimant_or_partner_esa_income: 2_438.36
+    is_on_income_related_esa: true
+
+- name: Northern Ireland 2027-28 pays no income-related ESA
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+  output:
+    esa_income_payable_share: 0
+    esa_income_report_closed: true
+    esa_income: 0
+    is_on_income_related_esa: false
+
+- name: The 2026-27 share applies to the award after tariff income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        savings: 7_000
+  output:
+    # ESA Regs 2008 reg 118: £1 a week for each £250 of capital above £6,000,
+    # so £7,000 gives £4 a week, 4 x 52 = £208 a year. The award is
+    # (5,000 - 208) x 86 / 365 = 4,792 x 86 / 365 = 1,129.07.
+    esa_income_tariff_income: 208
+    esa_income: 1_129.07
+
+- name: An award saved for an appointee stays payable in Great Britain in 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # Art. 3A(2) treats the abolition as not in force for this award.
+    esa_income_payable_share: 1
+    esa_income_report_closed: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    is_on_income_related_esa: true
+
+- name: An award saved for an appointee is payable for all of 2026-27 in Northern Ireland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+  output:
+    # SR 2025/176 art. 3A(2).
+    esa_income_payable_share: 1
+    esa_income: 5_000
+
+- name: A Universal Credit claim still ends an award saved for an appointee
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # Art. 3A(3): the saving does not stop a claim for Universal Credit from
+    # bringing the abolition into force.
+    esa_income_payable_share: 1
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+    is_on_income_related_esa: false
+
+- name: A contributory-only award continues in full in 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # The abolition removes only the income-related allowance; a
+    # contributory allowance is new style ESA (SI 2025/1148 art. 2).
+    esa_contrib: 4_000
+    esa_income: 0
+    esa: 4_000
+
+- name: A mixed award keeps its contributory allowance and pays the income-related part to 30 June 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 4_000
+        esa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    esa_contrib: 4_000
+    # 1,000 x 86 / 365 = 235.62
+    esa_income: 235.62
+    # 4,000 + 235.62
+    esa: 4_235.62
+
+- name: A mixed award keeps only its contributory allowance in 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 4_000
+        esa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    esa_contrib: 4_000
+    esa_income: 0
+    esa: 4_000
+
+- name: A family the legacy closure already moved has no income-related ESA in 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        child_tax_credit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # Tax credits closed from 6 April 2025, and DWP's migration notice ends
+    # all the family's legacy awards (SI 2014/1230 reg 46(1)(a)), before the
+    # abolition reaches the award.
+    legacy_benefits_closed: true
+    esa_income_payable_share: 1
+    esa_income_report_closed: true
+    esa_income: 0
+    is_on_income_related_esa: false
+
+- name: A family the legacy closure already moved stays without income-related ESA in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        child_tax_credit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    legacy_benefits_closed: true
+    esa_income_report_closed: true
+    esa_income: 0
+
+- name: A non-dependent adult's own award is paid to 30 June 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 2_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+        region: LONDON
+  output:
+    esa_income_report_closed: [false, false]
+    # 2,000 x 86 / 365 = 471.23, on the adult's own claim.
+    esa_income: 471.23
+    claimant_or_partner_esa_income: 0
+    is_on_income_related_esa: [false, true]
+
+- name: A non-dependent adult's own award has ended by 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 2_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+        region: LONDON
+  output:
+    esa_income_report_closed: [true, true]
+    esa_income: 0
+    # Their award has ended, so they are not on income-related ESA
+    # (own_report_is_paid reads esa_income_report_closed).
+    is_on_income_related_esa: [false, false]
+
+- name: A couple's award saved for the claimant who reports it stays payable in 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    esa_income_payable_share: [1, 0]
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    is_on_income_related_esa: [true, false]
