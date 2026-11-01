@@ -506,8 +506,10 @@ def test_non_dependant_deduction_invariants(population, year):
             if reporter is None or reporter >= len(household["non_dependants"])
             else members_of[person["benunit"]][reporter]
         )
+        # Pension Credit's payee must also have reached the qualifying age
+        # (SPCA 2002 s.1(2)(b)), which payee_of doesn't model.
         if reporter_index is None or couple[reporter_index]:
-            for b in REPORTED:
+            for b in ["income_support", "jsa_income", "esa_income"]:
                 assert on[b] == (payee_of(i, b) and household["benefits"][b] > 0), (
                     b,
                     i,
@@ -607,11 +609,27 @@ def test_non_dependant_deduction_invariants(population, year):
             if nd["hours"] < scale.remunerative_work_hours:
                 assert ctr_deduction == pytest.approx(lowest, abs=0.01)
 
-        # 11. Banding on gross income computed from the inputs.
+        # 11. Banding on gross income computed from the inputs. Income-based
+        # JSA and income-related ESA count only where the claimant or partner
+        # reports them, or no one does.
+        couple_awards = (
+            ["jsa_income", "esa_income"]
+            if reporter_index is None or couple[reporter_index]
+            else []
+        )
+        family_awards = sum(
+            household["benefits"][b]
+            for b in [
+                "income_support",
+                "pension_credit",
+                "universal_credit_pre_benefit_cap",
+                *couple_awards,
+            ]
+        )
         if couple[i]:
             weekly = (
                 sum(own_gross(j) for j in members_of[person["benunit"]] if couple[j])
-                + sum(household["benefits"].values())
+                + family_awards
             ) / WEEKS
         else:
             weekly = own_gross(i) / WEEKS

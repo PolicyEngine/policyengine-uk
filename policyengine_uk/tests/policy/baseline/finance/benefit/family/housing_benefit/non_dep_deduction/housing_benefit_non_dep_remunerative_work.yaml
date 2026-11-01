@@ -3,6 +3,8 @@
 # A non-worker or 15-hour worker pays 20.40 * 52 = 1,060.80 in 2026-27,
 # whatever their income. The exemptions in reg 74(7), (8) and (10) and reg
 # 55(7)-(9) act through eligibility, which most cases here take as an input.
+# Family awards, which a single non-dependant's gross income would count, are
+# held at zero.
 # A 16-hour worker's wages of 9,000 alone are below 192/week; adding
 # IIDB or child maintenance of 12,000 gives 403.85/week, so 105.20 * 52.
 
@@ -11,6 +13,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -30,6 +40,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -49,6 +67,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -68,6 +94,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -87,6 +121,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -106,6 +148,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -125,6 +175,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -144,6 +202,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     country: ENGLAND
     housing_benefit_individual_non_dep_deduction_eligible: true
@@ -163,6 +229,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 70
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 0
@@ -178,6 +252,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 70
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 0
@@ -197,6 +279,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 22
     hours_worked: 0
     social_security_income: 0
@@ -212,6 +302,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -228,6 +326,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -244,6 +350,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -260,6 +374,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     age: 30
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 832
@@ -276,6 +398,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.dwp.housing_benefit.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: ENGLAND
@@ -294,6 +424,14 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
     gov.dwp.housing_benefit.non_dep_deduction.remunerative_work_hours: 20
     age: 30
     country: ENGLAND

@@ -17,14 +17,16 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 
 # Family benefits counted in a couple's gross income, besides Universal Credit.
 # They are awarded to the benefit unit, so the person-level gross income
-# variables leave them out.
+# variables leave them out. Income-based JSA and income-related ESA count the
+# claimant's and partner's award only: another member claims in their own
+# right.
 FAMILY_GROSS_INCOME_BENEFITS = [
     "child_tax_credit",
     "working_tax_credit",
     "child_benefit",
     "income_support",
-    "jsa_income",
-    "esa_income",
+    "claimant_or_partner_jsa_income",
+    "claimant_or_partner_esa_income",
     "pension_credit",
 ]
 
