@@ -17,9 +17,9 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     limits by the grossed-up gift (s. 414(2)(b)), as in earned_income_tax,
     and does not come off the income.
 
-    The test reads income before the Marriage Allowance. The rates a person
-    is liable at come from Step 3 of s. 23, before the tax reductions of
-    Step 6, of which the allowance is one (s. 55B(1)). The model still takes
+    The test reads income before the Marriage Allowance. Step 4 of s. 23
+    charges tax at each rate before Step 6 deducts the tax reductions, and
+    s. 55B(1) gives the allowance as a tax reduction. The model still takes
     the allowance off earned_taxable_income (#1947), so
     non_savings_taxable_income and the savings rate bands built on it would
     read this test back.
@@ -33,7 +33,8 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     non_savings = person("non_savings_income_after_allowances", period)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; in 2017-18 the Scottish scale had only the basic rate below it.
-    # Before 2017-18 the Scottish rates used the UK limits.
+    # The model holds no Scottish scale before 2017-18, and in 2016-17
+    # s. 11A(1) charged the Scottish basic rate up to the basic rate limit.
     scottish = rates.scotland.rates
     basic_rate_limit = rates.uk.thresholds[1] + gross_gift
     if len(scottish.rates) > 3:
@@ -48,11 +49,11 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         basic_rate_limit,
     )
     # Savings sit above non-savings income (s. 16) and take the rest-of-UK
-    # bands (s. 11D(6)). The starting rate for savings and then the savings
-    # nil rate take the first of them, as in higher_rate_savings_income; the
-    # model keeps the starting rate within the basic rate band. Savings above
-    # those are charged at a positive rate, and fail the test once they pass
-    # the basic rate limit.
+    # bands (s. 11D(6)). As in higher_rate_savings_income, the model charges
+    # the first of them at the starting rate for savings, which it keeps
+    # within the basic rate band, and then at the savings nil rate. Savings
+    # above those bear a positive rate, and the person fails the test once
+    # they pass the basic rate limit.
     savings = max_(
         0,
         person("taxable_savings_interest_income", period)

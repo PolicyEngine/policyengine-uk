@@ -44,9 +44,9 @@ def scottish_tax_band(person, period, parameters):
     remain, then return the higher band. Keep income at each upper limit in
     the lower band: s. 10(2) to (3A) charges income "up to" a limit at the
     lower rate, and each resolution charges a rate "on income above" one
-    limit "and up to" the next. As for every taxpayer, income charged at a
-    nil rate stays in the band where it sits; the Marriage Allowance applies
-    its own rate conditions (liable_only_at_marriage_allowance_rates).
+    limit "and up to" the next. Keep income charged at a nil rate in the
+    band where it sits, as for every taxpayer; the Marriage Allowance has its
+    own rate test (liable_only_at_marriage_allowance_rates).
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)

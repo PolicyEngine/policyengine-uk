@@ -70,7 +70,8 @@
     # 50,270 - 12,570 = 37,700, all below it. The 1 of interest takes taxable
     # income to 37,701, above the basic rate limit, so the Personal Savings
     # Allowance is 500 (s. 12B) and charges it at the savings nil rate
-    # (s. 12A), which s. 55B(2)(b) allows. The band rests on that pound.
+    # (s. 12A), which s. 55B(2)(b) allows. The model bands the person HIGHER
+    # on that pound alone.
     gov.hmrc.income_tax.rates.scotland.rates[3].threshold: 37_702
     employment_income: 50_270
     savings_interest_income: 1
