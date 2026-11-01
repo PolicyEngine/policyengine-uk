@@ -3,11 +3,11 @@ refuses them (PolicyEngine/policyengine-uk#2602).
 
 ``Simulation.to_input_dataframe`` exports an enum as 0-based positions, and a
 policyengine-core dataset can hold them too, so a DataFrame and a Core
-dataset still give positions, and the loader checks each one. Every dataset
-policyengine-uk-data builds, and every one policyengine-uk saves, holds
-member names, so the loader refuses integers in a ``UKSingleYearDataset``, a
-``UKMultiYearDataset`` and their saved files. There a survey code can't pass
-as a position.
+dataset still give positions, and the loader checks each one.
+policyengine-uk-data builds every dataset with member names, and
+policyengine-uk saves the positions it encodes as names, so the loader
+refuses integers in a ``UKSingleYearDataset``, a ``UKMultiYearDataset`` and
+their saved files. There a survey code can't pass as a position.
 
 The issue's survey codes run from 1, while ``CouncilTaxBand`` positions run
 from 0 (A) to 8 (I).
