@@ -214,7 +214,8 @@ def replaces_formula(
     caller set an input for the period (``stored_as_input``), as a scenario
     does with its own value (``set_model_value``). A cached formula result is
     not an input, even in populations taken from another simulation or in
-    their clones and branches."""
+    their clones and branches. Housing Benefit's hb_uses_annual_override
+    makes the same test for its annual amounts."""
     variable = population.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
     if (

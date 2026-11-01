@@ -1,14 +1,27 @@
 from policyengine_uk.model_api import *
 from policyengine_core.parameters import ParameterNode
 from policyengine_uk.utils.excise import fiscal_year_segments
-from policyengine_uk.utils.supplied_inputs import replaces_formula
+from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
     """Keep annual inputs and replacement formulas out of recalculation."""
-    # SUPPLIED_INPUT_VARIABLES lists each name passed here, as replaces_formula
+    simulation = benunit.simulation
+    variable = simulation.tax_benefit_system.get_variable(variable_name)
+    formula = variable.get_formula(period)
+    if (
+        variable.is_neutralized
+        or formula is None
+        or formula.__code__ != default_formula.__code__
+    ):
+        return True
+    # An input the caller set for this period overrides recalculation, and so
+    # does a scenario's own value (set_model_value), which the variable then
+    # reads; a cached formula result does not, even in populations taken from
+    # another simulation or in their clones and branches.
+    # SUPPLIED_INPUT_VARIABLES lists each name passed here, as stored_as_input
     # and set_model_value require.
-    return replaces_formula(benunit, variable_name, period, default_formula)
+    return stored_as_input(benunit, variable_name, period)
 
 
 def hb_accommodation_segments(benunit, period, parameters):
