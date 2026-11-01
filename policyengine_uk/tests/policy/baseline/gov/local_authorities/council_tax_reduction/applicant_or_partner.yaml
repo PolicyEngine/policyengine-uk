@@ -222,12 +222,15 @@
         savings: 0
   output:
     # Disability (44.85) and severe disability (86.05) premiums at the single
-    # rate: (44.85 + 86.05) * 52. The young mother's disability does not give
-    # the grandmother a premium, and at 17 neither parent is a non-dependant
-    # who bars the severe disability premium.
-    council_tax_reduction_premiums: [6_806.80]
+    # rate, and the enhanced disability premium (22.00), which Scotland's
+    # working-age scheme pays for attendance allowance from 1 April 2023 (SSI
+    # 2021/249 Sch 1 para 14(1)(g)): (44.85 + 86.05 + 22.00) * 52. The young
+    # mother's disability does not give the grandmother a premium, and at 17
+    # neither parent is a non-dependant who bars the severe disability
+    # premium.
+    council_tax_reduction_premiums: [7_950.80]
     # Single aged 25 or over, 95.55 * 52 = 4,968.60, plus the premiums.
-    council_tax_reduction_applicable_amount: [11_775.40]
+    council_tax_reduction_applicable_amount: [12_919.40]
 
 - name: Adult parents in a lone-applying head's benefit unit are her non-dependants and bar her severe disability premium
   period: 2026
@@ -268,9 +271,11 @@
     # At 19 the parents are residents aged 18 or over outside her family, so
     # the severe disability premium is not payable (HB Regs 2006 Sch 3 para
     # 14(2)(a)(ii), which the model applies to Council Tax Reduction too).
-    # Only the disability premium remains: 44.85 * 52.
-    council_tax_reduction_premiums: [2_332.20]
-    council_tax_reduction_applicable_amount: [7_300.80]
+    # The disability premium and the enhanced disability premium for her
+    # attendance allowance (SSI 2021/249 Sch 1 para 14(1)(g)) remain:
+    # (44.85 + 22.00) * 52.
+    council_tax_reduction_premiums: [3_476.20]
+    council_tax_reduction_applicable_amount: [8_444.80]
 
 - name: A blind grandmother head who applies alone has no non-dependant deduction in Merton
   period: 2026
