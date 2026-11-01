@@ -19,6 +19,9 @@
 # and the claim ends the award. From 2027-28 the award has ended and DWP
 # moves the family off its legacy benefits (legacy_benefits_closed). Cases
 # that test the 2026-27 share set would_claim_uc_at_legacy_closure to false.
+# The move ends the family's Housing Benefit, except for specified or
+# temporary accommodation (SI 2014/1230 reg 46(2)); a claim ends it there
+# too, because the model's Universal Credit pays the rent.
 #
 # Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
 # A saving for either member who reports a couple's award keeps the whole
@@ -624,6 +627,93 @@
     legacy_benefits_closed: true
     claims_universal_credit: false
     esa_income: 0
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Great Britain 2027-28, the move off legacy benefits keeps Housing Benefit for specified or temporary accommodation
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # SI 2014/1230 reg 46(2): the deadline with no claim ends the
+    # income-related ESA award but not Housing Benefit for specified or
+    # temporary accommodation. With no income, the means test pays the
+    # whole eligible rent.
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    esa_income: 0
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+
+- name: Great Britain 2027-28, the same family outside that accommodation loses its Housing Benefit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # in_specified_or_temporary_accommodation defaults to false.
+    legacy_benefits_closed: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Great Britain 2026-27, a family in specified or temporary accommodation that claims Universal Credit gets no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # The family claims when the abolition reaches its award. Reg 8(3)
+    # keeps this Housing Benefit award after the claim, but the model's
+    # Universal Credit pays the rent through its housing costs element, so
+    # the model ends the award to avoid paying the rent twice.
+    claims_universal_credit: true
     housing_benefit_eligible: false
     housing_benefit: 0
 
