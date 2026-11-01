@@ -23,7 +23,7 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/6",
-        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/paragraph/2",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/part/1/paragraph/2",
         "https://www.legislation.gov.uk/uksi/2017/1305/regulation/7/made",
         "https://www.legislation.gov.uk/uksi/2017/1305/regulation/17/made",
         "https://www.legislation.gov.uk/uksi/2025/39/regulation/5/made",

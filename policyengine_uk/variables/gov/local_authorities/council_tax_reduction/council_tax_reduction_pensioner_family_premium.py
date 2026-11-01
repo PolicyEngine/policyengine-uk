@@ -20,7 +20,7 @@ class council_tax_reduction_pensioner_family_premium(Variable):
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/6",
-        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/paragraph/3",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/part/2/paragraph/3",
         "https://www.legislation.gov.uk/uksi/2015/2041/regulation/3/made",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/1",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/paragraph/3",
