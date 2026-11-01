@@ -92,11 +92,15 @@
     dividend_income: [10_000, 10_000]
     gift_aid: [0, 800]
   output:
-    earned_taxable_income: [37_430, 37_430]
-    # The £500 dividend allowance still occupies the band. The extension
-    # moves £770 of taxed dividends from 35.75% to 10.75%: £192.50 relief.
-    dividend_income_tax: [3_396.25, 3_203.75]
-    income_tax: [10_882.25, 10_689.75]
+    # ITA 2007 s. 25(2): the Personal Allowance keeps the pay up to the basic
+    # rate limit, £37,700, or £38,700 with the £1,000 grossed-up gift, and the
+    # rest of it comes off dividends, so the £500 dividend allowance covers
+    # dividends that would otherwise be taxed at 35.75%. Dividends left:
+    # 9,730 and 8,730; less £500 at the nil rate, at 35.75%. The extension
+    # keeps £1,000 more pay at 20% in place of upper-rate dividends: £157.50.
+    earned_taxable_income: [37_700, 38_700]
+    dividend_income_tax: [3_299.725, 2_942.225]
+    income_tax: [10_839.725, 10_682.225]
 
 - name: Gift Aid extends UK limits across savings and dividend slices
   period: 2026
@@ -109,12 +113,18 @@
     dividend_income: [5_000, 5_000]
     gift_aid: [0, 1_600]
   output:
-    # £2,000 gross extension moves £800 taxed savings down 20 percentage
-    # points and £700 taxed dividends down 25 percentage points.
+    # ITA 2007 s. 25(2): the Personal Allowance keeps the pay up to the basic
+    # rate limit, £37,700, or £39,700 with the £2,000 grossed-up gift, and
+    # the rest comes off savings above it, taxed at 40%, keeping the £500
+    # savings allowance in use. Without the gift: £800 of savings, £500 at
+    # the nil rate and £300 at 40% = 120; all £5,000 of dividends, £500 at the
+    # nil rate and £4,500 at 35.75% = 1,608.75; pay 7,540. With it: £500 of
+    # savings at the nil rate; £3,300 of dividends, (3,300 - 500) x 35.75% =
+    # 1,001; pay 39,700 x 20% = 7,940.
     savings_allowance: [500, 500]
-    savings_income_tax: [460, 300]
-    dividend_income_tax: [1_608.75, 1_433.75]
-    income_tax: [9_368.75, 9_033.75]
+    savings_income_tax: [120, 0]
+    dividend_income_tax: [1_608.75, 1_001]
+    income_tax: [9_268.75, 8_941]
 
 - name: Gift Aid extends UK savings and dividend limits for Scottish taxpayers
   period: 2026
@@ -461,8 +471,12 @@
         members: [control]
         region: NORTH_WEST
   output:
-    # Both still have higher-rate income, so a £500 savings allowance. Without
-    # the gift, £9,770 at 20% and £9,730 at 40%; the gift moves £1,000 from
-    # 40% to 20%: £200.
+    # Both still have higher-rate income, so a £500 savings allowance. ITA
+    # 2007 s. 25(2): the Personal Allowance keeps the property income up to
+    # the basic rate limit, £38,700 with the £1,000 grossed-up gift and
+    # £37,700 without, and the rest comes off savings, so the savings
+    # allowance covers savings taxed at 40% rather than 20%. Savings left:
+    # 8,730 and 9,730, less £500 at the nil rate, at 40%. The gift moves
+    # £1,000 of income from 40% to 20%: £200.
     savings_allowance: [500, 500]
-    savings_income_tax: [5_646, 5_846]
+    savings_income_tax: [3_292, 3_692]

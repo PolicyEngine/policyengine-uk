@@ -113,17 +113,16 @@ def _context(person, period, parameters):
 
     savings = np.maximum(0, column(person("taxable_savings_interest_income", period)))
     dividends = np.maximum(0, column(person("taxable_dividend_income", period)))
+    relief = column(person("trade_loss_relief_against_general_income", period))
+    # net_income, not its components, so a supplied adjusted net income or a
+    # reform that sets net income is followed, as the default order does.
     non_savings = np.maximum(
-        0,
-        column(person("net_income_before_trade_loss_relief", period))
-        - savings
-        - dividends,
+        0, column(person("net_income", period)) + relief - savings - dividends
     )
     property_income = np.minimum(
         np.maximum(0, column(person("taxable_property_income", period))), non_savings
     )
-    deductions = column(person("trade_loss_relief_against_general_income", period))
-    deductions = deductions + column(person("allowances", period))
+    deductions = relief + column(person("allowances", period))
     used = np.minimum(deductions, non_savings + savings + dividends)
     exclusions = [
         variable
@@ -428,14 +427,14 @@ def non_savings_deductions(person, period):
     moved = (to_savings != default.savings) | (to_dividends != default.dividends)
     savings = np.maximum(0, person("taxable_savings_interest_income", period))
     dividends = np.maximum(0, person("taxable_dividend_income", period))
-    non_savings = np.maximum(
-        0,
-        person("net_income_before_trade_loss_relief", period) - savings - dividends,
+    relief = person("trade_loss_relief_against_general_income", period).astype(
+        np.float64
     )
-    relief = person("trade_loss_relief_against_general_income", period)
+    non_savings = np.maximum(
+        0, person("net_income", period) + relief - savings - dividends
+    )
     used = np.minimum(
-        relief.astype(np.float64) + person("allowances", period),
-        non_savings.astype(np.float64) + savings + dividends,
+        relief + person("allowances", period), non_savings + savings + dividends
     )
     to_non_savings = used - to_savings - to_dividends
     return SimpleNamespace(

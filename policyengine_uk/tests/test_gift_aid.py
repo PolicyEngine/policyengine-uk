@@ -299,23 +299,33 @@ def test_zero_gift_preserves_baseline_outputs_bit_for_bit():
         "personal_allowance": [12_570, 12_570, 0, 12_570, 12_570, 12_070] * 2,
         "allowances": [12_570, 12_570, 0, 12_570, 12_570, 12_070] * 2,
         "unused_personal_allowance": [0, 0, 0, 0, 0, 0] * 2,
-        "earned_taxable_income": [17_430, 47_430, 150_000, 17_430, 0, 88_930] * 2,
-        "received_allowances_earned_income": [12_570, 12_570, 0, 12_570, 10_000, 12_070]
-        * 2,
-        "received_allowances_savings_income": [0, 0, 0, 0, 2570, 0] * 2,
+        # The fourth row outside Scotland sets £1,300 of the Personal
+        # Allowance against pay and £11,270 against savings (ITA 2007
+        # s. 25(2), #2106): pay and property reach the £37,700 basic rate
+        # limit, and the £500 savings allowance covers savings that would be
+        # taxed at 40%, so its tax falls by £100. In Scotland the pay above
+        # £31,092 would be taxed at 42%, so the order is unchanged.
+        "earned_taxable_income": [17_430, 47_430, 150_000, 28_700, 0, 88_930]
+        + [17_430, 47_430, 150_000, 17_430, 0, 88_930],
+        "received_allowances_earned_income": [12_570, 12_570, 0, 1_300, 10_000, 12_070]
+        + [12_570, 12_570, 0, 12_570, 10_000, 12_070],
+        "received_allowances_savings_income": [0, 0, 0, 11_270, 2570, 0]
+        + [0, 0, 0, 0, 2570, 0],
         "received_allowances_dividend_income": [0, 0, 0, 0, 0, 0] * 2,
-        "basic_rate_earned_income": [17_430, 37_700, 37_700, 17_430, 0, 37_700] * 2,
+        "basic_rate_earned_income": [17_430, 37_700, 37_700, 28_700, 0, 37_700]
+        + [17_430, 37_700, 37_700, 17_430, 0, 37_700],
         "higher_rate_earned_income": [0, 9730, 87_440, 0, 0, 51_230] * 2,
         "add_rate_earned_income": [0, 0, 24_860, 0, 0, 0] * 2,
-        "basic_rate_savings_income": [0, 0, 0, 10_770, 11_430, 0] * 2,
-        "higher_rate_savings_income": [0, 0, 0, 730, 0, 0] * 2,
+        "basic_rate_savings_income": [0, 0, 0, 0, 11_430, 0]
+        + [0, 0, 0, 10_770, 11_430, 0],
+        "higher_rate_savings_income": [0, 0, 0, 230, 0, 0] + [0, 0, 0, 730, 0, 0],
         "add_rate_savings_income": [0, 0, 0, 0, 0, 0] * 2,
         "savings_allowance": [1000, 500, 0, 500, 1000, 500] * 2,
         "earned_income_tax": [
             3486,
             11_432,
             53_703,
-            3486,
+            5740,
             0,
             28_032,
             3451.070068359375,
@@ -325,14 +335,14 @@ def test_zero_gift_preserves_baseline_outputs_bit_for_bit():
             0,
             31407.05078125,
         ],
-        "savings_income_tax": [0, 0, 0, 2446, 2286, 0] * 2,
+        "savings_income_tax": [0, 0, 0, 92, 2286, 0] + [0, 0, 0, 2446, 2286, 0],
         "dividend_income_tax": [0, 0, 0, 6256.25, 1021.25, 0] * 2,
         "property_income_tax": [0, 0, 0, 1800, 0, 0, 0, 0, 0, 1890, 0, 0],
         "income_tax": [
             3486,
             11_432,
             53_703,
-            13988.25,
+            13888.25,
             3307.25,
             28_032,
             3451.070068359375,

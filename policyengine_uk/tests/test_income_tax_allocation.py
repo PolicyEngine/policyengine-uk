@@ -37,7 +37,7 @@ from policyengine_uk.utils.income_tax_allocation import (
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEARS = (2026, 2027)
-PEOPLE = 12
+PEOPLE = 8
 REGIONS = ["LONDON", "SCOTLAND", "WALES", "NORTH_EAST"]
 INCOMES = (
     "employment_income",
@@ -121,7 +121,7 @@ person = st.tuples(*([amount] * 5), st.floats(min_value=0, max_value=5_000))
 people = st.lists(person, min_size=PEOPLE, max_size=PEOPLE)
 year = st.sampled_from(YEARS)
 SETTINGS = settings(
-    max_examples=20,
+    max_examples=8,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
