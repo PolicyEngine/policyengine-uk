@@ -487,10 +487,10 @@ the forecast levels, though not their growth.
    renumbering does not matter, and reads only that table's rows. It takes
    each workbook's release from its contents sheet, or else its file name or
    URL, and refuses receipts tables from another EFO or of unknown release.
-   Every selected receipts table in both releases must declare `£ billion`
-   in its header (the importer also accepts `£bn` and `£ bn`, ignoring case
-   and whitespace); the OBR states each clearance line's unit in a label or
-   a note (below).
+   The importer requires `£ billion` in the header of every selected
+   receipts table in both releases, and also accepts `£bn` and `£ bn`,
+   ignoring case and whitespace. The OBR states each clearance line's unit
+   in a label or a note (below).
    Other units, including `£m`, and missing or ambiguous declarations stop
    the import before any file is written, so different cash magnitudes
    cannot be combined across releases.
@@ -511,11 +511,11 @@ the forecast levels, though not their growth.
    The same run also refreshes the six alcohol and tobacco clearance series
    under `per_capita` from the new EFO's tobacco clearances and alcohol
    clearance forecasts, and the previous EFO's for the outturn year's base.
-   The importer interprets no words in these tables. From each table's
-   title through its configured end, the row above a title
-   `CLEARANCE_TABLE_ENDS` lists or the sheet's last row, the importer
-   compares text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. It skips
-   the title cell, numbers and fiscal years. It also needs the cell that
+   From each table's title through its configured end, the importer
+   compares text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. The end
+   falls on the row above a title `CLEARANCE_TABLE_ENDS` lists, or on the
+   sheet's last row. It skips the title cell, numbers and fiscal years. It
+   also needs the cell that
    states each line's unit: million sticks in the cigarette label,
    thousand kilograms in the non-cigarette total's label and thousand
    hectolitres of alcohol in Table 4.12's note. It stops before writing on
@@ -532,9 +532,9 @@ the forecast levels, though not their growth.
    importer writes
    `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,
    using the population in `yoy_growth.yaml`, so rerun it whenever that
-   series changes. Until then the six
-   clearance series and the seven gambling bases keep the values written
-   for the old population, and the byte-for-byte test fails. Then update
+   series changes. Until then the six clearance series and the seven
+   gambling bases keep the values the importer wrote for the old
+   population, and the byte-for-byte test fails. Then update
    the published levels in
    `policyengine_uk/tests/test_excise_quantity_projection.py`
    (`CLEARANCES`) and `policyengine_uk/tests/test_import_obr_forecasts.py`
