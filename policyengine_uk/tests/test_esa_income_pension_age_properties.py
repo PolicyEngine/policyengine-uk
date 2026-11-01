@@ -64,9 +64,13 @@ opens none, a branch never outlives the calculation, the tax credit passport
 branch inside it reads the couple's award as nil, and the screen reads no
 Pension Credit condition without a couple's claim that passes the other
 tests. Others enter Pension Credit, or a part of it, as an input, or reform
-it: an entered award, a reform that pays every family and a frozen award each
+it: an entered award, a reform that pays every family, a frozen award and a
+reform that changes the default or coverage of a Pension Credit variable each
 make the model read the award for every couple, and a parameter reform keeps
-the age and take-up conditions.
+the age and take-up conditions. One test changes each attribute of each
+Pension Credit variable in turn, and requires the model to drop the age and
+take-up conditions for every change to what Core calculates the variable
+from.
 """
 
 import numpy as np
@@ -82,7 +86,14 @@ from policyengine_uk.model_api import GBP, YEAR, BenUnit, Variable
 from policyengine_uk.tests.legacy_award_work_reference import esa_screen
 from policyengine_uk.variables.gov.dwp.esa_income_eligible import (
     NO_INCOME_RELATED_ESA_BRANCH,
+    PENSION_CREDIT_VARIABLES,
     pension_credit_follows_model_formulas,
+)
+from policyengine_uk.variables.gov.dwp.pension_credit.guarantee_credit.guarantee_credit import (
+    guarantee_credit as model_guarantee_credit,
+)
+from policyengine_uk.variables.gov.dwp.pension_credit.is_pension_credit_eligible import (
+    is_pension_credit_eligible as model_eligibility,
 )
 from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit import (
     pension_credit as model_pension_credit,
@@ -683,6 +694,7 @@ def test_a_parameter_reform_keeps_the_age_and_take_up_conditions(monkeypatch):
     assert no_branch_opens_beside(log)
 
     lifted = Simulation(situation=combine(working_age, mixed), reform=reform)
+    assert follows_model_formulas(lifted, year)
     assert lifted.calculate("meets_pension_credit_age_conditions", year).tolist() == [
         False,
         True,
@@ -761,6 +773,205 @@ def test_each_entered_part_of_pension_credit_drops_the_age_and_take_up_condition
     assert pension_credit_follows_model_formulas(
         sim.populations["benunit"], period_(year), parameters
     )
+
+
+def follows_model_formulas(sim, year):
+    return pension_credit_follows_model_formulas(
+        sim.populations["benunit"], period_(year), sim.tax_benefit_system.parameters
+    )
+
+
+class entitlement_with_a_default(Reform):
+    """The model's Pension Credit entitlement, which gives £2,000 to a family
+    outside its defined_for."""
+
+    def apply(self):
+        class pension_credit_entitlement(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            default_value = 2_000
+            defined_for = "is_pension_credit_eligible"
+            adds = ["guarantee_credit", "savings_credit"]
+
+        self.update_variable(pension_credit_entitlement)
+
+
+class payment_with_a_default(Reform):
+    """The model's Pension Credit formula for a family eligible for Pension
+    Credit, and £2,000 for any other."""
+
+    def apply(self):
+        class pension_credit(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            default_value = 2_000
+            defined_for = "is_pension_credit_eligible"
+            formula = model_pension_credit.formula
+
+        self.update_variable(pension_credit)
+
+
+class eligibility_with_a_default(Reform):
+    """The model's eligibility formula for a family that meets the age
+    conditions, and eligibility for any other."""
+
+    def apply(self):
+        class is_pension_credit_eligible(Variable):
+            value_type = bool
+            entity = BenUnit
+            definition_period = YEAR
+            default_value = True
+            defined_for = "meets_pension_credit_age_conditions"
+            formula = model_eligibility.formula
+
+        self.update_variable(is_pension_credit_eligible)
+
+
+class guarantee_credit_for_every_family_it_tests(Reform):
+    """The model's guarantee credit and entitlement for every family with
+    income within the minimum guarantee (is_guarantee_credit_eligible), not
+    only one eligible for Pension Credit. Only their coverage changes."""
+
+    def apply(self):
+        class guarantee_credit(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            defined_for = "is_guarantee_credit_eligible"
+            formula = model_guarantee_credit.formula
+
+        class pension_credit_entitlement(Variable):
+            value_type = float
+            entity = BenUnit
+            definition_period = YEAR
+            defined_for = "is_guarantee_credit_eligible"
+            adds = ["guarantee_credit", "savings_credit"]
+
+        self.update_variable(guarantee_credit)
+        self.update_variable(pension_credit_entitlement)
+
+
+class model_pension_credit_registered_again(Reform):
+    """The model's own five Pension Credit variables, registered again."""
+
+    def apply(self):
+        for variable in PENSION_CREDIT_VARIABLES:
+            self.update_variable(variable)
+
+
+@pytest.mark.parametrize(
+    "reform, follows, pension_credit_at_40, esa",
+    [
+        (entitlement_with_a_default, False, 2_000, [5_000, 0, 0]),
+        (
+            (entitlement_with_a_default, pension_credit_by_another_formula),
+            False,
+            2_000,
+            [5_000, 0, 0],
+        ),
+        (payment_with_a_default, False, 2_000, [5_000, 0, 0]),
+        (eligibility_with_a_default, False, 8_091.20, [5_000, 0, 0]),
+        (guarantee_credit_for_every_family_it_tests, False, 8_091.20, [5_000, 0, 0]),
+        (model_pension_credit_registered_again, True, 0, [5_000, 5_000, 0]),
+    ],
+    ids=[
+        "entitlement_default",
+        "entitlement_default_another_formula",
+        "payment_default",
+        "eligibility_default",
+        "guarantee_credit_coverage",
+        "model_definitions_again",
+    ],
+)
+def test_a_reform_that_pays_outside_the_age_conditions_bars_the_award(
+    reform, follows, pension_credit_at_40, esa
+):
+    """In 2016 the man aged 63 who would not claim Pension Credit gets none
+    and keeps his £5,000 award, and the man aged 63 who would claim gets the
+    £8,091.20 minimum guarantee (52 x £155.60) and no award. The man aged 40
+    does not meet the age conditions. Under each reform but the last, a
+    family outside the definition's defined_for gets something other than
+    the model's: Pension Credit pays him £2,000 or the minimum guarantee, so
+    he has an entitlement to it (Sch 1 para 6(1)(c)) and gets no award. The
+    model's own definitions, registered again, keep the shortcut, and he
+    keeps his £5,000."""
+    year = 2016
+    sim = Simulation(
+        situation=combine(
+            household([MAN_63], year, would_claim_pc=False),
+            household([MAN_40], year),
+            household([MAN_63], year),
+        ),
+        reform=reform,
+    )
+    assert follows_model_formulas(sim, year) is follows
+    assert sim.calculate("meets_pension_credit_age_conditions", year).tolist() == [
+        True,
+        False,
+        True,
+    ]
+    assert sim.calculate("pension_credit", year) == pytest.approx(
+        [0, pension_credit_at_40, 8_091.20], abs=0.01
+    )
+    assert sim.calculate("esa_income", year).tolist() == esa
+
+
+def wrapped(formula):
+    def wrapper(entity, period, parameters):
+        return formula(entity, period, parameters)
+
+    return wrapper
+
+
+def changes(variable):
+    """For each attribute a reform can change, the attribute, a new value and
+    whether the change can alter what Core calculates."""
+    formula = wrapped(variable.get_formula() or model_pension_credit.formula)
+    default = True if variable.value_type is bool else 2_000.0
+    return [
+        ("default_value", default, True),
+        ("defined_for", "is_guarantee_credit_eligible", True),
+        ("is_neutralized", True, True),
+        ("formulas", {"0001-01-01": formula}, True),
+        ("adds", ["guarantee_credit"], True),
+        ("definition_period", "month", True),
+        ("end", period_(2010).start.date, True),
+        ("label", "Changed", False),
+        ("documentation", "Changed.", False),
+        ("reference", ("https://www.legislation.gov.uk/ukpga/2002/16",), False),
+        ("unit", "currency-USD", False),
+        ("metadata", {"changed": True}, False),
+    ]
+
+
+def test_every_change_to_a_pension_credit_definition_drops_the_shortcut():
+    """Exhaustive over the five Pension Credit variables and the attributes a
+    reform can change: any change to what Core calculates a variable from
+    drops the age and take-up conditions, and a change to its description
+    alone keeps them."""
+    year = 2016
+    sim = Simulation(situation=household([MAN_40], year))
+    system = sim.tax_benefit_system
+    assert follows_model_formulas(sim, year)
+    for model_variable in PENSION_CREDIT_VARIABLES:
+        name = model_variable.__name__
+        variable = system.variables[name]
+        for attribute, value, calculates in changes(variable):
+            changed = variable.clone()
+            if attribute == "formulas":
+                value = type(changed.formulas)(value)
+            setattr(changed, attribute, value)
+            system.variables[name] = changed
+            try:
+                assert follows_model_formulas(sim, year) is not calculates, (
+                    name,
+                    attribute,
+                )
+            finally:
+                system.variables[name] = variable
+    assert follows_model_formulas(sim, year)
 
 
 class ScreenReads:

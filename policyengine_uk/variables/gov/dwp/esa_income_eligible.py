@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.supplied_inputs import replaces_formula, stored_as_input
+from policyengine_uk.utils.supplied_inputs import replaces_definition
 from policyengine_uk.variables.gov.dwp.pension_credit.guarantee_credit.guarantee_credit import (
     guarantee_credit,
 )
@@ -19,10 +19,11 @@ from policyengine_uk.variables.gov.dwp.pension_credit.savings_credit.savings_cre
 # The branch in which the family has no income-related ESA.
 NO_INCOME_RELATED_ESA_BRANCH = "esa_income_pension_credit_bar"
 
-# The Pension Credit variables whose formulas the model's age and take-up
-# conditions govern, with pension_credit_entitlement, which sums two of them.
-PENSION_CREDIT_FORMULAS = [
+# The Pension Credit variables whose definitions pay Pension Credit only to a
+# family that meets the age conditions and would claim.
+PENSION_CREDIT_VARIABLES = [
     pension_credit,
+    pension_credit_entitlement,
     is_pension_credit_eligible,
     guarantee_credit,
     savings_credit,
@@ -38,17 +39,17 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
     pension_credit equals the entitlement where the family would claim and
     nil otherwise. The entitlement sums the guarantee and savings credits for
     a family eligible for Pension Credit (is_pension_credit_eligible), and
-    nil for any other, and only a family that meets the age conditions is
-    eligible. A parameter reform keeps these formulas, and the age conditions
-    read its parameters.
+    gives nil to any other, and only a family that meets the age conditions
+    is eligible. A parameter reform keeps these definitions, and the age
+    conditions read its parameters.
 
     A caller can instead set pension_credit, its entitlement, its eligibility
-    or either credit as an input for the period. A reform can replace or
-    remove one of their formulas, change what the entitlement sums or which
-    families it covers, or freeze Pension Credit at the baseline's award
-    (gov.contrib.freeze_pension_credit) whatever the reform's age conditions.
-    Pension Credit can then pay a family that does not meet the age
-    conditions or would not claim.
+    or either credit as an input for the period. A reform can change anything
+    Core calculates one of them from (replaces_definition), such as the
+    default a family outside its defined_for gets, or freeze Pension Credit
+    at the baseline's award (gov.contrib.freeze_pension_credit) whatever the
+    reform's age conditions. Pension Credit can then pay a family that does
+    not meet the age conditions or would not claim.
     """
     simulation = benunit.simulation
     if (
@@ -56,17 +57,9 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
         and simulation.baseline is not None
     ):
         return False
-    for default in PENSION_CREDIT_FORMULAS:
-        if replaces_formula(benunit, default.__name__, period, default.formula):
-            return False
-    name = pension_credit_entitlement.__name__
-    entitlement = simulation.tax_benefit_system.get_variable(name)
-    return (
-        not entitlement.is_neutralized
-        and entitlement.get_formula(period) is None
-        and entitlement.adds == pension_credit_entitlement.adds
-        and entitlement.defined_for == pension_credit_entitlement.defined_for
-        and not stored_as_input(benunit, name, period)
+    return not any(
+        replaces_definition(benunit, variable, period)
+        for variable in PENSION_CREDIT_VARIABLES
     )
 
 

@@ -33,6 +33,7 @@ populations that do not hold it, and a clone or branch gets its own copy of
 the record.
 """
 
+from functools import cache
 from typing import List, Optional
 
 import numpy as np
@@ -205,26 +206,63 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
     )
 
 
-def replaces_formula(
-    population, variable_name: str, period: Period, default_formula
-) -> bool:
-    """Whether the simulation gives ``variable_name`` for ``period`` a value
-    other than what ``default_formula`` calculates: a reform neutralizes the
-    variable, removes its formula for the period or gives it another, or a
-    caller set an input for the period (``stored_as_input``), as a scenario
-    does with its own value (``set_model_value``). A cached formula result is
-    not an input, even in populations taken from another simulation or in
-    their clones and branches. Housing Benefit's hb_uses_annual_override
-    makes the same test for its annual amounts."""
-    variable = population.simulation.tax_benefit_system.get_variable(variable_name)
+# Variable attributes that describe a variable without changing what Core
+# calculates for it.
+DESCRIPTIVE_ATTRIBUTES = frozenset(
+    {
+        "_explicit_attribute_names",
+        "baseline_variable",
+        "category",
+        "cerfa_field",
+        "documentation",
+        "hidden_input",
+        "index_in_module",
+        "label",
+        "metadata",
+        "module_name",
+        "reference",
+        "unit",
+    }
+)
+
+
+def calculation_definition(variable, period: Period) -> dict:
+    """Every attribute Core calculates ``variable`` from for ``period``: all
+    but the descriptive ones, with the formula for the period, by its code,
+    in place of the formulas, and the entity by its key."""
+    definition = {
+        name: value
+        for name, value in vars(variable).items()
+        if name not in DESCRIPTIVE_ATTRIBUTES | {"entity", "formulas"}
+    }
     formula = variable.get_formula(period)
-    if (
-        variable.is_neutralized
-        or formula is None
-        or formula.__code__ != default_formula.__code__
+    definition["formula"] = None if formula is None else formula.__code__
+    definition["entity"] = variable.entity.key
+    return definition
+
+
+@cache
+def _model_variable(variable_class):
+    return variable_class()
+
+
+def replaces_definition(population, variable_class, period: Period) -> bool:
+    """Whether the simulation gives the variable that ``variable_class``
+    defines a value for ``period`` other than that definition calculates. A
+    reform can change anything Core calculates it from: neutralize it, give
+    it another formula for the period or none, or change its default, the
+    variable it is defined for, what it sums or its period. Or a caller can
+    set an input for the period (``stored_as_input``), as a scenario does
+    with its own value (``set_model_value``). A cached formula result is not
+    an input, even in populations taken from another simulation or in their
+    clones and branches."""
+    name = variable_class.__name__
+    variable = population.simulation.tax_benefit_system.get_variable(name)
+    if calculation_definition(variable, period) != calculation_definition(
+        _model_variable(variable_class), period
     ):
         return True
-    return stored_as_input(population, variable_name, period)
+    return stored_as_input(population, name, period)
 
 
 def supplied_input(
