@@ -28,7 +28,14 @@ class esa_income_report_closed(Variable):
         "part of the family's Universal Credit claim, so the claim does not "
         "end their award. The model applies this in every year and area: the "
         "postcode districts named in the commencement orders are not "
-        "modelled."
+        "modelled. Every other award ends when the abolition reaches it on "
+        "1 July 2026, or 1 October 2026 in Northern Ireland (SI 2025/1148 "
+        "art. 3A; SR 2025/176 art. 3A), so the report is closed in a year "
+        "where none of it is payable (esa_income_payable_share is 0, from "
+        "2027-28). In 2026-27 the report stays open and esa_income pays it "
+        "for the share of the year before that date. An award saved for an "
+        "appointee (esa_income_appointee_saving) stays open, but a Universal "
+        "Credit claim or the legacy closure still ends it (art. 3A(3))."
     )
     definition_period = YEAR
     reference = (
@@ -43,6 +50,9 @@ class esa_income_report_closed(Variable):
 
     def formula(person, period, parameters):
         claims_uc = person.benunit("claims_universal_credit", period)
-        return person("person_legacy_benefits_closed", period) | (
-            person("is_claimant_or_partner", period) & claims_uc
+        abolished = person("esa_income_payable_share", period) <= 0
+        return (
+            person("person_legacy_benefits_closed", period)
+            | (person("is_claimant_or_partner", period) & claims_uc)
+            | abolished
         )
