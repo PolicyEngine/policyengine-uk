@@ -33,6 +33,7 @@ Invariants, for any nonnegative amounts:
    shares; and the same input gives the same output.
 """
 
+from contextlib import contextmanager
 from fractions import Fraction
 
 import numpy as np
@@ -674,49 +675,52 @@ LODGER = {
 }
 
 
-def _uc_sources_without(source):
-    path = CAPITAL["uc_assessable_capital"] + ".sources"
-    kept = [name for name in _node(path)(f"{YEAR}-01-01") if name != source]
-    return {path: {f"{YEAR}-01-01.2100-12-31": kept}}
+@contextmanager
+def _law(simulation, path, value):
+    """Change one parameter in place for YEAR, then restore it."""
+    parameters = simulation.tax_benefit_system.parameters
+    original = list(parameters.get_child(path)(f"{YEAR}-01-01"))
+
+    def update(new):
+        parameters.get_child(path).update(period=str(YEAR), value=new)
+        simulation.tax_benefit_system.reset_parameter_caches()
+        simulation.reset_calculations()
+
+    update(value)
+    try:
+        yield
+    finally:
+        update(original)
 
 
-@pytest.mark.parametrize(
-    "source, expected",
-    [
-        # Cash ISAs disregarded: savings 2,000 shared, and the lodger keeps
-        # their 4,000 stocks and shares ISA.
+def test_reforms_to_either_list_keep_each_isa_with_its_household_source():
+    """Invariant 6, on one simulation whose law changes in place."""
+    simulation = Simulation(situation=LODGER)
+    uc_path = CAPITAL["uc_assessable_capital"]
+
+    def capital(name):
+        return list(simulation.calculate(name, YEAR))
+
+    assert capital("uc_assessable_capital") == [1_000, 15_000]
+    assert capital("housing_benefit_assessable_capital") == [1_000, 15_000]
+    sources = list(_node(uc_path + ".sources")(f"{YEAR}-01-01"))
+    # Dropping cash_isa from UC's sources: savings 2,000 shared, and the
+    # lodger keeps their 4,000 stocks and shares ISA. Dropping
+    # share_like_capital: the 10,000 cash ISA stays theirs.
+    for dropped, expected in (
         ("cash_isa", [1_000, 5_000]),
-        # Share-like capital disregarded: the 10,000 cash ISA stays theirs.
         ("share_like_capital", [1_000, 11_000]),
-    ],
-)
-def test_a_reform_that_drops_a_household_source_drops_its_person_source(
-    source, expected
-):
-    """Invariant 6: a person ISA counts only while its household source does."""
-    reformed = Simulation(situation=LODGER, reform=_uc_sources_without(source))
-    assert list(reformed.calculate("uc_assessable_capital", YEAR)) == expected
-    baseline = Simulation(situation=LODGER)
-    assert list(baseline.calculate("uc_assessable_capital", YEAR)) == [1_000, 15_000]
-    assert list(baseline.calculate("housing_benefit_assessable_capital", YEAR)) == [
-        1_000,
-        15_000,
-    ]
-
-
-def test_emptying_person_sources_returns_the_isas_to_the_pool():
-    """Invariant 6: without the person sources the household proxy stands."""
-    path = CAPITAL["uc_assessable_capital"] + ".person_sources"
-    reformed = Simulation(
-        situation=LODGER, reform={path: {f"{YEAR}-01-01.2100-12-31": []}}
-    )
-    # Savings 2,000 and both ISAs, 16,000 in all, shared by two claimants.
-    assert list(reformed.calculate("uc_assessable_capital", YEAR)) == [8_000, 8_000]
-    # Housing Benefit keeps its own lists.
-    assert list(reformed.calculate("housing_benefit_assessable_capital", YEAR)) == [
-        1_000,
-        15_000,
-    ]
+    ):
+        kept = [name for name in sources if name != dropped]
+        with _law(simulation, uc_path + ".sources", kept):
+            assert capital("uc_assessable_capital") == expected, dropped
+    # Emptying UC's person_sources returns both ISAs to the pool: savings
+    # 2,000 and the ISAs, 16,000 in all, shared by two claimants. Housing
+    # Benefit keeps its own lists.
+    with _law(simulation, uc_path + ".person_sources", []):
+        assert capital("uc_assessable_capital") == [8_000, 8_000]
+        assert capital("housing_benefit_assessable_capital") == [1_000, 15_000]
+    assert capital("uc_assessable_capital") == [1_000, 15_000]
 
 
 @pytest.mark.parametrize("variable", CAPITAL)
