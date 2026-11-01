@@ -18,6 +18,9 @@ tax (income_tax_pre_charges), which is all the share changes:
    share (a differential test of two implementations of Step 5).
 6. The vertex search finds the least value of that function, checked against
    a dense grid.
+7. Fast path: for everyone the tests in _old_order_is_least let through, the
+   result equals the full search's, bit for bit, and in current law those
+   tests let through everyone with one kind of income.
 """
 
 import numpy as np
@@ -27,10 +30,14 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.utils.income_tax_allocation import (
+    _build,
     _context,
     _least_tax_share,
+    _old_order_is_least,
     _shares,
     default_order_deductions,
+    least_tax_deductions,
+    old_order,
     step_5_tax,
 )
 
@@ -322,3 +329,219 @@ def test_vertex_search_equals_dense_grid(sims, year, drawn):
     # tie-break.
     assert np.all(found <= grid + 1e-5)
     assert np.all(found >= grid - 2 * step - 1e-5)
+
+
+# The fast path, checked on many synthetic people at once without a simulation:
+# the inputs the search reads, drawn freely, and the old order computed from
+# them as the model does, in float32.
+SYNTHETIC_YEARS = tuple(range(2016, 2031))
+SYNTHETIC_PEOPLE = 2_000
+LIMITS = [500, 1_000, 5_000, 6_000, 12_570, 17_570, 37_700, 50_270, 100_000, 125_140]
+# Curated people at the edges of each test: other non-savings income, property,
+# savings, dividends, trade loss relief, allowances beyond the Personal
+# Allowance, Marriage Allowance received, grossed-up Gift Aid, Scottish, and
+# personal savings allowance.
+EDGES = [
+    # Pay and savings across the basic rate limit: the search moves £270.
+    (50_000, 0, 10_000, 0, 0, 0, 0, 0, False, 500),
+    # Pay and dividends across the basic rate limit.
+    (50_000, 0, 0, 20_000, 0, 0, 0, 0, False, 500),
+    # Pay that ends exactly at the basic rate limit, and a pound below it.
+    (50_270, 0, 10_000, 0, 0, 0, 0, 0, False, 500),
+    (50_269, 0, 10_000, 0, 0, 0, 0, 0, False, 500),
+    # Savings and dividends with no other income.
+    (0, 0, 4_000, 20_000, 0, 0, 0, 0, False, 1_000),
+    # Marriage Allowance moves the savings below the basic rate limit.
+    (51_000, 0, 10_000, 0, 0, 0, 1_260, 0, False, 500),
+    (49_000, 0, 0, 20_000, 0, 0, 1_260, 0, False, 500),
+    # Savings exactly at the savings allowance, dividends at the allowance.
+    (30_000, 0, 1_000, 500, 0, 0, 0, 0, False, 1_000),
+    (30_000, 0, 1_001, 501, 0, 0, 0, 0, False, 1_000),
+    # Deductions that just fill the first component.
+    (12_570, 0, 3_000, 0, 0, 0, 0, 0, False, 1_000),
+    (12_570, 0, 3_000, 2_000, 0, 0, 0, 0, False, 1_000),
+    # A pensioner whose savings fill the starting rate band.
+    (14_000, 0, 8_000, 0, 0, 0, 0, 0, False, 1_000),
+    # Scottish pay in the starter, basic and intermediate bands.
+    (14_000, 0, 7_000, 0, 0, 0, 0, 0, True, 1_000),
+    (25_000, 0, 2_000, 3_000, 0, 0, 0, 0, True, 1_000),
+    (40_000, 0, 0, 5_000, 0, 0, 0, 0, True, 500),
+    (43_000, 0, 6_000, 0, 0, 0, 0, 0, True, 500),
+    # Property with other income, savings and dividends.
+    (9_000, 30_000, 6_000, 15_000, 0, 0, 0, 0, False, 500),
+    (9_000, 30_000, 6_000, 15_000, 0, 0, 0, 0, True, 500),
+    (0, 20_000, 0, 200_000, 1_000, 0, 0, 0, False, 0),
+    (45_000, 20_000, 3_000, 0, 0, 0, 1_260, 0, False, 500),
+    # Gift Aid raises the limits.
+    (40_000, 0, 3_000, 8_000, 0, 0, 0, 2_000, False, 1_000),
+    (52_000, 0, 9_000, 0, 0, 0, 0, 2_000, False, 500),
+    # Pension relief and a trading loss.
+    (60_000, 0, 9_000, 4_000, 3_000, 10_000, 0, 0, False, 500),
+    (110_000, 0, 20_000, 30_000, 0, 0, 0, 0, False, 0),
+]
+
+
+@pytest.fixture(scope="module")
+def system():
+    import policyengine_uk.simulation as uk_simulation
+
+    return uk_simulation.CountryTaxBenefitSystem()
+
+
+def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free"):
+    """Inputs for ``least_tax_deductions`` and the old order's deductions.
+
+    "free" draws every amount from a wide mixture with values at the limits;
+    "realistic" gives most people pay alone and some savings or dividends."""
+    rng = np.random.default_rng(seed)
+
+    def amount(zero, scale):
+        rest = 1 - zero
+        kind = rng.choice(4, count, p=[zero, 0.3 * rest, 0.4 * rest, 0.3 * rest])
+        limits = rng.choice(LIMITS, count) + rng.uniform(-300, 300, count)
+        values = np.select(
+            [kind == 0, kind == 1, kind == 2],
+            [0, rng.uniform(0, 2_000, count), rng.uniform(0, scale, count)],
+            limits,
+        )
+        return np.maximum(0, values)
+
+    if mix == "free":
+        other = amount(0.2, 200_000)
+        property_income = amount(0.6, 60_000)
+        savings = amount(0.4, 150_000)
+        dividends = amount(0.5, 250_000)
+    else:
+        other = rng.lognormal(10.2, 0.6, count)
+        property_income = np.where(
+            rng.random(count) < 0.05, rng.uniform(0, 20_000, count), 0
+        )
+        savings = np.where(rng.random(count) < 0.25, rng.lognormal(5, 1.5, count), 0)
+        dividends = np.where(rng.random(count) < 0.08, rng.lognormal(7, 1.5, count), 0)
+    income = other + property_income + savings + dividends
+    relief = np.where(
+        rng.random(count) < 0.1, np.minimum(rng.uniform(0, 30_000, count), income), 0
+    )
+    extra = np.where(rng.random(count) < 0.2, rng.uniform(0, 15_000, count), 0)
+    married = rng.random(count) < 0.1
+    gift = np.where(rng.random(count) < 0.1, rng.uniform(0, 10_000, count), 0)
+    scottish = rng.random(count) < 0.3
+    savings_allowance = rng.choice([0.0, 500.0, 1_000.0], count)
+    rows = np.array(EDGES, dtype=float) if mix == "free" else np.empty((0, 10))
+    other, property_income, savings, dividends, relief, extra, marriage, gift = (
+        np.concatenate([column, rows[:, i]])
+        for i, column in enumerate(
+            [
+                other,
+                property_income,
+                savings,
+                dividends,
+                relief,
+                extra,
+                married * 1_260.0,
+                gift,
+            ]
+        )
+    )
+    scottish = np.concatenate([scottish, rows[:, 8] > 0])
+    savings_allowance = np.concatenate([savings_allowance, rows[:, 9]])
+    f32 = np.float32
+    before_relief = (other + property_income + savings + dividends).astype(f32)
+    relief = relief.astype(f32)
+    net_income = np.maximum(0, before_relief - relief)
+    personal_allowance = np.maximum(0, 12_570 - np.maximum(0, net_income - 100_000) / 2)
+    allowances = (personal_allowance + extra).astype(f32)
+    savings, dividends = savings.astype(f32), dividends.astype(f32)
+    default = old_order(
+        allowances, savings, dividends, net_income, relief, before_relief
+    )
+    inputs = dict(
+        savings=savings,
+        dividends=dividends,
+        relief=relief,
+        net_income=net_income,
+        property=property_income.astype(f32),
+        allowances=allowances,
+        earned_exclusions=marriage.astype(f32),
+        gift=gift.astype(f32),
+        scottish=scottish,
+        savings_allowance=savings_allowance.astype(f32),
+    )
+    inputs = {
+        name: values if name == "scottish" else values.astype(np.float64)
+        for name, values in inputs.items()
+    }
+    return inputs, default
+
+
+def assert_fast_path_equals_search(income_tax, inputs, default):
+    fast = least_tax_deductions(inputs, income_tax, default.savings, default.dividends)
+    full = least_tax_deductions(
+        inputs, income_tax, default.savings, default.dividends, search_all=True
+    )
+    for fast_part, full_part in zip(fast, full):
+        mismatch = np.flatnonzero(fast_part != full_part)
+        assert not len(mismatch), {
+            name: values[mismatch[:5]] for name, values in inputs.items()
+        }
+
+
+@settings(
+    max_examples=30,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(st.sampled_from(SYNTHETIC_YEARS), st.integers(0, 2**32 - 1))
+@example(2026, 0)
+@example(2027, 0)
+@example(2028, 1)
+def test_fast_path_equals_full_search(system, year, seed):
+    income_tax = system.parameters(str(year)).gov.hmrc.income_tax
+    inputs, default = synthetic_people(seed)
+    # Invariant 7: the people the tests let through get the search's result.
+    assert_fast_path_equals_search(income_tax, inputs, default)
+
+
+@pytest.mark.parametrize("year", [2026, 2027])
+def test_fast_path_lets_most_realistic_people_through(system, year):
+    income_tax = system.parameters(str(year)).gov.hmrc.income_tax
+    inputs, default = synthetic_people(2106, count=20_000, mix="realistic")
+    c = _build(inputs, income_tax)
+    through = _old_order_is_least(
+        c, default.savings[:, None], default.dividends[:, None]
+    )[:, 0]
+    # With one kind of income nothing can move (invariant 4), so all of
+    # those go through; and few of the rest need the search.
+    one_kind = (inputs["savings"] == 0) & (inputs["dividends"] == 0)
+    assert through[one_kind].all()
+    assert (~through).mean() < 0.1, (~through).mean()
+
+
+# Rates that fall with income break the arguments of tests 2 and 3, so the
+# tests must then send everyone with something to share to the search.
+FALLING_RATES = {
+    "gov.hmrc.income_tax.rates.scotland.rates[3].rate": 0.05,
+    "gov.hmrc.income_tax.rates.uk[1].rate": 0.1,
+    "gov.hmrc.income_tax.rates.dividends[1].rate": 0.05,
+}
+
+
+@pytest.mark.parametrize("year", [2026, 2027])
+def test_fast_path_equals_full_search_when_rates_fall(system, year):
+    parameters = system.parameters
+    old = {}
+    try:
+        for path, value in FALLING_RATES.items():
+            parameter = parameters.get_child(path)
+            old[path] = parameter(str(year))
+            parameter.update(period=str(year), value=value)
+        system.reset_parameter_caches()
+        income_tax = parameters(str(year)).gov.hmrc.income_tax
+        for seed in range(3):
+            inputs, default = synthetic_people(seed)
+            assert_fast_path_equals_search(income_tax, inputs, default)
+    finally:
+        for path, value in old.items():
+            parameters.get_child(path).update(period=str(year), value=value)
+        system.reset_parameter_caches()

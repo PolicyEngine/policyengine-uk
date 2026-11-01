@@ -60,6 +60,42 @@ savings and dividends down by up to that amount. The search still evaluates
 every candidate with the full tax, so with Marriage Allowance it takes the best
 of them. In every case it keeps the order non-savings, savings, dividends
 unless another share gives less tax, so it never charges more than that order.
+
+Who cannot gain
+---------------
+Most people cannot gain from another share, and ``_old_order_is_least`` finds
+them without a search, so the search runs only on the rest.
+
+1. One share: with no deduction left for s. 25(2) to place, or no income left
+   after the deductions, only one share exists, and the old order takes it.
+
+Tests 2 and 3 need the rates to rise with income in every scale, as Parliament
+has set them, and the old order to set every shared deduction against the
+first component, so that any other share leaves more of it (``x`` rises).
+
+2. Nothing taxed above the first component: if the old order leaves no savings
+   and no dividends charged above the nil rates, any other share charges them
+   at least nil, and tax on the first component rises with ``x``. So no share
+   gives less tax.
+3. Rates: moving a pound of the deductions to savings or dividends raises
+   ``x`` by that pound and ``w`` by at most a pound. Write ``rho_n`` for the
+   rate on the first component just above where the old order leaves it,
+   ``rho_s`` for the savings rate just above the top of the savings, and
+   ``sigma_s`` and ``sigma_v`` for the highest savings and dividend rates the
+   moved pounds can reach above the nil rates. The tax then rises by at least
+   ``(rho_n - sigma_s) dx + (rho_s - sigma_v) dw`` for any move with
+   ``0 <= dw <= dx``, or ``rho_n dx - sigma_v dw`` where the old order charges
+   no savings above the nil rates. Where that is never negative, the old order
+   gives the least tax. The top of the nil rates moves by at most ``dx``,
+   because the starting rate band shrinks by at most a pound for each pound of
+   non-savings income (s. 12) and the savings and dividend nil rates cover
+   fixed amounts (ss. 12A and 13A). Before 2027-28 the test also needs no
+   Marriage Allowance or no property income: with property income, the
+   model's Marriage Allowance breaks the rising rate on the first component.
+
+Where any test holds, the search would keep the old order too, since it
+changes the share only for a saving above ``TOLERANCE``. So the result is the
+same, and ``test_income_tax_allocation.py`` checks that it is.
 """
 
 from types import SimpleNamespace
@@ -103,39 +139,57 @@ def _tax(income, schedule):
     return sum(step * np.maximum(income - t, 0) for t, step in zip(thresholds, steps))
 
 
-def _context(person, period, parameters):
-    """Everything the tax on a share depends on, as float64 columns."""
-    income_tax = parameters(period).gov.hmrc.income_tax
-    rates = income_tax.rates
+def _inputs(person, period, income_tax):
+    """The amounts the tax on a share depends on, one float64 value a person."""
 
-    def column(values):
-        return np.asarray(values, dtype=np.float64)[:, None]
+    def values(variable):
+        return np.asarray(person(variable, period), dtype=np.float64)
 
-    savings = np.maximum(0, column(person("taxable_savings_interest_income", period)))
-    dividends = np.maximum(0, column(person("taxable_dividend_income", period)))
-    relief = column(person("trade_loss_relief_against_general_income", period))
-    # net_income, not its components, so a supplied adjusted net income or a
-    # reform that sets net income is followed, as the default order does.
-    non_savings = np.maximum(
-        0, column(person("net_income", period)) + relief - savings - dividends
-    )
-    property_income = np.minimum(
-        np.maximum(0, column(person("taxable_property_income", period))), non_savings
-    )
-    deductions = relief + column(person("allowances", period))
-    used = np.minimum(deductions, non_savings + savings + dividends)
     exclusions = [
         variable
         for variable in income_tax.earned_taxable_income_exclusions
         if variable not in ALLOCATED_EXCLUSIONS
     ]
-    earned_exclusions = sum(
-        (column(person(variable, period)) for variable in exclusions),
-        np.zeros_like(savings),
+    savings = values("taxable_savings_interest_income")
+    return dict(
+        savings=savings,
+        dividends=values("taxable_dividend_income"),
+        relief=values("trade_loss_relief_against_general_income"),
+        net_income=values("net_income"),
+        property=values("taxable_property_income"),
+        allowances=values("allowances"),
+        earned_exclusions=sum(
+            (values(variable) for variable in exclusions), np.zeros_like(savings)
+        ),
+        gift=values("gift_aid_grossed_up"),
+        scottish=np.asarray(person("pays_scottish_income_tax", period)),
+        savings_allowance=values("savings_allowance"),
     )
-    gift = column(person("gift_aid_grossed_up", period))
-    scottish = np.asarray(person("pays_scottish_income_tax", period))[:, None]
+
+
+def _context(person, period, parameters):
+    """Everything the tax on a share depends on, as float64 columns."""
+    income_tax = parameters(period).gov.hmrc.income_tax
+    return _build(_inputs(person, period, income_tax), income_tax)
+
+
+def _build(inputs, income_tax):
+    """The context for the people in ``inputs`` (see ``_inputs``)."""
+    rates = income_tax.rates
+    columns = {name: values[:, None] for name, values in inputs.items()}
+    savings = np.maximum(0, columns["savings"])
+    dividends = np.maximum(0, columns["dividends"])
+    relief = columns["relief"]
+    # net_income, not its components, so a supplied adjusted net income or a
+    # reform that sets net income is followed, as the default order does.
+    non_savings = np.maximum(0, columns["net_income"] + relief - savings - dividends)
+    property_income = np.minimum(np.maximum(0, columns["property"]), non_savings)
+    deductions = relief + columns["allowances"]
+    used = np.minimum(deductions, non_savings + savings + dividends)
+    gift = columns["gift"]
     uk_thresholds = rates.uk.thresholds
+    savings_rates = rates.savings
+    property_rates = rates.property
     c = SimpleNamespace(
         other_first=bool(income_tax.reliefs.other_income_first),
         savings=savings,
@@ -143,27 +197,40 @@ def _context(person, period, parameters):
         non_savings=non_savings,
         property=property_income,
         used=used,
-        earned_exclusions=earned_exclusions,
+        earned_exclusions=columns["earned_exclusions"],
         gift=gift,
-        scottish=scottish,
+        scottish=columns["scottish"],
         uk=_schedule(rates.uk, gift),
+        uk_rates=list(rates.uk.rates),
         scotland=_schedule(
             rates.scotland.rates,
             gift,
             first_extended_scottish_threshold(rates.scotland.rates),
             len(rates.scotland.rates.thresholds),
         ),
+        scotland_rates=list(rates.scotland.rates.rates),
         dividend_scale=_schedule(rates.dividends, gift),
+        dividend_rates=list(rates.dividends.rates),
         bands=(
             uk_thresholds[0],
             uk_thresholds[1] + gift,
             uk_thresholds[2] + gift,
         ),
-        savings_rates=rates.savings,
-        property_rates=rates.property,
+        savings_rates=savings_rates,
+        savings_rate_list=[
+            savings_rates.basic,
+            savings_rates.higher,
+            savings_rates.additional,
+        ],
+        property_rates=property_rates,
+        property_rate_list=[
+            property_rates.basic,
+            property_rates.higher,
+            property_rates.additional,
+        ],
         starting_limit=rates.savings_starter_rate.allowance,
         phase_out=rates.savings_starter_rate.phase_out,
-        savings_allowance=column(person("savings_allowance", period)),
+        savings_allowance=columns["savings_allowance"],
         dividend_allowance=income_tax.allowances.dividend_allowance,
     )
     if c.other_first:
@@ -175,7 +242,7 @@ def _context(person, period, parameters):
         c.shared = used - to_other
         # The savings stack on the other non-savings income left, as earned
         # taxable income has it, plus the property income left.
-        c.offset = np.maximum(0, c.other_left - earned_exclusions)
+        c.offset = np.maximum(0, c.other_left - c.earned_exclusions)
     else:
         c.first = non_savings
         c.shared = used
@@ -188,16 +255,38 @@ def _non_savings_tax(c, income):
     return np.where(c.scottish, _tax(income, c.scotland), _tax(income, c.uk))
 
 
-def step_5_tax(c, x, s, v):
-    """Step 5 Income Tax on the share leaving ``x`` of the first component,
-    ``s`` of savings and ``v`` of dividends, as the model's
-    income_tax_pre_charges computes it from the variables the share sets."""
+def _split(c, x):
+    """The other non-savings income and the property income left, and the
+    earned taxable income, where the share leaves ``x`` of the first
+    component."""
     if c.other_first:
         other, property_left = c.other_left, x
     else:
         property_left = np.minimum(x, c.property)
         other = x - property_left
-    earned = np.maximum(0, other - c.earned_exclusions)
+    return other, property_left, np.maximum(0, other - c.earned_exclusions)
+
+
+def _savings_band(c, below, s):
+    """The top of the savings and the top of the part of them that the
+    starting rate (s. 12) and the savings nil rate (s. 12A) cover, for ``s``
+    of savings above ``below`` of non-savings income."""
+    low, basic_limit, _ = c.bands
+    top = below + s
+    in_basic_band = np.clip(top, low, basic_limit) - np.clip(below, low, basic_limit)
+    starting = np.clip(
+        np.minimum(in_basic_band, s),
+        0,
+        np.maximum(0, c.starting_limit - np.maximum(0, below * c.phase_out)),
+    )
+    return top, below + np.minimum(s, starting + c.savings_allowance)
+
+
+def step_5_tax(c, x, s, v):
+    """Step 5 Income Tax on the share leaving ``x`` of the first component,
+    ``s`` of savings and ``v`` of dividends, as the model's
+    income_tax_pre_charges computes it from the variables the share sets."""
+    other, property_left, earned = _split(c, x)
     earned_tax = _non_savings_tax(c, earned)
     if c.other_first:
         # property_income_tax.formula_2027: Scottish rates in Scotland,
@@ -220,16 +309,8 @@ def step_5_tax(c, x, s, v):
             _non_savings_tax(c, other)
         )
     # Savings and dividends sit on non_savings_taxable_income.
-    below = earned + property_left
+    top, start = _savings_band(c, earned + property_left, s)
     low, basic_limit, higher_limit = c.bands
-    top = below + s
-    in_basic_band = np.clip(top, low, basic_limit) - np.clip(below, low, basic_limit)
-    starting = np.clip(
-        np.minimum(in_basic_band, s),
-        0,
-        np.maximum(0, c.starting_limit - np.maximum(0, below * c.phase_out)),
-    )
-    start = below + np.minimum(s, starting + c.savings_allowance)
     rates = c.savings_rates
     savings_tax = (
         rates.basic
@@ -361,18 +442,23 @@ def _least_tax_share(c):
 def default_order_deductions(person, period):
     """The deductions from non-savings, savings and dividend income in the
     order non-savings, savings, dividends, computed as the model always has."""
-    allowances = person("allowances", period)
-    savings = person("taxable_savings_interest_income", period)
-    dividends = person("taxable_dividend_income", period)
-    non_savings = person("net_income", period) - savings - dividends
-    relief = person("trade_loss_relief_against_general_income", period)
+    return old_order(
+        person("allowances", period),
+        person("taxable_savings_interest_income", period),
+        person("taxable_dividend_income", period),
+        person("net_income", period),
+        person("trade_loss_relief_against_general_income", period),
+        person("net_income_before_trade_loss_relief", period),
+    )
+
+
+def old_order(
+    allowances, savings, dividends, net_income, relief, net_income_before_relief
+):
+    """``default_order_deductions`` from the amounts it reads."""
+    non_savings = net_income - savings - dividends
     relief_left = np.maximum(
-        0,
-        relief
-        - np.maximum(
-            0,
-            person("net_income_before_trade_loss_relief", period) - savings - dividends,
-        ),
+        0, relief - np.maximum(0, net_income_before_relief - savings - dividends)
     )
     to_non_savings = np.where(
         non_savings < allowances, np.maximum(0, non_savings), allowances
@@ -391,25 +477,148 @@ def default_order_deductions(person, period):
     )
 
 
+def _rate(thresholds, rates, income, above=True):
+    """The rate a scale charges just above ``income`` (or just below it)."""
+    rate = np.zeros(np.shape(income))
+    for threshold, value in zip(thresholds, rates):
+        rate = np.where(
+            income >= threshold if above else income > threshold, value, rate
+        )
+    return rate
+
+
+def _rising(rates):
+    return rates[0] >= 0 and all(b >= a for a, b in zip(rates, rates[1:]))
+
+
+def _old_order_is_least(c, to_savings, to_dividends):
+    """People for whom no share gives less Step 5 tax than the old order, by
+    the tests the module docstring sets out. ``to_savings`` and
+    ``to_dividends`` are the old order's deductions from savings and
+    dividends."""
+    in_first = (to_savings == 0) & (to_dividends == 0)
+    # Test 1: nothing to share, or nothing left after the deductions, so only
+    # one share exists, and the old order takes it.
+    nothing_to_share = (in_first & (c.shared <= 0)) | (
+        (to_savings == c.savings)
+        & (to_dividends == c.dividends)
+        & (c.step_3_income <= TIE)
+    )
+    low, basic_limit, higher_limit = c.bands
+    if not (
+        all(
+            _rising(rates)
+            for rates in (
+                c.uk_rates,
+                c.scotland_rates,
+                c.dividend_rates,
+                c.savings_rate_list,
+                c.property_rate_list,
+            )
+        )
+        and low <= 0
+        and c.phase_out >= 0
+    ):
+        return nothing_to_share
+    in_first &= c.shared <= c.first
+    x = c.first - c.shared
+    other, property_left, earned = _split(c, x)
+    top, start = _savings_band(c, earned + property_left, c.savings)
+    savings_taxed = top > start
+    nil_rated = ~savings_taxed & (c.dividends <= c.dividend_allowance)
+    # Test 3. The first component's rate just above x.
+    if c.other_first:
+        _, basic_upper, higher_upper = c.bands
+        rho_n = np.where(
+            c.scottish,
+            _rate(c.scotland[0], c.scotland_rates, other + x),
+            _rate(
+                (-np.inf, basic_upper, higher_upper), c.property_rate_list, other + x
+            ),
+        )
+        in_reach = in_first
+    else:
+        # With no property income, Marriage Allowance only moves every band
+        # position down by its amount.
+        position = x - c.earned_exclusions
+        rho_n = np.where(
+            c.scottish,
+            _rate(c.scotland[0], c.scotland_rates, position),
+            _rate(c.uk[0], c.uk_rates, position),
+        )
+        in_reach = in_first & ((c.earned_exclusions == 0) | (c.property == 0))
+    savings_scale = ((low, basic_limit, higher_limit), c.savings_rate_list)
+    # dx <= c.shared and dw <= min(dx, dividends). The top of the nil rates
+    # moves up by at most dx and never passes the top of the savings.
+    dw = np.minimum(c.shared, c.dividends)
+    sigma_s = _rate(*savings_scale, np.minimum(start + c.shared, top + dw), above=False)
+    rho_s = _rate(*savings_scale, top)
+    # The dividends end at the top of income, which no share moves.
+    sigma_v = np.where(
+        c.dividends > c.dividend_allowance,
+        _rate(
+            c.dividend_scale[0],
+            c.dividend_rates,
+            top + np.minimum(c.dividend_allowance + dw, c.dividends),
+            above=False,
+        ),
+        0,
+    )
+    rates_hold = np.where(
+        savings_taxed,
+        (rho_n >= sigma_s) & (rho_n - sigma_s + rho_s - sigma_v >= 0),
+        rho_n >= sigma_v,
+    )
+    return nothing_to_share | (in_first & nil_rated) | (in_reach & rates_hold)
+
+
 def allocate_deductions(person, period, parameters):
     """Deductions against savings and dividend income in the share that gives
     the least Income Tax (ITA 2007 s. 25(2) and (3A)). Where no share gives less
     tax than the order non-savings, savings, dividends, these are that order's
     deductions exactly."""
     default = default_order_deductions(person, period)
-    c = _context(person, period, parameters)
+    income_tax = parameters(period).gov.hmrc.income_tax
+    savings, dividends = least_tax_deductions(
+        _inputs(person, period, income_tax),
+        income_tax,
+        default.savings,
+        default.dividends,
+    )
+    return SimpleNamespace(savings=savings, dividends=dividends)
+
+
+def least_tax_deductions(
+    inputs, income_tax, to_savings, to_dividends, search_all=False
+):
+    """The deductions from savings and dividends: the old order's
+    (``to_savings`` and ``to_dividends``) unless another share saves more than
+    TOLERANCE. The search runs only on people the tests in
+    ``_old_order_is_least`` leave, or on everyone with ``search_all``."""
+    to_savings = np.asarray(to_savings, dtype=np.float64)
+    to_dividends = np.asarray(to_dividends, dtype=np.float64)
+    if search_all:
+        search = np.ones(len(to_savings), dtype=bool)
+    else:
+        search = ~_old_order_is_least(
+            _build(inputs, income_tax), to_savings[:, None], to_dividends[:, None]
+        )[:, 0]
+    if not search.any():
+        return to_savings, to_dividends
+    c = _build({name: values[search] for name, values in inputs.items()}, income_tax)
     x, s, v = _least_tax_share(c)
-    default_s = c.savings - np.asarray(default.savings, dtype=np.float64)[:, None]
-    default_v = c.dividends - np.asarray(default.dividends, dtype=np.float64)[:, None]
+    default_s = c.savings - to_savings[search][:, None]
+    default_v = c.dividends - to_dividends[search][:, None]
     default_x = c.step_3_income - default_s - default_v
     lower = (
         step_5_tax(c, x, s, v)
         < step_5_tax(c, default_x, default_s, default_v) - TOLERANCE
     )[:, 0]
-    return SimpleNamespace(
-        savings=np.where(lower, (c.savings - s)[:, 0], default.savings),
-        dividends=np.where(lower, (c.dividends - v)[:, 0], default.dividends),
-    )
+    moved = np.flatnonzero(search)[lower]
+    to_savings, to_dividends = to_savings.copy(), to_dividends.copy()
+    to_savings[moved] = (c.savings - s)[lower, 0]
+    to_dividends[moved] = (c.dividends - v)[lower, 0]
+    return to_savings, to_dividends
 
 
 def non_savings_deductions(person, period):
