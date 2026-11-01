@@ -11,11 +11,11 @@
 # get with the award e. A mixed-age couple has no entitlement to State Pension
 # Credit from 15 May 2019 (State Pension Credit Act 2002 s.4(1A)) unless it
 # keeps the SI 2019/37 art 4 saving.
-# Everyone here is a legacy claimant (would_claim_uc false), since a couple
-# that claims Universal Credit loses its income-related ESA anyway. No case has
-# capital, so no tariff income: an award that passes is the amount reported.
-# Pension Credit with no income is the guarantee credit's standard minimum
-# guarantee for 52 weeks: in 2026-27, £238.00 for a single claimant and
+# Nobody here claims Universal Credit (would_claim_uc false), since a couple
+# that claims it loses its income-related ESA anyway. No case has capital, so
+# no tariff income: the model pays an award that passes at the amount
+# reported. With no income, a family gets the guarantee credit's standard
+# minimum guarantee for 52 weeks: in 2026-27, £238.00 for a single claimant and
 # £363.25 for a couple (SPC Regs 2002 reg 6(1), as amended by the Social
 # Security Benefits Up-rating Order 2026, SI 2026/148, art 29(2)), so
 # 52 x 238.00 = 12_376 and 52 x 363.25 = 18_889. Nobody here in 2026 reached
@@ -695,7 +695,7 @@
     # reg 83(1): the award with its support component.
     is_uc_benefit_cap_exempt_specified_benefit: true
     is_housing_benefit_benefit_cap_exempt_specified_benefit: true
-    # So no cap applies: uc_benefit_cap is unlimited.
+    # So the model applies no Universal Credit benefit cap.
     is_uc_benefit_cap_exempt: true
 
 # Cases 21 to 24 supply Pension Credit, or a part of it, as an input. The model

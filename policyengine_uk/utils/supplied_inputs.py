@@ -247,15 +247,15 @@ def _model_variable(variable_class):
 
 
 def replaces_definition(population, variable_class, period: Period) -> bool:
-    """Whether the simulation gives the variable that ``variable_class``
-    defines a value for ``period`` other than that definition calculates. A
-    reform can change anything Core calculates it from: neutralize it, give
-    it another formula for the period or none, or change its default, the
-    variable it is defined for, what it sums or its period. Or a caller can
-    set an input for the period (``stored_as_input``), as a scenario does
-    with its own value (``set_model_value``). A cached formula result is not
-    an input, even in populations taken from another simulation or in their
-    clones and branches."""
+    """Whether the simulation can give the variable that ``variable_class``
+    defines a value for ``period`` other than the one that definition
+    calculates. A reform can change anything Core calculates it from:
+    neutralize it, give it another formula for the period or none, or change
+    its default, its defined_for, what it sums or its period. A caller can
+    also set an input for the period (``stored_as_input``), as a scenario
+    does with its own value (``set_model_value``). A cached formula result is
+    not an input, even in populations taken from another simulation or in
+    their clones and branches."""
     name = variable_class.__name__
     variable = population.simulation.tax_benefit_system.get_variable(name)
     if calculation_definition(variable, period) != calculation_definition(

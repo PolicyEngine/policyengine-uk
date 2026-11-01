@@ -200,9 +200,9 @@ def legacy_benefits_closed(couple, others, parameters):
 
     Reports by other members neither close nor shield it (SI 2014/1230
     regs 44(1), (4) and 46(1)). This is the existing annual proxy, not a
-    notice/deadline model. Tax-credit reports are generated only in years
-    with tax credits, in which they close nothing. Ages avoid the changing
-    Pension Credit qualifying-age boundary.
+    notice/deadline model. The generators draw tax-credit reports only in
+    years with tax credits, in which they close nothing. Ages avoid the
+    changing Pension Credit qualifying-age boundary.
     """
     dwp = parameters.gov.dwp
     members = couple + others

@@ -99,8 +99,8 @@ def pension_credit_without_income_related_esa(benunit, period):
     In a year with tax credits, a calculation in this branch opens the
     passport branch (pension_credit_with_passported_tax_credits), and one in
     the passport branch opens this one. Core reads a branch's inputs from
-    the branches it was made from as well, so a branch of either keeps both
-    sets of inputs.
+    its parent branches as well, so a branch of either keeps both sets of
+    inputs.
     """
     simulation = benunit.simulation
     # get_branch returns an existing branch of that name, or this simulation
