@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class income_support_assessable_capital(Variable):
@@ -24,7 +28,7 @@ class income_support_assessable_capital(Variable):
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
-        sources = IS.means_test.capital.sources
+        capital = IS.means_test.capital
         person = benunit.members
         would_claim_is = benunit("would_claim_IS", period)
 
@@ -35,7 +39,9 @@ class income_support_assessable_capital(Variable):
         # weights. Regulation 23 excludes children's and young persons' capital;
         # the household allocation itself is a modelling convention.
         household_capital = sum(
-            benunit.max(person.household(source, period)) for source in sources
+            benunit.max(person.household(source, period))
+            - pooled_person_capital(benunit, source, period, capital)
+            for source in capital.sources
         )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]
@@ -57,7 +63,7 @@ class income_support_assessable_capital(Variable):
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in IS.means_test.capital.person_sources
+            for source in counted_person_sources(capital)
         )
         household_share = where(
             household_claiming_members > 0, claiming_proxy, fallback_proxy

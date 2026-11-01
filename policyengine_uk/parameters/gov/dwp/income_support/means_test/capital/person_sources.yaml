@@ -9,7 +9,17 @@ description: >
   ISA at its surrender value: regulation 49 values capital at its current
   market or surrender value, and DMG 29665 counts a Lifetime ISA at 75% of its
   value under 60 and in full from 60. Lifetime ISAs exist from 6 April 2017,
-  and the list is empty before then.
+  and the list counts them from then. `cash_isa_countable_capital` and
+  `stocks_and_shares_isa_countable_capital` are a member's cash and stocks and
+  shares ISA balances. An ISA has one holder, who owns its investments
+  beneficially (Individual Savings Account Regulations 1998 reg. 4(1B)(c) and
+  (6)(a)), and a child holds their own junior ISA (reg. 2B). Each counts only
+  while `sources` lists the household source that already holds it
+  (`cash_isa`, `share_like_capital`), and the household pool then leaves it
+  out of that source, so it counts once, in its holder's own benefit unit, and
+  a list without the household source counts neither. Household data with no
+  balances keep the whole household total in the pool. ISAs exist from 6 April
+  1999 (reg. 1).
 metadata:
   label: Income Support person-level capital sources
   period: year
@@ -21,7 +31,15 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/49
     - title: Decision Makers' Guide, Chapter 29 (Capital), para. 29665
       href: https://assets.publishing.service.gov.uk/media/6894a69d3080e72710b2e237/dmg-ch-29.pdf
+    - title: The Individual Savings Account Regulations 1998 reg. 4
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4
+    - title: The Individual Savings Account Regulations 1998 reg. 2B
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/2B
 values:
-  2010-01-01: []
+  2010-01-01:
+    - cash_isa_countable_capital
+    - stocks_and_shares_isa_countable_capital
   2017-04-06:
     - lifetime_isa_countable_capital
+    - cash_isa_countable_capital
+    - stocks_and_shares_isa_countable_capital

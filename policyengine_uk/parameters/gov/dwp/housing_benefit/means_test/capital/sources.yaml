@@ -1,6 +1,9 @@
 description: >
   Ordinary cash ISA balances are separate from savings and are included at
   their accessible cash value, without a generic cash sale-cost deduction.
+  Where the data tie a cash ISA or stocks and shares ISA balance to a member,
+  `person_sources` counts it in the holder's own benefit unit, and the pool
+  takes it out of `cash_isa` or `share_like_capital` before sharing the rest.
   Model variables currently mapped to countable Housing Benefit capital. The
   Housing Benefit Regulations 2006 treat the whole of a claimant's capital as
   assessable unless it is disregarded under Schedule 6. The current mappings

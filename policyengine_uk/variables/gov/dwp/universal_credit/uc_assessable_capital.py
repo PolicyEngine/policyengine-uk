@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class uc_assessable_capital(Variable):
@@ -41,14 +45,24 @@ class uc_assessable_capital(Variable):
     def formula(benunit, period, parameters):
         household = benunit.household
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
-        household_financial_capital = sum(
-            household(source, period) for source in p.sources
+        person = benunit.members
+        claimant_or_partner = person("is_uc_claimant", period)
+        # A report or complete override already covers its claimant's and
+        # partner's ISAs, as it does their company holdings, and consumes
+        # them from the pool. Every other person's ISA leaves the pool here.
+        covered = claimant_or_partner & (
+            (person.benunit("benunit_reported_capital", period) >= 0)
+            | (person.benunit("uc_reported_capital", period) >= 0)
         )
-        claimant_or_partner = benunit.members("is_uc_claimant", period)
+        household_financial_capital = sum(
+            household(source, period)
+            - pooled_person_capital(benunit, source, period, p, ~covered)
+            for source in p.sources
+        )
         benunit_claimants = benunit.sum(claimant_or_partner)
         person_capital = sum(
-            benunit.sum(benunit.members(source, period) * claimant_or_partner)
-            for source in p.person_sources
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in counted_person_sources(p)
         )
         financial_report = benunit("benunit_reported_capital", period)
         complete_override = benunit("uc_reported_capital", period)

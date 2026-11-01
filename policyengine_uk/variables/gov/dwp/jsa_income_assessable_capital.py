@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class jsa_income_assessable_capital(Variable):
@@ -25,12 +29,13 @@ class jsa_income_assessable_capital(Variable):
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).gov.dwp.JSA.income
-        sources = JSA.capital.sources
         person = benunit.members
         claiming_jsa_income = add(benunit, period, ["jsa_income_reported"]) > 0
 
         household_capital = sum(
-            benunit.max(person.household(source, period)) for source in sources
+            benunit.max(person.household(source, period))
+            - pooled_person_capital(benunit, source, period, JSA.capital)
+            for source in JSA.capital.sources
         )
         # Regulation 88(2) excludes children's and young persons' capital.
         # The claimant/partner weights approximate otherwise unobserved ownership.
@@ -51,7 +56,7 @@ class jsa_income_assessable_capital(Variable):
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in JSA.capital.person_sources
+            for source in counted_person_sources(JSA.capital)
         )
         household_share = where(
             household_reporting_claimants > 0, claiming_proxy, fallback_proxy

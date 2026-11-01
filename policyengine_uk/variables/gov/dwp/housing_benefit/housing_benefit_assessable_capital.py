@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class housing_benefit_assessable_capital(Variable):
@@ -42,11 +46,15 @@ class housing_benefit_assessable_capital(Variable):
             "housing_benefit_pension_age_regulations_apply", period
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = sum(
+            household(source, period)
+            - pooled_person_capital(benunit, source, period, p)
+            for source in p.sources
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in p.person_sources
+            for source in counted_person_sources(p)
         )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]

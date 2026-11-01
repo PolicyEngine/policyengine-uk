@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class pension_credit_assessable_capital(Variable):
@@ -28,11 +32,15 @@ class pension_credit_assessable_capital(Variable):
         household = benunit.household
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = sum(
+            household(source, period)
+            - pooled_person_capital(benunit, source, period, p)
+            for source in p.sources
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in p.person_sources
+            for source in counted_person_sources(p)
         )
         any_pension_age = benunit.any(
             person("has_attained_state_pension_credit_qualifying_age", period)
