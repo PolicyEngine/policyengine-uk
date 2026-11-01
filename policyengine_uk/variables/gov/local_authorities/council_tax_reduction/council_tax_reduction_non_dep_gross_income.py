@@ -20,31 +20,33 @@ class council_tax_reduction_non_dep_gross_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/5",
     )
     documentation = (
-        "Annual gross income represented by the model for non-dependant "
+        "Annual gross income the model represents for the non-dependant "
         "bands, before tax, National Insurance, employment deductions and "
-        "pension contributions. A self-employment or property loss counts as "
-        "nil, so it does not reduce other income: gross income from "
-        "self-employment has no deduction for business expenses (DWP HB "
-        "guidance A5.551), and the model has profit, not turnover. Claimant "
-        "war-pension and supplementary-pension disregards do not apply to "
-        "these non-dependant bands. It includes statutory sick, maternity and "
-        "paternity pay once through employment_benefits, child and spousal "
-        "maintenance, the tax-purpose social security income sources, and "
-        "the separately represented non-taxable periodic benefits. "
-        "Attendance Allowance, DLA and PIP are omitted under the specific "
-        "disability-payment disregards. The other disregarded disability "
-        "and compensation/trust payments have no separate model inputs. "
-        "Benefit-unit awards (including Child Benefit, tax credits and UC) "
-        "are not allocated to an individual recipient here. "
-        "BSP and AFCS inputs do not separate periodic income from capital "
-        "payments, so they are not added. Gross income includes earnings "
-        "and any other income (DWP HB guidance A5.542), so other investment "
-        "income counts. This is a person's own income: a claimant or partner "
-        "of the non-dependant's family is banded on the couple's joint "
-        "income, with the family's awards added, in the deduction formula, "
-        "which also applies the remunerative-work test. The gross-income "
-        "variable itself does not decide whether someone is in remunerative "
-        "work or whether a deduction is due."
+        "pension contributions. DWP HB guidance A5.551 counts a "
+        "self-employed non-dependant's total income with no deduction for "
+        "business expenses. The model holds self-employment and property "
+        "profits, not receipts, so this approximates gross income by adding "
+        "each profit and counting a loss as nil, which stops a loss reducing "
+        "other income. The claimant war-pension and supplementary-pension "
+        "disregards do not apply to these bands. The total includes "
+        "statutory sick, maternity and paternity pay once, through "
+        "employment_benefits; child and spousal maintenance; the tax-purpose "
+        "social security income sources; and the non-taxable periodic "
+        "benefits the model represents separately. It leaves out Attendance "
+        "Allowance, DLA and PIP under the disability-payment disregards; the "
+        "other disregarded disability, compensation and trust payments have "
+        "no model inputs. BSP and AFCS inputs do not separate periodic income "
+        "from capital payments, so the total leaves them out. Gross income "
+        "includes earnings and any other income (A5.542), and A5.570 adds "
+        "savings interest to earnings, so other investment income, ISA "
+        "interest (tax_free_savings_income) and ISA dividends count. This is "
+        "the person's own income. Benefit-unit awards, such as Child Benefit, "
+        "tax credits and Universal Credit, stay out of it: the deduction "
+        "formula adds them for the claimant and partner of the "
+        "non-dependant's family, whom it bands on their joint income, and "
+        "applies the remunerative-work test. This variable decides neither "
+        "whether someone is in remunerative work nor whether a deduction is "
+        "due."
     )
 
     def formula(person, period, parameters):
@@ -57,8 +59,11 @@ class council_tax_reduction_non_dep_gross_income(Variable):
                 "private_pension_income",
                 "social_security_income",
                 "savings_interest_income",
+                # Exempt interest, ISA interest unless a total is supplied.
+                "tax_free_savings_income",
                 "other_investment_income",
                 "dividend_income",
+                "individual_savings_account_dividend_income",
                 "miscellaneous_income_before_trading_allowance",
                 "maternity_allowance",
                 "iidb",
@@ -66,7 +71,9 @@ class council_tax_reduction_non_dep_gross_income(Variable):
                 "war_widows_pension",
             ],
         )
-        # A loss counts as nil (DWP HB guidance A5.551).
+        # The model has profits, not the receipts DWP HB guidance A5.551
+        # counts before business expenses. As an approximation, a loss
+        # counts as nil, so it never reduces other income.
         losses_as_nil = max_(0, person("self_employment_income", period)) + max_(
             0, person("property_income", period)
         )

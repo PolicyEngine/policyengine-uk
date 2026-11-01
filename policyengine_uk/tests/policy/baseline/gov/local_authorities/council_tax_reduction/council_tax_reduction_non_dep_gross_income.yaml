@@ -733,7 +733,8 @@
     council_tax_reduction_non_dep_gross_income: 3_000
 
 - name: council_tax_reduction_non_dep_gross_income counts a self-employment or property loss as nil
-  # No deduction for business expenses (DWP HB guidance A5.551), so a loss
+  # The model has profits, not the receipts DWP HB guidance A5.551 counts
+  # before business expenses. As an approximation, a loss counts as nil and
   # does not reduce other income.
   period: 2025
   input:
@@ -743,3 +744,17 @@
     property_income: -1_000
   output:
     council_tax_reduction_non_dep_gross_income: 5_000
+
+- name: council_tax_reduction_non_dep_gross_income counts ISA interest and dividends
+  # Gross income is earnings and any other income (DWP HB guidance A5.542),
+  # savings interest included (A5.570). The supplied exempt-interest total
+  # includes the ISA interest, which counts once.
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 9_000
+    individual_savings_account_interest_income: 500
+    tax_free_savings_income: 20_000
+    individual_savings_account_dividend_income: 30_000
+  output:
+    council_tax_reduction_non_dep_gross_income: 59_000
