@@ -7,7 +7,10 @@
 # all five Python shards of nine runs on 24 October 2026, each test's mean
 # over the runs: merge queue runs 40050881130, 40059344467, 40063244949,
 # 40067189795, 40071060766, 40079467297, 40083761750 and 40087883891, and
-# pull request run 40095846881. A slow test not here is placed by the hash.
+# pull request run 40095846881. The entries for
+# test_non_dependant_deduction_properties.py come from pull request run
+# 41269333878 alone, below 20 seconds included. A slow test not here is
+# placed by the hash.
 # test_ci_test_shards.py fails if an entry names a test that no longer
 # exists, so a pull request that renames or removes a listed test should
 # rename or delete its line here. Regenerate when a shard drifts well above
@@ -153,6 +156,7 @@
 "policyengine_uk/tests/test_severe_disability_addition_properties.py::test_residence_condition_is_metamorphic" = 101
 "policyengine_uk/tests/test_benefit_cap_lha_scheme_split_properties.py::test_lha_category_is_the_claimed_schemes_old_category" = 101
 "policyengine_uk/tests/test_severe_disability_addition_properties.py::test_shared_carer_attribution_matches_the_reference_matching" = 101
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_non_dependant_deduction_invariants" = 101
 "policyengine_uk/tests/test_dfe_childcare_student_support_properties.py::test_maintenance_loan_household_income_applies_the_age_25_test" = 100
 "policyengine_uk/tests/test_severe_disability_addition_properties.py::test_legacy_premium_equals_the_addition_without_young_people" = 100
 "policyengine_uk/tests/test_pension_annual_allowance_properties.py::test_extra_contributions_never_raise_tax_by_more_than_the_charge" = 100
@@ -306,6 +310,7 @@
 "policyengine_uk/tests/test_carer_overlapping_benefits_properties.py::test_carer_benefit_is_monotonic_in_state_pension" = 60
 "policyengine_uk/tests/test_winter_heating_payment_properties.py::test_non_dependants_never_change_anyone_elses_payment" = 60
 "policyengine_uk/tests/test_uc_single_claim_properties.py::test_single_standard_allowance_at_the_claimants_own_age" = 60
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_capped_universal_credit_matches_the_model" = 60
 "policyengine_uk/tests/test_trading_loss_properties.py::test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award[universal_credit-2026]" = 59
 "policyengine_uk/tests/test_reform_inputs_survive_reset.py::test_a_reform_names_exactly_the_variables_it_leaves_inputs_for" = 59
 "policyengine_uk/tests/test_uc_minimum_income_floor_properties.py::test_top_up_never_takes_couple_above_couple_threshold" = 59
@@ -579,3 +584,7 @@
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_a_household_that_moves_is_paid_under_each_years_scheme[LONDON-SCOTLAND]" = 20
 "policyengine_uk/tests/test_capital_gains_responses.py::test_revenue_falls_short_of_the_static_estimate" = 20
 "policyengine_uk/tests/test_capital_gains_response_default.py::test_employer_cost_branches_hold_the_realisation_response" = 20
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[ENGLAND]" = 14
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[WALES]" = 11
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[SCOTLAND]" = 10
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[HOUSING_BENEFIT]" = 10
