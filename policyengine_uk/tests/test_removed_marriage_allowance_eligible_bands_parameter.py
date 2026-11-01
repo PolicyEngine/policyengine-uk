@@ -1,7 +1,7 @@
 """Saved policies naming the Marriage Allowance eligible bands get directions.
 
-The income conditions apply the rate conditions of ITA 2007 s. 55B(2)(b) and
-(ba) directly, so nothing reads
+The model applies the rate conditions of ITA 2007 s. 55B(2)(b) and (ba) to
+income directly, so nothing reads
 ``gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands`` (#2350).
 """
 

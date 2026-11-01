@@ -663,10 +663,10 @@
         members: [person]
         country: SCOTLAND
   output:
-    # property_income is profit. With no receipts given, the model takes a
-    # profit above the 1,000 property allowance to reflect the better of
-    # expenses and the allowance already, and taxes all 31,092. Pay takes
-    # the personal allowance. Property income bears the Scottish rates
+    # The model reads property_income as profit and, with no receipts given,
+    # takes a profit above the 1,000 property allowance to reflect the better
+    # of expenses and the allowance already, so it taxes all 31,092. Pay
+    # takes the personal allowance. Property income bears the Scottish rates
     # (s. 11A): 2,827 x 19% + 12,094 x 20% + 16,171 x 21% = 537.13
     # + 2,418.80 + 3,395.91 = 6,351.84, with none above 31,092.
     tax_band: INTERMEDIATE
