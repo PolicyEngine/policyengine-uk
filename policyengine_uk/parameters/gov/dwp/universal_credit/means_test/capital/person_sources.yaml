@@ -14,9 +14,9 @@ description: >
   household financial proxy, before the regulation 77 company substitution.
   `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`
   hold a member's cash and stocks and shares ISA balances, bounded by the
-  household total. Each ISA has one holder, who owns its investments
-  beneficially (Individual Savings Account Regulations 1998 reg. 4(1B)(c) and
-  (6)(a)), and a child holds their own junior ISA (reg. 2B). Where no unit
+  household total. The account investor beneficially owns an ordinary ISA's
+  investments, and the named child owns a junior ISA's investments (Individual
+  Savings Account Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). Where no unit
   reports capital, the formula subtracts each bounded ISA balance from its
   household source and counts it in the holder's unit. For a reporting UC
   unit, the formula leaves its claimant's and partner's ISAs in the pool and

@@ -11,11 +11,11 @@ description: >
   exist from 6 April 2017, and the formulas count them from then.
   `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital`
   hold a member's cash and stocks and shares ISA balances, bounded by the
-  household total. Each ISA has one holder, who owns its investments
-  beneficially (Individual Savings Account Regulations 1998 reg. 4(1B)(c) and
-  (6)(a)), and a child holds their own junior ISA (reg. 2B). In the ordinary
-  calculation, the formula subtracts each bounded ISA balance from its
-  household source (`cash_isa`, `share_like_capital`) and counts it in the
+  household total. The account investor beneficially owns an ordinary ISA's
+  investments, and the named child owns a junior ISA's investments (Individual
+  Savings Account Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). In the
+  ordinary calculation, the formula subtracts each bounded ISA balance from
+  its household source (`cash_isa`, `share_like_capital`) and counts it in the
   holder's unit. For a family on a passporting benefit, or at pension age on a
   guarantee credit, the formula returns zero capital, and for a
   savings-credit-only award it uses the Pension Credit capital assessment.

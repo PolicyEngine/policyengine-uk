@@ -1,13 +1,13 @@
 # Cash and stocks and shares ISA balances count in the holder's own benefit
-# unit (#2729). An ISA has one holder, who owns its investments beneficially
-# (ISA Regulations 1998 reg 4(1B)(c) and (6)(a)), and a child holds their own
-# junior ISA (reg 2B). The means tests count the claimant's and partner's
-# capital (WRA 2012 s 5; HB Regs 2006 reg 25; SPCA 2002 s 5; IS Regs 1987
-# reg 23; JSA Regs 1996 reg 88; ESA Regs 2008 reg 83), and not a child's or
-# young person's (HB reg 25(3) and 45; IS reg 23(2); JSA reg 88(2); ESA reg
-# 83(2)). The formula subtracts the identified ISA balances from the
-# household's capital, then allocates the remainder by claimant and partner
-# counts.
+# unit (#2729). The account investor beneficially owns an ordinary ISA's
+# investments, and the named child owns a junior ISA's investments (ISA
+# Regulations 1998 reg 4(6)(a) and reg 2B(c)). The means tests count the
+# claimant's and partner's capital (WRA 2012 s 5; HB Regs 2006 reg 25; SPCA
+# 2002 s 5; IS Regs 1987 reg 23; JSA Regs 1996 reg 88; ESA Regs 2008 reg 83),
+# and not a child's or young person's (HB reg 25(3) and 45; IS reg 23(2); JSA
+# reg 88(2); ESA reg 83(2)). The formula subtracts the identified ISA balances
+# from the household's capital, then allocates the remainder by claimant and
+# partner counts.
 
 - name: Case 1, a lodger's cash ISA stays out of the main benefit unit's capital.
   period: 2025
