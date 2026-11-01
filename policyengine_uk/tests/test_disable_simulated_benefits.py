@@ -343,6 +343,21 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
     assert by_family(reformed, "legacy_benefits_closed", year) == dict.fromkeys(
         NAMES, False
     )
+    # The abolition of income-related ESA reaches the claimant's own award
+    # from 2026-27 (SI 2025/1148 art. 3A), which would prompt a Universal
+    # Credit claim; the reform holds that too, so it prompts no claim.
+    reached = year > DATASET_YEAR
+    assert by_family(unreformed, "esa_income_abolition_reached", year) == {
+        "excluded_adult": False,
+        "excluded_adult_no_award": False,
+        "own_esa": reached,
+        "own_jsa": False,
+        "own_esa_over_tariff": reached,
+        "excluded_income_support": False,
+    }
+    assert by_family(reformed, "claims_uc_at_legacy_closure", year) == dict.fromkeys(
+        NAMES, False
+    )
     ten_years = list(range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
     for variable in NOT_MOVED:
         assert known_years(reformed, variable) == ten_years, variable
@@ -363,18 +378,12 @@ def test_each_person_is_on_their_own_award(reformed, year):
         str(year)
     ).gov.dwp.JSA.income.active
     assert jsa_open == (year == DATASET_YEAR)
-    # Likewise their own income-related ESA, which its abolition ends from 1
-    # July 2026 (SI 2025/1148 art. 3A): payable for part of 2026-27, none of
-    # 2027-28.
-    esa_open = (
-        reformed.tax_benefit_system.parameters(
-            str(year)
-        ).gov.dwp.ESA.income.awards_payable.great_britain
-        > 0
-    )
-    assert esa_open == (year < DATASET_YEAR + 2)
+    # The reform pays their income-related ESA in every year too, after its
+    # abolition on 1 July 2026 (SI 2025/1148 art. 3A) included. The award it
+    # holds, not the abolition's closure of their report, decides whether it
+    # is payable to them, as for the claimant and partner.
     assert not on_esa["excluded_adult_no_award_0"]
-    assert on_esa["excluded_adult_no_award_1"] == esa_open
+    assert on_esa["excluded_adult_no_award_1"]
     assert not on_jsa["excluded_adult_no_award_0"]
     assert on_jsa["excluded_adult_no_award_1"] == jsa_open
     assert on_esa["own_esa_0"] and not on_jsa["own_esa_0"]

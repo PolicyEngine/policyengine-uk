@@ -10,7 +10,10 @@ in remunerative work. For every family:
   closure (PolicyEngine/policyengine-uk#2119): income-based JSA is closed in
   2026, so there a JSA report closes the family's legacy benefits and ends
   both awards unless the claimant and partner are all over Pension Credit
-  age;
+  age; and in 2026 the abolition of income-related ESA reaches the couple's
+  award, so the family claims Universal Credit
+  (would_claim_uc_at_legacy_closure keeps its default), which ends their
+  ESA reports under the same age and Pension Credit conditions;
 - more hours or more pay for anyone never makes a family eligible, in the
   years tested (2025 and 2026) and within the scope below. Before 6 April
   2024 reg 99(3)(a) took a fixed Class 2 deduction once profit reached a
@@ -42,6 +45,7 @@ from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
 from legacy_award_work_reference import (
+    couple_report_closed,
     esa_screen,
     esa_weekly_earnings,
     jsa_screen,
@@ -320,7 +324,7 @@ def test_member_outside_the_family_never_changes_the_couples_screen(units, year,
         for i, (couple, *_rest) in enumerate(without):
             assert not flags[ends[n + i] - 1]
             if any(a[reported] > 0 for a in couple):
-                closed = legacy_benefits_closed(couple, [], parameters)
+                closed = couple_report_closed(couple, reported, parameters)
                 # An open couple report still selects the same work screen.
                 # Once closed, only an outside member's separate claim can
                 # be a candidate, so the aggregate screen may then change.

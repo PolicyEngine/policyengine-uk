@@ -83,14 +83,15 @@ def own_report_is_paid(
     )
     closed = person("person_legacy_benefits_closed", period)
     if award_on_reports is not None:
+        units = person.simulation.populations["benunit"]
         report_closed = person(REPORT_CLOSED[award], period)
-        stored = benunit(award, period)
+        stored = units(award, period)
         open_reported = person(f"{award}_reported", period) * ~report_closed
-        formula_award = award_on_reports(benunit, period, open_reported)
+        formula_award = award_on_reports(units, period, open_reported)
         as_formula = np.isclose(
             stored, formula_award.astype(stored.dtype), rtol=0, atol=HALF_PENNY
         )
-        closed = where(benunit.project(as_formula), report_closed, closed)
+        closed = where(units.project(as_formula), report_closed, closed)
     removed = person.simulation.tax_benefit_system.get_variable(award).is_neutralized
     paid = benunit(award, period) > 0
     screen_fails = ~benunit(f"{award}_eligible", period)

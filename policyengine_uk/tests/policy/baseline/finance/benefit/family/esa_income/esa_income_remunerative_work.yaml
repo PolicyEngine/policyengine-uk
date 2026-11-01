@@ -165,6 +165,9 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        # The family does not claim Universal Credit when the abolition of
+        # income-related ESA reaches the award, so the work screen decides.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -188,6 +191,9 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        # The family does not claim Universal Credit when the abolition of
+        # income-related ESA reaches the award, so the work screen decides.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]

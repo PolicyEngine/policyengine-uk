@@ -1,23 +1,32 @@
-# The abolition of income-related ESA (Welfare Reform Act 2012 s.33(1)(b);
-# NI: Welfare Reform (NI) Order 2015 art. 39(1)(b)) comes into force for every
-# remaining old style ESA award on 1 July 2026 in Great Britain (SI 2025/1148
-# art. 3A(1), inserted by SI 2026/409) and on 1 October 2026 in Northern
-# Ireland (SR 2025/176 art. 3A(1), inserted by SR 2026/115).
+# The Secretary of State appointed 1 July 2026 for the abolition of
+# income-related ESA (Welfare Reform Act 2012 s.33(1)(b)) to reach every
+# remaining old style ESA award in Great Britain (SI 2025/1148 art. 3A(1),
+# inserted by SI 2026/409). The Department appointed 1 October 2026 in
+# Northern Ireland (Welfare Reform (NI) Order 2015 art. 39(1)(b); SR 2025/176
+# art. 3A(1), inserted by SR 2026/115).
 #
 # Each model year is the fiscal year from 6 April to 5 April; 2026-27 has 365
 # days. A Great Britain award is payable for the 86 days from 6 April to 30
 # June 2026 (25 + 31 + 30) and a Northern Ireland award for the 178 days from
 # 6 April to 30 September 2026 (25 + 31 + 30 + 31 + 31 + 30). So 2026-27 pays
 # the annual award times 86/365 = 0.235616 or 178/365 = 0.487671, and
-# 2027-28 pays nothing.
+# 2027-28 pays nothing. Art. 3A(1)(b) leaves an award already due to end at
+# the end of a two-week run-on to that schedule; the annual model pays every
+# award to the general date.
+#
+# When the abolition reaches the claimant's or partner's award, the family
+# claims Universal Credit if would_claim_uc_at_legacy_closure (default true),
+# and the claim ends the award. From 2027-28 the award has ended and the
+# family is moved off its legacy benefits (legacy_benefits_closed). Cases
+# that test the 2026-27 share set would_claim_uc_at_legacy_closure to false.
 #
 # Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
-# Art. 3A(3): a Universal Credit claim still ends a saved award. A
+# A couple's award is one award, saved when either member who reports it is
+# saved. Art. 3A(3): a Universal Credit claim still ends a saved award. A
 # contributory allowance continues as new style ESA (esa_contrib).
 #
 # Unless a case says otherwise, nobody has capital, so there is no tariff
-# income and the annual award is the reported amount, and the family does
-# not claim Universal Credit.
+# income and the annual award is the reported amount.
 
 - name: Great Britain 2025-26, before the abolition, pays the whole award
   period: 2025
@@ -54,11 +63,16 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
         region: LONDON
   output:
+    # The family does not claim Universal Credit when the abolition reaches
+    # its award, so it keeps the award to 30 June 2026.
+    esa_income_abolition_reached: true
+    claims_uc_at_legacy_closure: false
     esa_income_payable_share: 0.235616
     esa_income_report_closed: false
     esa_income_eligible: true
@@ -79,11 +93,15 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
         region: LONDON
   output:
+    # The award has ended, so DWP has moved the family off its legacy
+    # benefits.
+    legacy_benefits_closed: true
     esa_income_payable_share: 0
     esa_income_report_closed: true
     esa_income_eligible: false
@@ -106,6 +124,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -126,6 +145,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -166,11 +186,13 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
         region: NORTHERN_IRELAND
   output:
+    esa_income_abolition_reached: true
     esa_income_payable_share: 0.487671
     esa_income_report_closed: false
     # 5,000 x 178 / 365 = 2,438.36
@@ -190,11 +212,13 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
         region: NORTHERN_IRELAND
   output:
+    legacy_benefits_closed: true
     esa_income_payable_share: 0
     esa_income_report_closed: true
     esa_income: 0
@@ -212,6 +236,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -242,8 +267,11 @@
         members: [claimant]
         region: LONDON
   output:
-    # Art. 3A(2) treats the abolition as not in force for this award.
+    # Art. 3A(2) treats the abolition as not in force for this award, so it
+    # neither prompts a claim nor moves the family.
     esa_income_payable_share: 1
+    esa_income_abolition_reached: false
+    legacy_benefits_closed: false
     esa_income_report_closed: false
     esa_income: 5_000
     claimant_or_partner_esa_income: 5_000
@@ -269,6 +297,8 @@
   output:
     # SR 2025/176 art. 3A(2).
     esa_income_payable_share: 1
+    esa_income_abolition_reached: false
+    claims_universal_credit: false
     esa_income: 5_000
 
 - name: A Universal Credit claim still ends an award saved for an appointee
@@ -334,6 +364,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -358,6 +389,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -440,6 +472,10 @@
         members: [claimant, other]
         region: LONDON
   output:
+    # The adult claims in their own right, so their report neither prompts
+    # the family's claim nor is ended by it.
+    esa_income_abolition_reached: false
+    claims_universal_credit: false
     esa_income_report_closed: [false, false]
     # 2,000 x 86 / 365 = 471.23, on the adult's own claim.
     esa_income: 471.23
@@ -468,10 +504,12 @@
         members: [claimant, other]
         region: LONDON
   output:
+    # Their own award has ended, which closes their own legacy benefits but
+    # not the family's.
+    person_legacy_benefits_closed: [false, true]
+    legacy_benefits_closed: false
     esa_income_report_closed: [true, true]
     esa_income: 0
-    # Their award has ended, so they are not on income-related ESA
-    # (own_report_is_paid reads esa_income_report_closed).
     is_on_income_related_esa: [false, false]
 
 - name: A couple's award saved for the claimant who reports it stays payable in 2027-28
@@ -494,7 +532,351 @@
         members: [claimant, partner]
         region: LONDON
   output:
-    esa_income_payable_share: [1, 0]
+    # The couple's award is one award, so both members share its share.
+    esa_income_payable_share: [1, 1]
+    esa_income_abolition_reached: false
+    legacy_benefits_closed: false
     esa_income: 5_000
     claimant_or_partner_esa_income: 5_000
     is_on_income_related_esa: [true, false]
+
+- name: Great Britain 2026-27, a family whose award the abolition reaches claims Universal Credit, ending the award and its Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # would_claim_uc_at_legacy_closure defaults to true. The claim ends the
+    # income-related ESA award (esa_income_report_closed) and the Housing
+    # Benefit award (SI 2014/1230 reg 8(2A)).
+    esa_income_abolition_reached: true
+    legacy_benefits_closed: false
+    claims_uc_at_legacy_closure: true
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income: 0
+    is_on_income_related_esa: false
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Great Britain 2026-27, a family that does not claim keeps its Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    claims_universal_credit: false
+    esa_income: 1_178.08
+    housing_benefit_eligible: true
+
+- name: Great Britain 2027-28, the move off legacy benefits ends a family's Housing Benefit even without a claim
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # SI 2014/1230 reg 46(1)(a): with no claim by the deadline, every
+    # existing award ends.
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    esa_income: 0
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Great Britain 2027-28, a family the abolition moved claims Universal Credit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    claims_universal_credit: true
+    esa_income: 0
+
+- name: Northern Ireland 2026-27, a family whose award the abolition reaches claims Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+  output:
+    esa_income_abolition_reached: true
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income: 0
+
+- name: A saved award prompts no Universal Credit claim in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # would_claim_uc_at_legacy_closure defaults to true, but the abolition
+    # has not reached a saved award.
+    esa_income_abolition_reached: false
+    claims_uc_at_legacy_closure: false
+    esa_income: 5_000
+
+- name: Before the abolition a couple's award counts its two reports once
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 2_000
+      partner:
+        age: 38
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    # One claim: 2,000 + 3,000.
+    esa_income: 5_000
+
+- name: Saving a partner who reports nothing does not save the claimant's award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+      partner:
+        age: 38
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    esa_income_payable_share: [0.235616, 0.235616]
+    esa_income_abolition_reached: true
+    # 5,000 x 86 / 365 = 1,178.08
+    esa_income: 1_178.08
+
+- name: Saving a partner who reports nothing does not stop the couple's claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+      partner:
+        age: 38
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    esa_income_abolition_reached: true
+    claims_universal_credit: true
+    esa_income: 0
+
+- name: The claimant's saving keeps the couple's whole award after the abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 2_000
+        esa_income_appointee_saving: true
+      partner:
+        age: 38
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    # A couple's award is one award: the saving keeps it, the partner's
+    # report included.
+    esa_income_payable_share: [1, 1]
+    esa_income_report_closed: [false, false]
+    esa_income_abolition_reached: false
+    legacy_benefits_closed: false
+    esa_income: 5_000
+
+- name: The abolition moves a mixed-age couple, whose younger member reports the award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    is_mixed_age_couple: true
+    esa_income_abolition_reached: true
+    claims_uc_at_legacy_closure: true
+    esa_income: 0
+
+- name: As for Income Support and income-based JSA, the abolition does not move a single claimant over the Pension Credit qualifying age
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    # SI 2014/1230 reg 8(2B). The award still ends.
+    esa_income_abolition_reached: false
+    legacy_benefits_closed: false
+    claims_uc_at_legacy_closure: false
+    esa_income_report_closed: true
+    esa_income: 0
+
+- name: A protected mixed-age couple that claims when the abolition reaches its award leaves the pension-age route
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # The couple claims jointly (UC Regs 2013 reg 3(2)(a)) and is entitled,
+    # so it leaves the pension-age route and its Housing Benefit ends.
+    meets_pension_credit_age_conditions: true
+    esa_income_abolition_reached: true
+    claims_uc_at_legacy_closure: true
+    left_pension_route_at_legacy_closure: true
+    housing_benefit_eligible: false
+    housing_benefit: 0

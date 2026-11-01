@@ -1,7 +1,10 @@
 """Property-based tests for Universal Credit claims when legacy benefits close.
 
 Tax credits closed from 6 April 2025 and Income Support and income-based JSA
-from 1 April 2026. DWP moved each family off its legacy benefits with a notice
+from 1 April 2026. The abolition of income-related ESA reached every remaining
+award on 1 July 2026 (SI 2025/1148 art. 3A), so a family whose award it
+reaches can claim from 2026-27 and is moved from 2027-28, when none of the
+award is payable. DWP moved each family off its legacy benefits with a notice
 covering all of them. A Universal Credit migration notice ends the awards on a
 claim (SI 2014/1230 reg 8) or at its deadline (reg 46). A tax credit closure
 notice sent families on Pension Credit, and families on Child Tax Credit but
@@ -15,10 +18,14 @@ Invariants, for any generated population of families in 2024 to 2027:
 
 1. Closure: legacy_benefits_closed holds exactly for a family that reports
    tax credits from 2025 and is not sent to Pension Credit, or reports Income
-   Support or income-based JSA from 2026, is not on Pension Credit and is not
-   wholly pension age.
-2. Claim: claims_universal_credit is would_claim_uc, or the closure with the
-   closure claim flag; Universal Credit is paid only to claiming families.
+   Support or income-based JSA from 2026, or income-related ESA from 2027, is
+   not on Pension Credit and is not wholly pension age. The ESA abolition
+   reaches (esa_income_abolition_reached) a family reporting income-related
+   ESA from 2026 under the same Pension Credit conditions.
+2. Claim: claims_universal_credit is would_claim_uc, or the closure or the
+   abolition reaching the award with the closure claim flag; Universal Credit
+   is paid only to claiming families, and a claiming family gets no
+   income-related ESA.
 3. Migration ends every legacy award: a family moved off legacy benefits gets
    no tax credits, Income Support, income-related ESA or income-based JSA.
    It gets no Housing Benefit unless it keeps the pension-age route by not
@@ -29,8 +36,9 @@ Invariants, for any generated population of families in 2024 to 2027:
 4. Exclusive: no family gets Universal Credit with Pension Credit or with
    Housing Benefit.
 5. Metamorphic, the flag is inert unless it decides a claim or age waiver: negating
-   would_claim_uc_at_legacy_closure changes no benefit for a family not
-   moved off legacy benefits, or for a working-age one that would claim
+   would_claim_uc_at_legacy_closure changes no benefit for a family neither
+   moved off legacy benefits nor reached by the ESA abolition, or for a
+   working-age one that would claim
    Universal Credit anyway and has a qualifying working-age claimant. In
    particular nothing changes in 2024, before
    any closure.
@@ -97,6 +105,7 @@ BENEFITS = [
 ]
 OUTPUTS = BENEFITS + [
     "legacy_benefits_closed",
+    "esa_income_abolition_reached",
     "claims_universal_credit",
     "left_pension_route_at_legacy_closure",
     "meets_pension_credit_age_conditions",
@@ -196,11 +205,25 @@ def expected_closure(unit, year, pension_age_route, mixed_age):
         pension_age_route and not r["working_tax_credit_reported"]
     )
     is_or_jsa = r["income_support_reported"] or r["jsa_income_reported"]
+    working_age_closed = (is_or_jsa and year >= 2026) or (
+        r["esa_income_reported"] and year >= 2027
+    )
     return (tax_credits and year >= 2025 and not to_pension_credit) or (
-        is_or_jsa
-        and year >= 2026
+        working_age_closed
         and not r["pension_credit_reported"]
         and not wholly_pension_age
+    )
+
+
+def expected_reached(unit, year, pension_age_route, mixed_age):
+    """The ESA abolition reaches an unsaved award from 2026-27 (no generated
+    family has the appointee saving)."""
+    r = unit["reported"]
+    return (
+        r["esa_income_reported"] > 0
+        and year >= 2026
+        and not r["pension_credit_reported"] > 0
+        and not (pension_age_route and not mixed_age)
     )
 
 
@@ -224,22 +247,29 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
             mixed_age = bool(v["is_mixed_age_couple"][i])
             closed = expected_closure(unit, year, pension_age_route, mixed_age)
             assert bool(v["legacy_benefits_closed"][i]) == closed, (year, unit)
-            claims_at_closure = closed and unit["claims_at_closure"]
+            reached = expected_reached(unit, year, pension_age_route, mixed_age)
+            assert bool(v["esa_income_abolition_reached"][i]) == reached, (year, unit)
+            moved = closed or reached
+            claims_at_closure = moved and unit["claims_at_closure"]
             claims = unit["would_claim_uc"] or claims_at_closure
             assert bool(v["claims_universal_credit"][i]) == claims, (year, unit)
             if not claims:
                 assert v["universal_credit"][i] == 0, (year, unit)
+            else:
+                # Only the claimant reports, so a claim ends the award.
+                assert v["esa_income"][i] == 0, (year, unit)
             assert not (v["universal_credit"][i] > 0 and v["pension_credit"][i] > 0)
             assert not (v["universal_credit"][i] > 0 and v["housing_benefit"][i] > 0)
-            if not closed:
+            if not (closed or claims_at_closure):
                 continue
-            for benefit in [
-                "tax_credits",
-                "income_support",
-                "esa_income",
-                "jsa_income",
-            ]:
-                assert v[benefit][i] == 0, (year, benefit, unit)
+            if closed:
+                for benefit in [
+                    "tax_credits",
+                    "income_support",
+                    "esa_income",
+                    "jsa_income",
+                ]:
+                    assert v[benefit][i] == 0, (year, benefit, unit)
             uc_eligible = bool(v["is_uc_eligible"][i])
             # A working-age claimant, or the reg 60A upper-age waiver for
             # WTC migrants, is still needed. A pensioner with an ineligible
@@ -300,7 +330,8 @@ def test_the_closure_flag_only_decides_closure_claims(units):
                 "working_tax_credit_reported"
             ] > 0 and not has_working_age_claimant(unit)
             closed = bool(drawn[year]["legacy_benefits_closed"][i])
-            decides = closed and (
+            moved = closed or bool(drawn[year]["esa_income_abolition_reached"][i])
+            decides = moved and (
                 not unit["would_claim_uc"]
                 or bool(drawn[year]["meets_pension_credit_age_conditions"][i])
                 or age_waiver_decides
@@ -364,10 +395,10 @@ def test_a_closure_claim_pays_the_universal_credit_of_any_claim(units):
         for i, unit in enumerate(units):
             # On the pension-age route only a closure claim reaches Universal
             # Credit, so the two claims differ by design there.
-            if (
-                v["legacy_benefits_closed"][i]
-                and not (v["meets_pension_credit_age_conditions"][i])
-            ):
+            moved = (
+                v["legacy_benefits_closed"][i] | v["esa_income_abolition_reached"][i]
+            )
+            if moved and not (v["meets_pension_credit_age_conditions"][i]):
                 for benefit in BENEFITS + [
                     "uc_housing_costs_element",
                     "is_lha_shared_accommodation_rate_specified_renter",

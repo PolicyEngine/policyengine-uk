@@ -181,10 +181,41 @@ def legacy_benefits_closed(couple, others, parameters):
     return not all(adult["age"] >= 70 for adult in couple)
 
 
+def esa_abolition_claim(couple, parameters):
+    """Whether the claimant and partner claim Universal Credit when the
+    abolition of income-related ESA reaches their award, which ends their
+    reports (esa_income_report_closed).
+
+    The abolition reaches every remaining award on 1 July 2026 in England
+    (SI 2025/1148 art. 3A), the households' default country, and no award
+    here is saved for an appointee, so it reaches any award reported in a
+    year with less than all of it payable. would_claim_uc_at_legacy_closure
+    keeps its default, true. The conditions are those of the other
+    working-age closures: no Pension Credit report, and not all pension age.
+    """
+    payable = parameters.gov.dwp.ESA.income.awards_payable.great_britain
+    reports_award = any(m.get("esa_income_reported", 0) > 0 for m in couple)
+    on_pension_credit = any(m.get("pension_credit_reported", 0) > 0 for m in couple)
+    if not reports_award or payable >= 1 or on_pension_credit:
+        return False
+    assert all(not 65 <= adult["age"] < 70 for adult in couple), couple
+    return not all(adult["age"] >= 70 for adult in couple)
+
+
+def couple_report_closed(couple, reported, parameters):
+    """Whether the claimant's and partner's own reports of an award have
+    closed: their legacy benefits have closed, or, for income-related ESA,
+    they claim Universal Credit when its abolition reaches the award."""
+    closed = legacy_benefits_closed(couple, [], parameters)
+    if reported == "esa_income_reported":
+        closed = closed or esa_abolition_claim(couple, parameters)
+    return closed
+
+
 def candidates(couple, others, reported, parameters):
     """Indexes (into couple + others) of members who could be the claimant."""
     members = couple + others
-    couple_closed = legacy_benefits_closed(couple, [], parameters)
+    couple_closed = couple_report_closed(couple, reported, parameters)
     open_reports = [
         member.get(reported, 0) > 0
         and not (
