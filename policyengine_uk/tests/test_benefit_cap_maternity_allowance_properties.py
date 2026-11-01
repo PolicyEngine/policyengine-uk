@@ -10,31 +10,31 @@ as income. DWP counts all of a Maternity Allowance as unearned income (UC Regs
 2013 reg 66(1)(b)(viii)), and councils disregard none of it under HB Regs 2006
 reg 40 and Schedule 5.
 
-Invariants, for families on Universal Credit or on Housing Benefit alone, and
-a holder who is a single claimant, either member of a couple, or a
-non-dependent adult:
+Invariants, for families on Universal Credit or on Housing Benefit alone,
+whether a single claimant, either member of a couple, or a non-dependent
+adult receives the allowance:
 
 1. Exchange: moving an amount between the holder's Maternity Allowance and
-   an equal amount of another welfare benefit of theirs that the scheme
-   counts in the same way leaves the cap's total, both exemptions and both
-   reductions unchanged. For Universal Credit the other benefit is
-   contribution-based JSA or ESA, incapacity benefit, severe disablement
-   allowance or widowed parent's allowance. DWP counts JSA, ESA and widowed
-   parent's allowance in full as unearned income (UC Regs 2013 regs
-   66(1)(b)(i), (ii), (vi) and 80(4)), and the other two at the amount of the
-   award (reg 80(1)). For Housing Benefit it is contribution-based JSA or ESA,
-   which councils count at the amount of the award (HB Regs 2006 reg 75C(1),
-   (4)), or severe disablement allowance, which no paragraph of Schedule 5
-   disregards and which bears no income tax (ITEPA 2003 s.677(1)). Councils
-   disregard £15 a week of widowed parent's allowance (Sch 5 para 16(b)) and
-   any tax paid on incapacity benefit (Sch 5 para 1; ITEPA 2003 s.660(1)), so
-   the families on Housing Benefit receive neither.
+   an equal amount of another welfare benefit of theirs that DWP or the
+   council counts in the same way leaves the cap's total, both exemptions and
+   both reductions unchanged. For Universal Credit the tests draw the other
+   benefit from contribution-based JSA or ESA, incapacity benefit, severe
+   disablement allowance and widowed parent's allowance. DWP counts JSA, ESA
+   and widowed parent's allowance in full as unearned income (UC Regs 2013
+   regs 66(1)(b)(i), (ii), (vi) and 80(4)), and the other two at the amount
+   of the award (reg 80(1)). For Housing Benefit the tests draw
+   contribution-based JSA or ESA, which councils count at the amount of the
+   award (HB Regs 2006 reg 75C(1), (4)), or severe disablement allowance,
+   which no paragraph of Schedule 5 disregards and which bears no income tax
+   (ITEPA 2003 s.677(1)). Councils disregard £15 a week of widowed parent's
+   allowance (Sch 5 para 16(b)) and any tax paid on incapacity benefit (Sch 5
+   para 1; ITEPA 2003 s.660(1)), so the tests give families on Housing
+   Benefit neither.
 2. Coefficient one: with each award before the cap entered, so that
    Universal Credit does not taper, raising the holder's allowance by d
-   raises the total by exactly d when the holder is the claimant or partner,
-   and leaves it unchanged when the holder is a non-dependent adult. The
-   total therefore never falls as the allowance rises, and nor does either
-   reduction.
+   raises the total by d for a claimant or partner, and leaves it unchanged
+   for a non-dependent adult. The total therefore never falls as the
+   allowance rises, and nor does either reduction.
 3. Differential: the total equals a reference written from s.96(10) and
    those regulations: the listed benefits of the claimant and partner, plus
    the family's Child Benefit, Child Tax Credit, Income Support, and
@@ -52,8 +52,9 @@ non-dependent adult:
    replaces. That needs an award large enough to take the whole excess and no
    protected floor that limits the reduction. Once the reduction takes the
    award to nil, DWP has nothing left to reduce, and each further pound of
-   allowance adds a pound to what the family keeps: the test for a mother of
-   16 children shows it.
+   allowance adds a pound to what the family keeps.
+   test_a_mother_of_16_keeps_more_allowance_once_dwp_cuts_her_award_to_nil
+   checks that edge.
 
 Each example fills fixed benefit units in one simulation per module, so the
 draws set amounts while each family's members stay fixed.
@@ -72,13 +73,14 @@ YEAR = 2025
 # Outside London, 2025-26 (UC Regs 2013 reg 80A(2)(c), (d); HB Regs 2006 reg
 # 75CA(2)(c), (d)).
 SINGLE_LIMIT, COUPLE_LIMIT = 14_753, 22_020
-# HB Regs 2006 reg 75: Housing Benefit is not paid below 50p a week.
+# HB Regs 2006 reg 75: councils pay no Housing Benefit of less than 50p a
+# week.
 HOUSING_BENEFIT_MINIMUM = 0.50 * 52
 
-# The holder's other welfare benefits that the cap counts as theirs (WRA 2012
-# s.96(10)(d), (f), (h), (j), (n)), each entered as an award. Each scheme's
-# list holds those it counts at the amount of the award, as it does
-# Maternity Allowance (invariant 1).
+# The holder's other welfare benefits that DWP and councils count in the cap
+# as theirs (WRA 2012 s.96(10)(d), (f), (h), (j), (n)), each entered as an
+# award. Each scheme's list holds those that DWP or the council counts at the
+# amount of the award, as each counts Maternity Allowance (invariant 1).
 OTHER_BENEFITS = {
     "uc": [
         "jsa_contrib",
@@ -91,7 +93,8 @@ OTHER_BENEFITS = {
 }
 FAMILY_AWARDS = ["child_benefit", "child_tax_credit", "income_support"]
 
-# Families by structure: whether each member is the claimant or partner.
+# Families by structure: True for each member whose benefits DWP and councils
+# count, the claimant or partner.
 STRUCTURES = {
     "single": [True],
     "couple": [True, True],
@@ -130,17 +133,17 @@ def entered_situation():
                     "age": {YEAR: 40 - 2 * j},
                     "is_claimant_or_partner": {YEAR: counted},
                     "current_education": {YEAR: "NOT_IN_EDUCATION"},
-                    # No ESA support component, so contribution-based ESA
-                    # does not lift the cap (UC reg 83(1)(a); HB reg
-                    # 75F(1)(a)).
+                    # With no ESA support component, DWP and councils grant
+                    # no exemption for contribution-based ESA (UC reg
+                    # 83(1)(a); HB reg 75F(1)(a)).
                     "esa_includes_support_component": {YEAR: False},
                     "jsa_income_reported": {YEAR: 0},
                     "esa_income_reported": {YEAR: 0},
                 }
             benunits[unit] = {
                 "members": members,
-                # Entered as nil, the LCWRA and carer elements are not in the
-                # award (UC reg 83(1)(a), (j)).
+                # The tests enter the LCWRA and carer elements as nil, so
+                # neither exempts the family (UC reg 83(1)(a), (j)).
                 "uc_LCWRA_element": {YEAR: 0},
                 "uc_carer_element": {YEAR: 0},
             }
@@ -160,7 +163,7 @@ def entered():
 
 PERSON_AMOUNTS = ["maternity_allowance_reported", *OTHER_BENEFITS["uc"]]
 # The benefits each scheme's families receive. Families on Housing Benefit
-# receive none of the others, which councils count at less than the award.
+# receive none of the others, which councils can count at less than the award.
 SCHEME_AMOUNTS = {
     scheme: ["maternity_allowance_reported", *others]
     for scheme, others in OTHER_BENEFITS.items()
@@ -218,7 +221,8 @@ def holder_amounts(row, scheme, variant):
 def member_amounts(row, structure, holder, scheme, variant):
     """Each member's own benefits after the move, by member: the holder takes
     the first member's benefits before the move, any other member the
-    second's, and a benefit the scheme's families don't receive is nil."""
+    second's, and a member receives nothing of a benefit outside the scheme's
+    list."""
     members = []
     for j, _ in enumerate(STRUCTURES[structure]):
         own = dict(row["own"][0 if j == holder else 1])
@@ -297,8 +301,9 @@ def tolerance(*values):
 def reference_total(row, structure, holder, scheme, variant):
     """WRA 2012 s.96(10); UC Regs 2013 regs 79(1), 80(1); HB Regs 2006 reg
     75A: the claimant's and partner's own welfare benefits and the family's
-    awards. A non-dependent adult's benefits are their own. Each scheme's
-    families receive only benefits it counts at the amount of the award."""
+    awards. A non-dependent adult receives their benefits in their own right.
+    Each scheme's families receive only the benefits DWP or the council counts
+    at the amount of the award."""
     members = member_amounts(row, structure, holder, scheme, variant)
     total = 0.0
     for own, counted in zip(members, STRUCTURES[structure]):
@@ -386,8 +391,8 @@ def test_total_and_reductions_match_the_regulations(entered, drawn):
             expected = reference_total(row, structure, holder, scheme, variant)
             context = (structure, holder, scheme, variant, row)
             assert abs(total - expected) <= tolerance(total, expected), context
-            # None of these benefits lifts either cap (UC Regs 2013 reg 83;
-            # HB Regs 2006 regs 75E, 75F).
+            # DWP and councils grant no exemption for these benefits (UC Regs
+            # 2013 reg 83; HB Regs 2006 regs 75E, 75F).
             limit = COUPLE_LIMIT if structure == "couple" else SINGLE_LIMIT
             if scheme == "uc":
                 assert not out["is_uc_benefit_cap_exempt"][r, i], context
@@ -409,9 +414,9 @@ def test_total_and_reductions_match_the_regulations(entered, drawn):
             assert abs(actual - reduction) <= tolerance(expected, limit), context
 
 
-# Invariant 4: Universal Credit worked out by the model, 2026-27, for families
-# renting privately in Tyneside. The mother is the claimant of a lone-parent
-# family and the partner in a couple.
+# Invariant 4: the model works out Universal Credit, 2026-27, for families
+# renting privately in Tyneside. The mother claims alone in a lone-parent
+# family and jointly, as the second member, in a couple.
 MODEL_YEAR = 2026
 MODEL_FAMILIES = {
     "lone_parent_1": [30, 2],
@@ -528,22 +533,23 @@ def test_universal_credit_falls_by_the_allowance_inside_the_cap(modelled, drawn)
 
 # The edge of invariant 4. A mother of 40 with 16 children (aged 1 to 15, and
 # another of 7) owns her home outright outside London and has no earnings,
-# 2026-27. Monthly Universal Credit before her allowance (DWP, Benefit and
-# pension rates 2026 to 2027; UC Regs 2013 reg 24A revoked from 6 April 2026
-# by the Universal Credit (Removal of Two Child Limit) Act 2026 s.1(3)(a)):
+# 2026-27. Parliament revoked UC Regs 2013 reg 24A, the two-child limit, from
+# 6 April 2026 through the Universal Credit (Removal of Two Child Limit) Act
+# 2026 s.1(3)(a). Monthly Universal Credit before her allowance (DWP, Benefit
+# and pension rates 2026 to 2027):
 #   standard allowance, single 25 or over                 424.90
 #   child element, first child born before 6 April 2017   351.88
 #   child element, 15 more children, 15 x 303.94         4,559.10
 #   maximum amount                                       5,335.88, or 64,030.56
 #     a year
 # Child Benefit: (27.05 + 15 x 17.90) x 52 = 15,368.60 a year (Child Benefit
-# (Rates) Regulations 2006 reg 2(1)). Her family's limit is 22,020 (reg
-# 80A(2)(d)(ii)).
+# (Rates) Regulations 2006 reg 2(1)). DWP applies the limit of 22,020 for a
+# single claimant with a child (reg 80A(2)(d)(ii)).
 EDGE_CHILD_AGES = [*range(1, 16), 7]
 EDGE_ALLOWANCES = [6_000, 7_000]
 
 
-def test_a_mother_of_16_keeps_more_once_the_cap_takes_universal_credit_to_nil():
+def test_a_mother_of_16_keeps_more_allowance_once_dwp_cuts_her_award_to_nil():
     people, benunits, households = {}, {}, {}
     for i, amount in enumerate(EDGE_ALLOWANCES):
         mother = f"e{i}_mother"
@@ -586,7 +592,8 @@ def test_a_mother_of_16_keeps_more_once_the_cap_takes_universal_credit_to_nil():
         "uc_benefit_cap": [22_020, 22_020],
         # Reg 81: 79,399.16 - 22,020 - 0 childcare = 57,379.16 at both amounts.
         "uc_benefit_cap_reduction": [57_379.16, 57_379.16],
-        # At 7,000 the award before the cap, 57,030.56, is all DWP can take.
+        # At 7,000 DWP can take no more than the award before the cap,
+        # 57,030.56.
         "uc_benefit_cap_reduction_after_floor": [57_379.16, 57_030.56],
         # 58,030.56 - 57,379.16 = 651.40, and nil.
         "universal_credit": [651.40, 0],

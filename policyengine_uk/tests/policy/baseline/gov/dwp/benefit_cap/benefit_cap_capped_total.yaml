@@ -331,10 +331,10 @@
 # Parliament lists Maternity Allowance among the welfare benefits whose
 # total the Secretary of State may cap by regulations (WRA 2012 s.96(1),
 # (10)(i)). The woman entitled to it receives it (SSCBA 1992 s.35(1)), so DWP
-# and councils count it when she is the claimant or partner and leave it out
-# when she is a non-dependent adult. Under UC Regs 2013 reg 80(4) and HB Regs
-# 2006 reg 75C(4) they use the amount each scheme counts as income. DWP
-# counts all of it as unearned income (reg 66(1)(b)(viii)), and councils
+# and councils count the allowance of a claimant or partner and leave out
+# that of a non-dependent adult in the household. Under UC Regs 2013 reg
+# 80(4) and HB Regs 2006 reg 75C(4) they use the amount they count as income.
+# DWP counts all of it as unearned income (reg 66(1)(b)(viii)), and councils
 # disregard none of it under HB Regs 2006 reg 40 and Schedule 5.
 
 - name: DWP counts the claimant's own Maternity Allowance in the capped total
@@ -356,12 +356,12 @@
     maternity_allowance: 3_000
     benefit_cap_welfare_benefits: 18_000
     # A woman can become entitled to Maternity Allowance from the 11th week
-    # before the expected week of confinement (SSCBA 1992 s.35(1)(a)), so she
-    # can receive it before she is responsible for a child. DWP applies the
-    # limit for a single claimant with no child outside London, 14,753 (UC
-    # Regs 2013 reg 80A(2)(c)). Under reg 81 it reduces her Universal Credit
-    # by max(15,000 + 3,000 - 14,753 - 0 childcare, 0) = 3,247 and pays
-    # 15,000 - 3,247 = 11,753.
+    # before the expected week of confinement (SSCBA 1992 s.35(1)(a)), so DWP
+    # can pay it to a woman with no child yet. DWP applies the limit for a
+    # single claimant with no child outside London, 14,753 (UC Regs 2013 reg
+    # 80A(2)(c)). Under reg 81 it reduces her Universal Credit by max(15,000 +
+    # 3,000 - 14,753 - 0 childcare, 0) = 3,247 and pays 15,000 - 3,247 =
+    # 11,753.
     uc_benefit_cap: 14_753
     uc_benefit_cap_reduction: 3_247
     housing_benefit_benefit_cap_reduction: 0
@@ -482,7 +482,8 @@
 #
 # Child Benefit: (27.05 + 2 x 17.90) x 52 = 3,268.20 a year (Child Benefit
 # (Rates) Regulations 2006 reg 2(1), as SI 2026/232 art. 2 sets them).
-# The family's limit is 22,020 (reg 80A(2)(d)(ii)); no exception applies.
+# DWP applies the family limit of 22,020 (reg 80A(2)(d)(ii)) and grants no
+# exception.
 
 - name: DWP takes the excess over the cap off the issue 2784 family's Universal Credit when it has no Maternity Allowance
   period: 2026
@@ -563,7 +564,7 @@
 # Each of the next three cases holds the award before the cap fixed, so the
 # total and the reduction follow from the Maternity Allowance alone.
 
-- name: DWP counts the Maternity Allowance the claimant is entitled to, not the amount she reported
+- name: DWP counts the claimant's Maternity Allowance award, not the amount she reported
   period: 2025
   input:
     people:
@@ -580,7 +581,8 @@
         members: [claimant]
         region: NORTH_EAST
   output:
-    # Her award is 3,000 (UC Regs 2013 reg 80(1), (4)), so 15,000 + 3,000.
+    # DWP counts her 3,000 award (UC Regs 2013 reg 80(1), (4)): 15,000 +
+    # 3,000.
     benefit_cap_welfare_benefits: 18_000
     uc_benefit_cap: 14_753
     # Under reg 81 DWP reduces her Universal Credit by max(18,000 - 14,753
@@ -617,7 +619,7 @@
     uc_benefit_cap_reduction: 3_247
     universal_credit: 11_753
 
-- name: On Universal Credit, DWP counts an entered joint claimant's own Maternity Allowance though she is not the Housing Benefit partner
+- name: On Universal Credit, DWP counts the Maternity Allowance of an entered joint claimant whom the council doesn't treat as the Housing Benefit partner
   period: 2025
   input:
     people:
