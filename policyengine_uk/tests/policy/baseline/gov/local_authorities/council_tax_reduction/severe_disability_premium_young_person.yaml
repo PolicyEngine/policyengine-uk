@@ -1,8 +1,11 @@
 # SSI2021/249 regs6,8(2)(a),Sch1para13. Existing2026 model controls:
 # allowance95.55*52=4968.60; severe86.05*52=4474.60; withdrawal20%.
 # PIP qualifies SDP but generic disability flag is separately supplied/defaultfalse.
+# Enhanced PIP daily living also gives the enhanced disability premium,
+# 22.00*52=1144 (HB Regs 2006 Sch3 para15(1)(c); IS Regs 1987 Sch2
+# para13A(1ZA)(c); SSI2021/249 Sch1 para14(1)(f)).
 # Pension12570:no tax; PIP disregarded; Child Benefit claim declined.
-# CTR=2000-20%*(12570-allowance):479.72 or1374.64.
+# CTR=2000-20%*(12570-applicable amount):708.52 or1603.44.
 # Annual UC terminal-date input represents unavailable assessment-period detail.
 # Reverse case supplies CB family status: input-contract composition,
 # not a naturally derived eligibility pair or full statutory rate audit.
@@ -48,19 +51,22 @@
         council_tax: 2000
         savings: 0
   output:
-    simulated_council_tax_reduction_benunit: 479.72
+    # 2000 - 20% * (12570 - 6112.60) = 708.52.
+    simulated_council_tax_reduction_benunit: 708.52
     disability_premium: 0
-    enhanced_disability_premium: 0
+    enhanced_disability_premium: 1144
     severe_disability_premium: 4474.6
     council_tax_reduction_pensioner: false
     council_tax_reduction_applicable_income: 12570
-    council_tax_reduction_applicable_amount: 4968.6
+    # 4968.60 + 1144 (enhanced disability premium only).
+    council_tax_reduction_applicable_amount: 6112.6
     council_tax_reduction_non_dep_deductions: 0
     severe_disability_premium_before_non_dependant_test: 4474.6
     council_tax_reduction_severe_disability_premium: 0
-    working_age_benefits_premiums: 4474.6
-    benefits_premiums: 4474.6
-    income_support_applicable_amount: 9443.2
+    # 4474.60 + 1144 = 5618.60; IS 4968.60 + 5618.60 = 10587.20.
+    working_age_benefits_premiums: 5618.6
+    benefits_premiums: 5618.6
+    income_support_applicable_amount: 10587.2
 - name: Before terminal date both definitions retain Scottish CTR premium
   period: 2026
   absolute_error_margin: 0.01
@@ -99,19 +105,21 @@
         council_tax: 2000
         savings: 0
   output:
-    simulated_council_tax_reduction_benunit: 1374.64
+    # 2000 - 20% * (12570 - 10587.20) = 1603.44.
+    simulated_council_tax_reduction_benunit: 1603.44
     disability_premium: 0
-    enhanced_disability_premium: 0
+    enhanced_disability_premium: 1144
     severe_disability_premium: 4474.6
     council_tax_reduction_pensioner: false
     council_tax_reduction_applicable_income: 12570
-    council_tax_reduction_applicable_amount: 9443.2
+    # 4968.60 + 4474.60 + 1144 = 10587.20.
+    council_tax_reduction_applicable_amount: 10587.2
     council_tax_reduction_non_dep_deductions: 0
     severe_disability_premium_before_non_dependant_test: 4474.6
     council_tax_reduction_severe_disability_premium: 4474.6
-    working_age_benefits_premiums: 4474.6
-    benefits_premiums: 4474.6
-    income_support_applicable_amount: 9443.2
+    working_age_benefits_premiums: 5618.6
+    benefits_premiums: 5618.6
+    income_support_applicable_amount: 10587.2
 - name: 'Supplied-status contract: UC young person outside CB family restores Scottish
     CTR premium'
   period: 2026
@@ -152,16 +160,20 @@
         council_tax: 2000
         savings: 0
   output:
-    simulated_council_tax_reduction_benunit: 1374.64
+    # 2000 - 20% * (12570 - 10587.20) = 1603.44.
+    simulated_council_tax_reduction_benunit: 1603.44
     disability_premium: 0
-    enhanced_disability_premium: 0
+    enhanced_disability_premium: 1144
     severe_disability_premium: 0
     council_tax_reduction_pensioner: false
     council_tax_reduction_applicable_income: 12570
-    council_tax_reduction_applicable_amount: 9443.2
+    # 4968.60 + 4474.60 + 1144 = 10587.20.
+    council_tax_reduction_applicable_amount: 10587.2
     council_tax_reduction_non_dep_deductions: 0
     severe_disability_premium_before_non_dependant_test: 4474.6
     council_tax_reduction_severe_disability_premium: 4474.6
-    working_age_benefits_premiums: 0
-    benefits_premiums: 0
-    income_support_applicable_amount: 4968.6
+    # The non-dependant bars only the severe premium: 1144; IS 4968.60 +
+    # 1144 = 6112.60.
+    working_age_benefits_premiums: 1144
+    benefits_premiums: 1144
+    income_support_applicable_amount: 6112.6
