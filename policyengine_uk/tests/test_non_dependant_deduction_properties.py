@@ -53,7 +53,7 @@ and a non-dependant family of one or two adults:
    reporter or the benefit unit's head, which the test checks. Universal
    Credit counts for the claimants it assesses: the members the generated
    is_uc_claimant flags name (by default the claimant and partner), the two
-   eldest where more are flagged, which the test checks. Earned income is
+   eldest where the inputs flag more, which the test checks. Earned income is
    Universal Credit's own calculation (invariant 13).
 10. (In test_rent_of_sharers_boarders_and_lodgers_properties.py.)
 11. Banding: a non-dependant in remunerative work who is neither exempt nor
@@ -63,10 +63,10 @@ and a non-dependant family of one or two adults:
    pay, self-employed profit with a loss as nil, and other investment income;
    for the claimant or partner of the non-dependant's family, the couple's
    sum plus the family's IS, JSA(IB), ESA(IR) and Pension Credit, and its
-   Universal Credit where the award assesses either of them. Another member
-   who claims Universal Credit alone is banded on their own income and that
-   award. Incomes within a penny a week of an edge are skipped, since the
-   inputs are stored as float32.
+   Universal Credit where the award assesses either of them. The council
+   bands another member who claims Universal Credit alone on their own
+   income and that award. The test skips incomes within a penny a week of an
+   edge, since the inputs hold float32 values.
 12. Differential: the after-cap Universal Credit used in a non-dependant
    family's gross income equals the model's universal_credit for a family
    with no Housing Benefit, no Maternity Allowance and no deductions from
