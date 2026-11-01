@@ -1,4 +1,4 @@
-description: The Oxford Council Tax Reduction scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant who does not receive Universal Credit. The scheme assesses an applicant who does on the net earned income DWP provides (Appendix 3), which deducts relievable pension contributions in full, so this share does not apply to them. The model applies Appendix 3 from April 2026 (universal_credit.in_effect), so in earlier years this share reaches them too.
+description: Oxford City Council deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age Council Tax Reduction applicant who does not receive Universal Credit. The council assesses an applicant who does on the net earned income DWP provides (Appendix 3), and DWP deducts relievable pension contributions in full, so this share does not reach them. The model applies Appendix 3 from April 2026 (universal_credit.in_effect), so in earlier years this share reaches them too.
 values:
   2026-04-01: 0.5
 metadata:

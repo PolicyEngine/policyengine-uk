@@ -1,12 +1,12 @@
-description: When this is true, the model assesses a working-age Oxford Council Tax Reduction applicant who receives Universal Credit on the income Oxford's Appendix 3 sets. Otherwise it assesses them on the income for applicants without Universal Credit, less Child Benefit and without Oxford's assumed income from capital.
+description: When this is true, the model assesses a working-age Oxford Council Tax Reduction applicant who receives Universal Credit on the income Oxford City Council sets in Appendix 3. Otherwise it assesses them on the income the council sets for applicants without Universal Credit, less Child Benefit and without the council's assumed income from capital.
 values:
   # The model holds Oxford's 2026-27 scheme only: its other Oxford parameters
   # start on 1 April 2026 and backdating carries them to earlier years. The
   # model reads each year's parameters at 30 April, so this switches Appendix
-  # 3 on in model year 2026 and leaves earlier years as they were. Oxford's
-  # 2025-26 scheme also had an Appendix 3, with other bands and a Carer's
-  # Allowance disregard in place of the element disregards, which the model
-  # does not hold.
+  # 3 on in model year 2026 and leaves earlier years as they were. In its
+  # 2025-26 scheme Oxford City Council also set an Appendix 3 income, with
+  # other bands and a Carer's Allowance disregard in place of the element
+  # disregards; the model does not hold that scheme.
   2015-01-01: false
   2026-04-01: true
 metadata:

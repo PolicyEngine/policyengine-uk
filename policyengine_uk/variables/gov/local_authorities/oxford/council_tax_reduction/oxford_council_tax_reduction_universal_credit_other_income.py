@@ -6,23 +6,28 @@ class oxford_council_tax_reduction_universal_credit_other_income(Variable):
     entity = BenUnit
     label = "Oxford Council Tax Reduction other income of a Universal Credit applicant"
     documentation = (
-        "The yearly other (unearned) income that Oxford's working-age scheme "
-        "adds to DWP's net earned income and the Universal Credit awarded for "
-        "an applicant who receives Universal Credit (Appendix 3). Appendix 3 "
-        "lists the income it ignores and takes all other unearned income into "
-        "account; Appendix 5's disregards, Child Benefit and child maintenance "
-        "among them, apply only to applicants without Universal Credit. "
+        "The yearly other (unearned) income that Oxford City Council adds to "
+        "DWP's net earned income and the Universal Credit awarded for a "
+        "working-age applicant who receives Universal Credit (Appendix 3). The "
+        "council lists the income it ignores in Appendix 3 and takes all other "
+        "unearned income into account; it applies its Appendix 5 disregards, "
+        "Child Benefit and child maintenance among them, only to applicants "
+        "without Universal Credit. "
         "gov.local_authorities.oxford.council_tax_reduction.universal_credit."
-        "other_income_sources lists the sources and the reason for each. It "
-        "counts Child Benefit, child maintenance and the receipts in Universal "
-        "Credit's unearned income, and leaves out Universal Credit's assumed "
-        "yield from capital (uc_tariff_income) and income derived from capital, "
-        "which Part 1 para 30 and Annex 7 treat as capital. The income is the "
-        "applicant's and partner's, as in "
+        "other_income_sources lists the sources and the reason for each. The "
+        "model counts Child Benefit, child maintenance, the receipts DWP counts "
+        "as Universal Credit unearned income, the Scottish Carer Supplement "
+        "and the other receipts the council does not ignore. It leaves out "
+        "Universal Credit's assumed yield from capital (uc_tariff_income), "
+        "income derived from capital, which the council treats as capital "
+        "(Part 1 para 30 and Annex 7), and miscellaneous income, which DWP "
+        "already counts in its net earned income. The model counts the "
+        "applicant's and partner's income, as in "
         "council_tax_reduction_applicable_income: a household head who applies "
-        "alone counts only their own, and the benefit unit's awards belong to its "
-        "claimant and partner. The model does not count student loans or "
-        "grants, which Annex 8 counts with its own disregards."
+        "alone counts only their own, and the benefit unit's awards belong to "
+        "its claimant and partner. The model does not count student loans or "
+        "grants, which the council counts under Annex 8 with its own "
+        "disregards."
     )
     definition_period = YEAR
     unit = GBP
@@ -37,11 +42,12 @@ class oxford_council_tax_reduction_universal_credit_other_income(Variable):
         p = parameters(
             period
         ).gov.local_authorities.oxford.council_tax_reduction.universal_credit
-        # Appendix 3 bases the income on "the income of the applicant and,
-        # where appropriate, their partner". A person's receipts count for
-        # the applicant and partner only. The benefit unit's awards (Child
-        # Benefit and the rest) are its claimant's and partner's, so they do
-        # not count where the household head applies alone.
+        # Oxford City Council bases the income on "the income of the
+        # applicant and, where appropriate, their partner" (Appendix 3), so
+        # the model counts a person's receipts for the applicant and partner
+        # only. The benefit unit's awards (Child Benefit and the rest) belong
+        # to its claimant and partner, so the model leaves them out where the
+        # household head applies alone.
         person = benunit.members
         applicant_or_partner = person(
             "is_council_tax_reduction_applicant_or_partner", period
