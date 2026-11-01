@@ -9,9 +9,10 @@ and partner's. A member who is neither, such as a non-dependent adult, claims
 income-related ESA in their own right and is not part of it.
 
 Invariants, for any generated population of working-age families in 2025
-and 2027 (either side of income-related ESA's 1 July 2026 abolition date,
-which the model does not yet apply) with no other legacy benefit, so none is
-moved off legacy benefits:
+and 2027 (either side of income-related ESA's 1 July 2026 abolition date)
+with no other legacy benefit, so none is moved off legacy benefits. Every
+award is saved for an appointee (SI 2025/1148 art. 3A(2)), so the abolition
+leaves it in place in 2027 and only the claim ends it (art. 3A(3)):
 
 1. Exclusive: a family that claims Universal Credit pays its claimant and
    partner no income-related ESA (claimant_or_partner_esa_income), and
@@ -125,6 +126,8 @@ def situation(units, would_claim_uc=None, drop_couple_reports=False):
                 "esa_income_reported": every_year(report),
                 "employment_income": every_year(member["employment_income"]),
                 "weekly_hours": every_year(member["weekly_hours"]),
+                # Art. 3A(2) keeps the award open after the abolition.
+                "esa_income_appointee_saving": every_year(True),
             }
             names.append(name)
         claims = unit["would_claim_uc"] if would_claim_uc is None else would_claim_uc

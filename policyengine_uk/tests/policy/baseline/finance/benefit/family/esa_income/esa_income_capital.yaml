@@ -30,6 +30,9 @@
       claimant:
         age: 40
         esa_income_reported: 1_000
+        # SI 2025/1148 art. 3A(2) saves this award, so it stays payable
+        # for the whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
@@ -50,6 +53,9 @@
       claimant:
         age: 40
         esa_income_reported: 1_000
+        # SI 2025/1148 art. 3A(2) saves this award, so it stays payable
+        # for the whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
@@ -71,6 +77,9 @@
       claimant:
         age: 40
         esa_income_reported: 3_000
+        # SI 2025/1148 art. 3A(2) saves this award, so it stays payable
+        # for the whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
