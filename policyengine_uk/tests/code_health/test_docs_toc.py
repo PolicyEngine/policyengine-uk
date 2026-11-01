@@ -26,7 +26,7 @@ MYST_CONFIG = REPO_ROOT / "myst.yml"
 if not MYST_CONFIG.is_file():
     # The release workflow tests the installed wheel, which has no docs.
     pytest.skip(
-        "myst.yml and the docs are not part of an installed package",
+        "an installed package holds neither myst.yml nor the docs",
         allow_module_level=True,
     )
 
@@ -57,7 +57,7 @@ def toc_entries(entries):
 
 
 def listed_pages(config_text: str) -> set[Path]:
-    """The files a myst.yml table of contents publishes, with patterns expanded."""
+    """The files a myst.yml table of contents publishes, by file or by pattern."""
     toc = yaml.safe_load(config_text)["project"]["toc"]
     pages = set()
     for entry in toc_entries(toc):
@@ -180,15 +180,11 @@ def test_every_notebook_in_docs_book_is_in_the_table_of_contents():
         if not {"_build", ".ipynb_checkpoints"} & set(path.parts)
     }
     left_out = {(REPO_ROOT / path).resolve() for path in NOTEBOOKS_LEFT_OUT}
-    assert sorted(
-        str(path.relative_to(REPO_ROOT)) for path in notebooks - PAGES - left_out
-    ) == []
+    unlisted = notebooks - PAGES - left_out
+    assert sorted(str(path.relative_to(REPO_ROOT)) for path in unlisted) == []
     # An exclusion must name a notebook that exists and that myst.yml omits.
-    assert sorted(
-        str(path.relative_to(REPO_ROOT))
-        for path in left_out
-        if path not in notebooks or path in PAGES
-    ) == []
+    stale = {path for path in left_out if path not in notebooks or path in PAGES}
+    assert sorted(str(path.relative_to(REPO_ROOT)) for path in stale) == []
 
 
 def test_every_relative_link_in_a_listed_page_reaches_a_page_or_file():
