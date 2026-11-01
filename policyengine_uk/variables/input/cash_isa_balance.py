@@ -8,7 +8,9 @@ class cash_isa_balance(Variable):
         "(lifetime_isa_balance). The household's cash_isa sums it over its "
         "members, so a dataset that stores cash_isa itself keeps that stored "
         "total instead. It is separate from savings, the household's ordinary "
-        "savings."
+        "savings. A child's junior cash ISA is the child's own. The means tests "
+        "count the balance in its holder's benefit unit, for the claimant and "
+        "partner only (cash_isa_countable_capital)."
     )
     entity = Person
     definition_period = YEAR

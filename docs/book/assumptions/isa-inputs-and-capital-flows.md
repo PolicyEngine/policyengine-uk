@@ -107,9 +107,21 @@ respectively, including years after the dataset projection ends, unless the
 dataset holds the person balances for a later year than the total, or a reform
 changes what the total sums or stops a person balance reading its inputs. A
 household input in a situation applies only to its own year; the person
-balances carry the variable-level uprating to later years. The means tests read
-the household totals, so they pool a person's balance with the household's
-other financial capital rather than attribute it to their own benefit unit.
+balances carry the variable-level uprating to later years.
+
+Each means test counts a member's cash and stocks and shares ISA balances in
+the member's own benefit unit, through `cash_isa_countable_capital` and
+`stocks_and_shares_isa_countable_capital` in its `person_sources`, and only for
+the claimant and partner. A dependant's balance, a child's junior ISA among
+them, counts in no benefit unit. The household pool leaves those balances out
+of `cash_isa` and `share_like_capital` and shares the rest between benefit
+units. Where the balances add up to less than the total the model holds for
+the year, the rest stays in the pool. Where they add up to more, each counts in
+proportion, so the household counts no more than that total. Data that store
+only household totals hold no balances, so the pool keeps the whole total, as
+before. A balance counts only while the programme's `sources` lists the
+household source that holds it, so a reform that drops `cash_isa` or
+`share_like_capital` from `sources` drops the balances with it.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and

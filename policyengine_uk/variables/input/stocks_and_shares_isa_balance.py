@@ -9,7 +9,10 @@ class stocks_and_shares_isa_balance(Variable):
         "stocks_and_shares_isa sums it over its members, so a dataset that "
         "stores stocks_and_shares_isa itself keeps that stored total instead. "
         "Like that total, it is part of corporate_wealth, so the two must "
-        "never be summed."
+        "never be summed. A child's junior stocks and shares ISA is the "
+        "child's own. The means tests count the balance in its holder's "
+        "benefit unit, for the claimant and partner only "
+        "(stocks_and_shares_isa_countable_capital)."
     )
     entity = Person
     definition_period = YEAR

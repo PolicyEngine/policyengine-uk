@@ -48,7 +48,7 @@ def pooled_person_capital(benunit, source, period, capital, leaves_pool=None):
             amount = amount + person.household.sum(held)
     if isinstance(amount, int):
         return 0
-    return benunit.max(amount)
+    return _as_stored(benunit.max(amount))
 
 
 def bounded_person_holding(person, balance, household_total):
@@ -64,7 +64,15 @@ def bounded_person_holding(person, balance, household_total):
     total = max_(0, household_total)
     finite = np.where(np.isfinite(balance), balance, np.where(balance > 0, total, 0))
     held = max_(0, finite)
-    household_held = person.household.sum(held)
+    household_held = _as_stored(person.household.sum(held))
     over = household_held > total
     scale = where(over, total / where(over, household_held, 1), 1)
     return held * scale
+
+
+def _as_stored(amount):
+    # Core holds float variables in float32 but sums and maximises members in
+    # float64. Round the result as Core stores a household total such as
+    # cash_isa, so balances that make up a total net it to exactly zero and
+    # the pool keeps its float32 arithmetic.
+    return amount.astype(np.float32)

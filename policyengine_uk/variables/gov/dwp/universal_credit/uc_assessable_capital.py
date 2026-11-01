@@ -29,6 +29,9 @@ class uc_assessable_capital(Variable):
         "independent of other units' financial reports. These "
         "allocations are assumptions about unobserved ownership, not law. "
         "Person-level proxies count only claimants/partners, not dependants. "
+        "A cash or stocks and shares ISA balance tied to a person leaves the "
+        "financial pool, unless a report or override of the holder's own unit "
+        "already covers it. "
         "Under regulation 77, disregarded company holdings are replaced by "
         "the claimant/partner's share of company capital."
     )
