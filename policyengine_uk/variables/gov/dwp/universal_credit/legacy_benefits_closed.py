@@ -1,11 +1,29 @@
 from policyengine_uk.model_api import *
 
 
-def legacy_award_is_closed(reports, pension_age_route, mixed_age_couple, dwp):
+def moves_working_age_awards(reports, pension_age_route, mixed_age_couple):
+    """Whether closing a working-age legacy award moves its owners.
+
+    Income Support, income-based JSA and income-related ESA are working-age
+    benefits; the rules ending legacy awards on a Universal Credit claim do
+    not apply to a single claimant, or joint claimants both, over the
+    qualifying age for State Pension Credit (SI 2014/1230 reg 8(2B)), and a
+    family on Pension Credit is not moved.
+    """
+    on_pension_credit = reports("pension_credit_reported")
+    wholly_pension_age = pension_age_route & ~mixed_age_couple
+    return ~on_pension_credit & ~wholly_pension_age
+
+
+def legacy_award_is_closed(
+    reports, pension_age_route, mixed_age_couple, dwp, esa_income_abolished
+):
     """Existing annual migration proxy for one award's owners.
 
     This preserves the model's programme closure dates and Pension Credit
     exceptions. It does not simulate notices, deadlines or run-on periods.
+    esa_income_abolished says the owners report an income-related ESA award
+    whose claim has nothing left payable (esa_income_payable_share is 0).
     """
     on_pension_credit = reports("pension_credit_reported")
     # A tax credit closure notice sent to Pension Credit, not Universal
@@ -23,19 +41,19 @@ def legacy_award_is_closed(reports, pension_age_route, mixed_age_couple, dwp):
         & (not dwp.tax_credits.active)
         & ~pension_credit_route
     )
-    # Income Support and income-based JSA are working-age benefits; the
-    # rules ending legacy awards on a Universal Credit claim do not apply
-    # to a single claimant, or joint claimants both, over the qualifying
-    # age for State Pension Credit (reg 8(2B)).
-    wholly_pension_age = pension_age_route & ~mixed_age_couple
     income_support_closed = reports("income_support_reported") & (
         not dwp.income_support.active
     )
     jsa_income_closed = reports("jsa_income_reported") & (not dwp.JSA.income.active)
+    # Income-related ESA closes once its abolition leaves none of a claim
+    # payable: from 2027-28, after the abolition reached every remaining
+    # award on 1 July 2026, or 1 October 2026 in Northern Ireland (SI
+    # 2025/1148 art. 3A; SR 2025/176 art. 3A). A claim saved for an
+    # appointee does not close.
+    working_age_closed = income_support_closed | jsa_income_closed
     return tax_credits_closed | (
-        (income_support_closed | jsa_income_closed)
-        & ~on_pension_credit
-        & ~wholly_pension_age
+        (working_age_closed | esa_income_abolished)
+        & moves_working_age_awards(reports, pension_age_route, mixed_age_couple)
     )
 
 
@@ -56,11 +74,19 @@ class legacy_benefits_closed(Variable):
         "Credit but not Working Tax Credit that meet the Pension Credit age "
         "conditions. Pension-age and protected mixed-age families on Working "
         "Tax Credit are included; Income Support and income-based JSA "
-        "closures do not move a wholly pension-age family. Housing Benefit and income-related "
-        "Employment and Support Allowance join this list when the model ends "
-        "their working-age awards. Reports by other benefit-unit members do "
-        "not close or shield this award. This annual proxy does not model "
-        "actual notices, deadlines, run-on periods or Housing Benefit exceptions."
+        "closures do not move a wholly pension-age family. Income-related "
+        "Employment and Support Allowance joins this list from 2027-28: the "
+        "Secretary of State appointed 1 July 2026 (the Department, 1 October "
+        "2026 in Northern Ireland) for its abolition to reach every remaining "
+        "award, so from then a reported claim has nothing left payable "
+        "(esa_income_payable_share is 0), unless an appointee saving keeps "
+        "it. The same Pension Credit and pension-age exceptions apply. In "
+        "2026-27 a family whose award the abolition reaches can claim "
+        "Universal Credit (claims_uc_at_legacy_closure) but is not moved. "
+        "Housing Benefit joins this list when the model ends its working-age "
+        "awards. Reports by other benefit-unit members do not close or "
+        "shield this award. This annual proxy does not model actual notices, "
+        "deadlines, run-on periods or Housing Benefit exceptions."
     )
     definition_period = YEAR
     reference = (
@@ -71,6 +97,7 @@ class legacy_benefits_closed(Variable):
         "https://www.legislation.gov.uk/uksi/2019/167/article/3A",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/33",
         "https://www.legislation.gov.uk/uksi/2025/1148/article/3A",
+        "https://www.legislation.gov.uk/nisr/2025/176/article/3A",
     )
 
     def formula(benunit, period, parameters):
@@ -81,9 +108,15 @@ class legacy_benefits_closed(Variable):
             amounts = sum(person(name, period) for name in variables)
             return benunit.sum(amounts * owners) > 0
 
+        esa_income_abolished = benunit.any(
+            owners
+            & (person("esa_income_reported", period) > 0)
+            & (person("esa_income_payable_share", period) <= 0)
+        )
         return legacy_award_is_closed(
             reports,
             benunit("meets_pension_credit_age_conditions", period),
             benunit("is_mixed_age_couple", period),
             parameters(period).gov.dwp,
+            esa_income_abolished,
         )

@@ -8,7 +8,8 @@ class claims_universal_credit(Variable):
     documentation = (
         "Whether this family claims Universal Credit: it would claim it "
         "anyway (would_claim_uc), or it claims when DWP moves it off its "
-        "legacy benefits (claims_uc_at_legacy_closure). Universal Credit is "
+        "legacy benefits or the abolition of income-related ESA reaches its "
+        "award (claims_uc_at_legacy_closure). Universal Credit is "
         "paid only to claiming families. A claim ends the family's Housing "
         "Benefit continuing award and Child Tax Credit, and the claimant's "
         "and partner's income-related ESA (esa_income_report_closed). Once "

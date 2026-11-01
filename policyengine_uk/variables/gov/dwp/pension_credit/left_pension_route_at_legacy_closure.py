@@ -7,7 +7,8 @@ class left_pension_route_at_legacy_closure(Variable):
     label = "Left the pension-age route when its legacy benefits closed"
     documentation = (
         "Whether a family meeting the Pension Credit age conditions left that "
-        "route when DWP moved it to Universal Credit (legacy_benefits_closed): "
+        "route when DWP moved it to Universal Credit (legacy_benefits_closed, "
+        "or esa_income_abolition_reached): "
         "it claimed Universal Credit at the closure and is entitled to it "
         "before benefit-cap reductions and deductions. A family that does "
         "not claim, or claims but has nil entitlement, keeps the route. A "
@@ -29,9 +30,12 @@ class left_pension_route_at_legacy_closure(Variable):
     )
 
     def formula(benunit, period, parameters):
-        moved = benunit("legacy_benefits_closed", period) & benunit(
-            "meets_pension_credit_age_conditions", period
-        )
+        # A protected mixed-age couple whose income-related ESA award the
+        # abolition reaches is moved too (esa_income_abolition_reached).
+        moved = (
+            benunit("legacy_benefits_closed", period)
+            | benunit("esa_income_abolition_reached", period)
+        ) & benunit("meets_pension_credit_age_conditions", period)
         # SI 2019/37 art. 4(3)(b)(ii), inserted by SI 2024/604, lets a
         # protected couple that did not claim Universal Credit, or claimed
         # but was not entitled, reclaim Housing Benefit within three months

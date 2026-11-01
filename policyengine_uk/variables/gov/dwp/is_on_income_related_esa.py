@@ -3,6 +3,9 @@ from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
     own_report_is_paid,
 )
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 
 
 class is_on_income_related_esa(Variable):
@@ -26,9 +29,11 @@ class is_on_income_related_esa(Variable):
         "capital, within the capital limit. On the formula path the claimant's "
         "or partner's claim and work never change this. The legacy "
         "benefits for this person's own award must remain open "
-        "(person_legacy_benefits_closed), the abolition of income-related ESA "
-        "must not have ended the award (esa_income_report_closed), and the "
-        "benefit unit's modelled award must "
+        "(person_legacy_benefits_closed), and so must their report "
+        "(esa_income_report_closed, which the abolition of income-related "
+        "ESA closes) while esa_income holds its formula's award; a value "
+        "entered directly or held by disable_simulated_benefits decides "
+        "payment instead. The benefit unit's modelled award must "
         "be in payment: positive, or nil while esa_income_eligible fails and "
         "esa_income is not neutralised. On the formula path that nil comes only "
         "from the retained value-based override convention. Formula totals "
@@ -55,5 +60,6 @@ class is_on_income_related_esa(Variable):
             "esa_income",
             works=person("esa_income_claimant_remunerative_work", period),
             capital_limit=parameters(period).gov.dwp.ESA.income.capital.limit,
+            award_on_reports=income_related_esa_award_on_reports,
         )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

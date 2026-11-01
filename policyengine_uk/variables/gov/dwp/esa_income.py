@@ -33,11 +33,11 @@ def income_related_esa_award_on_reports(benunit, period, reported, members=None)
     own_claim = ~couple & ~works & benunit.project(capital <= limit)
     tariff = benunit.project(benunit("esa_income_tariff_income", period))
     own_awards = where(own_claim, max_(0, reported - tariff), 0)
-    # Each award is paid for the share of the year before the abolition of
+    # Each claim is paid for the share of the year before the abolition of
     # income-related ESA reached it (SI 2025/1148 art. 3A; SR 2025/176 art.
-    # 3A). The couple's award keeps the saving of a member who reports it.
+    # 3A). The claimant and partner share one claim, so one share.
     share = person("esa_income_payable_share", period)
-    couple_share = benunit.max(where(couple & (reported > 0), share, 0))
+    couple_share = benunit.max(where(couple, share, 0))
     return couple_award * couple_share + benunit.sum(own_awards * share)
 
 
@@ -51,7 +51,7 @@ class esa_income(Variable):
         "has ended are left out (esa_income_report_closed): the owner's "
         "legacy benefits have closed, the owner is the claimant or "
         "partner of a family that claims Universal Credit, or the abolition "
-        "of income-related ESA has ended the award. Each award is paid for "
+        "of income-related ESA has ended the award. Each claim is paid for "
         "the share of the year before that abolition "
         "(esa_income_payable_share). This is not a full entitlement model."
     )

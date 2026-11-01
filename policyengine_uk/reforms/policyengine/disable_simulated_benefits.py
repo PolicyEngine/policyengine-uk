@@ -60,23 +60,31 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # The model's move off legacy benefits (legacy_benefits_closed): once a legacy
 # benefit a family reports has closed, DWP's migration notice ends all its
 # legacy awards, whether or not the family then claims Universal Credit,
-# unless DWP sent it to Pension Credit instead. The reform pays every listed
-# benefit, the legacy ones and Universal Credit alike, at its dataset-year
-# report in every year, so it moves no family: it holds these false for its
-# years. The closure then ends none of the family's legacy benefits (their
-# eligibility and the "on" statuses read from it, and Housing Benefit and tax
-# credit eligibility), prompts no Universal Credit claim
-# (claims_uc_at_legacy_closure) and takes no family off the Pension Credit
+# unless DWP sent it to Pension Credit instead. The abolition of
+# income-related ESA reaching a family's award (esa_income_abolition_reached)
+# likewise prompts a Universal Credit claim from 2026-27. The reform pays
+# every listed benefit, the legacy ones and Universal Credit alike, at its
+# dataset-year report in every year, so it moves no family: it holds these
+# false for its years. The closure then ends none of the family's legacy
+# benefits (their eligibility and the "on" statuses read from it, and Housing
+# Benefit and tax credit eligibility), neither prompts a Universal Credit
+# claim (claims_uc_at_legacy_closure) and no family leaves the Pension Credit
 # route. Only the closure is held: the model's other rules still apply, and
 # the reform still pays the amounts reported. A family the model has claim
 # Universal Credit anyway (would_claim_uc) is still not eligible for Housing
 # Benefit or tax credits. An adult outside the couple who reports
 # income-based JSA is on it, as their own claim, only in the years the model
-# has the scheme open (gov.dwp.JSA.income.active: to 2025). Likewise one who
-# reports income-related ESA is on it only while some of the year is payable
-# (esa_income_payable_share: to 2026-27, unless saved for an appointee).
-# Hold the family closure and each separate member's own closure.
-NOT_MOVED = ["legacy_benefits_closed", "person_legacy_benefits_closed"]
+# has the scheme open (gov.dwp.JSA.income.active: to 2025). One who reports
+# income-related ESA is on it in every year, as the reform pays it in every
+# year: the abolition closes their report (esa_income_report_closed), but
+# the held award, not the formula's, decides their status
+# (_legacy_award_payee.own_report_is_paid). Hold the family closure, each
+# separate member's own closure, and the abolition's claim.
+NOT_MOVED = [
+    "legacy_benefits_closed",
+    "person_legacy_benefits_closed",
+    "esa_income_abolition_reached",
+]
 
 # The first year in which the model pays a carer in Scotland Carer Support
 # Payment in place of Carer's Allowance: carers_allowance_pre_overlap and

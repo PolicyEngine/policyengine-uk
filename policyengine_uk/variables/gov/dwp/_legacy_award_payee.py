@@ -1,7 +1,7 @@
 """Who is "on" a legacy income-related award."""
 
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.benefit_unit import REPORT_CLOSED
+from policyengine_uk.utils.benefit_unit import HALF_PENNY, REPORT_CLOSED
 
 
 def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=None):
@@ -40,7 +40,9 @@ def is_payee_of_couple_award(person, period, reported, can_claim=None, couple=No
     return where(person.benunit.any(reports), reports, claimant)
 
 
-def own_report_is_paid(person, period, award, works, capital_limit):
+def own_report_is_paid(
+    person, period, award, works, capital_limit, award_on_reports=None
+):
     """Whether income-related ESA or income-based JSA (award: "esa_income" or
     "jsa_income") is paid on this person's own report, for a member who is
     neither the claimant nor the partner and so claims in their own right.
@@ -54,11 +56,17 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     cannot stand in for theirs, because when the claimant or partner reports
     an award it tests only them.
 
-    Their own award must remain open (REPORT_CLOSED: for income-based JSA,
-    their legacy benefits under the existing annual proxy,
-    person_legacy_benefits_closed; for income-related ESA, also its
-    abolition, esa_income_report_closed). A couple's closure does not end
-    this separate claim. The benefit unit's award must also be in payment:
+    Their own legacy benefits must remain open under the existing annual
+    proxy (person_legacy_benefits_closed). A couple's closure does not end
+    this separate claim. An award with closures of its own (REPORT_CLOSED:
+    for income-related ESA, its abolition, esa_income_report_closed) passes
+    award_on_reports, the award its formula gives on open person reports.
+    Where the stored award is that formula's, those closures, which leave
+    the report out of it, end status too. Where it holds another value,
+    entered directly or held by disable_simulated_benefits in every year,
+    that value decides payment, as it does for the claimant and partner
+    (claimant_or_partner_esa_income), so only the legacy closure ends
+    status. The benefit unit's award must also be in payment:
     positive, or nil while its work/capital screen fails and the award is not
     neutralised. A directly entered or reformed nil removes status while
     that screen passes; neutralising the award always removes it. These
@@ -73,7 +81,16 @@ def own_report_is_paid(person, period, award, works, capital_limit):
             > benunit(f"{award}_tariff_income", period)
         )
     )
-    closed = person(REPORT_CLOSED[award], period)
+    closed = person("person_legacy_benefits_closed", period)
+    if award_on_reports is not None:
+        report_closed = person(REPORT_CLOSED[award], period)
+        stored = benunit(award, period)
+        open_reported = person(f"{award}_reported", period) * ~report_closed
+        formula_award = award_on_reports(benunit, period, open_reported)
+        as_formula = np.isclose(
+            stored, formula_award.astype(stored.dtype), rtol=0, atol=HALF_PENNY
+        )
+        closed = where(benunit.project(as_formula), report_closed, closed)
     removed = person.simulation.tax_benefit_system.get_variable(award).is_neutralized
     paid = benunit(award, period) > 0
     screen_fails = ~benunit(f"{award}_eligible", period)
