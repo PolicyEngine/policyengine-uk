@@ -1,4 +1,9 @@
 description: Rates for Scottish Income Tax.
+# Each year's Scottish rate resolution sets these rates and limits for that
+# tax year only (Scotland Act 1998 s. 80C(3)). The comment on each dated value
+# names the motion and paragraph. The resolutions state the limits as taxable
+# income, above the personal allowance, and this file holds them as stated.
+# gov.scot's tables add the standard personal allowance to the same limits.
 # The Scottish Budget 2026-27 announces higher, advanced and top threshold
 # freezes through 2028-29. These future values model announced policy;
 # Scottish rates and bands are still subject to annual rate resolutions.
@@ -7,98 +12,124 @@ description: Rates for Scottish Income Tax.
 brackets:
   - threshold:
       values:
-        2017-04-06: null
-        2018-04-06: 0
+        2017-04-06: null # S5M-03912 sets no starter rate
+        2018-04-06: 0 # S5M-10397 (a) and paragraph (a) of each later motion
         2021-04-06: 0
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-01: null
-      2018-04-06: 0.19 # Starter rate
+      2018-04-06: 0.19 # Starter rate: paragraph (a) from S5M-10397
   - threshold:
       values:
-        2017-04-06: 0
-        2018-04-06: 2_000
-        2021-04-06: 2_306
-        2022-04-06: 2_162
-        2023-04-06: 2_162
-        2024-04-06: 2_306
-        2025-04-06: 2_827
-        2026-04-06: 3_967
+        2017-04-06: 0 # S5M-03912 (a)
+        2018-04-06: 2_000 # S5M-10397 (a)
+        2019-04-06: 2_049 # S5M-15879 (a)
+        2020-04-06: 2_085 # S5M-21090 (a)
+        2021-04-06: 2_097 # S5M-24225 (a)
+        2022-04-06: 2_162 # S6M-03019 (a)
+        2023-04-06: 2_162 # S6M-07853 (a)
+        2024-04-06: 2_306 # S6M-12252 (a)
+        2025-04-06: 2_827 # S6M-16531 (a)
+        2026-04-06: 3_967 # S6M-20844 (a)
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.2  # Basic rate
+      2017-04-06: 0.2  # Basic rate: S5M-03912 (a), then paragraph (b)
   - threshold:
       values:
-        2017-04-06: null
-        2018-04-06: 12_150
-        2021-04-06: 13_991
-        2022-04-06: 13_118
-        2023-04-06: 13_118
-        2024-04-06: 13_991
-        2025-04-06: 14_921
-        2026-04-06: 16_956
+        2017-04-06: null # S5M-03912 sets no intermediate rate
+        2018-04-06: 12_150 # S5M-10397 (b)
+        2019-04-06: 12_444 # S5M-15879 (b)
+        2020-04-06: 12_658 # S5M-21090 (b)
+        2021-04-06: 12_726 # S5M-24225 (b)
+        2022-04-06: 13_118 # S6M-03019 (b)
+        2023-04-06: 13_118 # S6M-07853 (b)
+        2024-04-06: 13_991 # S6M-12252 (b)
+        2025-04-06: 14_921 # S6M-16531 (b)
+        2026-04-06: 16_956 # S6M-20844 (b)
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-06: null
-      2018-04-06: 0.21 # Intermediate rate
+      2018-04-06: 0.21 # Intermediate rate: paragraph (c) from S5M-10397
   - threshold:
       values:
-        2017-04-06: 31_500
-        2021-04-06: 31_092
-        2022-04-06: 31_092
-        2023-04-06: 31_092
-        2024-04-06: 31_092
-        2025-04-06: 31_092
+        2017-04-06: 31_500 # S5M-03912 (a)
+        2018-04-06: 31_580 # S5M-10397 (c)
+        2019-04-06: 30_930 # S5M-15879 (c)
+        2020-04-06: 30_930 # S5M-21090 (c)
+        2021-04-06: 31_092 # S5M-24225 (c)
+        2022-04-06: 31_092 # S6M-03019 (c)
+        2023-04-06: 31_092 # S6M-07853 (c)
+        2024-04-06: 31_092 # S6M-12252 (c)
+        2025-04-06: 31_092 # S6M-16531 (c)
         # Scottish Budget 2026-27 announced freeze through 2028-29.
-        2026-04-06: 31_092
+        2026-04-06: 31_092 # S6M-20844 (c)
         2027-04-06: 31_092
         2028-04-06: 31_092
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.4
-      2021-04-06: 0.41 # Higher rate
-      2023-04-06: 0.42
+      2017-04-06: 0.4 # S5M-03912 (b)
+      2018-04-06: 0.41 # Higher rate: paragraph (d), S5M-10397 to S6M-03019
+      2023-04-06: 0.42 # S6M-07853 (d), then paragraph (d) to S6M-20844
   - threshold:
       values:
-        2017-04-06: 150_000
-        2023-04-06: 125_140
-        2024-04-06: 62_430
-        2025-04-06: 62_430
+        2017-04-06: 150_000 # S5M-03912 (b)
+        2018-04-06: 150_000 # S5M-10397 (d)
+        2019-04-06: 150_000 # S5M-15879 (d)
+        2020-04-06: 150_000 # S5M-21090 (d)
+        2021-04-06: 150_000 # S5M-24225 (d)
+        2022-04-06: 150_000 # S6M-03019 (d)
+        2023-04-06: 125_140 # S6M-07853 (d)
+        2024-04-06: 62_430 # S6M-12252 (d)
+        2025-04-06: 62_430 # S6M-16531 (d)
         # Scottish Budget 2026-27 announced freeze through 2028-29.
-        2026-04-06: 62_430
+        2026-04-06: 62_430 # S6M-20844 (d)
         2027-04-06: 62_430
         2028-04-06: 62_430
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
-      2017-04-06: 0.45
-      2018-04-06: 0.46 # Additional rate
-      2023-04-06: 0.47
-      2024-04-06: 0.45
+      2017-04-06: 0.45 # S5M-03912 (c)
+      2018-04-06: 0.46 # Top rate: paragraph (e), S5M-10397 to S6M-03019
+      2023-04-06: 0.47 # S6M-07853 (e)
+      2024-04-06: 0.45 # Advanced rate: paragraph (e) from S6M-12252
   - threshold:
       values:
         2017-04-06: null
         # The personal allowance is fully withdrawn at £125,140, so the
         # taxable-income top limit equals total income: do not subtract PA.
-        2024-04-06: 125_140
-        2025-04-06: 125_140
-        2026-04-06: 125_140
+        2024-04-06: 125_140 # S6M-12252 (e)
+        2025-04-06: 125_140 # S6M-16531 (e)
+        2026-04-06: 125_140 # S6M-20844 (e)
         2027-04-06: 125_140
         2028-04-06: 125_140
       metadata:
         uprating: gov.economic_assumptions.indices.obr.consumer_price_index
     rate:
       2017-04-06: null
-      2024-04-06: 0.48
+      2024-04-06: 0.48 # Top rate: paragraph (f) from S6M-12252
 metadata:
   threshold_unit: currency-GBP
   rate_unit: /1
   label: Scottish Income Tax rates
   reference:
+    - title: Scottish Rate Resolution 2017-18 (S5M-03912), paragraphs (a)-(c)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S5M-03912
+    - title: Scottish Rate Resolution 2018-19 (S5M-10397), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S5M-10397
+    - title: Scottish Rate Resolution 2019-20 (S5M-15879), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S5M-15879
+    - title: Scottish Rate Resolution 2020-21 (S5M-21090), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S5M-21090
+    - title: Scottish Rate Resolution 2021-22 (S5M-24225), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S5M-24225
+    - title: Scottish Rate Resolution 2022-23 (S6M-03019), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-03019
+    - title: Scottish Rate Resolution 2023-24 (S6M-07853), paragraphs (a)-(e)
+      href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-07853
     - title: Scottish Rate Resolution 2024-25 (S6M-12252), paragraphs (a)-(f)
       href: https://www.parliament.scot/chamber-and-committees/votes-and-motions/S6M-12252
     - title: Scottish Rate Resolution 2025-26 (S6M-16531), paragraphs (a)-(f)
