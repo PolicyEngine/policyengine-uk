@@ -42,7 +42,7 @@ Deliberate exceptions:
   component, so a reader can tell a reform whose own change is too small to
   publish from one that only touches another small cell. A published year
   records no reason, so it says nothing new.
-- A withheld year's ``small_target_change`` that names the reform's own
+- A withheld year's ``small_target_change``, which names the reform's own
   target, beside the ``responsive:<id>`` verdict the report publishes for
   that year, says whether fewer than 10 records together moved the target by
   at least the reform's minimum: a bound on that cell's total, never its
@@ -54,6 +54,15 @@ Deliberate exceptions:
   records behind a published count of 10 show one record in each group),
   and the reform list, in CI the head's ``standard_reforms.yaml``, decides
   which rows exist.
+- When a reform's target is part of gov_balance, its costing less the
+  target's part is the change in the rest of gov_balance, whose records the
+  tool doesn't count. A reform that moves its target in 10 or more records,
+  and the rest of gov_balance in fewer than 10, publishes a costing and a
+  target change that together give the rest's change in those few records.
+  Before #2775 the tool withheld such a year when that change lay in another
+  reform's target, a set the reform list decides; it now publishes it, as it
+  already did when the change lay in any other variable and no other
+  condition held.
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest

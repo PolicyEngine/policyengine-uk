@@ -6,7 +6,10 @@ per condition, two conditions together, and, for all small worlds, that the
 tool withholds a year exactly when it records a reason, that the reasons
 match a direct computation, and that the years withheld and the figures
 published match the yes-or-no rule frozen at da31e8698 (the oracle in
-``reform_withheld_main_reference.py``).
+``reform_withheld_main_reference.py``) when its baseline holds the reform's
+own target only. With other reforms' targets in the baseline, the frozen
+rule checks them too and withholds more; since #2775 the tool checks only
+the reform's own target and gov_balance.
 """
 
 import re
@@ -183,7 +186,8 @@ def _measure(
 
     ``base`` and ``reformed`` map variable to household values, or year to
     such a mapping. ``others`` are other reforms' targets, which measure()
-    checks too."""
+    records in the baseline too; the reform's checks read only its own
+    (#2775)."""
     if not isinstance(next(iter(base)), int):
         base = {year: base for year in years}
         reformed = {year: reformed for year in years}
@@ -297,10 +301,12 @@ def test_a_reform_that_changes_few_target_records_names_the_target():
     )
 
 
-def test_a_small_change_in_another_reforms_target_names_that_target():
-    """measure() checks every costed reform's target: the tool withholds a
-    reform aimed at income tax when it moves Pension Credit, another
-    reform's target, in three records."""
+def test_a_small_change_in_another_reforms_target_withholds_nothing():
+    """#2775: a reform aimed at income tax moves Pension Credit, another
+    reform's target, in three records, and income tax in all 20. The report
+    publishes nothing about Pension Credit for this reform, so the tool
+    publishes its costing and target change. Until #2775 the tool withheld
+    them with a small_target_change naming pension_credit."""
     world = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
     reformed = _world(
         np.full(N, 110.0), np.full(N, 100.0), pension_credit=_first(3, 25.0)
@@ -319,10 +325,14 @@ def test_a_small_change_in_another_reforms_target_names_that_target():
         baseline={YEAR: baseline_records(base_sim, _partition(), rec, YEAR, targets)},
         components=_partition().component_variables(),
     )
-    reasons = rec.metrics["reforms.raise_income_tax"]["withheld_because"]
-    assert _conditions(reasons[str(YEAR)]) == [
-        (SMALL_TARGET_CHANGE, "pension_credit", None)
-    ]
+    for metric_id in ("reforms.raise_income_tax", "reform_targets.raise_income_tax"):
+        record = rec.metrics[metric_id]
+        assert record["withheld_because"] == {} and "suppressed" not in record
+        assert record["values"][str(YEAR)] == pytest.approx(200.0)
+    assert rec.checks["responsive:raise_income_tax"]["failing"][str(YEAR)] == (
+        "expected income_tax up by at least £1,000,000,000,000 a year; "
+        "2026-27: income_tax moved only £200"
+    )
 
 
 def test_a_year_without_baseline_records_says_so():
@@ -409,9 +419,10 @@ def test_component_metric_ids_name_heads_and_double_counts():
     }
 
 
-def test_two_small_targets_are_both_named():
-    """The reform moves Pension Credit and Child Benefit, two other reforms'
-    targets, in three records each; every income tax bill rises too."""
+def test_of_two_small_targets_only_the_reforms_own_is_named():
+    """The reform aimed at Pension Credit moves it and Child Benefit, another
+    reform's target, in three records each; every income tax bill rises too.
+    The tool names Pension Credit only: until #2775 it named both."""
     zero = np.zeros(N)
     base = _world(
         np.full(N, 100.0), np.full(N, 100.0), pension_credit=zero, child_benefit=zero
@@ -422,11 +433,39 @@ def test_two_small_targets_are_both_named():
         pension_credit=_first(3, 25.0),
         child_benefit=_first(3, 10.0),
     )
-    rec = _measure(base, reformed, others=("pension_credit", "child_benefit"))
-    assert _conditions(_reasons(rec)) == [
-        (SMALL_TARGET_CHANGE, "pension_credit", None),
-        (SMALL_TARGET_CHANGE, "child_benefit", None),
-    ]
+    rec = _measure(base, reformed, target="pension_credit", others=("child_benefit",))
+    assert _conditions(_reasons(rec)) == [(SMALL_TARGET_CHANGE, "pension_credit", None)]
+    assert rec.metrics["reform_targets.change_it"]["values"][str(YEAR)] is None
+
+
+def test_a_small_balance_change_withholds_whatever_other_targets_do():
+    """Three households' income tax rises, and Pension Credit, another
+    reform's target outside gov_balance, rises in all 20: the reform aimed at
+    the state pension stays withheld for its three balances."""
+    base = _world(np.full(N, 100.0), np.full(N, 100.0), pension_credit=np.zeros(N))
+    reformed = _world(
+        _first(3, 110.0, 100.0), np.full(N, 100.0), pension_credit=np.full(N, 5.0)
+    )
+    rec = _measure(base, reformed, target="state_pension", others=("pension_credit",))
+    assert _conditions(_reasons(rec)) == [(SMALL_BALANCE_CHANGE, "gov_balance", None)]
+    assert rec.metrics["reforms.change_it"]["values"][str(YEAR)] is None
+
+
+def test_another_reforms_target_inside_gov_balance_counts_only_through_it():
+    """The reform aimed at income tax raises it in all 20 households and the
+    state pension, another reform's target and a part of gov_balance, in
+    three. The tool publishes the costing, which holds those three pensions'
+    change, and the target change; the two together give that change, the
+    limit privacy.py states (#2775)."""
+    base = _world(np.full(N, 100.0), np.full(N, 100.0))
+    reformed = _world(np.full(N, 110.0), _first(3, 125.0, 100.0))
+    rec = _measure(base, reformed, others=("state_pension",))
+    assert _reasons(rec) == []
+    costing = rec.metrics["reforms.change_it"]["values"][str(YEAR)]
+    target = rec.metrics["reform_targets.change_it"]["values"][str(YEAR)]
+    assert costing == pytest.approx(20 * 10.0 - 3 * 25.0)
+    assert target == pytest.approx(20 * 10.0)
+    assert target - costing == pytest.approx(3 * 25.0)
 
 
 def test_a_change_of_exactly_half_a_penny_changes_no_record():
@@ -759,12 +798,14 @@ def _direct_reasons(base, reformed, weight, target):
 @settings(max_examples=300, deadline=None)
 @given(world=worlds())
 def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
-    """For every world: the tool withholds the figures exactly when it
-    records a reason; the reasons match the conditions computed directly;
-    the years withheld match the frozen rule; and the published
-    figures equal the direct weighted changes."""
+    """For every world, with the other variables as other reforms' targets:
+    the tool withholds the figures exactly when it records a reason; the
+    reasons match the conditions computed directly; the years withheld match
+    the frozen rule given the reform's own target; and the published figures
+    equal the direct weighted changes."""
     base, reformed, weight, target = world
-    rec = _measure(base, reformed, weight, target)
+    others = tuple(v for v in HEADS + ("pension_credit",) if v != target)
+    rec = _measure(base, reformed, weight, target, others=others)
     reasons = _reasons(rec)
     for metric_id in ("reforms.change_it", "reform_targets.change_it"):
         record = rec.metrics[metric_id]
@@ -784,8 +825,18 @@ def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
     components = partition.component_variables()
     frozen = main_reference.reform_withheld(reformed_sim, YEAR, records, components)
     assert frozen == bool(reasons)
-    assert reform_withheld(reformed_sim, YEAR, records, components) == frozen
-    assert withheld_reasons(reformed_sim, YEAR, records, components) == reasons
+    assert reform_withheld(reformed_sim, YEAR, records, components, target=target) == (
+        frozen
+    )
+    assert (
+        withheld_reasons(reformed_sim, YEAR, records, components, target=target)
+        == reasons
+    )
+    every = baseline_records(base_sim, partition, rec, YEAR, [target, *others])
+    assert (
+        withheld_reasons(reformed_sim, YEAR, every, components, target=target)
+        == reasons
+    )
 
     costing = float(np.sum(weight * (_balance(reformed) - _balance(base))))
     change = float(np.sum(weight * (reformed[target] - base[target])))
@@ -796,6 +847,76 @@ def test_a_year_is_withheld_exactly_when_it_has_a_reason(world):
     else:
         assert published == pytest.approx(costing, abs=1e-6)
         assert target_change == pytest.approx(change, abs=1e-6)
+
+
+TARGETS = HEADS + ("pension_credit", "child_benefit")
+
+
+@st.composite
+def moves(draw):
+    """Five variables, each one reform's target, moved in any records by
+    any of a few amounts. Every value stays non-zero and 10 or more
+    households carry weight, so every component keeps 10 or more records on
+    both sides: only the balance and target conditions can hold."""
+    weight = np.asarray(
+        draw(st.lists(st.sampled_from([1.0, 2.5]), min_size=N, max_size=N))
+    )
+    unweighted = draw(st.sets(st.integers(0, N - 1), max_size=N - MIN_CELL))
+    weight[sorted(unweighted)] = 0.0
+    base, reformed = {}, {}
+    for variable in TARGETS:
+        before = np.asarray(draw(st.lists(values, min_size=N, max_size=N)))
+        moved = np.isin(np.arange(N), sorted(draw(st.sets(st.integers(0, N - 1)))))
+        delta = draw(st.sampled_from([0.004, CHANGE_GBP, 0.006, 1.0, -0.5, 250.0]))
+        base[variable] = before
+        reformed[variable] = np.where(moved, before + delta, before)
+    return base, reformed, weight, draw(st.sampled_from(TARGETS))
+
+
+@settings(max_examples=300, deadline=None)
+@given(world=moves())
+def test_a_year_is_withheld_exactly_when_its_own_target_or_balance_moves_in_few_records(
+    world,
+):
+    """#2775, for every such world: the tool withholds a reform's year
+    exactly when its own target or gov_balance moves by more than CHANGE_GBP
+    in 1 to 9 records that carry weight, whichever other reforms' targets
+    move, and where. Measured with no other target, it records the same
+    figures and checks. The frozen rule, given every target, withholds
+    exactly when this rule does or another reform's target moves in 1 to 9
+    such records."""
+    base, reformed, weight, target = world
+    others = tuple(v for v in TARGETS if v != target)
+    rec = _measure(base, reformed, weight, target, others=others)
+
+    def few(before, after):
+        moved = (np.abs(after - before) > CHANGE_GBP) & (weight > 0)
+        return 0 < int(np.count_nonzero(moved)) < MIN_CELL
+
+    expected = []
+    if few(_balance(base), _balance(reformed)):
+        expected.append((SMALL_BALANCE_CHANGE, "gov_balance", None))
+    if few(base[target], reformed[target]):
+        expected.append((SMALL_TARGET_CHANGE, target, None))
+    assert _conditions(_reasons(rec)) == expected
+    for metric_id in ("reforms.change_it", "reform_targets.change_it"):
+        withheld = rec.metrics[metric_id]["values"][str(YEAR)] is None
+        assert withheld == bool(expected)
+
+    alone = _measure(base, reformed, weight, target)
+    assert alone.metrics == rec.metrics and alone.checks == rec.checks
+
+    partition = _partition()
+    every = baseline_records(
+        WorldSim({YEAR: base}, weight), partition, rec, YEAR, [target, *others]
+    )
+    frozen = main_reference.reform_withheld(
+        WorldSim({YEAR: reformed}, weight),
+        YEAR,
+        every,
+        partition.component_variables(),
+    )
+    assert frozen == (bool(expected) or any(few(base[v], reformed[v]) for v in others))
 
 
 @settings(max_examples=300, deadline=None)
