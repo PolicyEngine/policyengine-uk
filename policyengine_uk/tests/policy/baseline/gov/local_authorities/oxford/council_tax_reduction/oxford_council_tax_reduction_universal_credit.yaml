@@ -1068,60 +1068,19 @@
 # supplement, and does not cap an award with a carer element (reg 83(1)(j)).
 # Oxford ignores 48.15 x 52 = 2,503.80 of the carer element and counts both
 # payments whole, since it ignores the part above Carer's Allowance only in
-# Appendix 5, for applicants without Universal Credit.
-
-- name: Oxford counts the Scottish Carer Supplement the model pays with a carer support payment
-  # Carer support payment for 13 weeks: 13 x 86.45 = 1,123.85. The model pays
-  # the supplement for the year whenever the carer support payment is
-  # positive: 11.70 x 52 = 608.40. UC: maximum amount 424.90 x 12 + 2 x
-  # 303.94 x 12 + 2,512.08 + 10,100 housing = 25,005.44, award 25,005.44 -
-  # 1,123.85 = 23,881.59. Other income 2,337.40 + 1,123.85 + 608.40 =
-  # 4,069.65. Appendix 3: 23,881.59 - 2,503.80 + 4,069.65 = 25,447.44 a year,
-  # 489.37 a week: band 2, 75% of 1,800. Leaving out the supplement would
-  # give 477.67 a week, band 1 (1,800).
-  period: 2026
-  absolute_error_margin: 0.01
-  input:
-    people:
-      person1:
-        age: 35
-        is_carer_for_benefits: true
-        carers_allowance: 0
-        would_claim_carers_allowance: false
-        carer_support_payment: 1_123.85
-      person2:
-        age: 5
-      person3:
-        age: 8
-    benunits:
-      benunit:
-        members: [person1, person2, person3]
-        would_claim_uc: true
-        claims_all_entitled_benefits: true
-        uc_housing_costs_element: 10_100
-        uc_deduction_rate: 0
-    households:
-      household:
-        members: [person1, person2, person3]
-        country: ENGLAND
-        local_authority: OXFORD
-        council_tax: 1_800
-        savings: 0
-  output:
-    scottish_carer_supplement: [608.40, 0, 0]
-    uc_carer_element: 2_512.08
-    uc_unearned_income: 1_123.85
-    uc_benefit_cap_reduction: 0
-    universal_credit: 23_881.59
-    oxford_council_tax_reduction_universal_credit_other_income: 4_069.65
-    oxford_council_tax_reduction_universal_credit_income: 25_447.44
-    oxford_council_tax_reduction: 1_350
+# Appendix 5, for applicants without Universal Credit. The model pays the
+# supplement for 52 weeks whenever the carer support payment is positive
+# (scottish_carer_supplement), so each case supplies the supplement.
 
 - name: Oxford counts 13 weeks of the Scottish Carer Supplement after a move from Scotland
-  # As above, with the supplement supplied for the 13 weeks: 13 x 11.70 =
-  # 152.10. The award stays 23,881.59. Other income 2,337.40 + 1,123.85 +
-  # 152.10 = 3,613.35. Appendix 3: 23,881.59 - 2,503.80 + 3,613.35 =
-  # 24,991.14 a year, 480.60 a week: band 2, 75% of 1,800.
+  # Carer support payment for 13 weeks, 13 x 86.45 = 1,123.85, and the
+  # supplement for the same 13 weeks, 13 x 11.70 = 152.10. UC: maximum
+  # amount 424.90 x 12 + 2 x 303.94 x 12 + 2,512.08 + 10,100 housing =
+  # 25,005.44, award 25,005.44 - 1,123.85 = 23,881.59. Other income
+  # 2,337.40 + 1,123.85 + 152.10 = 3,613.35. Appendix 3: 23,881.59 -
+  # 2,503.80 + 3,613.35 = 24,991.14 a year, 480.60 a week: band 2, 75% of
+  # 1,800. Leaving out the supplement would give 477.67 a week, band 1
+  # (1,800).
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -1152,6 +1111,9 @@
         council_tax: 1_800
         savings: 0
   output:
+    uc_carer_element: 2_512.08
+    uc_unearned_income: 1_123.85
+    uc_benefit_cap_reduction: 0
     universal_credit: 23_881.59
     oxford_council_tax_reduction_universal_credit_other_income: 3_613.35
     oxford_council_tax_reduction_universal_credit_income: 24_991.14
@@ -1161,8 +1123,9 @@
   # The model takes the carer support payment it is given. Here it holds
   # 5,200 (100 a week), more than the 4,495.40 DWP counts. Housing 9,000. UC:
   # maximum amount 5,098.80 + 7,294.56 + 2,512.08 + 9,000 = 23,905.44, award
-  # 23,905.44 - 4,495.40 = 19,410.04. The model pays the supplement for the
-  # year: 608.40. Other income 2,337.40 + 5,200 + 608.40 = 8,145.80.
+  # 23,905.44 - 4,495.40 = 19,410.04. The case supplies the supplement for a
+  # year, 11.70 x 52 = 608.40. Other income 2,337.40 + 5,200 + 608.40 =
+  # 8,145.80.
   # Appendix 3: 19,410.04 - 2,503.80 + 8,145.80 = 25,052.04 a year, 481.77 a
   # week: band 2, 75% of 1,800. Counting only DWP's 4,495.40 would give
   # 468.22 a week, band 1 (1,800).
@@ -1176,6 +1139,7 @@
         carers_allowance: 0
         would_claim_carers_allowance: false
         carer_support_payment: 5_200
+        scottish_carer_supplement: 608.40
       person2:
         age: 5
       person3:
