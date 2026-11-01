@@ -4,7 +4,7 @@
 # equally between them (Sch 1 para 8(5); WSI 2013/3029 Sch 1 para 3(5) and
 # Sch 6 para 5(5); SSI 2021/249 reg 90(5)). 2026-27 scales: England
 # pensioners 279 band 10.60; Wales 279 band 13.35; Scotland lowest 5.55, 286
-# band 10.95. Cases from the round-6 review of #2007.
+# band 10.95.
 
 - name: England, working-age head and pension-age sharer, deduction from the sharer's pensioner claim
   period: 2026

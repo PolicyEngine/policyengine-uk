@@ -20,16 +20,16 @@ FAMILY_GROSS_INCOME_BENEFITS = [
 
 
 def non_dependant_weekly_gross_income(person, period, parameters, own_gross_income):
-    """Normal weekly gross income for the deduction bands. A claimant or
-    partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
-    para 8(4)): each member's own gross income plus the family's tax credits,
+    """Calculate normal weekly gross income for the deduction bands. The council
+    bands a claimant or partner on the couple's joint income (HB reg 74(4); CTR
+    Sch 1 para 8(4)): each member's own gross income plus the family's tax credits,
     child benefit, Income Support, income-based JSA, income-related ESA and
     Pension Credit, and its Universal Credit award (universal_credit_award)
-    where either member claims it.
-    Anyone else in the benefit unit is a separate non-dependant, banded on
-    their own income, with the Universal Credit where they alone claim it.
-    own_gross_income names the programme's person-level gross income
-    variable."""
+    where either member claims it. The council bands each other member of the
+    benefit unit separately on their own income, adding Universal Credit
+    where that member claims it alone. own_gross_income names the programme's
+    person-level gross income variable.
+    """
     claimant_or_partner = person("is_claimant_or_partner", period)
     own_income = person(own_gross_income, period)
     benunit = person.simulation.populations["benunit"]

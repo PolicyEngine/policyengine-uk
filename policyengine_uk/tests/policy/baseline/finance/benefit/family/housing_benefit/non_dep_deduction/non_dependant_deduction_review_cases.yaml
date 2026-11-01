@@ -240,8 +240,8 @@
         country: ENGLAND
         local_authority: MAIDSTONE
   output:
-    # UC Regs 2013 reg 55(5)(a): relievable pension contributions are deducted
-    # from employed earnings, leaving none (HB reg 74(8)(b); CTR para 8(8)(c)).
+    # DWP deducts relievable pension contributions from employed earnings
+    # (UC Regs 2013 reg 55(5)(a)), leaving none (HB reg 74(8)(b); CTR para 8(8)(c)).
     housing_benefit_non_dep_deduction_exempt: [false, true]
     council_tax_reduction_non_dep_deduction_exempt: [false, true]
     housing_benefit_non_dep_deductions: [0, 0]
@@ -282,8 +282,8 @@
         country: ENGLAND
         local_authority: MAIDSTONE
   output:
-    # UC Regs 2013 reg 62(2): a person to whom the floor applies is treated as
-    # having earned income equal to it.
+    # DWP treats a person to whom the floor applies as having earned income
+    # equal to it (UC Regs 2013 reg 62(2)).
     housing_benefit_non_dep_deduction_exempt: [false, false]
     council_tax_reduction_non_dep_deduction_exempt: [false, false]
     housing_benefit_non_dep_deductions: [1_060.80, 0]
@@ -704,8 +704,8 @@
   output:
     # UC Regs 2013 reg 55(4)(c): statutory paternity pay is employed earnings,
     # so the award is not calculated on no earned income and neither
-    # exemption applies (HB reg 74(8)(b); CTR para 8(8)(c)). Out of
-    # remunerative work, the lodger pays the lowest amounts, 20.40 and 5.20.
+    # exemption applies (HB reg 74(8)(b); CTR para 8(8)(c)). The lodger does no
+    # remunerative work, so the council deducts the lowest amounts, 20.40 and 5.20.
     housing_benefit_non_dep_deduction_exempt: [false, false]
     council_tax_reduction_non_dep_deduction_exempt: [false, false]
     housing_benefit_non_dep_deductions: [1_060.80, 0]
@@ -807,7 +807,7 @@
     # is" on Income Support and is not on Universal Credit, so both are exempt
     # from CTR. Housing Benefit has no such rule (reg 74(8)(a) is for the
     # person on IS, and only under 25): both are out of remunerative work, and
-    # the couple pays one lowest amount, 20.40 a week.
+    # the council deducts one lowest amount for the couple, 20.40 a week.
     council_tax_reduction_non_dep_deduction_exempt: [false, true, true]
     council_tax_reduction_non_dep_deductions: [0, 0]
     housing_benefit_non_dep_deductions: [1_060.80, 0]
@@ -858,7 +858,7 @@
         local_authority: GLASGOW_CITY
   output:
     # SSI 2012/303 reg 67(8)(a): only a non-dependant "who is on income
-    # support" is exempt. The partner, out of remunerative work, pays the
+    # support" is exempt. For the partner outside remunerative work, the council deducts the
     # lowest 2021-22 amount, 4.30 a week.
     council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
     council_tax_reduction_non_dep_deductions: [223.60, 0]
@@ -999,9 +999,9 @@
   output:
     # LGFA 1992 Sch 1 para 3 needs another person to be "entitled to child
     # benefit" for the young person, and entitlement needs a claim (SSAA 1992
-    # s.1(1)). With no claim, both are charged: the parent's 200 a week is
-    # under the CTR 279 band (5.20), and the young person, out of remunerative
-    # work, pays the lowest amount (5.20).
+    # s.1(1)). With no claim, the council deducts for both: the parent's 200 a week is
+    # under the CTR 279 band (5.20), and for the young person outside remunerative
+    # work, the council deducts the lowest amount (5.20).
     council_tax_reduction_non_dep_deduction_exempt: [false, false, false]
     council_tax_reduction_non_dep_deductions: [540.80, 0]
 

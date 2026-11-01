@@ -170,8 +170,8 @@
 # The review case on #2184: an existing claimant in council housing with an
 # adult child whose only income is £28,912 of other investment income and who
 # does no paid work. The bands apply only in remunerative work (HB Regs 2006
-# reg 74(2)), so the adult child pays the reg 74(1)(b) amount, as one with no
-# income would.
+# reg 74(2)), so the council deducts the reg 74(1)(b) amount for the adult child,
+# as it would for one with no income.
 - name: A non-dependant's investment income does not raise the Housing Benefit deduction
   period: 2025
   absolute_error_margin: 0.01
@@ -250,7 +250,7 @@
   # (is_uc_claimant), so it counts in his gross income, not his parents'
   # (HB Regs 2006 reg 74(2), (4)). The parents' joint income is the father's
   # 180 a week, under the 192 band: 20.40, one deduction for the couple
-  # (reg 74(3)). The son works 2 hours, so he pays 20.40 (reg 74(1)(b)).
+  # (reg 74(3)). The son works 2 hours, so the council deducts 20.40 for him (reg 74(1)(b)).
   # (20.40 + 20.40) * 52 = 2,121.60. Counting the son's 100 a week of UC in
   # the parents' income would give 280 a week and 64.35.
   period: 2026
@@ -305,7 +305,7 @@
   # The adult son claims income-related ESA in his own right, so it is his
   # income, not his parents' (HB Regs 2006 reg 74(4)). The parents' joint
   # income is the father's 180 a week, under the 192 band: 20.40, one
-  # deduction for the couple. The son does no work and pays 20.40 (reg
+  # deduction for the couple. The son does no work, so the council deducts 20.40 for him (reg
   # 74(1)(b)). (20.40 + 20.40) * 52 = 2,121.60. Counting his 100 a week of
   # ESA in the parents' income would give 280 a week and 64.35.
   period: 2026

@@ -13,12 +13,12 @@ and a non-dependant family of one or two adults:
 
 1. An exempt non-dependant's individual deduction is 0, for Housing Benefit and
    for Council Tax Reduction.
-2. Bounds: an eligible non-dependant who is not exempt pays between the
-   scale's lowest and highest weekly amounts. In English working-age
-   households (local schemes) the national CTR deduction is 0.
-3. A non-dependant not in remunerative work (under 16 hours or, for Housing
-   Benefit, on IS, JSA(IB) or ESA(IR): HB reg 6(6)) pays the lowest amount,
-   whatever their income.
+2. Bounds: for an eligible non-dependant who is not exempt, the council
+   deducts between the scale's lowest and highest weekly amounts. In English
+   working-age households (local schemes) the national CTR deduction is 0.
+3. For a non-dependant outside remunerative work (under 16 hours or, for Housing
+   Benefit, on IS, JSA(IB) or ESA(IR): HB reg 6(6)), the council deducts the lowest
+   amount whatever their income.
 4. If the claimant or partner is blind or receives a qualifying disability
    benefit (read from the generated inputs, and checked against the model's
    flags), the claimant family's deductions are 0.
@@ -56,10 +56,10 @@ and a non-dependant family of one or two adults:
    eldest where the inputs flag more, which the test checks. Earned income is
    Universal Credit's own calculation (invariant 13).
 10. (In test_rent_of_sharers_boarders_and_lodgers_properties.py.)
-11. Banding: a non-dependant in remunerative work who is neither exempt nor
-   on IS, JSA(IB) or ESA(IR) pays the amount of the band whose lower edge is
-   the highest not above their normal gross weekly income, computed here from
-   the generated inputs: earnings, statutory sick, maternity and paternity
+11. Banding: for a non-dependant in remunerative work who is neither exempt nor
+   on IS, JSA(IB) or ESA(IR), the council deducts the amount of the band whose lower
+   edge is the highest not above their normal gross weekly income, computed here
+   from the generated inputs: earnings, statutory sick, maternity and paternity
    pay, self-employed profit with a loss as nil, and other investment income;
    for the claimant or partner of the non-dependant's family, the couple's
    sum plus the family's IS, JSA(IB), ESA(IR) and Pension Credit, and its
@@ -1291,8 +1291,8 @@ EARNINGS = {
     year=2026,
 )
 def test_earned_income_exemption_reads_universal_credit(families, year):
-    """Invariant 13: the Universal Credit exemption's earned-income test is
-    Universal Credit's own calculation (HB Regs 2006 reg 74(8)(b), (11); WSI
+    """Invariant 13: compare the Universal Credit exemption's earned-income test
+    with Universal Credit's own calculation (HB Regs 2006 reg 74(8)(b), (11); WSI
     2013/3029 Sch 1 para 3(8)(c), (10))."""
     people, benunits, households_, cases = {}, {}, {}, []
     for f, family in enumerate(families):

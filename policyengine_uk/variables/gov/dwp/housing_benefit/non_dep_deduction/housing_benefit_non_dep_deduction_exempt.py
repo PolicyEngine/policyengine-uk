@@ -37,9 +37,9 @@ class housing_benefit_non_dep_deduction_exempt(Variable):
         on_legacy_income_related_benefit = person(
             "is_on_income_support", period
         ) | person("is_on_income_based_jsa", period)
-        # Entitlement before the benefit cap: universal_credit itself depends on
-        # Housing Benefit through the cap. The award is the claimants' it
-        # assesses.
+        # Read entitlement before the cap and debt deductions for the claimants
+        # the award assesses. DWP can reduce the payment to nil while
+        # entitlement still qualifies for the exemption.
         entitled_to_universal_credit = person("is_uc_assessed_claimant", period) & (
             person.benunit("universal_credit_pre_benefit_cap", period) > 0
         )

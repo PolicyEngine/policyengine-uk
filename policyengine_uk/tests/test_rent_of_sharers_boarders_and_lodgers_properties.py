@@ -290,8 +290,8 @@ def test_non_dependants(population):
     )
     hb_total = sim.map_result(hb_individual, "person", "household")
     assert hb_total.max() > 0
-    # Each non-dependant family pays one deduction for its couple, the higher
-    # (HB Regs 2006 reg 74(3)), and one for each other member. The pool is
+    # The council deducts once for each non-dependant couple, the higher amount
+    # (HB Regs 2006 reg 74(3)), and once for each other member. The pool is
     # apportioned over the families liable for the rent, and none falls on a
     # family whose claimant or partner is exempt (reg 74(6)).
     families = sim.populations["benunit"]

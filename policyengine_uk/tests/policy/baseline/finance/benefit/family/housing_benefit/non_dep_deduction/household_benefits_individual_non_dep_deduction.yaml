@@ -216,8 +216,8 @@
       household:
         members: [worker, partner]
   output:
-    # reg 74(4): joint income 400 a week is in the 365 band; the partner, not
-    # in remunerative work, would pay 20.40 (reg 74(1)(b)).
+    # reg 74(4): joint income 400 a week is in the 365 band; the council would
+    # deduct 20.40 for the partner outside remunerative work (reg 74(1)(b)).
     household_benefits_individual_non_dep_deduction: [5_470.40, 1_060.80]
 
 - name: A dependent child's income does not count towards the couple's
@@ -277,8 +277,8 @@
     working_tax_credit: 0
     child_benefit: 0
   output:
-    # reg 6(6): a person on income-related ESA is treated as not in
-    # remunerative work, so pays the reg 74(1)(b) amount.
+    # reg 6(6): the council treats a person on income-related ESA as outside
+    # remunerative work and deducts the reg 74(1)(b) amount.
     household_benefits_individual_non_dep_deduction: 20.40 * 52
 
 - name: A dependent young person in the family is banded on their own income, not the parent's
@@ -310,8 +310,8 @@
         members: [parent, young_person]
   output:
     # reg 74(4) joins only a couple's income. The parent's 180 a week is
-    # under the 192 band (20.40); the young person, under 16 hours, pays 20.40
-    # if not exempt (eligibility is an input here).
+    # under the 192 band (20.40); for the young person, under 16 hours, the council deducts 20.40
+    # unless they are exempt (eligibility is an input here).
     household_benefits_individual_non_dep_deduction: [1_060.80, 1_060.80]
 
 # 2025-26 bands and deductions (HB Regs 2006 reg 74 as up-rated by SI 2025/295

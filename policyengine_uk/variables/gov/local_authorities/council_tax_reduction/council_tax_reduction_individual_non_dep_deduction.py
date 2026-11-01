@@ -11,14 +11,14 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
     label = "CTR individual non-dependent deduction"
     documentation = (
         "The England pensioner, Scottish and Welsh schemes' own weekly scales. "
-        "A non-dependant in remunerative work pays the deduction for the band "
+        "For a non-dependant in remunerative work, the council deducts the amount for the band "
         "containing their normal gross weekly income (a couple's joint income "
         "for a claimant or partner of the non-dependant's family); bands "
-        "include their lower edge. A non-dependant not in remunerative work, "
+        "include their lower edge. For a non-dependant outside remunerative work, "
         "including one on Income Support, income-based JSA or income-related "
-        "ESA, pays the lowest amount; an exempt non-dependant pays nothing. English working-age local schemes have their own "
-        "variables. Reported under the scheme of the household head's family; "
-        "each applicant's deductions use its own scheme."
+        "ESA, the council deducts the lowest amount; for an exempt non-dependant it deducts nothing. English working-age local schemes have their own "
+        "variables. The person-level variable reports the scheme of the household head's family; "
+        "each applicant's deductions follow their own scheme."
     )
     definition_period = YEAR
     unit = GBP

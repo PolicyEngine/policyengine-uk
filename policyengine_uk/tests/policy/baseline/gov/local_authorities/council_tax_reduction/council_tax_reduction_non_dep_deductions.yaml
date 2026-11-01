@@ -5,7 +5,7 @@
 #   England: under 279 5.20; 279 10.60; 485 13.30; 605 and above 15.95.
 #   Wales: under 279 6.70; 279 13.35; 485 16.80; 605 and above 20.05.
 #   Scotland: under 286 5.55; 286 10.95; 497 13.90; 614 and above 16.55.
-# A non-dependant not in remunerative work (under 16 hours) pays the lowest.
+# The council deducts the lowest amount for a non-dependant outside remunerative work (under 16 hours).
 # The applicant is the benefit unit with the household's oldest member, so
 # working-age applicants here are 60.
 
@@ -1161,8 +1161,8 @@
         council_tax: 2_000
         savings: 0
   output:
-    # para 8(3)-(4): joint 300 a week is in the 279 band (10.60); the partner
-    # not in remunerative work would pay 5.20; only the higher is deducted.
+    # para 8(3)-(4): joint 300 a week is in the 279 band (10.60); for the partner
+    # outside remunerative work the council would deduct 5.20; it deducts only the higher.
     council_tax_reduction_individual_non_dep_deduction: [0, 551.20, 270.40]
     council_tax_reduction_non_dep_deductions: [551.20, 0]
 
