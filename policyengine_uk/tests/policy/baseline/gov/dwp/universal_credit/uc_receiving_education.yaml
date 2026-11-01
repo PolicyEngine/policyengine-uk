@@ -159,8 +159,8 @@
 - name: Case 6, a student couple where the other member is responsible for a child keeps the award.
   # Reg. 14(1)(e)(i): both members receive education and the other member
   # is responsible for a child. The model places responsibility on the
-  # benefit unit, so each member need not meet the condition under reg.
-  # 14(1)(c). 12 x (£528.34 + £303.94) = 12 x £832.28 = £9,987.36.
+  # benefit unit, so each member also has the reg. 14(1)(c) exception.
+  # 12 x (£528.34 + £303.94) = 12 x £832.28 = £9,987.36.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -663,8 +663,8 @@
 
 - name: Case 26, a pension-age student couple on Working Tax Credit claim under reg. 60A when DWP moves them.
   # Under SI 2014/1230 reg. 60A, the Secretary of State waives the upper age
-  # condition. Neither member needs to meet the education condition under
-  # reg. 60(1). 12 x £666.97 = £8,003.64.
+  # condition. Under reg. 60(1), neither member needs to meet the education
+  # condition. 12 x £666.97 = £8,003.64.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -721,8 +721,8 @@
 
 - name: Case 28, a student with Armed Forces Independence Payment and limited capability for work keeps the award.
   # Under reg. 2, DWP counts Armed Forces Independence Payment as attendance
-  # allowance for reg. 14(1)(b), and excludes it from unearned income under
-  # reg. 66. 12 x £424.90 = £5,098.80.
+  # allowance for reg. 14(1)(b), and doesn't count it as unearned income,
+  # since reg. 66 doesn't list it. 12 x £424.90 = £5,098.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -771,7 +771,8 @@
     universal_credit: 5_098.80
 
 - name: Case 30, a claimant on a non-advanced full-time course with an equipment grant and no maintenance funding keeps the award.
-  # Under reg. 12(2)(b), the person must have a loan or grant for their
+  # Under reg. 12(2)(b), DWP treats a claimant on a non-advanced full-time
+  # course as receiving education only where a loan or grant pays for their
   # maintenance. The claimant can use Learner Support for materials and
   # equipment (gov.uk/learner-support), and their student loan doesn't fund
   # maintenance here, so they don't receive education. 12 x £424.90 =
@@ -826,9 +827,9 @@
     is_uc_eligible: true
 
 - name: Case 32, the same 18-year-old with a maintenance grant receives education under reg. 12(2)(b).
-  # DWP no longer treats the claimant as a qualifying young person under reg.
-  # 28, so the claimant takes the ordinary route under reg. 12(2), and the
-  # grant for their maintenance meets reg. 12(2)(b). No exception applies.
+  # Under reg. 28, DWP doesn't treat the claimant as a qualifying young
+  # person, so they take the ordinary route under reg. 12(2), and the grant
+  # for their maintenance meets reg. 12(2)(b). No exception applies.
   period: 2026
   input:
     people:
