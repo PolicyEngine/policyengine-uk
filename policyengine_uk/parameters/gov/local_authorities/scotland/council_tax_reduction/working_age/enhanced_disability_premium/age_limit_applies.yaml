@@ -1,0 +1,26 @@
+description: >
+  Scotland's working-age Council Tax Reduction scheme pays the enhanced
+  disability premium only for an applicant or partner under the qualifying
+  age for State Pension Credit if this is true. The 2012 scheme had this limit
+  until 31 March 2022. The 2021 scheme limited it to those under pensionable
+  age, which the model reads as the same qualifying age (the two have agreed
+  for everyone since 2019-20), until S.S.I. 2022/161 removed the limit from
+  20 June 2022. Like other parameters,
+  the model reads this as at 30 April of each year from 2015, so the limit
+  applies in 2022 and not from 2023.
+metadata:
+  label: Scottish working-age Council Tax Reduction enhanced disability premium age limit applies
+  period: year
+  unit: bool
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 Sch. 1 para. 12(1)(b), (ba), (c) (to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/12/2021-04-01
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 para. 14(1) as in force on 1 April 2022
+      href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/14/2022-04-01
+    - title: The Council Tax Reduction (Scotland) Amendment (No. 3) Regulations 2022 reg. 1 (in force 20 June 2022)
+      href: https://www.legislation.gov.uk/ssi/2022/161/regulation/1
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 para. 14(1)
+      href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/14
+values:
+  2013-04-01: true
+  2022-06-20: false

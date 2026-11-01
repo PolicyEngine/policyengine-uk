@@ -1,0 +1,41 @@
+description: >
+  Benefits whose receipt at the rate named meets the qualifying-benefit
+  condition of the legacy enhanced disability premium for a claimant or
+  partner: the care component of disability living allowance at the highest
+  rate, the daily living component of personal independence payment at the
+  enhanced rate, and armed forces independence payment. Each programme adds its
+  own conditions, such as the age limit. The Regulations also list the Scottish
+  equivalents (child disability payment and Scottish adult disability living
+  allowance care components at the highest rate, adult disability payment
+  daily living component at the enhanced rate), which are not separate model
+  variables. The 8 April 2013 date is Great Britain's: S.I. 2013/388 added the
+  PIP daily living component and S.I. 2013/591 added armed forces independence
+  payment. This list applies in Great Britain; the
+  enhanced_qualifying_benefits_northern_ireland parameter holds Northern
+  Ireland's separate commencement dates. Like other parameters, the model reads
+  the list as at 30 April of each year from 2015 and does not prorate a change
+  made during a year.
+metadata:
+  label: Legacy benefit enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations 2006 Sch. 3 para. 15(1)(b), (c), (d)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/15
+    - title: The Income Support (General) Regulations 1987 Sch. 2 para. 13A(1ZA)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13A
+    - title: The Employment and Support Allowance Regulations 2008 Sch. 4 para. 7(1)(b)-(d)
+      href: https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/7
+    - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15A(1ZA)
+      href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15A
+    - title: The Personal Independence Payment (Supplementary Provisions and Consequential Amendments) Regulations 2013 reg. 2
+      href: https://www.legislation.gov.uk/uksi/2013/388/regulation/2
+    - title: "The Armed Forces and Reserve Forces Compensation Scheme (Consequential Provisions: Subordinate Legislation) Order 2013 art. 2"
+      href: https://www.legislation.gov.uk/uksi/2013/591/article/2
+values:
+  2006-03-06:
+    - receives_highest_dla_sc
+  2013-04-08:
+    - receives_highest_dla_sc
+    - receives_enhanced_pip_dl
+    - armed_forces_independence_payment
