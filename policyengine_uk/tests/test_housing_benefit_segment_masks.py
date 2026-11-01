@@ -37,6 +37,7 @@ from hypothesis import example, given
 from hypothesis import strategies as st
 from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
+from policyengine_core.simulations import Simulation
 
 from policyengine_uk.model_api import BenUnit, Person, Variable, YEAR
 from policyengine_uk.system import system
@@ -625,3 +626,87 @@ def test_one_segment_gives_the_annual_routes_award(units, year, active):
     for key in ("accommodation", "earnings_disregard", "reserve", "childcare"):
         assert_close(segment[key], actual[key], key)
     assert_close(segment_route_award(sim, units, year), actual["award"])
+
+
+class wtc_disregard_reads_earnings(Reform):
+    """The WTC disregard applies only where the earnings disregard is
+    positive."""
+
+    def apply(self):
+        class masked(Variable):
+            defined_for = EARNINGS
+
+        masked.__name__ = WTC_DISREGARD
+        self.update_variable(masked)
+
+
+def test_a_wtc_condition_can_read_the_earnings_disregard():
+    """The annual earnings disregard calculates no WTC disregard, so a
+    condition on the WTC disregard can read it. Assessed inputs for 2024:
+    £500 of net earnings, a £260 standard disregard, no accommodation
+    disregard or childcare deduction, the work condition met and £2,000 of
+    WTC. The earnings disregard is the £260 standard disregard, with the
+    condition and without it."""
+    inputs = {
+        "housing_benefit_net_earnings": 500,
+        "housing_benefit_applied_standard_earnings_disregard": 260,
+        ACCOMMODATION: 0,
+        CHILDCARE: 0,
+        "housing_benefit_on_passporting_benefit": False,
+        "meets_housing_benefit_additional_earnings_disregard_conditions": True,
+        "working_tax_credit": 2_000,
+    }
+    situation = {
+        "people": {"adult": {}},
+        "benunits": {
+            "family": {
+                "members": ["adult"],
+                **{name: {2024: value} for name, value in inputs.items()},
+            }
+        },
+        "households": {"home": {"members": ["adult"]}},
+    }
+    for tax_benefit_system in (system, wtc_disregard_reads_earnings(system)):
+        sim = Simulation(tax_benefit_system=tax_benefit_system, situation=situation)
+        assert sim.calculate(EARNINGS, 2024)[0] == pytest.approx(260, abs=TOLERANCE)
+
+
+@pytest.mark.parametrize(
+    "year,active,unit,earnings,wtc,award",
+    [
+        # The issue's claimant in 2024. The earnings disregard is £260, so
+        # the condition holds and the model's figures apply: income is 2,500
+        # - 260 - 889.20 = 1,350.80 and the award 10,400 - 0.65 * 1,350.80.
+        (2024, False, ISSUE_CLAIMANT, 260, 889.20, 9_521.98),
+        # Without earnings the disregard is nil and the condition fails, so
+        # the WTC disregard is nil too: income is the £2,000 of WTC and the
+        # award 10,400 - 0.65 * 2,000.
+        (2024, False, specified_claimant(specified=False, net=0), 0, 0, 9_100),
+        # In 2026-27 in specified accommodation, with tax credits kept: £260
+        # before 5 October and £500 after, weighted by 182 and 183 days, so
+        # the condition holds and the issue's figures apply.
+        (
+            2026,
+            True,
+            specified_claimant(),
+            (182 * 260 + 183 * 500) / 365,
+            889.20,
+            9_600.19,
+        ),
+    ],
+)
+def test_a_wtc_condition_reading_the_earnings_disregard_runs(
+    year, active, unit, earnings, wtc, award
+):
+    """The issue's claimant, with every component the model calculates,
+    under a condition that gives the WTC disregard only where the earnings
+    disregard is positive."""
+    sim = simulation(
+        [unit],
+        year,
+        tax_benefit_system=wtc_disregard_reads_earnings(baseline(active)),
+        dated_accommodation=True,
+    )
+    assert sim.calculate(EARNINGS, year)[0] == pytest.approx(earnings, abs=TOLERANCE)
+    assert sim.calculate(WTC_DISREGARD, year)[0] == pytest.approx(wtc, abs=TOLERANCE)
+    assert sim.calculate(AWARD, year)[0] == pytest.approx(award, abs=TOLERANCE)
