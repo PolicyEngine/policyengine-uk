@@ -1,23 +1,26 @@
 """Property-based tests: armed forces independence payment (AFIP) counts as
 attendance allowance in the Universal Credit housing cost contribution rules.
 
-UC Regs 2013 Sch 4 para 13 deducts a housing cost contribution for each
-non-dependant in the renter's extended benefit unit. Para 16(2)(d) exempts a
-non-dependant "in receipt of attendance allowance", and reg 2 defines that
-term to include armed forces independence payment (head (f)). Reg 66 does not
-list AFIP as unearned income, so it does not reduce the renter's award.
+Under UC Regs 2013 Sch 4 para 13, DWP deducts a housing cost contribution for
+each non-dependant in the renter's extended benefit unit. Under para 16(2)(d)
+it deducts none for a non-dependant "in receipt of attendance allowance", and
+the Secretary of State defines that term in reg 2 to include AFIP (head (f)).
+The Secretary of State names no AFIP head among the descriptions of unearned
+income in reg 66, and the model leaves AFIP out of the renter's unearned
+income.
 
 Each generated household has a renter, who claims Universal Credit, and a
-non-dependant in a family of their own that does not claim. The same
-households are calculated with no AFIP, then with a positive AFIP for the
+non-dependant in a family of their own that does not claim. The tests
+calculate the same households with no AFIP, then with a positive AFIP for the
 non-dependant, the renter or both. Invariants:
 
 1. Raising AFIP from nil to any positive amount never lowers Universal
    Credit and never raises the housing cost contributions.
 2. A non-dependant who receives AFIP is exempt and bears no contribution.
 3. Where only the non-dependant receives AFIP, the renter's housing costs
-   element rises by no more than the contributions fall (para 14(3) floors
-   the element at nil), and Universal Credit by no more than the element.
+   element rises by no more than the contributions fall (under para 14(3),
+   DWP reduces the element to nil and no further), and Universal Credit rises
+   by no more than the element.
 """
 
 import numpy as np
@@ -207,3 +210,110 @@ def test_afip_never_lowers_uc_and_exempts_the_non_dependant(simulation, househol
     assert (
         uc_change[only_non_dependant] <= element_change[only_non_dependant] + 0.01
     ).all()
+
+
+# Sch 4 para 29(5) excepts a renter under 35 who receives the DLA care
+# component at the middle or highest rate, attendance allowance or the PIP
+# daily living component. The shared accommodation rate exception list used to
+# name attendance allowance and AFIP itself; it now names
+# uc_receives_attendance_allowance, which applies the reg 2 definition. The
+# differential below checks the two lists give the same result.
+LHA_EXCEPTIONS = "gov.dwp.LHA.shared_accommodation_exception_benefits"
+PREVIOUS_LHA_EXCEPTIONS = [
+    "attendance_allowance",
+    "dla_sc_middle_plus",
+    "pip_dl",
+    "armed_forces_independence_payment",
+]
+RENTER_OUTPUTS = [
+    "is_lha_shared_accommodation_rate_specified_renter",
+    "universal_credit",
+]
+
+
+def single_renters():
+    people, benunits, households = {}, {}, {}
+    for i in range(SLOTS):
+        renter = f"renter_{i}"
+        people[renter] = {
+            "age": {YEAR: 30},
+            "is_household_head": {YEAR: True},
+            "is_claimant_or_partner": {YEAR: True},
+            "employment_income": {YEAR: 0},
+            "attendance_allowance": {YEAR: 0},
+            "dla_sc_middle_plus": {YEAR: False},
+            "pip_dl": {YEAR: 0},
+            "armed_forces_independence_payment": {YEAR: 0},
+        }
+        benunits[f"renter_family_{i}"] = {
+            "members": [renter],
+            "would_claim_uc": {YEAR: True},
+            "claims_all_entitled_benefits": {YEAR: False},
+        }
+        households[f"household_{i}"] = {
+            "members": [renter],
+            "rent": {YEAR: 9_000},
+            "tenure_type": {YEAR: "RENT_PRIVATELY"},
+            "region": {YEAR: REGIONS[i % len(REGIONS)]},
+        }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.fixture(scope="module")
+def renter_simulation(cloned_uk_tax_benefit_system):
+    return Simulation(situation=single_renters())
+
+
+sometimes = st.one_of(st.just(0.0), st.just(0.0), st.floats(1, 9_000))
+
+
+@st.composite
+def renter(draw):
+    return dict(
+        age=draw(st.integers(18, 40)),
+        attendance_allowance=draw(sometimes),
+        dla_sc_middle_plus=draw(st.booleans()),
+        pip_dl=draw(sometimes),
+        armed_forces_independence_payment=draw(sometimes),
+    )
+
+
+def renter_outputs(sim):
+    sim.drop_computed_arrays()
+    return {name: np.asarray(sim.calculate(name, YEAR)) for name in RENTER_OUTPUTS}
+
+
+@PROPERTY_SETTINGS
+@given(renters=st.lists(renter(), min_size=SLOTS, max_size=SLOTS))
+@example(
+    renters=[
+        dict(
+            age=age,
+            attendance_allowance=0.0,
+            dla_sc_middle_plus=False,
+            pip_dl=0.0,
+            armed_forces_independence_payment=afip,
+        )
+        for age in (25, 34, 35, 40)
+        for afip in (0.0, 9_000.0, 0.01)
+    ]
+)
+def test_shared_accommodation_exceptions_match_the_previous_list(
+    renter_simulation, renters
+):
+    sim = renter_simulation
+    for name in renters[0]:
+        sim.set_input(name, YEAR, np.array([r[name] for r in renters]))
+    current = renter_outputs(sim)
+    parameter = sim.tax_benefit_system.parameters.get_child(LHA_EXCEPTIONS)
+    listed = parameter(f"{YEAR}-01-01")
+    try:
+        parameter.update(period=str(YEAR), value=PREVIOUS_LHA_EXCEPTIONS)
+        sim.tax_benefit_system.reset_parameter_caches()
+        previous = renter_outputs(sim)
+    finally:
+        parameter.update(period=str(YEAR), value=listed)
+        sim.tax_benefit_system.reset_parameter_caches()
+        sim.drop_computed_arrays()
+    for name in RENTER_OUTPUTS:
+        np.testing.assert_array_equal(current[name], previous[name], err_msg=name)

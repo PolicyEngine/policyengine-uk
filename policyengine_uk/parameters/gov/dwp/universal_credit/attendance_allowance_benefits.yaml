@@ -1,4 +1,4 @@
-description: Benefits that count as attendance allowance under the Universal Credit Regulations, so that a person who receives any of them is in receipt of attendance allowance for Universal Credit. The list covers heads (a) and (f) of the definition. The model holds no separate amount for heads (b), (d) and (e), so it cannot list them.
+description: Benefits that the Secretary of State counts as attendance allowance for Universal Credit, heads (a) and (f) of the definition in regulation 2 of the Universal Credit Regulations 2013. The model holds no separate amount for heads (b), (d) and (e), so the list leaves them out.
 values:
   2013-04-29:
     - attendance_allowance

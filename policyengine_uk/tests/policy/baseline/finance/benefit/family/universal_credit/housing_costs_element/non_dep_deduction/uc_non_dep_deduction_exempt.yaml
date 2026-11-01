@@ -52,8 +52,9 @@
     is_carer_for_benefits: true
     uc_non_dep_deduction_exempt: false
 
-# UC Regs 2013 Sch 4 para 16(2)(d) exempts "a person in receipt of attendance
-# allowance", which reg 2 defines to include armed forces independence payment.
+# Under UC Regs 2013 Sch 4 para 16(2)(d), DWP deducts no contribution for "a
+# person in receipt of attendance allowance", and the Secretary of State defines
+# that term in reg 2 to include armed forces independence payment.
 - name: Exempt - armed forces independence payment
   period: 2026
   absolute_error_margin: 0

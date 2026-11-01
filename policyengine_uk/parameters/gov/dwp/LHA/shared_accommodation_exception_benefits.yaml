@@ -1,4 +1,4 @@
-description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate. The list names attendance allowance through uc_receives_attendance_allowance, which applies the Universal Credit definition, so armed forces independence payment counts.
+description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate. The list names uc_receives_attendance_allowance for attendance allowance, so the model applies the Universal Credit definition and counts armed forces independence payment.
 values:
   2013-04-29:
     - uc_receives_attendance_allowance

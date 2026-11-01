@@ -9,10 +9,11 @@ class uc_non_dep_deduction_exempt(Variable):
     documentation = (
         "No housing costs contribution is deducted for a non-dependant who is "
         "receiving Pension Credit, the middle or higher rate of the DLA care "
-        "component, the PIP daily living component or attendance allowance as "
-        "Universal Credit defines it, which includes armed forces independence "
-        "payment (see uc_receives_attendance_allowance), or who receives "
-        "Carer's Allowance or Carer Support Payment, or who is "
+        "component, the PIP daily living component or attendance allowance, "
+        "which the Secretary of State defines for Universal Credit to include "
+        "armed forces independence payment (see "
+        "uc_receives_attendance_allowance), or "
+        "who receives Carer's Allowance or Carer Support Payment, or who is "
         "responsible for a child under the child responsibility age limit. "
         "Benefit-unit membership represents the child's normal residence "
         "with the claimant or partner; the existing Universal Credit child "
@@ -40,7 +41,8 @@ class uc_non_dep_deduction_exempt(Variable):
             person.benunit("uc_non_dep_receives_pension_credit", period)
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
-            # Para 16(2)(d), with "attendance allowance" as reg 2 defines it.
+            # Para 16(2)(d), reading "attendance allowance" with its reg 2
+            # definition.
             | person("uc_receives_attendance_allowance", period)
             | person("receives_carer_benefit", period)
             | responsible_for_young_child

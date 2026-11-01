@@ -1,15 +1,16 @@
-# UC Regs 2013 Sch 4 para 16(2)(d) exempts a non-dependant "in receipt of
-# attendance allowance", and reg 2 defines that term to include armed forces
-# independence payment (head (f)). Para 16(2)(e) exempts a non-dependant who
-# receives the PIP daily living component.
+# Under UC Regs 2013 Sch 4 para 16(2)(d), DWP deducts no housing cost
+# contribution for a non-dependant "in receipt of attendance allowance", and
+# the Secretary of State defines that term in reg 2 to include armed forces
+# independence payment (head (f)). Under para 16(2)(e), DWP deducts none for a
+# non-dependant who receives the PIP daily living component.
 # 2026-27 amounts, from legislation.gov.uk:
 # - Standard allowance, single claimant aged 25 or over (reg 36): 12 x 424.90 = 5,098.80.
 # - Housing cost contribution (Sch 4 para 14(1)), one flat amount with no
 #   earnings bands: 12 x 96.55 = 1,158.60.
 # The renter has no earnings or capital and pays the council 6,000 a year, so
 # UC = 5,098.80 + 6,000 - contributions.
-# The non-dependant's own family does not claim UC. AFIP amounts are
-# illustrative: receipt of any amount counts.
+# The non-dependant's own family does not claim UC. Any amount of AFIP in
+# payment qualifies, so the cases use illustrative amounts.
 
 - name: Case 1, a non-dependant with no qualifying benefit bears a contribution.
   period: 2026
