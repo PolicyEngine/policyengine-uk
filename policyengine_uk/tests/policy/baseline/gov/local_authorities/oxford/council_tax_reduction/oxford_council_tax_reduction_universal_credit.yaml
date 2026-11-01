@@ -1,31 +1,33 @@
-# Oxford Council Tax Reduction Scheme 2026 to 2027
+# Oxford City Council Council Tax Reduction Scheme 2026 to 2027
 # (https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27).
 #
-# Part 1 para 9 bands two groups of working-age applicants on weekly income:
-# those who do not receive Universal Credit, whose income "is calculated in
-# accordance with paragraphs 14-27", and those who do, whose income follows
-# Appendix 3. The heading before para 14 says "Paragraphs 14-27, and Annexes 5
-# and 6, apply to pensioners, and working-age applicants who do not receive
-# Universal Credit". Para 18 deducts "50% of contributions to occupational or
-# personal pension schemes" from earnings.
+# In Part 1 para 9 Oxford City Council bands two groups of working-age
+# applicants on weekly income: those who do not receive Universal Credit,
+# whose income it calculates "in accordance with paragraphs 14-27", and those
+# who do, whose income follows Appendix 3. In the heading before para 14 the
+# council says "Paragraphs 14-27, and Annexes 5 and 6, apply to pensioners,
+# and working-age applicants who do not receive Universal Credit". In para 18
+# it deducts "50% of contributions to occupational or personal pension
+# schemes" from earnings.
 #
 # Appendix 3 (page /4): "The income of applicants who receive Universal Credit
 # is calculated by adding their net earned income (as provided by DWP) to the
 # amount of Universal Credit awarded. Any transitional protection (the
 # 'transitional element' of Universal Credit) included in the Universal Credit
 # award is ignored. Other (unearned) income is calculated separately on a
-# weekly basis." DWP's net earned income deducts "any relievable pension
-# contributions made by the person" in full, with income tax and primary Class
-# 1 contributions (UC Regs 2013 reg 55(5)(a) and (b)).
+# weekly basis." DWP deducts "any relievable pension contributions made by the
+# person" in full from net earned income, with income tax and primary Class 1
+# contributions (UC Regs 2013 reg 55(5)(a) and (b)).
 #
-# Other income. Appendix 3 lists the income it ignores and says "All other
-# unearned income is taken into account". Appendix 5, which ignores Child
-# Benefit and child maintenance, applies to "pensioners and working-age
-# applicants who do not receive Universal Credit", so Oxford counts both for
-# these applicants. Part 1 para 30 and Annex 7 treat "any income derived from
-# capital" as capital, so interest, dividends and rent stay out. Universal
-# Credit's assumed yield from capital (reg 72) reduces the award but is not a
-# receipt, so it stays out too.
+# Other income. In Appendix 3 Oxford City Council lists the income it ignores
+# and says "All other unearned income is taken into account". It ignores Child
+# Benefit and child maintenance in Appendix 5, which it applies to
+# "pensioners and working-age applicants who do not receive Universal
+# Credit", so it counts both for these applicants. It treats "any income
+# derived from capital" as capital (Part 1 para 30 and Annex 7), so interest,
+# dividends and rent stay out. DWP deems Universal Credit's assumed yield from
+# capital (reg 72) and takes it off the award, but nobody receives it, so it
+# stays out too.
 #
 # Bands, weekly income (Part 1 para 9 and Appendix 3): up to 480.00 100%;
 # 480.01 to 530.00 75%; 530.01 to 580.00 50%; 580.01 to 660.00 25%; above
@@ -42,7 +44,8 @@
 # allowance, single 25 or over, 424.90, couple 666.97; child (born on or
 # after 6 April 2017) 303.94; lower work allowance 427, higher 710. The taper
 # is 55% (reg 22). Every award below sits under the benefit cap outside
-# Greater London (14,753 single, 22,020 otherwise). Child Benefit, at HMRC's
+# Greater London (14,753 single, 22,020 otherwise), except where DWP includes
+# the carer element and so applies no cap (reg 83(1)(j)). Child Benefit, at HMRC's
 # 2026-27 weekly rates, is 27.05 for the eldest child and 17.90 for each
 # other: 1,406.60 a year for one child and 2,337.40 for two.
 
