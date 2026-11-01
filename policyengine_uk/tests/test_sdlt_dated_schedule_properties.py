@@ -191,6 +191,8 @@ def test_tax_never_falls_as_the_price_rises_on_any_date(effective_date, price_li
 # the initial relief period that s1(1), as amended, sets.
 INITIAL_RELIEF = (date(2020, 7, 8), date(2021, 6, 30))
 rates = st.floats(0, 0.5)
+# Positive, unequal rates, under which relief changes a small purchase's tax.
+UNEQUAL_RATES = dict(main_rates=[0.07] * 4, first_time_buyer_rates=[0.11, 0.30])
 
 
 def _change_rates_over_initial_relief(scale, new_rates):
@@ -204,11 +206,11 @@ def _change_rates_over_initial_relief(scale, new_rates):
 
 @PROPERTY_SETTINGS
 @example(
-    effective_date=date(2021, 4, 30),
-    price_list=[0.01, 1, 300_000],
-    main_rates=[0.07] * 4,
-    first_time_buyer_rates=[0.11, 0.30],
+    effective_date=date(2021, 4, 30), price_list=[0.01, 1, 300_000], **UNEQUAL_RATES
 )
+# The first and last days of the initial relief period.
+@example(effective_date=INITIAL_RELIEF[0], price_list=[0.01, 1], **UNEQUAL_RATES)
+@example(effective_date=INITIAL_RELIEF[1], price_list=[0.01, 1], **UNEQUAL_RATES)
 @given(
     effective_date=st.dates(*INITIAL_RELIEF),
     price_list=st.lists(prices, min_size=1, max_size=8),
