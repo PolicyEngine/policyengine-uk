@@ -270,14 +270,28 @@ in 2024 and stand at:
 Past `PROJECTION_END_YEAR` (2032), policyengine-core scales each input by
 the index it declares.
 
-`policyengine_uk/utils/import_obr_forecasts.py` writes the six series from
-`CLEARANCE_SERIES_SPECS` in the same run as the other receipts series (see
-the steps for a new EFO in the economic assumptions README), and reads
-`ons.population` from the `yoy_growth.yaml` it rewrites. It finds each line's
-unit in exactly one cell, where the OBR states it: the line's own label, the
-label of the total the line breaks down, or a note. It stops before writing
-anything if a line's row holds a cell beside its label and values, such as a
-unit, so it never reads a line's values in a unit that another row states.
+The importer, `policyengine_uk/utils/import_obr_forecasts.py`, writes the
+six series from `CLEARANCE_SERIES_SPECS` in the same run as the other
+receipts series (see the steps for a new EFO in the economic assumptions
+README), and reads `ons.population` from the `yoy_growth.yaml` it rewrites.
+It reads every unit the OBR states in a clearance table against a closed
+list: sticks, kg, and litres or hectolitres of alcohol or of product, each
+after an optional number and a scale such as "'000s", "thousands of" or
+"million". It compares units by measure and size, so "'000s kg" and
+"thousand kg" agree. It reads a unit as a line's when the OBR states it in
+the line's own label, in the label of the total the line breaks down, in
+another line's label that names the line's product, or in a note that names
+the line's product or no product, and ignores a note that names only other
+products. It stops before writing anything when:
+
+- the OBR states another unit or scale for a line;
+- the OBR states two units in one note, and the importer cannot tie each to
+  the products named in its own clause;
+- the OBR uses a word for a quantity or scale outside the list, such as
+  "tonnes", in a note or in a cell the importer reads as a line's;
+- the OBR states a line's unit in none of its label, its total's label and a
+  note beginning "Note:" that names its product or no product;
+- the OBR puts any cell beside a line's label and values.
 
 ### Budget measures and reforms
 
