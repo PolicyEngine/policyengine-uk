@@ -773,9 +773,9 @@
 - name: Case 30, a claimant on a non-advanced full-time course with an equipment grant and no maintenance funding keeps the award.
   # Under reg. 12(2)(b), the person must have a loan or grant for their
   # maintenance. The claimant can use Learner Support for materials and
-  # equipment (gov.uk/learner-support), and the claimant's student loan
-  # doesn't fund maintenance here, so the claimant doesn't receive education.
-  # 12 x £424.90 = £5,098.80.
+  # equipment (gov.uk/learner-support), and their student loan doesn't fund
+  # maintenance here, so they don't receive education. 12 x £424.90 =
+  # £5,098.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
