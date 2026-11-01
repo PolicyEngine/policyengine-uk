@@ -60,7 +60,7 @@ def check_enum_positions(values: np.ndarray, possible_values, column: str) -> No
     this check, because nothing tells it apart from a position.
 
     Args:
-        values: The column's values. Only an integer array is checked.
+        values: The column's values. The check reads only an integer array.
         possible_values: The enum the column's variable takes.
         column: The column's name, for the error.
 
@@ -75,9 +75,9 @@ def check_enum_positions(values: np.ndarray, possible_values, column: str) -> No
         first, last = list(possible_values)[0], list(possible_values)[-1]
         raise ValueError(
             f"Column '{column}' holds {_listed(bad.tolist())}, which are not "
-            f"positions of enum {possible_values.__name__}. An integer is read "
-            f"as a 0-based position, from 0 ({first.name}) to {size - 1} "
-            f"({last.name}). Map source codes to member names, such as "
+            f"positions of enum {possible_values.__name__}. The model reads an "
+            f"integer as a 0-based position, from 0 ({first.name}) to "
+            f"{size - 1} ({last.name}). Map source codes to member names, such as "
             f"{_members(possible_values)}, before loading."
         )
 

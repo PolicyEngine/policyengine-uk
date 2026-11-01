@@ -153,8 +153,8 @@ def test_codes_past_the_last_position_are_refused_by_name(path, column, tmp_path
         Simulation(dataset=source(path, np.array([1, 4, 9, 10]), tmp_path))
     assert str(error.value) == (
         f"Column '{column}' holds 9, 10, which are not positions of enum "
-        "CouncilTaxBand. An integer is read as a 0-based position, from 0 (A) "
-        "to 8 (I). Map source codes to member names, such as 'A', 'B', 'C', "
+        "CouncilTaxBand. The model reads an integer as a 0-based position, from "
+        "0 (A) to 8 (I). Map source codes to member names, such as 'A', 'B', 'C', "
         "'D', 'E', 'F', 'G', 'H', 'I', before loading."
     )
 
