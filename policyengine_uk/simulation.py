@@ -816,9 +816,8 @@ class Simulation(CoreSimulation):
             native = self.tax_benefit_system.variables[part].definition_period
             if part_source.start > source.start or part_source.unit != native:
                 # Person balances stored for a later year than the total are
-                # the newer observation, and Core carries a balance stored in
-                # another unit flat rather than uprating it, so their sum
-                # stands.
+                # the newer observation, and Core doesn't uprate a balance
+                # stored in another unit, so their sum stands.
                 return None
         try:
             index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
