@@ -3,11 +3,11 @@ description: >
   in a working-age Council Tax Reduction applicable amount only for an
   applicant or partner under the qualifying age for State Pension Credit. The
   Scottish Ministers set this limit in the 2012 scheme, which ran until 31
-  March 2022, and set a limit at pensionable age in the 2021 scheme, which the
-  model reads as the same qualifying age (the two have agreed for everyone
-  since 2019-20). The Scottish Ministers removed the limit from 20 June 2022
-  (S.S.I. 2022/161). The model reads this as at 30 April of each year from
-  2015, so it applies the limit in 2022 and not from 2023.
+  March 2022. In the 2021 scheme they set the limit at pensionable age, which
+  the model reads as the same qualifying age (the two have agreed for everyone
+  since 2019-20), and from 20 June 2022 they removed it (S.S.I. 2022/161). The
+  model reads this as at 30 April of each year from 2015, so it applies the
+  limit in 2022 and not from 2023.
 metadata:
   label: Scottish working-age Council Tax Reduction enhanced disability premium age limit applies
   period: year

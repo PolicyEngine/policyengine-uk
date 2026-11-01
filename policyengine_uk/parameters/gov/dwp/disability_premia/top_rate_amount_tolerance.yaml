@@ -1,6 +1,4 @@
-description: The model counts a disability living allowance care amount or a personal independence payment daily living amount entered without its award category as a top-rate award for the enhanced disability premium when the amount reaches the top weekly rate less this tolerance, times 52. policyengine-uk-data allows the same £1 a week when it derives award categories from reported weekly amounts.
-values:
-  2015-01-01: 1
+description: The model counts a DLA care or PIP daily living amount entered without its award category as a top-rate award for the enhanced disability premium when the amount reaches the top weekly rate less this tolerance, times 52. policyengine-uk-data allows the same £1 a week when it derives award categories from reported weekly amounts.
 metadata:
   period: week
   unit: currency-GBP
