@@ -1,0 +1,22 @@
+description: Whether HMRC charges Stamp Duty Land Tax on land in Wales. When it does not, the Welsh Revenue Authority charges Land Transaction Tax there instead.
+values:
+  2003-07-10:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2003 s. 48(1)(a), as at 30 April 2017
+          href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/2017-04-30
+  2018-04-01:
+    value: false
+    metadata:
+      reference:
+        - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018, schedule
+          href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+metadata:
+  unit: bool
+  label: Stamp Duty applies in Wales
+  reference:
+    - title: Finance Act 2003 s. 48(1)(a), as at 30 April 2017
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/2017-04-30
+    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018, schedule
+      href: https://www.legislation.gov.uk/wsi/2018/128/schedule

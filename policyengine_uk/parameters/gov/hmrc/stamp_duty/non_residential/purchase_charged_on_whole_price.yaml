@@ -1,0 +1,22 @@
+description: Whether HMRC charges a non-residential purchase at the single percentage of the whole price that the non-residential purchase rates set for the band the price falls in, rather than at each band's rate on the slice of the price in that band.
+values:
+  2003-07-10:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2003 s. 55(2), as at 30 April 2015
+          href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2015-04-30
+  2016-03-17:
+    value: false
+    metadata:
+      reference:
+        - title: Finance Act 2016 s. 127(12)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/127/enacted
+metadata:
+  unit: bool
+  label: Stamp Duty on non-residential purchases charged on the whole price
+  reference:
+    - title: Finance Act 2003 s. 55(2), as at 30 April 2015
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2015-04-30
+    - title: Finance Act 2016 s. 127(12)
+      href: https://www.legislation.gov.uk/ukpga/2016/24/section/127/enacted
