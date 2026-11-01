@@ -363,6 +363,97 @@ def test_both_forms_in_one_dataset_add_up_to_the_stored_total():
     ]
 
 
+# The shape Microcosm's producer writes (microcosm main b979d46b): adults'
+# cash and stocks and shares ISA balances, and a household corporate_wealth
+# that sums directly_held_shares, unit_and_investment_trusts and the stocks
+# and shares ISAs, with no household cash_isa or stocks_and_shares_isa.
+PRODUCER_SHAPE = [
+    {
+        "units": [
+            [
+                (30, {"cash_isa_balance": 3_000.0}),
+                (28, {"stocks_and_shares_isa_balance": 2_000.0}),
+            ],
+            [
+                (
+                    40,
+                    {
+                        "cash_isa_balance": 5_000.0,
+                        "stocks_and_shares_isa_balance": 1_000.0,
+                    },
+                )
+            ],
+        ],
+        "savings": 7_000,
+        "directly_held_shares": 1_500,
+        "unit_and_investment_trusts": 500,
+        "corporate_wealth": 5_000,
+    },
+    {
+        "units": [
+            [(70, {"cash_isa_balance": 4_000.0}), (68, {})],
+            [(30, {"stocks_and_shares_isa_balance": 6_000.0})],
+        ],
+        "savings": 12_000,
+        "unit_and_investment_trusts": 3_000,
+        "corporate_wealth": 9_000,
+    },
+]
+
+
+def _household_capital(simulation, year):
+    return sum(
+        simulation.calculate(name, year)
+        for name in ("savings", "cash_isa", "share_like_capital")
+    )
+
+
+def test_person_balances_without_household_totals_count_with_their_holders():
+    """Core sums the balances into each total, so every balance counts."""
+    simulation = Simulation(dataset=_dataset(PRODUCER_SHAPE, claims=False))
+    person_household = np.array([0, 0, 0, 1, 1, 1])
+    benunit_household = np.array([0, 0, 1, 1])
+    for year in (YEAR, PROJECTION_END_YEAR + 1):
+        for name, balance_name in BALANCE.items():
+            balance = simulation.calculate(balance_name, year)
+            assert np.array_equal(simulation.calculate(name, year), balance)
+        for total, balance_name in (
+            ("cash_isa", "cash_isa_balance"),
+            ("stocks_and_shares_isa", "stocks_and_shares_isa_balance"),
+        ):
+            sums = np.bincount(
+                person_household, weights=simulation.calculate(balance_name, year)
+            )
+            assert simulation.calculate(total, year) == pytest.approx(sums, rel=1e-6)
+        # The itemised shares add up to corporate_wealth, which stays the pool.
+        assert np.array_equal(
+            simulation.calculate("share_like_capital", year),
+            simulation.calculate("corporate_wealth", year),
+        )
+        holdings = _household_capital(simulation, year)
+        uc = simulation.calculate("uc_assessable_capital", year)
+        assert np.bincount(benunit_household, weights=uc) == pytest.approx(
+            holdings, rel=1e-6
+        )
+    # Savings 7,000 and 2,000 of non-ISA shares make the first pool, 3,000 for
+    # each claimant, and each unit adds its members' 5,000 and 6,000 of ISAs.
+    # The second pool, savings 12,000 and 3,000 of trusts, gives the parents
+    # 10,000 and their son 5,000 in UC, and the pension-age parents all
+    # 15,000 in Pension Credit.
+    expected_uc = [11_000, 9_000, 14_000, 11_000]
+    assert list(simulation.calculate("uc_assessable_capital", YEAR)) == expected_uc
+    for name in CAPITAL:
+        if name != "pension_credit_assessable_capital":
+            capital = simulation.calculate(name, YEAR)
+            assert list(capital[:2]) == expected_uc[:2], name
+    assert list(simulation.calculate("pension_credit_assessable_capital", YEAR)) == [
+        0,
+        0,
+        19_000,
+        0,
+    ]
+
+
 money = st.integers(min_value=0, max_value=2_000_000).map(lambda pence: pence / 100)
 # One benefit unit: a claimant, perhaps a partner, each with a cash and a
 # stocks and shares ISA, and a child; with savings and other shares.
