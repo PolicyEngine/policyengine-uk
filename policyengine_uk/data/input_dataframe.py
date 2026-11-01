@@ -32,11 +32,13 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from policyengine_core.enums import Enum
 from policyengine_core.periods import ETERNITY, period as period_
 
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
+    check_enum_positions,
 )
 from policyengine_uk.data.savings_income_projection import (
     SAVINGS_INCOME_PROJECTION_KEY,
@@ -317,6 +319,12 @@ def dataset_from_input_dataframe(
     the order ``Simulation.build_from_ids`` gives them. Columns that do not
     name a variable of ``tax_benefit_system`` are left out.
 
+    An enum column gives member names, or 0-based positions of its enum as
+    ``Simulation.to_input_dataframe`` exports them. Each year records the
+    positions it holds, so the simulation reads them without checking them
+    again. A source code that falls in range, such as a 1-based survey code,
+    reads as a later member: nothing tells it apart from a position.
+
     Args:
         df: One row per person and a column per input, named
             ``variable__period``.
@@ -344,7 +352,8 @@ def dataset_from_input_dataframe(
             bits or is a float that may stand for more than one, identifier
             columns contradict each other,
             or the members of a benefit unit or household give different
-            values for one of its variables.
+            values for one of its variables, or an integer enum column holds
+            a value that is not a position of its enum.
     """
     if not df.columns.is_unique:
         duplicated = df.columns[df.columns.duplicated()][0]
@@ -382,6 +391,8 @@ def dataset_from_input_dataframe(
     # first of them is the data year that some formulas read from the
     # dataset (State Pension), so a year with no data must not come first.
     years: Dict[int, Dict[str, Dict[str, np.ndarray]]] = {}
+    # The enum each year's checked integer columns hold positions of.
+    enum_positions: Dict[int, dict] = {}
     identifier_years = set()
     # Every input of the model the frame gives, and whether it is for one
     # whole year, in column order.
@@ -396,8 +407,12 @@ def dataset_from_input_dataframe(
             if whole_year:
                 identifier_years.add(start.year)
             continue
-        entity = tax_benefit_system.variables[variable].entity.key
+        definition = tax_benefit_system.variables[variable]
+        entity = definition.entity.key
         values = df[column].to_numpy()
+        is_enum_positions = definition.value_type == Enum and values.dtype.kind in "iu"
+        if is_enum_positions:
+            check_enum_positions(values, definition.possible_values, column)
         if entity in GROUP_ENTITIES:
             group_values = values[first_members[entity]]
             agrees = _same(group_values[group_indices[entity]], values)
@@ -410,6 +425,11 @@ def dataset_from_input_dataframe(
                 )
             values = group_values
         if whole_year:
+            if is_enum_positions:
+                enum_positions.setdefault(start.year, {})[variable] = (
+                    definition.possible_values
+                )
+                values = values.view(np.ndarray).astype(np.int16)
             years.setdefault(start.year, no_tables())[entity][variable] = values
         inputs.append(((variable, period_text, values), whole_year))
 
@@ -439,8 +459,9 @@ def dataset_from_input_dataframe(
     contracts = contracts_for_years(
         df.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT), years
     )
-    datasets = [
-        UKSingleYearDataset(
+    datasets = []
+    for fiscal_year, tables in sorted(years.items()):
+        dataset = UKSingleYearDataset(
             person=pd.DataFrame({**person_identifiers, **tables["person"]}),
             benunit=pd.DataFrame(
                 {"benunit_id": group_ids["benunit"], **tables["benunit"]}
@@ -452,8 +473,8 @@ def dataset_from_input_dataframe(
             isa_income_contract=contracts[fiscal_year],
             savings_income_projection=df.attrs.get(SAVINGS_INCOME_PROJECTION_KEY),
         )
-        for fiscal_year, tables in sorted(years.items())
-    ]
+        dataset._enum_columns = enum_positions.get(fiscal_year, {})
+        datasets.append(dataset)
     return UKMultiYearDataset(datasets=datasets), replayed, identifier_inputs
 
 

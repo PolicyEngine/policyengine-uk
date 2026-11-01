@@ -33,6 +33,8 @@ from policyengine_uk.utils.parameters import (
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
+    check_enum_positions,
+    refuse_enum_integers,
 )
 from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
@@ -222,36 +224,88 @@ def get_default_dataset_url() -> str:
     )
 
 
+def _enum_columns_of(single_year: UKSingleYearDataset, tbs: "CountryTaxBenefitSystem"):
+    """Each enum column of a year's tables: its table, name, values and enum."""
+    for table_name in single_year.table_names:
+        table = getattr(single_year, f"_{table_name}")
+        for column in list(table.columns):
+            variable = tbs.variables.get(column)
+            if variable is None or variable.value_type != CoreEnum:
+                continue
+            values = table[column].values
+            if not isinstance(values, np.ndarray):
+                values = np.asarray(values, dtype=object)
+            yield table, column, values, variable.possible_values
+
+
+def _same_members(recorded, possible_values) -> bool:
+    """Whether a recorded enum declares the same members in the same order.
+
+    Each tax-benefit system can load its own copy of an enum class, so the
+    loader compares members rather than classes.
+    """
+    return recorded is possible_values or (
+        recorded is not None
+        and [member.name for member in recorded]
+        == [member.name for member in possible_values]
+    )
+
+
+def _refuse_unchecked_enum_integers(
+    dataset: UKSingleYearDataset, tbs: "CountryTaxBenefitSystem"
+) -> None:
+    """Refuse integer enum columns the loader has not checked. The loader
+    runs this before it projects the data, so the projection never reads
+    such a column."""
+    for _, column, values, possible_values in _enum_columns_of(dataset, tbs):
+        if not _same_members(dataset._enum_columns.get(column), possible_values):
+            refuse_enum_integers(values, possible_values, column)
+
+
 def _pre_encode_enum_columns(
     dataset: UKMultiYearDataset, tbs: "CountryTaxBenefitSystem"
 ) -> None:
-    """Convert string enum columns in a dataset to int16 in-place.
+    """Convert enum columns in a dataset to int16 positions in place.
 
-    Run once before caching; subsequent loads use encode()'s fast integer path.
-    Also stores a mapping of column name -> possible_values on each
-    UKSingleYearDataset so callers can decode back to strings when needed.
+    The loader runs this once, before it caches the dataset. Each year
+    records the enum each column holds positions of, so later loads, and the
+    decoded ``person``, ``benunit`` and ``household`` tables, read the column
+    without checking it again. The loader decodes a column recorded under
+    another declaration of its enum, as a structural reform makes, to names
+    and encodes it again.
+
+    The loader refuses an integer column it has not recorded
+    (``refuse_enum_integers``): only a DataFrame or a policyengine-core
+    dataset gives positions, and their loaders check and record them. It
+    checks every year before it changes any table.
+
+    Raises:
+        ValueError: If a column holds integers the loader has not recorded,
+            or a name its enum lacks.
     """
+    encoded_years = []
     for year in dataset.years:
         single_year = dataset[year]
-        enum_columns: dict = {}
-        for table_name in single_year.table_names:
-            table = getattr(single_year, f"_{table_name}")
-            for col_name in list(table.columns):
-                if col_name not in tbs.variables:
-                    continue
-                var_def = tbs.variables[col_name]
-                if var_def.value_type != CoreEnum:
-                    continue
-                arr = table[col_name].values
-                if not isinstance(arr, np.ndarray):
-                    arr = np.asarray(arr, dtype=object)
-                if arr.dtype.kind in ("i", "u"):
-                    # Already integer - record possible_values if not yet seen
-                    enum_columns[col_name] = var_def.possible_values
-                    continue
-                encoded = var_def.possible_values.encode(arr)
-                table[col_name] = encoded.view(np.ndarray).astype(np.int16)
-                enum_columns[col_name] = var_def.possible_values
+        recorded = single_year._enum_columns
+        encoded = []
+        for table, column, values, possible_values in _enum_columns_of(
+            single_year, tbs
+        ):
+            previous = recorded.get(column)
+            if _same_members(previous, possible_values):
+                continue
+            if previous is not None and values.dtype.kind in "iu":
+                names = np.array([member.name for member in previous], dtype=object)
+                values = names[values]
+            refuse_enum_integers(values, possible_values, column)
+            positions = possible_values.encode(values).view(np.ndarray)
+            encoded.append((table, column, positions.astype(np.int16), possible_values))
+        encoded_years.append((single_year, encoded))
+    for single_year, encoded in encoded_years:
+        enum_columns = dict(single_year._enum_columns)
+        for table, column, positions, possible_values in encoded:
+            table[column] = positions
+            enum_columns[column] = possible_values
         single_year._enum_columns = enum_columns
 
 
@@ -837,6 +891,7 @@ class Simulation(CoreSimulation):
 
     def _extend_dataset_with_cgt_provenance(self, dataset):
         """Retain the origin of inputs materialised by this loader only."""
+        _refuse_unchecked_enum_integers(dataset, self.tax_benefit_system)
         source_year = int(dataset.time_period)
         variables = [v for v in CGT_DATASET_INPUTS if v in dataset.person.columns]
         extended = extend_single_year_dataset(
@@ -1347,7 +1402,16 @@ class Simulation(CoreSimulation):
                 if variable not in self.tax_benefit_system.variables:
                     continue
                 values = data[variable][time_period]
-                entity = self.tax_benefit_system.variables[variable].entity.key
+                variable_definition = self.tax_benefit_system.variables[variable]
+                entity = variable_definition.entity.key
+                # A policyengine-core dataset can give an enum as 0-based
+                # positions, as policyengine-core's own export does.
+                if variable_definition.value_type == CoreEnum and np.ndim(values) > 0:
+                    check_enum_positions(
+                        np.asarray(values),
+                        variable_definition.possible_values,
+                        variable,
+                    )
                 # Leave scalars for Core to normalize and validate against
                 # the population size; only arrays have a group row order.
                 if entity in group_orders and np.ndim(values) > 0:
@@ -1407,10 +1471,10 @@ class Simulation(CoreSimulation):
         # Work on detached tables: a cached or caller-owned source is reusable.
         dataset = normalized_dataset(dataset)
 
-        # Ensure enum columns are encoded and _enum_columns is populated so
-        # that .person/.benunit/.household properties can decode back to strings.
-        if not any(dataset[y]._enum_columns for y in dataset.years):
-            _pre_encode_enum_columns(dataset, self.tax_benefit_system)
+        # Encode the enum columns not yet encoded, so that the .person,
+        # .benunit and .household properties can decode them back to names.
+        # A cached dataset's columns are all encoded, so this checks none.
+        _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]
         self.build_from_ids(

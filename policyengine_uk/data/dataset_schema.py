@@ -35,6 +35,75 @@ from policyengine_uk.data.isa_income import (
     validate_contract,
 )
 
+# How many distinct values or member names an enum error shows.
+SHOWN_IN_ERRORS = 10
+
+
+def _listed(values) -> str:
+    """The first ``SHOWN_IN_ERRORS`` of ``values``, and how many it leaves out."""
+    values = list(values)
+    shown = ", ".join(str(value) for value in values[:SHOWN_IN_ERRORS])
+    left_out = len(values) - SHOWN_IN_ERRORS
+    return f"{shown} and {left_out} more" if left_out > 0 else shown
+
+
+def _members(possible_values) -> str:
+    return _listed(f"'{member.name}'" for member in possible_values)
+
+
+def check_enum_positions(values: np.ndarray, possible_values, column: str) -> None:
+    """Check that an integer enum column holds only positions of its enum.
+
+    The model reads an integer enum value as a 0-based position in
+    ``possible_values``: 0 is the first member. A source code that falls in
+    range, such as a 1-based survey code, reads as a later member and passes
+    this check, because nothing tells it apart from a position.
+
+    Args:
+        values: The column's values. Only an integer array is checked.
+        possible_values: The enum the column's variable takes.
+        column: The column's name, for the error.
+
+    Raises:
+        ValueError: If a value is below 0 or not below the number of members.
+    """
+    if values.dtype.kind not in "iu" or values.size == 0:
+        return
+    size = len(possible_values)
+    bad = np.unique(values[(values < 0) | (values >= size)])
+    if bad.size:
+        first, last = list(possible_values)[0], list(possible_values)[-1]
+        raise ValueError(
+            f"Column '{column}' holds {_listed(bad.tolist())}, which are not "
+            f"positions of enum {possible_values.__name__}. An integer is read "
+            f"as a 0-based position, from 0 ({first.name}) to {size - 1} "
+            f"({last.name}). Map source codes to member names, such as "
+            f"{_members(possible_values)}, before loading."
+        )
+
+
+def refuse_enum_integers(values: np.ndarray, possible_values, column: str) -> None:
+    """Refuse integers in an enum column of a dataset's tables.
+
+    policyengine-uk-data builds every dataset with member names, and
+    policyengine-uk saves the positions it encodes as names, so an integer
+    there is most likely a source code, and a code that falls in range would
+    read as the wrong member. A DataFrame given to ``Simulation`` and a
+    policyengine-core dataset still give integers, as 0-based positions
+    (see ``check_enum_positions``).
+
+    Raises:
+        ValueError: If ``values`` is a non-empty integer array.
+    """
+    if values.dtype.kind not in "iu" or values.size == 0:
+        return
+    raise ValueError(
+        f"Column '{column}' holds integers ({_listed(np.unique(values).tolist())}), "
+        f"but a dataset's enum {possible_values.__name__} column takes member "
+        f"names, such as {_members(possible_values)}. Map source codes to "
+        "names before loading."
+    )
+
 
 class UKSingleYearDataset:
     @staticmethod
@@ -142,8 +211,10 @@ class UKSingleYearDataset:
         # simulation engine internals - do not decode these.
         self.tables = (self._person, self._benunit, self._household)
         self.table_names = ("person", "benunit", "household")
-        # Populated by _pre_encode_enum_columns in simulation.py after the
-        # dataset is loaded and enum columns have been converted to int16.
+        # The enum each int16 column holds positions of, by column. Only the
+        # loader records a column here (_pre_encode_enum_columns in
+        # simulation.py, or dataset_from_input_dataframe), after it has
+        # encoded or checked the column, so it never checks it again.
         self._enum_columns: dict = {}
 
     @property
@@ -156,7 +227,8 @@ class UKSingleYearDataset:
         self._energy_price_basis = parse_energy_price_basis(value)
 
     def _decode_enum_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Return a copy of *df* with int16 enum columns decoded to strings."""
+        """Return a copy of *df* with the loader's int16 enum positions
+        decoded to member names."""
         if not self._enum_columns:
             return df
         enum_cols_in_df = [c for c in df.columns if c in self._enum_columns]
@@ -172,12 +244,21 @@ class UKSingleYearDataset:
             out[col] = names[arr.astype(int)]
         return out
 
+    def _forget_enum_columns(self, df: pd.DataFrame) -> None:
+        """Stop reading a replaced table's columns as checked positions."""
+        self._enum_columns = {
+            column: possible_values
+            for column, possible_values in self._enum_columns.items()
+            if column not in df.columns
+        }
+
     @property
     def person(self) -> pd.DataFrame:
         return self._decode_enum_df(self._person)
 
     @person.setter
     def person(self, df: pd.DataFrame):
+        self._forget_enum_columns(df)
         self._person = df
         self.tables = (self._person, self._benunit, self._household)
 
@@ -187,6 +268,7 @@ class UKSingleYearDataset:
 
     @benunit.setter
     def benunit(self, df: pd.DataFrame):
+        self._forget_enum_columns(df)
         self._benunit = df
         self.tables = (self._person, self._benunit, self._household)
 
@@ -196,6 +278,7 @@ class UKSingleYearDataset:
 
     @household.setter
     def household(self, df: pd.DataFrame):
+        self._forget_enum_columns(df)
         self._household = df
         self.tables = (self._person, self._benunit, self._household)
 
