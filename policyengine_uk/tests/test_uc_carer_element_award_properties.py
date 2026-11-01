@@ -589,13 +589,14 @@ def tax_free_childcare_situation():
     ),
 )
 def test_a_non_dependant_deduction_that_takes_the_award_to_nil_leaves_no_award():
-    # The non-dependant's deduction (UC Regs 2013 Sch 4 paras 13 and 16; a
-    # blind non-dependant has no exemption, and the carer is no exempt renter
-    # under para 15) takes the carer's award to nil, so she has no award
-    # (Welfare Reform Act 2012 s.5(1)(b); reg 17). The disabled person is a
-    # joint tenant, not her non-dependant (para 9(2)(d)), and she is not his
-    # (HB Regs 2006 reg 3(2)(d)); a blind non-dependant does not bar the
-    # premium (Sch 3 para 14(4)). So the law pays him the premium.
+    # DWP's deduction for the non-dependant (UC Regs 2013 Sch 4 paras 13 and
+    # 16; blindness brings no exemption, and para 15 does not exempt the
+    # carer as a renter) takes the carer's award to nil, so she has no award
+    # (Welfare Reform Act 2012 s.5(1)(b); reg 17). DWP does not count the
+    # disabled person, a joint tenant, as her non-dependant (para 9(2)(d)),
+    # the council does not count her as his (HB Regs 2006 reg 3(2)(d)), and a
+    # blind non-dependant does not bar the premium (Sch 3 para 14(4)). So he
+    # keeps the premium in law.
     sim = Simulation(situation=non_dependant_situation())
     award = sim.calculate("universal_credit_pre_benefit_cap", YEAR)
     bound = sim.calculate("uc_award_upper_bound", YEAR)
@@ -615,10 +616,10 @@ def test_a_non_dependant_deduction_that_takes_the_award_to_nil_leaves_no_award()
     ),
 )
 def test_a_family_that_takes_tax_free_childcare_instead_has_no_award():
-    # The family is better off with the Tax-Free Childcare top-up, so it
-    # takes no award (forgoes_universal_credit_for_tax_free_childcare); with
-    # no award, no one has one in respect of caring for the disabled person,
-    # and the law pays him the premium.
+    # The family gets more from the Tax-Free Childcare top-up than from the
+    # award, so it takes no award (forgoes_universal_credit_for_tax_free_
+    # childcare). No one then has an award in respect of caring for the
+    # disabled person, so he keeps the premium in law.
     sim = Simulation(situation=tax_free_childcare_situation())
     forgoes = sim.calculate("forgoes_universal_credit_for_tax_free_childcare", YEAR)
     award = sim.calculate("universal_credit_pre_benefit_cap", YEAR)
