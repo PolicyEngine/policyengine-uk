@@ -2,19 +2,26 @@
 
 Each means test counts cash_isa_countable_capital and
 stocks_and_shares_isa_countable_capital through person_sources, for the
-claimant and partner, and takes them out of the household pool (cash_isa and
-share_like_capital) before sharing the rest between benefit units.
+claimant and partner. The formulas subtract them from the household source
+that holds them (cash_isa and share_like_capital) and allocate the remainder
+between benefit units.
 
-Invariants, for any nonnegative amounts:
+For the households below, with no reported capital, the formulas allocate the
+remainder by claimant weights or, for Pension Credit, pension-age adult
+counts. A UC unit that reports its capital leaves its claimant's and
+partner's ISAs in the pool, and a Pension Credit report replaces the unit's
+calculated capital; the YAML cases cover both. The invariants:
 
-1. A pound counts once. Where the pool is shared by claimant weights (or, for
-   Pension Credit, pension-age adults), the capital the household's benefit
-   units count, plus the ISAs of members no unit counts (dependants, and for
-   Pension Credit holders outside a pension-age unit), equals savings,
-   cash_isa and share_like_capital together.
-2. The household counts min(sum of balances, total) of each ISA kind, each
-   member at most their balance, and members over a total in proportion to
-   their balances.
+1. A pound counts once. The capital the household's benefit units count,
+   plus the ISAs of members no unit counts (dependants, and for Pension
+   Credit holders outside a pension-age unit), equals savings, cash_isa and
+   share_like_capital together, up to float32 rounding of the remainder's
+   shares. Where balances exceed a total, the holdings sum to it exactly, so
+   that source leaves nothing in the remainder: an adult with no ISA counts
+   exactly the capital they count without the other members' ISAs.
+2. Where the balances' stored sum exceeds the total, the holdings sum to
+   the total exactly, each in proportion to its balance within the step
+   invariant 7 gives; otherwise each member counts their balance exactly.
 3. With no person balances, every means test gives what the lists without
    the ISA person sources give, in 2025, 2032, 2033 and 2040.
 4. Differential: person balances alone and the household totals alone give
@@ -25,14 +32,18 @@ Invariants, for any nonnegative amounts:
 6. A reform that drops the household source drops the person source with it,
    and one that empties person_sources returns the ISAs to the pool.
 7. The allocation arithmetic (bounded_holdings), for every float32 balance
-   and finite total: no holding exceeds the total; the household's stored sum
-   of holdings never exceeds it, so every remainder stays at or above zero; a
-   sole holder whose balance reaches the total holds exactly the total;
-   balances whose stored sum is within the total keep their exact values;
-   holdings over a total lie within float32 spacing of their proportional
-   shares; and the same input gives the same output.
+   and finite total: no holding exceeds the total or falls below zero; where
+   the balances' stored sum exceeds the total, the holdings' float64 sum
+   equals it; where it doesn't, each holding equals the balance; a sole
+   holder whose balance reaches the total holds exactly the total; each
+   holding is its proportional share rounded down or up to a whole step,
+   the total's float32 spacing, allowing for float64 sum and division
+   rounding, so it lies within one step of the share and passes a capital
+   limit only where the share does; and the same input gives the same
+   output.
 """
 
+import math
 from contextlib import contextmanager
 from fractions import Fraction
 
@@ -144,8 +155,8 @@ def _dataset(households, year=YEAR, claims=True):
     )
 
 
-def _core_household_sum(household_of):
-    """Core's person.household.sum, for people in the given households.
+def _core_household(household_of):
+    """Core's person population, and its household, for the given households.
 
     Builds Core's own populations by hand, with no Simulation, so the
     allocation properties run in milliseconds.
@@ -155,7 +166,36 @@ def _core_household_sum(household_of):
     household = GroupPopulation(Household, person)
     household.members_entity_id = np.asarray(household_of, dtype=np.intp)
     household.count = int(max(household_of)) + 1
+    return person, household
+
+
+def _core_household_sum(household_of):
+    """Core's person.household.sum, for people in the given households."""
+    _, household = _core_household(household_of)
     return lambda array: household.project(household.sum(array))
+
+
+def _household_rank(household_of):
+    """Each member's rank in their household, lowest first, ties in member order.
+
+    Plain numpy, for the allocation properties; Core's
+    person.get_rank(person.household, ...) gives the same ranks.
+    """
+    household_of = np.asarray(household_of)
+    index = np.arange(household_of.size)
+
+    def rank(criteria):
+        # Sort by household, then criteria, then member order, and count each
+        # member's place from their household's first place.
+        order = np.lexsort((index, np.asarray(criteria), household_of))
+        grouped = household_of[order]
+        first = np.r_[True, grouped[1:] != grouped[:-1]]
+        place = np.arange(order.size)
+        ranks = np.empty(order.size, dtype=int)
+        ranks[order] = place - np.maximum.accumulate(np.where(first, place, 0))
+        return ranks
+
+    return rank
 
 
 ANY_FLOAT32 = st.floats(width=32)
@@ -188,6 +228,24 @@ ALLOCATION_SETTINGS = settings(SETTINGS, max_examples=300)
 @example(allocation=([16_000.0], [(0, 16_790.0)]))
 @example(allocation=([6_000.0], [(0, 8_341.0)]))
 @example(allocation=([10_000.0], [(0, 16_450.0), (0, 0.0), (0, 0.0)]))
+# A couple over the total beside an adult with no ISA, whose shares round
+# down to one step short of it at the UC tariff threshold and limit.
+@example(allocation=([32_000.0], [(0, 0.0), (0, 12_000.0), (0, 24_000.0)]))
+@example(allocation=([64_000.0], [(0, 0.0), (0, 24_000.0), (0, 48_000.0)]))
+# Three equal balances with steps left over for some of them.
+@example(allocation=([10.0], [(0, 3.0), (0, 3.0), (0, 3.0)]))
+# Three holders of exactly 16,000 and of 6,000 under totals one step short
+# of their sum: each share falls just short of the balance, and no holding
+# may pass it.
+@example(allocation=([47_999.99609375], [(0, 16_000.0)] * 3))
+@example(allocation=([17_999.998046875], [(0, 6_000.0)] * 3))
+# Shares that round to the nearest float32 overshoot the total.
+@example(
+    allocation=(
+        [46_000.98046875],
+        [(0, 10_000.0), (0, 10_000.0), (0, 16_001.0), (0, 10_000.0)],
+    )
+)
 # Balances whose float64 sum exceeds the total but rounds to it in float32.
 @example(allocation=([16_000.0], [(0, 8_000.00048828125), (0, 8_000.0)]))
 # A balance too small to change the float64 sum, beside one over the total.
@@ -206,51 +264,63 @@ def test_holdings_stay_within_the_household_total(allocation):
     totals, members = allocation
     household_of = np.array([h for h, _ in members])
     household_sum = _core_household_sum(household_of)
+    household_rank = _household_rank(household_of)
     balance = np.array([b for _, b in members], np.float32)
     total = np.array(totals, np.float32)[household_of]
-    holding = bounded_holdings(balance, total, household_sum)
+    holding = bounded_holdings(balance, total, household_sum, household_rank)
     assert holding.dtype == np.float32
 
     cap = np.maximum(np.float32(0), total)
     held = np.where(np.isposinf(balance), cap, np.where(balance > 0, balance, 0))
     held = held.astype(np.float32)
+    # The plain numpy rank agrees with Core's get_rank.
+    person, household = _core_household(household_of)
+    assert np.array_equal(household_rank(-held), person.get_rank(household, -held))
     # No holding is negative or exceeds the household total.
     assert ((0 <= holding) & (holding <= cap)).all()
-    # Core stores the household's sum of holdings, as each means test nets it
-    # from the household source, within the total.
     with np.errstate(over="ignore"):
-        stored = household_sum(holding).astype(np.float32)
-        within = household_sum(held).astype(np.float32) <= cap
-    assert (cap - stored >= 0).all()
+        scales = household_sum(held).astype(np.float32) > cap
+    # Over a total, the holdings' float64 sum equals it exactly, so each
+    # means test nets the whole total from the household source and leaves
+    # nothing of it in the pool.
+    assert np.array_equal(household_sum(holding)[scales], cap[scales])
     # Balances whose stored sum is within the total keep their exact values.
-    assert np.array_equal(holding[within], held[within])
+    assert np.array_equal(holding[~scales], held[~scales])
     # A sole holder whose balance reaches the total holds exactly the total.
     holders = household_sum((held > 0).astype(np.float32))
     sole = (held > 0) & (holders == 1) & (held >= cap)
     assert np.array_equal(holding[sole], cap[sole])
-    # Over a total, each holding lies within float32 spacing (plus float64
-    # rounding) of its exact proportional share, and together they fall
-    # short of the total by at most one float32 spacing per member.
-    for i in np.flatnonzero(~within):
+    # Over a total, each holding is its exact proportional share rounded down
+    # or up to a whole step, the total's float32 spacing, allowing for float64
+    # sum and division rounding. So it lies within one step of the share and
+    # passes a multiple of the step, such as a capital limit, only where the
+    # share does.
+    for i in np.flatnonzero(scales):
         same = np.flatnonzero(household_of == household_of[i])
         exact = (
             Fraction(float(held[i]))
             * Fraction(float(cap[i]))
             / sum(Fraction(float(held[j])) for j in same)
         )
-        spacing = Fraction(float(np.spacing(np.float32(float(exact)))))
-        assert abs(Fraction(float(holding[i])) - exact) <= spacing + exact / 2**48
-        assert cap[i] - stored[i] <= (len(same) + 1) * np.spacing(cap[i])
+        step = Fraction(float(np.spacing(cap[i])))
+        slack = exact / 2**48
+        below = math.floor((exact - slack) / step) * step
+        above = math.ceil((exact + slack) / step) * step
+        assert below <= Fraction(float(holding[i])) <= above
     # The same input gives the same output, and one household's holdings
     # never depend on another's.
-    again = bounded_holdings(balance.copy(), total.copy(), household_sum)
+    again = bounded_holdings(
+        balance.copy(), total.copy(), household_sum, household_rank
+    )
     assert np.array_equal(holding, again)
     for h in np.unique(household_of):
         alone = household_of == h
+        own_household = np.zeros(alone.sum(), dtype=int)
         result = bounded_holdings(
             balance[alone],
             total[alone],
-            _core_household_sum(np.zeros(alone.sum(), dtype=int)),
+            _core_household_sum(own_household),
+            _household_rank(own_household),
         )
         assert np.array_equal(result, holding[alone])
 
@@ -259,9 +329,9 @@ def test_holdings_stay_within_the_household_total(allocation):
 def test_a_sole_holder_over_a_limit_holds_exactly_the_limit(limit):
     """Invariant 7, exhaustively near three capital limits.
 
-    Every float32 balance from the limit to four times it, each a sole
-    holder under a household total equal to the limit, and the next 1,000
-    float32 balances above the limit.
+    Whole-pound balances from the limit up to, but excluding, four times it,
+    plus 1,000 adjacent float32 values starting at the limit, each a sole
+    holder under a household total equal to the limit.
     """
     above = np.nextafter(np.float32(limit), np.float32(np.inf))
     steps = np.arange(1_000, dtype=np.float32) * (above - np.float32(limit))
@@ -269,8 +339,10 @@ def test_a_sole_holder_over_a_limit_holds_exactly_the_limit(limit):
         [np.arange(limit, 4 * limit, dtype=np.float32), np.float32(limit) + steps]
     )
     total = np.full_like(balance, limit)
-    household_sum = _core_household_sum(np.arange(balance.size))
-    holding = bounded_holdings(balance, total, household_sum)
+    households = np.arange(balance.size)
+    holding = bounded_holdings(
+        balance, total, _core_household_sum(households), _household_rank(households)
+    )
     assert (holding == np.float32(limit)).all()
 
 
@@ -455,30 +527,27 @@ def test_person_balances_without_household_totals_count_with_their_holders():
     ]
 
 
-money = st.integers(min_value=0, max_value=2_000_000).map(lambda pence: pence / 100)
-# One benefit unit: a claimant, perhaps a partner, each with a cash and a
-# stocks and shares ISA, and a child; with savings and other shares.
-ONE_UNIT_HOUSEHOLDS = st.lists(
-    st.tuples(st.lists(st.tuples(money, money), min_size=1, max_size=2), money, money),
-    min_size=1,
-    max_size=4,
-)
-# Each example runs whole means tests, so keep the examples few: a dataset
-# example builds two simulations, and a Pension Credit example took about 45
-# seconds locally.
-DATASET_SETTINGS = settings(SETTINGS, max_examples=2)
-SITUATION_SETTINGS = settings(SETTINGS, max_examples=4)
-PENSION_CREDIT_SETTINGS = settings(SETTINGS, max_examples=2)
+# One benefit unit each, with a child: the adults' cash and stocks and shares
+# ISA balances, other shares and savings.
+ONE_UNIT_CASES = [
+    # Nothing at all.
+    ([(0.0, 0.0)], 0.0, 0.0),
+    # A cash ISA alone, beside savings.
+    ([(5_000.0, 0.0)], 0.0, 2_000.0),
+    # A stocks and shares ISA alone, beside other shares.
+    ([(0.0, 7_000.0)], 1_500.0, 0.0),
+    # A couple's ISAs of both kinds, beside savings and other shares.
+    ([(3_000.0, 2_000.0), (4_000.25, 1_000.75)], 2_500.0, 6_000.0),
+    # A couple's balances whose float64 sum, 16,000.00048828125, Core stores
+    # as a 16,000 total, in both kinds.
+    ([(8_000.00048828125, 8_000.00048828125), (8_000.0, 8_000.0)], 0.0, 0.0),
+]
 
 
-@DATASET_SETTINGS
-@given(households=ONE_UNIT_HOUSEHOLDS)
-def test_balances_alone_and_totals_alone_give_one_unit_the_same_capital(
-    households,
-):
+def test_balances_alone_and_totals_alone_give_one_unit_the_same_capital():
     """Invariant 4, differential: the two forms of the same holdings."""
     balances, totals = [], []
-    for adults, other_shares, savings in households:
+    for adults, other_shares, savings in ONE_UNIT_CASES:
         shares = sum(amounts[1] for amounts in adults)
         common = {"savings": savings, "corporate_wealth": other_shares + shares}
         people = [
@@ -498,9 +567,20 @@ def test_balances_alone_and_totals_alone_give_one_unit_the_same_capital(
     totals_only = Simulation(dataset=_dataset(totals))
     for year in (YEAR, PROJECTION_END_YEAR + 1):
         for name in MEANS_TEST_CAPITAL:
+            # Float32 sums in either order round alike to within a penny.
             assert balances_only.calculate(name, year) == pytest.approx(
                 totals_only.calculate(name, year), rel=1e-6, abs=0.01
             ), (name, year)
+    # The couple at the rounding boundary keep their exact balances.
+    assert list(balances_only.calculate("cash_isa_countable_capital", YEAR)[-3:]) == [
+        8_000.00048828125,
+        8_000.0,
+        0.0,
+    ]
+
+
+money = st.integers(min_value=0, max_value=2_000_000).map(lambda pence: pence / 100)
+SITUATION_SETTINGS = settings(SETTINGS, max_examples=4)
 
 
 def _situation(units, assets, claim_uc=False):
@@ -528,7 +608,6 @@ def _situation(units, assets, claim_uc=False):
 
 def _unit(adult_ages):
     """A benefit unit of one or two adults and up to two children."""
-    person = st.tuples(money, money)
     adults = st.lists(st.sampled_from(adult_ages), min_size=1, max_size=2)
     children = st.lists(st.just(10), min_size=0, max_size=2)
     return st.tuples(adults, children).flatmap(
@@ -566,33 +645,66 @@ def _assets(units, holdings):
     return assets
 
 
-def _check_counted_isas(simulation, units, assets):
-    """Invariant 2: the household counts min(balances, total) of each kind."""
+def _by_household(simulation, entity, array):
+    """Sum a person or benefit unit array over each household, in float64."""
+    person_household = simulation.populations["household"].members_entity_id
+    if entity == "person":
+        index = person_household
+    else:
+        index = np.zeros(simulation.populations["benunit"].count, dtype=int)
+        index[simulation.populations["benunit"].members_entity_id] = person_household
+    return np.bincount(
+        index,
+        weights=np.asarray(array, np.float64),
+        minlength=simulation.populations["household"].count,
+    )
+
+
+def _check_counted_isas(simulation):
+    """Invariant 2, in each household of the simulation.
+
+    Where the balances' stored sum exceeds the total, the holdings sum to it
+    exactly, each within one step of the total of its balance; otherwise each
+    member counts their balance exactly.
+    """
     totals = {
-        "cash_isa_countable_capital": simulation.calculate("cash_isa", YEAR)[0],
-        "stocks_and_shares_isa_countable_capital": min(
-            simulation.calculate("stocks_and_shares_isa", YEAR)[0],
-            simulation.calculate("share_like_capital", YEAR)[0],
+        "cash_isa_countable_capital": simulation.calculate("cash_isa", YEAR),
+        "stocks_and_shares_isa_countable_capital": np.minimum(
+            simulation.calculate("stocks_and_shares_isa", YEAR),
+            simulation.calculate("share_like_capital", YEAR),
         ),
     }
+    person_household = simulation.populations["household"].members_entity_id
     counted = {}
     for name, total in totals.items():
         balance = simulation.calculate(BALANCE[name], YEAR)
         counted[name] = simulation.calculate(name, YEAR)
-        assert (counted[name] >= 0).all()
-        assert (counted[name] <= balance * (1 + 1e-6) + 1e-3).all()
-        assert counted[name].sum() == pytest.approx(
-            min(balance.sum(), max(0, total)), rel=1e-5, abs=0.01
+        total = np.maximum(np.float32(0), total)
+        scales = _by_household(simulation, "person", balance).astype(np.float32) > total
+        assert np.array_equal(
+            _by_household(simulation, "person", counted[name])[scales],
+            total[scales].astype(np.float64),
+        ), name
+        member_scales = scales[person_household]
+        step = np.spacing(total)[person_household]
+        sums = _by_household(simulation, "person", balance)[person_household]
+        share = (
+            balance
+            * total[person_household].astype(np.float64)
+            / np.where(member_scales, sums, 1)
         )
-        if balance.sum() > total > 0:
-            share = counted[name] / total
-            assert share == pytest.approx(balance / balance.sum(), abs=1e-5)
+        assert (counted[name] >= 0).all(), name
+        assert (abs(counted[name] - share) <= step)[member_scales].all(), name
+        assert (counted[name] <= balance + step).all(), name
+        assert np.array_equal(counted[name][~member_scales], balance[~member_scales]), (
+            name
+        )
     return counted
 
 
 def _holdings(simulation):
     return sum(
-        simulation.calculate(name, YEAR)[0]
+        simulation.calculate(name, YEAR)
         for name in ("savings", "cash_isa", "share_like_capital")
     )
 
@@ -606,7 +718,7 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
     """Invariant 1 for UC, HB, IS, JSA and ESA, nobody on a claim path."""
     assets = _assets(units, holdings)
     simulation = Simulation(situation=_situation(units, assets))
-    counted = _check_counted_isas(simulation, units, assets)
+    counted = _check_counted_isas(simulation)
     dependants = ~simulation.calculate("is_claimant_or_partner", YEAR)
     uncounted = sum((amount * dependants).sum() for amount in counted.values())
     for name in (
@@ -617,8 +729,9 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
         "esa_income_assessable_capital",
     ):
         capital = simulation.calculate(name, YEAR)
+        # Float32 shares of the remainder round to within a few pence.
         assert capital.sum() + uncounted == pytest.approx(
-            _holdings(simulation), rel=1e-5, abs=0.05
+            _holdings(simulation)[0], rel=1e-5, abs=0.05
         ), name
         # Each unit counts at least its own claimant's and partner's ISAs.
         own = sum(
@@ -628,18 +741,97 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
         assert (capital >= own * (1 - 1e-6) - 0.01).all(), name
 
 
-@PENSION_CREDIT_SETTINGS
-@given(
-    pensioners=st.lists(_unit([70, 75]), min_size=1, max_size=2),
-    others=st.lists(_unit([30]), min_size=0, max_size=1),
-    holdings=HOLDINGS,
-)
-def test_a_pound_counts_once_in_pension_credit(pensioners, others, holdings):
+# Households for Pension Credit's pool: each a list of benefit units of
+# (age, person columns), with household columns. A dataset that stores a
+# total for one household stores it for all, so households with no stored
+# totals take a dataset of their own.
+NO_STORED_TOTALS = [
+    # A pensioner couple, both with ISAs, and an unrelated working-age holder.
+    {
+        "units": [
+            [
+                (
+                    70,
+                    {
+                        "cash_isa_balance": 3_000.0,
+                        "stocks_and_shares_isa_balance": 1_000.0,
+                    },
+                ),
+                (68, {"cash_isa_balance": 2_000.0}),
+            ],
+            [
+                (
+                    30,
+                    {
+                        "cash_isa_balance": 4_000.0,
+                        "stocks_and_shares_isa_balance": 500.0,
+                    },
+                )
+            ],
+        ],
+        "savings": 5_000,
+        "corporate_wealth": 2_500 + 1_500,
+    },
+]
+STORED_TOTALS = [
+    # Totals above the balances: a pensioner with a child who holds a junior
+    # ISA, and a separate pension-age unit.
+    {
+        "units": [
+            [
+                (
+                    75,
+                    {
+                        "cash_isa_balance": 1_000.0,
+                        "stocks_and_shares_isa_balance": 2_000.0,
+                    },
+                ),
+                (10, {"cash_isa_balance": 700.0}),
+            ],
+            [(72, {"stocks_and_shares_isa_balance": 3_000.0})],
+        ],
+        "savings": 4_000,
+        "cash_isa": 1_700 + 2_500,
+        "stocks_and_shares_isa": 5_000 + 1_500,
+        "corporate_wealth": 2_000 + 5_000 + 1_500,
+    },
+    # Totals below the balances, so the formulas scale them: two separate
+    # pension-age units and an unrelated working-age holder.
+    {
+        "units": [
+            [
+                (
+                    70,
+                    {
+                        "cash_isa_balance": 6_000.0,
+                        "stocks_and_shares_isa_balance": 4_000.0,
+                    },
+                )
+            ],
+            [(71, {"cash_isa_balance": 3_000.0})],
+            [
+                (
+                    30,
+                    {
+                        "cash_isa_balance": 2_000.0,
+                        "stocks_and_shares_isa_balance": 2_000.0,
+                    },
+                )
+            ],
+        ],
+        "savings": 1_000,
+        "cash_isa": 11_000 / 3,
+        "stocks_and_shares_isa": 2_000,
+        "corporate_wealth": 6_000 + 500,
+    },
+]
+
+
+@pytest.mark.parametrize("households", [NO_STORED_TOTALS, STORED_TOTALS])
+def test_a_pound_counts_once_in_pension_credit(households):
     """Invariant 1 for Pension Credit, shared by pension-age adults only."""
-    units = pensioners + others
-    assets = _assets(units, holdings)
-    simulation = Simulation(situation=_situation(units, assets))
-    counted = _check_counted_isas(simulation, units, assets)
+    simulation = Simulation(dataset=_dataset(households, claims=False))
+    counted = _check_counted_isas(simulation)
     pension_age = simulation.calculate(
         "has_attained_state_pension_credit_qualifying_age", YEAR
     )
@@ -652,11 +844,125 @@ def test_a_pound_counts_once_in_pension_credit(pensioners, others, holdings):
         > 0
     )
     counts = simulation.calculate("is_claimant_or_partner", YEAR) & in_pension_unit
-    uncounted = sum((amount * ~counts).sum() for amount in counted.values())
+    uncounted = sum(
+        _by_household(simulation, "person", amount * ~counts)
+        for amount in counted.values()
+    )
     capital = simulation.calculate("pension_credit_assessable_capital", YEAR)
-    assert capital.sum() + uncounted == pytest.approx(
+    # Float32 shares of the remainder round to within a few pence.
+    assert _by_household(simulation, "benunit", capital) + uncounted == pytest.approx(
         _holdings(simulation), rel=1e-5, abs=0.05
     )
+    if households is STORED_TOTALS:
+        # The last household's ISA holdings sum exactly to its totals, so its
+        # pool keeps savings of 1,000 and the 4,500 of share_like_capital
+        # beyond its 2,000 of ISAs: 2,750 for each pension-age adult.
+        own = sum(counted.values())
+        assert list(capital[-3:]) == pytest.approx(
+            [2_750 + own[-3], 2_750 + own[-2], 0], rel=1e-6
+        )
+
+
+# An adult with no ISA beside a couple whose cash ISAs exceed the household's
+# cash_isa: (adults' age, cash_isa, the couple's balances, savings). The
+# savings leave the adult exactly at a threshold: UC's tariff threshold of
+# 6,000 and capital limit of 16,000, and Pension Credit's deemed income
+# threshold of 10,000.
+THRESHOLDS = {
+    "uc_tariff": (30, 32_000, (12_000, 24_000), 18_000),
+    "uc_limit": (30, 64_000, (24_000, 48_000), 48_000),
+    "pension_credit_deemed_income": (70, 32_000, (12_000, 24_000), 30_000),
+}
+THRESHOLD_OUTPUTS = (
+    "uc_assessable_capital",
+    "uc_tariff_income",
+    "is_uc_eligible",
+    "pension_credit_assessable_capital",
+    "pension_credit_deemed_income",
+    "is_pension_credit_eligible",
+)
+NO_CLAIMS = {
+    name: {YEAR: False}
+    for name in (
+        "would_claim_uc",
+        "would_claim_IS",
+        "would_claim_pc",
+        "housing_benefit_on_passporting_benefit",
+    )
+}
+
+
+def _threshold_situation():
+    """Each threshold household, then the same without the couple's ISAs.
+
+    A last household holds three single adults, each with a 16,000 cash ISA,
+    under a cash_isa one float32 step short of their 48,000.
+    """
+    people, benunits, households = {}, {}, {}
+    for case, (age, total, balances, savings) in THRESHOLDS.items():
+        for form, keeps_isas in (("isas", True), ("reference", False)):
+            home = f"{case}_{form}"
+            names = [f"{home}_adult", f"{home}_holder_a", f"{home}_holder_b"]
+            for name, balance in zip(names, (0, *balances)):
+                people[name] = {
+                    "age": {YEAR: age},
+                    "cash_isa_balance": {YEAR: balance if keeps_isas else 0},
+                }
+            benunits[f"{home}_adult"] = {"members": names[:1], **NO_CLAIMS}
+            benunits[f"{home}_couple"] = {"members": names[1:], **NO_CLAIMS}
+            households[home] = {
+                "members": names,
+                "savings": {YEAR: savings},
+                "cash_isa": {YEAR: total if keeps_isas else 0},
+            }
+    names = [f"holder_{i}" for i in range(3)]
+    for name in names:
+        people[name] = {"age": {YEAR: 30}, "cash_isa_balance": {YEAR: 16_000}}
+        benunits[name] = {"members": [name], **NO_CLAIMS}
+    households["holders"] = {
+        "members": names,
+        "cash_isa": {YEAR: float(np.nextafter(np.float32(48_000), np.float32(0)))},
+    }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+def test_isas_over_a_total_leave_an_unrelated_adult_exactly_at_a_threshold():
+    """Invariant 1, exactly, at three thresholds.
+
+    Rounding each scaled holding down would leave a remainder that the pool
+    shares with the adult: UC capital of 6,000.00048828125 and annual tariff
+    income of 52.20 rather than 0. The holdings sum exactly to cash_isa, so
+    the adult counts exactly what they count without the couple's ISAs.
+    """
+    simulation = Simulation(situation=_threshold_situation())
+    outputs = {name: simulation.calculate(name, YEAR) for name in THRESHOLD_OUTPUTS}
+    cash = simulation.calculate("cash_isa_countable_capital", YEAR)
+    for c, (case, (age, total, balances, savings)) in enumerate(THRESHOLDS.items()):
+        # Each case takes four units (adult and couple, with ISAs and without)
+        # and six people.
+        adult, reference = 4 * c, 4 * c + 2
+        couple = cash[6 * c + 1 : 6 * c + 3]
+        assert couple.sum(dtype=np.float64) == total, case
+        for name, values in outputs.items():
+            assert values[adult] == values[reference], (case, name)
+        capital = (
+            "pension_credit_assessable_capital"
+            if age >= 66
+            else "uc_assessable_capital"
+        )
+        assert outputs[capital][adult] == savings / 3, case
+    assert outputs["uc_tariff_income"][0] == 0
+    assert outputs["is_uc_eligible"][4]
+    assert outputs["pension_credit_deemed_income"][8] == 0
+    # The three holders' shares come to 15,999.9987 each. Each holding is
+    # that share rounded down or up to a step of 1/256, so none passes the
+    # 16,000 limit its share stays under, and the three sum to cash_isa.
+    holders = cash[-3:]
+    assert list(holders) == [16_000, 16_000, 16_000 - 2**-8]
+    assert holders.sum(dtype=np.float64) == np.nextafter(
+        np.float32(48_000), np.float32(0)
+    )
+    assert outputs["is_uc_eligible"][-3:].all()
 
 
 LODGER = {
