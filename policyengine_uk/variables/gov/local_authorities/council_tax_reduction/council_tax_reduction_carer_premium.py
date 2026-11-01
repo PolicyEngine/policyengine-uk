@@ -14,21 +14,32 @@ class council_tax_reduction_carer_premium(Variable):
         "has regular and substantial caring responsibilities for a severely "
         "disabled person. The Scottish Ministers define those in para 6(1) "
         "as (a) receiving Carer's Allowance or Carer Support Payment, (b) "
-        "being entitled to one that the overlapping benefits rules reduce to "
-        "nil, or (c) having an award of Universal Credit which includes the "
-        "carer element. carer_premium tests limbs (a) and (b) "
+        "being entitled to an allowance that DWP or Social Security Scotland "
+        "reduces to nil under the overlapping benefits rules, or (c) having "
+        "an award of Universal Credit which includes the carer element. "
+        "carer_premium tests limbs (a) and (b) "
         "(is_entitled_to_carer_benefit). For limb (c), the Scottish Ministers "
         "defined an award of Universal Credit to include one with a value of "
         "zero from 1 April 2022 (reg 4, as amended by SSI 2022/52 reg 3), and "
         "from 1 April 2025 as an award made under Part 1 of the Welfare Reform "
         "Act 2012 (SSI 2025/24 reg 8), under which an income that tapers the "
-        "award to nil leaves no award (s.5(1)(b); UC Regs 2013 reg 17). So "
-        "while the earlier definition holds "
-        "(uc_award_includes_zero_value_award), this variable reads limb (c) "
-        "from the award's conditions: the family claims Universal Credit, meets its basic "
-        "conditions and does not take Tax-Free Childcare instead, and the "
-        "award includes the carer element for this claimant. Afterwards it "
-        "reads the positive award (receives_uc_carer_element). From 1 April "
+        "award to nil leaves no award (s.5(1)(b); UC Regs 2013 reg 17). The "
+        "model reads the earlier definition as reaching a carer whose "
+        "earnings take the award to nil, and so counts that nil award from "
+        "2022-23 to 2024-25. The sources leave that reading open. UC Claims "
+        "and Payments Regs 2013 reg 32A(1)(a) says DWP makes no award where "
+        "income fails that condition. The Scottish Government's policy note "
+        "to SSI 2025/24 records a 2022 intention to treat such a claimant as "
+        "having an award, but calls reg 10A an expansion that gives the "
+        "intention effect. Ipswich BC v TD [2024] UKUT 117 (AAC) holds that "
+        "a nil award carries no Universal Credit entitlement, without "
+        "construing the Scottish definition. So while the earlier definition "
+        "holds (uc_award_includes_zero_value_award), this variable reads limb "
+        "(c) from the award's conditions: the family claims Universal Credit, "
+        "meets its basic conditions and does not take Tax-Free Childcare "
+        "instead, and the award includes the carer element for this "
+        "claimant. Afterwards it reads the positive award "
+        "(receives_uc_carer_element). From 1 April "
         "2025 the Scottish Ministers also count two nil awards as awards (reg "
         "10A): one a sanction reduces to nil, and one whose claimant the "
         "Secretary of State treats as reclaiming after earnings end it (UC "
@@ -74,8 +85,9 @@ class council_tax_reduction_carer_premium(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         # SSI 2021/249 Sch 1 para 6(1)(c): an award of Universal Credit which
-        # includes the carer element. Until 31 March 2025 an award with a
-        # value of zero counts (reg 4), so the award's conditions decide.
+        # includes the carer element. Until 31 March 2025 the model counts a
+        # nil award as one "with a value of zero" (reg 4), a reading the
+        # sources leave open, so the award's conditions decide.
         carer_element_award = person("receives_uc_carer_element", period)
         if scotland.uc_award_includes_zero_value_award:
             family = person.benunit

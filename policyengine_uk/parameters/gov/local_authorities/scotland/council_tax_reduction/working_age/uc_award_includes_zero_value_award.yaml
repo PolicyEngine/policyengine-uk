@@ -1,4 +1,4 @@
-description: Scotland's working-age Council Tax Reduction scheme treats an award of Universal Credit with a value of zero as an award of Universal Credit if this is true, so a nil award that includes the carer element meets the carer premium's caring condition.
+description: Whether Scottish councils count a Universal Credit award with a value of zero when deciding the working-age Council Tax Reduction carer premium. The model reads that to include a nil award that earnings bring about, a reading the sources leave open.
 values:
   2013-04-01: false
   2022-04-01: true

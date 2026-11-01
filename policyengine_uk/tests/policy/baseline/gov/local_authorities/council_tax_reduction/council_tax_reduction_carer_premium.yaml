@@ -12,7 +12,12 @@
 # a value of zero" (reg 4, as amended by SSI 2022/52 reg 3); from 1 April 2025
 # it "means an award of universal credit made under Part 1 of the 2012 Act"
 # (SSI 2025/24 reg 8), and an income that tapers the award to nil leaves no
-# award (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17).
+# award (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17). The model
+# reads the earlier definition as reaching a carer whose earnings take the
+# award to nil. The sources leave that reading open: UC Claims and Payments
+# Regs 2013 reg 32A(1)(a) covers a claim on which DWP makes no award, and
+# Ipswich BC v TD [2024] UKUT 117 (AAC) finds no Universal Credit
+# entitlement in a nil award without construing the Scottish text.
 #
 # Amounts: carer premium £48.15 a week from 1 April 2026 (SSI 2021/249 Sch 1
 # para 5(1), substituted by SSI 2026/56), £46.40 in 2025-26, £45.60 in
@@ -177,12 +182,14 @@
     receives_uc_carer_element: false
     council_tax_reduction_carer_premium: 0
 
-- name: In 2024 a Scottish carer's nil award still counts as an award with the carer element
+- name: In 2024 the model counts a Scottish carer's nil award as an award with the carer element
   # The same carer in 2024-25. The maximum amount is (393.45 + 198.31) x 12
   # = 7,101.12, and the taper on £20,000 of earnings less income tax and
   # National Insurance takes more, so the award is nil. Until 31 March 2025
   # an "award of universal credit" included one "with a value of zero" (reg
-  # 4), so para 6(1)(c) applies: carer premium 45.60 x 52 = 2,371.20.
+  # 4). The model reads that as reaching this nil award, a reading the
+  # sources leave open (see the header), so para 6(1)(c) applies: carer
+  # premium 45.60 x 52 = 2,371.20.
   period: 2024
   absolute_error_margin: 0.01
   input:
