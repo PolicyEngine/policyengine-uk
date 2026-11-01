@@ -12,9 +12,9 @@ class enhanced_disability_premium(Variable):
         "(num_enhanced_disabled_claimants_or_partners_for_legacy_benefits). "
         "Housing Benefit, Income Support and Council Tax Reduction read it; "
         "Council Tax Reduction substitutes its own scheme's condition "
-        "(council_tax_reduction_enhanced_disability_premium). The separate "
-        "Housing Benefit enhanced rate for children and young persons is "
-        "housing_benefit_child_disability_premiums."
+        "(council_tax_reduction_enhanced_disability_premium). "
+        "housing_benefit_child_disability_premiums holds Housing Benefit's "
+        "separate enhanced rate for children and young persons."
     )
     definition_period = YEAR
     reference = (

@@ -14,10 +14,11 @@ class num_enhanced_disabled_claimants_or_partners_for_legacy_benefits(Variable):
         "England's Default Scheme limit both the claimant and their family or "
         "partner by age. Income Support and Employment and Support Allowance "
         "name only the partner, as their claimants must be under that age "
-        "(SSCBA 1992 s.124(1)(aa); WRA 2007 s.1(3)(c), pensionable age). "
-        "This count excludes children and "
-        "young persons, whose separate enhanced premium is modelled for "
-        "Housing Benefit only (housing_benefit_child_disability_premiums)."
+        "(SSCBA 1992 s.124(1)(aa) and SSCBA (NI) 1992 s.123(1)(aa); WRA 2007 "
+        "s.1(3)(c) and WRA (NI) 2007 s.1(3)(c), pensionable age). This count "
+        "excludes children and young persons, whose separate enhanced premium "
+        "the model computes for Housing Benefit only "
+        "(housing_benefit_child_disability_premiums)."
     )
     definition_period = YEAR
     reference = (

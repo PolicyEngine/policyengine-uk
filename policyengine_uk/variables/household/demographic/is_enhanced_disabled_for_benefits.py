@@ -8,8 +8,8 @@ class is_enhanced_disabled_for_benefits(Variable):
     documentation = (
         "Deprecated: no premium reads it. The enhanced disability premium "
         "reads receives_enhanced_disability_premium_qualifying_benefit, which "
-        "this returns, and applies each programme's own conditions. It is "
-        "kept for downstream compatibility and for the deprecated counts "
+        "this returns, and applies each programme's own conditions. The model "
+        "keeps it for downstream compatibility and for the deprecated counts "
         "num_enhanced_disabled_adults and num_enhanced_disabled_children. The "
         "Enhanced FRS stores its own value of this flag, which replaces this "
         "formula in dataset runs: reported attendance allowance, disability "
