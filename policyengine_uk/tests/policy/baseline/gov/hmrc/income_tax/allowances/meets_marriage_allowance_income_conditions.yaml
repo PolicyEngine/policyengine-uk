@@ -211,10 +211,10 @@
 - name: In 2015-16 a Scottish taxpayer's limit is the basic rate limit
   period: 2015
   input:
-    # 2015-16 had no Scottish rate, and the 2015-16 s. 55B(2)(b) allows the
-    # basic rate. 42,200 - 10,600 = 31,600, below the basic rate limit,
-    # though above the 31,500 the model's Scottish scale carries back from
-    # 2017-18.
+    # s. 11A takes effect in 2016-17 (SI 2015/2000 art. 3), and the 2015-16
+    # s. 55B(2)(b) allows the basic rate. 42,200 - 10,600 = 31,600, below the
+    # basic rate limit, though above the 31,500 the model's Scottish scale
+    # carries back from 2017-18.
     employment_income: 42_200
     region: SCOTLAND
   output:

@@ -33,11 +33,11 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     non_savings = person("non_savings_income_after_allowances", period)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; in 2017-18 the Scottish scale had only the basic rate below it.
-    # Scottish limits start in 2017-18: in 2016-17 s. 11A(1) charged the
-    # Scottish basic rate on income that would otherwise bear the basic rate,
-    # and 2015-16 had no Scottish rate. The model's Scottish scale carries its
-    # 2017-18 values back to earlier years, so those years use the basic rate
-    # limit here.
+    # Scottish limits start in 2017-18. s. 11A takes effect in 2016-17 (FA
+    # 2014 Sch. 38 para. 12, SI 2015/2000 art. 3), when s. 11A(1) charged the
+    # Scottish basic rate on income that would otherwise bear the basic rate.
+    # The model's Scottish scale carries its 2017-18 values back to earlier
+    # years, so those years use the basic rate limit here.
     scottish = rates.scotland.rates
     basic_rate_limit = rates.uk.thresholds[1] + gross_gift
     if period.start.year < 2017 or len(scottish.rates) < 3:
