@@ -266,6 +266,25 @@ def test_a_year_set_for_later_than_a_later_input_keeps_its_value(route):
     )
 
 
+def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
+    # reset_calculations keeps what the drop before a calculation keeps: the
+    # years the data or a caller supplied, here 2025 and 2038, and not the
+    # years grown from them.
+    simulation = Simulation(
+        dataset=_frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
+    )
+    simulation.set_input("cash_isa_balance", 2038, np.array([7_000.0]))
+    holder = simulation.get_holder("cash_isa_balance")
+    for year in (2035, 2040):
+        simulation.calculate("cash_isa_balance", year)
+        assert holder.get_array(period(year)) is not None
+    simulation.reset_calculations()
+    for year in (2035, 2040):
+        assert holder.get_array(period(year)) is None
+    assert holder.get_array(period(DATA_YEAR))[0] == 3_000
+    assert holder.get_array(period(2038))[0] == 7_000
+
+
 AMOUNTS = st.integers(min_value=0, max_value=5_000_000).map(lambda pence: pence / 100)
 LATER_YEARS = st.integers(min_value=DATA_YEAR + 1, max_value=LAST_YEAR)
 STEPS = st.lists(
