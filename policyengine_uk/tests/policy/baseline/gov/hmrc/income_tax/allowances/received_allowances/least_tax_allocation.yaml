@@ -218,3 +218,29 @@
     received_allowances_dividend_income: 0
     dividend_income_tax: 6_971.25
     income_tax: 14_457.25
+
+- name: Case 12, pay stops at the basic rate limit with nil-rate savings above it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_000
+    savings_interest_income: 300
+    dividend_income: 20_000
+  output:
+    # As in case 8, £270 of the allowance comes off dividends, which sit
+    # above the basic rate limit at 35.75%, rather than off pay at 20%, until
+    # the pay reaches the £37,700 limit; past it, pay would pay 40%. The
+    # £300 of savings sits between the pay and the dividends, within the
+    # £500 savings allowance of a higher rate taxpayer (s. 12B), so no
+    # allowance comes off it. Pay 37,700 x 20% = 7,540. Dividends of £19,730
+    # from £38,000: £500 at the nil rate and (57,730 - 38,500) x 35.75% =
+    # 6,874.725. All the allowance against pay first would charge 7,486 +
+    # (57,730 - 38,230) x 35.75% = 14,457.25.
+    received_allowances_earned_income: 12_300
+    received_allowances_savings_income: 0
+    received_allowances_dividend_income: 270
+    savings_income_tax: 0
+    earned_income_tax: 7_540
+    dividend_income_tax: 6_874.725
+    income_tax: 14_414.725
