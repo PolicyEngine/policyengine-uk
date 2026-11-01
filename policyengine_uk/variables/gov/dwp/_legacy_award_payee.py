@@ -74,10 +74,10 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     claimant's and partner's part of it (holds_formula_award). When both
     match, it applies the ESA report closure. When either differs, it
     applies only the person's legacy closure, and the held award decides
-    payment, as it does for the claimant and partner. A value entered
-    directly, a reform that replaces the award, or
-    disable_simulated_benefits, which holds both amounts in every year, can
-    make them differ. The comparison can't separate two outside reporters in
+    payment, as it does for the claimant and partner. They can differ when a
+    user enters esa_income, a reform replaces it, or
+    disable_simulated_benefits holds both amounts in every year. The
+    comparison can't separate two outside reporters in
     one benefit unit when the held total and the couple's part both equal
     the formula's: own_report_is_paid then applies each one's report
     closure. The benefit unit's award must also be in payment:
@@ -112,7 +112,7 @@ def holds_formula_award(benunit, period, award):
     "esa_income"): both the stored award and the claimant's and partner's
     part of it (claimant_or_partner_esa_income) equal the formula in
     AWARD_ON_REPORTS on open person reports, compared to within half a
-    penny at the precision each is stored in.
+    penny at the precision the model stores each in.
 
     benunit is the simulation's benefit-unit population. Under
     disable_simulated_benefits the two held amounts differ from the

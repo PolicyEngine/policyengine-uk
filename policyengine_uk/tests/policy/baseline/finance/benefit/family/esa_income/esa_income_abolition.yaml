@@ -654,10 +654,10 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # SI 2014/1230 reg 46(2): the deadline with no claim ends the
-    # income-related ESA award but not Housing Benefit for specified or
-    # temporary accommodation. With no income, the means test pays the
-    # whole eligible rent.
+    # The deadline with no claim ends the income-related ESA award, but
+    # Housing Benefit for specified or temporary accommodation doesn't
+    # terminate (SI 2014/1230 reg 46(2)). With no income, the means test
+    # pays the whole eligible rent.
     legacy_benefits_closed: true
     claims_universal_credit: false
     esa_income: 0
@@ -711,10 +711,10 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # The family claims when the abolition reaches its award. Reg 8(3)
-    # keeps this Housing Benefit award after the claim, but the model's
-    # Universal Credit pays the rent through its housing costs element, so
-    # the model ends the award to avoid paying the rent twice.
+    # The family claims when the abolition reaches its award. Under reg
+    # 8(3) this Housing Benefit award continues after the claim, but the
+    # model's Universal Credit pays the rent through its housing costs
+    # element, so the model ends the award to avoid paying the rent twice.
     claims_universal_credit: true
     housing_benefit_eligible: false
     housing_benefit: 0

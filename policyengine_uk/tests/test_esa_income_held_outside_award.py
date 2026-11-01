@@ -17,9 +17,9 @@ only when both held amounts match the formula on open reports
 so in every unit the outside adult stays on income-related ESA, as the held
 award decides for the claimant and partner.
 
-The awards are held three ways: by the disable_simulated_benefits reform
-("frozen"), as entered values ("stored"), and by a reform that replaces
-esa_income's formula ("replaced").
+The test holds the awards three ways: through the disable_simulated_benefits
+reform ("frozen"), as entered values ("stored"), and through a reform that
+replaces esa_income's formula ("replaced").
 """
 
 import json

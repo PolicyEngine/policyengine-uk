@@ -60,10 +60,11 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # Tax credits closed on 6 April 2025, so DWP has moved the family. SI
-    # 2014/1230 reg 46(2) keeps this Housing Benefit award whichever legacy
-    # benefit closed. The closure ends Working Tax Credit, so the family has no
-    # income and the means test pays the whole eligible rent.
+    # Tax credits closed on 6 April 2025, so DWP has moved the family. This
+    # Housing Benefit award doesn't terminate, whichever legacy benefit
+    # closed (SI 2014/1230 reg 46(2)). The closure ends Working Tax Credit,
+    # so the family has no income and the means test pays the whole
+    # eligible rent.
     legacy_benefits_closed: true
     claims_universal_credit: false
     working_tax_credit: 0

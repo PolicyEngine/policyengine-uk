@@ -22,16 +22,19 @@ class housing_benefit_eligible(Variable):
         "Universal Credit. DWP's move off a closed legacy benefit "
         "(legacy_benefits_closed) also ends that award, unless the family "
         "lives in specified or temporary accommodation "
-        "(in_specified_or_temporary_accommodation): SI 2014/1230 reg 46(2) "
-        "(NI: SR 2016/226 reg 47(2)) keeps such an award when the migration "
-        "notice's deadline passes without a claim, whichever legacy benefit "
-        "closed. The model leaves out new claims for that accommodation (reg "
-        "6A(2)) and reg 8(3), which keeps such an award after a Universal "
-        "Credit claim: the model's Universal Credit pays a housing costs "
+        "(in_specified_or_temporary_accommodation): such an award doesn't "
+        "terminate when the migration notice's deadline passes without a "
+        "claim, whichever legacy benefit closed (SI 2014/1230 reg 46(2); NI: "
+        "SR 2016/226 reg 47(2)). The model leaves out new claims for that "
+        "accommodation (reg "
+        "6A(2)) and reg 8(3), under which such an award continues after a "
+        "Universal Credit claim: the model's Universal Credit pays a housing costs "
         "element for these homes, so Housing Benefit beside it would pay the "
-        "rent twice. SI 2025/1148 art. 7 ends every other working-age award "
-        "on 1 July 2026 without a claim (SR 2025/176 art. 7: 1 October 2026 "
-        "in Northern Ireland). The model doesn't apply that date yet, so it "
+        "rent twice. The Secretary of State appointed 1 July 2026 for every "
+        "other working-age award to end without a claim (SI 2025/1148 art. "
+        "7), and the Department for Communities appointed 1 October 2026 in "
+        "Northern Ireland (SR 2025/176 art. 7). The model doesn't apply that "
+        "date yet, so it "
         "pays such an award for the whole of 2026-27 and keeps it until the "
         "family claims or DWP moves it; #1910 adds the date."
     )
@@ -81,23 +84,24 @@ class housing_benefit_eligible(Variable):
         # Working-age families, and mixed-age couples without the saving
         # (since 15 May 2019), claim Universal Credit instead. They keep an
         # existing award until they claim it (reg 8(2A)), so this route also
-        # rules out receiving Universal Credit. SI 2025/1148 art. 7 ends the
-        # remaining working-age awards on 1 July 2026 without a claim (SR
-        # 2025/176 art. 7: 1 October 2026 in Northern Ireland), except in
-        # specified or temporary accommodation (art. 7(4)(a), through reg
-        # 6A(2); NI reg 4A(2)). The model doesn't apply that date yet, so it
+        # rules out receiving Universal Credit. The Secretary of State
+        # appointed 1 July 2026 for the remaining working-age awards to end
+        # without a claim (SI 2025/1148 art. 7; Northern Ireland: 1 October
+        # 2026, SR 2025/176 art. 7), but not in specified or temporary
+        # accommodation (art. 7(4)(a), through reg 6A(2); NI reg 4A(2)). The
+        # model doesn't apply that date yet, so it
         # pays such an award for the whole of 2026-27 and keeps it until the
         # family claims or DWP moves it; #1910 adds the date.
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("claims_universal_credit", period)
         # Once another of the family's legacy benefits has closed, DWP's
         # migration notice ends this award even if the family does not claim
-        # Universal Credit (reg 46(1)(a)), but not an award for specified or
-        # temporary accommodation, whichever legacy benefit closed (reg
-        # 46(2); NI: SR 2016/226 reg 47(2)). A claim still ends that award
-        # here: reg 8(3) keeps it, but the model's Universal Credit pays a
-        # housing costs element for these homes, so keeping it would pay the
-        # rent twice.
+        # Universal Credit (reg 46(1)(a)). An award for specified or
+        # temporary accommodation doesn't terminate there, whichever legacy
+        # benefit closed (reg 46(2); NI: SR 2016/226 reg 47(2)). A claim
+        # still ends that award here. Under reg 8(3) it continues, but the
+        # model's Universal Credit pays a housing costs element for these
+        # homes, so keeping it would pay the rent twice.
         migrated = benunit("legacy_benefits_closed", period)
         accommodation = benunit("in_specified_or_temporary_accommodation", period)
         continuing_award = already_claiming & ~claiming_uc & (~migrated | accommodation)
