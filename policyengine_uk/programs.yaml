@@ -671,7 +671,7 @@ programs:
     agency: Revenue Scotland
     status: complete
     coverage: Scotland
-    verified_start_year: 2019
+    verified_start_year: 2017
     notes: Devolved tax bands applied via income tax system
 
   - id: lbtt
