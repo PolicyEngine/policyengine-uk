@@ -12,8 +12,8 @@ class TaxBand(Enum):
 
 
 def uk_tax_band_above_limits(person, period, parameters):
-    """The rest-of-UK band before 2018-19: income above a limit is in the
-    band above it."""
+    """Return the rest-of-UK band before 2018-19, counting income above each
+    limit in the next band."""
     allowances = person("allowances", period)
     ani = person("net_income", period)
     rates = parameters(period).gov.hmrc.income_tax.rates
@@ -35,8 +35,8 @@ def uk_tax_band_above_limits(person, period, parameters):
 def scottish_tax_band(person, period, parameters):
     """The highest band in which a Scottish taxpayer has taxable income.
 
-    Use the Scottish limits for income other than savings and dividends,
-    the only income the Scottish rates charge (ITA 2007 s. 11A and the
+    Use Scottish limits for income other than savings and dividends.
+    Parliament applies Scottish rates to this income (ITA 2007 s. 11A and the
     Scottish rate resolutions). Treat savings and dividends as the top
     slices of income (s. 16) and apply the rest-of-UK limits, since they
     bear the rates they would bear outside Scotland (ss. 11D(6) and 13(5)).
@@ -131,8 +131,8 @@ class tax_band(Variable):
         return uk_tax_band_above_limits(person, period, parameters)
 
     def formula_2017(person, period, parameters):
-        # Annual formulas start on 1 January, so this runs from 2017-18, the
-        # first year of Scottish rates and limits.
+        # Annual formulas start on 1 January, so this runs from 2017-18, when
+        # the Scottish Parliament first set its own band limits.
         return where(
             person("pays_scottish_income_tax", period),
             scottish_tax_band(person, period, parameters),

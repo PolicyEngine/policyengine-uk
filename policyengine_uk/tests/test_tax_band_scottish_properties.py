@@ -9,29 +9,30 @@ dividend rates (savings_income_tax and dividend_income_tax, ss. 11D(6) and
 13(5)). These tests read the band off that liability: they raise the rates of
 one band at a time by RISE and see which bands' rates each person pays.
 
-The people are single, so the Marriage Allowance, which the model takes off
-earned income rather than giving as a tax reduction (#1947), plays no part.
-With the starting rate for savings, the Personal Savings Allowance and the
-dividend allowance set to nothing, every pound of taxable income is charged at
-a band's rate, and for every single Scottish taxpayer:
+These tests use single adults, so the model grants them no Marriage
+Allowance. We set the starting-rate amount, Personal Savings Allowance and
+dividend allowance to zero, so the model taxes every taxable pound at a band's
+positive rate, and for every single Scottish taxpayer:
 
 - a person in a band pays tax at that band's rates on some income and at no
   higher band's rates, and a person with no band pays no tax;
 - the Marriage Allowance income conditions hold exactly when the person pays
   nothing at the higher or additional rates (s. 55B(2)(b)).
 
-With baseline nil rates restored, the model keeps nil-rate income in its
+With the baseline nil-rate amounts, the model keeps nil-rate income in its
 underlying band, and no one pays tax at the higher or additional rates above
 their band.
 
-The Marriage Allowance income conditions do not read the band. With the nil
-rates in force, under the law in force or with its rate limits and nil-rate
-amounts changed, for every single person in England, and in Scotland from
-2017-18, they hold exactly when the liability charges no income at a rate
-s. 55B(2)(b) forbids and, with the dividend allowance removed
-(s. 55B(2)(ba)), none at the dividend upper or additional rate. So savings at
-the savings nil rate or the starting rate for savings never stop the
-allowance.
+The Marriage Allowance income conditions do not read the band. With the
+baseline nil-rate amounts and with reformed limits and amounts, for every
+single person in England, and in Scotland from 2017-18, they hold exactly when
+the liability charges no income at a rate s. 55B(2)(b) forbids and, with the
+dividend allowance removed (s. 55B(2)(ba)), none at the dividend upper or
+additional rate. So savings at the savings nil rate or the starting rate for
+savings never stop the allowance. The reforms start the dividend upper rate at
+the basic rate limit, as s. 13(2) does, and hold the starting rate limit for
+savings at or below the basic rate limit, the range in which the model's
+savings liability places the savings nil rate as s. 12A does.
 
 Before #2350 the band compared all taxable income with the Scottish limits.
 Against that formula, which ran from 2019-20, the band never rises, except
@@ -193,12 +194,12 @@ def liability(sim, period):
 
 
 def charged_at(sim, period, paths):
-    """The income charged at the rates at these paths: the rise in tax when
-    only those rates rise by RISE, divided by RISE."""
+    """Measure the income the model taxes at these rates by raising only
+    these rates by RISE and dividing the tax increase by RISE."""
     parameters = sim.tax_benefit_system.parameters
     before = liability(sim, period)
     rates = {path: parameters.get_child(path)(str(period)) for path in paths}
-    # A rate with no value that year (a Scottish rate not yet set) stays so.
+    # Skip Scottish rates that Parliament had not set that year.
     raised = {path: rate + RISE for path, rate in rates.items() if rate is not None}
     with law(sim, period, raised):
         return (liability(sim, period) - before) / RISE
@@ -250,7 +251,7 @@ def test_no_one_pays_higher_rates_above_their_band(sim, drawn, period):
     set_people(sim, drawn, period)
     band = band_of(sim, period)
     tax = liability(sim, period)
-    # The Marriage Allowance and counts by marginal rate turn on these.
+    # Counts by marginal rate use these bands.
     income_at = charged(sim, period, ["HIGHER", "ADDITIONAL"])
     for i, b in enumerate(band):
         case = f"{drawn[i]} in {period}: {b}, {[income_at[x][i] for x in income_at]}"
@@ -400,7 +401,7 @@ def test_marriage_allowance_follows_the_liability_with_nil_rates(
     sim = mixed_sim
     set_people(sim, drawn, period)
     parameters = sim.tax_benefit_system.parameters
-    # A limit with no value that year (a Scottish rate not yet set) stays so.
+    # Skip Scottish rates that Parliament had not set that year.
     changes = {
         path: value
         for path, value in changes.items()

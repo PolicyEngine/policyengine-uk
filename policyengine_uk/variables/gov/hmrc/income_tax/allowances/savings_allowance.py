@@ -13,9 +13,9 @@ class savings_allowance(Variable):
         "12B(8)(a)(iv) and (b)(iv) count as higher- or additional-rate income "
         "what would be charged at those rates if they were not a Scottish or "
         "Welsh taxpayer, so the bands are the rest-of-UK ones for everyone. "
-        "tax_band follows the Scottish bands for a Scottish taxpayer, as the "
-        "Marriage Allowance conditions need, so it is not read here. Taxable "
-        "income is taken, as in tax_band, as net income less allowances, and "
+        "For Scottish taxpayers, tax_band also uses Scottish limits for "
+        "non-savings income. This calculation uses the rest-of-UK limits "
+        "directly. Taxable income is taken, as in tax_band, as net income less allowances, and "
         "a Gift Aid gift raises the basic and higher rate limits by its "
         "grossed-up amount (ITA 2007 s. 414(2)(b))."
     )

@@ -21,7 +21,7 @@
 - name: Higher-rate earner fails the Marriage Allowance income conditions
   period: 2021
   input:
-    # 60,000 - 12,570 = 47,430, so 9,730 is at the higher rate.
+    # 60,000 - 12,570 = 47,430. The model taxes 9,730 at the higher rate.
     employment_income: 60_000
     region: NORTH_EAST
   output:
@@ -30,8 +30,8 @@
 - name: Additional-rate earner fails the Marriage Allowance income conditions
   period: 2021
   input:
-    # No personal allowance above 125,140 of income; 10,000 is above the
-    # 150,000 higher rate limit.
+    # The personal allowance falls to zero at 125,140 of income, and 10,000
+    # of the income exceeds the 150,000 higher rate limit.
     employment_income: 160_000
     region: NORTH_EAST
   output:

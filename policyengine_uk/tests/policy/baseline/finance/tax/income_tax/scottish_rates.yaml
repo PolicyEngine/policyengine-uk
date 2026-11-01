@@ -132,16 +132,17 @@
 # Scottish rates charge only income that is neither savings nor dividends
 # (ITA 2007 s. 11A(1A); S6M-16531 for 2025-26). Savings and dividends are the
 # top slice (s. 16) and take the rates and bands they would bear outside
-# Scotland (ss. 11D(6) and 13(5)). The band is the higher of the two. In
+# Scotland (ss. 11D(6) and 13(5)). The model returns the higher band. In
 # 2025-26 the personal allowance is £12,570, the Scottish limits on taxable
 # income are £2,827, £14,921, £31,092, £62,430 and £125,140 (19%, 20%, 21%,
 # 42%, 45%, 48%), the basic rate limit is £37,700, the dividend allowance is
 # £500 (8.75% ordinary, 33.75% upper) and the Personal Savings Allowance is
 # £1,000, or £500 with higher-rate income (s. 12B). Marriage Allowance
 # applies the rate conditions of s. 55B(2)(b) and the dividend counterfactual
-# of s. 55B(2)(ba); savings charged at the savings nil rate leave it open.
+# of s. 55B(2)(ba). Savings at the savings nil rate do not bar the Marriage
+# Allowance.
 
-- name: Scottish 2025 pay of 40000 and dividends of 5000 is intermediate
+- name: Scottish 2025 pay of 40000 and dividends of 5000 reaches the intermediate band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -163,7 +164,7 @@
     earned_income_tax: 5_582.82
     dividend_income_tax: 393.75
 
-- name: Scottish 2025 pay of 40000 and savings of 5000 is intermediate
+- name: Scottish 2025 pay of 40000 and savings of 5000 reaches the intermediate band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -186,7 +187,7 @@
     earned_income_tax: 5_582.82
     savings_income_tax: 800
 
-- name: England 2025 pay of 40000 and dividends of 5000 is basic
+- name: England 2025 pay of 40000 and dividends of 5000 reaches the basic band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -206,7 +207,7 @@
     earned_income_tax: 5_486
     dividend_income_tax: 393.75
 
-- name: Scottish 2025 pay of 60000 and dividends of 20000 is higher
+- name: Scottish 2025 pay of 60000 and dividends of 20000 reaches the higher band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -230,7 +231,7 @@
     earned_income_tax: 13_213.80
     dividend_income_tax: 6_581.25
 
-- name: Scottish 2025 pay of 60000 and savings of 20000 is higher
+- name: Scottish 2025 pay of 60000 and savings of 20000 reaches the higher band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -251,7 +252,7 @@
     earned_income_tax: 13_213.80
     savings_income_tax: 7_800
 
-- name: England 2025 pay of 60000 and dividends of 20000 is higher
+- name: England 2025 pay of 60000 and dividends of 20000 reaches the higher band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -337,7 +338,7 @@
     earned_income_tax: 6_351.84
     dividend_income_tax: 534.45
 
-- name: Scottish 2025 dividends one pound above the basic rate limit are higher
+- name: Scottish 2025 dividends one pound above the basic rate limit reach the higher band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -383,7 +384,7 @@
     earned_income_tax: 6_509.84
     dividend_income_tax: 393.75
 
-- name: Scottish 2025 allowance beyond pay goes to dividends, which are basic
+- name: Scottish 2025 allowance beyond pay goes to dividends, which reach the basic band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -405,7 +406,7 @@
     earned_income_tax: 0
     dividend_income_tax: 1_918.88
 
-- name: Scottish 2025 allowance beyond pay goes to savings, which are basic
+- name: Scottish 2025 allowance beyond pay goes to savings, which reach the basic band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -427,7 +428,7 @@
     earned_income_tax: 0
     savings_income_tax: 3_286
 
-- name: Scottish 2025 starter-rate pay without savings or dividends is starter
+- name: Scottish 2025 starter-rate pay without savings or dividends reaches the starter band
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -461,7 +462,7 @@
     tax_band: NONE
     earned_income_tax: 0
 
-- name: Scottish 2018-19 pay of 40000 and dividends of 5000 is intermediate
+- name: Scottish 2018-19 pay of 40000 and dividends of 5000 reaches the intermediate band
   period: 2018
   absolute_error_margin: 0.01
   input:
@@ -486,7 +487,7 @@
     earned_income_tax: 5_770
     dividend_income_tax: 225
 
-- name: Scottish 2017-18 pay above 43000 is higher
+- name: Scottish 2017-18 pay above 43000 reaches the higher band
   period: 2017
   absolute_error_margin: 0.01
   input:
@@ -511,7 +512,7 @@
 # £16,956, £31,092, £62,430 and £125,140 of taxable income. The personal
 # allowance stays £12,570 and the basic rate limit £37,700.
 
-- name: Scottish 2026 pay of 40000 and dividends of 5000 is intermediate
+- name: Scottish 2026 pay of 40000 and dividends of 5000 reaches the intermediate band
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -532,7 +533,7 @@
     meets_marriage_allowance_income_conditions: true
     earned_income_tax: 5_551.07
 
-- name: Scottish 2026 pay of 60000 and savings of 20000 is higher
+- name: Scottish 2026 pay of 60000 and savings of 20000 reaches the higher band
   period: 2026
   input:
     people:
@@ -568,7 +569,7 @@
     tax_band: INTERMEDIATE
     meets_marriage_allowance_income_conditions: true
 
-- name: Scottish 2026 dividends one pound above the basic rate limit are higher
+- name: Scottish 2026 dividends one pound above the basic rate limit reach the higher band
   period: 2026
   input:
     people:
@@ -584,7 +585,7 @@
     tax_band: HIGHER
     meets_marriage_allowance_income_conditions: false
 
-- name: Scottish 2026 allowance beyond pay goes to dividends, which are basic
+- name: Scottish 2026 allowance beyond pay goes to dividends, which reach the basic band
   period: 2026
   input:
     people:
@@ -673,7 +674,7 @@
     meets_marriage_allowance_income_conditions: true
     property_income_tax: 6_351.84
 
-- name: Scottish 2025 property income one pound above the higher rate limit is higher
+- name: Scottish 2025 property income one pound above the higher rate limit reaches the higher band
   period: 2025
   absolute_error_margin: 0.01
   input:

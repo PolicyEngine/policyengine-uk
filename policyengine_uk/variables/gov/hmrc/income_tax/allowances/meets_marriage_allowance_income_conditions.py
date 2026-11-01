@@ -4,18 +4,21 @@ from policyengine_uk.model_api import *
 def liable_only_at_marriage_allowance_rates(person, period, parameters):
     """Whether the person pays no income tax above the basic rates.
 
-    ITA 2007 s. 55B(2)(b) and s. 55C(1)(c) allow only the basic rate, the
-    property, default, savings, Scottish and Welsh basic rates, the Scottish
-    starter and intermediate rates, the dividend ordinary rate and the nil and
-    starting rates for savings. So no non-savings income may reach the higher
-    rate (the Scottish higher rate for a Scottish taxpayer), and no savings the
-    savings higher rate. Dividends covered by the dividend nil rate still
-    count: s. 55B(2)(ba) and s. 55C(1)(ca) test the dividend upper rate as if
+    Apply the rates that s. 55B(2)(b) and s. 55C(1)(c) permit for the year
+    being calculated. From 2016-17 these include the savings nil rate; from
+    2018-19 the Scottish list includes rates below basic and the intermediate
+    rate. Where s. 55B(2)(ba) and s. 55C(1)(ca) apply, test dividends as if
     s. 13A were omitted.
 
-    The bands are the ones the model taxes with: Gift Aid extends the rate
-    limits by the grossed-up gift (s. 414(2)(b)), as in earned_income_tax,
-    and does not come off the income.
+    Gift Aid extends the rate limits by the grossed-up gift (s. 414(2)(b));
+    it does not reduce taxable income. Before 2017-18 this test uses the
+    basic rate limit for Scottish taxpayers, even though the model's
+    historical Scottish liability currently reads the 2017-18 schedule. The
+    test also follows the statute where the model's liability departs from
+    it: it starts the dividend upper rate at the basic rate limit (ss. 10
+    and 13), counts no savings nil rate before 2016-17 (FA 2016 s. 4(17)),
+    and places the nil-rate slice above the starting rate limit for savings
+    (s. 12A).
 
     The test reads income before the Marriage Allowance. Step 4 of s. 23
     charges tax at each rate before Step 6 deducts the tax reductions, and
@@ -28,14 +31,14 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     gross_gift = person("gift_aid_grossed_up", period)
     # Earnings, pensions, property and other non-savings income after
     # allowances, which go to it first: the income below savings and
-    # dividends (s. 16). It is non_savings_taxable_income before the
+    # dividends (s. 16). This reads non-savings taxable income before the
     # Marriage Allowance.
     non_savings = person("non_savings_income_after_allowances", period)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; in 2017-18 the Scottish scale had only the basic rate below it.
-    # Before 2017-18 a Scottish taxpayer's limit is the basic rate limit.
-    # Section 11A takes effect in 2016-17 (FA 2014 Sch. 38 para. 12, SI
-    # 2015/2000 art. 3), when s. 11A(1) charged the Scottish basic rate on
+    # Before 2017-18 the test holds a Scottish taxpayer to the basic rate
+    # limit. Section 11A takes effect in 2016-17 (FA 2014 Sch. 38 para. 12,
+    # SI 2015/2000 art. 3), when s. 11A(1) charged the Scottish basic rate on
     # income that would otherwise bear the basic rate. The model reads its
     # Scottish scale's 2017-18 values in earlier years too, so the test sets
     # the limit by the year.
