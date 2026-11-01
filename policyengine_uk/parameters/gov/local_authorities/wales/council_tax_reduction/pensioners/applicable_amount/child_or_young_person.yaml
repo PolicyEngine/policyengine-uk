@@ -1,12 +1,12 @@
 description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the Welsh Council Tax Reduction prescribed requirements. Wales did not raise it for 2020-21 or 2021-22, so it differs from the Housing Benefit amount in those years.
 values:
   # Each value is the paragraph 2 amount in the version of Schedule 2 in
-  # force on 30 April of that year.
+  # force on 30 April of that year, with the amending regulations it reflects.
   2013-04-01:
-    value: 64.99
+    value: 65.62
     reference:
-      - title: WSI 2012/3144 Sch. 2 para. 2 (schemes for 2013-14), as in force on 30 April 2013
-        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/2/2013-04-30
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Wales) (Amendment) Regulations 2013 (WSI 2013/112) reg. 5(b), amending WSI 2012/3144 Sch. 2 para. 2 for schemes for 2013-14
+        href: https://www.legislation.gov.uk/wsi/2013/112/made
   2014-04-01:
     value: 66.33
     reference:

@@ -79,7 +79,10 @@ def calculate(data, claim, status_first=False):
 @settings(max_examples=4, deadline=None, derandomize=True)
 @given(
     st.sampled_from(sorted(COUNTRIES)),
-    st.integers(15000, 19000),
+    # Income after tax exceeds the applicable amount, which includes the
+    # children's amounts (up to 2 * 109.85 * 52 in Scotland), so the award
+    # is interior and below the 35,000 Winter Fuel Payment charge threshold.
+    st.integers(30000, 34000),
     st.integers(1, 2),
     st.booleans(),
 )

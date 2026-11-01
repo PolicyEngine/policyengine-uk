@@ -24,8 +24,9 @@ liability, ND the non-dependant deductions and A the applicable amount:
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
    max(0, I - A) - ND) when household savings are within 16,000, where I is the
    income definition on main before this change less pensioners' Child Benefit
-   and the schemes' pensioner earnings disregard, recomputed here (income from its components,
-   the disregard from the statutory sums) rather than read from the variables
+   and the schemes' pensioner earnings disregard, plus pensioners' tariff income
+   from capital, recomputed here (income from its components, the disregard and
+   the tariff from the statutory sums) rather than read from the variables
    under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
@@ -294,6 +295,13 @@ MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_ins
 # 2013/3029 Sch 3; SSI 2012/319 Sch 2).
 PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
 PENSIONER_ADDITIONAL_DISREGARD = 17.10
+# Since #1933, a pensioner family's general-rules income also adds tariff
+# income from capital after the floor, written out from the law: £1 a week
+# for each £500, or part of £500, of capital above £10,000 and up to £16,000
+# (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31; SSI 2012/319 reg
+# 27(2)). Household savings are these families' capital.
+TARIFF_THRESHOLD = 10_000
+TARIFF_STEP = 500
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
     "savings",
@@ -372,6 +380,13 @@ def calculate(units, guarantee=None, **kwargs):
         - benunit_total(MAIN_DEDUCTIONS)
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
+    )
+    tariff_steps = np.ceil(
+        np.maximum(0, np.minimum(values["savings"], CAPITAL_LIMIT) - TARIFF_THRESHOLD)
+        / TARIFF_STEP
+    )
+    values["income_under_main_definition"] += np.where(
+        values["council_tax_reduction_pensioner"], 52 * tariff_steps, 0
     )
     # Each claim's scheme follows its own family's pensioner status.
     values["national"] = np.array(
