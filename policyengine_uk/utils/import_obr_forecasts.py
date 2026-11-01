@@ -710,8 +710,7 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
         if self.unit_cell not in CLEARANCE_TABLE_TEXTS.get(self.title, ()):
             raise ValueError(
                 f"{name}: a clearance line needs the cell that states its "
-                f"unit among its table's read texts, and {self.unit_cell!r} "
-                "is not one"
+                f"unit, and its table's read texts lack {self.unit_cell!r}"
             )
         # The importer links clearance outturns to the previous EFO's outturn.
         if self.rates or self.outturn is not None:
@@ -731,9 +730,10 @@ ALCOHOL_CLEARANCES = "alcohol clearance forecasts"
 TOBACCO_STICKS = "cigarette clearances (million sticks)"
 TOBACCO_KILOGRAMS = "non-cigarette clearances ('000s kg)"
 ALCOHOL_HECTOLITRES = "note: all clearances are in thousands of hectolitres of alcohol."
-# The text of every cell below each clearance table's title in Tables 3.11
-# and 3.12 of the March 2025 and March 2026 EFOs and Tables 4.11 and 4.12 of
-# October 2026, but numbers and fiscal years. Someone read each one. The
+# The text of every cell from each clearance table's title down to the next
+# table's title, in Tables 3.11 and 3.12 of the March 2025 and March 2026
+# EFOs and Tables 4.11 and 4.12 of October 2026, but the title, numbers and
+# fiscal years. Someone read each one. The
 # importer compares a cell's text as receipts_label gives it: lower case, in
 # single spaces and without a footnote number after a label's last letter,
 # so " Wine1" gives "wine". It refuses any other text
@@ -1314,8 +1314,8 @@ def find_receipts_line(
 
     The importer reads only that table's rows: its cash unit, its year
     headers and its "Outturn" and "Forecast" markers, which may sit on one
-    row or several. For a clearance line it first checks every cell of the
-    line's table against the texts someone has read
+    row or several. Before it reads a clearance line's values, it checks
+    every cell of the line's table against the texts someone has read
     (``validate_clearance_table``).
     """
     matches = []

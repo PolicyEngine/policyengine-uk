@@ -3077,12 +3077,12 @@ def test_a_clearance_spec_needs_a_read_unit_cell_and_takes_no_rates_or_outturn()
     spec = CLEARANCE_SPECS["wine"]
     with pytest.raises(ValueError, match="needs the cell that states its unit"):
         ClearanceSeriesSpec(path=("per_capita", "x"), title=ALCOHOL_CLEARANCES, row="r")
-    with pytest.raises(ValueError, match=r"and '\(tonnes\)' is not one"):
+    with pytest.raises(ValueError, match=r"texts lack '\(tonnes\)'"):
         replace(spec, unit_cell="(tonnes)")
     # Each table's list holds its own cells.
-    with pytest.raises(ValueError, match="is not one"):
+    with pytest.raises(ValueError, match="texts lack 'cigarette clearances"):
         replace(spec, unit_cell=CLEARANCE_SPECS["cigarettes"].unit_cell)
-    with pytest.raises(ValueError, match="is not one"):
+    with pytest.raises(ValueError, match="needs the cell that states its unit"):
         replace(spec, title="alcohol receipts forecasts")
     with pytest.raises(ValueError, match="takes no rates"):
         replace(spec, rates=GAMBLING_SPECS[0].rates)
@@ -3474,8 +3474,8 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
 
 
 def real_levels(workbook, key):
-    """The levels the importer reads for ``key`` from its table alone in
-    ``workbook``, and from the real October 2026 table."""
+    """Read the levels of ``key`` from its table alone in ``workbook``, and
+    from the real October 2026 table."""
     spec = CLEARANCE_SPECS[key]
     table = "4.11" if spec.title == TOBACCO_CLEARANCES else "4.12"
     return (
@@ -3484,7 +3484,7 @@ def real_levels(workbook, key):
     )
 
 
-# The importer reads no words in a clearance table: each cell must hold a
+# The importer interprets no words in a clearance table: each cell must hold a
 # number, a fiscal year or a text someone has read (CLEARANCE_TABLE_TEXTS).
 
 TOBACCO_LINES = ("cigarettes", "hand_rolling_tobacco", "other_tobacco_products")
@@ -3502,9 +3502,9 @@ REAL_CLEARANCE_TABLES = {
 
 @lru_cache(maxsize=None)
 def real_clearance_rows(release, title):
-    """The rows of a real clearance table's sheet, and of its table: from
-    its title's row to the row above the next table's title, or to the
-    sheet's end, with that title in lower case, without its number."""
+    """Read a real clearance table's sheet and find the table: its title's
+    row, the row of the next table's title or the sheet's end, and that
+    title in lower case without its number."""
     workbook, sheet = REAL_CLEARANCE_TABLES[release, title]
     rows = read_sheet_rows(workbook, sheet)
     titles = [" ".join(str(row.get("B") or "").split()) for row in rows]
@@ -3518,8 +3518,8 @@ def real_clearance_rows(release, title):
 
 
 def unread(table, title, *cells):
-    """The importer's refusal of real Table ``table`` for the unread
-    ``cells``, each as (text, column)."""
+    """Write out the importer's refusal of real Table ``table`` for the
+    unread ``cells``, each as (text, column)."""
     return (
         f"Table {table} (sheet {table}) holds text the importer has not read: "
         + "; ".join(f"{text!r} in column {column}" for text, column in cells)
@@ -3531,8 +3531,9 @@ def unread(table, title, *cells):
 
 
 def test_both_real_release_pairs_read_every_series():
-    """March 2026 over March 2025 and October 2026 over March 2026 each read
-    all 17 series, the six clearance lines among them."""
+    """The importer reads all 17 series, the six clearance lines among
+    them, from each real pair: March 2026 over March 2025 and October 2026
+    over March 2026."""
     for current, previous in (
         (REAL_RECEIPTS[2026], REAL_RECEIPTS[2025]),
         (REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026]),
@@ -3720,6 +3721,13 @@ UNREAD_EDITS = {
     "other-table-text": ("4.11", {"B10": "Wine"}, {}, []),
     # Text where a number belongs.
     "not-a-number": ("4.11", {"D5": "nan"}, {}, []),
+    # A note shaped like a table's title, which sheet_tables reads as one.
+    "title-shaped-note": (
+        "4.11",
+        {},
+        {},
+        ["1.1 Note: Cigarette forecasts shown in ten million sticks."],
+    ),
 }
 
 
@@ -3727,7 +3735,7 @@ UNREAD_EDITS = {
 def test_text_no_one_has_read_stops_the_real_tables(name):
     """For each edit, the importer refuses every line of the edited table,
     naming each unread cell, and the run stops before it renders anything;
-    the other table's lines read as before."""
+    the importer reads the other table's lines as before."""
     table, cells, scale, notes = UNREAD_EDITS[name]
     changed = edit_real_table(
         REAL_OCTOBER_2026_RECEIPTS, table, cells=cells, scale=scale, notes=notes
@@ -3759,9 +3767,10 @@ def test_text_no_one_has_read_stops_the_real_tables(name):
 
 
 def test_the_scale_edits_change_the_growth_the_figures_give():
-    """Read in the units the real tables state, the two rescaled tables'
-    figures would give cigarette clearances growth of -91.0% in 2026-27
-    for -10.3%, and other tobacco -99.9% in 2025-26 for -13.6%."""
+    """In the units the real tables state, the two rescaled tables' figures
+    give cigarette clearances growth of -91.0% in 2026-27, where the
+    published figures give -10.3%, and other tobacco growth of -99.9% in
+    2025-26, where they give -13.6%."""
 
     def growth(levels, key):
         # 2025-26 over March 2026's 2024-25 outturn, then 2026-27 over 2025-26.
@@ -3786,10 +3795,10 @@ def test_the_scale_edits_change_the_growth_the_figures_give():
 
 
 def test_a_real_table_without_its_unit_cell_refuses_the_lines_it_describes():
-    """Cleared, the non-cigarette total's label and Table 4.12's note leave
-    hand-rolled tobacco, other tobacco and the alcohol lines without the
-    cell that states their unit, and the importer refuses them; cigarettes
-    read as before."""
+    """The helper clears the non-cigarette total's label and, separately,
+    Table 4.12's note. Each leaves its lines, hand-rolled and other tobacco
+    or the three alcohol lines, without the cell that states their unit,
+    and the importer refuses them; it reads cigarettes as before."""
     for table, cell in (("4.11", "B6"), ("4.12", "B8")):
         changed = edit_real_table(REAL_OCTOBER_2026_RECEIPTS, table, cells={cell: None})
         for key, spec in CLEARANCE_SPECS.items():
@@ -3810,13 +3819,14 @@ def test_a_real_table_without_its_unit_cell_refuses_the_lines_it_describes():
 
 
 def test_the_alcohol_receipts_table_stays_outside_the_clearance_table():
-    """On the real October 2026 sheet 4.12, the alcohol receipts forecasts
-    follow the clearances, with "£ billion" and "Note: All taxes are on an
-    accrued basis.". The clearance table ends at their title: a note in the
-    receipts table leaves the clearance lines reading, the same note in the
-    clearance table's last row stops them, and so does a receipts title the
-    list of ends does not name, since the clearance table then runs through
-    the receipts table to the sheet's end."""
+    """On the real October 2026 sheet 4.12 the OBR follows the alcohol
+    clearances with the alcohol receipts forecasts, which hold "£ billion"
+    and "Note: All taxes are on an accrued basis.". The importer ends the
+    clearance table at their title. It reads the clearance lines with a note
+    or "£ million" in the receipts table, and refuses them with the same
+    note in the clearance table's last row, or under a receipts title
+    CLEARANCE_TABLE_ENDS does not name, since the clearance table then runs
+    to the sheet's end."""
     rows, start, end, following = real_clearance_rows(
         "October 2026", ALCOHOL_CLEARANCES
     )
@@ -3849,10 +3859,9 @@ def test_the_alcohol_receipts_table_stays_outside_the_clearance_table():
 
 
 def unread_text(text, title):
-    """Whether the importer must refuse ``text`` in a clearance table titled
-    ``title``: written out from the lists, not read by the importer, and
-    leaving out blanks, numbers, fiscal years and table titles a list
-    names."""
+    """Decide from the lists, without the importer, whether it must refuse
+    ``text`` in a clearance table titled ``title``. The test leaves out
+    blanks, numbers, fiscal years and table titles a list names."""
     label = receipts_label(text)
     if not label or label in CLEARANCE_TABLE_TEXTS[title]:
         return False
@@ -3890,6 +3899,9 @@ UNIT_SHAPED = st.one_of(
             "Note: Non-cigarettes are in million sticks.",
             "Note: Sake clearances are in thousands of hectolitres of alcohol.",
             "Note: All clearances are in millions of litres of alcohol.",
+            # Shaped like a table's title, so sheet_tables starts a table there.
+            "1.1 Note: Cigarette forecasts shown in ten million sticks.",
+            "4.13 Tobacco clearances in ten million sticks",
         ]
     ),
     st.builds(
@@ -3931,7 +3943,7 @@ def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
     table: the importer names the cell, or finds no line or table where the
     text took a label's or the title's place. A text from the list, other
     than a line's label or a marker, in a cell outside the lines and the
-    year row, leaves every line reading as before."""
+    year row, changes nothing: the importer reads every line as before."""
     release, title = table
     _, sheet = REAL_CLEARANCE_TABLES[table]
     real, start, end, _ = real_clearance_rows(release, title)
@@ -4000,11 +4012,11 @@ REMOTE_GAMING = next(
 
 
 def test_per_head_growth_divides_the_base_growth_the_series_holds():
-    """Remote Gaming Duty receipts double while the base,
-    receipts over the rate, grows 10%, and population grows 1%. Per head
-    the base grows 1.10 / 1.01 - 1, not 2 / 1.01 - 1 (receipts) or the
-    growth the levels and the model's rates give, with or without a previous
-    line."""
+    """Remote Gaming Duty receipts double and its base, receipts over the
+    rate, grows 10%, while population grows 1%. per_head_growth returns
+    1.10 / 1.01 - 1 for the base's growth per head, with or without a
+    previous line, not 2 / 1.01 - 1 (receipts) or the growth the levels and
+    the model's rates give."""
     line = ReceiptsLine(
         table="4.10",
         label="Remote Gaming Duty",
@@ -4037,9 +4049,10 @@ def test_per_head_growth_divides_the_base_growth_the_series_holds():
 
 
 def test_real_remote_gaming_base_per_head_rounds_once():
-    """The real line has its own outturn and no previous line. Per head, each
-    year divides the base's growth before rounding by one plus population
-    growth and rounds once, as the committed series holds it."""
+    """The real line has its own outturn and no previous line. Each year the
+    importer divides one plus the base's growth before rounding by one plus
+    population growth, subtracts one and rounds once, as the committed
+    series holds it."""
     growth = compute_receipts_growth(
         REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026], specs=(REMOTE_GAMING,)
     )[REMOTE_GAMING.path]
@@ -4065,11 +4078,12 @@ def test_real_remote_gaming_base_per_head_rounds_once():
 def test_per_head_growth_times_population_growth_is_the_series_growth(
     ratios, population
 ):
-    """For any growth before rounding and any population growth: per head,
-    one plus the series times one plus population growth is the growth to
-    within the six-decimal rounding, 5e-7 times one plus population growth;
-    the per-head series rounds its own ratios; and a series without its
-    ratios divides one plus its six-decimal values instead."""
+    """For any growth before rounding and any population growth,
+    (1 + per-head growth) × (1 + population growth) matches one plus the
+    aggregate growth to within the six-decimal rounding, 5e-7 ×
+    (1 + population growth). The per-head series rounds its own ratios, and
+    for a series without its ratios per_head_growth divides one plus its
+    six-decimal values instead."""
     years = range(2025, 2025 + len(ratios))
     by_year = dict(zip(years, ratios))
     population_by_year = dict(zip(range(2025, 2033), population))
