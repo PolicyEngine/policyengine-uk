@@ -721,3 +721,25 @@
     miscellaneous_income: -300
   output:
     council_tax_reduction_non_dep_gross_income: 1_000
+
+- name: council_tax_reduction_non_dep_gross_income counts other investment income
+  # Gross income is earnings and any other income (DWP HB guidance A5.542).
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 1_000
+    other_investment_income: 2_000
+  output:
+    council_tax_reduction_non_dep_gross_income: 3_000
+
+- name: council_tax_reduction_non_dep_gross_income counts a self-employment or property loss as nil
+  # No deduction for business expenses (DWP HB guidance A5.551), so a loss
+  # does not reduce other income.
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 5_000
+    self_employment_income: -3_000
+    property_income: -1_000
+  output:
+    council_tax_reduction_non_dep_gross_income: 5_000
