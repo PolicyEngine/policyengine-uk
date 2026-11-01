@@ -764,7 +764,10 @@ def test_each_entered_part_of_pension_credit_drops_the_age_and_take_up_condition
 
 
 class ScreenReads:
-    """Records each variable the income-related ESA screen reads."""
+    """Records each variable the income-related ESA screen reads in a
+    simulation itself. A branch can change the family: the one that works out
+    Pension Credit without employment income gives a claimant in paid work no
+    earnings, so their claim can pass the work test there."""
 
     def __init__(self, monkeypatch):
         self.variables = []
@@ -772,7 +775,11 @@ class ScreenReads:
 
         def logged(simulation, variable_name, *args, **kwargs):
             stack = simulation.tracer.stack
-            if stack and stack[-1]["name"] == "esa_income_eligible":
+            if (
+                simulation.branch_name == "default"
+                and stack
+                and stack[-1]["name"] == "esa_income_eligible"
+            ):
                 self.variables.append(variable_name)
             return calculate(simulation, variable_name, *args, **kwargs)
 
