@@ -1,32 +1,44 @@
 """Housing Benefit accommodation segments under a reform's defined_for masks.
 
-A reform can give a Housing Benefit amount a ``defined_for`` condition and
-keep the model's formula. Core then masks the annual output: the amount
-where the condition holds, nil where it fails. In 2026-27 the award is
-calculated separately before and after 5 October, when SI 2026/753 reg 1(1)
-brings the Sch 4 para 18 accommodation disregard into force, from amounts
-the segment helpers rebuild. Each helper applies the condition to its own
-amount (issue #2777).
+A reform author can add a ``defined_for`` condition to a Housing Benefit
+amount and keep the model's formula. Core then masks the annual output: it
+keeps the amount where the condition exceeds zero and returns the
+variable's default elsewhere. In 2026-27 entitlement calculates the award
+separately before and after 5 October, when SI 2026/753 reg 1(1) brings the
+Sch 4 para 18 accommodation disregard into force, from amounts the segment
+helpers rebuild. Each helper applies the condition to its own amount (issue
+#2777).
 
 For every generated population, with or without tax credits, and any
 condition on the accommodation, earnings and WTC disregards, the childcare
-deduction, its limit and applicable income:
+deduction, its limit and applicable income that reads none of these
+amounts:
 
 M1. Each annual disregard equals the day-weighted sum of its segment amounts.
-M2. Where a condition fails, its amount is nil in the annual output and in
-    every segment, unless the population supplies the amount as an input,
-    which applies as supplied, as core applies it.
+M2. Where a condition fails, its amount takes the variable's default in the
+    annual output and in every segment, unless the population supplies the
+    amount as an input, which applies as supplied, as core applies it.
+    Where applicable income's condition fails, the award is the maximum
+    benefit less 65% of any excess of that default over the applicable
+    amount.
 M3. A benefit unit whose conditions all hold has the model's outputs, award
     included.
 M4. The award equals an independent calculation that applies the
     regulations within each segment, with each failed condition's amount
-    nil, and combines the segments' awards by days.
+    nil, and combines the segments' awards by days. The calculation settles
+    the childcare deduction before it removes a failed earnings or WTC
+    disregard from income, as the model does: the limit still counts the
+    standard and accommodation disregards and keeps back the WTC the model
+    would disregard (test_a_failed_disregard_still_limits_childcare).
 M5. Each year but 2026-27 has one segment, and the award built from it
     equals the award the model builds from annual income.
 
-The annual childcare deduction and its limit keep their single annual
-calculation. Populations use core situations, as in
-test_housing_benefit_wtc_disregard.py; they never load a survey dataset.
+The fixture's conditions are inputs, and its variables default to nil. Its
+eligible rent is the rent, ``RENT``, with no non-dependant deductions, so
+the maximum benefit is the whole rent. The annual childcare deduction and
+its limit keep their single annual calculation. Populations use core
+situations, as in test_housing_benefit_wtc_disregard.py; they never load a
+survey dataset.
 """
 
 from functools import cache
@@ -39,7 +51,7 @@ from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation
 
-from policyengine_uk.model_api import BenUnit, Person, Variable, YEAR
+from policyengine_uk.model_api import BenUnit, Person, Variable, YEAR, max_, where
 from policyengine_uk.system import system
 from policyengine_uk.tests.test_housing_benefit_wtc_disregard import (
     ACCOMMODATION,
@@ -70,6 +82,9 @@ from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_disregard import (
     hb_segment_deductions,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+    hb_childcare_wtc_reserve,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
@@ -429,16 +444,23 @@ def test_a_condition_reaches_each_segment(name, unit, key, fails, held, holds):
 
 
 @pytest.mark.parametrize(
-    "holds,income,award",
+    "holds,non_dependant,income,award",
     [
-        # Nil income leaves the whole rent of 10,400.
-        (False, 0, 10_400),
-        (True, 1_350.80, 9_521.98),
+        # Income takes its nil default, so the award is the maximum benefit:
+        # the eligible rent of 10,400 less any non-dependant deductions.
+        (False, 0, 0, 10_400),
+        (False, 500, 0, 9_900),
+        (True, 0, 1_350.80, 9_521.98),
     ],
 )
-def test_a_condition_on_applicable_income_reaches_each_segment(holds, income, award):
+def test_a_condition_on_applicable_income_reaches_each_segment(
+    holds, non_dependant, income, award
+):
     unit = holding(ISSUE_CLAIMANT) if holds else holding(ISSUE_CLAIMANT, INCOME)
     sim = masked_simulation([unit], YEAR_WITH_SEGMENTS, active=True)
+    sim.set_input(
+        "housing_benefit_non_dep_deductions", YEAR_WITH_SEGMENTS, [non_dependant]
+    )
     assert sim.calculate(INCOME, YEAR_WITH_SEGMENTS)[0] == pytest.approx(
         income, abs=TOLERANCE
     )
@@ -545,7 +567,9 @@ def test_masked_segments_add_up_and_match_the_regulations(units, active):
             if key in segment:
                 assert np.all(segment[key][failed] == 0), key
     assert np.all(actual["income"][~holds[INCOME]] == 0)
-    # Nil income leaves the whole rent.
+    # The fixture's nil default income leaves the maximum benefit, the
+    # whole rent: the eligible rent is RENT, with no non-dependant
+    # deductions.
     assert_close(actual["award"][~holds[INCOME]], RENT)
     # M4.
     assert_close(actual["award"], [legal_masked_award(unit, active) for unit in units])
@@ -776,3 +800,108 @@ def test_a_numeric_condition_applies_where_it_exceeds_zero():
     assert_close(
         sim.calculate(AWARD, YEAR_WITH_SEGMENTS), [10_388.95, 9_521.98, 10_388.95]
     )
+
+
+class limit_follows_conditions(Variable):
+    """The earnings and tax-credit limit, releasing to childcare the
+    earnings a failed earnings condition no longer disregards and the WTC a
+    failed WTC condition no longer reserves."""
+
+    value_type = float
+    entity = BenUnit
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        net = max_(benunit("housing_benefit_net_earnings", period), 0)
+        disregarded = benunit(
+            "housing_benefit_applied_standard_earnings_disregard", period
+        ) + benunit(ACCOMMODATION, period)
+        earnings = where(
+            benunit(condition_of(EARNINGS), period),
+            max_(0, net - disregarded),
+            net,
+        )
+        reserve = where(
+            benunit(condition_of(WTC_DISREGARD), period),
+            hb_childcare_wtc_reserve(benunit, period, parameters),
+            0,
+        )
+        return (
+            earnings
+            + max_(benunit("working_tax_credit", period) - reserve, 0)
+            + max_(benunit("child_tax_credit", period), 0)
+        )
+
+
+limit_follows_conditions.__name__ = LIMIT
+
+
+class release_to_childcare(Reform):
+    def apply(self):
+        self.update_variable(limit_follows_conditions)
+
+
+@pytest.mark.parametrize(
+    "fails,unit,active,limit,award,released_limit,released_award",
+    [
+        # WTC condition fails, for £500 of earnings, a £260 standard
+        # disregard, £2,000 of WTC and £3,000 of childcare. The limit still
+        # keeps back £889.20 of WTC: 240 + 2,000 - 889.20 = 1,350.80. Income
+        # is 2,500 - 260 - 1,350.80 = 889.20 and the award 10,400 - 0.65 *
+        # 889.20. A limit that releases that WTC gives 2,240, nil income and
+        # the whole rent.
+        (
+            WTC_DISREGARD,
+            case(net=500, standard=260, wtc=2_000, childcare=3_000),
+            True,
+            1_350.80,
+            9_822.02,
+            2_240,
+            10_400,
+        ),
+        # Earnings condition fails, for £500 of earnings, a £260 standard
+        # disregard, no WTC and £500 of childcare. The limit still subtracts
+        # the standard disregard, 500 - 260 = 240, so income is 500 - 240 =
+        # 260 and the award 10,400 - 0.65 * 260. A limit that releases those
+        # earnings gives 500, nil income and the whole rent.
+        (
+            EARNINGS,
+            case(net=500, standard=260, wtc=0, childcare=500),
+            False,
+            240,
+            10_231,
+            500,
+            10_400,
+        ),
+    ],
+)
+def test_a_failed_disregard_still_limits_childcare(
+    fails, unit, active, limit, award, released_limit, released_award
+):
+    """hb_childcare_wtc_reserve ignores a condition on the WTC disregard,
+    and the limit counts the standard disregard whatever the earnings
+    disregard's condition. A reform author who wants a failed condition to
+    fund childcare changes the limit too. In 2026-27, for a claimant with
+    one child outside specified accommodation."""
+    unit = holding(unit, fails)
+    sim = masked_simulation([unit], YEAR_WITH_SEGMENTS, active)
+    benunit = sim.populations["benunit"]
+    period = period_(YEAR_WITH_SEGMENTS)
+    parameters = sim.tax_benefit_system.parameters
+    reserve = 889.20 if active else 0
+    assert_close(hb_childcare_wtc_reserve(benunit, period, parameters), [reserve])
+    assert sim.calculate(fails, YEAR_WITH_SEGMENTS)[0] == 0
+    assert_close(sim.calculate(LIMIT, YEAR_WITH_SEGMENTS), [limit])
+    assert_close(sim.calculate(AWARD, YEAR_WITH_SEGMENTS), [award])
+    released = simulation(
+        [unit],
+        YEAR_WITH_SEGMENTS,
+        tax_benefit_system=release_to_childcare(conditioned(active)),
+        dated_accommodation=True,
+    )
+    for name in MASKED:
+        released.set_input(
+            condition_of(name), YEAR_WITH_SEGMENTS, [unit["conditions"][name]]
+        )
+    assert_close(released.calculate(LIMIT, YEAR_WITH_SEGMENTS), [released_limit])
+    assert_close(released.calculate(AWARD, YEAR_WITH_SEGMENTS), [released_award])

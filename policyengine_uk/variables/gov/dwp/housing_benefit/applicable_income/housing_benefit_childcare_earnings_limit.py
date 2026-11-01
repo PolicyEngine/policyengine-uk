@@ -55,7 +55,11 @@ def hb_wtc_disregard(benunit, period, parameters, accommodation, childcare):
 def hb_childcare_wtc_reserve(benunit, period, parameters, accommodation=None):
     """The WTC this limit keeps from childcare for the Sch 5 para 56
     disregard. By default the accommodation disregard has its annual
-    segments; an accommodation segment passes its own amount."""
+    segments; an accommodation segment passes its own amount. A defined_for
+    condition on the WTC disregard doesn't reach this reserve: where the
+    condition fails, the limit still keeps back the WTC the model would
+    disregard. A reform author who wants that WTC to fund childcare changes
+    the limit too."""
     name = "housing_benefit_wtc_disregard"
     if hb_reads_no_other_variable(benunit, period, name):
         return benunit(name, period)
@@ -82,7 +86,10 @@ def hb_childcare_wtc_reserve(benunit, period, parameters, accommodation=None):
 def hb_childcare_earnings_limit(benunit, period, parameters, accommodation=None):
     """Remaining earnings and tax credits, without an additional-disregard loop.
     By default the accommodation disregard is the annual variable; an
-    accommodation segment passes its own."""
+    accommodation segment passes its own. The limit subtracts the standard
+    and accommodation disregards even where a defined_for condition on the
+    earnings disregard fails; a reform author who wants those earnings to
+    fund childcare changes the limit too."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
     reserve = hb_childcare_wtc_reserve(benunit, period, parameters, accommodation)
