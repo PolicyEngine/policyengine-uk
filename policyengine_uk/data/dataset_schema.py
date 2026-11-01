@@ -65,7 +65,7 @@ def check_enum_positions(values: np.ndarray, possible_values, column: str) -> No
         column: The column's name, for the error.
 
     Raises:
-        ValueError: If a value is below 0 or not below the number of members.
+        ValueError: If a value falls below 0 or reaches the number of members.
     """
     if values.dtype.kind not in "iu" or values.size == 0:
         return
@@ -74,9 +74,9 @@ def check_enum_positions(values: np.ndarray, possible_values, column: str) -> No
     if bad.size:
         first, last = list(possible_values)[0], list(possible_values)[-1]
         raise ValueError(
-            f"Column '{column}' holds {_listed(bad.tolist())}, which are not "
-            f"positions of enum {possible_values.__name__}. The model reads an "
-            f"integer as a 0-based position, from 0 ({first.name}) to "
+            f"Column '{column}' holds positions that enum "
+            f"{possible_values.__name__} lacks: {_listed(bad.tolist())}. The "
+            f"model reads an integer as a 0-based position, from 0 ({first.name}) to "
             f"{size - 1} ({last.name}). Map source codes to member names, such as "
             f"{_members(possible_values)}, before loading."
         )

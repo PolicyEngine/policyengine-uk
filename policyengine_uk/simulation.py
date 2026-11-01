@@ -254,11 +254,12 @@ def _same_members(recorded, possible_values) -> bool:
 def _refuse_unchecked_enum_integers(
     dataset: UKSingleYearDataset, tbs: "CountryTaxBenefitSystem"
 ) -> None:
-    """Refuse integer enum columns the loader has not checked. The loader
+    """Refuse integer enum columns the loader has not recorded. The loader
     runs this before it projects the data, so the projection never reads
-    such a column."""
+    such a column. The projection decodes a recorded column by the enum it
+    was recorded under, even one a structural reform has since reordered."""
     for _, column, values, possible_values in _enum_columns_of(dataset, tbs):
-        if not _same_members(dataset._enum_columns.get(column), possible_values):
+        if column not in dataset._enum_columns:
             refuse_enum_integers(values, possible_values, column)
 
 
@@ -1406,9 +1407,9 @@ class Simulation(CoreSimulation):
                 entity = variable_definition.entity.key
                 # A policyengine-core dataset can give an enum as 0-based
                 # positions, as policyengine-core's own export does.
-                if variable_definition.value_type == CoreEnum and np.ndim(values) > 0:
+                if variable_definition.value_type == CoreEnum:
                     check_enum_positions(
-                        np.asarray(values),
+                        np.atleast_1d(np.asarray(values)),
                         variable_definition.possible_values,
                         variable,
                     )
@@ -1473,7 +1474,8 @@ class Simulation(CoreSimulation):
 
         # Encode the enum columns not yet encoded, so that the .person,
         # .benunit and .household properties can decode them back to names.
-        # A cached dataset's columns are all encoded, so this checks none.
+        # The loader has already encoded every column of a cached dataset, so
+        # this checks none.
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]

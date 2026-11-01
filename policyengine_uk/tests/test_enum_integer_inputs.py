@@ -152,8 +152,8 @@ def test_codes_past_the_last_position_are_refused_by_name(path, column, tmp_path
     with pytest.raises(ValueError) as error:
         Simulation(dataset=source(path, np.array([1, 4, 9, 10]), tmp_path))
     assert str(error.value) == (
-        f"Column '{column}' holds 9, 10, which are not positions of enum "
-        "CouncilTaxBand. The model reads an integer as a 0-based position, from "
+        f"Column '{column}' holds positions that enum CouncilTaxBand lacks: "
+        "9, 10. The model reads an integer as a 0-based position, from "
         "0 (A) to 8 (I). Map source codes to member names, such as 'A', 'B', 'C', "
         "'D', 'E', 'F', 'G', 'H', 'I', before loading."
     )
@@ -181,12 +181,13 @@ MISSING = {
 @pytest.mark.parametrize("case", MISSING)
 def test_missing_values_keep_their_errors(path, case, tmp_path):
     if path == "single":
-        message = "Column 'council_tax_band' contains NaN values."
+        message = re.escape("Column 'council_tax_band' contains NaN values.")
     elif case == "float NaN":
-        message = "Unsupported array dtype: float64"
+        message = re.escape("Unsupported array dtype: float64")
     else:
-        message = "Invalid value(s) ['nan'] for enum CouncilTaxBand."
-    with pytest.raises(ValueError, match=re.escape(message)):
+        # pandas 3 reads None in a string column as NaN.
+        message = r"Invalid value\(s\) \['(nan|None)'\] for enum CouncilTaxBand\."
+    with pytest.raises(ValueError, match=message):
         Simulation(dataset=source(path, MISSING[case], tmp_path))
 
 
@@ -300,6 +301,15 @@ def test_positions_recorded_under_a_redeclared_enum_keep_their_names():
     assert data.person.code.tolist() == ["X", "Z"]
 
 
+def test_a_year_recorded_under_a_redeclared_enum_projects_its_names():
+    data = person_dataset(np.array(["X", "Z"]))
+    _pre_encode_enum_columns(UKMultiYearDataset(datasets=[data]), enum_system(Order))
+    # The single-year loaders check before projecting; a recorded column
+    # passes, and the projection's copy reads it by its recorded enum.
+    simulation_module._refuse_unchecked_enum_integers(data, enum_system(Reordered))
+    assert data.copy().person.code.tolist() == ["X", "Z"]
+
+
 def test_every_enum_of_the_model_reads_its_positions_from_a_frame():
     for name, variable in system.variables.items():
         if variable.value_type != Enum:
@@ -317,7 +327,7 @@ def test_every_enum_of_the_model_reads_its_positions_from_a_frame():
         table = getattr(dataset[YEAR], variable.entity.key)
         assert table[name].tolist() == members, name
         frame[f"{name}__{YEAR}"] = count
-        with pytest.raises(ValueError, match=f"holds {count}, which are not"):
+        with pytest.raises(ValueError, match=f"lacks: {count}\\. The model"):
             dataset_from_input_dataframe(frame, system, YEAR)
 
 
@@ -385,8 +395,9 @@ def test_positions_load_as_their_names_or_are_refused_by_name(drawn):
             frame_dataset(values, possible_values)
         message = str(error.value)
         shown = ", ".join(map(str, out_of_range[:10]))
-        assert message.startswith(f"Column 'code__{YEAR}' holds {shown}")
-        assert "not positions of enum Drawn" in message
+        assert message.startswith(
+            f"Column 'code__{YEAR}' holds positions that enum Drawn lacks: {shown}"
+        )
         return
     names = [members[value] for value in values]
     assert frame_dataset(values, possible_values) == names
