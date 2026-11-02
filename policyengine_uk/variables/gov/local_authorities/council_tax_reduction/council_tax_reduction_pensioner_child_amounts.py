@@ -10,13 +10,13 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
         "Councils add one weekly amount for each child or young person in a "
         "pensioner's family to the Council Tax Reduction applicable amount. "
         "For the 2018-19 to 2024-25 schemes the Secretary of State limited "
-        "England's to two children or young persons, unless the applicant's "
-        "Child Tax Credit award included the individual element for more of "
-        "them. We read an award from a positive final child_tax_credit, "
-        "worked out or entered, or, while HMRC pays tax credit awards "
-        "(gov.dwp.tax_credits.active), from the claim and eligibility the "
-        "model reads from reports, which keeps an award at a nil rate. We do "
-        "not model the transitional protection for families "
+        "England's child amounts to two children or young persons, unless "
+        "the applicant's Child Tax Credit award included the individual "
+        "element for more of them. We read an award from a positive final "
+        "child_tax_credit, worked out or entered. While HMRC pays tax credit "
+        "awards (gov.dwp.tax_credits.active), we also count an award, even a "
+        "nil-rate one, where the model reads a claim and eligibility from "
+        "reports. We do not model the transitional protection for families "
         "with more than two on 31 March 2018. Where the household head "
         "applies alone (council_tax_reduction_head_applies_alone), we assume "
         "the head has no children in their family, because we cannot "
@@ -54,14 +54,14 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
             # SI 2012/2885 Sch 1 para 6(1)(b) and (1A) to (1C), from SI
             # 2017/1305 reg 7: up to two, or those whose individual element
             # an award of Child Tax Credit includes where that gives more.
-            # Every child or young person has the same amount, so the
-            # greatest total is the greatest count.
+            # Every child or young person has the same amount, so counting
+            # the most children gives the greatest total.
             # Councils apply para 6(1B)(a) where the applicant has an award
             # of Child Tax Credit "whether or not any amount is payable", and
             # HMRC may award it at a nil rate (TCA 2002 s.14(3)). We count a
             # positive final child_tax_credit, worked out or entered, as an
-            # award, and also the claim and eligibility read from reports,
-            # whatever amount is payable. As in has_tax_credit_award, we infer
+            # award, and also the claim and eligibility that the model reads
+            # from reports, whatever amount is payable. As in has_tax_credit_award, we infer
             # no award from reports once HMRC stops paying awards.
             child_tax_credit_award = benunit("child_tax_credit", period) > 0
             if parameters(period).gov.dwp.tax_credits.active:

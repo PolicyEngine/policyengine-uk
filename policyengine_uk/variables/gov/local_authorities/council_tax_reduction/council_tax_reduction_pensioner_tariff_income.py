@@ -14,9 +14,11 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
         "Ministers count the excess up to £16,000, and the Scottish Ministers "
         "set no ceiling. All three bar a reduction where capital exceeds "
         "£16,000. Councils apply the £16,000 limit to assessable capital "
-        "after statutory disregards. Councils disregard all capital for "
-        "Guarantee Credit recipients. We use the pension-age Housing Benefit "
-        "tariff amounts, which all three nations share. We give nil on both "
+        "after statutory disregards, and disregard all of an applicant's "
+        "capital where the applicant or their partner receives guarantee "
+        "credit. We use the pension-age Housing Benefit tariff amounts, which "
+        "the Secretary of State, the Welsh Ministers and the Scottish "
+        "Ministers also set. We give nil on both "
         "Pension Credit routes: on guarantee credit because of that "
         "disregard, and on a savings-credit-only award because councils use "
         "the Secretary of State's assessment of income, which already "
@@ -46,13 +48,14 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
         local_authorities = parameters(period).gov.local_authorities
         country = benunit.household("country", period)
         capital = benunit("council_tax_reduction_assessable_capital", period)
-        # SI 2012/2885 Sch 1 para 37 and WSI 2013/3029 Sch 1 para 31 count
-        # the excess "not exceeding £16,000", the capital limit. The Scottish
-        # Ministers set no ceiling in SSI 2012/319 reg 27(2), and reg 40 bars
-        # a reduction where capital exceeds £16,000. Councils apply the
-        # £16,000 limit to assessable capital after statutory disregards (reg
-        # 41(2)). Councils disregard all capital for Guarantee Credit
-        # recipients (reg 24).
+        # The Secretary of State and the Welsh Ministers count the excess "not
+        # exceeding £16,000", the capital limit (SI 2012/2885 Sch 1 para 37;
+        # WSI 2013/3029 Sch 1 para 31). The Scottish Ministers set no ceiling
+        # in SSI 2012/319 reg 27(2), and bar a reduction where capital exceeds
+        # £16,000 (reg 40). Councils apply the £16,000 limit to assessable
+        # capital after statutory disregards (reg 41(2)), and disregard all of
+        # an applicant's capital where the applicant or their partner receives
+        # guarantee credit (reg 24).
         counted_capital = select(
             [
                 country == Country.ENGLAND,
@@ -77,7 +80,7 @@ class council_tax_reduction_pensioner_tariff_income(Variable):
         # The Pension Credit routes (England Sch 1 paras 13 and 14, Wales
         # Sch 1 paras 7 and 8, Scotland regs 24 and 25), as in
         # council_tax_reduction_applicable_income. The benefit unit's
-        # Pension Credit is its claimant's and partner's.
+        # Pension Credit belongs to its claimant and partner.
         applicant_family = ~benunit("council_tax_reduction_head_applies_alone", period)
         pension_credit_route = applicant_family & (
             benunit("in_receipt_of_guarantee_credit", period)

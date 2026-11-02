@@ -1,14 +1,14 @@
 """A pensioner's Council Tax Reduction child amounts and tariff income.
 
-Councils add an amount for each child or young person in the family and, in
-Wales, a family premium for pensioners (SI 2012/2885 Sch 1 para 6(1)(b)-(c)
-and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch 2 paras
-2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). For 2018-19 to 2024-25 the
-Secretary of State limited England's to two unless a Child Tax Credit award
-included more (SI 2017/1305 reg 7; SI 2025/39 reg 5(2)). Councils treat a
-pensioner's capital as a weekly income of £1 for each £500, or part of £500,
-over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31; SSI
-2012/319 reg 27(2)), except where Pension Credit sets the means test. The
+Under their pensioner schemes, councils add an amount for each child or young
+person in the family and, in Wales, a family premium (SI 2012/2885 Sch 1 para
+6(1)(b)-(c) and Sch 2 paras 2-3; WSI 2013/3029 Sch 1 para 1(1)(b)-(c) and Sch
+2 paras 2-3; SSI 2012/319 reg 20(b) and Sch 1 para 3). For 2018-19 to 2024-25
+the Secretary of State limited England's child amounts to two unless a Child
+Tax Credit award included more (SI 2017/1305 reg 7; SI 2025/39 reg 5(2)).
+Councils treat a pensioner's capital as a weekly income of £1 for each £500,
+or part of £500, over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch
+1 para 31; SSI 2012/319 reg 27(2)), except on the Pension Credit routes. The
 Secretary of State and Welsh Ministers count the excess up to £16,000; the
 Scottish Ministers set no ceiling.
 
@@ -16,22 +16,23 @@ Each invariant holds on a fixed route and status. The generated families
 claim no Universal Credit, so neither capital nor a child can move a family
 between the pensioner and working-age schemes, and the first invariant's
 pensioners claim no Pension Credit, so capital cannot move them onto a
-Pension Credit route. Off those routes both can move, as the model intends:
-capital changes a savings-credit-only pensioner's applicable income through
-the Secretary of State's assessment, and a child who brings Universal Credit
-into payment for a mixed-age couple moves them to the working-age scheme,
-whose applicable amount can be lower.
+Pension Credit route. Off those routes both can move. For a
+savings-credit-only pensioner, councils use the Secretary of State's
+assessment, which includes Pension Credit's deemed income from capital, so
+capital can raise their applicable income. A mixed-age couple who gain a child, and so start to receive
+Universal Credit, move to the working-age scheme, whose applicable amount can
+be lower.
 
 1. For a pensioner off Pension Credit, tariff income is 52 times £1 for each
    £500, or part of £500, of capital above £10,000 (up to £16,000 in England
    and Wales), and it never falls as capital rises. Capital changes nothing
    else in the applicable income, and the award never rises with capital.
 2. For a family that claims no Universal Credit, adding a dependent child
-   never lowers the applicable amount. For a pensioner, the child amount
-   grows by 52 times the scheme's weekly rate for each extra child counted.
-   In England from 2018-19 to 2024-25, count up to two children, or more
-   where a Child Tax Credit award includes individual elements for more. Add
-   the family premium with the first child in Wales. The generated families
+   never lowers the applicable amount. For a pensioner, councils add 52 times
+   the scheme's weekly rate for each extra child they count. In England from
+   2018-19 to 2024-25, they count up to two children, or more where a Child
+   Tax Credit award includes individual elements for more. In Wales, councils
+   also add the family premium with the first child. The generated families
    report no Child Tax Credit, so none has an award.
 3. A pensioner with no child and capital up to £10,000, and every working-age
    family, gets no child amount, family premium or tariff income, so their
@@ -133,8 +134,8 @@ def calculate(households, year, names=OUTPUTS):
 
 
 def tariff(capital, country):
-    # England and Wales count the excess "not exceeding £16,000"; Scotland's
-    # reg 27(2) sets no ceiling.
+    # The Secretary of State and the Welsh Ministers count the excess "not
+    # exceeding £16,000"; the Scottish Ministers set no ceiling in reg 27(2).
     counted = capital if country == "SCOTLAND" else min(capital, 16_000)
     return 52 * math.ceil(max(0, counted - 10_000) / 500)
 
@@ -180,7 +181,8 @@ def test_tariff_income_is_the_tariff_and_never_falls_as_capital_rises(
         tariffs, [tariff(c, base["country"]) for c in capitals], atol=0.01
     )
     assert (np.diff(tariffs) >= 0).all()
-    # Capital adds the tariff income and nothing else.
+    # As capital rises, the model changes only the tariff income within the
+    # applicable income.
     other_income = result["council_tax_reduction_applicable_income"] - tariffs
     np.testing.assert_allclose(other_income, other_income[0], atol=0.01)
     assert (np.diff(result["council_tax_benefit"]) <= 0.01).all()
@@ -323,8 +325,8 @@ DIFFERENTIAL_OUTPUTS = (
     "council_tax_reduction_applicable_income",
     "council_tax_benefit",
 )
-# Computed on origin/main at 2da212abc for UNCHANGED_HOUSEHOLDS, in order:
-# applicable amount, applicable income and council_tax_benefit.
+# We computed these on origin/main at 2da212abc for UNCHANGED_HOUSEHOLDS, in
+# order: applicable amount, applicable income and council_tax_benefit.
 ORIGIN_MAIN = {
     2019: [
         (9_412, 12_000, 1_482.4),

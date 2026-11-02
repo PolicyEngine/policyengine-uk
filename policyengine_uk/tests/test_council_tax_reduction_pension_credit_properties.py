@@ -295,12 +295,13 @@ MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_ins
 # 2013/3029 Sch 3; SSI 2012/319 Sch 2).
 PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
 PENSIONER_ADDITIONAL_DISREGARD = 17.10
-# Since #1933, a pensioner family's general-rules income also adds tariff
-# income from capital after the floor, written out from the law: £1 a week
+# We also add tariff income from capital to a pensioner family's
+# general-rules income, after the floor, written out from the law: £1 a week
 # for each £500, or part of £500, of capital above £10,000, up to £16,000 in
 # England and Wales (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch 1 para 31)
-# and with no ceiling in Scotland (SSI 2012/319 reg 27(2)). Household
-# savings are these families' capital.
+# and with no ceiling in Scotland (SSI 2012/319 reg 27(2)). We count
+# household savings as these families' capital, as
+# council_tax_reduction_assessable_capital does.
 TARIFF_THRESHOLD = 10_000
 TARIFF_STEP = 500
 HOUSEHOLD_VARIABLES = [
@@ -539,10 +540,10 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
 
 
 def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
-    """We charge income tax to recover the Winter Fuel Payment from a pensioner
-    with £39,500 of total income (winter_fuel_payment_charge, ITEPA 2003
-    s.681I). CTR deducts income tax before that charge, so the routes agree
-    with the main definition."""
+    """This pensioner's total income of £39,500 exceeds £35,000, so they owe
+    income tax equal to their Winter Fuel Payment (ITEPA 2003 s.681I(1) and
+    (3); winter_fuel_payment_charge). CTR deducts income tax before that
+    charge, so the routes agree with the main definition."""
     family = dict(
         shape="single_pension",
         ages=[70],

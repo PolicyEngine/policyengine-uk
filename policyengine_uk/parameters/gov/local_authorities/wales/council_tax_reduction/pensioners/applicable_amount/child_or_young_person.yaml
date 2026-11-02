@@ -1,7 +1,7 @@
-description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the Welsh Council Tax Reduction prescribed requirements. Wales did not raise it for 2020-21 or 2021-22, so it differs from the Housing Benefit amount in those years.
+description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the Welsh Council Tax Reduction prescribed requirements. The Welsh Ministers did not raise it for 2020-21 or 2021-22, so it differs from the Housing Benefit amount in those years.
 values:
-  # Each value is the paragraph 2 amount in the version of Schedule 2 in
-  # force on 30 April of that year, with the amending regulations it reflects.
+  # We take each value from paragraph 2 of the version of Schedule 2 in force
+  # on 30 April of that year, and cite the amending regulations it reflects.
   2013-04-01:
     value: 65.62
     reference:

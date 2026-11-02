@@ -7,8 +7,9 @@ class council_tax_reduction_applicable_income(Variable):
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
     documentation = (
-        "Councils assess the applicant's and partner's income for the Council "
-        "Tax Reduction means test. Under the pensioner schemes, councils "
+        "We count the applicant's and partner's income "
+        "(is_council_tax_reduction_applicant_or_partner) in the Council Tax "
+        "Reduction means test. Under the pensioner schemes, councils "
         "disregard the whole income of an applicant who, or whose partner, is "
         "in receipt of Pension Credit guarantee credit, and use the Secretary "
         "of State's Pension Credit assessment of income, plus the savings "
@@ -28,8 +29,6 @@ class council_tax_reduction_applicable_income(Variable):
         "We count no child maintenance. Scotland's working-age maintenance "
         "rule, like Universal Credit, requires a court order or agreement; "
         "we assume the input meets that condition. "
-        "We count the applicant's and partner's income "
-        "(is_council_tax_reduction_applicant_or_partner). "
         "Where the household head applies alone "
         "(council_tax_reduction_head_applies_alone), the benefit unit's own "
         "awards (Child Benefit, Income Support, income-based JSA, "
@@ -39,8 +38,8 @@ class council_tax_reduction_applicable_income(Variable):
         "benefit, severe disablement allowance and incapacity benefit count "
         "in every scheme, for the applicant and partner only, not for "
         "children or young persons. We disregard war pensions and Armed "
-        "Forces Compensation Scheme payments in full: Scotland disregards or "
-        "omits them, and English and Welsh councils may relieve them beyond "
+        "Forces Compensation Scheme payments in full: Scottish councils count "
+        "none of them, and English and Welsh councils may relieve them beyond "
         "the prescribed £10 a week."
     )
     definition_period = YEAR

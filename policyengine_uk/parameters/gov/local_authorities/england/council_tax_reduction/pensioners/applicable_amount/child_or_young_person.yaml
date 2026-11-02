@@ -1,8 +1,8 @@
 description: Weekly amount for each child or young person in the applicant's family in the applicable amount of a pensioner under the England Council Tax Reduction prescribed requirements. The amounts equal the Housing Benefit pension-age child or young person amounts in every year from 2013-14 to 2026-27.
 values:
-  # Each value is the paragraph 2 amount in the version of Schedule 2 in
-  # force on 30 April of that year. The prescribed requirements set it for
-  # schemes for the financial year from 1 April.
+  # We take each value from paragraph 2 of the version of Schedule 2 in force
+  # on 30 April of that year. The Secretary of State sets it for schemes for
+  # the financial year from 1 April.
   2013-04-01:
     value: 65.62
     reference:

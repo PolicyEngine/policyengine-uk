@@ -14,8 +14,8 @@ class council_tax_reduction_pensioner_family_premium(Variable):
         "Ministers removed Scotland's from 1 May 2016. Each kept it for "
         "families with a child who had a reduction on 30 April 2016 until "
         "they make a new application or have no child; we do not model that "
-        "protection. We read each year's amount on 30 April, so model year "
-        "2016 keeps the premium."
+        "protection. We read each year's amount on 30 April, so we keep the "
+        "premium for the whole of model year 2016."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,7 +50,7 @@ class council_tax_reduction_pensioner_family_premium(Variable):
             default=0,
         )
         pensioner = benunit("council_tax_reduction_pensioner", period)
-        # The head who applies alone has no children in their family.
+        # We assume the head who applies alone has no children in their family.
         has_child = ~benunit(
             "council_tax_reduction_head_applies_alone", period
         ) & benunit(

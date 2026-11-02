@@ -1,24 +1,26 @@
-# A pensioner's Council Tax Reduction applicable amount includes an amount for
-# each child or young person in the family and, where the scheme still has one,
-# a family premium:
+# Councils include in a pensioner's Council Tax Reduction applicable amount an
+# amount for each child or young person in the family and, where the scheme
+# keeps one, a family premium:
 #
 # - England: SI 2012/2885 Sch 1 para 6(1)(b) and (c), Sch 2 paras 2 and 3.
-#   2026-27 child or young person amount 87.88 a week (SI 2026/27); the family
-#   premium is nil for reduction weeks beginning after 1 May 2016. From
-#   2018-19 to 2024-25 para 6(1)(b) counted up to two children or young
-#   persons, or those an award of Child Tax Credit included if more (SI
-#   2017/1305 reg 7; removed by SI 2025/39 reg 5(2)).
+#   2026-27 child or young person amount 87.88 a week (SI 2026/27); the
+#   Secretary of State made the family premium nil for reduction weeks
+#   beginning after 1 May 2016. For the 2018-19 to 2024-25 schemes the
+#   Secretary of State limited the para 6(1)(b) amounts to two children or
+#   young persons, or those an award of Child Tax Credit included if more (SI
+#   2017/1305 reg 7), then removed the limit (SI 2025/39 reg 5(2)).
 # - Wales: WSI 2013/3029 Sch 1 para 1(1)(b) and (c), Sch 2 paras 2 and 3.
 #   2026-27 amounts 87.88 and a family premium of 20.22.
 # - Scotland: SSI 2012/319 reg 20(b), Sch 1 para 3. 2026-27 amount 109.85;
-#   the family premium was removed from 1 May 2016 (SSI 2016/81 reg 18).
+#   the Scottish Ministers removed the family premium from 1 May 2016 (SSI
+#   2016/81 reg 18).
 #
 # Each amount runs from birth to the day before the 20th birthday, for a
 # Child Benefit qualifying young person. Every person aged 72 or 80 here
-# reached State Pension age before 1 April 2021, so the single or lone parent
-# personal allowance is 256.00 a week and the couple allowance 383.35 (SI
-# 2012/2885 Sch 2 para 1; WSI 2013/3029 Sch 2 para 1; SSI 2012/319 Sch 1
-# para 2). Annual amounts are 52 weeks.
+# reached State Pension age before 1 April 2021, so councils use a single or
+# lone parent personal allowance of 256.00 a week and a couple allowance of
+# 383.35 (SI 2012/2885 Sch 2 para 1; WSI 2013/3029 Sch 2 para 1; SSI 2012/319
+# Sch 1 para 2). We multiply each weekly amount by 52.
 
 - name: Case 1, an English 72-year-old alone gets the personal allowance only.
   period: 2026
@@ -311,7 +313,7 @@
         savings: 0
   output:
     # Para 6(1B) and (1C): the award includes the individual element for
-    # three, which is more than two. 3 * 83.24 * 52 = 12,985.44.
+    # three, more than two. 3 * 83.24 * 52 = 12,985.44.
     council_tax_reduction_pensioner_child_amounts: 12_985.44
 
 - name: Case 11, England's 2025-26 scheme counts every child.
@@ -542,7 +544,7 @@
         savings: 0
   output:
     # No child_tax_credit_reported, so the model reads no eligibility from
-    # reports; the entered final award is the award.
+    # reports; councils count the entered final award.
     is_CTC_eligible: false
     child_tax_credit: 9_800.95
     # Each child was born before 6 April 2017, so the model includes each
@@ -581,8 +583,9 @@
         council_tax: 2_000
         savings: 0
   output:
-    # A claim without eligibility is no award: is_CTC_eligible needs a
-    # report, and child_tax_credit is nil without eligibility.
+    # HMRC makes no award on a claim without eligibility: is_CTC_eligible
+    # needs a report, and the model gives no child_tax_credit without
+    # eligibility.
     is_CTC_eligible: false
     child_tax_credit: 0
     is_CTC_child_element_included: [false, true, true, true]
@@ -618,11 +621,12 @@
         council_tax: 2_000
         savings: 0
   output:
-    # Income of 60,000 withdraws the whole credit, so nothing is payable.
+    # At income of 60,000 HMRC withdraws the whole credit, so it pays nothing.
     child_tax_credit: 0
     is_CTC_child_element_included: [false, true, true, true]
-    # Para 6(1B)(a): an award "whether or not any amount is payable". The
-    # individual elements for three give 3 * 83.24 * 52 = 12,985.44.
+    # Para 6(1B)(a): an award "whether or not any amount is payable".
+    # Councils count the three whose individual elements the award includes:
+    # 3 * 83.24 * 52 = 12,985.44.
     council_tax_reduction_pensioner_child_amounts: 12_985.44
 
 - name: Case 21, England's 2024-25 scheme counts two of three where the family is eligible for Child Tax Credit but would not claim it.
@@ -655,8 +659,9 @@
         council_tax: 2_000
         savings: 0
   output:
-    # Entitlement depends on a claim (TCA 2002 s.3(1)), so eligibility
-    # without one gives no award, and the family has no final award either.
+    # Entitlement depends on a claim (TCA 2002 s.3(1)), so HMRC makes no
+    # award to a family that is eligible but does not claim, and the model
+    # gives it no final award either.
     child_tax_credit: 0
     is_CTC_child_element_included: [false, true, true, true]
     # Para 6(1)(b): up to two. 2 * 83.24 * 52 = 8,656.96.
@@ -692,13 +697,15 @@
         council_tax: 2_000
         savings: 0
   output:
-    # The report still gives a claim and eligibility, but the closed scheme
-    # pays nothing and has_tax_credit_award infers no award from it.
+    # The model still reads a claim and eligibility from the report, but HMRC
+    # pays nothing under the closed scheme and has_tax_credit_award infers no
+    # award.
     would_claim_CTC: true
     is_CTC_eligible: true
     child_tax_credit: 0
     has_tax_credit_award: false
     council_tax_reduction_pensioner: true
     is_CTC_child_element_included: [false, true, true, true]
-    # No award, so para 6(1)(b) counts up to two: 2 * 83.24 * 52 = 8,656.96.
+    # No award, so councils count up to two under para 6(1)(b):
+    # 2 * 83.24 * 52 = 8,656.96.
     council_tax_reduction_pensioner_child_amounts: 8_656.96

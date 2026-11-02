@@ -1,7 +1,7 @@
 description: Weekly amount for each child or young person in the applicant's family in the applicable amount under the Scottish State Pension Credit Council Tax Reduction regulations. From 2017-18 it exceeds the Housing Benefit amount by about a quarter.
 values:
-  # Each value is the paragraph 3 amount in the version of Schedule 1 in
-  # force on 30 April of that year.
+  # We take each value from paragraph 3 of the version of Schedule 1 in force
+  # on 30 April of that year.
   2013-04-01:
     value: 65.62
     reference:

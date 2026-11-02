@@ -100,7 +100,7 @@ class council_tax_reduction_applicable_amount(Variable):
             + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
         # We currently include the severe disability and carer premiums for
-        # pensioners; the same pensioner test chooses the schedule.
+        # pensioners, and choose the schedule by the same pensioner test.
         premiums = benunit("council_tax_reduction_premiums", period)
         # A pensioner's amounts for the children and young persons in the
         # family and the family premium (SI 2012/2885 Sch 1 para 6(1)(b)-(c);
