@@ -5,6 +5,12 @@ from policyengine_core.parameters import (
 )
 
 
+UNROUNDED_INDICES = (
+    "gov.economic_assumptions.yoy_growth.earnings_uprating",
+    "gov.economic_assumptions.yoy_growth.triple_lock",
+)
+
+
 def last_year(parameter: Parameter) -> int:
     """The first year whose 1 January reads the parameter's final value."""
     final_instant = max(value.instant_str for value in parameter.values_list)
@@ -71,7 +77,10 @@ def create_economic_assumption_indices(
                 indices_value = values[year - 1] * (1 + yoy_growth)
                 # Rounding an earnings index down can put the projected
                 # guarantee below its statutory annual earnings floor.
-                if full_name != "gov.economic_assumptions.yoy_growth.earnings_uprating":
+                # Rounding the triple lock index would add up to about 3e-6
+                # to its yearly growth, enough to tip a State Pension rate
+                # to the other 5p (create_rate_projection).
+                if full_name not in UNROUNDED_INDICES:
                     indices_value = round(indices_value, 5)
                 values[year] = indices_value
 

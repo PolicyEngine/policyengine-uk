@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over six runners, and Result, which fails unless every listed
+# tests split over seven runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/6" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/7" and "Test / Result";
 # "Test / Result" is the one to require.
 #
 # Runners. These jobs, and the check jobs that pull requests, merge queue
@@ -174,6 +174,12 @@ jobs:
     # 15.5 GB (run 40395541241). With six, the listed slow tests come to
     # about 134 minutes of worker time per shard instead of 161, and each
     # worker runs about a sixth fewer tests.
+    #
+    # Seven, not six, for time. Nine successful test runs started on 31
+    # October (EDT) took 57 to 73 minutes a shard, and the 75-minute limit
+    # cancelled shard 1/6 with its tests at 99% (run 41191216150, first
+    # attempt). With seven, the listed slow tests come to about 115 minutes
+    # of worker time per shard instead of 134.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -189,7 +195,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
