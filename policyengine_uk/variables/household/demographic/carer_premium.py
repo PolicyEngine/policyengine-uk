@@ -60,7 +60,7 @@ class carer_premium(Variable):
         # tests caring responsibilities and pays each partner who qualifies.
         # Para 6(1) defines those as (a) receiving either allowance, (b) being
         # entitled to one reduced to nil by the overlapping benefits rules, or
-        # (c) a Universal Credit award with the carer element. This premium
+        # (c) a Universal Credit award with the carer element. This variable
         # applies (a) and (b), which every scheme shares; Scottish working-age
         # council tax reduction reads council_tax_reduction_carer_premium,
         # which adds (c).

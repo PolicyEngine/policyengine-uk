@@ -97,7 +97,7 @@ class council_tax_reduction_premiums(Variable):
             & (others_counted == 0)
         ) * disability.severe_single
         # A head who applies alone holds no Universal Credit award of her own
-        # (the benefit unit's award is its claimant's and partner's), so
+        # (the benefit unit's claimant and partner hold its award), so
         # Scotland's carer element limb (council_tax_reduction_carer_premium)
         # never reaches her.
         carer_premium = (

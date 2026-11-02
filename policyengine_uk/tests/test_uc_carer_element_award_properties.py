@@ -763,9 +763,10 @@ def test_the_bound_reads_neither_the_award_nor_pension_credit():
 
 
 # Families for the endpoint comparison, each in its own English household:
-# every element of the maximum amount, both work allowances, and owners,
-# private, council and housing association renters. The award reads the
-# earned and unearned income each row supplies.
+# every element of the maximum amount, both work allowances, owners, council
+# and housing association renters, and private renters below and above the
+# Local Housing Allowance rate. The award reads the earned and unearned
+# income each row supplies.
 PARITY_FAMILIES = [
     # A single owner, with no work allowance.
     dict(adults=[dict(age=30)], children=[], tenure="OWNED_OUTRIGHT", rent=0),
@@ -809,6 +810,16 @@ PARITY_FAMILIES = [
         children=[dict(age=6, dla_sc_category="MIDDLE")],
         tenure="RENT_FROM_HA",
         rent=7_200,
+    ),
+    # A lone parent earning £6,000, with a child (3) in childcare, who rents
+    # privately for £30,000 a year. The model places a household with no
+    # region in Inner South East London, where DWP caps the housing costs
+    # element at the two-bedroom Local Housing Allowance rate, £1,550 a month.
+    dict(
+        adults=[dict(age=30, employment_income=6_000)],
+        children=[dict(age=3, childcare_expenses=6_000)],
+        tenure="RENT_PRIVATELY",
+        rent=30_000,
     ),
 ]
 # Earned income before the work allowance and unearned income, a year.
@@ -907,6 +918,8 @@ def test_upper_bound_matches_real_award_endpoints():
         "uc_childcare_element",
     )
     variables = components + (
+        "uc_LHA_cap",
+        "benunit_rent",
         "uc_work_allowance",
         "universal_credit_pre_benefit_cap",
         "universal_credit",
@@ -915,10 +928,16 @@ def test_upper_bound_matches_real_award_endpoints():
     base = Simulation(situation=parity_situation(rows))
     bound = np.asarray(base.calculate("uc_award_upper_bound", YEAR))
 
-    # The rows cover every element, both work allowances, both endpoints
+    # The rows cover every element, a housing costs element that DWP caps at
+    # the Local Housing Allowance rate, both work allowances, both endpoints
     # deciding the bound, and awards that cancel to nil or under a penny.
     for component in components:
         assert (with_housing[component] > 0).any(), component
+    lha_cap = with_housing["uc_LHA_cap"]
+    assert (
+        (lha_cap < with_housing["benunit_rent"])
+        & (with_housing["uc_housing_costs_element"] == lha_cap)
+    ).any()
     assert (with_housing["uc_work_allowance"] == 427 * 12).any()
     assert (without_housing["uc_work_allowance"] == 710 * 12).any()
     pre_cap = [

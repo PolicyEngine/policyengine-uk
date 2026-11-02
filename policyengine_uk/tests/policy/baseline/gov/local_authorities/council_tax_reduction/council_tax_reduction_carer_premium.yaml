@@ -183,13 +183,14 @@
     council_tax_reduction_carer_premium: 0
 
 - name: In 2024 the model counts a Scottish carer's nil award as an award with the carer element
-  # The same carer in 2024-25. The maximum amount is (393.45 + 198.31) x 12
-  # = 7,101.12, and the taper on £20,000 of earnings less income tax and
-  # National Insurance takes more, so the award comes to nil. Until 31 March 2025
-  # an "award of universal credit" included one "with a value of zero" (reg
-  # 4). The model reads that as reaching this nil award, a reading the
-  # sources leave open (see the header), so para 6(1)(c) applies: carer
-  # premium 45.60 x 52 = 2,371.20.
+  # The same carer in 2024-25. The maximum amount comes to (393.45 + 198.31)
+  # x 12 = 7,101.12, and the taper on £20,000 of earnings less income tax and
+  # National Insurance takes more, so the award comes to nil. Until 31 March
+  # 2025 an "award of universal credit" included one "with a value of zero"
+  # (reg 4), and the model reads those words as reaching this nil award.
+  # Under that chosen reading, the model includes the carer premium (para
+  # 6(1)(c)): 45.60 x 52 = 2,371.20. The sources leave that reading open (see
+  # the header).
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -248,8 +249,10 @@
     council_tax_reduction_carer_premium: 0
 
 - name: A Scottish carer with both Carer Support Payment and the carer element gets one premium
-  # Councils pay the premium in respect of each person who qualifies (para
-  # 5(3)), not for each award: 48.15 x 52 = 2,503.80, not twice that.
+  # The applicant has regular and substantial caring responsibilities under
+  # both para 6(1)(a) and (c), and councils include the premium once for an
+  # applicant with those responsibilities (para 5(2)): 48.15 x 52 =
+  # 2,503.80, not twice that.
   period: 2026
   absolute_error_margin: 0.01
   input:
