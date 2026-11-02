@@ -47,6 +47,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
     {
         "adjusted_net_income",
         "carers_allowance",
+        "carers_allowance_pre_couple_limit",
         "carers_allowance_pre_overlap",
         "carer_support_payment",
         "carer_support_payment_pre_overlap",

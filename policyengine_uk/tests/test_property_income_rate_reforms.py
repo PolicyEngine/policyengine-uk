@@ -95,8 +95,10 @@ def test_from_2027_main_rate_reform_leaves_separate_property_rate_unchanged(
     sim = component_simulation(
         year, 10_000, 5_000, country=country, rates={UK_RATE.format(0): 0.21}
     )
+    # 5,000 at the 24% property basic rate (22% from Budget 2025, 2 points
+    # more from Budget 2026).
     assert sim.calculate("property_income_tax", year)[0] == pytest.approx(
-        1_100, abs=0.01
+        1_200, abs=0.01
     )
 
 
@@ -142,7 +144,7 @@ def test_zero_property_income_has_zero_property_tax_under_reform(year):
 
 
 @pytest.mark.parametrize(
-    "year, expected", [(2025, 1_000), (2026, 1_000), (2027, 1_100), (2028, 1_100)]
+    "year, expected", [(2025, 1_000), (2026, 1_000), (2027, 1_200), (2028, 1_200)]
 )
 def test_baseline_property_rates_retain_annual_2027_boundary(year, expected):
     sim = component_simulation(year, 10_000, 5_000)

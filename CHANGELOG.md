@@ -1,3 +1,63 @@
+## [2.171.0] - 2026-11-02
+
+### Added
+
+- The aggregate impact report now records why it withholds a standard reform's costing and target change in a year. For each withheld year, `withheld_because` names every condition that holds (`suppressed_component_changed`, `small_component_left`, `small_balance_change`, `small_target_change` or `no_baseline`) and the component or variable it holds for, in `result.json` and in the long-format report that qualification reads. The pull request comment lists the reasons under the reform costings. No reason gives a count or an amount.
+
+### Changed
+
+- Test statutory paternity pay as wages at every pension contribution level, and share the cloned tax-benefit system in the UC work-related groups property tests.
+- Spread the Python tests across seven shards to reduce the work per job.
+
+### Fixed
+
+- Keep the household ISA totals a dataset stores after the years it holds, grown like the person balances they sum, so means-tested capital no longer drops by those holdings from 2033.
+
+
+## [2.170.4] - 2026-11-02
+
+### Fixed
+
+- Projected the sixteen gambling duty inputs per person from HMRC's 2025-26 receipts and the OBR's October 2026 betting and gaming forecast (receipts Table 4.10), divided by the rates the model charges and by population growth. The inputs no longer stay at their 2024-25 cash level, their weighted totals follow each duty's base as household weights grow with population, and the 2026 and 2027 remote gambling rate rises and the 2027 higher-stake machine rate rise apply once.
+
+
+## [2.170.3] - 2026-11-02
+
+### Fixed
+
+- The aggregate checker detects movement in undeclared tax heads independently of their baseline levels, and counts an infinite or NaN response as movement.
+
+
+## [2.170.2] - 2026-11-02
+
+### Fixed
+
+- The programme registry identifies the correct responsible bodies and nations for Scottish income tax, tax credits, the Energy Price Guarantee, Council Tax, Council Tax Reduction and Winter Fuel Payment.
+
+
+## [2.170.1] - 2026-11-02
+
+### Fixed
+
+- Round projected State Pension weekly rates as each Up-rating Order does. Each April the model now raises the previous year's full new State Pension and basic State Pension rates by the triple lock and rounds them to the nearest 5p (`gov.dwp.state_pension.weekly_rate_rounding`). It used to multiply the last published rate by the index's growth and leave the product unrounded. On the October 2026 forecast the full new State Pension becomes £250.70, £259.20 and £265.70 a week in 2027-28 to 2029-30 (from £250.71, £259.24 and £265.72). The Pension Tax Allowance threshold, 52 weeks of that rate, moves to £13,036.40 in 2027-28, the figure in HM Treasury's explainer, and in 2028-29 the full allowance falls from £183 to £182. The model no longer rounds the triple lock index to five decimal places.
+
+
+## [2.170.0] - 2026-10-31
+
+### Added
+
+- Add the Household Energy Payment announced at Budget 2026: £100 in 2026-27 for households in council tax bands A to D in England, counted in household benefits, government spending and HBAI income (as HBAI counted the 2022 Council Tax Rebate).
+- Add the Pension Tax Allowance announced at Budget 2026: from 6 April 2027 to 5 April 2030, people over State Pension age (or reaching it within the tax year) get a non-refundable Income Tax reduction of 20% of the full new State Pension above the Personal Allowance, rounded up to the pound (£94 in 2027-28), tapered by £1 for every £3 of total income above the full new State Pension (52 weeks at the weekly rate, so it follows any change to that rate). Universal Credit's deduction for tax on earnings sees it.
+
+### Changed
+
+- Replace the cliff edge at the Carer's Allowance earnings limit with the 100% taper that Budget 2026 announced, in England and Wales: the weekly allowance falls by £1 for each £1 of weekly earnings above the limit. The taper starts within 2030-31; until DWP confirms the date the model starts it on 6 October 2030, so 2030-31 carries 182 of its 365 days. In that year the weeks before the taper and the weeks under it each get their own couple restriction and overlapping-benefit reduction, so State Pension reduces the allowance only in the weeks the allowance pays for. A couple caring for the same person elect which of them has the allowance, and the model gives it to the partner with the larger award (before, it preferred the benefit-unit head), so the taper never leaves a couple with less than the cliff edge did, and one partner has the award for the year: where the two have the same award for some weeks, the couple elect the one with the larger award over the year. An amount before the couple restriction or the overlap rule that an input supplies, or that a reform neutralizes, calculates with a formula of its own or otherwise changes, reaches the payment with the whole year's treatment for the stages after it, even where it equals the model's. The payment ignores the stage before the couple restriction wherever an input supplies, or a reform calculates, the amount before overlap. A mask that takes away a fraction of a penny counts as a change, since the couple restriction chooses only among partners with an award. A payment of less than half a penny for the year is nil.
+- Extend the temporary zero rate of VAT on domestic electricity to 30 June 2027, and apply it in Northern Ireland from 1 April 2027, as announced at Budget 2026.
+- Keep the 5p fuel duty cut, and the proportionate cut for LPG and natural gas, to 1 July 2027, as announced at Budget 2026. On that date petrol and diesel rise to the OBR's forecast of 60.59p (57.95p uprated by RPI growth to 2027 Q1), and LPG and natural gas return to their full rates with the same uprating, at the rates HM Treasury publishes (natural gas 25.82p a kilogram); all three then rise by RPI each 1 April from 2028.
+- Raise the savings and property income rates to 24%, 44% and 49% from 6 April 2027 (Budget 2026).
+- Raise the trading allowance to £3,000 from 6 April 2027 (Budget 2026).
+
+
 ## [2.169.0] - 2026-10-31
 
 ### Added
