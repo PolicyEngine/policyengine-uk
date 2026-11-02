@@ -138,8 +138,9 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - non_residential_property_purchased
 - owned_land
 - owned_land_secured_debt
-# A formula of benunit_reported_capital; listed so a dataset that stores it
-# directly is uprated like the input.
+# The formula returns -1, meaning no complete override, and a financial-only
+# report is assessed separately through benunit_reported_capital. This index
+# uprates programme observations that a dataset stores directly in the column.
 - pension_credit_reported_capital
 - pension_income
 - private_pension_wealth

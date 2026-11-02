@@ -624,9 +624,7 @@ def test_property_company_gives_no_earnings(unit_list, share):
         np.testing.assert_allclose(a, b, rtol=0, atol=1e-6, err_msg=v)
 
 
-@PROPERTY_SETTINGS
-@given(st.lists(st.tuples(units(), units()), min_size=1, max_size=3))
-@example(
+PINNED_ALLOCATIONS = [
     [
         (
             pinned_unit(
@@ -636,9 +634,7 @@ def test_property_company_gives_no_earnings(unit_list, share):
             ),
             pinned_unit(pinned_adult()),
         )
-    ]
-)
-@example(
+    ],
     [
         (
             pinned_unit(
@@ -653,9 +649,7 @@ def test_property_company_gives_no_earnings(unit_list, share):
                 pinned_adult(),
             ),
         )
-    ]
-)
-@example(
+    ],
     [
         (
             pinned_unit(
@@ -664,9 +658,12 @@ def test_property_company_gives_no_earnings(unit_list, share):
             ),
             pinned_unit(pinned_adult(pinned_company(owned_company_holding_value=0.40))),
         )
-    ]
-)
-def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs):
+    ],
+]
+
+
+def _allocation_outputs(pairs):
+    """Return UC capital and the oracle's unit and household totals."""
     # Each household holds two benefit units: the first unit's adults and the
     # second's, with the first unit's savings and corporate wealth. No unit
     # reports its own capital, so every owner's holding leaves the household
@@ -735,10 +732,27 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
         situation={"people": people, "benunits": benunits, "households": households}
     )
     capital = np.asarray(sim.calculate("uc_assessable_capital", YEAR))
+    return capital, expected_units, expected_households
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(st.tuples(units(), units()), min_size=1, max_size=3))
+@example(PINNED_ALLOCATIONS[0])
+@example(PINNED_ALLOCATIONS[1])
+@example(PINNED_ALLOCATIONS[2])
+def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs):
+    capital, expected_units, expected_households = _allocation_outputs(pairs)
+    per_household = capital.reshape(-1, 2).sum(axis=1)
     assert (capital >= 0).all()
+    if pairs in PINNED_ALLOCATIONS:
+        # Pinned cases equal the penny-rounded oracle exactly once it is
+        # stored as float32, so a missing final rounding or a lost penny fails.
+        assert capital.dtype == np.float32
+        assert capital.tolist() == np.float32(expected_units).tolist()
+        assert per_household.tolist() == np.float32(expected_households).tolist()
+        return
     for got, want in zip(capital, expected_units):
         assert close(got, want)
-    per_household = capital.reshape(-1, 2).sum(axis=1)
     for got, want in zip(per_household, expected_households):
         assert close(got, want)
 

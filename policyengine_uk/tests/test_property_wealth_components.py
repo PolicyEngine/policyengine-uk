@@ -211,6 +211,46 @@ def test_property_capital_lists_preserve_each_source_once(
         assert sources.count("owned_land") == 1
 
 
+PARAMETERS_DIR = Path(__file__).parents[1] / "parameters"
+PROPERTY_SOURCE_FILES = sorted(PARAMETERS_DIR.rglob("property_sources.yaml"))
+# Universal Credit's uc_property_capital formula reads each listed variable
+# directly. Every other list goes to valued_capital(..., sources=...), which
+# skips a name missing from the programme's capital.sources.
+DIRECTLY_READ_PROPERTY_SOURCES = {"gov.dwp.universal_credit.means_test.capital"}
+
+
+def _dated_lists(path):
+    values = yaml.safe_load(path.read_text())["values"]
+    return {str(start): names for start, names in values.items()}
+
+
+@pytest.mark.parametrize(
+    "path",
+    PROPERTY_SOURCE_FILES,
+    ids=lambda path: ".".join(path.relative_to(PARAMETERS_DIR).parent.parts),
+)
+def test_property_source_lists_name_configured_sources(path, _property_metadata_system):
+    node = ".".join(path.relative_to(PARAMETERS_DIR).parent.parts)
+    property_lists = _dated_lists(path)
+    assert property_lists
+    if node in DIRECTLY_READ_PROPERTY_SOURCES:
+        variables = _property_metadata_system.variables
+        for names in property_lists.values():
+            assert len(names) == len(set(names))
+            unknown = [name for name in names if name not in variables]
+            assert not unknown, f"{path}: {unknown} are not variables"
+        return
+    parameters = _property_metadata_system.parameters
+    first = min(property_lists)
+    dates = set(property_lists) | set(_dated_lists(path.with_name("sources.yaml")))
+    for date in sorted(d for d in dates if d >= first):
+        names = list(parameters.get_child(f"{node}.property_sources")(date))
+        configured = list(parameters.get_child(f"{node}.sources")(date))
+        assert len(names) == len(set(names))
+        missing = [name for name in names if name not in configured]
+        assert not missing, f"{path} at {date}: {missing} missing from sources"
+
+
 @pytest.mark.parametrize(
     "variable", ["overseas_property_value", "other_property_value"]
 )
@@ -470,10 +510,11 @@ def test_legacy_stored_total_overrides_formula_until_removed_by_data_release():
 
 
 # Outputs pinned from a run of these situations on main at 2da212ab, which has
-# neither overseas_property_value nor other_property_value. The legacy-benefit
-# capital of the last two rows is omitted: the sale-expense valuation of
-# other property and corporate_wealth changes it independently of the new
-# inputs.
+# neither overseas_property_value nor other_property_value. Row 8 pins wealth,
+# land and Universal Credit capital; row 9 pins wealth and land only. The
+# sale-expense valuation of other residential and non-residential property and
+# of corporate_wealth changes the other capital outputs of those rows
+# independently of the new inputs.
 WEALTH_AND_LAND = ("property_wealth", "total_wealth", "household_land_value")
 CAPITAL = (
     "uc_assessable_capital",
@@ -542,7 +583,7 @@ ZERO_INPUT_GRID = (
             "non_residential_property_value": 80_000,
         },
         None,
-        (630_000, 630_000, 535_500),
+        (630_000, 630_000, 535_500, 207_000),
     ),
     (
         (45,),

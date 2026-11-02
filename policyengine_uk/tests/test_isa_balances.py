@@ -60,8 +60,9 @@ def test_stored_household_totals_without_person_balances_project_with_savings():
     assert cash == pytest.approx(3_000.0 * growth)
     assert shares == pytest.approx(2_000.0 * growth)
     # Savings, the cash ISA and the stocks-and-shares ISA (through
-    # share_like_capital) all reach the capital pool. UC values share-like
-    # capital less the regulation 49(1)(a) sale-expense rate.
+    # share_like_capital) all reach the capital pool. The formula values
+    # share-like capital for Universal Credit at market value less the
+    # sale-expense rate (UC Regulations 2013 reg. 49).
     rate = simulation.tax_benefit_system.parameters(
         "2027-01-01"
     ).gov.dwp.universal_credit.means_test.capital.sale_expenses.rate
