@@ -352,18 +352,15 @@ def test_every_formula_that_reads_beyond_its_households_is_listed():
 
 
 # Each function that walks up the parent_branch chain, by file, and what it
-# reads there: a calculation depth (Simulation.set_input), branch names, or
-# the years self-employment profit was supplied for and a dataset's first
-# year (branch_root, for the trading allowance's data year), which are the
-# same in a household subset, since each year's input covers every
-# household; or an ancestor's labour supply response (response_source),
-# which a subset takes from the whole population instead.
+# reads there: a calculation depth (Simulation.set_input) or branch names,
+# which are the same in a household subset, or an ancestor's labour supply
+# response (response_source), which a subset takes from the whole population
+# instead.
 REVIEWED_ANCESTOR_WALKS = {
     "simulation.py": {"set_input"},
     "utils/aggregate_impact/guard.py": {"_visible_branches"},
     "utils/labour_supply_responses.py": {"response_source"},
     "utils/supplied_inputs.py": {"_visible_branch_names"},
-    "utils/trading_allowance.py": {"branch_root"},
 }
 
 

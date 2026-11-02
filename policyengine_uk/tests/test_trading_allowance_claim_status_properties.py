@@ -3,9 +3,9 @@ Chapter 1).
 
 Survey data hold profit, not receipts. The claim status says which receipts
 lie behind a positive profit. A claimant's profit already deducts the
-allowance legislated for the year the profit was measured (here, a situation
-whose profit is supplied for the year simulated: £1,000 in 2026-27), so
-their receipts are that profit plus £1,000. A non-claimant did not elect for
+allowance legislated for the year the profit was measured (for a situation,
+the year simulated: £1,000 in 2026-27), so their receipts are that profit
+plus £1,000. A non-claimant did not elect for
 partial relief. Unknown, the default, keeps the rules for supplied or
 missing receipts.
 

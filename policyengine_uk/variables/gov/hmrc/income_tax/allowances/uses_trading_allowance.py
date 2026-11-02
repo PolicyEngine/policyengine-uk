@@ -1,11 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.supplied_inputs import stored_as_input
 from policyengine_uk.utils.trading_allowance import trading_allowance_reliefs
-
-DEDUCTIONS = (
-    "trading_allowance_deduction",
-    "miscellaneous_income_trading_allowance_deduction",
-)
 
 
 class uses_trading_allowance(Variable):
@@ -26,13 +20,13 @@ class uses_trading_allowance(Variable):
         "(trading_allowance_claim_status) counts whenever they take it, even "
         "where it relieves nothing beyond their input profit. By default, "
         "with no current loss, they take it at any allowance at or above the "
-        "one their profit already deducts. That is the deductions' own "
-        "election, so it counts only where both come from their formulas: "
-        "where either is an input (supplied, or set by the model) or "
-        "neutralised, the deductions applied are not the election's, and "
-        "only a positive one counts, for a claimant as for anyone. A reform "
-        "that replaces either deduction's formula should replace this one's "
-        "too."
+        "one their profit already deducts. Where a deduction is an input "
+        "(supplied, or set by the model) or neutralised, their election "
+        "weighs it at the value applied, and the other deduction follows "
+        "that election, so a deduction pinned to the value its formula gives "
+        "changes nothing; a positive one means the allowance applies. A "
+        "reform that replaces either deduction's formula should replace this "
+        "one's too."
     )
     definition_period = YEAR
     reference = [
@@ -55,20 +49,14 @@ class uses_trading_allowance(Variable):
             person("miscellaneous_income_trading_allowance_deduction", period) > 0
         )
         # A claimant with a profit can take the allowance with a deduction
-        # of nil or less. Only the deductions' formulas make that election,
-        # so it counts only where the deductions applied are theirs. Without
-        # such a claimant there is nothing to add, and the reliefs are not
-        # worked out a third time.
+        # of nil or less, which only their election shows. Without such a
+        # claimant there is nothing to add, and the reliefs are not worked
+        # out a third time.
         status = person("trading_allowance_claim_status", period)
         claimant = (status == status.possible_values.CLAIMANT) & (
             person("self_employment_income", period) > 0
         )
-        system = person.simulation.tax_benefit_system
-        if not claimant.any() or any(
-            system.get_variable(name).is_neutralized
-            or stored_as_input(person, name, period)
-            for name in DEDUCTIONS
-        ):
+        if not claimant.any():
             return uses
         _, _, claimant_takes_allowance = trading_allowance_reliefs(
             person, period, parameters
