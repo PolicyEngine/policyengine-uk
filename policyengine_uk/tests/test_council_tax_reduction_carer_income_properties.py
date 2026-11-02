@@ -15,11 +15,14 @@ from 15 March 2026: reg 57(1) is a closed list that leaves it out, and reg
 27(1)(j)(xxib) excepts it. Nor does the tax on the supplement count: at
 working age SSI 2021/249 deducts income tax only from earnings (Part 6
 Chapter 3), and at pension age SSI 2012/319 reg 31(12) disregards the tax
-payable on income taken into account, which the supplement is not. So in law
-the supplement, which is taxable (SI 2026/93), does not touch Council Tax
-Reduction at all. The model deducts the tax and National Insurance each
-scheme allows (council_tax_reduction_tax_deduction), with the supplement's
-tax taken as the highest part of non-savings income.
+payable on income taken into account, which the supplement is not. The
+supplement is taxable (SI 2026/93). The model deducts the tax and National
+Insurance each scheme allows (council_tax_reduction_tax_deduction). At working
+age that includes the extra tax earnings cause, with the earnings as the top
+slice of income (the choice settled for Pension Credit on
+PolicyEngine/policyengine-uk#2019, option (a)), so the supplement beneath the
+earnings can raise the tax the earnings add. At pension age the formula
+deducts the tax on the counted income with the supplement above it.
 
 Invariants, for single people and couples in Scotland in 2026 in which one
 member is a carer, all of working age and taking no Universal Credit or all
@@ -33,12 +36,14 @@ over State Pension age:
    reduction itself never rises, and where both awards are partial it falls
    by 20% of the rise in income less the rise in the applicable amount (the
    carer premium comes with the claim).
-2. Invariant to the supplement: setting the Scottish Carer Supplement to zero
-   leaves Carer Support Payment, the other benefits counted in Council Tax
-   Reduction income (Child Benefit, the income-related benefits, Universal
-   Credit and tax credits) and Council Tax Reduction income itself unchanged
-   under the general rules. The supplement never lowers the reduction, and
-   under the general rules never changes it.
+2. Invariant to the supplement, apart from the tax earnings add: setting the
+   Scottish Carer Supplement to zero leaves Carer Support Payment and the
+   other benefits counted in Council Tax Reduction income (Child Benefit, the
+   income-related benefits, Universal Credit and tax credits) unchanged.
+   Under the general rules it changes Council Tax Reduction income only by
+   the change in the deduction for income tax and National Insurance, and in
+   a family with no earnings it changes neither that income nor the
+   reduction. The supplement never lowers the reduction.
 3. Differential: Council Tax Reduction and Housing Benefit assess the same
    carer income. Where Guarantee Credit does not passport Housing Benefit,
    Housing Benefit applicable income, before its disregard, childcare element
@@ -343,17 +348,25 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         # Where both runs follow the general rules.
         general = g["general_rules"][i] & without["general_rules"][i]
         assert general.any(), fam
-        assert np.allclose(income[general], income_without[general], atol=0.01), (
-            fam,
-            income[general],
-            income_without[general],
+        # The supplement reaches the income only through the deduction.
+        assert np.allclose(
+            (income + g[CTR_TAX][i])[general],
+            (income_without + without[CTR_TAX][i])[general],
+            atol=0.01,
+        ), (fam, income[general], income_without[general])
+        has_earnings = any(
+            a.get("employment_income", 0.0) > 0 for a in fam["adults"]
         )
         award = g["council_tax_benefit"][i]
         award_without = without["council_tax_benefit"][i]
         # The supplement never lowers the award, even on the Pension Credit
         # routes (whose income follows invariant 4).
         assert np.all(award >= award_without - 0.01), fam
-        assert np.allclose(award[general], award_without[general], atol=0.01), fam
+        if not has_earnings:
+            assert np.allclose(
+                income[general], income_without[general], atol=0.01
+            ), (fam, income[general], income_without[general])
+            assert np.allclose(award[general], award_without[general], atol=0.01), fam
         # Without a claim there is no supplement, so nothing moves.
         assert np.allclose(income[:, 1], income_without[:, 1], atol=0.01), fam
 

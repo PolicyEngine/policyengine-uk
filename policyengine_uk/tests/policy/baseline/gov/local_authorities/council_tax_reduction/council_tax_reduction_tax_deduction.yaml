@@ -1,23 +1,37 @@
 # Income tax and National Insurance deducted from Council Tax Reduction income.
-# - Scotland, working age: the Council Tax Reduction (Scotland) Regulations
-#   2021 (SSI 2021/249) reg 50(3)(a) reads "Earnings do not include— (a) any
-#   amount deducted from them by way of income tax or primary Class 1
-#   contributions under the 1992 Act"; regs 49(6)(b) and 51(2) do the same,
-#   and the unearned income rules (regs 57 to 65) deduct no tax. So only tax
-#   and National Insurance on earnings come off.
+# - Scotland, working age (SSI 2021/249): reg 50(3)(a) reads "Earnings do not
+#   include— (a) any amount deducted from them by way of income tax or
+#   primary Class 1 contributions under the 1992 Act". The Scottish Ministers
+#   set the same rule with Universal Credit (regs 49(6)(b) and 51(2) step 3)
+#   and gave no tax deduction for unearned income (regs 57 to 65). Without
+#   Universal Credit, reg 51(9) applies SSI 2012/303 regs 37 and 38, which
+#   price the tax and contributions on self-employed profit notionally: the
+#   basic rate on chargeable income less only the personal allowance, and
+#   Class 4 at the main rate between the lower and upper limits.
 # - Pension age: SSI 2012/319 reg 31(12), "In the case of any income taken
 #   into account for the purpose of calculating a person's income, any amount
 #   payable by way of tax must be disregarded"; SI 2012/2885 Sch 1 para 17(13)
-#   and WSI 2013/3029 Sch 1 para 11(13) read the same. So tax on income not
-#   taken into account (savings interest, dividends, the Scottish Carer
-#   Supplement) does not come off.
+#   and WSI 2013/3029 Sch 1 para 11(13) read the same. Reg 33(2)(a), para
+#   19(2)(a) and para 13(2)(a) deduct the income tax and Class 1 deducted from
+#   earnings, and reg 37, para 30 and para 24 price self-employed profit
+#   notionally, as at working age.
+# No provision says how to split one income tax liability. The model follows
+# the choice settled for Pension Credit on PolicyEngine/policyengine-uk#2019
+# (option (a)): the tax on earnings is the extra tax the earnings cause, with
+# the earnings as the top slice of income and self-employed profit beneath
+# them. In the pensioner schemes the tax on the other counted income is the
+# tax it bears with the uncounted income above it.
 #
-# 2026-27 rates. Personal allowance 12,570. Scottish bands on taxable income:
-# 19% to 3,967, 20% to 16,956, 21% to 31,092. UK basic rate 20% to 37,700.
-# Class 1 primary contributions 8% above 241.73 a week (12,569.96 a year).
-# Each family is a single adult with no Pension Credit or Universal Credit.
+# 2026-27 rates. Personal allowance 12,570. Scottish bands on taxable non-
+# savings income: 19% to 3,967, 20% to 16,956, 21% to 31,092, 42% to 62,430.
+# UK basic rate 20% to 37,700, higher rate 40%. Savings: starting rate band
+# 5,000 less taxable non-savings income; personal savings allowance 1,000 for
+# a basic-rate taxpayer and 500 for a higher-rate one. Class 1 primary
+# contributions 8% above 241.73 a week (12,569.96 a year). Class 4 6% from
+# 12,570 to 50,270. Each family is a single adult with no Pension Credit or
+# Universal Credit unless stated.
 
-- name: Scotland's working-age scheme deducts tax and National Insurance on earnings only
+- name: Scotland's working-age scheme deducts the tax that pay adds to a pension
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -37,13 +51,240 @@
         region: SCOTLAND
         council_tax: 2_000
   output:
-    # Tax on earnings, the earnings as the lowest part of income:
-    # 20,000 - 12,570 = 7,430 taxable; 3,967 x 19% = 753.73 and
-    # 3,463 x 20% = 692.60, so 1,446.33. Class 1: (20,000 - 12,569.96) x 8% =
-    # 594.40. The tax on the private pension is not deducted.
+    # Tax with the pay: 30,000 - 12,570 = 17,430 taxable; 3,967 x 19% = 753.73,
+    # 12,989 x 20% = 2,597.80 and 474 x 21% = 99.54, so 3,451.07. Tax without
+    # the pay: 10,000 is below the personal allowance, so nil. The pay adds
+    # 3,451.07. Class 1: (20,000 - 12,569.96) x 8% = 594.40.
+    council_tax_reduction_tax_deduction: 4_045.47
+    # 20,000 + 10,000 - 4,045.47.
+    council_tax_reduction_applicable_income: 25_954.53
+
+- name: Scotland's working-age scheme deducts the savings tax that pay adds
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 30_000
+        savings_interest_income: 60_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # With the pay: non-savings 17,430 taxable, 3,451.07 as above. Savings
+    # 60,000 sit above 17,430 in the UK bands: no starting rate; 500 personal
+    # savings allowance; 37,700 - 17,430 - 500 = 19,770 x 20% = 3,954; and
+    # 60,000 - 20,270 = 39,730 x 40% = 15,892. Total 23,297.07.
+    # Without the pay: 60,000 - 12,570 = 47,430 taxable savings; 5,000 at the
+    # starting rate and 500 allowance at nil, 32,200 x 20% = 6,440 and
+    # 9,730 x 40% = 3,892, so 10,332. The pay adds 12,965.07.
+    # Class 1: (30,000 - 12,569.96) x 8% = 1,394.40.
+    council_tax_reduction_tax_deduction: 14_359.47
+    # The scheme counts the pay alone: 30,000 - 14,359.47.
+    council_tax_reduction_applicable_income: 15_640.53
+
+- name: Scotland's working-age scheme deducts the tax that pay adds to property income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 30_000
+        property_income: 20_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # With the pay: 50,000 - 12,570 = 37,430 taxable; 753.73 + 2,597.80 +
+    # 14,136 x 21% = 2,968.56 + 6,338 x 42% = 2,661.96, so 8,982.05. Without
+    # the pay: 7,430 taxable; 753.73 + 3,463 x 20% = 692.60, so 1,446.33. The
+    # pay adds 7,535.72. Class 1 1,394.40.
+    council_tax_reduction_tax_deduction: 8_930.12
+    # 30,000 + 20,000 - 8,930.12.
+    council_tax_reduction_applicable_income: 41_069.88
+
+- name: Scotland's working-age scheme keeps benefits in kind beneath the pay
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 30_000
+        company_car_benefit: 15_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # Reg 50(3)(e): a payment in kind is not earnings, so the car benefit stays
+    # in both terms. With the pay: 45,000 - 12,570 = 32,430 taxable; 753.73 +
+    # 2,597.80 + 2,968.56 + 1,338 x 42% = 561.96, so 6,882.05. Without the pay:
+    # 15,000 - 12,570 = 2,430 x 19% = 461.70. The pay adds 6,420.35. Class 1
+    # 1,394.40.
+    council_tax_reduction_tax_deduction: 7_814.75
+    # 30,000 - 7,814.75: the car benefit is not counted.
+    council_tax_reduction_applicable_income: 22_185.25
+
+- name: Scotland's working-age scheme prices tax on a 15,000 profit notionally
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        self_employment_income: 15_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # SSI 2012/303 reg 38: (15,000 - 12,570) x 20% = 486 and Class 4
+    # (15,000 - 12,570) x 6% = 145.80. That exceeds the 461.70 + 145.80 the
+    # person pays, as the rule intends.
+    council_tax_reduction_tax_deduction: 631.80
+    # 15,000 - 631.80.
+    council_tax_reduction_applicable_income: 14_368.20
+
+- name: Scotland's working-age scheme prices tax on a 60,000 profit notionally
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        self_employment_income: 60_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # (60,000 - 12,570) x 20% = 9,486, and Class 4 only between the limits:
+    # (50,270 - 12,570) x 6% = 2,262.
+    council_tax_reduction_tax_deduction: 11_748
+    # 60,000 - 11,748.
+    council_tax_reduction_applicable_income: 48_252
+
+- name: Scotland's working-age scheme with Universal Credit deducts the tax that profit adds
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        self_employment_income: 15_000
+        savings_interest_income: 20_000
+      child_1:
+        age: 5
+      child_2:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    universal_credit: 7_190.20
+    # Reg 51(2) step 3 deducts the tax and contributions paid. With the
+    # profit: non-savings 2,430 x 19% = 461.70; savings 20,000 over a 2,570
+    # starting rate band and a 1,000 allowance, 16,430 x 20% = 3,286; total
+    # 3,747.70. Without it: 7,430 taxable savings; 5,000 starting rate, 1,000
+    # allowance, 1,430 x 20% = 286. The profit adds 3,461.70. Class 4
+    # charged: 145.80.
+    council_tax_reduction_tax_deduction: 3_607.50
+
+- name: Scotland's working-age scheme counted Class 2 in the notional deduction before 2024-25
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        self_employment_income: 20_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # 2023-24: SSI 2012/303 reg 38 as it stood on 5 April 2024. Income tax
+    # (20,000 - 12,570) x 20% = 1,486; Class 4 (20,000 - 12,570) x 9% =
+    # 668.70; Class 2, as the profit exceeds the 12,570 lower profits
+    # threshold, 3.45 x 52 weeks = 179.40.
+    council_tax_reduction_tax_deduction: 2_334.10
+    # 20,000 - 2,334.10.
+    council_tax_reduction_applicable_income: 17_665.90
+
+- name: Scotland's working-age scheme deducts no voluntary Class 3 contributions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 20_000
+        ni_class_3: 900
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # Tax on the pay: 7,430 taxable; 753.73 + 692.60 = 1,446.33. Class 1:
+    # 594.40. Class 3 is voluntary, not a primary Class 1 contribution
+    # deducted from earnings, so the 900 does not come off.
     council_tax_reduction_tax_deduction: 2_040.73
-    # 20,000 + 10,000 - 2,040.73.
-    council_tax_reduction_applicable_income: 27_959.27
+    # 20,000 - 2,040.73.
+    council_tax_reduction_applicable_income: 17_959.27
 
 - name: England's pensioner scheme deducts no tax on savings interest
   period: 2026
@@ -64,11 +305,63 @@
         region: NORTH_WEST
         council_tax: 2_000
   output:
-    # The scheme counts the pension, not the interest. Tax on the pension:
-    # (20,308 - 12,570) x 20% = 1,547.60.
+    # The scheme counts the pension, not the interest. Tax on the pension
+    # with the interest above it: (20,308 - 12,570) x 20% = 1,547.60.
     council_tax_reduction_tax_deduction: 1_547.60
     # 20,308 - 1,547.60.
     council_tax_reduction_applicable_income: 18_760.40
+
+- name: England's pensioner scheme deducts the savings tax that pay adds
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 20_000
+        savings_interest_income: 20_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: NORTH_WEST
+        council_tax: 2_000
+  output:
+    # With the pay: 7,430 x 20% = 1,486 on the pay; savings 20,000 with no
+    # starting rate, a 1,000 allowance and 19,000 x 20% = 3,800; total 5,286.
+    # Without the pay: 7,430 taxable savings; 5,000 starting rate, 1,000
+    # allowance, 1,430 x 20% = 286. The pay adds 5,000. The scheme counts no
+    # other taxed income, and the person pays no Class 1 above pension age.
+    council_tax_reduction_tax_deduction: 5_000
+    # 20,000 - 5,000 - the 5 a week earnings disregard (260).
+    council_tax_reduction_applicable_income: 14_740
+
+- name: England's pensioner scheme prices tax on a profit notionally
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 60_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: NORTH_WEST
+        council_tax: 2_000
+  output:
+    # SI 2012/2885 Sch 1 para 30: (60,000 - 12,570) x 20% = 9,486, not the
+    # 11,432 the profit bears. No Class 4 is payable above pension age.
+    council_tax_reduction_tax_deduction: 9_486
+    # 60,000 - 9,486 - 260.
+    council_tax_reduction_applicable_income: 50_254
 
 - name: Wales's pensioner scheme deducts no tax on dividends
   period: 2026
@@ -95,6 +388,30 @@
     # 20,000 - 1,486.
     council_tax_reduction_applicable_income: 18_514
 
+- name: Wales's pensioner scheme prices tax on a profit notionally
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 60_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        region: WALES
+        council_tax: 2_000
+  output:
+    # WSI 2013/3029 Sch 1 para 24: (60,000 - 12,570) x 20% = 9,486, not the
+    # 11,432 the profit bears. No Class 4 is payable above pension age.
+    council_tax_reduction_tax_deduction: 9_486
+    # 60,000 - 9,486 - 260.
+    council_tax_reduction_applicable_income: 50_254
+
 - name: Scotland's pensioner scheme deducts no tax on the Scottish Carer Supplement
   period: 2026
   absolute_error_margin: 0.01
@@ -115,12 +432,37 @@
         region: SCOTLAND
         council_tax: 2_000
   output:
-    # SSI 2012/319 reg 27(1)(j)(xxib) excepts the supplement, so the scheme
-    # counts the pension alone. Tax on the pension with the supplement above
-    # it: (15,000 - 12,570) x 19% = 461.70.
+    # The Scottish pensioner scheme does not count the Scottish Carer
+    # Supplement as income (SSI 2012/319 reg 27(1)(j)(xxib)), so its tax, as
+    # the highest part of income, does not come off. Tax on the pension:
+    # (15,000 - 12,570) x 19% = 461.70.
     council_tax_reduction_tax_deduction: 461.70
     # 15,000 - 461.70.
     council_tax_reduction_applicable_income: 14_538.30
+
+- name: Scotland's pensioner scheme prices tax on a profit notionally
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 60_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # SSI 2012/319 reg 37: (60,000 - 12,570) x 20% = 9,486, not the 13,182.05
+    # in Scottish bands the profit bears. No Class 4 above pension age.
+    council_tax_reduction_tax_deduction: 9_486
+    # 60,000 - 9,486 - 260.
+    council_tax_reduction_applicable_income: 50_254
 
 - name: Wales's working-age scheme still deducts the whole income tax
   period: 2026

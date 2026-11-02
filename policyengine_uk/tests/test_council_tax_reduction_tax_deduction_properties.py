@@ -3,18 +3,26 @@
 Scotland's working-age scheme (the Council Tax Reduction (Scotland) Regulations
 2021, SSI 2021/249) takes income tax and primary Class 1 contributions off
 earnings only (regs 49(6)(b), 50(3)(a) and 51(2)); its unearned income rules
-(regs 57 to 65) deduct no tax. The pensioner schemes disregard tax only on
-income taken into account: SSI 2012/319 reg 31(12) in Scotland, SI 2012/2885
-Sch 1 para 17(13) in England and WSI 2013/3029 Sch 1 para 11(13) in Wales.
-council_tax_reduction_tax_deduction applies these rules, and
-council_tax_reduction_applicable_income deducts it.
+(regs 57 to 65) deduct no tax. Without Universal Credit, reg 51(9) applies the
+notional tax and contributions of SSI 2012/303 reg 38 to self-employed profit.
+The pensioner schemes disregard tax only on income taken into account and on
+earnings: SSI 2012/319 regs 31(12), 33(2)(a) and 37 in Scotland, SI 2012/2885
+Sch 1 paras 17(13), 19(2)(a) and 30 in England, and WSI 2013/3029 Sch 1 paras
+11(13), 13(2)(a) and 24 in Wales.
 
-Each test builds single-adult households by hand in 2026, with no Universal
-Credit claim, and states its invariant in its docstring.
+No provision says how to split one income tax liability. The model follows
+the choice settled for Pension Credit on PolicyEngine/policyengine-uk#2019
+(option (a)): the tax on earnings is the extra tax the earnings cause, with
+the earnings as the top slice of income. council_tax_reduction_tax_deduction
+applies these rules, and council_tax_reduction_applicable_income deducts it.
+
+Each test builds households by hand in 2026, states its invariant in its
+docstring, and records the scheme of each household it draws as a Hypothesis
+event, so that `--hypothesis-show-statistics` counts the examples per scheme.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -27,19 +35,29 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-WHOLE_TAX = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
-# Taxed income that is not earnings. A working-age adult has no State Pension.
+DEDUCTION = "council_tax_reduction_tax_deduction"
+INCOME_TAX = "income_tax_before_winter_fuel_payment_charge"
+NO_SCOTTISH_CARER_SUPPLEMENT = {
+    "gov.social_security_scotland.carer_support_payment.supplement": {
+        "2026-01-01.2100-12-31": 0
+    }
+}
+# Taxed income the pensioner schemes do not count, as inputs.
+UNCOUNTED = [
+    "savings_interest_income",
+    "other_investment_income",
+    "dividend_income",
+    "miscellaneous_income",
+    "company_car_benefit",
+]
+# Taxed income other than earnings that Scotland's working-age scheme counts
+# or treats as capital.
 UNEARNED = [
     "private_pension_income",
     "property_income",
     "savings_interest_income",
     "dividend_income",
-]
-# Taxed income the pensioner schemes do not take into account.
-UNCOUNTED = [
-    "savings_interest_income",
-    "dividend_income",
-    "scottish_carer_supplement",
+    "miscellaneous_income",
 ]
 
 
@@ -47,151 +65,412 @@ def money(high):
     return st.floats(0, high, allow_nan=False, allow_infinity=False)
 
 
-def simulate(people, country):
-    """One single-adult household per entry of people, all in one country."""
+def maybe(high):
+    return st.one_of(st.just(0.0), money(high))
+
+
+def simulate(households, reform=None):
+    """One simulation of households. Each household is a dict with country,
+    benunits (a list of lists of person input dicts; the first benunit is
+    the Council Tax Reduction applicant's) and, optionally, uc."""
     situation = {"people": {}, "benunits": {}, "households": {}}
-    for i, inputs in enumerate(people):
-        name = f"p{i}"
-        situation["people"][name] = {k: {YEAR: v} for k, v in inputs.items()}
-        situation["benunits"][f"b{i}"] = {
-            "members": [name],
-            "would_claim_uc": {YEAR: False},
-        }
-        situation["households"][f"h{i}"] = {
-            "members": [name],
+    for h, household in enumerate(households):
+        names = []
+        for b, adults in enumerate(household["benunits"]):
+            members = []
+            for p, inputs in enumerate(adults):
+                name = f"p{h}_{b}_{p}"
+                situation["people"][name] = {k: {YEAR: v} for k, v in inputs.items()}
+                members.append(name)
+            situation["benunits"][f"b{h}_{b}"] = {
+                "members": members,
+                "would_claim_uc": {YEAR: household.get("uc", False)},
+            }
+            names += members
+        country = household["country"]
+        situation["households"][f"h{h}"] = {
+            "members": names,
             "country": {YEAR: country},
             "region": {YEAR: REGIONS[country]},
             "council_tax": {YEAR: 2_000.0},
             "savings": {YEAR: 0.0},
         }
-    return Simulation(situation=situation)
+    return Simulation(situation=situation, reform=reform)
 
 
 def benunit_values(simulation, variable):
     return np.asarray(simulation.calculate(variable, YEAR))
 
 
-def person_values(simulation, variables):
-    return sum(
-        np.asarray(simulation.calculate(v, YEAR, map_to="benunit")) for v in variables
+def applicant_total(simulation, variable):
+    """The Council Tax Reduction applicant's and partner's total, by benunit."""
+    values = np.asarray(simulation.calculate(variable, YEAR))
+    members = np.asarray(
+        simulation.calculate("is_council_tax_reduction_applicant_or_partner", YEAR)
+    )
+    return np.asarray(
+        simulation.map_result(values * members, "person", "benunit", how="sum")
     )
 
 
+def scheme_of(country, pensioner, uc=False):
+    if pensioner:
+        return f"{country.lower()} pensioner"
+    if country == "SCOTLAND":
+        return "scotland working age " + ("with UC" if uc else "without UC")
+    return f"{country.lower()} working age"
+
+
 @st.composite
-def working_age_adult(draw):
-    return dict(
-        age=draw(st.integers(25, 60)),
-        employment_income=draw(st.one_of(st.just(0.0), money(80_000))),
-        self_employment_income=draw(st.one_of(st.just(0.0), money(40_000))),
-        **{v: draw(st.one_of(st.just(0.0), money(40_000))) for v in UNEARNED},
+def adult(draw, pensioner, earnings=True, self_employment=True):
+    person = dict(
+        age=draw(st.integers(67, 90)) if pensioner else draw(st.integers(25, 60)),
+        employment_income=draw(maybe(90_000)) if earnings else 0.0,
+        self_employment_income=draw(maybe(90_000)) if self_employment else 0.0,
+        private_pension_income=draw(maybe(60_000)),
+        property_income=draw(maybe(30_000)),
+        **{v: draw(maybe(40_000)) for v in UNCOUNTED},
+    )
+    if pensioner:
+        person["state_pension"] = draw(money(12_000))
+    return person
+
+
+@st.composite
+def household(draw, countries=tuple(REGIONS), pensioner=None, **kwargs):
+    country = draw(st.sampled_from(countries))
+    is_pensioner = draw(st.booleans()) if pensioner is None else pensioner
+    adults = draw(st.lists(adult(is_pensioner, **kwargs), min_size=1, max_size=2))
+    return dict(country=country, benunits=[adults], pensioner=is_pensioner)
+
+
+def schemes(simulation, households):
+    pensioner = benunit_values(simulation, "council_tax_reduction_pensioner")
+    universal_credit = benunit_values(simulation, "universal_credit") > 0
+    labels = []
+    for i, h in enumerate(households):
+        assert pensioner[i] == h["pensioner"], h
+        labels.append(scheme_of(h["country"], pensioner[i], universal_credit[i]))
+        event(labels[-1])
+    return labels
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        household(countries=("SCOTLAND",), pensioner=False, self_employment=False),
+        min_size=1,
+        max_size=4,
+    )
+)
+def test_scottish_working_age_deduction_matches_pension_credit_earnings_tax(
+    households,
+):
+    """Invariant 1. At working age in Scotland without self-employment income,
+    the deduction less primary Class 1 contributions equals the income tax on
+    employed earnings that Pension Credit computes
+    (pension_credit_employment_income_tax), wherever the Council Tax
+    Reduction applicant and partner are the Pension Credit claimant and
+    partner."""
+    simulation = simulate(households)
+    schemes(simulation, households)
+    same_people = np.asarray(
+        simulation.calculate("is_council_tax_reduction_applicant_or_partner", YEAR)
+    ) == np.asarray(simulation.calculate("is_claimant_or_partner", YEAR))
+    assert same_people.all()
+    deduction = benunit_values(simulation, DEDUCTION)
+    class_1 = applicant_total(simulation, "ni_class_1_employee")
+    pension_credit = benunit_values(simulation, "pension_credit_employment_income_tax")
+    assert np.allclose(deduction - class_1, pension_credit, atol=0.01), (
+        households,
+        deduction,
+        class_1,
+        pension_credit,
     )
 
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(working_age_adult(), min_size=1, max_size=4),
-    st.sampled_from(UNEARNED),
-    money(30_000),
+    st.lists(household(pensioner=True, earnings=False), min_size=1, max_size=4),
+    st.sampled_from(UNCOUNTED),
+    money(60_000),
+    st.booleans(),
 )
-def test_scottish_working_age_income_never_falls_as_taxed_unearned_income_rises(
-    adults, unearned, rise
+def test_pensioner_deduction_ignores_uncounted_income_without_earnings(
+    households, uncounted, change, partner
 ):
-    """In Scotland's working-age scheme, Council Tax Reduction applicable income
-    never falls when a taxed unearned income rises and earnings stay fixed."""
-    raised = [{**a, unearned: a[unearned] + rise} for a in adults]
-    base = simulate(adults, "SCOTLAND")
-    more = simulate(raised, "SCOTLAND")
-    assert not benunit_values(base, "council_tax_reduction_pensioner").any()
-    before = benunit_values(base, "council_tax_reduction_applicable_income")
-    after = benunit_values(more, "council_tax_reduction_applicable_income")
-    assert np.all(after >= before - 0.01), (adults, unearned, rise, before, after)
+    """Invariant 2. In every pensioner scheme, with no employed earnings, the
+    deduction does not change when any uncounted income changes, for either
+    member of a couple. The notional amount on self-employed profit reads the
+    personal reliefs to which the person is entitled, which the uncounted
+    income can taper, so the test compares the deduction less that amount."""
+    changed = []
+    for h in households:
+        adults = [dict(a) for a in h["benunits"][0]]
+        who = len(adults) - 1 if partner else 0
+        adults[who][uncounted] = adults[who][uncounted] + change
+        changed.append({**h, "benunits": [adults]})
+    before = simulate(households)
+    after = simulate(changed)
+    schemes(before, households)
+
+    def without_notional(simulation):
+        notional = np.where(
+            np.asarray(
+                [h["country"] == "SCOTLAND" for h in households], dtype=bool
+            ),
+            applicant_total(
+                simulation, "council_tax_reduction_scotland_self_employment_deductions"
+            ),
+            applicant_total(simulation, "pension_credit_self_employment_deductions"),
+        )
+        return benunit_values(simulation, DEDUCTION) - notional
+
+    assert np.allclose(without_notional(before), without_notional(after), atol=0.01), (
+        households,
+        uncounted,
+        change,
+        without_notional(before),
+        without_notional(after),
+    )
+
+
+@st.composite
+def any_household(draw):
+    h = draw(household())
+    if h["country"] == "SCOTLAND" and not h["pensioner"]:
+        # Children make a Universal Credit award likely.
+        h["uc"] = draw(st.booleans())
+        if h["uc"]:
+            h["benunits"][0] += [dict(age=4), dict(age=7)]
+    return h
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(working_age_adult(), min_size=1, max_size=4))
-def test_scottish_working_age_deducts_no_tax_without_earnings(adults):
-    """In Scotland's working-age scheme, with no earnings the deduction for
-    income tax and National Insurance is nil, however much other taxed income
-    there is."""
-    no_earnings = [
-        {**a, "employment_income": 0.0, "self_employment_income": 0.0} for a in adults
+@given(st.lists(any_household(), min_size=1, max_size=4))
+def test_deduction_bounds(households):
+    """Invariant 3. The deduction is never negative. Without self-employment
+    income it never exceeds the applicant's and partner's income tax before
+    the winter fuel payment charge plus National Insurance. With it, the
+    notional amount the schemes set on profit can take the deduction above
+    that liability, as the law intends, but never above the liability plus
+    the notional amount."""
+    simulation = simulate(households)
+    schemes(simulation, households)
+    deduction = benunit_values(simulation, DEDUCTION)
+    whole = applicant_total(simulation, INCOME_TAX) + applicant_total(
+        simulation, "national_insurance"
+    )
+    profit = applicant_total(simulation, "self_employment_income")
+    notional = np.maximum(
+        applicant_total(
+            simulation, "council_tax_reduction_scotland_self_employment_deductions"
+        ),
+        applicant_total(simulation, "pension_credit_self_employment_deductions"),
+    )
+    assert np.all(deduction >= 0), (households, deduction)
+    assert np.all((deduction <= whole + 0.01)[profit == 0]), (
+        households,
+        deduction,
+        whole,
+    )
+    assert np.all(deduction <= whole + notional + 0.01), (
+        households,
+        deduction,
+        whole,
+        notional,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        household(
+            countries=("SCOTLAND",),
+            pensioner=False,
+            earnings=False,
+            self_employment=False,
+        ),
+        min_size=1,
+        max_size=4,
+    )
+)
+def test_scottish_working_age_deducts_nothing_without_earnings(households):
+    """Invariant 4. At working age in Scotland, with no earnings and no
+    profit, the deduction is nil, however much other taxed income there is."""
+    simulation = simulate(households)
+    schemes(simulation, households)
+    deduction = benunit_values(simulation, DEDUCTION)
+    assert np.all(deduction == 0), (households, deduction)
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        household(countries=("SCOTLAND",), pensioner=False), min_size=1, max_size=4
+    ),
+    money(20_000),
+    st.booleans(),
+)
+def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, partner):
+    """Invariant 5. At working age in Scotland without Universal Credit,
+    raising either member's employment income never raises Council Tax
+    Reduction."""
+    raised = []
+    for h in households:
+        adults = [dict(a) for a in h["benunits"][0]]
+        who = len(adults) - 1 if partner else 0
+        adults[who]["employment_income"] += rise
+        raised.append({**h, "benunits": [adults]})
+    before = simulate(households)
+    after = simulate(raised)
+    schemes(before, households)
+    reduction_before = np.asarray(before.calculate("council_tax_reduction", YEAR))
+    reduction_after = np.asarray(after.calculate("council_tax_reduction", YEAR))
+    assert np.all(reduction_after <= reduction_before + 0.01), (
+        households,
+        rise,
+        partner,
+        reduction_before,
+        reduction_after,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(any_household(), min_size=1, max_size=3),
+    adult(pensioner=False),
+    adult(pensioner=False),
+)
+def test_non_dependant_income_never_changes_the_deduction(
+    households, non_dependant, other_income
+):
+    """Invariant 6. A non-dependant's income never changes the deduction:
+    adding a working-age adult with their own benefit unit to the household,
+    and changing that adult's income, leaves the applicant's deduction where
+    it was."""
+    with_non_dependant = [
+        {**h, "benunits": h["benunits"] + [[non_dependant]]} for h in households
     ]
-    simulation = simulate(no_earnings, "SCOTLAND")
-    deduction = benunit_values(simulation, "council_tax_reduction_tax_deduction")
-    assert np.all(deduction == 0), (no_earnings, deduction)
-
-
-@st.composite
-def pensioner(draw):
-    # Pensions reach far enough, with the uncounted income, to cross the
-    # personal allowance taper.
-    return dict(
-        age=draw(st.integers(67, 90)),
-        state_pension=draw(money(12_000)),
-        private_pension_income=draw(money(140_000)),
-        property_income=draw(st.one_of(st.just(0.0), money(15_000))),
-        savings_interest_income=draw(st.one_of(st.just(0.0), money(20_000))),
-        dividend_income=draw(st.one_of(st.just(0.0), money(20_000))),
-        scottish_carer_supplement=draw(st.sampled_from([0.0, 608.40])),
-    )
-
-
-@PROPERTY_SETTINGS
-@given(
-    st.lists(pensioner(), min_size=1, max_size=4),
-    st.sampled_from(sorted(REGIONS)),
-)
-def test_pensioner_schemes_deduct_no_more_than_the_tax_on_counted_income(
-    pensioners, country
-):
-    """In the pensioner schemes of England, Wales and Scotland, the income tax
-    and National Insurance deducted never exceed what the same person would
-    pay with only the income the scheme counts, nor the whole liability."""
-    counted_only = [{**p, **{v: 0.0 for v in UNCOUNTED}} for p in pensioners]
-    full = simulate(pensioners, country)
-    alone = simulate(counted_only, country)
-    assert benunit_values(full, "council_tax_reduction_pensioner").all()
-    deduction = benunit_values(full, "council_tax_reduction_tax_deduction")
-    tax_on_counted_income = person_values(alone, WHOLE_TAX)
-    whole_tax = person_values(full, WHOLE_TAX)
-    assert np.all(deduction <= tax_on_counted_income + 0.01), (
-        pensioners,
-        deduction,
-        tax_on_counted_income,
-    )
-    assert np.all(deduction <= whole_tax + 0.01), (pensioners, deduction, whole_tax)
-    # Taking away the uncounted income leaves the deduction where it was.
-    deduction_alone = benunit_values(alone, "council_tax_reduction_tax_deduction")
-    assert np.allclose(deduction, deduction_alone, atol=0.01), (
-        pensioners,
-        deduction,
-        deduction_alone,
-    )
+    changed = [
+        {**h, "benunits": h["benunits"] + [[other_income]]} for h in households
+    ]
+    alone = simulate(households)
+    schemes(alone, households)
+    first = simulate(with_non_dependant)
+    second = simulate(changed)
+    # The applicant's benunit is the first in each household.
+    applicant = np.arange(len(households)) * 2
+    deduction = benunit_values(alone, DEDUCTION)
+    for simulation in (first, second):
+        assert np.allclose(
+            benunit_values(simulation, DEDUCTION)[applicant], deduction, atol=0.01
+        ), (households, non_dependant, other_income)
 
 
 CASES = [
-    ("SCOTLAND", dict(age=40, employment_income=20_000.0, dividend_income=9_000.0)),
-    ("SCOTLAND", dict(age=70, private_pension_income=15_000.0)),
-    ("ENGLAND", dict(age=70, private_pension_income=20_308.0)),
-    ("WALES", dict(age=70, private_pension_income=20_000.0)),
+    dict(
+        country="SCOTLAND",
+        benunits=[[dict(age=40, employment_income=30_000.0, dividend_income=9_000.0)]],
+    ),
+    dict(country="SCOTLAND", benunits=[[dict(age=40, self_employment_income=15_000.0)]]),
+    dict(
+        country="SCOTLAND",
+        uc=True,
+        benunits=[
+            [
+                dict(age=35, self_employment_income=15_000.0),
+                dict(age=5),
+                dict(age=3),
+            ]
+        ],
+    ),
+    dict(country="SCOTLAND", benunits=[[dict(age=70, private_pension_income=15_000.0)]]),
+    dict(
+        country="ENGLAND",
+        benunits=[[dict(age=70, employment_income=20_000.0)]],
+    ),
+    dict(
+        country="WALES",
+        benunits=[[dict(age=70, self_employment_income=60_000.0)]],
+    ),
 ]
 
 
 def test_council_tax_reduction_is_the_same_whichever_variable_is_calculated_first():
-    """Council Tax Reduction and its tax deduction come out the same whether
-    the deduction or the reduction is calculated first, so the deduction reads
-    no benefit that depends on the reduction."""
+    """Invariant 7. Council Tax Reduction and its tax deduction come out the
+    same whether the deduction or the reduction is calculated first."""
     variables = [
-        "council_tax_reduction_tax_deduction",
+        DEDUCTION,
         "council_tax_reduction_applicable_income",
         "council_tax_reduction",
     ]
-    for country, person in CASES:
-        inputs = {**person, "savings_interest_income": 6_559.0}
+    for case in CASES:
+        applicant = case["benunits"][0][0]
+        inputs = {
+            **case,
+            "benunits": [
+                [{**applicant, "savings_interest_income": 6_559.0}]
+                + case["benunits"][0][1:]
+            ],
+        }
         results = []
         for order in (variables, variables[::-1]):
-            simulation = simulate([inputs], country)
+            simulation = simulate([inputs])
             results.append(
                 {v: float(simulation.calculate(v, YEAR).sum()) for v in order}
             )
-        assert results[0] == results[1], (country, results)
+        assert results[0] == results[1], (case, results)
+
+
+UNCOUNTED_CASES = [
+    ("savings_interest_income", 10_000.0),
+    ("other_investment_income", 10_000.0),
+    ("dividend_income", 10_000.0),
+    ("miscellaneous_income", 10_000.0),
+    ("company_car_benefit", 10_000.0),
+]
+
+
+def test_branch_takes_each_uncounted_income_out_of_income_tax():
+    """The pensioner schemes' tax on other counted income zeroes each income
+    they do not count, so it equals the income tax of the same person without
+    that income. This covers the Scottish Carer Supplement, which the model
+    computes from the carer's award rather than reading as an input."""
+    base = dict(age=70, private_pension_income=30_000.0)
+    with_income = [
+        dict(country="ENGLAND", benunits=[[{**base, variable: amount}]])
+        for variable, amount in UNCOUNTED_CASES
+    ]
+    without_income = [dict(country="ENGLAND", benunits=[[base]])]
+    branch = np.asarray(
+        simulate(with_income).calculate(
+            "council_tax_reduction_income_tax_on_other_counted_income", YEAR
+        )
+    )
+    expected = float(simulate(without_income).calculate(INCOME_TAX, YEAR)[0])
+    assert np.allclose(branch, expected, atol=0.01), (branch, expected)
+    tax_with_income = np.asarray(simulate(with_income).calculate(INCOME_TAX, YEAR))
+    assert np.all(tax_with_income > expected + 1), tax_with_income
+
+    carer = dict(
+        age=70,
+        private_pension_income=14_000.0,
+        care_hours=35,
+        would_claim_carers_allowance=True,
+    )
+    carer_household = [dict(country="SCOTLAND", benunits=[[carer]])]
+    with_supplement = simulate(carer_household)
+    without_supplement = simulate(carer_household, reform=NO_SCOTTISH_CARER_SUPPLEMENT)
+    assert with_supplement.calculate("scottish_carer_supplement", YEAR)[0] > 0
+    assert np.isclose(
+        with_supplement.calculate(
+            "council_tax_reduction_income_tax_on_other_counted_income", YEAR
+        )[0],
+        without_supplement.calculate(INCOME_TAX, YEAR)[0],
+        atol=0.01,
+    )
+    assert (
+        with_supplement.calculate(INCOME_TAX, YEAR)[0]
+        > without_supplement.calculate(INCOME_TAX, YEAR)[0] + 1
+    )
