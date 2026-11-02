@@ -1,7 +1,7 @@
 """Property tests for a Scottish taxpayer's tax_band and the Marriage
 Allowance income conditions (#2350).
 
-tax_band is the highest band in which a person has taxable income. For a
+tax_band returns the highest band in which a person has taxable income. For a
 Scottish taxpayer the liability charges income other than savings and
 dividends at the Scottish rates (earned_income_tax and property_income_tax,
 ITA 2007 s. 11A) and savings and dividends at the rest-of-UK savings and
@@ -9,36 +9,38 @@ dividend rates (savings_income_tax and dividend_income_tax, ss. 11D(6) and
 13(5)). These tests read the band off that liability: they raise the rates of
 one band at a time by RISE and see which bands' rates each person pays.
 
-The people are single, so the Marriage Allowance, which the model takes off
-earned income rather than giving as a tax reduction (#1947), plays no part.
-With the starting rate for savings, the Personal Savings Allowance and the
-dividend allowance set to nothing, every pound of taxable income is charged at
-a band's rate, and for every single Scottish taxpayer:
+These tests use single adults, so the model grants them no Marriage
+Allowance. We set the starting-rate amount, Personal Savings Allowance and
+dividend allowance to zero, so the model taxes every taxable pound at a band's
+positive rate, and for every single Scottish taxpayer:
 
 - a person in a band pays tax at that band's rates on some income and at no
   higher band's rates, and a person with no band pays no tax;
 - the Marriage Allowance income conditions hold exactly when the person pays
   nothing at the higher or additional rates (s. 55B(2)(b)).
 
-With baseline nil rates restored, the model keeps nil-rate income in its
+With the baseline nil-rate amounts, the model keeps nil-rate income in its
 underlying band, and no one pays tax at the higher or additional rates above
 their band.
 
-The Marriage Allowance income conditions do not read the band. With the nil
-rates in force, under the law in force or with its rate limits and nil-rate
-amounts changed, for every single person in England, and in Scotland from
-2017-18, they hold exactly when the liability charges no income at a rate
-s. 55B(2)(b) forbids and, with the dividend allowance removed
-(s. 55B(2)(ba)), none at the dividend upper or additional rate. So savings at
-the savings nil rate or the starting rate for savings never stop the
-allowance.
+The Marriage Allowance income conditions do not read the band. With the
+baseline nil-rate amounts and with reformed limits and amounts, for every
+single person in England, and in Scotland from 2017-18, they hold exactly when
+the liability charges no income at a rate s. 55B(2)(b) forbids and, with the
+dividend allowance removed (s. 55B(2)(ba)), none at the dividend upper or
+additional rate. So savings at the savings nil rate or the starting rate for
+savings never stop the allowance. The reforms start the dividend upper rate at
+the basic rate limit, where Parliament starts it (s. 13(2)), and hold the
+starting rate limit for savings at or below the basic rate limit. In that
+range the model's savings liability places the savings nil rate where
+Parliament does (s. 12A).
 
 Before #2350 the band compared all taxable income with the Scottish limits.
 Against that formula, which ran from 2019-20, the band never rises, except
 from STARTER to BASIC where savings or dividends sit below the Scottish
-starter limit: they sit in the rest-of-UK basic band (charged at the starting
-rate for savings, the dividend nil rate or the dividend ordinary rate), not at
-the Scottish starter rate.
+starter limit: they sit in the rest-of-UK basic band (where the model charges
+the starting rate for savings, the dividend nil rate or the dividend ordinary
+rate), not at the Scottish starter rate.
 """
 
 from contextlib import contextmanager
@@ -193,12 +195,12 @@ def liability(sim, period):
 
 
 def charged_at(sim, period, paths):
-    """The income charged at the rates at these paths: the rise in tax when
-    only those rates rise by RISE, divided by RISE."""
+    """Measure the income the model taxes at these rates by raising only
+    these rates by RISE and dividing the tax increase by RISE."""
     parameters = sim.tax_benefit_system.parameters
     before = liability(sim, period)
     rates = {path: parameters.get_child(path)(str(period)) for path in paths}
-    # A rate with no value that year (a Scottish rate not yet set) stays so.
+    # Skip Scottish rates that Parliament had not set that year.
     raised = {path: rate + RISE for path, rate in rates.items() if rate is not None}
     with law(sim, period, raised):
         return (liability(sim, period) - before) / RISE
@@ -250,7 +252,7 @@ def test_no_one_pays_higher_rates_above_their_band(sim, drawn, period):
     set_people(sim, drawn, period)
     band = band_of(sim, period)
     tax = liability(sim, period)
-    # The Marriage Allowance and counts by marginal rate turn on these.
+    # Counts by marginal rate use these bands.
     income_at = charged(sim, period, ["HIGHER", "ADDITIONAL"])
     for i, b in enumerate(band):
         case = f"{drawn[i]} in {period}: {b}, {[income_at[x][i] for x in income_at]}"
@@ -301,9 +303,9 @@ def test_band_never_rises_except_from_starter_to_basic(sim, drawn, period):
 
 
 def test_savings_allowance_does_not_read_the_band():
-    # ITA 2007 s. 12B(8) sets the Personal Savings Allowance on the
-    # rest-of-UK bands for everyone, so savings_allowance (#2347) never reads
-    # tax_band: forcing the band changes nothing.
+    # Parliament sets the Personal Savings Allowance on the rest-of-UK bands
+    # for everyone (ITA 2007 s. 12B(8)), so savings_allowance (#2347) never
+    # reads tax_band: forcing the band changes nothing.
     sim = Simulation(situation=situation())
     set_people(sim, ISSUE, 2025)
     allowance = sim.calculate("savings_allowance", 2025)
@@ -316,20 +318,21 @@ def test_savings_allowance_does_not_read_the_band():
         )
 
 
-# The Marriage Allowance income conditions against the liability, with the nil
-# rates in force: people alternate between Scotland and England, from 2016-17,
-# the first year of the savings and dividend nil rates. Before 2017-18 the
-# model charges a Scottish taxpayer's non-savings income on its 2017-18
-# Scottish scale, where s. 11A(1) charged it on the rest-of-UK limits. The
-# Marriage Allowance test uses the basic rate limit there, as the law did, so
-# this test leaves those people out.
+# The Marriage Allowance income conditions against the liability, with the
+# baseline nil-rate amounts and with reformed limits and amounts: people
+# alternate between Scotland and England, from 2016-17, the first year of the
+# savings and dividend nil rates. Before 2017-18 the model charges a Scottish
+# taxpayer's non-savings income on its 2017-18 Scottish scale, where Parliament
+# charged it on the rest-of-UK limits (s. 11A(1)). The Marriage Allowance test
+# uses the basic rate limit there, as Parliament did, so this test leaves those
+# people out.
 MA_YEARS = list(range(2016, 2027))
 MA_COUNTRIES = ["SCOTLAND", "ENGLAND"]
 FIRST_SCOTTISH_LIMITS_YEAR = 2017
-# The rates s. 55B(2)(b) forbids, other than the dividend rates: the Scottish
-# higher, advanced and top rates, the higher and additional rates, and the
-# savings higher and additional rates. Each person pays at most one of the
-# Scottish and rest-of-UK schedules on non-savings income.
+# The rates Parliament forbids in s. 55B(2)(b), other than the dividend rates:
+# the Scottish higher, advanced and top rates, the higher and additional rates,
+# and the savings higher and additional rates. Each person pays at most one of
+# the Scottish and rest-of-UK schedules on non-savings income.
 FORBIDDEN = (
     [SCOTTISH.format(i) for i in (3, 4, 5)]
     + [UK.format(i) for i in (1, 2, 3)]
@@ -337,15 +340,17 @@ FORBIDDEN = (
 )
 DIVIDEND_UPPER = [DIVIDENDS.format(i) for i in (1, 2, 3)]
 DIVIDEND_ALLOWANCE = "gov.hmrc.income_tax.allowances.dividend_allowance"
+BASIC_RATE_LIMIT = "gov.hmrc.income_tax.rates.uk[1].threshold"
+DIVIDEND_UPPER_START = "gov.hmrc.income_tax.rates.dividends[1].threshold"
+STARTING_RATE_LIMIT = "gov.hmrc.income_tax.rates.savings_starter_rate.allowance"
 # Rate limits and nil-rate amounts a reform might change, each drawn or left
 # at the law in force.
 LIMITS = {
     "gov.hmrc.income_tax.rates.scotland.rates[3].threshold": st.integers(
         20_000, 50_000
     ),
-    "gov.hmrc.income_tax.rates.uk[1].threshold": st.integers(25_000, 50_000),
-    "gov.hmrc.income_tax.rates.dividends[1].threshold": st.integers(25_000, 50_000),
-    "gov.hmrc.income_tax.rates.savings_starter_rate.allowance": st.integers(0, 60_000),
+    BASIC_RATE_LIMIT: st.integers(25_000, 50_000),
+    STARTING_RATE_LIMIT: st.integers(0, 60_000),
     "gov.hmrc.income_tax.allowances.personal_savings_allowance.basic": st.integers(
         0, 10_000
     ),
@@ -398,12 +403,27 @@ def test_marriage_allowance_follows_the_liability_with_nil_rates(
     sim = mixed_sim
     set_people(sim, drawn, period)
     parameters = sim.tax_benefit_system.parameters
-    # A limit with no value that year (a Scottish rate not yet set) stays so.
+    # Skip Scottish rates that Parliament had not set that year.
     changes = {
         path: value
         for path, value in changes.items()
         if parameters.get_child(path)(str(period)) is not None
     }
+    basic_rate_limit = changes.get(
+        BASIC_RATE_LIMIT, parameters.get_child(BASIC_RATE_LIMIT)(str(period))
+    )
+    # Parliament starts the dividend upper rate at the basic rate limit
+    # (ss. 10(3) and 13(2)), so a reformed limit moves the model's dividend
+    # scale too.
+    changes[DIVIDEND_UPPER_START] = basic_rate_limit
+    # The model's savings liability starts the savings nil rate where the
+    # starting rate for savings ends. That matches where Parliament places it
+    # (s. 12A) only while the starting rate limit stays at or below the basic
+    # rate limit.
+    if STARTING_RATE_LIMIT in changes:
+        changes[STARTING_RATE_LIMIT] = min(
+            changes[STARTING_RATE_LIMIT], basic_rate_limit
+        )
     with law(sim, period, changes):
         meets = np.asarray(
             sim.calculate("meets_marriage_allowance_income_conditions", period)

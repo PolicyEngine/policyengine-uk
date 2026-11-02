@@ -12,8 +12,8 @@ class TaxBand(Enum):
 
 
 def uk_tax_band_above_limits(person, period, parameters):
-    """The rest-of-UK band before 2018-19: income above a limit is in the
-    band above it."""
+    """Return the rest-of-UK band before 2018-19, counting income above each
+    limit in the next band."""
     allowances = person("allowances", period)
     ani = person("net_income", period)
     rates = parameters(period).gov.hmrc.income_tax.rates
@@ -35,18 +35,19 @@ def uk_tax_band_above_limits(person, period, parameters):
 def scottish_tax_band(person, period, parameters):
     """The highest band in which a Scottish taxpayer has taxable income.
 
-    Use the Scottish limits for income other than savings and dividends,
-    the only income the Scottish rates charge (ITA 2007 s. 11A and the
+    Use Scottish limits for income other than savings and dividends.
+    Parliament applies Scottish rates to this income (ITA 2007 s. 11A and the
     Scottish rate resolutions). Treat savings and dividends as the top
     slices of income (s. 16) and apply the rest-of-UK limits, since they
     bear the rates they would bear outside Scotland (ss. 11D(6) and 13(5)).
     Compare the rest-of-UK band only when taxable savings or dividends
     remain, then return the higher band. Keep income at each upper limit in
-    the lower band: s. 10(2) to (3A) charges income "up to" a limit at the
-    lower rate, and each resolution charges a rate "on income above" one
-    limit "and up to" the next. Keep income charged at a nil rate in the
-    band where it sits, as for every taxpayer; the Marriage Allowance has its
-    own rate test (liable_only_at_marriage_allowance_rates).
+    the lower band. Parliament charges income "up to" a limit at the lower
+    rate (s. 10(2) to (3A)), and the Scottish Parliament charges each Scottish
+    rate "on income above" one limit "and up to" the next (each Scottish rate
+    resolution). Keep income charged at a nil rate in the band where it sits,
+    as for every taxpayer; the Marriage Allowance has its own rate test
+    (liable_only_at_marriage_allowance_rates).
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)
@@ -64,11 +65,12 @@ def scottish_tax_band(person, period, parameters):
             TaxBand.HIGHER,
         ] + [TaxBand.ADDITIONAL] * (len(scale.thresholds) - 4)
     labels = np.array([band.index for band in [TaxBand.NONE] + scottish_bands])
-    # Allowances go to this income first, as in earned_income_tax. Marriage
-    # Allowance is a tax reduction (s. 55B(1)), so it does not move the band.
+    # Allowances go to this income first, as in earned_income_tax. Parliament
+    # gives the Marriage Allowance as a tax reduction (s. 55B(1)), so it does
+    # not move the band.
     non_savings = person("non_savings_income_after_allowances", period)
-    # s. 414(2)(b) raises the Scottish basic rate's upper limit and every
-    # limit above it by the grossed-up gift.
+    # Parliament raises the Scottish basic rate's upper limit and every limit
+    # above it by the grossed-up gift (s. 414(2)(b)).
     first_extended = first_extended_scottish_threshold(scale)
     limits_exceeded = sum(
         non_savings > threshold + (gross_gift if index >= first_extended else 0)
@@ -77,8 +79,9 @@ def scottish_tax_band(person, period, parameters):
     scottish_band = labels[limits_exceeded]
     uk_limits = rates.uk.thresholds
     taxable_income = person("net_income", period) - person("allowances", period)
-    # Taxable income above the non-savings income is savings or dividends.
-    # s. 414(2)(b) raises the basic and higher rate limits by the gift too.
+    # Savings and dividends make up the taxable income above the non-savings
+    # income. Parliament raises the basic and higher rate limits by the gift
+    # too (s. 414(2)(b)).
     uk_band = select(
         [
             taxable_income <= non_savings,
@@ -131,8 +134,8 @@ class tax_band(Variable):
         return uk_tax_band_above_limits(person, period, parameters)
 
     def formula_2017(person, period, parameters):
-        # Annual formulas start on 1 January, so this runs from 2017-18, the
-        # first year of Scottish rates and limits.
+        # Annual formulas start on 1 January, so this runs from 2017-18, when
+        # the Scottish Parliament first set its own band limits.
         return where(
             person("pays_scottish_income_tax", period),
             scottish_tax_band(person, period, parameters),

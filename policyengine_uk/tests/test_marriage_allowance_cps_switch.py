@@ -70,10 +70,10 @@ DEFAULT_CPS_RATE = 0.1
 # (marriage_allowance/rounding_increment.yaml).
 PERSONAL_ALLOWANCE = 12_570
 ROUNDING_INCREMENT = 10
-# 2025-26 taxable income above which non-savings income is charged above the
-# rates that allow the allowance: the basic rate limit (ITA 2007 s. 10), and
-# for a Scottish taxpayer the start of the Scottish higher rate, £43,662 of
-# income less the personal allowance (Scottish Rate Resolution 2025).
+# 2025-26 taxable income above which the model charges non-savings income at
+# rates that bar the allowance: the basic rate limit (ITA 2007 s. 10), and for
+# a Scottish taxpayer the start of the Scottish higher rate, £43,662 of income
+# less the personal allowance (Scottish Rate Resolution 2025).
 BASIC_RATE_LIMIT = 37_700
 SCOTTISH_HIGHER_RATE_START = 31_092
 REFORM_VARIABLE = "meets_expanded_ma_conditions"  # Only the reform adds it.
@@ -288,8 +288,8 @@ def test_the_reform_switches_on_from_its_own_parameters_only(
 # parameters, reused: each example writes its own inputs.
 
 COUPLES = 20
-# Every fourth couple lives in Scotland, whose starter and intermediate rates
-# allow the allowance (ITA 2007 s. 55B(2)(b)).
+# Every fourth couple lives in Scotland, where Parliament allows the allowance
+# at the Scottish starter and intermediate rates (ITA 2007 s. 55B(2)(b)).
 REGIONS = ["SCOTLAND", "LONDON", "NORTH_EAST", "WALES"]
 
 
@@ -383,8 +383,8 @@ def run(simulation, drawn, anyone_claims=True):
         # Simulation.calculate returns an enum's names.
         band=np.asarray(simulation.calculate("tax_band", YEAR), dtype=str),
         income_tax=simulation.calculate("income_tax", YEAR),
-        # The earners have only employment income, so all their taxable
-        # income is non-savings income.
+        # The earners have only employment income, so they have no savings or
+        # dividend income.
         taxable=np.maximum(
             simulation.calculate("employment_income", YEAR)
             - simulation.calculate("personal_allowance", YEAR),

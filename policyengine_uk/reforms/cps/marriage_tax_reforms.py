@@ -37,7 +37,10 @@ def create_expanded_ma_reform(
 
     class meets_marriage_allowance_income_conditions(Variable):
         label = "Meets Marriage Allowance income conditions"
-        documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"
+        documentation = (
+            "Whether this person meets the statutory Marriage Allowance income "
+            "conditions or this reform's expansion conditions."
+        )
         entity = Person
         definition_period = YEAR
         value_type = bool
@@ -47,8 +50,8 @@ def create_expanded_ma_reform(
             base_eligible = liable_only_at_marriage_allowance_rates(
                 person, period, parameters
             )
-            # Expand to people liable above those rates if the reform's
-            # expansion conditions are met.
+            # Expand to people liable above those rates who meet the reform's
+            # expansion conditions.
             expansion = person("meets_expanded_ma_conditions", period) & ~base_eligible
             return base_eligible | expansion
 
