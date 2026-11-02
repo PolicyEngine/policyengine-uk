@@ -1,7 +1,8 @@
 # Employer National Insurance incidence
 
-Employer National Insurance reforms can change wages, tax receipts and household
-income through the model's incidence assumptions. The parameters under
+Changes in employer National Insurance can change wages, tax receipts and household
+income through the model's incidence assumptions. Secondary Class 1 and Class 1A
+on benefits in kind use the same channels. The parameters under
 `gov.contrib.policyengine.employer_ni` default to:
 
 | Parameter | Default | Implemented role |
@@ -15,14 +16,22 @@ for the defaults, and this page does not select a preferred incidence assumption
 
 ## Wage adjustment and supplied income
 
-The wage channel compares the baseline and reform employer-NI rate, secondary
-threshold and employer-pension exemption. For its eligible earnings branch, it
-solves for pay holding modeled employer cost fixed, then multiplies the pay change
-by `employee_incidence`. At `1`, the full computed adjustment applies in the same
-model year. The formula returns zero without a baseline, without a relevant
-parameter change, at employee incidence zero, or for prior pay below the baseline
-secondary threshold. This describes the implemented calculation, including its
-threshold guard; it does not assert a general equilibrium response for every worker.
+The wage channel compares the baseline and reform secondary Class 1 rate,
+threshold, employer-pension exemption and actual Class 1A liabilities. It solves
+for pay holding modeled employer cost fixed, then multiplies the pay change by
+`employee_incidence`. At `1`, the full computed adjustment applies in the same
+model year. A change in the taxable value of a benefit can change Class 1A and
+trigger this response even when every Class 1 parameter stays the same.
+
+Employer cost includes cash pay, statutory pay, employer pension contributions,
+secondary Class 1 and Class 1A. It excludes the tax valuation of the benefits
+themselves. Class 1A does not depend on cash pay, so the solver subtracts the
+reform Class 1A liability from the baseline total cost, then solves the existing
+piecewise Class 1 cost equation. The cash-pay floor prevents negative pay.
+The formula returns zero without a baseline, at employee incidence zero, when
+the Class 1 schedule and Class 1A liability are unchanged, or when prior cash pay
+is zero. A positive earner below a Class 1 threshold can still bear a Class 1A
+change, including an earner within the under-21 zero-rate band.
 
 `employment_income` adds this adjustment to `employment_income_before_lsr` and
 other earnings components. An input actually stored in the final
@@ -33,9 +42,9 @@ wage response. The example below demonstrates an override with `set_input` after
 construction and before calculation. Dataset and other input routes should be
 checked for which earnings holder they populate.
 
-The [wage formula](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_fixed_employer_cost_change.py),
-[earnings components](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/input/employment_income.py)
-and [constructor remapping](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/simulation.py#L350)
+The [wage formula](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_fixed_employer_cost_change.py),
+[earnings components](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/input/employment_income.py)
+and [constructor remapping](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/simulation.py)
 provide the implementation details.
 
 ## Consumer and capital channels
@@ -46,6 +55,14 @@ employee incidence is one. Otherwise, the formulas use person weights and alloca
 that change using household consumption or corporate wealth per person. Their
 weighted aggregate exposure must be nonzero; they also return zero when the
 simulation has no dataset attribute.
+
+Full fixed-cost conservation requires enough cash pay to absorb the computed
+adjustment and an earnings formula that can respond. A zero-pay or binding-floor
+case, or a supplied final-pay override, can leave employer cost above its
+baseline. At employee incidence `1`, the residual channels remain zero even in
+those cases. Other incidence shares allocate their stated fraction of the actual
+remaining cost; the model does not renormalize shares or allocate a channel with
+zero aggregate exposure.
 
 An attribute can be present with `dataset=None`, so that guard alone is not a
 promise that every household calculation has zero residual incidence. The example
@@ -58,22 +75,38 @@ employer-NI incidence channels. This does not disable unrelated labor-supply or
 other behavioral responses.
 
 The response amounts enter `household_tax`; those same variables are not added to
-`gov_tax`. See the [consumer](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_consumer_incidence.py)
-and [capital](https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_capital_incidence.py)
+`gov_tax`. See the [consumer](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_consumer_incidence.py)
+and [capital](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_capital_incidence.py)
 allocation formulas.
 
-## Secondary Class 1 only
+## Secondary Class 1 and Class 1A
 
-All three channels cover secondary Class 1 contributions. `ni_employer` also
-holds Class 1A contributions on benefits in kind (`ni_class_1a`), but
-`employer_cost`, `baseline_employer_cost` and `adjusted_employer_cost` leave
-them out, as they leave out the benefits themselves. No household bears
-Class 1A or a change in it, whether the change comes from the benefits (as
-with a rise in the company car appropriate percentages) or from the employer
-rate, which Class 1A follows (SSCBA 1992 s. 10(5)). Such a reform raises
-`gov_tax` by its Class 1A change on top of what households pay. Passing
-Class 1A through these channels is
-[#2752](https://github.com/PolicyEngine/policyengine-uk/issues/2752).
+All three channels include Class 1A contributions on benefits in kind
+(`ni_class_1a`) alongside secondary Class 1. `employer_cost` reads their
+`ni_employer` total; `baseline_employer_cost` and `adjusted_employer_cost` include
+the actual Class 1A liability from their respective simulations. Statutory
+Class 1A rates and benefit definitions stay separate from these incidence
+assumptions.
+
+This applies to changes in the employer rate and to benefit valuations, including
+the `company_car_tax_rise_2030` scenario. Its default result now includes Class 1A
+incidence through wages and any supported residual channels. This extends the
+model's adjustable incidence assumption; it does not establish an empirical
+pass-through estimate for company car benefits.
+
+For a static comparison, set all three parameters below to zero for the target
+years in **both the baseline and the reform**. Apply the tax reform itself only
+to the reform simulation.
+
+| Parameter | Static comparison value |
+|---|---:|
+| `gov.contrib.policyengine.employer_ni.employee_incidence` | 0 |
+| `gov.contrib.policyengine.employer_ni.consumer_incidence` | 0 |
+| `gov.contrib.policyengine.employer_ni.capital_incidence` | 0 |
+
+This disables these three channels, including their Class 1A response. Other
+labor-supply assumptions have separate controls. The all-zero row in the worked
+example below applies this recipe.
 
 ## Measures and aggregation
 

@@ -92,14 +92,15 @@ car that cannot emit CO2. `benefits_in_kind` adds the two.
   of `benefits_in_kind`, and `ni_employer` adds it to secondary Class 1, so it
   reaches `gov_tax`. The Class 1A percentage is the secondary percentage for
   the year, except 14.53% in 2022-23.
-- **No household bears Class 1A.** `employer_cost`, and the employer NI
-  incidence variables that recompute it, cover pay and secondary Class 1
-  only. So the fixed-cost pay response and the capital and consumer
-  channels leave out Class 1A and any change in it: it stays with employers
-  as revenue. A reform that changes Class 1A, such as the 2030-31 rise below
-  or a rise in the employer rate, raises `gov_tax` by more than it lowers
-  household incomes. Passing Class 1A through like secondary Class 1 is
-  [#2752](https://github.com/PolicyEngine/policyengine-uk/issues/2752).
+- **Employer NI incidence.** Class 1A enters the modeled employer cost and
+  uses the same wage, capital and consumer incidence assumptions as secondary
+  Class 1. A change in a benefit's taxable value can therefore change pay
+  even when the Class 1 schedule stays the same. The default full employee
+  incidence applies the computed pay adjustment, subject to the cash-pay
+  floor and final-pay overrides. Residual channels retain their existing
+  share, weight and exposure guards. The benefits' tax valuation itself is
+  not added to employer resource cost. See the
+  [incidence assumptions](../../../assumptions/employer-ni-incidence.md).
 
 ## 2030-31
 
@@ -119,6 +120,24 @@ reformed = Simulation(situation=situation, scenario=company_car_tax_rise_2030)
 `policyengine_uk.scenarios.company_car_tax_rise_2030.COMPANY_CAR_TAX_RISE_2030`
 holds the same changes as a parameter-changes dictionary.
 
+The scenario's default result includes the employer NI incidence of its
+additional Class 1A charge. This is a modeling assumption about who bears that
+charge, rather than a change to the statutory tax calculation. A comparison with
+a static costing must set all three parameters below to zero for 2030 in both
+the baseline and the reform, while applying the scenario's tax changes only to
+the reform:
+
+| Parameter | Static comparison value |
+| --- | ---: |
+| `gov.contrib.policyengine.employer_ni.employee_incidence` | 0 |
+| `gov.contrib.policyengine.employer_ni.consumer_incidence` | 0 |
+| `gov.contrib.policyengine.employer_ni.capital_incidence` | 0 |
+
+Setting employee incidence alone to zero leaves the residual channels active
+where weights and exposures support them. No company-car-specific incidence
+exception applies. See the [worked incidence example](../../../assumptions/employer-ni-incidence.md#worked-household-example)
+for applying matching assumptions to both simulations.
+
 The car fuel benefit charge multiplier is in the baseline for 2027-28 at the
 £30,200 Budget 2026 announced, before the Treasury order is made. That is the
 annual CPI uprating, which the Budget does not score, so a pre-Budget
@@ -135,8 +154,9 @@ baseline has it too; the 2030-31 rise is a policy decision Budget 2026 scores
 - Fuel provided for only part of the year (s. 152(2)).
 - Other benefits in kind.
 
-The survey data does not fill these inputs yet, so a population run scores
-the company car benefits at zero until a dataset does.
+Population results depend on the dataset supplying these inputs. The default
+inputs describe no company car and produce no company car benefit or Class 1A
+charge.
 
 [s120]: https://www.legislation.gov.uk/ukpga/2003/1/section/120
 [s121]: https://www.legislation.gov.uk/ukpga/2003/1/section/121
