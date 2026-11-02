@@ -22,7 +22,6 @@ no page. The tests check that:
    fenced or inline code.
 """
 
-import functools
 import json
 import re
 from pathlib import Path
@@ -232,14 +231,12 @@ def slug(heading: str) -> str:
     return re.sub(r"-{2,}", "-", text).strip("-")
 
 
-@functools.cache
 def labels(page: Path) -> frozenset[str]:
     """The ``(label)=`` targets a page defines."""
     text = without_code(page_markdown(page), keep_inline_code=True)
     return frozenset(m["label"] for m in LABEL.finditer(text))
 
 
-@functools.cache
 def anchors(page: Path) -> frozenset[str]:
     """The heading anchors and ``(label)=`` targets a page defines."""
     text = without_code(page_markdown(page), keep_inline_code=True)
