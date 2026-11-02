@@ -336,7 +336,7 @@ def test_brma_carries_per_cell_until_that_households_region_changes():
                     "region": {2024: "SCOTLAND", 2027: "WALES"},
                     "brma": {2024: "GREATER_GLASGOW"},
                 },
-                {"country": {2024: "WALES"}, "brma": {2026: "CARDIFF"}},
+                {"region": {2024: "WALES"}, "brma": {2026: "CARDIFF"}},
             ]
         )
     )
@@ -698,3 +698,70 @@ def test_enabled_projection_matches_independently_explicit_ons_geography():
     assert "PLAN_4" in actual_plans
     assert set(actual_plans) <= {"NONE", "PLAN_4"}
     assert "region" not in derived.household.columns
+
+
+@pytest.mark.parametrize("years", [(2023, 2022), (2022, 2023)])
+def test_country_inputs_are_year_specific_while_region_and_council_carry(years):
+    simulation = Simulation(
+        situation=situation(
+            [
+                {"country": {2022: "NORTHERN_IRELAND"}},
+                {"region": {2022: "NORTHERN_IRELAND"}},
+                {"local_authority": {2022: "BELFAST"}},
+                {"country": {2023: "NORTHERN_IRELAND"}},
+            ]
+        )
+    )
+    expected = {
+        2022: ["NORTHERN_IRELAND"] * 3 + ["ENGLAND"],
+        2023: ["ENGLAND"] + ["NORTHERN_IRELAND"] * 3,
+    }
+    for year in years:
+        assert labels(simulation, "country", year) == expected[year]
+    assert labels(simulation, "region", 2023) == ["LONDON"] + ["NORTHERN_IRELAND"] * 3
+    # Existing AFP cases distinguish a one-year country observation from
+    # persistent geography. Preserve their actual final rebate oracles.
+    np.testing.assert_allclose(
+        simulation.calculate("ebr_alternative_fuel_payment", 2023),
+        [0, 200, 200, 200],
+        atol=0.01,
+        rtol=0,
+    )
+    np.testing.assert_allclose(
+        simulation.calculate("energy_bills_rebate", 2023),
+        [201, 600, 600, 600],
+        atol=0.01,
+        rtol=0,
+    )
+    simulation.reset_calculations()
+    assert labels(simulation.clone(), "country", 2023) == expected[2023]
+
+
+def test_prior_country_input_does_not_mask_a_later_custom_country_formula():
+    simulation = Simulation(
+        situation=situation([{"country": {2024: "SCOTLAND"}}, {}]),
+        reform=WelshCountry,
+    )
+    assert labels(simulation, "country", 2026) == ["WALES", "WALES"]
+    assert labels(simulation, "region", 2026) == ["LONDON", "LONDON"]
+    assert labels(simulation, "country", 2024) == ["SCOTLAND", "WALES"]
+    assert labels(simulation, "region", 2024) == ["SCOTLAND", "LONDON"]
+
+
+@pytest.mark.parametrize("reform", [None, WelshCountry], ids=["native", "custom"])
+def test_snapshot_does_not_promote_a_past_country_input_into_a_new_year(reform):
+    original = Simulation(
+        situation=transport_ready_situation([{"country": {2024: "NORTHERN_IRELAND"}}]),
+        reform=reform,
+    )
+    current_country = "WALES" if reform is WelshCountry else "ENGLAND"
+    assert labels(original, "country", 2024) == ["NORTHERN_IRELAND"]
+    assert labels(original, "country", YEAR) == [current_country]
+    snapshot = UKSingleYearDataset.from_simulation(original, fiscal_year=YEAR)
+    assert snapshot.household.country.tolist() == [current_country]
+    reloaded = Simulation(dataset=snapshot, scenario=no_economic_assumptions)
+    assert labels(reloaded, "country") == ["ENGLAND"]
+    reloaded.set_input("local_authority", YEAR, ["CITY_OF_EDINBURGH"])
+    assert labels(reloaded, "region") == ["SCOTLAND"]
+    assert labels(reloaded, "country") == ["SCOTLAND"]
+    assert labels(original, "country", YEAR) == [current_country]

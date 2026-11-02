@@ -633,8 +633,10 @@ The simulation system is designed to be flexible and powerful. Start with simple
 
 The UK `Simulation` and `Scenario` APIs resolve geography for each household.
 A region supplied for the requested year or an earlier year takes precedence.
-Otherwise a supplied local authority determines the region; a supplied country
-identifies Scotland, Wales or Northern Ireland when no council identifies it.
+Otherwise a supplied local authority determines the region; a country supplied
+for the requested year identifies Scotland, Wales or Northern Ireland when no
+council identifies it. Country overrides apply only to their supplied year:
+an earlier country input alone does not establish a later year's geography.
 England alone uses London because it does not identify an English region.
 The model reads country inputs directly while resolving region, so an omitted
 country cannot create a country–region calculation cycle.
@@ -646,7 +648,7 @@ provided facts. Explicit values equal to the defaults do count. Explicit
 council values raise `ValueError`; callers changing a previously supplied
 region must also keep any provided council and country consistent.
 
-For example, a household with `local_authority: EDINBURGH` and no region uses
+For example, a household with `local_authority: CITY_OF_EDINBURGH` and no region uses
 `SCOTLAND`. A household with `local_authority: OXFORD` uses `SOUTH_EAST`.
 A later region input does not change earlier years, and supplied regions carry
 forward after calculated values are cleared. The council lookup covers the

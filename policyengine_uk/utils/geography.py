@@ -154,10 +154,12 @@ def _resolve(region, council, country):
 
 
 def resolved_region(population, period, *, override=None):
-    """Region from genuine region/council/country facts, in that order."""
+    """Region/council history, then a country supplied for this year."""
     return _resolve(
         *(
-            input_facts(population, name, period, override=override)
+            input_facts(
+                population, name, period, exact=name == "country", override=override
+            )
             for name in ("region", "local_authority", "country")
         )
     )
@@ -233,7 +235,7 @@ def merge_geography_formula(simulation, variable, period, native, had_array):
     population = simulation.get_variable_population(variable.name)
     resolved_region(population, period)
     values, supplied, _ = input_facts(
-        population, variable.name, period, exact=variable.name == "brma"
+        population, variable.name, period, exact=variable.name in {"country", "brma"}
     )
     if supplied.all():
         return variable.possible_values.encode(values)
@@ -306,7 +308,7 @@ def attach_household_presence(frame, simulation, period) -> None:
     )
     masks = []
     for name in GEOGRAPHY_FIELDS.intersection(frame.columns):
-        _, mask, _ = input_facts(population, name, period)
+        _, mask, _ = input_facts(population, name, period, exact=name == "country")
         if name == "brma":
             from policyengine_uk.variables.household.BRMA import (
                 REGION_DEFAULT_BRMA,
