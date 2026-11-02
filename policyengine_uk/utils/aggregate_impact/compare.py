@@ -193,6 +193,16 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
                 and bool(base_metric and head_metric)
                 and (b_hidden or h_hidden or (_finite(b) and _finite(h))),
             }
+            reasons = {
+                side: list(
+                    ((metric or {}).get("withheld_because") or {}).get(key) or []
+                )
+                for side, metric in (("base", base_metric), ("head", head_metric))
+            }
+            if any(reasons.values()):
+                # Why each side withholds a reform figure this year
+                # (measure.withheld_reasons).
+                row["values"][key]["withheld_because"] = reasons
             if (delta is not None and delta != 0) or row["values"][key]["withheld"]:
                 row["changed"] = True
             if (

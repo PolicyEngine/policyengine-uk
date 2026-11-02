@@ -1,3 +1,47 @@
+## [2.171.0] - 2026-11-02
+
+### Added
+
+- The aggregate impact report now records why it withholds a standard reform's costing and target change in a year. For each withheld year, `withheld_because` names every condition that holds (`suppressed_component_changed`, `small_component_left`, `small_balance_change`, `small_target_change` or `no_baseline`) and the component or variable it holds for, in `result.json` and in the long-format report that qualification reads. The pull request comment lists the reasons under the reform costings. No reason gives a count or an amount.
+
+### Changed
+
+- Test statutory paternity pay as wages at every pension contribution level, and share the cloned tax-benefit system in the UC work-related groups property tests.
+- Spread the Python tests across seven shards to reduce the work per job.
+
+### Fixed
+
+- Keep the household ISA totals a dataset stores after the years it holds, grown like the person balances they sum, so means-tested capital no longer drops by those holdings from 2033.
+
+
+## [2.170.4] - 2026-11-02
+
+### Fixed
+
+- Projected the sixteen gambling duty inputs per person from HMRC's 2025-26 receipts and the OBR's October 2026 betting and gaming forecast (receipts Table 4.10), divided by the rates the model charges and by population growth. The inputs no longer stay at their 2024-25 cash level, their weighted totals follow each duty's base as household weights grow with population, and the 2026 and 2027 remote gambling rate rises and the 2027 higher-stake machine rate rise apply once.
+
+
+## [2.170.3] - 2026-11-02
+
+### Fixed
+
+- The aggregate checker detects movement in undeclared tax heads independently of their baseline levels, and counts an infinite or NaN response as movement.
+
+
+## [2.170.2] - 2026-11-02
+
+### Fixed
+
+- The programme registry identifies the correct responsible bodies and nations for Scottish income tax, tax credits, the Energy Price Guarantee, Council Tax, Council Tax Reduction and Winter Fuel Payment.
+
+
+## [2.170.1] - 2026-11-02
+
+### Fixed
+
+- Round projected State Pension weekly rates as each Up-rating Order does. Each April the model now raises the previous year's full new State Pension and basic State Pension rates by the triple lock and rounds them to the nearest 5p (`gov.dwp.state_pension.weekly_rate_rounding`). It used to multiply the last published rate by the index's growth and leave the product unrounded. On the October 2026 forecast the full new State Pension becomes £250.70, £259.20 and £265.70 a week in 2027-28 to 2029-30 (from £250.71, £259.24 and £265.72). The Pension Tax Allowance threshold, 52 weeks of that rate, moves to £13,036.40 in 2027-28, the figure in HM Treasury's explainer, and in 2028-29 the full allowance falls from £183 to £182. The model no longer rounds the triple lock index to five decimal places.
+
+
 ## [2.170.0] - 2026-10-31
 
 ### Added
