@@ -98,8 +98,11 @@
 - name: One pound of savings at the savings higher rate fails the conditions
   period: 2026
   input:
-    # As above with 501 of interest: 1 is at the savings higher rate, 40p.
-    employment_income: 50_070
+    # 50,270 - 12,570 = 37,700 of pay, at the basic rate limit, then 501 of
+    # interest. The higher-rate allowance covers 500 at the savings nil rate
+    # (s. 12A) and the last pound bears the savings higher rate, 40p. With pay
+    # at the limit, no other share of the allowance lowers the tax (s. 25(2)).
+    employment_income: 50_270
     savings_interest_income: 501
     region: NORTH_EAST
   absolute_error_margin: 0.01
