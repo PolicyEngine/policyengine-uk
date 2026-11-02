@@ -18,7 +18,7 @@ check the route from a reported weekly amount to Income Tax:
 - a pensioner reporting the data year's full rate has no add-on in any
   year. The new State Pension reporter is 70 and reports the full new rate.
   The basic State Pension reporter is 85. With ages held fixed, the model
-  gives these women the basic type in every year to 2030-31 only from 78. At
+  gives a woman aged 78 or over the basic type in every year to 2030-31. At
   85 a basic State Pension recipient is over 80, so DWP pays her the 25p a
   week age addition with the full basic rate. She reports both, and the model
   pays the full rate as basic State Pension and the 25p, never uprated, as the
