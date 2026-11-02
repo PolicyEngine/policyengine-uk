@@ -3553,6 +3553,14 @@ def real_clearance_rows(release, title):
     return rows, start, len(rows), None
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_real_clearance_rows():
+    # Drop the cached sheets once this module's tests are done, instead of
+    # keeping them for the rest of the test process.
+    yield
+    real_clearance_rows.cache_clear()
+
+
 def unread(table, title, *cells):
     """Write out the importer's refusal of real Table ``table`` for the
     unread ``cells``, each as (text, column)."""

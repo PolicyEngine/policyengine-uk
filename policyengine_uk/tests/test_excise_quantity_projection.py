@@ -82,6 +82,14 @@ def parameters():
     return current_law()
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_current_law():
+    # Drop the cached parameters once this module's tests are done, instead
+    # of keeping them for the rest of the test process.
+    yield
+    current_law.cache_clear()
+
+
 def growth(parameters, path, year):
     return parameters.get_child(path)(f"{year}-01-01")
 
