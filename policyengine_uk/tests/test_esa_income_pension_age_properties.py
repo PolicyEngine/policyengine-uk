@@ -372,6 +372,12 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
             525.20, abs=0.01
         )
         assert pension_credit[2] == 0
+        # The fifth row is case 12's pairing: the member outside the couple
+        # keeps their 3,000 beside the couple's minimum guarantee, 52 x
+        # 155.60 = 8,091.20, whether or not the couple would claim.
+        assert esa[[4, n + 4]] == pytest.approx([3_000, 3_000], abs=0.01)
+        assert couple_esa[4] == 0
+        assert pension_credit[4] == pytest.approx(8_091.20, abs=0.01)
 
     # The screen, family by family.
     eligible = sim.calculate("esa_income_eligible", year)
