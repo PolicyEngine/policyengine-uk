@@ -43,6 +43,24 @@ def retained_input_variables(simulation) -> set:
     return retained
 
 
+def drop_calculated_totals(simulation, name: str) -> None:
+    """Delete the values of a stored household total that the simulation
+    calculated, keeping those the data or a caller supplied.
+
+    A total in STORED_HOUSEHOLD_TOTALS that the data store counts as an input
+    by name, but the simulation calculates it for the years the data do not
+    hold, from the stored years and the parts. Core's own record of inputs
+    (``_user_input_keys``, checked by ``Holder._stores_user_input``) decides
+    which values go, as it does for ``drop_computed_arrays``.
+    """
+    simulation.get_holder(name)._drop_computed()
+    cache = getattr(simulation, "_fast_cache", None)
+    if cache:
+        simulation._fast_cache = {
+            key: value for key, value in cache.items() if key[0] != name
+        }
+
+
 def drop_calculated_values(simulation) -> None:
     """Drop calculated arrays while preserving each actual input cell.
 
