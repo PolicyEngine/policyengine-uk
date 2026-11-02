@@ -47,7 +47,9 @@ class LHA_allowed_bedrooms(Variable):
         "is not the claimant or partner, one for each non-dependant aged 16 or "
         "over, and the children's bedrooms. A qualifying young person the "
         "renter is responsible for has their own bedroom; any other member "
-        "aged 16 or over is a non-dependant and has one too. A qualifying "
+        "aged 16 or over is a non-dependant and has one too, unless they "
+        "head the household: the model treats the household head as liable "
+        "for the rent, so a head who does not claim has no bedroom. A qualifying "
         "young person no one is responsible for, such as one looked after by "
         "a local authority, is not a non-dependant and has no bedroom, in "
         "this family or another. Joint tenants and other sharers of the rent, "
@@ -80,12 +82,16 @@ class LHA_allowed_bedrooms(Variable):
         # responsible (regs 4 and 5).
         qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
-        # non-dependant with a bedroom. The formula does not read
-        # is_resolved_household_head, so it also gives this bedroom to a
-        # member who heads the household, although para 9(2)(d) stops a
-        # person liable to make payments on a commercial basis for their
-        # occupation being a non-dependant.
-        family_non_dependant = family_member & ~qualifying
+        # non-dependant with a bedroom, unless they head the household. The
+        # model treats the household head (is_resolved_household_head) as
+        # the householder in whose name the accommodation is rented, and so
+        # as liable to make payments for their occupation. Such a member who
+        # does not claim is not a renter (paras 1(2) and 9(1)(a)), is not a
+        # qualifying young person (para 9(1)(b)) and is not a non-dependant
+        # (para 9(2)(d)), so para 10(1) gives them no bedroom.
+        family_non_dependant = (
+            family_member & ~qualifying & ~person("is_resolved_household_head", period)
+        )
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 10(1)(c): a non-dependant from another family who is not a
         # child.

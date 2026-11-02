@@ -10,7 +10,10 @@ Invariants, for any generated population of households:
 2. Exact effect: when the added person is not the claimant or partner, their
    family gains one Housing Benefit bedroom, and one Universal Credit bedroom
    unless they are a qualifying young person no one is responsible for (para
-   9(2)(g)). If they join a non-dependant's family, the claim that counts the
+   9(2)(g)) or they head the household and are not a qualifying young person
+   (the model treats the household head as liable for the rent, so such a
+   member is neither a renter nor a non-dependant: paras 1(2), 9(1) and
+   9(2)(d)). If they join a non-dependant's family, the claim that counts the
    household's non-dependants (uc_non_dependants_counted) gains one Universal
    Credit bedroom unless they are a qualifying young person no one is
    responsible for (para 9(2)(g) applies to the whole extended benefit unit),
@@ -21,7 +24,8 @@ Invariants, for any generated population of households:
 3. Reference: every family's bedrooms equal an independent count of the size
    criteria. Universal Credit: one for the renter or couple; one for each
    other member aged 16 or over, except a qualifying young person no one is
-   responsible for; for the counting claim, one for each person aged 16 or
+   responsible for and a household head who is not a qualifying young
+   person; for the counting claim, one for each person aged 16 or
    over in a non-dependant's family, with the same exception; and the
    fewest rooms that hold the family's own children. Housing Benefit, for a
    family liable for the rent: one for the claimant or couple; one for each
@@ -106,14 +110,21 @@ def scenario(draw):
     population = draw(st.lists(household(), min_size=1, max_size=4))
     h = draw(st.integers(0, len(population) - 1))
     f = draw(st.integers(0, len(population[h]) - 1))
-    return population, (h, f), draw(young_person())
+    person = draw(young_person())
+    # On some draws the person added to the head's family heads the
+    # household in place of its claimant.
+    if f == 0:
+        person["is_household_head"] = draw(st.booleans())
+    return population, (h, f), person
 
 
 def build(population, added=None, supply_roles=True):
     """One situation for the population, optionally with a person added to
     family ``added[0]`` = (household, family) with attributes ``added[1]``.
 
-    Returns the situation and, per benefit unit, its (household, family)."""
+    Returns the situation and, per benefit unit, its (household, family).
+    An added person with ``is_household_head`` heads the household in place
+    of the head family's first adult."""
     people, benunits, homes, keys = {}, {}, {}, []
     for h, families in enumerate(population):
         members = []
@@ -136,7 +147,10 @@ def build(population, added=None, supply_roles=True):
                 ids.append(pid)
             if added is not None and added[0] == (h, f):
                 pid = f"{name}_added"
-                people[pid] = {**added[1], "is_household_head": False}
+                people[pid] = {
+                    **added[1],
+                    "is_household_head": added[1].get("is_household_head", False),
+                }
                 if supply_roles:
                     people[pid]["is_claimant_or_partner"] = False
                 ids.append(pid)
@@ -145,7 +159,12 @@ def build(population, added=None, supply_roles=True):
                 extra["liable_for_share_of_household_rent"] = True
             if fam["role"] in ("boarder", "lodger"):
                 people[ids[0]][f"rent_paid_as_{fam['role']}"] = 5_000
-            if fam["role"] == "head":
+            added_head = (
+                added is not None
+                and added[0] == (h, f)
+                and added[1].get("is_household_head", False)
+            )
+            if fam["role"] == "head" and not added_head:
                 people[ids[0]]["is_household_head"] = True
             benunits[name] = {"members": ids, **extra}
             members.extend(ids)
@@ -181,15 +200,21 @@ def claim_roles(sim):
     return counted.astype(bool), liable
 
 
-def unclaimed_young_people(sim, situation):
-    """Each person: a qualifying young person no one is responsible for."""
-    qualifying = sim.calculate("is_qualifying_young_person_for_universal_credit", YEAR)
-    responsible = sim.calculate(
-        "is_child_or_qualifying_young_person_for_universal_credit", YEAR
+def has_own_uc_bedroom(sim, situation):
+    """Each person aged 16 or over who is not the claimant or partner: whether
+    they have a Universal Credit bedroom of their own. A qualifying young
+    person the renter is responsible for has one (para 10(1)(b)); one no one
+    is responsible for has none (para 9(2)(g)). Anyone else has one as a
+    non-dependant (para 10(1)(c)), unless they head the household, whom the
+    model treats as liable for the rent (para 9(2)(d))."""
+    qualifying = np.asarray(
+        sim.calculate("is_qualifying_young_person_for_universal_credit", YEAR)
     )
-    return dict(
-        zip(situation["people"], np.asarray(qualifying) & ~np.asarray(responsible))
+    responsible = np.asarray(
+        sim.calculate("is_child_or_qualifying_young_person_for_universal_credit", YEAR)
     )
+    head = np.asarray(sim.calculate("is_resolved_household_head", YEAR))
+    return dict(zip(situation["people"], responsible | (~qualifying & ~head)))
 
 
 def fewest_rooms_for_children(children):
@@ -245,6 +270,28 @@ def test_adding_a_person_aged_16_to_19_never_lowers_bedrooms(case, supply_roles)
         ),
     )
 )
+# The same young person in a non-dependant's family: no Universal Credit
+# bedroom in the renter's claim either (para 9(2)(g)).
+@example(
+    (
+        [
+            [
+                dict(role="head", adults=[40], children=[]),
+                dict(role="non_dependant", adults=[45], children=[]),
+            ]
+        ],
+        (0, 1),
+        dict(
+            age=17,
+            is_male=True,
+            current_education="UPPER_SECONDARY",
+            age_started_or_accepted_current_education_or_training=16,
+            is_before_universal_credit_qualifying_young_person_terminal_date=True,
+            is_looked_after_by_local_authority=True,
+            receives_benefits_in_own_right=False,
+        ),
+    )
+)
 def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     population, target, person = case
     before, keys = build(population)
@@ -257,16 +304,16 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     counted_before, liable_before = claim_roles(sim_before)
     assert np.array_equal(counted, counted_before)
     assert np.array_equal(liable, liable_before)
-    unclaimed = unclaimed_young_people(sim, after)[f"h{target[0]}_f{target[1]}_added"]
+    gains = has_own_uc_bedroom(sim, after)[f"h{target[0]}_f{target[1]}_added"]
     # 2. Exact effect.
     expected_uc = np.zeros(len(keys))
     expected_hb = np.zeros(len(keys))
     t = keys.index(target)
-    expected_uc[t] += 0 if unclaimed else 1
+    expected_uc[t] += 1 if gains else 0
     expected_hb[t] += 1
     role = population[target[0]][target[1]]["role"]
     same_household = np.array([h == target[0] for h, _ in keys])
-    if role == "non_dependant" and not unclaimed:
+    if role == "non_dependant" and gains:
         expected_uc[same_household & counted] += 1
     if role in ("non_dependant", "boarder", "lodger"):
         expected_hb[same_household & liable] += 1
@@ -281,14 +328,14 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
     situation, keys = build(population, (target, person))
     sim, uc, hb = bedrooms(situation)
     counted, liable = claim_roles(sim)
-    unclaimed = unclaimed_young_people(sim, situation)
+    gains = has_own_uc_bedroom(sim, situation)
     occupier_roles = ("non_dependant", "boarder", "lodger")
     # 3. Reference count.
     for b, (h, f) in enumerate(keys):
         families = population[h]
         fam = families[f]
         added = (h, f) == target
-        own_uc = int(added and not unclaimed[f"h{h}_f{f}_added"])
+        own_uc = int(added and gains[f"h{h}_f{f}_added"])
         own_hb = int(added)
         outside_uc = outside_hb = 0
         hb_children = list(fam["children"])
@@ -300,7 +347,7 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
                 # UC: each non-dependant who is not a child (adults are
                 # supplied as claimant or partner).
                 outside_uc += len(other["adults"])
-                outside_uc += int(joins and not unclaimed[f"h{h}_f{g}_added"])
+                outside_uc += int(joins and gains[f"h{h}_f{g}_added"])
             if liable[b] and other["role"] in occupier_roles:
                 # HB: the occupier family's couple ((a)) or single adult
                 # ((b)), the added person ((b)) and its children.
