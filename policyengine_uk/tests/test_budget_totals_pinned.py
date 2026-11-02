@@ -3,7 +3,7 @@
 household_tax and household_benefits read their terms from programs.yaml.
 EXPECTED holds the three totals for thirteen hand-built households in four
 years under four reforms, computed with the lists that the formula modules
-held as literals at commit 2da212abcf2086337fc088a4a1236f4ae7b6af63. The
+held as literals at commit 46a60678ff52d829253572393abdcc6a03ceb6a7. The
 reforms switch on gov.contrib.abolish_council_tax, the two
 gov.contrib.benefit_uprating rates, and a flat basic income, which the
 uprating leaves out. The test compares with exact equality, because the
@@ -191,7 +191,7 @@ def situation(year):
 
 
 # (reform, year, household): (household_tax, household_benefits,
-# household_net_income), from commit 2da212ab.
+# household_net_income), from commit 46a60678.
 EXPECTED = {
     ("baseline", 2023, "single_renter_london"): (
         5636.60498046875,
@@ -330,7 +330,7 @@ EXPECTED = {
         21507.8984375,
         36659.49609375,
     ),
-    ("baseline", 2028, "pensioner_couple"): (2280.0, 22573.3203125, 20293.3203125),
+    ("baseline", 2028, "pensioner_couple"): (2280.0, 22573.318359375, 20293.318359375),
     ("baseline", 2028, "scottish_lone_parent"): (
         1280.0,
         15792.3837890625,
@@ -361,7 +361,7 @@ EXPECTED = {
     ),
     ("baseline", 2028, "east_of_england_mixed"): (
         8408.4033203125,
-        11700.0009765625,
+        11700.0,
         41291.59765625,
     ),
     ("baseline", 2028, "london_high_value_owner"): (80293.6015625, 0.0, 99706.3984375),
@@ -560,8 +560,8 @@ EXPECTED = {
     ),
     ("abolish_council_tax", 2028, "pensioner_couple"): (
         180.0,
-        20473.3203125,
-        20293.3203125,
+        20473.318359375,
+        20293.318359375,
     ),
     ("abolish_council_tax", 2028, "scottish_lone_parent"): (
         180.0,
@@ -605,7 +605,7 @@ EXPECTED = {
     ),
     ("abolish_council_tax", 2028, "east_of_england_mixed"): (
         6408.4033203125,
-        11700.0009765625,
+        11700.0,
         43291.59765625,
     ),
     ("abolish_council_tax", 2028, "london_high_value_owner"): (
@@ -789,7 +789,7 @@ EXPECTED = {
     ),
     ("uprating", 2028, "east_of_england_mixed"): (
         8408.4033203125,
-        12405.0009765625,
+        12405.0,
         41996.59765625,
     ),
     ("uprating", 2028, "london_high_value_owner"): (80293.6015625, 0.0, 99706.3984375),
@@ -1045,7 +1045,7 @@ EXPECTED = {
     ),
     ("abolish_uprating_basic_income", 2028, "east_of_england_mixed"): (
         6408.4033203125,
-        15593.0009765625,
+        15593.0,
         47184.59765625,
     ),
     ("abolish_uprating_basic_income", 2028, "london_high_value_owner"): (
