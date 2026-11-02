@@ -318,16 +318,19 @@
 
 - name: Wales, a mixed-age couple on Universal Credit claims under the working-age rules
   # WSI 2013/3029 reg 3(1)(b)(ii): a person over the qualifying age whose
-  # partner has an award of Universal Credit is not a pensioner.
+  # partner has an award of Universal Credit is not a pensioner. The two are
+  # 20 years apart, so the inputs name them as the couple.
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
         council_tax_benefit_reported: 100
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -1002,7 +1005,8 @@
   # Sch 3 para 4(3): "either the applicant or the applicant's partner has not
   # reached pensionable age and at least one of them is engaged in
   # employment"; the two need not be the same person. A mixed-age couple on
-  # Universal Credit is on the working-age route. Earnings 12,000 (no tax,
+  # Universal Credit is on the working-age route. The two are 30 years
+  # apart, so the inputs name them as the couple. Earnings 12,000 (no tax,
   # and no NI over State Pension age) - 1,040 = 10,960; no children, so no
   # Universal Credit counts; applicable amount 150.15 x 52 = 7,807.80; award
   # 1,800 - 0.2 x 3,152.20 = 1,169.56.
@@ -1012,10 +1016,12 @@
     people:
       claimant:
         age: 40
+        is_claimant_or_partner: true
         uc_limited_capability_for_WRA: true
         council_tax_benefit_reported: 100
       partner:
         age: 70
+        is_claimant_or_partner: true
         employment_income: 12_000
         weekly_hours: 20
         state_pension: 0
@@ -1158,11 +1164,12 @@
     council_tax_reduction_working_age_personal_allowance: 75.65 * 52
 
 - name: Scotland, partners caring for the same person get one carer premium
-  # SSI 2021/249 Sch 1 para 5(3)-(4). Both partners care 35 hours and the
-  # model gives each Carer Support Payment (86.45 x 52 = 4,495.40), but they
-  # care for the same person, so one premium: (150.15 + 48.15) x 52 =
-  # 10,311.60. Income 10,000 pension + 2 x 4,495.40 = 18,990.80; award
-  # 3,000 - 0.2 x 8,679.20 = 1,264.16 (two premiums would give 1,764.92).
+  # SSI 2021/249 Sch 1 para 5(3)-(4). Both partners care 35 hours for the
+  # same person. The model pays Carer Support Payment (86.45 x 52 =
+  # 4,495.40) to one of them, and the scheme gives one premium:
+  # (150.15 + 48.15) x 52 = 10,311.60. Income 10,000 pension + 4,495.40 =
+  # 14,495.40; award 3,000 - 0.2 x 4,183.80 = 2,163.24 (two premiums would
+  # give 2,664.00).
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -1190,8 +1197,8 @@
   output:
     council_tax_reduction_working_age_carers: 1
     council_tax_reduction_working_age_applicable_amount: (150.15 + 48.15) * 52
-    council_tax_reduction_working_age_applicable_income: 18_990.80
-    simulated_council_tax_reduction_benunit: 1_264.16
+    council_tax_reduction_working_age_applicable_income: 14_495.40
+    simulated_council_tax_reduction_benunit: 2_163.24
 
 - name: Scotland, partners caring for different people get a carer premium each
   # The control: two premiums, (150.15 + 2 x 48.15) x 52 = 12,815.40; award
