@@ -676,6 +676,31 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
 
 @PROPERTY_SETTINGS
 @given(years, st.lists(family, min_size=1, max_size=5), st.sampled_from([1, 5, 15]))
+@example(
+    2025,
+    [
+        # A 3-year-old in a family whose maximum hours used, 40, exceed the
+        # working parent total: raising them must not lower that total.
+        {
+            "children": [{"age": 3, "hours_used": 45, "looked_after": False}],
+            "cap": 40,
+            "claims_universal": True,
+            "claims_targeted": False,
+            "targeted": False,
+            "england": True,
+        },
+        # A 3-year-old whose own hours used bind, below the family's maximum.
+        {
+            "children": [{"age": 3, "hours_used": 20, "looked_after": False}],
+            "cap": 30,
+            "claims_universal": True,
+            "claims_targeted": False,
+            "targeted": False,
+            "england": True,
+        },
+    ],
+    5,
+)
 def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
     raises = ((bump, 0), (0, bump))
     lower, *raised = split(
