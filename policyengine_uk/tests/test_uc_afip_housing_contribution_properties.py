@@ -9,10 +9,11 @@ The Secretary of State names no AFIP head among the descriptions of unearned
 income in reg 66, and the model leaves AFIP out of the renter's unearned
 income.
 
-Each generated household has a renter, who claims Universal Credit, and a
-non-dependant in a family of their own that does not claim. The tests
-calculate the same households with no AFIP, then with a positive AFIP for the
-non-dependant, the renter or both. Invariants:
+Each generated household has a renter, who claims Universal Credit, and one
+non-dependant (a non-dependant couple in the last test) in a family of their
+own that does not claim. The tests calculate each household with no AFIP and
+then with a positive AFIP: for the non-dependant, the renter or both, or in
+the last test for one member of the couple. Invariants:
 
 1. Raising AFIP from nil to any positive amount never lowers Universal
    Credit and never raises the housing cost contributions.
@@ -22,8 +23,9 @@ non-dependant, the renter or both. Invariants:
    element rises by no more than the contributions fall (under para 14(3),
    DWP reduces the element to nil and no further), and Universal Credit rises
    by no more than the element.
-4. One non-dependant's AFIP changes only that person's own attendance
-   allowance result, exemption and contribution.
+4. One non-dependant's AFIP changes no other person's attendance allowance
+   result, exemption or contribution, unless it starts Pension Credit for
+   their benefit unit (para 16(2)(b)).
 """
 
 import numpy as np
@@ -325,10 +327,10 @@ def test_shared_accommodation_exceptions_match_the_previous_list(
 
 
 # Under Sch 4 para 16(1), DWP deducts no contribution "in respect of any
-# non-dependant" to whom para 16(2) applies, so one person's AFIP opens the
-# exemption for that person alone. Each slot holds a renter and a non-dependant
-# couple in one household, which separates the person from the benefit unit and
-# from the household.
+# non-dependant" to whom para 16(2) applies, so DWP exempts only the person who
+# receives AFIP. Each slot puts a renter and a non-dependant couple in one
+# household, so an exemption widened to the benefit unit or the household would
+# reach the recipient's partner.
 PERSON_OUTPUTS = [
     "uc_receives_attendance_allowance",
     "uc_non_dep_deduction_exempt",
@@ -379,6 +381,11 @@ def person_outputs(sim, afip):
     return {name: np.asarray(sim.calculate(name, YEAR)) for name in PERSON_OUTPUTS}
 
 
+def renter_totals(sim):
+    # Benefit units alternate: the renter's family, then the couple's.
+    return np.asarray(sim.calculate("uc_non_dep_deductions", YEAR))[::2]
+
+
 @PROPERTY_SETTINGS
 @given(
     earnings=st.lists(
@@ -396,6 +403,7 @@ def test_one_persons_afip_moves_only_their_own_exemption(
     sim = couple_simulation
     sim.set_input("employment_income", YEAR, np.array(earnings))
     before = person_outputs(sim, np.zeros(PEOPLE_PER_SLOT * SLOTS))
+    total_before = renter_totals(sim)
     amounts = np.zeros(PEOPLE_PER_SLOT * SLOTS)
     amounts[PEOPLE_PER_SLOT * np.arange(SLOTS) + np.array(recipients)] = afip
     after = person_outputs(sim, amounts)
@@ -408,3 +416,9 @@ def test_one_persons_afip_moves_only_their_own_exemption(
         np.testing.assert_array_equal(
             after[name][~received], before[name][~received], err_msg=name
         )
+    # The renter's total falls by the recipient's contribution and no more.
+    np.testing.assert_allclose(
+        total_before - renter_totals(sim),
+        before["uc_individual_non_dep_deduction"][received],
+        atol=0.01,
+    )

@@ -303,7 +303,7 @@
     uc_non_dep_deductions: [0, 0]
     universal_credit: [11_098.8, 0]
 
-- name: Case 9, a private renter aged 30 with a penny of armed forces independence payment keeps the full LHA rate.
+- name: Case 9, DWP excepts a private renter aged 30 with a penny of armed forces independence payment from the shared accommodation rate.
   period: 2026
   input:
     people:

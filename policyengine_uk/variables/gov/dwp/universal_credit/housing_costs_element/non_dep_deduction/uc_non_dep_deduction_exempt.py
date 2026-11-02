@@ -8,7 +8,7 @@ class uc_non_dep_deduction_exempt(Variable):
     definition_period = YEAR
     documentation = (
         "DWP deducts no housing cost contribution for a non-dependant who "
-        "receives Pension Credit, the middle or higher rate of the DLA care "
+        "receives Pension Credit, the middle or highest rate of the DLA care "
         "component, the PIP daily living component, attendance allowance, "
         "Carer's Allowance or Carer Support Payment, or who is responsible "
         "for a child under the child responsibility age limit. For Universal "
