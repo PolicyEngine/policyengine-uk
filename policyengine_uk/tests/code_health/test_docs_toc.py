@@ -280,8 +280,8 @@ def link_problem(page: Path, target: str, pages: set[Path]) -> str | None:
             return "names a page myst.yml does not list"
         return "names no file"
     if anchor and anchor not in anchors(resolved):
-        # A heading anchor belongs to its page, but MyST resolves a bare
-        # #label link to an explicit label on any page.
+        # MyST resolves a bare #anchor from any page, but warns when it
+        # names a heading there; the test accepts only an explicit label.
         if not path and defines_label(anchor, pages):
             return None
         return f"names no heading or label #{anchor} on its page"
@@ -414,7 +414,7 @@ def test_a_bare_label_link_reaches_a_label_on_another_listed_page(tmp_path):
     listed = {labelled.resolve(), linking.resolve()}
     assert link_problem(linking, "#sp-label", listed) is None
     assert "#no-such-label" in link_problem(linking, "#no-such-label", listed)
-    # A heading anchor belongs to its own page.
+    # The test rejects a bare link to a heading on another page.
     assert "#elsewhere" in link_problem(linking, "#elsewhere", listed)
     # A label on a page myst.yml does not list resolves nowhere.
     assert "#sp-label" in link_problem(linking, "#sp-label", {linking.resolve()})
