@@ -748,10 +748,10 @@
     council_tax_reduction_pensioner: true
     is_CTC_child_element_included: [false, true, true, true]
     # Councils apply SI 2012/2885 Sch 1 para 6(1C) where the applicant "has
-    # an award of child tax credit" (para 6(1B)(a)) and it gives more than
-    # para 6(1)(b), so they count the entered award. They count each child
-    # whose individual element it includes: three, more than the two under
-    # para 6(1)(b). The Secretary of State set the 2024-25 amount at
-    # 83.24 a week (Sch 2 para 2(1), as SI 2024/29 amended it), so
-    # 3 * 83.24 * 52 = 12,985.44.
+    # an award of child tax credit" (para 6(1B)(a)) and counting under (1C)
+    # gives more than para 6(1)(b), so they count the entered award. They
+    # count each child whose individual element the award includes: three,
+    # more than the two under para 6(1)(b). The Secretary of State set the
+    # 2024-25 amount at 83.24 a week (Sch 2 para 2(1), as SI 2024/29 reg 6(3)
+    # substituted it), so 3 * 83.24 * 52 = 12,985.44.
     council_tax_reduction_pensioner_child_amounts: 12_985.44
