@@ -14,8 +14,9 @@ class claims_uc_at_legacy_closure(Variable):
         "the income-related ESA award (esa_income_report_closed) and the "
         "Housing Benefit award (housing_benefit_eligible). A family that does "
         "not claim keeps its income-related ESA for the part of 2026-27 "
-        "before the abolition reached it, and its Housing Benefit, until "
-        "legacy_benefits_closed moves it in 2027-28."
+        "before the abolition reached it, and its Housing Benefit until "
+        "legacy_benefits_closed moves it in 2027-28, or beyond that in "
+        "specified or temporary accommodation."
     )
     definition_period = YEAR
     reference = (

@@ -20,9 +20,10 @@
 # and the claim ends the award. From 2027-28 the award has ended and DWP
 # moves the family off its legacy benefits (legacy_benefits_closed). Cases
 # that test the 2026-27 share set would_claim_uc_at_legacy_closure to false.
-# The move ends the family's Housing Benefit, except for specified or
+# DWP's move ends the family's Housing Benefit, except for specified or
 # temporary accommodation (SI 2014/1230 reg 46(2)); a claim ends it there
-# too, because the model's Universal Credit pays the rent.
+# too, because the model's Universal Credit pays the rent, subject to the
+# benefit cap.
 #
 # Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
 # A saving for either member who reports a couple's award keeps the whole
@@ -711,10 +712,11 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # The family claims when the abolition reaches its award. Under reg
-    # 8(3) this Housing Benefit award continues after the claim, but the
-    # model's Universal Credit pays the rent through its housing costs
-    # element, so the model ends the award to avoid paying the rent twice.
+    # The family claims on its award's appointed day. Under reg 8(3) this
+    # Housing Benefit award continues after the claim, but the model's
+    # Universal Credit pays the rent through its housing costs element,
+    # subject to the benefit cap, so the model ends the award to avoid
+    # paying the rent twice beside an uncapped award.
     claims_universal_credit: true
     housing_benefit_eligible: false
     housing_benefit: 0

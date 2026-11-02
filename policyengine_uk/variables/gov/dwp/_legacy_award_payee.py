@@ -73,13 +73,15 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     reports (AWARD_ON_REPORTS), both the benefit unit's award and the
     claimant's and partner's part of it (holds_formula_award). When both
     match, it applies the ESA report closure. When either differs, it
-    applies only the person's legacy closure, and the held award decides
-    payment, as it does for the claimant and partner. They can differ when a
+    applies only the person's legacy closure, and the benefit unit's held
+    award decides payment. That award covers the whole unit, so an outside
+    member with an open report stays paid while the unit's award stays
+    positive, even if it leaves them nothing. The amounts can differ when a
     user enters esa_income, a reform replaces it, or
     disable_simulated_benefits holds both amounts in every year. The
-    comparison can't separate two outside reporters in
-    one benefit unit when the held total and the couple's part both equal
-    the formula's: own_report_is_paid then applies each one's report
+    comparison can't separate two or more outside reporters in one benefit
+    unit when the held total and the couple's part both equal the
+    formula's: own_report_is_paid then applies each one's report
     closure. The benefit unit's award must also be in payment:
     positive, or nil while its work/capital screen fails and the award is not
     neutralised. A directly entered or reformed nil removes status while
@@ -125,7 +127,7 @@ def holds_formula_award(benunit, period, award):
     same formula to the claimant's and partner's open reports. It sets that
     part to zero only where the part, or the stored total that bounds it,
     falls within half a penny of zero, so the formula's part then falls
-    within half a penny of the zero too.
+    within half a penny of zero too.
     """
     award_on_reports = AWARD_ON_REPORTS[award]
     person = benunit.members

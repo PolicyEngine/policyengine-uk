@@ -13,9 +13,9 @@ alone.
 
 own_report_is_paid applies the report closure to an outside member's status
 only when both held amounts match the formula on open reports
-(holds_formula_award). The held £5,000 never matches the formula's £5,200,
-so in every unit the outside adult stays on income-related ESA, as the held
-award decides for the claimant and partner.
+(holds_formula_award). The held £5,000 never matches the formula's couple
+part (£5,199, £5,200 or £5,201), so in every unit the outside adult stays on
+income-related ESA while the benefit unit's held award stays positive.
 
 The test holds the awards three ways: through the disable_simulated_benefits
 reform ("frozen"), as entered values ("stored"), and through a reform that
