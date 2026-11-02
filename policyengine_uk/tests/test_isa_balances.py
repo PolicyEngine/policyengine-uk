@@ -60,9 +60,15 @@ def test_stored_household_totals_without_person_balances_project_with_savings():
     assert cash == pytest.approx(3_000.0 * growth)
     assert shares == pytest.approx(2_000.0 * growth)
     # Savings, the cash ISA and the stocks-and-shares ISA (through
-    # share_like_capital) all reach the capital pool.
+    # share_like_capital) all reach the capital pool. UC values share-like
+    # capital less the regulation 49(1)(a) sale-expense rate.
+    rate = simulation.tax_benefit_system.parameters(
+        "2027-01-01"
+    ).gov.dwp.universal_credit.means_test.capital.sale_expenses.rate
     capital = simulation.calculate("uc_assessable_capital", 2027).values[0]
-    assert capital == pytest.approx(6_000.0 * growth, rel=1e-5)
+    assert capital == pytest.approx(
+        (1_000.0 + 3_000.0 + 2_000.0 * (1 - rate)) * growth, rel=1e-5
+    )
 
 
 def test_household_totals_sum_the_person_balances_in_every_year():
