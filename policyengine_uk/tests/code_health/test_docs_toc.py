@@ -1,4 +1,4 @@
-"""The documentation site publishes every page, and its links reach pages.
+"""The documentation site lists every page except the notebooks it leaves out on purpose, and its links reach pages.
 
 The deploy workflow builds the site from myst.yml with ``myst build --html``,
 and MyST makes a page only for a file the table of contents lists, by
@@ -13,13 +13,16 @@ no page. The tests check that:
    docs, appears in the table of contents or in ``NOTEBOOKS_LEFT_OUT``.
 4. Every relative link in a listed page, notebook Markdown cells included,
    reaches a listed page or an existing file, and its ``#`` anchor names a
-   heading or label on the page it reaches. The links read are Markdown links
+   heading or label on the page it reaches. A bare ``#label`` link may name
+   a ``(label)=`` target on any listed page, since MyST resolves those from
+   every page. The links read are Markdown links
    and images, reference definitions, ``<a href>`` and ``<img src>`` tags,
    ``{doc}`` roles and the paths of ``{figure}`` and ``{image}`` directives.
    The test ignores links with a scheme (https:, mailto:) and anything inside
    fenced or inline code.
 """
 
+import functools
 import json
 import re
 from pathlib import Path
@@ -42,9 +45,10 @@ DOCS_BOOK = DOCS / "book"
 PAGE_SUFFIXES = {".md", ".ipynb"}
 SKIPPED_FOLDERS = {"_build", ".ipynb_checkpoints"}
 
-# Notebooks that myst.yml leaves out on purpose, each with its reason. These
-# hold stored outputs that the current parameters or the law contradict, so
-# they stay off the site until someone reruns them against the current model.
+# Notebooks that myst.yml leaves out on purpose, each with its reason: the
+# current parameters or the law contradict their stored outputs, or nobody can
+# check them without survey data. They stay off the site until someone reruns
+# them against the current model.
 NOTEBOOKS_LEFT_OUT: dict[str, str] = {
     "docs/book/programs/gov/dcms/bbc/tv-licence.ipynb": (
         "Its fee table stops at the 2021 fee, and a cell hard-codes that fee "
@@ -103,7 +107,7 @@ REFERENCE_DEFINITION = re.compile(
     r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(?P<target><[^>]*>|\S+)", re.MULTILINE
 )
 HTML_LINK = re.compile(
-    r"<(?:a|img)\b[^>]*?\b(?:href|src)\s*=\s*(?P<quote>[\"'])(?P<target>.*?)(?P=quote)",
+    r"<(?:a|img)\b[^>]*?\b(?:href|src)\s*=\s*(?:(?P<quote>[\"'])(?P<target>.*?)(?P=quote)|(?P<bare>[^\s\"'=<>`]+))",
     re.IGNORECASE,
 )
 DOC_ROLE = re.compile(r"\{doc\}`(?P<body>[^`]+)`")
@@ -199,7 +203,7 @@ def relative_links(markdown: str) -> list[str]:
     text = INLINE_CODE.sub("", with_roles)
     targets = [m["target"] for m in INLINE_LINK.finditer(text)]
     targets += [m["target"] for m in REFERENCE_DEFINITION.finditer(text)]
-    targets += [m["target"] for m in HTML_LINK.finditer(text)]
+    targets += [m["target"] or m["bare"] for m in HTML_LINK.finditer(text)]
     targets += [m["target"] for m in COLON_PATH_DIRECTIVE.finditer(text)]
     for match in DOC_ROLE.finditer(with_roles):
         body = match["body"].strip()
@@ -215,16 +219,42 @@ def relative_links(markdown: str) -> list[str]:
 
 
 def slug(heading: str) -> str:
-    """The anchor MyST gives a heading: lower case, words joined by hyphens."""
-    return re.sub(r"[^a-z0-9]+", "-", heading.lower()).strip("-")
+    """The anchor MyST gives a heading.
+
+    MyST drops quotation marks, lower-cases the text, turns every other
+    character outside a-z, 0-9 and the hyphen into a hyphen, prefixes "id-"
+    when the result starts with a digit or hyphen, and collapses runs of
+    hyphens.
+    """
+    text = re.sub(r"['‘’\"“”]+", "", " ".join(heading.split())).lower()
+    text = re.sub(r"[^a-z0-9-]", "-", text)
+    text = re.sub(r"^([0-9-])", r"id-\1", text)
+    return re.sub(r"-{2,}", "-", text).strip("-")
 
 
-def anchors(page: Path) -> set[str]:
+@functools.cache
+def labels(page: Path) -> frozenset[str]:
+    """The ``(label)=`` targets a page defines."""
+    text = without_code(page_markdown(page), keep_inline_code=True)
+    return frozenset(m["label"] for m in LABEL.finditer(text))
+
+
+@functools.cache
+def anchors(page: Path) -> frozenset[str]:
     """The heading anchors and ``(label)=`` targets a page defines."""
     text = without_code(page_markdown(page), keep_inline_code=True)
     found = {slug(m["text"].replace("`", "")) for m in HEADING.finditer(text)}
-    found |= {m["label"] for m in LABEL.finditer(text)}
-    return found
+    return frozenset(found) | labels(page)
+
+
+def defines_label(label: str, pages: set[Path]) -> bool:
+    """Whether a listed page defines a ``(label)=`` target. MyST resolves
+    such a label from every page."""
+    return any(
+        label in labels(page)
+        for page in pages
+        if page.suffix in PAGE_SUFFIXES and page.is_file()
+    )
 
 
 def link_problem(page: Path, target: str, pages: set[Path]) -> str | None:
@@ -253,6 +283,10 @@ def link_problem(page: Path, target: str, pages: set[Path]) -> str | None:
             return "names a page myst.yml does not list"
         return "names no file"
     if anchor and anchor not in anchors(resolved):
+        # A heading anchor belongs to its page, but MyST resolves a bare
+        # #label link to an explicit label on any page.
+        if not path and defines_label(anchor, pages):
+            return None
         return f"names no heading or label #{anchor} on its page"
     return None
 
@@ -282,7 +316,10 @@ def test_every_file_entry_names_a_page():
         if Path(file).suffix not in PAGE_SUFFIXES or not (REPO_ROOT / file).is_file()
     ]
     assert missing == []
-    repeated = sorted({file for file in files if files.count(file) > 1})
+    resolved = [(REPO_ROOT / file).resolve() for file in files]
+    repeated = sorted(
+        {file for file, path in zip(files, resolved) if resolved.count(path) > 1}
+    )
     assert repeated == []
 
 
@@ -306,6 +343,10 @@ def test_every_notebook_in_docs_is_in_the_table_of_contents():
     # An exclusion must name a notebook that exists and that myst.yml omits.
     stale = {path for path in left_out if path not in notebooks or path in PAGES}
     assert sorted(str(path.relative_to(REPO_ROOT)) for path in stale) == []
+    unexplained = [
+        path for path, reason in NOTEBOOKS_LEFT_OUT.items() if not reason.strip()
+    ]
+    assert unexplained == []
 
 
 def test_every_markdown_page_in_docs_book_is_in_the_table_of_contents():
@@ -368,12 +409,27 @@ def test_link_problem_checks_the_anchor_on_the_page_it_reaches():
     assert "#top" in link_problem(page, "../index.md#top", listed)
 
 
+def test_a_bare_label_link_reaches_a_label_on_another_listed_page(tmp_path):
+    labelled = tmp_path / "labelled.md"
+    labelled.write_text("(sp-label)=\n## State Pension\n\n## Elsewhere\n")
+    linking = tmp_path / "linking.md"
+    linking.write_text("See [the State Pension](#sp-label).\n")
+    listed = {labelled.resolve(), linking.resolve()}
+    assert link_problem(linking, "#sp-label", listed) is None
+    assert "#no-such-label" in link_problem(linking, "#no-such-label", listed)
+    # A heading anchor belongs to its own page.
+    assert "#elsewhere" in link_problem(linking, "#elsewhere", listed)
+    # A label on a page myst.yml does not list resolves nowhere.
+    assert "#sp-label" in link_problem(linking, "#sp-label", {linking.resolve()})
+
+
 @pytest.mark.parametrize(
     "heading, expected",
     [
         ("Your first policy scenario", "your-first-policy-scenario"),
         ("Energy Price Guarantee (EPG)", "energy-price-guarantee-epg"),
-        ("2024–25 rates", "2024-25-rates"),
+        ("2024–25 rates", "id-2024-25-rates"),
+        ("Who’s eligible", "whos-eligible"),
     ],
 )
 def test_slug_joins_the_words_of_a_heading_with_hyphens(heading, expected):
