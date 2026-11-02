@@ -17,7 +17,7 @@ project:
       - file: docs/book/usage/simulations.md
       - file: docs/book/usage/scenarios.md
       - file: docs/book/usage/dynamics.md
-    # Pages listed by `file:` keep their place in a section. A `pattern:` entry
+    # A `file:` entry fixes its page's place in a section. A `pattern:` entry
     # adds, at its own place, any other Markdown page in a section's folder, so a
     # new page needs no change here. The patterns match only Markdown, so each
     # notebook needs its own `file:` entry, and
@@ -32,7 +32,6 @@ project:
       - file: docs/book/validation/hbai.md
       - file: docs/book/validation/spi-validation.ipynb
       - file: docs/book/validation/student-loan-repayments.ipynb
-      - file: docs/book/validation/validation.ipynb
       - pattern: docs/book/validation/*.md
     - title: Policy
       children:
@@ -47,22 +46,12 @@ project:
       - file: docs/book/programs/gov/dwp/pension-credit.ipynb
       - file: docs/book/programs/gov/hmrc/stamp-duty.ipynb
       - pattern: docs/book/programs/gov/*/*.md
-      - file: docs/book/programs/gov/dcms/bbc/tv-licence.ipynb
       - file: docs/book/programs/gov/dfe/care-to-learn.ipynb
       - file: docs/book/programs/gov/dfe/extended-childcare-entitlement.ipynb
       - file: docs/book/programs/gov/dfe/targeted-childcare-entitlement.ipynb
       - file: docs/book/programs/gov/dfe/universal-childcare-entitlement.ipynb
       - file: docs/book/programs/gov/dwp/housing-benefit.ipynb
-      - file: docs/book/programs/gov/dwp/PIP.ipynb
-      - file: docs/book/programs/gov/dwp/universal-credit.ipynb
-      - file: docs/book/programs/gov/hmrc/child-benefit.ipynb
-      - file: docs/book/programs/gov/hmrc/fuel-duty.ipynb
-      - file: docs/book/programs/gov/hmrc/income-tax.ipynb
-      - file: docs/book/programs/gov/hmrc/national-insurance.ipynb
       - file: docs/book/programs/gov/hmrc/tax-free-childcare.ipynb
-      - file: docs/book/programs/gov/ofgem/energy-price-guarantee.ipynb
-      - file: docs/book/programs/gov/revenue_scotland/land-and-buildings-transaction-tax.ipynb
-      - file: docs/book/programs/gov/wra/land-transaction-tax.ipynb
 site:
   options:
     logo: docs/book/logo.png
