@@ -400,7 +400,7 @@
     # 3,019.69: 14,000.01 - 286.01 - 85.81 - 3,019.69 = 10,608.50, or £204.00
     # a week, within the limit. Unrounded, earnings are 10,608.5174; the
     # nearest half penny of that is 10,608.52, £204.01 a week, which would
-    # have ended entitlement (juaristi22's review of #2543).
+    # have ended entitlement.
     carers_allowance_earnings: 10_608.50
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 86.45 * 52

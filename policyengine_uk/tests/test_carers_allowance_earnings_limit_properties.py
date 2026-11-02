@@ -496,14 +496,14 @@ def _with_fractions(route, year):
     return threshold, pairs
 
 
-# Pairs found in review of #2543, in pence. C1 (juaristi22): a trader within
-# the limit whom the earlier nearest-half-penny rule put over it. The
+# Known boundary pairs, in pence. A trader within the limit whom a
+# nearest-half-penny rule on the total would put over it (YAML Case 25). The
 # employees' Class 1 is a whole number of pence (£175.56, £235.38, £1.14,
 # £1.26, £2.28) that the model's float32 sum of twelve months holds more than
-# half a step out, so reading it with stored_pence and rounding up deducted a
-# penny too much and put each of them, exactly a penny a week over, within
-# the limit.
-REVIEW_PAIRS = {
+# half a step out, so reading it with stored_pence and rounding up would
+# deduct a penny too much and put each of them, exactly a penny a week over,
+# within the limit.
+KNOWN_PAIRS = {
     ("trading", 2026): [(1_400_001, 603_938)],
     ("employee", 2024): [(1_476_446, 1_347_276), (1_551_221, 1_484_862)],
     ("employee", 2026): [
@@ -524,10 +524,10 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
     is over the limit exactly when that reaches the threshold. Class 1 is
     worked exactly from its rate and threshold. Rounding only the total, or
     not at all, misjudges some of these pairs, and so does rounding up the
-    model's float32 Class 1 (REVIEW_PAIRS)."""
+    model's float32 Class 1 (KNOWN_PAIRS)."""
     threshold, pairs = _with_fractions(route, year)
-    review_pairs = REVIEW_PAIRS.get((route, year), [])
-    pairs += review_pairs
+    known_pairs = KNOWN_PAIRS.get((route, year), [])
+    pairs += known_pairs
     gross, contribution = (
         ("self_employment_income", "personal_pension_contributions")
         if route == "trading"
@@ -587,9 +587,9 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
     # Most pairs carry a fraction of a penny in some deduction.
     assert fractions > len(pairs) // 2
     if route == "employee":
-        # Each review pair is exactly the threshold: a penny a week over.
+        # Each known pair is exactly the threshold: a penny a week over.
         for (p, c), judged in zip(
-            review_pairs, gainful[len(pairs) - len(review_pairs) :]
+            known_pairs, gainful[len(pairs) - len(known_pairs) :]
         ):
             net = (
                 p
@@ -598,7 +598,7 @@ def test_each_deduction_counts_a_fraction_of_a_penny_as_a_penny(route, year):
             )
             assert net == threshold and judged, (p, c, net)
     if route == "trading" and year == 2026:
-        # C1: £14,000.01 of profit and a £6,039.38 premium. Tax £286.002 and
+        # YAML Case 25: £14,000.01 of profit and a £6,039.38 premium. Tax £286.002 and
         # Class 4 £85.8006 round up to £286.01 and £85.81, and half the
         # premium is £3,019.69, leaving £10,608.50: £204.00 a week, within the
         # limit, so the full £4,495.40 a year is paid.
@@ -693,8 +693,8 @@ def amounts_around_a_limit(draw):
 @example(case=(2023, 139, EDGES[139]))
 @example(case=(2026, 204, EDGES[204]))
 # 2026-27: 10,608.515625 and 10,608.517578125, a fraction of a penny short of
-# £10,608.52 (the second is the earnings of juaristi22's review case under
-# the earlier nearest-half-penny rule), and 10,608.5205078125, just over it.
+# £10,608.52 (the second is the earnings of YAML Case 25's trader under a
+# nearest-half-penny rule on the total), and 10,608.5205078125, just over it.
 @example(case=(2026, 204, [10_608.515625, 10_608.517578125, 10_608.5205078125]))
 def test_the_formula_matches_exact_arithmetic_and_rises_with_earnings(case):
     """Invariants 6 and 7, for amounts with any fraction of a penny."""
@@ -950,7 +950,7 @@ def test_class_1_supplied_near_its_formula_is_deducted_as_supplied():
     ids=["year", "months"],
 )
 def test_class_1_entered_in_whole_pence_is_deducted_in_whole_pence(class_1_input):
-    """Invariant 11 (found in review): £1.20 of Class 1, entered for the
+    """Invariant 11: £1.20 of Class 1, entered for the
     year or as 10p a month, is £1.20 deducted. policyengine-core divides the
     year's £1.20 among the months, and either way sums twelve float32 months
     to 1.2000001669, which rounded up would deduct £1.21: £10,609.72 of pay
@@ -1132,7 +1132,7 @@ class _NoNIIncomeInDecember(Reform):
     ],
 )
 def test_class_1_under_a_reform_of_its_formula_is_the_amount_calculated(reform, net):
-    """Invariant 11, for a reform (the dates and abolition found in review).
+    """Invariant 11, for a reform (its dates and abolition).
     At £12,569.97 of pay, a penny above the primary threshold, the model's
     own formula gives Class 1 of 0.08p, which counts as a penny, so with a
     £3,922.90 contribution £10,608.51 is left, within the limit. With Class
@@ -1205,7 +1205,7 @@ class _NIIncomeFormula(Reform):
 
 
 def test_a_formula_in_place_of_a_sum_is_read_as_stored():
-    """Invariant 13 (found in review): with ni_class_1_income calculated by a
+    """Invariant 13: with ni_class_1_income calculated by a
     formula giving the same amount, £14,764.46 of pay still leaves
     £14,764.46 less PAYE of £438.90 and Class 1 of £175.56."""
     net, _ = _earnings_of([{"employment_income": 14_764.46}], reform=_NIIncomeFormula)
@@ -1338,7 +1338,7 @@ def test_an_entered_total_is_read_as_entered_even_as_its_parts_float32_sum():
     ids=["employee pension contributions", "Class 1"],
 )
 def test_what_the_simulation_keeps_does_not_change_earnings(row, uncached, net):
-    """Invariants 11 and 12 (found in review): a simulation whose cache policy
+    """Invariants 11 and 12: a simulation whose cache policy
     keeps no value of a sum, or of Class 1, still calculated them, so reads
     them as one that keeps them does. Employee contributions of £1.08 and
     20p of salary sacrifice returned to pay are £1.28, though float32 sums
@@ -1432,7 +1432,7 @@ def test_sums_the_model_forms_are_read_in_whole_pence(regime):
     PAYE and Class 1."""
     rows, nets = _natural_rows(np.random.default_rng(2543), 600, regime)
     if regime == "no NI":
-        # From review: returned pay and contributions of 20p, and of £1,435.15.
+        # Returned pay and contributions of 20p, and of £1,435.15.
         rows += [
             {
                 "employment_income_before_lsr": 10_608.96,

@@ -20,8 +20,9 @@ limit since then is tested with it), for a carer in England caring 40 hours:
    year, to within a float32 step of the annual award. (The rates after the
    last legislated one are the model's uprated projections, which need not
    be whole pence.)
-3. It never pays more than the full rate.
-4. It never goes negative.
+3. It never pays more than the full rate, nor does the award before the
+   couple and overlap restrictions.
+4. It never goes negative, nor does the award before those restrictions.
 5. It falls by at most £1 for each £1 of weekly earnings above the limit:
    comparing any two carers, the weekly award differs by no more than their
    excesses do.
@@ -97,8 +98,9 @@ _SIMULATIONS = {}
 
 def _run(year, annual_pence):
     """For carers with annual net earnings of ``annual_pence``: the excess
-    and the award, each in exact pence (weekly and annual), and whether each
-    is gainfully employed."""
+    and the award, each in exact pence (weekly and annual), whether each is
+    gainfully employed, and the annual award before the couple and overlap
+    restrictions, in pence."""
     key = (year, len(annual_pence))
     if key not in _SIMULATIONS:
         _SIMULATIONS[key] = _simulation(year, len(annual_pence))
@@ -114,7 +116,13 @@ def _run(year, annual_pence):
     )
     gainful = simulation.calculate("is_gainfully_employed_for_carers_allowance", year)
     award = simulation.calculate("carers_allowance", year).astype(np.float64) * 100
-    return excess, gainful, award
+    pre_couple = (
+        simulation.calculate("carers_allowance_pre_couple_limit", year).astype(
+            np.float64
+        )
+        * 100
+    )
+    return excess, gainful, award, pre_couple
 
 
 def _expected(year, annual_pence):
@@ -135,7 +143,7 @@ def test_a_penny_two_pence_and_a_pound_over_each_limit_taper_exactly(year):
     more, which reg. 5 disregards."""
     limit, rate = _limit_and_rate_pence(year)
     annual = [WEEKS * (limit + step) + extra for step in STEPS for extra in (0, 51)]
-    excess, gainful, award = _run(year, annual)
+    excess, gainful, award, _ = _run(year, annual)
     expected_excess = [step for step in STEPS for _ in (0, 51)]
     assert list(excess) == expected_excess, (year, limit)
     assert list(gainful) == [e > 0 for e in expected_excess], (year, limit)
@@ -182,7 +190,7 @@ def test_the_taper_follows_exact_pence(case):
     points where the excess starts and where the taper leaves nothing."""
     year, pence = case
     _, rate = _limit_and_rate_pence(year)
-    excess, gainful, award = _run(year, pence)
+    excess, gainful, award, pre_couple = _run(year, pence)
     expected_excess, expected_award = _expected(year, pence)
     # 1 and 2: exact.
     assert list(excess) == list(expected_excess), year
@@ -190,9 +198,13 @@ def test_the_taper_follows_exact_pence(case):
     assert _within_a_step(award, expected_award).all(), year
     # A float32 step of the annual award, in pence a week.
     slack = np.spacing(np.float32(WEEKS * rate / 100)).astype(float) * 100 / WEEKS
-    # 3 and 4: within the full rate and never negative.
+    # 3 and 4: within the full rate and never negative, both for the award
+    # and for the taper's own award before the couple and overlap
+    # restrictions, which other variables read.
     assert (award <= WEEKS * rate + WEEKS * slack).all(), year
     assert (award >= 0).all(), year
+    assert (pre_couple <= WEEKS * rate + WEEKS * slack).all(), year
+    assert (pre_couple >= 0).all(), year
     # 5: between any two carers, the weekly award falls by no more than the
     # excess rises, and the award a week is at least the rate less the excess.
     weekly = award / WEEKS

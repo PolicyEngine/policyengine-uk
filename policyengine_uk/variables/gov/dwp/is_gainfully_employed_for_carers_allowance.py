@@ -33,7 +33,7 @@ class is_gainfully_employed_for_carers_allowance(Variable):
     ]
 
     def formula(person, period, parameters):
-        # The excess is a whole number of pence of at least 1p wherever
-        # earnings exceed the limit, which float32 holds as a positive
+        # The excess is positive wherever earnings exceed the limit (at least
+        # 1p for a limit in whole pence), which float32 holds as a positive
         # amount, and exactly zero otherwise.
         return person("carers_allowance_weekly_earnings_above_limit", period) > 0
