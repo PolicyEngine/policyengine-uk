@@ -39,8 +39,11 @@ PROPERTY_SETTINGS = settings(
 # Half the adult draws fall from 67 to 100, past the State Pension Credit
 # qualifying age, where only the reg 60A route can open.
 ADULT_AGE = st.one_of(st.integers(67, 100), st.integers(18, 100))
-# A partner aged 16 or 17 can't be a joint claimant of Universal Credit
-# (UC Regs 2013 reg 3(3)) but still holds the couple's tax credit award.
+# These draws set no carer or limited capability for work input, so a
+# partner aged 16 or 17 meets the minimum age condition
+# (meets_uc_minimum_age_condition) only beside a member under 16. Without
+# one, the partner can't be a joint claimant of Universal Credit (UC Regs
+# 2013 reg 3(3)) but still holds the couple's tax credit award.
 PARTNER_AGE = st.one_of(st.integers(67, 100), st.integers(16, 17), ADULT_AGE)
 OTHER_AGE = st.integers(0, 60)
 REPORT = st.sampled_from([0, 1, 500, 2_000, 6_000])
@@ -154,8 +157,8 @@ def test_working_tax_credit_never_changes_eligibility_without_closure_claim(fami
 
 def test_working_tax_credit_changes_eligibility_on_closure_claim():
     """On a closure claim, zeroing a pension-age claimant's own report closes
-    the route, so the zeroing that P3 applies without a closure claim can
-    change is_uc_eligible."""
+    the route. So the zeroing that P3 applies can change is_uc_eligible, and
+    P3 checks that it never does without a closure claim."""
     family = {
         "people": {
             "claimant": {
