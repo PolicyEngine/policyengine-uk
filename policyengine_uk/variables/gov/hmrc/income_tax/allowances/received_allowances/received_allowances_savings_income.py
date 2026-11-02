@@ -8,10 +8,11 @@ class received_allowances_savings_income(Variable):
     label = "Allowances and reliefs deducted from savings income"
     documentation = (
         "The part of the allowances and trade loss relief against general "
-        "income that Income Tax deducts from savings income. ITA 2007 s. 25(2) "
-        "deducts reliefs and allowances in the way that gives the least tax, "
-        "and from 2027-28 s. 25(3A) deducts them from income other than "
-        "property, savings and dividend income first. "
+        "income that Income Tax deducts from savings income. The taxpayer "
+        "deducts reliefs and allowances in the way that gives the least tax "
+        "(ITA 2007 s. 25(2)), and from 2027-28 deducts them from income other "
+        "than property, savings and dividend income first (s. 25(3A)). Pension "
+        "relief stays on non-savings income as far as it reaches. "
         "policyengine_uk.utils.income_tax_allocation finds that share."
     )
     unit = GBP

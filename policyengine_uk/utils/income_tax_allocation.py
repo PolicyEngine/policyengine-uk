@@ -1,76 +1,98 @@
 """Set Income Tax reliefs and allowances against the components of income.
 
-At Steps 2 and 3 of the Income Tax calculation (ITA 2007 s. 23), s. 25(2)
+At Steps 2 and 3 of the Income Tax calculation (ITA 2007 s. 23), the taxpayer
 deducts reliefs and allowances "in the way which will result in the greatest
-reduction in the taxpayer's liability to income tax". From 2027-28, s. 25(3A)
-(Finance Act 2026 s. 6(6) and (8)) deducts them from income other than
-property, savings and dividend income first, and s. 25(2) then chooses between
-property, savings and dividend income. Before 2027-28, s. 25(2) chooses between
-non-savings, savings and dividend income. Property income is non-savings income
-taxed at the same rates in those years, so the deductions come off the rest of
-non-savings income first, as they always have in the model.
+reduction in the taxpayer's liability to income tax" (s. 25(2)). From
+2027-28, the taxpayer deducts them from income other than property, savings
+and dividend income first (s. 25(3A), inserted by Finance Act 2026 s. 6(6)
+with effect from 2027-28 under s. 6(8)), and then chooses between property,
+savings and dividend income (s. 25(2)). Before 2027-28, the taxpayer chooses
+between non-savings, savings and dividend income (s. 25(2)). In those years
+Parliament taxes property income as non-savings income at the same rates, so
+the model takes the deductions off the rest of non-savings income first, as
+it always has.
 
 The model deducts trade loss relief against general income at Step 2 and the
-amounts in ``allowances`` (the personal and blind person's allowances, gifts of
-investments to charity, covenanted payments, other deductions and pension
-relief). Together they are one sum to share between the components. Each part
-of it can come off any component, and the tax depends only on how much comes
-off each, so the search shares out the sum.
+amounts in ``allowances`` (the personal and blind person's allowances, gifts
+of investments to charity, covenanted payments, other deductions and pension
+relief). The search shares their sum between the components. Each part of it
+can come off any component, and the tax depends only on how much comes off
+each, so the search shares out the sum.
+
+Pension relief is the exception. The model takes employee contributions as a
+net pay arrangement, which the employer deducts from employment income (FA
+2004 s. 193(2)), and personal contributions as relief at source, which
+extends the rate bands (s. 192(4)). Neither is a Step 2 deduction the
+taxpayer can set against savings or dividends, so the search holds
+``min(pension relief, non-savings income)`` on non-savings income and shares
+only the rest.
 
 How the search finds the least tax
 ----------------------------------
 Three components share what s. 25(3A) leaves: the first (non-savings income
-before 2027-28, property income after), savings and dividends. Write ``x`` for
-the first component left after deductions, ``w`` for ``x`` plus the savings
-left, and ``T`` for the three together after deductions, which the sharing
-does not change. The dividends left are ``T - w``. Savings sit above
-non-savings income and dividends above savings (ss. 16 and 16A), so with ``q``
-the non-savings income below the savings (``x``, or property plus the other
-non-savings income left before it from 2027-28):
+before 2027-28, property income after), savings and dividends. Write ``x``
+for the first component left after deductions, ``w`` for ``x`` plus the
+savings left, and ``T - w`` for the dividends left, where ``T``, the three
+together after deductions, stays the same in every share. Savings sit above
+non-savings income and dividends above savings (ss. 16 and 16A), so with
+``q`` the non-savings income below the savings (``x``, or property plus the
+other non-savings income left before it from 2027-28):
 
 - tax on the first component changes slope where ``x`` crosses a rate limit;
-- the starting rate for savings (s. 12) and the savings nil rate (s. 12A) cover
-  the savings from ``q`` up to ``max(q, L) + A``, where ``L`` is the starting
-  rate limit and ``A`` the personal savings allowance. That changes slope where
-  ``q`` reaches ``L``, where ``max(q, L) + A`` crosses a rate limit, and where
-  ``w`` reaches the top of that band: ``w - x = A`` above ``L``, ``w`` constant
-  below it;
+- the starting rate for savings (s. 12) and the savings nil rate (s. 12A)
+  cover the savings from ``q`` up to ``max(q, L) + A``, where ``L`` stands
+  for the starting rate limit and ``A`` for the personal savings allowance.
+  That changes slope where ``q`` reaches ``L``, where ``max(q, L) + A``
+  crosses a rate limit, and where ``w`` reaches the top of that band:
+  ``w - x = A`` above ``L``, ``w`` constant below it;
 - the rest of the savings change slope where their top, ``w``, crosses a rate
   limit;
-- the dividend nil rate (s. 13A) covers the lowest dividend allowance ``DA`` of
-  the dividends, so their tax changes slope where ``w + DA`` crosses a dividend
-  rate limit or reaches ``T``.
+- the dividend nil rate (s. 13A) covers the lowest dividend allowance ``DA``
+  of the dividends, so their tax changes slope where ``w + DA`` crosses a
+  dividend rate limit or reaches ``T``.
 
 The limits on the components add ``x = 0`` and ``x`` equal to the whole first
 component, savings left from nil to all (``w - x = 0`` and ``w - x`` equal to
-the savings), and dividends left from nil to all (``w = T`` and ``w = T`` less
-the dividends). So the Step 5 tax is continuous and linear on each piece of the
-feasible polygon cut out by vertical lines (``x`` constant), horizontal lines
-(``w`` constant) and diagonal lines (``w - x`` constant). A linear function
-takes its least value on a polygon at a corner, so the least tax is at a point
-where two of these lines cross. ``_candidates`` lists every such crossing, and
-the search evaluates the tax at all of them for all people at once.
+the savings), and dividends left from nil to all (``w = T`` and ``w = T``
+less the dividends). So the Step 5 tax runs continuous and linear on each
+piece of the feasible polygon that vertical lines (``x`` constant),
+horizontal lines (``w`` constant) and diagonal lines (``w - x`` constant)
+cut. A linear function takes its least value on a polygon at a corner, so the
+least tax lies where two of these lines cross. ``_candidates`` lists every
+such crossing, and the search evaluates the tax at all of them for all people
+at once.
 
-That argument needs the starting rate limit at or below the basic rate limit
-and a phase-out of one pound of starting rate band for each pound of
-non-savings income (s. 12), as in every year modelled. The search keeps the
+Before 2027-28, a reform can add an exclusion ``E`` from earned income. With
+property income ``P``, the savings then sit on ``q = x`` up to ``x = P``, on
+``q = P`` up to ``x = P + E``, and on ``q = x - E`` beyond. ``_candidates``
+adds the lines of each of those pieces: the two boundaries, the limits moved
+by ``P`` and ``E``, and the diagonal lines that a fixed ``q = P`` gives.
+
+That argument needs the starting rate limit at or below the basic rate limit,
+a phase-out of one pound of starting rate band for each pound of non-savings
+income (s. 12) and a first UK rate threshold at nil, as in every year
+modelled. A reform that sets that threshold above nil leaves savings below it
+untaxed and adds lines on which ``x + w`` stays constant, which the search
+doesn't list, so the search can then miss the least tax; the fast path sends
+everyone to the search under such a reform. The search keeps the
 order non-savings, savings, dividends unless another share gives less tax, so
 it never charges more than that order.
 
 The search ignores the Marriage Allowance. Parliament gives it as a tax
-reduction (s. 55B(1)), which Step 6 deducts, not as a deduction at Step 3, and
-whether a person qualifies for it (s. 55B(2)(b)) depends on the share. The
-model still subtracts the allowance from earned income (#1947), which moves a
-recipient's savings and dividends down by up to that amount, so for a
-recipient the search's tax can differ from the model's.
+reduction (s. 55B(1)), which the taxpayer deducts at Step 6, not as a
+deduction at Step 3, and whether a person qualifies for it (s. 55B(2)(b))
+depends on the share. The model still subtracts the allowance from earned
+income (#1947), which moves a recipient's savings and dividends down by up to
+that amount, so for a recipient the search's tax can differ from the model's.
 
 Who cannot gain
 ---------------
 Most people cannot gain from another share, and ``_old_order_is_least`` finds
 them without a search, so the search runs only on the rest.
 
-1. One share: with no deduction left for s. 25(2) to place, or no income left
-   after the deductions, only one share exists, and the old order takes it.
+1. One share: with no deduction left for the taxpayer to place under
+   s. 25(2), or no income left after the deductions, only one share exists,
+   and the old order takes it.
 
 Tests 2 and 3 need the rates to rise with income in every scale, as Parliament
 has set them, and the old order to set every shared deduction against the
@@ -88,18 +110,18 @@ first component, so that any other share leaves more of it (``x`` rises).
    moved pounds can reach above the nil rates. The tax then rises by at least
    ``(rho_n - sigma_s) dx + (rho_s - sigma_v) dw`` for any move with
    ``0 <= dw <= dx``, or ``rho_n dx - sigma_v dw`` where the old order charges
-   no savings above the nil rates. Where that is never negative, the old order
-   gives the least tax. The top of the nil rates moves by at most ``dx``,
-   because the starting rate band shrinks by at most a pound for each pound of
-   non-savings income (s. 12) and the savings and dividend nil rates cover
-   fixed amounts (ss. 12A and 13A). Before 2027-28 the test also needs no
-   property income or no exclusion from earned income that the search reads:
-   with property income, such an exclusion breaks the rising rate on the
-   first component.
+   no savings above the nil rates. Where that bound never falls below zero,
+   the old order gives the least tax. The top of the nil rates moves by at
+   most ``dx``, because the starting rate band shrinks by at most a pound for
+   each pound of non-savings income (s. 12) and the savings and dividend nil
+   rates cover fixed amounts (ss. 12A and 13A). Before 2027-28 the test also
+   needs no property income or no exclusion from earned income that the
+   search reads: with property income, such an exclusion breaks the rising
+   rate on the first component.
 
 Where any test holds, the search would keep the old order too, since it
-changes the share only for a saving above ``TOLERANCE``. So the result is the
-same, and ``test_income_tax_allocation.py`` checks that it is.
+changes the share only for a saving above ``TOLERANCE``. So both paths give
+the same result, and ``test_income_tax_allocation.py`` checks it.
 """
 
 from types import SimpleNamespace
@@ -111,7 +133,8 @@ from policyengine_uk.utils.income_tax import first_extended_scottish_threshold
 # A share replaces the order non-savings, savings, dividends only where it
 # saves more than this (in pounds), so rounding never moves a deduction.
 TOLERANCE = 1e-3
-# Shares whose tax differs by less than this (in pounds) are equally good.
+# The search treats shares whose tax differs by less than this (in pounds)
+# as equally good.
 TIE = 1e-6
 # Bound on people times candidates evaluated at once, to bound memory.
 CHUNK = 2_000_000
@@ -167,6 +190,7 @@ def _inputs(person, period, income_tax):
         net_income=values("net_income"),
         property=values("taxable_property_income"),
         allowances=values("allowances"),
+        pension=values("pension_contributions_relief"),
         earned_exclusions=sum(
             (values(variable) for variable in exclusions), np.zeros_like(savings)
         ),
@@ -192,8 +216,18 @@ def _build(inputs, income_tax):
     # net_income, not its components, so the search follows a supplied adjusted
     # net income or a reform that sets net income, as the default order does.
     non_savings = np.maximum(0, columns["net_income"] + relief - savings - dividends)
+    # Net pay comes off employment income (FA 2004 s. 193(2)) and relief at
+    # source extends the bands (s. 192(4)), so pension relief stays on
+    # non-savings income as far as it reaches; the search shares the rest.
+    # allowances includes the relief, so it never holds more than that.
+    pension = np.clip(
+        columns.get("pension", np.zeros_like(relief)),
+        0,
+        np.minimum(np.maximum(0, columns["allowances"]), non_savings),
+    )
+    non_savings = non_savings - pension
     property_income = np.minimum(np.maximum(0, columns["property"]), non_savings)
-    deductions = relief + columns["allowances"]
+    deductions = relief + columns["allowances"] - pension
     used = np.minimum(deductions, non_savings + savings + dividends)
     gift = columns["gift"]
     uk_thresholds = rates.uk.thresholds
@@ -334,9 +368,10 @@ def step_5_tax(c, x, s, v):
 def _candidates(c):
     """The points where two of the lines the module docstring lists cross."""
     zero = np.zeros_like(c.savings)
-    offset = c.offset
     low, basic_limit, higher_limit = c.bands
+    band_limits = (basic_limit, higher_limit)
     allowance = c.savings_allowance
+    dividend_allowance = c.dividend_allowance
     if c.other_first:
         first_limits = [
             np.where(c.scottish, scottish, ruk) - c.other_left
@@ -349,22 +384,40 @@ def _candidates(c):
             np.where(c.scottish, scottish, ruk)
             for scottish, ruk in _paired_limits(c.scotland[0], c.uk[0], zero)
         ]
-    vertical = [zero, c.first, c.starting_limit - offset + zero]
-    vertical += [limit - allowance - offset for limit in (basic_limit, higher_limit)]
-    vertical += first_limits
     total = c.step_3_income
-    horizontal = [
-        total - c.dividends,
-        total,
-        total - c.dividend_allowance,
-        c.starting_limit + allowance - offset,
-        basic_limit - offset,
-        higher_limit - offset,
-    ]
-    horizontal += [
-        limit - c.dividend_allowance - offset + zero for limit in c.dividend_scale[0]
-    ]
+    vertical = [zero, c.first] + first_limits
+    horizontal = [total - c.dividends, total, total - dividend_allowance]
     diagonal = [zero, c.savings, allowance]
+    # The non-savings income below the savings is x plus each offset.
+    offsets = [c.offset]
+    if not c.other_first and np.any(c.earned_exclusions > 0):
+        # Before 2027-28 an exclusion E from earned income splits x into three
+        # pieces: q = x up to the property income P, q = P up to P + E, and
+        # q = x - E beyond. Tax on the property income changes slope where x
+        # or x - P crosses a limit, and tax on earned income where x - P - E
+        # does. With q fixed at P, the savings band and dividend lines run
+        # diagonal, and the top of the dividends moves with x.
+        property_income, exclusion = c.property, c.earned_exclusions
+        offsets.append(-exclusion)
+        vertical += [property_income, property_income + exclusion]
+        vertical += [property_income + limit for limit in first_limits]
+        vertical += [property_income + exclusion + limit for limit in first_limits]
+        vertical += [property_income + total - limit for limit in c.dividend_scale[0]]
+        starting = np.maximum(0, c.starting_limit - property_income * c.phase_out)
+        diagonal += [limit - property_income for limit in band_limits]
+        diagonal += [starting + allowance]
+        diagonal += [
+            limit - dividend_allowance - property_income
+            for limit in c.dividend_scale[0]
+        ]
+    for offset in offsets:
+        vertical += [c.starting_limit - offset + zero]
+        vertical += [limit - allowance - offset for limit in band_limits]
+        horizontal += [c.starting_limit + allowance - offset]
+        horizontal += [limit - offset + zero for limit in band_limits]
+        horizontal += [
+            limit - dividend_allowance - offset + zero for limit in c.dividend_scale[0]
+        ]
     xs = np.concatenate([np.broadcast_to(v, zero.shape) for v in vertical], axis=1)
     ws = np.concatenate([np.broadcast_to(h, zero.shape) for h in horizontal], axis=1)
     ds = np.concatenate([np.broadcast_to(d, zero.shape) for d in diagonal], axis=1)
@@ -557,8 +610,8 @@ def _old_order_is_least(c, to_savings, to_dividends):
 def allocate_deductions(person, period, parameters):
     """Deductions against savings and dividend income in the share that gives
     the least Income Tax (ITA 2007 s. 25(2) and (3A)). Where no share gives less
-    tax than the order non-savings, savings, dividends, these are that order's
-    deductions exactly."""
+    tax than the order non-savings, savings, dividends, the function returns
+    that order's deductions exactly."""
     default = default_order_deductions(person, period)
     income_tax = parameters(period).gov.hmrc.income_tax
     savings, dividends = least_tax_deductions(
@@ -604,13 +657,17 @@ def least_tax_deductions(
 
 
 def non_savings_deductions(person, period):
-    """Allowances against non-savings income beyond trade loss relief, and the
-    relief set against savings and dividends, once received_allowances_savings_income
-    and received_allowances_dividend_income have taken their share.
+    """Allowances against non-savings income beyond trade loss relief, the
+    relief set against savings and dividends, and the non-savings income left
+    after the deductions, once received_allowances_savings_income and
+    received_allowances_dividend_income have taken their share.
 
     The relief comes off non-savings income first, as far as the share sets
-    anything against it, then the allowances. Where the share is the order
-    non-savings, savings, dividends, these are that order's amounts exactly.
+    anything against it, then the allowances. Where the share keeps the order
+    non-savings, savings, dividends, the function returns that order's
+    amounts exactly. Elsewhere it takes the non-savings income left from the
+    share's own arithmetic, in float64, so float32 rounding in a sum of
+    net income and the relief added back leaves no residue above nil.
     """
     default = default_order_deductions(person, period)
     to_savings = person("received_allowances_savings_income", period)
@@ -621,18 +678,22 @@ def non_savings_deductions(person, period):
     relief = person("trade_loss_relief_against_general_income", period).astype(
         np.float64
     )
-    non_savings = np.maximum(
-        0, person("net_income", period) + relief - savings - dividends
-    )
-    used = np.minimum(
-        relief + person("allowances", period), non_savings + savings + dividends
-    )
+    net_income = person("net_income", period)
+    allowances = person("allowances", period)
+    non_savings = np.maximum(0, net_income + relief - savings - dividends)
+    used = np.minimum(relief + allowances, non_savings + savings + dividends)
     to_non_savings = used - to_savings - to_dividends
+    # The old order: net income less savings, dividends and allowances, as the
+    # model has always computed it.
+    default_left = np.maximum(0, net_income - savings - dividends - allowances)
     return SimpleNamespace(
         earned=np.where(moved, np.maximum(0, to_non_savings - relief), default.earned),
         relief_against_savings_and_dividends=np.where(
             moved,
             np.maximum(0, relief - to_non_savings),
             default.relief_against_savings_and_dividends,
+        ),
+        non_savings_left=np.where(
+            moved, np.maximum(0, non_savings - to_non_savings), default_left
         ),
     )

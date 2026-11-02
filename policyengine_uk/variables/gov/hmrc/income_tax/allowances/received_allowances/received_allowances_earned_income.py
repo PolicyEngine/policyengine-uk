@@ -10,7 +10,7 @@ class received_allowances_earned_income(Variable):
         "The part of the allowances that Income Tax deducts from non-savings, "
         "non-dividend income, property income included. Trade loss relief "
         "against general income comes off that income first, inside "
-        "net_income, so this is whatever the share in "
+        "net_income, so it holds what the share in "
         "received_allowances_savings_income sets against that income beyond "
         "the relief."
     )

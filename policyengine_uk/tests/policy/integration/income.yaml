@@ -25,8 +25,10 @@
     # rate limit, so the £500 savings allowance (s. 12B(3)) covers savings
     # that would otherwise bear 40% rather than 20%: £100 less tax
     # than the allowance all against the pay. Savings of £5,000 run from
-    # £37,500 to £42,500: £500 at the nil rate and £4,500 at 40%. Setting
-    # more against the pay or the savings would not change the tax.
+    # £37,500 to £42,500: £500 at the nil rate and £4,500 at 40%, so the tax
+    # is 7,500 + 1,800 = 9,300. Setting more against the savings leaves it at
+    # 9,300; setting £500 more against the pay would bring the savings
+    # allowance below the limit and charge 9,400.
     received_allowances_savings_income: 10_000
     basic_rate_savings_income_pre_starter: 0
     savings_starter_rate_income: 0

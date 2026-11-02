@@ -3,7 +3,7 @@ in the way that gives the least tax (ITA 2007 s. 25(2) and, from 2027-28,
 s. 25(3A); #2106).
 
 The invariants, for every person without Marriage Allowance, on the Step 5
-tax (income_tax_pre_charges), which is all the share changes:
+tax (income_tax_pre_charges), the only tax the share changes:
 
 1. Least tax: no share of the deductions between the components s. 25 lets
    them come off gives less Step 5 tax than the model's. A brute-force oracle
@@ -288,12 +288,12 @@ def test_tax_equals_brute_force_grid_minimum(sims, year, region, incomes):
     model_tax = law["income_tax_pre_charges"][0]
     least = grid_tax[feasible].min()
     step = min(savings, used) / (GRID - 1) + min(dividends, used) / (GRID - 1)
-    # Invariant 1: the model's share is the least; the grid comes within its
+    # Invariant 1: the model's share gives the least tax; the grid comes within its
     # step of it, since a pound moved between components changes the tax by
     # less than a pound.
     assert model_tax <= least + tolerance(model_tax)
     assert model_tax >= least - step - tolerance(model_tax)
-    # Invariant 5: the search's tax function is the model's Step 5 tax.
+    # Invariant 5: the search's tax function equals the model's Step 5 tax.
     forced_c = _context(forced.populations["person"], year, parameters_of(forced))
     x = (forced_c.step_3_income - forced_c.savings - forced_c.dividends)[:, 0]
     x = x + to_savings + to_dividends
@@ -394,11 +394,13 @@ def system():
     return uk_simulation.CountryTaxBenefitSystem()
 
 
-def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free"):
+def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free", exclusions=False):
     """Inputs for ``least_tax_deductions`` and the old order's deductions.
 
     "free" draws every amount from a wide mixture with values at the limits;
-    "realistic" gives most people pay alone and some savings or dividends."""
+    "realistic" gives most people pay alone and some savings or dividends.
+    With ``exclusions``, half the people get an exclusion from earned income
+    of up to £20,000 in place of the Marriage Allowance's £1,260."""
     rng = np.random.default_rng(seed)
 
     def amount(zero, scale):
@@ -433,6 +435,8 @@ def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free"):
     gift = np.where(rng.random(count) < 0.1, rng.uniform(0, 10_000, count), 0)
     scottish = rng.random(count) < 0.3
     savings_allowance = rng.choice([0.0, 500.0, 1_000.0], count)
+    pension = np.where(rng.random(count) < 0.2, rng.uniform(0, 20_000, count), 0)
+    exclusion_draw = np.where(rng.random(count) < 0.5, rng.uniform(0, 20_000, count), 0)
     rows = np.array(EDGES, dtype=float) if mix == "free" else np.empty((0, 10))
     other, property_income, savings, dividends, relief, extra, marriage, gift = (
         np.concatenate([column, rows[:, i]])
@@ -451,12 +455,16 @@ def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free"):
     )
     scottish = np.concatenate([scottish, rows[:, 8] > 0])
     savings_allowance = np.concatenate([savings_allowance, rows[:, 9]])
+    pension = np.concatenate([pension, np.zeros(len(rows))])
+    if exclusions:
+        # A reform's exclusion from earned income, such as an exempt pension.
+        marriage = np.concatenate([exclusion_draw, rows[:, 6]])
     f32 = np.float32
     before_relief = (other + property_income + savings + dividends).astype(f32)
     relief = relief.astype(f32)
     net_income = np.maximum(0, before_relief - relief)
     personal_allowance = np.maximum(0, 12_570 - np.maximum(0, net_income - 100_000) / 2)
-    allowances = (personal_allowance + extra).astype(f32)
+    allowances = (personal_allowance + extra + pension).astype(f32)
     savings, dividends = savings.astype(f32), dividends.astype(f32)
     default = old_order(
         allowances, savings, dividends, net_income, relief, before_relief
@@ -468,6 +476,7 @@ def synthetic_people(seed, count=SYNTHETIC_PEOPLE, mix="free"):
         net_income=net_income,
         property=property_income.astype(f32),
         allowances=allowances,
+        pension=pension.astype(f32),
         earned_exclusions=marriage.astype(f32),
         gift=gift.astype(f32),
         scottish=scottish,
@@ -552,3 +561,174 @@ def test_fast_path_equals_full_search_when_rates_fall(system, year):
         for path, value in old.items():
             parameters.get_child(path).update(period=str(year), value=value)
         system.reset_parameter_caches()
+
+
+def vertex_search_and_grid(income_tax, inputs, points=101):
+    """The search's least Step 5 tax and a dense grid's least, per person,
+    with the grid's step."""
+    c = _build(inputs, income_tax)
+    x, s, v = _least_tax_share(c)
+    found = step_5_tax(c, x, s, v)[:, 0]
+    total = c.step_3_income
+    low = np.maximum(0, total - c.savings - c.dividends)
+    high = np.minimum(c.first, total)
+    fractions = np.linspace(0, 1, points)
+    grid_x = (low + (high - low) * fractions[None, :]).repeat(points, axis=1)
+    grid_s = np.tile(c.savings * fractions[None, :], points)
+    grid_x, grid_s, grid_v = _shares(c, grid_x, grid_x + grid_s)
+    grid = step_5_tax(c, grid_x, grid_s, grid_v).min(axis=1)
+    step = ((high - low) / (points - 1) + c.savings / (points - 1))[:, 0]
+    return found, grid, step
+
+
+@pytest.mark.parametrize("year", [2018, 2026, 2027])
+def test_vertex_search_equals_dense_grid_with_exclusions(system, year):
+    """Invariant 6 on synthetic people with exclusions from earned income of
+    up to £20,000 beside property income, as a reform that exempts pensions
+    gives. Before 2027-28 the exclusion splits the first component into three
+    pieces, each with its own lines."""
+    income_tax = system.parameters(str(year)).gov.hmrc.income_tax
+    for seed in range(2):
+        inputs, _ = synthetic_people(seed, count=300, exclusions=True)
+        found, grid, step = vertex_search_and_grid(income_tax, inputs)
+        worst = np.argmax(found - grid)
+        assert np.all(found <= grid + 1e-5), {
+            name: values[worst] for name, values in inputs.items()
+        } | {"found": found[worst], "grid": grid[worst]}
+        assert np.all(found >= grid - 2 * step - 1e-5)
+
+
+def one_person(**amounts):
+    """``least_tax_deductions`` inputs for one person, and the old order's
+    deductions, computed as the model computes them from net income and net
+    income before trade loss relief."""
+    values = dict(
+        savings=0.0,
+        dividends=0.0,
+        relief=0.0,
+        net_income=0.0,
+        property=0.0,
+        allowances=12_570.0,
+        pension=0.0,
+        earned_exclusions=0.0,
+        gift=0.0,
+        savings_allowance=1_000.0,
+    )
+    before_relief = amounts.pop("before_relief", None)
+    scottish = amounts.pop("scottish", False)
+    values.update(amounts)
+    if before_relief is None:
+        before_relief = values["net_income"] + values["relief"]
+    inputs = {
+        name: np.array([value], dtype=np.float64) for name, value in values.items()
+    }
+    inputs["scottish"] = np.array([scottish])
+    f32 = np.float32
+    default = old_order(
+        *(
+            np.array([value], dtype=f32)
+            for value in (
+                values["allowances"],
+                values["savings"],
+                values["dividends"],
+                values["net_income"],
+                values["relief"],
+                before_relief,
+            )
+        )
+    )
+    return inputs, default
+
+
+def tax_saved(income_tax, inputs, default):
+    """The Step 5 tax under the old order less the tax under the full search's
+    share, in the search's own tax function."""
+    full = least_tax_deductions(
+        inputs, income_tax, default.savings, default.dividends, search_all=True
+    )
+    c = _build(inputs, income_tax)
+
+    def tax(to_savings, to_dividends):
+        s = c.savings - np.asarray(to_savings, dtype=float)[:, None]
+        v = c.dividends - np.asarray(to_dividends, dtype=float)[:, None]
+        return step_5_tax(c, c.step_3_income - s - v, s, v)[0, 0]
+
+    return tax(default.savings, default.dividends) - tax(*full)
+
+
+@pytest.mark.parametrize(
+    "amounts, saving",
+    [
+        # Savings of £1,000 the only income in net income before the relief,
+        # with £1,000 of trade loss relief, and a supplied adjusted net income
+        # that puts net income at £30,000. The old order sets the relief
+        # against the savings and leaves £17,430 of non-savings income at
+        # 20%; setting it against non-savings income instead leaves £16,430,
+        # and the £1,000 savings allowance covers the savings: £200 less.
+        (
+            dict(savings=1_000, relief=1_000, net_income=30_000, before_relief=1_000),
+            200,
+        ),
+        # Savings of £300 and £300 of relief, with net income supplied at
+        # £13,070: the old order leaves £500 of non-savings income at 20%, the
+        # search £200, with the savings in the savings allowance: £60 less.
+        (dict(savings=300, relief=300, net_income=13_070, before_relief=300), 60),
+    ],
+    ids=["relief-against-savings", "all-savings-used"],
+)
+def test_fast_path_follows_a_supplied_net_income(system, amounts, saving):
+    """Where a supplied adjusted net income sets net income apart from net
+    income before trade loss relief less the relief, the old order can set
+    relief against savings while non-savings income remains. The fast path
+    must send those people to the search."""
+    income_tax = system.parameters("2026").gov.hmrc.income_tax
+    inputs, default = one_person(**amounts)
+    assert tax_saved(income_tax, inputs, default) == pytest.approx(saving, abs=1e-6)
+    assert_fast_path_equals_search(income_tax, inputs, default)
+
+
+def test_fast_path_reads_the_scottish_starter_rate(system):
+    """A reform that lifts the top of the Scottish starter band to £9,000,
+    above the £5,000 starting rate limit for savings. A Scottish taxpayer with
+    £18,570 of pay and £20,000 of savings: the old order leaves £6,000 of pay
+    at the 19% starter rate, and the savings above it, past the starting rate
+    band, bear 20%. Moving £3,000 of the allowance to savings takes the pay to
+    £9,000 and saves 1% of £3,000, £30. The fast path must read the Scottish
+    rate on the pay, not the UK basic rate."""
+    parameters = system.parameters
+    path = "gov.hmrc.income_tax.rates.scotland.rates[1].threshold"
+    parameter = parameters.get_child(path)
+    before = parameter("2026")
+    try:
+        parameter.update(period="2026", value=9_000)
+        system.reset_parameter_caches()
+        income_tax = parameters("2026").gov.hmrc.income_tax
+        inputs, default = one_person(savings=20_000, net_income=38_570, scottish=True)
+        assert tax_saved(income_tax, inputs, default) == pytest.approx(30, abs=1e-6)
+        assert_fast_path_equals_search(income_tax, inputs, default)
+    finally:
+        parameter.update(period="2026", value=before)
+        system.reset_parameter_caches()
+
+
+def test_pension_relief_stays_on_non_savings_income(system):
+    """Pay of £40,000 with £10,000 of pension relief and £30,000 of savings in
+    2026-27. The relief stays on the pay (FA 2004 ss. 192(4) and 193(2)), so
+    only the £12,570 allowance moves, and every share keeps the savings
+    allowance below the basic rate limit: the old order stands. Sharing the
+    pension relief would put the pay at the limit and save £100."""
+    income_tax = system.parameters("2026").gov.hmrc.income_tax
+    inputs, default = one_person(
+        savings=30_000,
+        net_income=70_000,
+        allowances=22_570,
+        pension=10_000,
+        savings_allowance=500,
+    )
+    full = least_tax_deductions(
+        inputs, income_tax, default.savings, default.dividends, search_all=True
+    )
+    assert full[0][0] == 0
+    assert tax_saved(income_tax, inputs, default) == 0
+    shared = dict(inputs, pension=np.array([0.0]))
+    assert tax_saved(income_tax, shared, default) == pytest.approx(100, abs=1e-6)

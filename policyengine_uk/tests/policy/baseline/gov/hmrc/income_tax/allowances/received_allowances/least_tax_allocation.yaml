@@ -1,8 +1,8 @@
 # ITA 2007 s. 25(2): "At Steps 2 and 3, deduct the reliefs and allowances in
 # the way which will result in the greatest reduction in the taxpayer's
-# liability to income tax." From 2027-28, s. 25(3A) (Finance Act 2026 s. 6)
-# deducts them from income other than property, savings and dividend income
-# first. Savings sit above non-savings income and dividends above savings
+# liability to income tax." From 2027-28, the taxpayer deducts them from
+# income other than property, savings and dividend income first (s. 25(3A),
+# inserted by Finance Act 2026 s. 6). Savings sit above non-savings income and dividends above savings
 # (s. 16), and from 2027-28 property income sits just below savings (s. 16A).
 # 2026-27 and 2027-28: Personal Allowance £12,570, tapered away by £1 for each
 # £2 of adjusted net income above £100,000 (s. 35); basic rate limit £37,700
@@ -76,8 +76,8 @@
     dividend_income: 200_000
     trading_loss: 1_000
   output:
-    # No other income, so s. 25(3A) leaves the choice between property and
-    # dividends to s. 25(2). Property income sits below dividends (s. 16A).
+    # No other income, so the taxpayer chooses between property and dividends
+    # (s. 25(2)); s. 25(3A) changes nothing. Property income sits below dividends (s. 16A).
     # Against property, the £1,000 of relief saves 24% on property income in
     # the basic rate band, and moves £1,000 of dividends down into the
     # ordinary rate band at 10.75%: a net saving of £132.50 over setting it
@@ -210,9 +210,9 @@
     employment_income: 50_000
     dividend_income: 20_000
   output:
-    # s. 25(3A) deducts the allowance from income other than property,
-    # savings and dividend income first, so all £12,570 comes off the pay,
-    # unlike case 8. Pay 37,430 x 20% = 7,486. Dividends from £37,430: £500
+    # The taxpayer deducts the allowance from income other than property,
+    # savings and dividend income first (s. 25(3A)), so all £12,570 comes off
+    # the pay, unlike case 8. Pay 37,430 x 20% = 7,486. Dividends from £37,430: £500
     # at the nil rate and (57,430 - 37,930) x 35.75% = 6,971.25.
     received_allowances_earned_income: 12_570
     received_allowances_dividend_income: 0
@@ -264,8 +264,8 @@
     # The model gives the recipient a Marriage Allowance of £1,260 from the
     # partner's unused Personal Allowance: 10% of £12,570, rounded up to a
     # multiple of £10 (s. 55B(4) and (5)). Parliament gives it as a tax
-    # reduction (s. 55B(1)), which Step 6 of s. 23 deducts, not as a deduction
-    # at Step 3, so the model leaves it out of the share. Pay, property income
+    # reduction (s. 55B(1)), which the taxpayer deducts at Step 6 of s. 23,
+    # not as a deduction at Step 3, so the model leaves it out of the share. Pay, property income
     # and the savings above the £1,000 savings allowance all bear 20%, and the
     # pay and property income leave no starting rate band (s. 12), so no share
     # lowers the Step 5 tax, and the model takes the Personal Allowance off the
@@ -276,3 +276,128 @@
     received_allowances_earned_income: [12_570, 0]
     received_allowances_savings_income: [0, 0]
     income_tax_pre_charges: [4_286, 0]
+
+- name: Case 14, net pay pension relief stays on pay
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    employee_pension_contributions: 10_000
+    savings_interest_income: 30_000
+  output:
+    # The model takes employee contributions as a net pay arrangement, which
+    # the employer deducts from employment income (FA 2004 s. 193(2)). The
+    # taxpayer can't set that relief against savings, so it stays on the
+    # pay, and the pay left for the share is £30,000, as if the person had
+    # pay of £30,000 and no pension. Adjusted net income of £60,000 leaves the
+    # full £12,570 allowance and a £500 savings allowance (s. 12B). Against
+    # pay: pay 17,430 x 20% = 3,486; savings from £17,430 to £47,430: £500 at
+    # the nil rate, (37,700 - 17,930) x 20% = 3,954 and 9,730 x 40% = 3,892.
+    # Every share keeps the savings allowance below the £37,700 limit, where
+    # it saves 20%, so no share lowers the tax of 11,332. Sharing the pension
+    # relief too would put the pay at the limit and charge £100 less.
+    pension_contributions_relief: 10_000
+    received_allowances_earned_income: 22_570
+    received_allowances_savings_income: 0
+    earned_taxable_income: 17_430
+    earned_income_tax: 3_486
+    savings_income_tax: 7_846
+    income_tax: 11_332
+
+- name: Case 15, relief at source on personal pension contributions stays on non-savings income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    personal_pension_contributions: 10_000
+    savings_interest_income: 30_000
+  output:
+    # The model takes personal contributions as relief at source, which
+    # extends the rate bands (FA 2004 s. 192(4)) rather than giving a Step 2
+    # deduction the taxpayer can set against savings. The model deducts the
+    # relief from non-savings income, so the tax matches case 14.
+    pension_contributions_relief: 10_000
+    received_allowances_earned_income: 22_570
+    received_allowances_savings_income: 0
+    income_tax: 11_332
+
+- name: Case 16, trading loss relief set against savings leaves the pay in earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    savings_interest_income: 30_000
+    trading_loss: 10_000
+  output:
+    # Net income of £60,000 leaves the full allowance and a £500 savings
+    # allowance. The £10,000 of relief (s. 64) and the £12,570 allowance
+    # share £22,570. The taxpayer sets £2,300 of the relief against pay, which
+    # leaves pay at the £37,700 limit, and the other £7,700 and the whole
+    # allowance against savings (s. 25(2)): savings of £9,730 from £37,700,
+    # £500 at the nil rate above the limit, where it saves 40%. Pay
+    # 37,700 x 20% = 7,540; savings 9,230 x 40% = 3,692. The relief against
+    # pay first charges 11,332. net_income deducts all the relief, so earned
+    # taxable income adds back the £7,700 set against savings.
+    trade_loss_relief_against_general_income: 10_000
+    trade_loss_relief_against_savings_and_dividends: 7_700
+    received_allowances_earned_income: 0
+    received_allowances_savings_income: 20_270
+    earned_taxable_income: 37_700
+    non_savings_income_after_allowances: 37_700
+    earned_income_tax: 7_540
+    savings_income_tax: 3_692
+    income_tax: 11_232
+
+- name: Case 17, under a reform that exempts pensions the search stops pay at the exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.earned_taxable_income_exclusions:
+      - taxable_savings_interest_income
+      - taxable_dividend_income
+      - taxable_property_income
+      - received_allowances_earned_income
+      - marriage_allowance
+      - taxable_pension_income
+    age: 40
+    employment_income: 5_000
+    private_pension_income: 10_000
+    savings_interest_income: 30_000
+  output:
+    # The reform takes the £10,000 pension out of earned income, so the
+    # model taxes non-savings income only above it. Net income of £45,000
+    # leaves the full allowance and a £1,000 savings allowance. With £5,000 of
+    # the allowance against pay and pension, the £10,000 left is all pension,
+    # earned income is nil, and the savings start at nil: £22,430 of savings,
+    # £5,000 at the starting rate (s. 12), £1,000 at the savings nil rate
+    # (s. 12A) and 16,430 x 20% = 3,286. Setting more against savings makes
+    # each pound of pay taxable at 20% and shrinks the starting rate band by
+    # a pound; setting less leaves a pound more of savings at 20%. All the
+    # allowance against non-savings income first charges
+    # (30,000 - 6,000) x 20% = 4,800.
+    received_allowances_earned_income: 5_000
+    received_allowances_savings_income: 7_570
+    earned_taxable_income: 0
+    savings_income_tax: 3_286
+    income_tax: 3_286
+
+- name: Case 18, trading loss relief past the non-savings income leaves none of it
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    self_employment_income: 30_016.63
+    savings_interest_income: 27_285.95
+    dividend_income: 74_747.51
+    trading_loss: 33_973.11
+  output:
+    # The £33,973.11 of relief exceeds the £30,016.63 of trading income, so
+    # no non-savings income is left, and the rest of the relief and the
+    # allowances come off savings and dividends. The model computes the non-savings income left from the
+    # share's own arithmetic, so float32 rounding in net income plus the
+    # relief added back leaves nothing above nil.
+    non_savings_income_after_allowances: 0
+    earned_taxable_income: 0

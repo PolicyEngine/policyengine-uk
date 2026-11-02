@@ -28,7 +28,12 @@ The model makes that choice only where it lowers the person's income tax.
 The order of the allowances can change too. A Scottish taxpayer's property
 income stays on the Scottish rates while the savings rates rise, so the
 allowance can save more against savings, and then both taxes move
-(test_higher_savings_rates_can_move_the_allowance_onto_savings).
+(test_higher_savings_rates_can_move_the_allowance_onto_savings). For everyone,
+whatever the share, income tax rises by at most 2% of the banded savings and
+taxable property income under the Budget 2025 rates: the Budget 2025 share
+costs at most that much more at the higher rates, and the model takes a share
+that costs no more than it
+(test_income_tax_rises_by_at_most_two_points_of_banded_income).
 """
 
 import numpy as np
@@ -62,12 +67,12 @@ case = st.tuples(
     st.one_of(st.floats(min_value=0, max_value=20_000), amount),  # savings
 )
 cases = st.lists(case, min_size=CASES, max_size=CASES)
-# Review round 2's counterexample: the fourth person (Scotland) gives up the
-# property allowance at the higher rates.
+# The fourth person, a Scottish taxpayer, gives up the property allowance at
+# the higher rates.
 ELECTION_CHANGE = [(0.0, 0.0, 0.0, 0.0)] * CASES
 ELECTION_CHANGE[3] = (20_000.0, 500.0, 0.87, 0.0)
-# The first property run's counterexample: the fourth person (Scotland) sets
-# the allowance against savings at the higher rates.
+# The fourth person, a Scottish taxpayer, sets the allowance against savings at
+# the higher rates.
 ORDER_CHANGE = [(0.0, 0.0, 0.0, 0.0)] * CASES
 ORDER_CHANGE[3] = (0.0, 58_000.0, 0.0, 24_000.0)
 
@@ -115,6 +120,12 @@ VARIABLES = ALLOWANCE_ORDER + [
     "property_finance_costs_relieved",
     "property_finance_cost_relief",
     "income_tax",
+]
+BANDED = [
+    "basic_rate_savings_income",
+    "higher_rate_savings_income",
+    "add_rate_savings_income",
+    "taxable_property_income_after_allowances",
 ]
 
 
@@ -191,6 +202,23 @@ def test_savings_tax_rises_by_two_points_in_every_country(sims, drawn):
     tol = tolerance(law["savings_income_tax"], banded)
     same = same_choices(law, before)
     assert (np.abs(rise - RISE * banded) <= tol)[same].all()
+
+
+@SETTINGS
+@given(cases)
+@example(ELECTION_CHANGE)
+@example(ORDER_CHANGE)
+def test_income_tax_rises_by_at_most_two_points_of_banded_income(sims, drawn):
+    """Under the Budget 2025 share and property allowance election, the Budget
+    2026 rates add 2% of the savings in the rate bands and, outside Scotland,
+    of the taxable property income, and the finance cost relief never falls.
+    The model's share and election give no more tax than that one (ITA 2007
+    s. 25(2)), so the bound holds for everyone, including people whose share
+    the rates move."""
+    law, before = run(sims, drawn)
+    bound = before["income_tax"] + RISE * sum(before[name] for name in BANDED)
+    tol = tolerance(law["income_tax"], bound)
+    assert (law["income_tax"] <= bound + tol).all()
 
 
 @SETTINGS
