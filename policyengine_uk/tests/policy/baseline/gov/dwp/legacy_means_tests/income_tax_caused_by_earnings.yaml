@@ -203,3 +203,42 @@
     legacy_means_test_income_tax: 6_486
     legacy_means_test_uncounted_income_tax_without_earnings: 2_000
     legacy_means_test_deducted_income_tax: 8_032
+
+- name: When one partner's pay moves the High Income Child Benefit Charge off the other, the couple's deduction nets it
+  # A couple with one child. Partner a has interest of 70,000 and partner b
+  # pay of 80,000. Child Benefit 1,406 in whole pounds. The charge falls on
+  # the partner with the higher adjusted net income (ITEPA 2003 s.681B): b,
+  # at 80,000, the whole 1,406. a's interest: 57,430 taxable, 5,000 at the
+  # starting rate and 500 savings allowance at nil, 32,200 at 20% = 6,440,
+  # 19,730 at 40% = 7,892; 14,332. b's pay: 37,700 at 20% = 7,540 and 29,730
+  # at 40% = 11,892; 19,432, plus the charge, 20,838.
+  # Without the pay, a has the higher income (70,000) and pays 50% x 1,406 =
+  # 703 of charge: 15,035 in all, none on counted income. So a's deduction is
+  # 14,332 - 15,035 = -703, and b's is 20,838. Together they deduct 20,135:
+  # the 19,432 on the pay and the 703 of charge the pay adds. The deduction is
+  # not floored per person, so the couple's total is the extra tax the pay
+  # causes.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+        savings_interest_income: 70_000
+      b:
+        age: 40
+        employment_income: 80_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [a, b, child]
+    households:
+      household:
+        members: [a, b, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [0, 1_406, 0]
+    income_tax_before_winter_fuel_payment_charge: [14_332, 20_838, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [15_035, 0, 0]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]

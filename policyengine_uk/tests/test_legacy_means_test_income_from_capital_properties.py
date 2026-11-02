@@ -233,7 +233,6 @@ def calculate_with_taxes(units, year, variables, **kwargs):
 def test_income_from_capital_changes_no_legacy_means_test(units, year):
     disregards = sorted(set(EARNINGS_DISREGARDS.values()))
     routes = [
-        "in_receipt_of_pension_credit",
         "council_tax_reduction_universal_credit_award",
         "housing_benefit_on_passporting_benefit",
     ]
@@ -264,8 +263,8 @@ def test_income_from_capital_changes_no_legacy_means_test(units, year):
         # Intended exception (d1424): where earnings make it move, each
         # means-test income moves by exactly minus that change, wherever
         # neither run is floored and the test uses its own income rules.
-        pension_credit_route = (base["in_receipt_of_pension_credit"] > 0) | (
-            scaled["in_receipt_of_pension_credit"] > 0
+        pension_credit_route = (base["pension_credit"] > 0) | (
+            scaled["pension_credit"] > 0
         )
         own_rules = {
             "income_support_applicable_income": np.ones_like(steady),
@@ -456,9 +455,9 @@ def test_the_four_tests_deduct_the_same_income_tax(units, year):
         )
         moved = np.asarray(bumped.calculate(income, year), dtype=float)
         unfloored = (base > 1) & (moved > 0)
-        own_rules = (
-            np.asarray(sim.calculate("in_receipt_of_pension_credit", year)) == 0
-        ) | (income == "pension_credit_income")
+        own_rules = (np.asarray(sim.calculate("pension_credit", year)) == 0) | (
+            income == "pension_credit_income"
+        )
         if income == "housing_benefit_applicable_income":
             own_rules &= (
                 np.asarray(
