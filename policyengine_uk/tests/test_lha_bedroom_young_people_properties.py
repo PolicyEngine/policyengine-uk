@@ -43,11 +43,11 @@ Invariants, for any generated population of households:
    who is neither the claimant nor partner nor a Universal Credit qualifying
    young person nor the household head (the householder in whose name the
    accommodation is rented, whom the formula reads as liable for the rent,
-   so that para 9(2)(d) excludes them) is a non-dependant (para 9(2)) with a bedroom (para 10(1)(c)). So
-   their family has one more Universal Credit bedroom with them than
-   without them, and making them qualifying young persons the renter is
-   responsible for (para 10(1)(b)) leaves every family's Universal Credit
-   bedrooms unchanged. This ties the bedroom to the same
+   so that para 9(2)(d) excludes them) is a non-dependant (para 9(2)) with
+   a bedroom (para 10(1)(c)). So their family has one more Universal Credit
+   bedroom with them than without them, and making them qualifying young
+   persons the renter is responsible for (para 10(1)(b)) leaves every family's
+   Universal Credit bedrooms unchanged. This ties the bedroom to the same
    definition that marks a benefit-unit member as a non-dependant for the
    non-dependant deduction.
 """
@@ -112,7 +112,7 @@ def scenario(draw):
     f = draw(st.integers(0, len(population[h]) - 1))
     person = draw(young_person())
     # On some draws the person added to the head's family heads the household
-    # in place of its first adult, who stays the claimant.
+    # in place of its first adult, whose claimant role does not change.
     if f == 0:
         person["is_household_head"] = draw(st.booleans())
     return population, (h, f), person
