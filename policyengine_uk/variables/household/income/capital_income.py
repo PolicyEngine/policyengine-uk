@@ -12,6 +12,7 @@ class capital_income(Variable):
 
     adds = [
         "savings_interest_income",
+        "other_investment_income",
         "tax_free_savings_income",
         "dividend_income",
         "individual_savings_account_dividend_income",

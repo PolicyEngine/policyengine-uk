@@ -39,13 +39,6 @@ modes = ["wheel"]
 why = "An installed wheel is not a git checkout, so there is no HEAD to compare with."
 
 [[allow]]
-nodeid = "policyengine_uk/tests/test_variable_code_sharing.py::test_a_simulation_leaves_coverage_no_new_code_objects"
-outcome = "skipped"
-reason = "coverage is not measuring with sys.monitoring"
-modes = ["wheel"]
-why = "The release workflow tests the installed wheel without coverage, so this check of coverage's code objects has nothing to measure there. It runs and passes against the source tree on every PR, where coverage measures with sys.monitoring."
-
-[[allow]]
 nodeid = "policyengine_uk/tests/test_build_hook.py"
 outcome = "collect-skipped"
 reason = "hatch_build.py is only in a source checkout"

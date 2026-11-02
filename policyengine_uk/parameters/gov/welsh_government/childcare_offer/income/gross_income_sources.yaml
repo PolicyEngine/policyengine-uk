@@ -53,14 +53,15 @@ values:
   # Maternity Grant, lump_sum_income) or to the household (cost of living
   # payments, the energy rebate, bill credits), because question 10 works out
   # annual income from regular pay and the bonuses a parent expects, read here
-  # as a test of recurring income (question 9's "all payments" points the
-  # other way); and loans, which are repaid (student_loans).
+  # as a test of recurring income (question 8's current-tax-year test and
+  # question 9's "all payments" point the other way); and loans, which are
+  # repaid (student_loans).
   #
   # Data limits, immaterial near £100,000: for a Welsh student the FRS
   # education_grants residual can still hold Childcare Grant and Disabled
   # Students' Allowance, because the dataset moves those out only through
   # England-only formulas; and the FRS allpay2 amount reaches both
-  # taxable_miscellaneous_income and private_transfer_income
+  # miscellaneous_income_before_trading_allowance and private_transfer_income
   # (policyengine-uk-data#627).
   2019-08-01:
     - employment_income
@@ -91,6 +92,6 @@ values:
     - savings_interest_income
     - other_investment_income
     - dividend_income
-    - taxable_miscellaneous_income
+    - miscellaneous_income_before_trading_allowance
     - maintenance_income
     - spousal_maintenance_income

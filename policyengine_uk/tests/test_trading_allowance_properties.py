@@ -17,15 +17,18 @@ from policyengine_uk import Simulation
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2027
-ALLOWANCE = 1_000
+# £3,000 from 6 April 2027 (Budget 2026, paragraph 6.254); £1,000 before.
+ALLOWANCE = 3_000
 OTHER_EMPLOYMENT_INCOME = [0, 8_000, 30_000, 60_000, 110_000, 200_000]
 CASES = 24  # Each case is simulated twice: as drawn, and with more profit.
 PEOPLE = 2 * CASES
 
 amount = st.one_of(
-    st.floats(min_value=0, max_value=2_500),
+    st.floats(min_value=0, max_value=7_500),
     st.floats(min_value=0, max_value=300_000),
-    st.sampled_from([0.0, 999.99, 1_000.0, 1_000.01, 12_570.0, 50_270.0]),
+    st.sampled_from(
+        [0.0, 999.99, 1_000.0, 2_999.99, 3_000.0, 3_000.01, 12_570.0, 50_270.0]
+    ),
 )
 case = st.tuples(
     st.one_of(amount, st.floats(min_value=-5_000, max_value=0)),  # profit

@@ -1,0 +1,7 @@
+description: Whether the annual energy price indices hold the previous year's level. The no_economic_assumptions scenario sets this from its first input year, as it zeroes the growth series, so energy prices stay flat in projected years.
+metadata:
+  unit: bool
+  label: Hold energy prices flat
+  period: year
+values:
+  2015-01-01: false

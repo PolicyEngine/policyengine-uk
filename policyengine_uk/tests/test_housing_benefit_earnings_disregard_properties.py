@@ -45,7 +45,13 @@ Invariants, for any generated population of families not on those benefits
 8. The selected standard is min(net earnings, 52 times the statutory weekly
    choice), with £25 lone-parent precedence, then £20 special, then £10
    couple, then £5 single. These amounts never stack and the selected
-   standard stays between zero and net earnings.
+   standard stays between zero and net earnings. It is the amount before
+   permitted work, whatever the permitted-work input. With a pre-assessed
+   permitted-work amount above zero, the standard actually deducted is
+   min(net earnings, the permitted-work amount), or for a lone parent
+   min(net earnings, the larger of that amount and £25 x 52): the
+   permitted-work amount replaces the £20, £10 and £5 (SI 2006/213 Sch 4
+   para 10A(2), SI 2006/214 Sch 4 para 5A(2)) and is never added to them.
 
 Para 12 is tested on its own: with Income Support, every family has all its
 net earnings disregarded, at working or pension age. Leaving Income Support can
@@ -90,6 +96,14 @@ EARNINGS = st.one_of(
     st.floats(0, 60_000, allow_nan=False),
 )
 LOW_EARNINGS = st.one_of(st.just(0.0), st.floats(0, 12_000, allow_nan=False))
+# A pre-assessed annual permitted-work disregard: none; 52 weeks at the £20
+# exempt-work limit or at 2024-25's £183.50 limit; amounts either side of 52
+# weeks of the lone parent's £25; or any amount in pence up to £20,000.
+PERMITTED_WORK = st.one_of(
+    st.just(0.0),
+    st.sampled_from([1040.0, 1299.99, 1300.0, 1300.01, 9542.0]),
+    st.integers(0, 2_000_000).map(lambda pennies: pennies / 100),
+)
 DISREGARD = system.parameters(YEAR).gov.dwp.housing_benefit.means_test.income_disregard
 MAX_WEEKLY = max(DISREGARD.single, DISREGARD.couple, DISREGARD.lone_parent)
 MAX_ANNUAL = (MAX_WEEKLY + DISREGARD.worker) * WEEKS
@@ -325,6 +339,7 @@ def test_pension_age_and_working_age_schedules_agree(units):
             st.sampled_from(sorted(SHAPES)),
             st.integers(0, 100_000_000).map(lambda pennies: pennies / 100),
             st.booleans(),
+            PERMITTED_WORK,
         ),
         min_size=1,
         max_size=30,
@@ -332,17 +347,18 @@ def test_pension_age_and_working_age_schedules_agree(units):
 )
 @example(
     cases=[
-        (shape, net, eligible)
+        (shape, net, eligible, permitted)
         for shape in SHAPES
-        for net in (0, 259.99, 260, 500, 520, 1039.99, 1040, 1300, 2000)
+        for net in (0, 259.99, 260, 500, 520, 1039.99, 1040, 1300, 2000, 9542)
         for eligible in (False, True)
+        for permitted in (0, 500, 1040, 1299.99, 1300, 1300.01, 9542)
     ]
 )
 def test_selected_standard_has_statutory_precedence_and_is_capped_at_net_earnings(
     cases,
 ):
     units = []
-    for shape, _, _ in cases:
+    for shape, _, _, _ in cases:
         n_adults, n_children = SHAPES[shape]
         units.append(
             dict(
@@ -370,9 +386,26 @@ def test_selected_standard_has_statutory_precedence_and_is_capped_at_net_earning
         YEAR,
         [case[2] for case in cases],
     )
+    sim.set_input(
+        "housing_benefit_permitted_work_disregard", YEAR, [case[3] for case in cases]
+    )
+    # Hold every other term at nil, so the applied disregard is the standard
+    # amount after the permitted-work replacement and nothing else.
+    for variable, value in (
+        ("housing_benefit_specified_or_temporary_accommodation_disregard", 0.0),
+        ("housing_benefit_applicable_income_childcare_element", 0.0),
+        ("meets_housing_benefit_additional_earnings_disregard_conditions", False),
+        ("housing_benefit_on_passporting_benefit", False),
+    ):
+        sim.set_input(variable, YEAR, np.full(len(cases), value))
     selected = sim.calculate("housing_benefit_special_earnings_disregard", YEAR)
+    applied = sim.calculate("housing_benefit_applicable_income_disregard", YEAR)
     net_earnings = sim.calculate("housing_benefit_net_earnings", YEAR)
-    for actual, net, (shape, _, eligible) in zip(selected, net_earnings, cases):
+    permitted_work = sim.calculate("housing_benefit_permitted_work_disregard", YEAR)
+    for actual, after, net, permitted, (shape, _, eligible, _) in zip(
+        selected, applied, net_earnings, permitted_work, cases
+    ):
+        case = (shape, net, eligible, permitted)
         if shape == "lone_parent":
             weekly = 25
         elif eligible:
@@ -381,8 +414,22 @@ def test_selected_standard_has_statutory_precedence_and_is_capped_at_net_earning
             weekly = 10
         else:
             weekly = 5
-        assert actual == min(net, WEEKS * weekly), (shape, net, eligible)
-        assert 0 <= actual <= net, (shape, net, eligible)
+        # The selected standard is the amount before permitted work, whatever
+        # the permitted-work input.
+        assert actual == min(net, WEEKS * weekly), case
+        assert 0 <= actual <= net, case
+        if permitted > 0:
+            # Working-age para 10A(2), pension-age para 5A(2): the specified
+            # amount replaces paras 3 to 10 (pension age: 1 to 5 and 7), the
+            # £20 included; a lone parent keeps £25 where that is higher.
+            floor = WEEKS * 25 if shape == "lone_parent" else 0
+            expected = min(net, max(permitted, floor))
+        else:
+            expected = min(net, WEEKS * weekly)
+        assert abs(after - expected) < 0.01, case
+        assert -0.01 < after <= net + 0.01, case
+        # Never stacked: at most the larger of the two amounts, never both.
+        assert after <= max(permitted, WEEKS * weekly) + 0.01, case
 
 
 @PROPERTY_SETTINGS

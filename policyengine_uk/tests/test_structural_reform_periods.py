@@ -1011,11 +1011,15 @@ def test_bsp_projection_routing_remains_inside_reported_observer(
 
 
 def test_clone_copies_isa_contract_before_synchronizing_reported_inputs(monkeypatch):
-    """Reported-input synchronization sees the clone's own nested ISA metadata."""
+    """Reported-input synchronization sees the clone's declared dataset metadata."""
     import policyengine_uk.simulation as uk_simulation
+    from policyengine_uk.data.savings_income_projection import (
+        OBR_SAVINGS_INCOME_2022_2025,
+    )
 
     parent = object.__new__(Simulation)
     parent._reported_benefit_inputs = {}
+    parent._savings_income_projection = OBR_SAVINGS_INCOME_2022_2025
     parent._isa_income_contracts = {
         2025: {"version": 1, "representation": "additive", "projection": "legacy_gross"}
     }
@@ -1029,6 +1033,9 @@ def test_clone_copies_isa_contract_before_synchronizing_reported_inputs(monkeypa
         calls.append("core_clone")
         clone = object.__new__(Simulation)
         clone.__dict__.update(owner.__dict__)
+        # Require the UK clone boundary to copy its own metadata, rather than
+        # rely on the generic Core clone carrying this subclass attribute.
+        clone.__dict__.pop("_savings_income_projection")
         return clone
 
     def synchronize(clone, active):
@@ -1038,6 +1045,7 @@ def test_clone_copies_isa_contract_before_synchronizing_reported_inputs(monkeypa
         assert (
             clone._isa_income_contracts[2025] is not parent._isa_income_contracts[2025]
         )
+        assert clone._savings_income_projection == OBR_SAVINGS_INCOME_2022_2025
         clone._isa_income_contracts[2025]["projection"] = "additive"
 
     monkeypatch.setattr(uk_simulation.CoreSimulation, "clone", core_clone)
@@ -1047,3 +1055,54 @@ def test_clone_copies_isa_contract_before_synchronizing_reported_inputs(monkeypa
     assert calls == ["prune", "core_clone", ("synchronize", True)]
     assert parent._isa_income_contracts == original
     assert clone._isa_income_contracts[2025]["projection"] == "additive"
+
+
+@pytest.mark.parametrize("model_value", (False, True), ids=("supplied", "model"))
+def test_population_rebuild_retires_reports_and_keeps_donor_input_provenance(
+    model_value,
+):
+    """A new population drops the old reports and keeps its own values' origin."""
+    from policyengine_core.periods import period as period_
+    from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
+
+    simulation = construct(
+        changes={REPORTED_ONLY: {FY2026: True}}, dataset=reported_dataset()
+    )
+    equals(money(simulation, "child_benefit", 2026), [666])
+    assert simulation._reported_benefit_inputs
+    simulation.set_input("adjusted_net_income", 2026, [1, 2, 3])
+
+    donor = construct(dataset=reported_dataset())
+    original = np.array([10_000.0, 20_000.0, 30_000.0])
+    if model_value:
+        set_model_value(donor, "adjusted_net_income", period_(2026), original)
+    else:
+        donor.set_input("adjusted_net_income", 2026, original)
+    donor_population = donor.populations["person"]
+
+    simulation.build_from_populations(donor.populations)
+
+    assert simulation._reported_benefit_inputs == {}
+    assert simulation._reported_benefit_requests == []
+    assert simulation._reported_benefit_observers == []
+    assert simulation._reported_benefit_observer_error is None
+    assert donor.populations["person"] is donor_population
+    assert donor_population.simulation is donor
+    assert simulation.populations["person"] is not donor_population
+    equals(money(simulation, "adjusted_net_income", 2026), original)
+    supplied = supplied_input(
+        simulation.populations["person"], "adjusted_net_income", period_(2026)
+    )
+    if model_value:
+        assert supplied is None
+    else:
+        equals(supplied, original)
+    # The replacement population has adults and no supplied Child Benefit.
+    # The old population's reported award must not return in the active year.
+    equals(money(simulation, "child_benefit", 2026), [0])
+
+    simulation.set_input("adjusted_net_income", 2026, [40_000, 50_000, 60_000])
+    equals(money(donor, "adjusted_net_income", 2026), original)
+    equals(money(simulation, "adjusted_net_income", 2026), [40_000, 50_000, 60_000])
+    donor.set_input("adjusted_net_income", 2026, [70_000, 80_000, 90_000])
+    equals(money(simulation, "adjusted_net_income", 2026), [40_000, 50_000, 60_000])

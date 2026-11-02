@@ -41,6 +41,7 @@ benefit units and households in that order, and every group has a member.
 """
 
 import warnings
+from importlib.metadata import version
 
 import h5py
 import numpy as np
@@ -48,6 +49,7 @@ import pandas as pd
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from packaging.version import Version
 
 from policyengine_uk import Microsimulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
@@ -73,6 +75,10 @@ ID_MIN, ID_MAX = -(2**31), 2**31 - 1
 FLOAT32_EXACT_LIMIT = 2**24
 # Three households that a 32-bit float stores as the same number, 900,000,000.
 ISSUE_IDS = [900_000_001, 900_000_002, 900_000_003]
+# PolicyEngine/policyengine-core#592 matches memberships to declared IDs by value.
+CORE_REJECTS_UNDECLARED_GROUP_IDS = Version(version("policyengine-core")) >= Version(
+    "3.33.7"
+)
 
 # The person table's column that holds each identifier once per person.
 PERSON_LEVEL_COLUMN = {
@@ -486,7 +492,13 @@ def test_object_column_with_a_fraction_warns():
     person, benunit, household = tables([1, 2, 3], [1, 2, 3], [1, 2, 3])
     person["person_household_id"] = pd.Series([1, 2.5, 3], dtype=object)
     with pytest.warns(EntityIdWarning, match="person_household_id should hold whole"):
-        simulate(person, benunit, household)
+        if CORE_REJECTS_UNDECLARED_GROUP_IDS:
+            with pytest.raises(
+                ValueError, match=r"household IDs that were not declared: \[2\.5\]"
+            ):
+                simulate(person, benunit, household)
+        else:
+            simulate(person, benunit, household)
 
 
 OUT_OF_RANGE_IDS = [ID_MAX - 1, ID_MAX, ID_MAX + 1]
@@ -535,7 +547,13 @@ def test_identifier_that_is_not_a_whole_number_warns():
     person, benunit, household = tables([1, 2, 3], [1, 2, 3], [1, 2, 3], "float64")
     person["person_household_id"] = [1.0, 2.5, 3.0]
     with pytest.warns(EntityIdWarning, match="person_household_id should hold whole"):
-        simulate(person, benunit, household)
+        if CORE_REJECTS_UNDECLARED_GROUP_IDS:
+            with pytest.raises(
+                ValueError, match=r"household IDs that were not declared: \[2\.5\]"
+            ):
+                simulate(person, benunit, household)
+        else:
+            simulate(person, benunit, household)
 
 
 def test_single_year_dataset_warns_about_an_identifier_out_of_range():

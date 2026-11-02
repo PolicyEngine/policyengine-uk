@@ -1,4 +1,6 @@
 # ISA Regulations1998 Schedule paras4-7 and5A.
+# SI2026/1130: from29October2026 a purchase failing only the para6(3) price
+# cap pays20 percent (paras5(a) and6A); fiscal2027 in the annual model.
 # Withdrawals are GROSS, excluding exempt inter-LISA transfers and death.
 # Annual2020/2021 use the existing30April fiscal-year parameter convention.
 
@@ -92,3 +94,62 @@
     main_residential_property_purchased_is_in_uk: [true, true, true, true, true]
   output:
     lifetime_isa_withdrawal_charge: [500, 0, 1_000, 0, 500]
+
+- name: From fiscal2027-28 a first-home purchase above the price cap pays20 percent
+  period: 2027
+  input:
+    age: [35, 35, 35, 60]
+    lifetime_isa_withdrawals: [10_000, 10_000, 10_000, 10_000]
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 10_000, 10_000, 10_000]
+    lifetime_isa_first_time_buyer: [true, true, true, true]
+    lifetime_isa_months_since_first_payment: [12, 12, 12, 12]
+    main_residential_property_purchased: [450_000, 450_001, 600_000, 600_000]
+    main_residential_property_purchased_with_mortgage: [true, true, true, true]
+    main_residential_property_purchased_is_in_uk: [true, true, true, true]
+  output:
+    # At the cap the purchase is exempt; above it20 percent; age60 is exempt.
+    lifetime_isa_withdrawal_charge: [0, 2_000, 2_000, 0]
+
+- name: Before29October2026 a first-home purchase above the price cap pays25 percent
+  period: 2026
+  input:
+    age: [35, 35]
+    lifetime_isa_withdrawals: [10_000, 10_000]
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 10_000]
+    lifetime_isa_first_time_buyer: [true, true]
+    lifetime_isa_months_since_first_payment: [12, 12]
+    main_residential_property_purchased: [450_001, 600_000]
+    main_residential_property_purchased_with_mortgage: [true, true]
+    main_residential_property_purchased_is_in_uk: [true, true]
+  output:
+    lifetime_isa_withdrawal_charge: [2_500, 2_500]
+
+- name: Above the price cap only a purchase meeting every other condition pays20 percent
+  period: 2027
+  input:
+    age: [35, 35, 35, 35]
+    lifetime_isa_withdrawals: [10_000, 10_000, 10_000, 10_000]
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 10_000, 10_000, 10_000]
+    lifetime_isa_first_time_buyer: [false, true, true, true]
+    lifetime_isa_months_since_first_payment: [12, 11, 12, 12]
+    main_residential_property_purchased: [600_000, 600_000, 600_000, 600_000]
+    main_residential_property_purchased_with_mortgage: [true, true, false, true]
+    main_residential_property_purchased_is_in_uk: [true, true, true, false]
+  output:
+    lifetime_isa_withdrawal_charge: [2_500, 2_500, 2_500, 2_500]
+
+- name: A withdrawal not paid towards the home keeps the25 percent charge above the cap
+  period: 2027
+  input:
+    age: [35, 35]
+    lifetime_isa_withdrawals: [12_000, 12_000]
+    # The first pays10000 of12000 to the conveyancer; the second pays none.
+    lifetime_isa_withdrawals_towards_first_home: [10_000, 0]
+    lifetime_isa_first_time_buyer: [true, true]
+    lifetime_isa_months_since_first_payment: [12, 12]
+    main_residential_property_purchased: [600_000, 600_000]
+    main_residential_property_purchased_with_mortgage: [true, true]
+    main_residential_property_purchased_is_in_uk: [true, true]
+  output:
+    # 10000 x20% + 2000 x25%, and 12000 x25%.
+    lifetime_isa_withdrawal_charge: [2_500, 3_000]

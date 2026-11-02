@@ -64,7 +64,7 @@ POPULATION_YEARS = [
 
 @pytest.mark.parametrize("year", POPULATION_YEARS)
 def test_per_person_growth_is_journeys_growth_net_of_population_growth(year):
-    # 2025-26: (1,829.468 / 1,728.704) / 1.0030 - 1 = 0.0551. Fails if either
+    # 2025-26: (1,829.468 / 1,728.704) / 1.0033 - 1 = 0.0548. Fails if either
     # input series changes without re-deriving this one.
     instant, previous = f"{year}-01-01", f"{year - 1}-01-01"
     expected = RIDERSHIP(instant) / RIDERSHIP(previous) / (1 + POPULATION(instant)) - 1
@@ -106,8 +106,8 @@ def _total(dataset):
 
 
 def test_projected_rail_usage_tracks_orr_journeys():
-    # Each household's usage grows by 1.0583 / 1.0030 = 1.0551 into 2025-26
-    # and the weights by 1.0030, so the weighted total grows by ORR's 5.83%.
+    # Each household's usage grows by 1.0583 / 1.0033 = 1.0548 into 2025-26
+    # and the weights by 1.0033, so the weighted total grows by ORR's 5.83%.
     # From 2026-27 the total stays flat in every projected year, past the end
     # of the OBR forecast too. Before #1862 rail_usage was not projected at
     # all.
@@ -116,7 +116,7 @@ def test_projected_rail_usage_tracks_orr_journeys():
     )
     datasets = projected.datasets
     assert datasets[2025].household["rail_usage"].tolist() == pytest.approx(
-        [105.51, 42.204], rel=1e-4
+        [105.48, 42.192], rel=1e-4
     )
     assert _total(datasets[2025]) / _total(datasets[2024]) == pytest.approx(
         JOURNEYS[2025] / JOURNEYS[2024], abs=1e-4
