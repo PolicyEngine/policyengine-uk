@@ -14,13 +14,13 @@ class claims_universal_credit(Variable):
         "Benefit continuing award and Child Tax Credit, and the claimant's "
         "and partner's income-related ESA (esa_income_report_closed). Once "
         "DWP moves a family off legacy benefits (legacy_benefits_closed) all "
-        "its legacy awards end, except Housing Benefit for specified or "
-        "temporary accommodation while the family does not claim "
-        "(housing_benefit_eligible). For other claimants the model doesn't "
-        "represent the overlap of Universal Credit with Working Tax Credit, "
-        "Income Support and income-based JSA, or the Housing Benefit for "
-        "specified or temporary accommodation that continues beside a claim "
-        "(SI 2014/1230 reg 8(3))."
+        "its legacy awards end. Housing Benefit for specified or temporary "
+        "accommodation survives both a claim and the move (SI 2014/1230 regs "
+        "8(3) and 46(2); housing_benefit_eligible), and Universal Credit "
+        "then leaves that rent out (uc_housing_costs_element). For other "
+        "claimants the model doesn't represent the overlap of Universal "
+        "Credit with Working Tax Credit, Income Support and income-based "
+        "JSA."
     )
     definition_period = YEAR
     reference = (

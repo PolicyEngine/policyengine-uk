@@ -691,7 +691,7 @@
     housing_benefit_eligible: false
     housing_benefit: 0
 
-- name: Great Britain 2026-27, a family in specified or temporary accommodation that claims Universal Credit gets no Housing Benefit
+- name: Great Britain 2026-27, a family in specified or temporary accommodation that claims Universal Credit keeps its Housing Benefit
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -712,14 +712,162 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 5_200
   output:
-    # The family claims on its award's appointed day. Under reg 8(3) this
-    # Housing Benefit award continues after the claim, but the model's
-    # Universal Credit pays the rent through its housing costs element,
-    # subject to the benefit cap, so the model ends the award to avoid
-    # paying the rent twice beside an uncapped award.
+    # The family claims on its award's appointed day. The claim doesn't
+    # terminate Housing Benefit for specified or temporary accommodation
+    # (SI 2014/1230 reg 8(3)). Universal Credit Regs 2013 Sch 1 paras 3(h)
+    # and (i) exclude this rent from rent payments, so the housing costs
+    # element is nil and Universal Credit pays the standard allowance alone:
+    # 12 x £424.90 = £5,098.80. Universal Credit passports the Housing
+    # Benefit means test, which pays the whole £5,200 rent.
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+
+- name: Great Britain 2026-27, a London tenant in temporary accommodation the abolition moves to Universal Credit keeps Housing Benefit for £30,000 of rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 30_000
+        # The work-related activity group: no support component.
+        esa_includes_support_component: false
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+        council_tax: 1_500
+  output:
+    # The abolition reaches the unsaved award (SI 2025/1148 art. 3A) and the
+    # family claims Universal Credit, which ends the income-related ESA
+    # award. Housing Benefit for council-arranged homelessness accommodation
+    # survives the claim (SI 2014/1230 reg 8(3)), and Universal Credit
+    # leaves that rent out (UC Regs 2013 Sch 1 paras 3(i) and 3B).
+    # Universal Credit: the standard allowance alone, 12 x £424.90 =
+    # £5,098.80. The Universal Credit cap counts Housing Benefit as nil (UC
+    # Regs 2013 reg 80(2A)): £5,098.80 falls below London's £16,967 single
+    # cap, so no reduction. Housing Benefit: Universal Credit passports the
+    # means test, so it pays the whole £30,000 rent, and the Housing Benefit
+    # cap doesn't apply to a claimant receiving Universal Credit (HB Regs
+    # 2006 reg 75F(1)(g)).
+    # Household net income: £30,000 + £5,098.80 + £100 Household Energy
+    # Payment (band A to D in England, 2026-27) - £180 TV licence - £1,500
+    # council tax = £33,518.80.
+    esa_income_abolition_reached: true
+    claims_universal_credit: true
+    esa_income: 0
+    housing_benefit_eligible: true
+    housing_benefit: 30_000
+    uc_housing_costs_element: 0
+    uc_benefit_cap_reduction: 0
+    housing_benefit_benefit_cap_reduction: 0
+    universal_credit: 5_098.80
+    household_net_income: 33_518.80
+
+- name: Great Britain 2026-27, the same London tenant outside that accommodation gets capped Universal Credit and no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        housing_benefit_reported: 30_000
+        esa_includes_support_component: false
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+        council_tax: 1_500
+  output:
+    # The claim ends Housing Benefit after its run-on (SI 2014/1230 reg
+    # 8(2A)). Universal Credit before the cap: £5,098.80 standard allowance
+    # + £30,000 social rent = £35,098.80. The cap reduces it by the excess
+    # over London's £16,967 single cap: £35,098.80 - £16,967 = £18,131.80,
+    # leaving £16,967. Household net income: £16,967 + £100 - £180 - £1,500
+    # = £15,387.
     claims_universal_credit: true
     housing_benefit_eligible: false
     housing_benefit: 0
+    uc_housing_costs_element: 30_000
+    uc_benefit_cap_reduction: 18_131.80
+    universal_credit: 16_967
+    household_net_income: 15_387
+
+- name: Great Britain 2026-27, the benefit cap reduces Universal Credit and leaves temporary accommodation Housing Benefit whole
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        esa_income_reported: 5_000
+        housing_benefit_reported: 15_000
+        esa_includes_support_component: false
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+      child_3:
+        age: 6
+      child_4:
+        age: 4
+    benunits:
+      benunit:
+        members: [claimant, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant, child_1, child_2, child_3, child_4]
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+  output:
+    # The lone parent claims when the abolition reaches the award. Universal
+    # Credit before the cap: the £5,098.80 standard allowance, and child
+    # elements of 12 x (£351.88 for the eldest, born before 6 April 2017, +
+    # 3 x £303.94) = £15,164.40, with no housing costs element (UC Regs 2013
+    # Sch 1 paras 3(i) and 3B): £20,263.20. Child Benefit: (£27.05 + 3 x
+    # £17.90) x 52 = £4,199.00. The Universal Credit cap counts Housing
+    # Benefit as nil (reg 80(2A)), so the welfare benefits come to £20,263.20
+    # + £4,199.00 = £24,462.20, which exceeds the £22,020 cap outside London
+    # for a lone parent by £2,442.20. Universal Credit: £20,263.20 -
+    # £2,442.20 = £17,821.00. Housing Benefit pays the whole £15,000 rent,
+    # passported by Universal Credit, and its own cap doesn't apply (HB Regs
+    # 2006 reg 75F(1)(g)). benefit_cap_welfare_benefits counts Housing
+    # Benefit at its amount before the cap: £24,462.20 + £15,000 =
+    # £39,462.20.
+    claims_universal_credit: true
+    uc_housing_costs_element: 0
+    universal_credit_pre_benefit_cap: 20_263.20
+    child_benefit: 4_199
+    benefit_cap_welfare_benefits: 39_462.20
+    uc_benefit_cap_reduction: 2_442.20
+    universal_credit: 17_821
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit: 15_000
 
 - name: Great Britain 2027-28, a family the abolition moved claims Universal Credit
   period: 2027

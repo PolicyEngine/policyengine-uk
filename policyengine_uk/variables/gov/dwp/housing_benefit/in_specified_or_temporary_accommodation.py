@@ -17,7 +17,13 @@ class in_specified_or_temporary_accommodation(Variable):
         "from tenure or a generic supported-housing label. The working-age "
         "Housing Benefit earnings disregard for specified or temporary "
         "accommodation (SI 2006/213 Sch 4 para 18; NI SR 2006/405 Sch 5 para "
-        "18), which refers to the same paragraphs, reads it. "
+        "18), which refers to the same paragraphs, reads it. Housing Benefit "
+        "eligibility reads it for new claims and for awards that continue "
+        "after a Universal Credit claim or DWP's move off legacy benefits "
+        "(SI 2014/1230 regs 6A(2), 8(3) and 46(2); NI: SR 2016/226 regs "
+        "4A(2), 6(3) and 47(2)), and the Universal Credit housing costs "
+        "element is nil for it (UC Regs 2013 Sch 1 paras 3(h) and 3(i); NI: "
+        "SR 2016/216 Sch 1 paras 3(e) and 3(ea)). "
         "It defaults to False when absent from household or dataset inputs."
     )
     definition_period = YEAR

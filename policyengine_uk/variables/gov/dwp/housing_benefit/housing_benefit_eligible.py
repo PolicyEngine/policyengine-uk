@@ -20,17 +20,18 @@ class housing_benefit_eligible(Variable):
         "other family keeps Housing Benefit only while it continues an "
         "existing award (reported Housing Benefit) and does not claim "
         "Universal Credit. When DWP moves the family off a closed legacy "
-        "benefit (legacy_benefits_closed), the move also ends that award, "
-        "unless the family lives in specified or temporary accommodation "
-        "(in_specified_or_temporary_accommodation): such an award doesn't "
-        "terminate when the migration notice's deadline passes without a "
-        "claim, whichever legacy benefit closed (SI 2014/1230 reg 46(2); NI: "
-        "SR 2016/226 reg 47(2)). The model leaves out new claims for that "
-        "accommodation (reg "
-        "6A(2)) and reg 8(3), under which such an award continues after a "
-        "Universal Credit claim: the model's Universal Credit pays a housing costs "
-        "element for these homes, subject to the benefit cap, so Housing "
-        "Benefit beside an uncapped award would pay the rent twice. The "
+        "benefit (legacy_benefits_closed), the move also ends that award. "
+        "A family in specified or temporary accommodation "
+        "(in_specified_or_temporary_accommodation) can receive Housing "
+        "Benefit for it whatever its age, its Universal Credit claim or "
+        "DWP's move: it can make a new claim (SI 2014/1230 reg 6A(2); NI: "
+        "SR 2016/226 reg 4A(2)), and an existing award doesn't terminate on a "
+        "Universal Credit claim (reg 8(3); NI reg 6(3)) or when the "
+        "migration notice's deadline passes without one, whichever legacy "
+        "benefit closed (reg 46(2); NI reg 47(2)). Universal Credit then "
+        "leaves that rent out (uc_housing_costs_element), so the two awards "
+        "don't pay it twice. The tenure and capital tests still apply, and "
+        "would_claim_housing_benefit decides whether the family claims. The "
         "Secretary of State appointed 1 July 2026 for every "
         "other working-age award to end without a claim (SI 2025/1148 art. "
         "7), and the Department for Communities appointed 1 October 2026 in "
@@ -48,6 +49,7 @@ class housing_benefit_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/4A",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/47",
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
         "https://www.legislation.gov.uk/nisr/2025/176/article/7",
@@ -96,16 +98,19 @@ class housing_benefit_eligible(Variable):
         claiming_uc = benunit("claims_universal_credit", period)
         # Once another of the family's legacy benefits has closed, DWP's
         # migration notice ends this award even if the family does not claim
-        # Universal Credit (reg 46(1)(a)). An award for specified or
-        # temporary accommodation doesn't terminate there, whichever legacy
-        # benefit closed (reg 46(2); NI: SR 2016/226 reg 47(2)). A claim
-        # still ends that award here. Under reg 8(3) it continues, but the
-        # model's Universal Credit pays a housing costs element for these
-        # homes, subject to the benefit cap, so keeping it beside an uncapped
-        # award would pay the rent twice.
+        # Universal Credit (reg 46(1)(a)).
         migrated = benunit("legacy_benefits_closed", period)
+        continuing_award = already_claiming & ~claiming_uc & ~migrated
+        # Specified or temporary accommodation: the bar on new claims doesn't
+        # apply (reg 6A(2); NI: SR 2016/226 reg 4A(2)), and an existing award
+        # terminates neither on a Universal Credit claim (reg 8(3); NI reg
+        # 6(3)) nor when the deadline passes without one (reg 46(2); NI reg
+        # 47(2)). The route reads the supplied status, not an award, so it
+        # adds no read of Universal Credit or Housing Benefit amounts.
+        # Universal Credit excludes this rent from its housing costs element
+        # (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B), so only Housing
+        # Benefit pays it.
         accommodation = benunit("in_specified_or_temporary_accommodation", period)
-        continuing_award = already_claiming & ~claiming_uc & (~migrated | accommodation)
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
         pension_age_regulations = benunit(
@@ -119,7 +124,7 @@ class housing_benefit_eligible(Variable):
             hb_capital.working_age.limit,
         )
         return (
-            (pension_age | continuing_award)
+            (pension_age | continuing_award | accommodation)
             & (social | lha_eligible)
             & (capital <= limit)
         )
