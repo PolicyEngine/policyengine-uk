@@ -628,3 +628,50 @@ This makes it easy to trace through exactly how a reform affects different compo
 ```
 
 The simulation system is designed to be flexible and powerful. Start with simple examples and gradually build up to more complex analyses as you become familiar with the structure and capabilities.
+
+## Household geography
+
+The UK `Simulation` and `Scenario` APIs resolve geography for each household.
+A region supplied for the requested year or an earlier year takes precedence.
+Otherwise a supplied local authority determines the region; a supplied country
+identifies Scotland, Wales or Northern Ireland when no council identifies it.
+England alone uses London because it does not identify an English region.
+The model reads country inputs directly while resolving region, so an omitted
+country cannot create a country–region calculation cycle.
+
+With no geography supplied, `region` defaults to `LONDON`, `country` to
+`ENGLAND` and `local_authority` to `MAIDSTONE`. These defaults do not count as
+provided facts. Explicit values equal to the defaults do count. Explicit
+`UNKNOWN` values remain unknown. Contradictory provided region, country and
+council values raise `ValueError`; callers changing a previously supplied
+region must also keep any provided council and country consistent.
+
+For example, a household with `local_authority: EDINBURGH` and no region uses
+`SCOTLAND`. A household with `local_authority: OXFORD` uses `SOUTH_EAST`.
+A later region input does not change earlier years, and supplied regions carry
+forward after calculated values are cleared. The council lookup covers the
+model's current and historical council enum names, using the documented
+[ONS mapping](../../../policyengine_uk/data/geography/README.md).
+
+An explicit Broad Rental Market Area (BRMA) overrides the regional fallback.
+An earlier BRMA carries forward until the household changes region. With no
+applicable override, the model uses its existing regional default BRMA,
+regardless of whether BRMA or region is calculated first. Oxford therefore
+uses Southampton's regional fallback; this inference does not identify the
+council's own BRMA.
+
+Use the UK `Simulation` API for situations that supply a geography field for
+some households and omit it for others. It retains genuine cell presence
+before Core pads input arrays. Direct use of Core's `SimulationBuilder` has
+already replaced missing cells with whole-array defaults; those arrays retain
+whole-array input semantics. Single-household and wholly supplied Core inputs
+use the same geography formulas.
+
+UK clones, branches and population rebuilds retain the geography presence of
+their actual supplied values. In-memory UK dataset snapshots, copies and input
+frames carry a narrow `policyengine_uk.geography_input_masks` DataFrame
+attribute, keyed by household or person identifiers, to retain sparse input
+presence through those adapters. Keep this attribute when copying the frame.
+Exporters that discard it cannot distinguish padded cells from provided
+values on re-import. This change adds no H5 metadata schema or general
+model-owned input refresh mechanism.

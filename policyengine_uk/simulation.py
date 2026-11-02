@@ -84,6 +84,17 @@ from policyengine_uk.data.capital_gains_projection import (
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
+from policyengine_uk.utils.geography import (
+    GEOGRAPHY_FIELDS,
+    attach_input_frame_presence,
+    install_situation_presence,
+    install_table_presence,
+    merge_geography_formula,
+    restore_input_frame_presence,
+    set_cell_mask,
+    situation_presence,
+    validate_geography,
+)
 from policyengine_uk.utils.measurement_branches import (
     drop_calculated_totals,
     drop_calculated_values,
@@ -634,6 +645,22 @@ class Simulation(CoreSimulation):
         keep_population_records(self, adopted)
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
+        geography = variable_name in GEOGRAPHY_FIELDS
+        if geography:
+            variable = self.tax_benefit_system.get_variable(
+                variable_name, check_existence=True
+            )
+            requested = period_(period)
+            if variable.is_neutralized:
+                warning_message = (
+                    "You cannot set a value for the variable {}, as it has been "
+                    "neutralized. The value you provided ({}) will be ignored."
+                ).format(variable_name, value)
+                warnings.warn(warning_message, Warning)
+                return
+            geography = variable.end is None or requested.start.date <= variable.end
+        if geography and not getattr(self, "_geography_loading", False):
+            validate_geography(self, override=(variable_name, period, value))
         # What is set here is supplied, even a value equal to the model's own,
         # so forget the model value (set_model_value) of each period the call
         # stores a value for, and only those. set_model_value records its
@@ -668,6 +695,18 @@ class Simulation(CoreSimulation):
         # for the year the input starts in if it holds them only for later
         # years. See ``policyengine_uk.data.input_dataframe.hold_identifiers_in``.
         hold_identifiers_in(self, variable_name, period)
+        if geography:
+            from policyengine_core.holders.helpers import get_stored_input
+
+            holder = self.get_holder(variable_name)
+            stored_period = period_(period)
+            if get_stored_input(holder, stored_period, self.branch_name) is not None:
+                set_cell_mask(
+                    self,
+                    variable_name,
+                    stored_period,
+                    np.ones(holder.population.count, dtype=bool),
+                )
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
@@ -1185,6 +1224,7 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
+        geography = situation_presence(situation, self.default_input_period)
         self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
         from policyengine_core.simulations.simulation_builder import (
@@ -1194,6 +1234,7 @@ class Simulation(CoreSimulation):
         builder = SimulationBuilder()
         builder.default_period = self.default_input_period
         builder.build_from_dict(self.tax_benefit_system, situation, self)
+        install_situation_presence(self, geography)
         self.has_axes = builder.has_axes
         self._capture_cgt_supplied_inputs()
 
@@ -1318,6 +1359,7 @@ class Simulation(CoreSimulation):
         dataset, replayed, identifiers = dataset_from_input_dataframe(
             df, self.tax_benefit_system, self.default_input_period
         )
+        restore_input_frame_presence(df, dataset)
         self.build_from_multi_year_dataset(dataset)
         # Identifiers for the years the frame names them in that hold no
         # data, and so are not years of the dataset.
@@ -1403,6 +1445,7 @@ class Simulation(CoreSimulation):
         frame.attrs[SAVINGS_INCOME_PROJECTION_KEY] = resolve_savings_income_projection(
             getattr(self, "_savings_income_projection", None), None
         )
+        attach_input_frame_presence(frame, self)
         return frame
 
     def build_from_dataset(self, dataset: Dataset) -> None:
@@ -1538,17 +1581,26 @@ class Simulation(CoreSimulation):
         }
         self._savings_income_projection = dataset.savings_income_projection
 
-        # Load variable values for all years
-        for year in dataset.years:
-            for entity, table in zip(dataset[year].table_names, dataset[year].tables):
-                if entity in ("benunit", "household"):
-                    # Align each year's group inputs to the sorted population
-                    # without reordering the caller's table or the people.
-                    table = table.iloc[np.argsort(table[f"{entity}_id"].to_numpy())]
-                for variable in table.columns:
-                    if variable not in self.tax_benefit_system.variables:
-                        continue
-                    self.set_input(variable, year, table[variable])
+        # Geography consistency is checked after the complete multi-field batch.
+        self._geography_loading = True
+        try:
+            for year in dataset.years:
+                for entity, table in zip(
+                    dataset[year].table_names, dataset[year].tables
+                ):
+                    if entity in ("benunit", "household"):
+                        # Align each year's group inputs to the sorted population
+                        # without reordering the caller's table or the people.
+                        table = table.iloc[np.argsort(table[f"{entity}_id"].to_numpy())]
+                    for variable in table.columns:
+                        if variable not in self.tax_benefit_system.variables:
+                            continue
+                        self.set_input(variable, year, table[variable])
+                    if entity == "household":
+                        install_table_presence(self, table, year)
+        finally:
+            self._geography_loading = False
+        validate_geography(self)
 
         # Retain the dataset actually loaded, including the copied base amounts
         # and price declaration when economic assumptions were disabled.
@@ -1709,6 +1761,28 @@ class Simulation(CoreSimulation):
         )
 
     def _calculate(self, variable_name: str, period: Period = None):
+        if (
+            variable_name in GEOGRAPHY_FIELDS
+            and period is not None
+            and period.unit == "year"
+            and period.size == 1
+        ):
+            variable = self.tax_benefit_system.get_variable(variable_name)
+            if (
+                variable.entity.key == "household"
+                and variable.value_type == CoreEnum
+                and variable.definition_period == "year"
+            ):
+                for source in ("region", "country", "local_authority", "brma"):
+                    self._record_derived(source)
+                had_array = (
+                    self.get_holder(variable_name).get_array(period, self.branch_name)
+                    is not None
+                )
+                native = super()._calculate(variable_name, period)
+                return merge_geography_formula(
+                    self, variable, period, native, had_array
+                )
         # Core requires an indexed input to have no formula. Keep the legacy
         # CPI declaration, but carry split dataset BSP nominally after the
         # materialized horizon, including through Core's monthly conversion.
@@ -1774,6 +1848,10 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
+        # The public identity mapping preserves Core's frame/enum handling
+        # while making sparse geography bypass its whole-array fast shortcut.
+        if variable_name in GEOGRAPHY_FIELDS and map_to is None:
+            map_to = "household"
 
         projection = self.tax_benefit_system.capital_gains_projection
         if projection is not None and variable_name in CGT_INPUTS:
