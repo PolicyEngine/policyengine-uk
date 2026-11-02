@@ -34,7 +34,9 @@ class uc_non_dep_receives_pension_credit(Variable):
         # the earnings counterfactuals on the parent so this branch and
         # ordinary Pension Credit share them whichever is requested first.
         benunit.members("pension_credit_income_tax_without_earnings", period)
-        benunit.members("pension_credit_uncounted_income_tax_without_earnings", period)
+        benunit.members(
+            "legacy_means_test_uncounted_income_tax_without_earnings", period
+        )
         name = "uc_non_dep_pension_credit"
         while name in simulation.branches or name == simulation.branch_name:
             name += "_"

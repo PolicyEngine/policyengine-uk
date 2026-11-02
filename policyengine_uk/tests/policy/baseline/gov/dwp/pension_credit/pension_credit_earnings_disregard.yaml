@@ -437,7 +437,7 @@
     # 738 = 12,000. HMRC: /apply-tax-free-interest-on-savings/how-much-is-tax-free.
     income_tax: 1_388
     pension_credit_employment_income_tax: 302
-    pension_credit_uncounted_income_tax_without_earnings: 1_086
+    legacy_means_test_uncounted_income_tax_without_earnings: 1_086
     pension_credit_earnings_disregard: 738
     pension_credit_income: 12_000
 
@@ -461,7 +461,7 @@
     pension_credit_earnings_disregard: 0
     # The 1,086 is all tax on the interest, which Pension Credit does not
     # count, so none of it is deducted: 12,000.
-    pension_credit_uncounted_income_tax_without_earnings: 1_086
+    legacy_means_test_uncounted_income_tax_without_earnings: 1_086
     pension_credit_income: 12_000
 
 - name: Statutory sick pay leaves Pension Credit income unchanged when the tax on interest is uncounted, as wages do.
@@ -494,7 +494,7 @@
   output:
     income_tax_before_winter_fuel_payment_charge: 1_388
     pension_credit_employment_income_tax: 302
-    pension_credit_uncounted_income_tax_without_earnings: 1_086
+    legacy_means_test_uncounted_income_tax_without_earnings: 1_086
     pension_credit_earnings_disregard: 738
     pension_credit_income: 12_000
 

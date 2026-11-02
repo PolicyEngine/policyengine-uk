@@ -226,7 +226,7 @@ def test_statute_bounds_differential_and_monotonicity(case):
         no_earnings - person_values(no_earnings_sim, "legacy_means_test_income_tax"),
     )
     assert np.allclose(
-        person_values(sim, "pension_credit_uncounted_income_tax_without_earnings"),
+        person_values(sim, "legacy_means_test_uncounted_income_tax_without_earnings"),
         uncounted_without_earnings,
         atol=0.01,
     )

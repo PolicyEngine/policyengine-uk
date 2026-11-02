@@ -58,10 +58,14 @@
   output:
     # (16,000 + 12,000 + 6,000 - 12,570) x 20%.
     income_tax: 4_286
-    # The rent does not count, nor its tax: the tax on the earnings and
-    # pension is (28,000 - 12,570) x 20% = 3,086, so 16,000 + 12,000 - 3,086,
-    # less the 5 a week earnings disregard.
-    housing_benefit_applicable_income: 24_654
+    # The rent does not count, nor the tax it would bear without the
+    # earnings: (12,000 + 6,000 - 12,570) x 20% = 1,086. The earnings carry
+    # the rest, 4,286 - 1,086 = 3,200: the 3,086 on the earnings and pension
+    # and the 114 they add on the rent by using the personal allowance. So
+    # 16,000 + 12,000 - 3,200, less the 5 a week earnings disregard.
+    legacy_means_test_uncounted_income_tax_without_earnings: 1_086
+    legacy_means_test_deducted_income_tax: 3_200
+    housing_benefit_applicable_income: 24_540
 
 - name: Housing Benefit, finance costs equal to the profit do not lower it
   period: 2026
@@ -78,7 +82,9 @@
     # 4,286 less the 20% x 6,000 reduction.
     income_tax: 3_086
     property_income_after_finance_costs: 0
-    # 16,000 + 12,000 - 3,086 - 260: the rent does not count, and the 1,200
-    # reduction comes off the tax on the rent, so the tax on the earnings and
-    # pension deducted is still 3,086.
+    # 16,000 + 12,000 - 3,086 - 260: the rent does not count. Without the
+    # earnings the 1,200 reduction clears the 1,086 of tax on the rent, so no
+    # tax is left on uncounted income and the whole 3,086 is deducted.
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 3_086
     housing_benefit_applicable_income: 24_654

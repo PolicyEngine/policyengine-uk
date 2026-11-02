@@ -71,7 +71,7 @@ class income_support_applicable_income(Variable):
         tax = add_for_members(
             benunit,
             period,
-            ["legacy_means_test_income_tax", "national_insurance"],
+            ["legacy_means_test_deducted_income_tax", "national_insurance"],
             members,
         )
         income += add_for_members(benunit, period, ["social_security_income"], members)

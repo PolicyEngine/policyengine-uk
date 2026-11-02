@@ -304,12 +304,12 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-# The means tests deduct only the income tax on the income they take into
-# account (legacy_means_test_income_tax), which is measured before the
-# winter fuel payment charge (ITEPA 2003 s.681I): the charge recovers a
-# payment rather than taxing the income they assess. A pensioner over
-# £35,000 of total income is charged it.
-MAIN_DEDUCTIONS = ["legacy_means_test_income_tax", "national_insurance"]
+# The means tests deduct the income tax before the winter fuel payment charge
+# (ITEPA 2003 s.681I), less the tax on income they do not take into account
+# due without earnings (legacy_means_test_deducted_income_tax): the charge
+# recovers a payment rather than taxing the income they assess. A pensioner
+# over £35,000 of total income is charged it.
+MAIN_DEDUCTIONS = ["legacy_means_test_deducted_income_tax", "national_insurance"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI

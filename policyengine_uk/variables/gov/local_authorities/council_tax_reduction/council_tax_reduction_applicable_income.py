@@ -352,7 +352,7 @@ class council_tax_reduction_applicable_income(Variable):
         tax = add_for_members(
             benunit,
             period,
-            ["legacy_means_test_income_tax", "national_insurance"],
+            ["legacy_means_test_deducted_income_tax", "national_insurance"],
             members,
         )
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para

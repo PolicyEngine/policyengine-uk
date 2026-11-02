@@ -47,16 +47,23 @@ class pension_credit_income(Variable):
         pension_contributions = benunit.sum(
             person("pension_contributions", period) * is_claimant_or_partner
         )
-        # Self-employed earnings are net of the notional tax and contributions
-        # of the Computation of Earnings Regulations 1996 reg. 14, in place of
-        # those actually payable on the profit (reg. 17(11)).
+        # Reg 17(10)(a) disregards tax only on income taken into account, and
+        # Schedule IV paragraph 18 disregards actual income from capital. The
+        # tax on earnings is the extra tax the earnings cause, so the income
+        # tax deducted leaves out the tax on uncounted income, and the Step 7
+        # charges, that the claimant and partner would pay without earnings
+        # (legacy_means_test_deducted_income_tax, which the other legacy
+        # means tests deduct too). Self-employed earnings are net of the
+        # notional tax and contributions of the Computation of Earnings
+        # Regulations 1996 reg. 14, in place of those actually payable on the
+        # profit (reg. 17(11)).
         tax = benunit.sum(
             (
                 add(
                     person,
                     period,
                     [
-                        "income_tax_before_winter_fuel_payment_charge",
+                        "legacy_means_test_deducted_income_tax",
                         "national_insurance",
                         "pension_credit_self_employment_deductions",
                     ],
@@ -65,15 +72,6 @@ class pension_credit_income(Variable):
             )
             * is_claimant_or_partner
         ) - benunit("pension_credit_self_employment_income_tax", period)
-        # Reg 17(10)(a) disregards tax only on income taken into account, and
-        # Schedule IV paragraph 18 disregards actual income from capital. The
-        # tax on earnings is the extra tax the earnings cause, so the tax not
-        # deducted is the tax on uncounted income, and the Step 7 charges,
-        # that the claimant and partner would pay without earnings.
-        tax -= benunit.sum(
-            person("pension_credit_uncounted_income_tax_without_earnings", period)
-            * is_claimant_or_partner
-        )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
         # Schedule VI earnings disregards (reg. 17(9)).

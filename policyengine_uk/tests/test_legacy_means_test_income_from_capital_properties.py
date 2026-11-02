@@ -9,35 +9,50 @@ income, less £20 a week per occupier.
 
 Invariants, for any generated population of families:
 
-1. Invariance: scaling property, savings interest and dividend income (by 0
-   and 3) changes none of the four means-test incomes, and none of
-   Income Support, Housing Benefit, Pension Credit or council tax reduction.
-   Universal Credit and tax credits, which have their own income rules, are
-   held fixed. Incomes are kept within the basic rate band, where extra
-   income from capital cannot change the tax on other income through the
-   personal allowance taper or the High Income Child Benefit Charge.
+1. Invariance: where nobody in the population has employed earnings or
+   self-employment income, scaling property, savings interest and dividend
+   income (by 0 and 3) changes none of the four means-test incomes, and none
+   of Income Support, Housing Benefit, Pension Credit or council tax
+   reduction. Universal Credit and tax credits, which have their own income
+   rules, are held fixed. Incomes are kept within the basic rate band, where
+   extra income from capital cannot change the tax on other income through
+   the personal allowance taper or the High Income Child Benefit Charge.
    Marriage Allowance is held at nil: whether a spouse can transfer it
    depends on their income including income from capital, which is a
    legitimate way for income from capital to change the tax on counted
    income.
-   Intended exception: Pension Credit's tax on earnings is the extra tax the
-   earnings cause, including on savings and dividends (#2019, Max's ruling
-   d1424). With earnings, income from capital can move that tax: earnings
-   under the personal allowance can leave dividends taxable. So Pension
-   Credit income is invariant wherever pension_credit_employment_income_tax
-   does not move, and elsewhere changes by exactly minus the change in that
-   tax and in the earnings disregard. The awards that follow Pension Credit
-   (Pension Credit, and Housing Benefit and council tax reduction for a
-   family receiving it) are compared wherever it does not move.
+   Intended exception: earnings carry the extra tax they cause, including on
+   savings, dividends and rent (d1424, applied to all four tests). With
+   earnings, income from capital can move that tax: earnings under the
+   personal allowance can leave rent or dividends taxable. Where someone has
+   earnings, each means-test income changes by exactly minus the change in
+   the tax that test deducts (legacy_means_test_deducted_income_tax, summed
+   over the members it counts) and in its earnings disregard, which is
+   capped at net earnings, unless floored or on a route that does not use
+   the test's own income rules. The awards are compared wherever none of
+   those taxes or disregards moves.
 2. Bounds: the counted home-letting income is between nil and the rent, and
    equals the rent less £20 a week, floored at nil.
 3. Monotone: more rent from part of the home never lowers a means-test income
    and never raises Income Support, Housing Benefit, Pension Credit or council
    tax reduction.
-4. Tax: legacy_means_test_income_tax is between nil and both income tax and
-   the tax on counted income before reductions (earned_income_tax), and
-   equals income tax when there is no savings, dividend or property income
-   and no Step 7 charge.
+4. Tax: legacy_means_test_income_tax, the Step 4 split the tests read
+   without earnings, is between nil and both income tax and the tax on
+   counted income before reductions (earned_income_tax), and equals income
+   tax when there is no savings, dividend or property income and no Step 7
+   charge. The tax each test deducts (legacy_means_test_deducted_income_tax)
+   is between nil and the income tax before the winter fuel payment charge;
+   it equals that tax when nobody has savings, dividend or property income
+   and no Step 7 charge applies; and without earnings it equals
+   legacy_means_test_income_tax, except where the nil floor on the tax on
+   uncounted income binds. Within the basic rate band it is never below
+   legacy_means_test_income_tax: earnings never lower the tax on income from
+   capital there.
+6. Differential: for every generated family without self-employment income,
+   Income Support, Housing Benefit and the council tax reduction line deduct,
+   for each person they count, the same income tax as Pension Credit's tax
+   line: the pre-charge income tax less
+   legacy_means_test_uncounted_income_tax_without_earnings.
 5. Tariff: the council tax reduction tariff income that replaces the actual
    income from capital is never negative, never more than the yield at the
    16,000 capital limit (40 steps of 250 at 4.35 a month, 2,088 a year), nil
@@ -172,56 +187,104 @@ def calculate(units, year, variables, **kwargs):
     return {v: np.asarray(sim.calculate(v, year), dtype=float) for v in variables}
 
 
+# The members whose income and tax each test counts.
+TEST_MEMBERS = {
+    "income_support_applicable_income": "is_claimant_or_partner",
+    "housing_benefit_applicable_income": "is_claimant_or_partner",
+    "pension_credit_income": "is_claimant_or_partner",
+    "council_tax_reduction_applicable_income": (
+        "is_council_tax_reduction_applicant_or_partner"
+    ),
+}
+# Each test's earnings disregard, which is capped at net earnings, so it moves
+# with the tax on them.
+EARNINGS_DISREGARDS = {
+    "income_support_applicable_income": "income_support_earnings_disregard",
+    "housing_benefit_applicable_income": "housing_benefit_applicable_income_disregard",
+    "pension_credit_income": "pension_credit_earnings_disregard",
+    "council_tax_reduction_applicable_income": (
+        "council_tax_reduction_pensioner_earnings_disregard"
+    ),
+}
+EARNINGS = ["employment_income", "self_employment_income"]
+
+
+def calculate_with_taxes(units, year, variables, **kwargs):
+    """Benefit-unit values of ``variables``, each test's deducted tax summed
+    over the members it counts (keyed ``tax:<income>``), and whether anyone in
+    the unit has earnings (``earners``)."""
+    sim = Simulation(situation=situation(units, year, **kwargs))
+    out = {v: np.asarray(sim.calculate(v, year), dtype=float) for v in variables}
+    tax = np.asarray(
+        sim.calculate("legacy_means_test_deducted_income_tax", year), dtype=float
+    )
+    for income, members in TEST_MEMBERS.items():
+        mask = np.asarray(sim.calculate(members, year), dtype=float)
+        out[f"tax:{income}"] = sim.map_result(tax * mask, "person", "benunit")
+    earnings = sum(
+        np.abs(np.asarray(sim.calculate(v, year), dtype=float)) for v in EARNINGS
+    )
+    out["earners"] = sim.map_result(earnings, "person", "benunit") > 0
+    return out
+
+
 @PROPERTY_SETTINGS
 @given(populations, st.sampled_from(YEARS))
 def test_income_from_capital_changes_no_legacy_means_test(units, year):
-    earnings_tax = [
-        "pension_credit_employment_income_tax",
-        "pension_credit_earnings_disregard",
+    disregards = sorted(set(EARNINGS_DISREGARDS.values()))
+    routes = [
+        "in_receipt_of_pension_credit",
+        "council_tax_reduction_universal_credit_award",
+        "housing_benefit_on_passporting_benefit",
     ]
-    variables = MEANS_TEST_INCOMES + AWARDS + earnings_tax
-    base = calculate(units, year, variables)
+    variables = MEANS_TEST_INCOMES + AWARDS + disregards + routes
+    base = calculate_with_taxes(units, year, variables)
     for scale in (0.0, 3.0):
-        scaled = calculate(units, year, variables, capital_income_scale=scale)
-        moved = {v: scaled[v] - base[v] for v in earnings_tax}
-        # Intended: income from capital reaches Pension Credit only through
-        # the tax the earnings cause on it (#2019, d1424).
-        steady = np.abs(moved["pension_credit_employment_income_tax"]) < 0.01
-        on_pension_credit = (base["pension_credit"] > 0) | (
-            scaled["pension_credit"] > 0
+        scaled = calculate_with_taxes(
+            units, year, variables, capital_income_scale=scale
         )
-        follows_pension_credit = {
-            "pension_credit_income": ~steady,
-            "pension_credit": ~steady,
-            "housing_benefit": ~steady & on_pension_credit,
-            "housing_benefit_applicable_income": ~steady & on_pension_credit,
-            "council_tax_benefit": ~steady & on_pension_credit,
-            "council_tax_reduction_applicable_income": ~steady & on_pension_credit,
+        moved = {
+            income: (scaled[f"tax:{income}"] - base[f"tax:{income}"])
+            + (scaled[EARNINGS_DISREGARDS[income]] - base[EARNINGS_DISREGARDS[income]])
+            for income in MEANS_TEST_INCOMES
         }
+        steady = np.all(
+            [np.abs(moved[income]) < 0.01 for income in MEANS_TEST_INCOMES], axis=0
+        )
+        # Without earnings, the tax each test deducts does not move.
+        assert np.all(steady[~base["earners"]])
+        # Where the deducted tax is steady, nothing moves.
         for v in MEANS_TEST_INCOMES + AWARDS:
-            compared = ~follows_pension_credit.get(v, np.zeros_like(steady))
             np.testing.assert_allclose(
-                scaled[v][compared],
-                base[v][compared],
+                scaled[v][steady],
+                base[v][steady],
                 atol=0.01,
                 err_msg=f"{v} at scale {scale}",
             )
-        # Where the tax on earnings moves, Pension Credit income moves by
-        # exactly minus that change and the disregard's, unless floored.
-        unfloored = (base["pension_credit_income"] > 0) & (
-            scaled["pension_credit_income"] > 0
+        # Intended exception (d1424): where earnings make it move, each
+        # means-test income moves by exactly minus that change, wherever
+        # neither run is floored and the test uses its own income rules.
+        pension_credit_route = (base["in_receipt_of_pension_credit"] > 0) | (
+            scaled["in_receipt_of_pension_credit"] > 0
         )
-        np.testing.assert_allclose(
-            (scaled["pension_credit_income"] - base["pension_credit_income"])[
-                unfloored
-            ],
-            -(
-                moved["pension_credit_employment_income_tax"]
-                + moved["pension_credit_earnings_disregard"]
-            )[unfloored],
-            atol=0.01,
-            err_msg=f"pension_credit_income decomposition at scale {scale}",
-        )
+        own_rules = {
+            "income_support_applicable_income": np.ones_like(steady),
+            "pension_credit_income": np.ones_like(steady),
+            "housing_benefit_applicable_income": ~pension_credit_route
+            & (base["housing_benefit_on_passporting_benefit"] == 0),
+            "council_tax_reduction_applicable_income": ~pension_credit_route
+            & (base["council_tax_reduction_universal_credit_award"] == 0),
+        }
+        for income in MEANS_TEST_INCOMES:
+            checked = (
+                ~steady & own_rules[income] & (base[income] > 0) & (scaled[income] > 0)
+            )
+            np.testing.assert_allclose(
+                (scaled[income] - base[income])[checked],
+                -moved[income][checked],
+                atol=0.01,
+                err_msg=f"{income} decomposition at scale {scale}",
+            )
 
 
 @PROPERTY_SETTINGS
@@ -256,7 +319,11 @@ def test_home_letting_rent_is_monotone(units, year, extra):
 def test_legacy_means_test_income_tax_bounds(units, year):
     variables = [
         "legacy_means_test_income_tax",
+        "legacy_means_test_deducted_income_tax",
+        "legacy_means_test_uncounted_income_tax_without_earnings",
         "income_tax",
+        "income_tax_before_winter_fuel_payment_charge",
+        "income_tax_charges",
         "earned_income_tax",
         "savings_income_tax",
         "dividend_income_tax",
@@ -271,15 +338,160 @@ def test_legacy_means_test_income_tax_bounds(units, year):
         v["savings_income_tax"] + v["dividend_income_tax"] + v["property_income_tax"]
     ) == 0
     np.testing.assert_allclose(tax[no_capital_tax], v["income_tax"][no_capital_tax])
-    without = calculate(
-        units,
-        year,
-        ["income_tax", "legacy_means_test_income_tax"],
-        capital_income_scale=0.0,
+
+    # The tax each test deducts.
+    deducted = v["legacy_means_test_deducted_income_tax"]
+    pre_charge = v["income_tax_before_winter_fuel_payment_charge"]
+    assert np.all(deducted >= -0.01)
+    assert np.all(deducted <= pre_charge + 0.01)
+    # Within the basic rate band, earnings never lower the tax on income
+    # from capital, so the deduction is never below the Step 4 split.
+    assert np.all(deducted >= tax - 0.01)
+
+    # Nobody has savings, dividend or property income: it is the pre-charge
+    # tax wherever no Step 7 charge applies.
+    without_capital = calculate(units, year, variables, capital_income_scale=0.0)
+    no_charge = without_capital["income_tax_charges"] == 0
+    np.testing.assert_allclose(
+        without_capital["legacy_means_test_deducted_income_tax"][no_charge],
+        without_capital["income_tax_before_winter_fuel_payment_charge"][no_charge],
+        atol=0.01,
     )
     np.testing.assert_allclose(
-        without["legacy_means_test_income_tax"], without["income_tax"], atol=0.01
+        without_capital["legacy_means_test_income_tax"],
+        without_capital["income_tax"],
+        atol=0.01,
     )
+
+
+@PROPERTY_SETTINGS
+@given(populations, st.sampled_from(YEARS))
+def test_deducted_tax_without_earnings_is_the_step_4_split(units, year):
+    no_earnings = [
+        dict(
+            unit,
+            members=[
+                (role, dict(attrs, employment_income=0.0) if role == "adult" else attrs)
+                for role, attrs in unit["members"]
+            ],
+        )
+        for unit in units
+    ]
+    v = calculate(
+        no_earnings,
+        year,
+        [
+            "legacy_means_test_income_tax",
+            "legacy_means_test_deducted_income_tax",
+            "income_tax_before_winter_fuel_payment_charge",
+        ],
+    )
+    # Equal unless the nil floor on the tax on uncounted income binds, where
+    # the Step 4 split exceeds the pre-charge tax and the deduction is the
+    # pre-charge tax.
+    np.testing.assert_allclose(
+        v["legacy_means_test_deducted_income_tax"],
+        np.minimum(
+            v["legacy_means_test_income_tax"],
+            v["income_tax_before_winter_fuel_payment_charge"],
+        ),
+        atol=0.01,
+    )
+    floor_binds = (
+        v["legacy_means_test_income_tax"]
+        > v["income_tax_before_winter_fuel_payment_charge"] + 0.01
+    )
+    np.testing.assert_allclose(
+        v["legacy_means_test_deducted_income_tax"][~floor_binds],
+        v["legacy_means_test_income_tax"][~floor_binds],
+        atol=0.01,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(populations, st.sampled_from(YEARS))
+def test_the_four_tests_deduct_the_same_income_tax(units, year):
+    """Income Support, Housing Benefit and the council tax reduction line
+    deduct, for each person they count, the income tax Pension Credit's tax
+    line deducts. Each test's income is recomputed with the person's income
+    tax raised by one pound and compared with the original, so the check
+    reads each formula rather than the shared variable. The families have no
+    self-employment income, where Pension Credit's notional tax applies."""
+    sim = Simulation(situation=situation(units, year))
+    people = sim.populations["person"].count
+    pension_credit_tax = np.asarray(
+        sim.calculate("income_tax_before_winter_fuel_payment_charge", year)
+    ) - np.asarray(
+        sim.calculate("legacy_means_test_uncounted_income_tax_without_earnings", year)
+    )
+    np.testing.assert_allclose(
+        np.asarray(sim.calculate("legacy_means_test_deducted_income_tax", year)),
+        pension_credit_tax,
+        atol=0.01,
+    )
+    # Each test's income responds one-for-one to the shared deduction for the
+    # members it counts, and not at all to the Step 4 split.
+    bumped = Simulation(situation=situation(units, year))
+    bumped.set_input(
+        "legacy_means_test_deducted_income_tax",
+        year,
+        np.asarray(sim.calculate("legacy_means_test_deducted_income_tax", year)) + 1.0,
+    )
+    split = Simulation(situation=situation(units, year))
+    split.set_input(
+        "legacy_means_test_income_tax",
+        year,
+        np.asarray(sim.calculate("legacy_means_test_income_tax", year)) + 1.0,
+    )
+    split.set_input(
+        "legacy_means_test_deducted_income_tax",
+        year,
+        np.asarray(sim.calculate("legacy_means_test_deducted_income_tax", year)),
+    )
+    assert people > 0
+    for income, members in TEST_MEMBERS.items():
+        base = np.asarray(sim.calculate(income, year), dtype=float)
+        counted = sim.map_result(
+            np.asarray(sim.calculate(members, year), dtype=float), "person", "benunit"
+        )
+        moved = np.asarray(bumped.calculate(income, year), dtype=float)
+        unfloored = (base > 1) & (moved > 0)
+        own_rules = (
+            np.asarray(sim.calculate("in_receipt_of_pension_credit", year)) == 0
+        ) | (income == "pension_credit_income")
+        if income == "housing_benefit_applicable_income":
+            own_rules &= (
+                np.asarray(
+                    sim.calculate("housing_benefit_on_passporting_benefit", year)
+                )
+                == 0
+            )
+        if income == "council_tax_reduction_applicable_income":
+            own_rules &= (
+                np.asarray(
+                    sim.calculate("council_tax_reduction_universal_credit_award", year)
+                )
+                == 0
+            )
+        checked = unfloored & own_rules
+        # The earnings disregard is capped at net earnings, so it can fall
+        # with them.
+        disregard = EARNINGS_DISREGARDS[income]
+        disregard_change = np.asarray(
+            bumped.calculate(disregard, year), dtype=float
+        ) - np.asarray(sim.calculate(disregard, year), dtype=float)
+        np.testing.assert_allclose(
+            (base - moved)[checked],
+            (counted + disregard_change)[checked],
+            atol=0.01,
+            err_msg=income,
+        )
+        np.testing.assert_allclose(
+            np.asarray(split.calculate(income, year), dtype=float),
+            base,
+            atol=0.01,
+            err_msg=f"{income} reads the Step 4 split",
+        )
 
 
 MAXIMUM_TARIFF_INCOME = 40 * 4.35 * 12

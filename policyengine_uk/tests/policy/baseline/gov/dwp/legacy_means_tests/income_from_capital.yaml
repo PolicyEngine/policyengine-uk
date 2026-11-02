@@ -15,13 +15,22 @@
 # s.783BH); personal savings allowance £1,000 for a basic-rate taxpayer;
 # dividend allowance £500; dividend ordinary rate 8.75% in 2025-26 and 10.75%
 # in 2026-27 (the model's rate); employee NI 8% above £12,570.
+#
+# The tax deducted (legacy_means_test_deducted_income_tax) is the income tax
+# before the winter fuel payment charge, less the tax the rent, interest and
+# dividends, and any Step 7 charge, would bear if nobody had earnings: earnings
+# carry the extra tax they cause, including what they add on income from
+# capital by using up the personal allowance or a band.
 
 - name: Income Support, lone parent with earnings and rent from a let property
   # Earnings 10,000 use 10,000 of the personal allowance, so the remaining
   # 2,570 goes against taxable rent of 5,200 - 1,000 = 4,200. Tax on rent:
-  # (4,200 - 2,570) x 20% = 326. Tax on earnings and NI: nil.
+  # (4,200 - 2,570) x 20% = 326. NI: nil. Without the earnings the rent is
+  # within the personal allowance and bears no tax, so the whole 326 is tax
+  # the earnings cause, and it is deducted.
   # Main counted the rent and deducted its tax: 10,000 + 5,200 - 326 - 1,040.
-  # The law counts neither: 10,000 - 1,040 (the £20 lone parent disregard).
+  # This counts the earnings net of the tax they cause, not the rent:
+  # 10,000 - 326 - 1,040 (the £20 lone parent disregard) = 8,634.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -44,15 +53,20 @@
     income_tax: [326, 0]
     property_income_tax: [326, 0]
     legacy_means_test_income_tax: [0, 0]
-    income_support_applicable_income: 8_960
+    legacy_means_test_uncounted_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [326, 0]
+    income_support_applicable_income: 8_634
 
-- name: Working-age Housing Benefit counts earnings net of the tax on them only
+- name: Working-age Housing Benefit counts earnings net of the tax they cause, not the rent, interest or dividends
   # Earnings 14,000: tax (14,000 - 12,570) x 20% = 286; NI (14,000 - 12,570)
   # x 8% = 114.40. Rent 6,000: tax (6,000 - 1,000) x 20% = 1,000. Interest 500
   # is within the personal savings allowance. Dividends 1,000: (1,000 - 500) x
-  # 8.75% = 43.75. Income tax 1,329.75, of which 286 is on counted income.
-  # Applicable income: 14,000 - 286 - 114.40 - 260 (the £5 weekly disregard,
-  # set as an input here) = 13,339.60.
+  # 8.75% = 43.75. Income tax 1,329.75, of which 286 is the Step 4 tax on
+  # counted income. Without the earnings, rent 5,000, interest 500 and
+  # dividends 1,000 total 6,500, within the personal allowance: no tax. So
+  # all 1,329.75 is tax the earnings cause, and it is deducted.
+  # Applicable income: 14,000 - 1,329.75 - 114.40 - 260 (the £5 weekly
+  # disregard, set as an input here) = 12,295.85.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -77,8 +91,10 @@
     dividend_income_tax: 43.75
     savings_income_tax: 0
     legacy_means_test_income_tax: 286
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 1_329.75
     national_insurance: 114.40
-    housing_benefit_applicable_income: 13_339.60
+    housing_benefit_applicable_income: 12_295.85
 
 - name: Pension-age Housing Benefit counts rent from part of the home less £20 a week, not rent from other property
   # State Pension 12,000 and private pension 2,000 use the personal allowance
@@ -208,7 +224,7 @@
   output:
     income_tax_before_winter_fuel_payment_charge: 4_899.75
     pension_credit_employment_income_tax: 2_368.375
-    pension_credit_uncounted_income_tax_without_earnings: 2_531.375
+    legacy_means_test_uncounted_income_tax_without_earnings: 2_531.375
     pension_credit_earnings_disregard: 260
     pension_credit_income: 19_371.625
 
@@ -243,7 +259,10 @@
   # SSI 2021/249 reg 57(1) lists unearned income in full; it includes the
   # assumed yield from capital (reg 63) but no head for actual rent or rent
   # from part of the home. Earnings 12,000 are below the personal allowance
-  # and the NI threshold, so applicable income is 12,000.
+  # and the NI threshold, but they use 12,000 of the allowance, leaving 570
+  # against the rent of 3,000: (3,000 - 570) x 19% (the Scottish starter
+  # rate) = 461.70. Without the earnings the rent bears no tax, so the 461.70
+  # is tax the earnings cause and is deducted: 12,000 - 461.70 = 11,538.30.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -262,12 +281,15 @@
         region: SCOTLAND
   output:
     legacy_means_test_income_tax: 0
-    council_tax_reduction_applicable_income: 12_000
+    legacy_means_test_deducted_income_tax: 461.70
+    council_tax_reduction_applicable_income: 11_538.30
 
 - name: Welsh working-age council tax reduction counts sub-tenant rent less £20, not other rent
   # WSI 2013/3029 Sch 6 para 27(5) treats income derived from capital as
-  # capital; Sch 9 para 26 disregards £20 a week of sub-tenant rent:
-  # 12,000 + (50 - 20) x 52 = 13,560.
+  # capital; Sch 9 para 26 disregards £20 a week of sub-tenant rent. The
+  # earnings use 12,000 of the personal allowance, so the rent of 3,000 bears
+  # (3,000 - 570) x 20% = 486, all caused by the earnings and deducted:
+  # 12,000 + (50 - 20) x 52 - 486 = 13,074.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -286,7 +308,8 @@
         region: WALES
   output:
     legacy_means_test_income_tax: 0
-    council_tax_reduction_applicable_income: 13_560
+    legacy_means_test_deducted_income_tax: 486
+    council_tax_reduction_applicable_income: 13_074
 
 - name: Sub-tenant rent below £20 a week is disregarded in full
   # 1,000 / 52 = 19.23 a week.
@@ -383,8 +406,11 @@
   # shares it in proportion to the Step 4 tax (a stated convention: a credit
   # for foreign tax on the rent would relieve only the rent, TIOPA 2010
   # s.18(2)): the rent's share is 1,000 x 1,000 / 1,286 = 777.60, leaving
-  # 222.40 of tax on rent. Income tax 286 less 222.40 = 63.60 is tax on the earnings,
-  # and HB applicable income is 14,000 - 63.60 - 114.40 (NI) - 260 = 13,562.00.
+  # 222.40 of tax on rent. Income tax 286 less 222.40 = 63.60 is the tax on
+  # counted income. Without the earnings the rent bears no tax, so all 286 is
+  # tax the earnings cause and is deducted: HB applicable income is
+  # 14,000 - 286 - 114.40 (NI) - 260 = 13,339.60. The sharing sets the tax
+  # deducted only without earnings (the next case).
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -405,7 +431,41 @@
   output:
     income_tax: 286
     legacy_means_test_income_tax: 63.605
-    housing_benefit_applicable_income: 13_561.995
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 286
+    housing_benefit_applicable_income: 13_339.60
+
+- name: Without earnings, the tax reductions shared with income from capital set the tax deducted
+  # The same Step 4 and Step 6 figures with a private pension of 14,000 in
+  # place of the earnings: 286 on the pension, 1,000 on the rent, a 1,000
+  # reduction shared pro rata, income tax 286. Nobody has earnings, so the
+  # tax on uncounted income is the 222.40 left on the rent, and the tax
+  # deducted is 286 - 222.40 = 63.60, the tax on counted income. A pension
+  # bears no NI. HB applicable income: 14,000 - 63.60 - 260 (the £5 weekly
+  # disregard, set as an input) = 13,676.40.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        private_pension_income: 14_000
+        property_income: 6_000
+        property_rental_income: 6_000
+        other_tax_credits: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: 286
+    legacy_means_test_income_tax: 63.605
+    legacy_means_test_uncounted_income_tax_without_earnings: 222.395
+    legacy_means_test_deducted_income_tax: 63.605
+    housing_benefit_applicable_income: 13_676.395
 
 - name: Step 7 charges are not tax on counted income
   # The High Income Child Benefit Charge is added at Step 7 of ITA 2007 s.23
@@ -502,11 +562,13 @@
 - name: Working-age Housing Benefit award with rent from a let property
   # A continuing award (2025-26). Earnings 10,000 use 10,000 of the personal
   # allowance; taxable rent 5,000 - 1,000 = 4,000, of which 4,000 - 2,570 =
-  # 1,430 is taxed: 286, all on rent, so none is deducted. NI is nil below
-  # 12,570. Applicable income: 10,000 - 260 (the £5 disregard, as an input) =
-  # 9,740. With the single 25-or-over personal allowance of £92.05 a week
-  # (4,786.60, an input here), HB = 6,000 - 65% x (9,740 - 4,786.60) =
-  # 6,000 - 3,219.71 = 2,780.29. Counting the rent would leave nothing.
+  # 1,430 is taxed: 286, all on rent. Without the earnings the rent bears no
+  # tax, so the 286 is tax the earnings cause and is deducted. NI is nil
+  # below 12,570. Applicable income: 10,000 - 286 - 260 (the £5 disregard, as
+  # an input) = 9,454. With the single 25-or-over personal allowance of
+  # £92.05 a week (4,786.60, an input here), HB = 6,000 - 65% x (9,454 -
+  # 4,786.60) = 6,000 - 3,033.81 = 2,966.19. Counting the rent would leave
+  # nothing.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -532,8 +594,9 @@
   output:
     property_income_tax: 286
     legacy_means_test_income_tax: 0
-    housing_benefit_applicable_income: 9_740
-    housing_benefit: 2_780.29
+    legacy_means_test_deducted_income_tax: 286
+    housing_benefit_applicable_income: 9_454
+    housing_benefit: 2_966.19
 
 - name: An English pensioner with a let property worth more than £16,000 gets no council tax reduction
   # The rent no longer counts as income, but the property counts as capital:
@@ -568,8 +631,10 @@
   # WSI 2013/3029 reg 30: no reduction where capital exceeds 16,000. The
   # property is valued less 10% for the expenses of sale (Sch 6 para 28(a)):
   # 45,000. Tariff income (Sch 6 para 33) counts capital up to 16,000:
-  # (16,000 - 6,000) / 250 = 40 a week, 2,080 a year, so income is 9,000 +
-  # 2,080 = 11,080.
+  # (16,000 - 6,000) / 250 = 40 a week, 2,080 a year. The earnings use 9,000
+  # of the personal allowance, so the rent of 5,200 bears (14,200 - 12,570)
+  # x 20% = 326, all caused by the earnings and deducted. Income is 9,000 -
+  # 326 + 2,080 = 10,754.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -595,7 +660,7 @@
   output:
     council_tax_reduction_assessable_capital: 45_000
     council_tax_reduction_tariff_income: 2_080
-    council_tax_reduction_applicable_income: 11_080
+    council_tax_reduction_applicable_income: 10_754
     council_tax_reduction: 0
 
 - name: A Scottish mixed-age couple on Universal Credit is under the working-age scheme
@@ -673,8 +738,11 @@
   # its value (WSI 2013/3029 Sch 6 para 28(a)): 9,000. Sch 6 para 33 treats it
   # as a weekly income of 1 for each 250, or part of 250, over 6,000: 12 a
   # week, 624 a year. Earnings 9,000 are below the personal allowance and the
-  # NI threshold. Income 9,000 + 624 = 9,624. With the applicable amount
-  # supplied as 6,000, CTR = 1,500 - 20% x (9,624 - 6,000) = 775.20.
+  # NI threshold, but they leave 3,570 of the allowance for the rent of
+  # 5,200, which bears (5,200 - 3,570) x 20% = 326. Without the earnings the
+  # rent bears no tax, so the 326 is deducted. Income 9,000 - 326 + 624 =
+  # 9,298. With the applicable amount supplied as 6,000, CTR = 1,500 - 20% x
+  # (9,298 - 6,000) = 840.40.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -701,14 +769,18 @@
   output:
     council_tax_reduction_assessable_capital: 9_000
     council_tax_reduction_tariff_income: 624
-    council_tax_reduction_applicable_income: 9_624
-    council_tax_reduction: 775.20
+    legacy_means_test_deducted_income_tax: 326
+    council_tax_reduction_applicable_income: 9_298
+    council_tax_reduction: 840.40
 
 - name: Scottish working-age assumed yield on a let property below the capital limit
   # SSI 2021/249 reg 70(1)(a) values the property less 10%: 9,000. Reg
   # 63(1)(b): a weekly income of 1 for each 250 over 6,000 and 1 for any part
   # of 250: 12 a week, 624 a year; reg 63(3) treats the actual rent as
-  # capital. CTR = 1,500 - 20% x (9,624 - 6,000) = 775.20.
+  # capital. The earnings leave 3,570 of the personal allowance for the rent
+  # of 5,200, which bears (5,200 - 3,570) x 19% (the Scottish starter rate) =
+  # 309.70, all caused by the earnings and deducted. Income 9,000 - 309.70 +
+  # 624 = 9,314.30. CTR = 1,500 - 20% x (9,314.30 - 6,000) = 837.14.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -735,8 +807,9 @@
   output:
     council_tax_reduction_assessable_capital: 9_000
     council_tax_reduction_tariff_income: 624
-    council_tax_reduction_applicable_income: 9_624
-    council_tax_reduction: 775.20
+    legacy_means_test_deducted_income_tax: 309.70
+    council_tax_reduction_applicable_income: 9_314.30
+    council_tax_reduction: 837.14
 
 - name: An English pensioner's let property valued less sale expenses stays within the limit
   # A 17,000 property is valued at 15,300 (SI 2012/2885 Sch 1 para 32(a)), so

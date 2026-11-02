@@ -105,8 +105,9 @@ def hb_income_before_deductions(benunit, period, parameters):
         * p.pension_contribution_deduction_rate
     )
     # Tax only on the income taken into account (HB Regs 2006 Sch 5 para 1;
-    # HB (SPC) Regs 2006 reg 33(12)), before the winter fuel payment charge.
-    TAX_COMPONENTS = ["legacy_means_test_income_tax", "national_insurance"]
+    # HB (SPC) Regs 2006 reg 33(12)), before the winter fuel payment charge,
+    # with earnings carrying the extra tax they cause.
+    TAX_COMPONENTS = ["legacy_means_test_deducted_income_tax", "national_insurance"]
     tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
     increased_income_reduced_by_tax_and_pensions = (
         increased_income - tax - pension_contributions
