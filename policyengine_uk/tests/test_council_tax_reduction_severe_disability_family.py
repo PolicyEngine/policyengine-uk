@@ -1,10 +1,11 @@
 """CTR family-mask input contracts, separate from derived eligibility tests.
 
 SSI 2021/249 regs 6 and 8(2)(a), Sch 1 para 13 retain an applicant's
-UC young person in their family. These finite grids deliberately supply the
-two young-person statuses to exercise both directions independently of the
-upstream eligibility rules. The policy YAML uses school/course inputs and
-the annual terminal-date input, plus actual PIP, pension and council tax.
+young person under UC Regs 2013 reg. 5 in their family. These finite grids
+deliberately supply the two young-person statuses to exercise both directions
+independently of the upstream eligibility rules. The policy YAML uses
+school/course inputs and the annual terminal-date input, plus actual PIP,
+pension and council tax.
 
 Looked-after and other-benefit-unit treatment remains the existing model
 baseline, not a certification of reg 8(2)(b) and its paragraph (3) overrides.
@@ -31,7 +32,9 @@ def input_grid(rows, country="SCOTLAND", year=2026, applicant_age=45):
             "age": row.get("age", 19),
             "is_claimant_or_partner": False,
             "is_child_or_qualifying_young_person_for_child_benefit": row["cb"],
-            "is_qualifying_young_person_for_universal_credit": row["uc"],
+            # SSI 2021/249 reg. 6(1) reads UC Regs reg. 5, without SI
+            # 2014/1230 reg. 28.
+            "is_qualifying_young_person_under_universal_credit_regulation_5": row["uc"],
             "is_looked_after_by_local_authority": row.get("looked_after", False),
             "is_blind": row.get("blind", False),
             "pip_dl_category": "STANDARD" if row.get("benefit", False) else "NONE",
