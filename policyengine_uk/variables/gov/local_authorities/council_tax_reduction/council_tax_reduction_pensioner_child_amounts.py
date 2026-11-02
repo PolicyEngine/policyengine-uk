@@ -61,8 +61,9 @@ class council_tax_reduction_pensioner_child_amounts(Variable):
             # HMRC may award it at a nil rate (TCA 2002 s.14(3)). We count a
             # positive final child_tax_credit, worked out or entered, as an
             # award, and also the claim and eligibility that the model reads
-            # from reports, whatever amount is payable. As in has_tax_credit_award, we infer
-            # no award from reports once HMRC stops paying awards.
+            # from reports, whatever amount is payable. As in
+            # has_tax_credit_award, we infer no award from reports once HMRC
+            # stops paying awards.
             child_tax_credit_award = benunit("child_tax_credit", period) > 0
             if parameters(period).gov.dwp.tax_credits.active:
                 child_tax_credit_award = child_tax_credit_award | (

@@ -19,9 +19,9 @@ pensioners claim no Pension Credit, so capital cannot move them onto a
 Pension Credit route. Off those routes both can move. For a
 savings-credit-only pensioner, councils use the Secretary of State's
 assessment, which includes Pension Credit's deemed income from capital, so
-capital can raise their applicable income. A mixed-age couple who gain a child, and so start to receive
-Universal Credit, move to the working-age scheme, whose applicable amount can
-be lower.
+capital can raise their applicable income. A mixed-age couple who gain a
+child, and so start to receive Universal Credit, move to the working-age
+scheme, whose applicable amount can be lower.
 
 1. For a pensioner off Pension Credit, tariff income is 52 times £1 for each
    £500, or part of £500, of capital above £10,000 (up to £16,000 in England
