@@ -363,9 +363,10 @@
         would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
-    # Childcare deducted is min(£4,160, one-child maximum) = £4,160.
-    # £5,200 < £1,300 + £4,160 + £889.20 = £6,349.20, so only £25 a week.
-    housing_benefit_applicable_income_childcare_element: 4_160
+    # Reg 27(1)(c): after the £1,300 standard disregard, only £3,900 of
+    # earnings remain. With no tax credits, min(£4,160, £3,900) = £3,900.
+    # £5,200 < £1,300 + £3,900 + £889.20 = £6,089.20, so only £25 a week.
+    housing_benefit_applicable_income_childcare_element: 3_900
     housing_benefit_applicable_income_disregard: 1_300
 
 - name: Lone parent whose earnings cover the disregards and childcare gets the additional disregard

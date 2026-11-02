@@ -1213,7 +1213,7 @@ def test_prior_law_that_never_settles_is_an_error(monkeypatch):
 
     calls = {"n": 0}
 
-    def unsettled(tree, unreformed=None, annualise=True, generated=None):
+    def unsettled(tree, unreformed=None, annualise=True, generated=None, enacted=None):
         calls["n"] += 1
         entry = ParameterAtInstant(
             UC_SINGLE_OLD, "2026-04-01", data={"value": float(calls["n"])}

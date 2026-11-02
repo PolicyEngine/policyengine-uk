@@ -65,7 +65,11 @@ def test_lisa_bonus_and_charge_reach_only_their_declared_fiscal_totals():
 
 
 def test_noncash_isa_interest_charge_reaches_tax_and_final_current_income_once():
-    """From fiscal2027,100 of ISA interest gives22 tax and78 net income."""
+    """From fiscal 2027, 100 of ISA interest gives 24 tax and 76 net income.
+
+    The charge is at the savings basic rate in force for the year (SI
+    2026/1018 reg. 15, new reg. 22A(3)), 24% from 2027-28 after Budget 2026.
+    """
     situation = {
         "people": {
             "person": {
@@ -83,16 +87,16 @@ def test_noncash_isa_interest_charge_reaches_tax_and_final_current_income_once()
     baseline = Simulation(situation=situation)
     changed = Simulation(situation=with_return)
     assert changed.calculate("isa_cash_interest_flat_rate_charge", 2027).tolist() == [
-        22
+        24
     ]
     for variable, expected in (
         ("market_income", 100),
         ("capital_income", 100),
         ("household_market_income", 100),
-        ("gov_tax", 22),
-        ("household_tax", 22),
-        ("household_net_income", 78),
-        ("hbai_household_net_income", 78),
+        ("gov_tax", 24),
+        ("household_tax", 24),
+        ("household_net_income", 76),
+        ("hbai_household_net_income", 76),
         ("income_tax", 0),
     ):
         difference = changed.calculate(variable, 2027) - baseline.calculate(

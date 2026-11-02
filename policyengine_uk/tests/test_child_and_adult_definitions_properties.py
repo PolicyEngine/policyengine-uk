@@ -44,6 +44,13 @@ Invariants:
    claimant's child either way (the any-age gap).
    Before/after families share one Simulation to avoid repeated
    model construction, but occupy distinct households and benefit units.
+5. Supplied claimant/partner role vectors, valid or not, are returned
+   unchanged on any benefit unit. Widening an unflagged member's gap below
+   the claimant, with the claimant, flags, other members and HBAI adulthood
+   fixed, never makes a member the presumption excludes the partner.
+   Identified parents take priority over the presumption; no other presumed
+   child is a claimant or partner. The two-other-parents exception to the
+   head being the claimant is kept.
 
 Scope: these are tests of the ENCODED statutory limbs, not full entitlement.
 Education status proxies full-time non-advanced study: hours, employment
@@ -249,21 +256,36 @@ def claimants_or_partners(family, any_age_gap=20):
     # couple instead. Age ties go to the earlier member. any_age_gap=None is
     # the rule without the any-age gap, kept for the differential test.
     n = len(family)
-    adult = [not hbai_dependent_child(p, family) for p in family]
-    ages = [p["age"] for p in family]
-    heads = [i for i in range(n) if family[i]["is_benunit_head"] and adult[i]]
-    adults = [i for i in range(n) if adult[i]]
-    if not adults:
+    claimant, adult, presumed = presumption(family, any_age_gap)
+    if claimant is None:
         return [False] * n
-    pool = heads or adults
-    claimant = max(pool, key=lambda i: (ages[i], -i))
+    ages = [p["age"] for p in family]
     parent = [adult[i] and family[i]["is_parent"] for i in range(n)]
     other_parents = [i for i in range(n) if parent[i] and i != claimant]
     if len(other_parents) >= 2 and not parent[claimant]:
         couple = sorted(other_parents, key=lambda i: (-ages[i], i))[:2]
         return [i in couple for i in range(n)]
+    pool = other_parents or [
+        i for i in range(n) if adult[i] and i != claimant and not presumed[i]
+    ]
+    partner = max(pool, key=lambda i: (ages[i], -i)) if pool else None
+    return [i == claimant or i == partner for i in range(n)]
+
+
+def presumption(family, any_age_gap=20):
+    # The reference claimant (None without an HBAI adult), HBAI adulthood and
+    # the members presumed to be the claimant's child, before identified
+    # parents take priority.
+    n = len(family)
+    adult = [not hbai_dependent_child(p, family) for p in family]
+    ages = [p["age"] for p in family]
+    heads = [i for i in range(n) if family[i]["is_benunit_head"] and adult[i]]
+    adults = [i for i in range(n) if adult[i]]
+    if not adults:
+        return None, adult, [False] * n
+    claimant = max(heads or adults, key=lambda i: (ages[i], -i))
     young_child = any(ages[j] < 20 and ages[claimant] - ages[j] >= 16 for j in range(n))
-    flag_unexplained = parent[claimant] and not young_child
+    flag_unexplained = family[claimant]["is_parent"] and not young_child
 
     def presumed_child(i):
         gap = ages[claimant] - ages[i]
@@ -271,11 +293,7 @@ def claimants_or_partners(family, any_age_gap=20):
             return True
         return (ages[i] < 20 or flag_unexplained) and gap >= 16
 
-    pool = other_parents or [
-        i for i in adults if i != claimant and not presumed_child(i)
-    ]
-    partner = max(pool, key=lambda i: (ages[i], -i)) if pool else None
-    return [i == claimant or i == partner for i in range(n)]
+    return claimant, adult, [presumed_child(i) for i in range(n)]
 
 
 def legacy_child_or_young_person(p, claimant):
@@ -992,3 +1010,88 @@ def test_wide_gap_couples_by_head_order_and_with_supplied_roles():
     supplied = simulate(families)
     supplied.set_input("is_claimant_or_partner", YEAR, [True] * 4)
     np.testing.assert_array_equal(supplied.calculate("is_couple", YEAR), [True] * 2)
+
+
+@PROPERTY_SETTINGS
+@given(arbitrary_benefit_units(), st.data())
+def test_supplied_roles_are_returned_unchanged(families, data):
+    # Any Boolean role vector, valid or not, on any benefit unit: a supplied
+    # is_claimant_or_partner is an input, so the model never recomputes it.
+    size = sum(map(len, families))
+    roles = data.draw(st.lists(st.booleans(), min_size=size, max_size=size))
+    sim = simulate(families)
+    sim.set_input("is_claimant_or_partner", YEAR, roles)
+    assert_values(sim, "is_claimant_or_partner", roles)
+
+
+@st.composite
+def widened_gap_pairs(draw):
+    # An adult head (the claimant), flagged or not, an unflagged member aged
+    # 20+ at least 16 years younger, and any other members. The pair is the
+    # unit before and after the member is made younger, holding everything
+    # else fixed.
+    pairs = []
+    for _ in range(draw(st.integers(1, 8))):
+        claimant_age = draw(st.integers(36, 90))
+        family = [
+            person(claimant_age, is_parent=draw(st.booleans()), is_benunit_head=True)
+        ]
+        for _ in range(draw(st.integers(0, 3))):
+            family.append(
+                person(
+                    draw(st.integers(0, claimant_age)),
+                    current_education=draw(st.sampled_from(EDUCATIONS)),
+                    is_in_approved_training=draw(st.booleans()),
+                    is_parent=draw(st.booleans()),
+                )
+            )
+        j = draw(st.integers(1, len(family)))
+        age = draw(st.integers(20, claimant_age - 16))
+        family.insert(j, person(age))
+        younger = [dict(p) for p in family]
+        younger[j]["age"] = draw(st.integers(0, age - 1))
+        pairs.append((family, younger, j))
+    return pairs
+
+
+@PROPERTY_SETTINGS
+@given(widened_gap_pairs())
+def test_a_wider_gap_never_makes_a_presumed_child_the_partner(pairs):
+    # Metamorphic: an unflagged member made younger, so their gap below the
+    # claimant widens, with the claimant, every flag, every other member and
+    # everyone's HBAI adulthood fixed. A member the presumption excludes from
+    # the partner pool stays excluded, so never becomes the partner. The
+    # two-other-parents exception is not asserted away: it never selects an
+    # unflagged member either.
+    cases = []
+    for family, younger, j in pairs:
+        before, after = presumption(family), presumption(younger)
+        held = before[0] == after[0] == 0 and before[1] == after[1]
+        if held and before[2][j]:
+            cases.append((family, younger, j))
+    if not cases:
+        return
+    combined = [unit for family, younger, _ in cases for unit in (family, younger)]
+    roles = simulate(combined).calculate("is_claimant_or_partner", YEAR)
+    offset = 0
+    for family, younger, j in cases:
+        assert presumption(younger)[2][j]
+        assert not roles[offset + j], family
+        assert not roles[offset + len(family) + j], younger
+        offset += 2 * len(family)
+
+
+@PROPERTY_SETTINGS
+@given(arbitrary_benefit_units())
+def test_effective_children_and_partners_are_disjoint(families):
+    # An identified parent (an HBAI adult flagged is_parent) takes priority
+    # over the presumption. Every other presumed child is an effective child,
+    # and no effective child is ever the partner (nor the claimant).
+    roles = simulate(families).calculate("is_claimant_or_partner", YEAR)
+    offset = 0
+    for family in families:
+        _, adult, presumed = presumption(family)
+        for i, p in enumerate(family):
+            effective_child = presumed[i] and not (adult[i] and p["is_parent"])
+            assert not (effective_child and roles[offset + i]), family
+        offset += len(family)

@@ -3,10 +3,17 @@ from policyengine_uk.model_api import *
 
 class cash_isa(Variable):
     label = "cash ISA holdings"
-    documentation = "Amount held in cash Individual Savings Accounts"
+    documentation = (
+        "Amount held in cash Individual Savings Accounts: cash_isa_balance "
+        "summed over the household's members. A dataset that stores this "
+        "column keeps the stored value, and projects it with savings: it is "
+        "recomputed only when not stored, so a reform or situation that edits "
+        "cash_isa_balance leaves a stored total unchanged. A household input "
+        "is used for the year it is given for only."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
     quantity_type = STOCK
+    adds = ["cash_isa_balance"]

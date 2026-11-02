@@ -482,7 +482,10 @@ def make_receipts_xlsx(
     northern_ireland_label: str = "Northern Ireland business rates",
     outturn_years: int = 1,
     sdlt_rows: list[tuple[str, tuple]] | None = None,
+    chapter: int = 3,
 ) -> bytes:
+    """Receipts tables numbered in ``chapter``: 3 to March 2026, 4 from
+    October 2026."""
     levels = levels or RECEIPTS_LEVELS
     sheet_318 = make_sheet({2: [make_inline_cell("B2", "Other table")]})
     sheet_319 = make_sheet(
@@ -515,11 +518,11 @@ def make_receipts_xlsx(
                     )
                 ],
                 # The contents list names tables but holds none of their rows.
-                6: [make_inline_cell("B6", "3.2 Other taxes")],
+                6: [make_inline_cell("B6", f"{chapter}.2 Other taxes")],
             }
         )
-    sheets["3.2"] = receipts_table(
-        "3.2 Other taxes",
+    sheets[f"{chapter}.2"] = receipts_table(
+        f"{chapter}.2 Other taxes",
         first_year,
         [
             (
@@ -531,8 +534,8 @@ def make_receipts_xlsx(
         ],
         outturn_years=outturn_years,
     )
-    sheets["3.7"] = receipts_table(
-        "3.7 Property transactions taxes: Receipts by sector",
+    sheets[f"{chapter}.7"] = receipts_table(
+        f"{chapter}.7 Property transactions taxes: Receipts by sector",
         first_year,
         sdlt_rows
         if sdlt_rows is not None
@@ -551,8 +554,8 @@ def make_receipts_xlsx(
     )
     # An accrued table with a "Business rates" row of its own, which the
     # cash-basis series must not read.
-    sheets["3.5"] = receipts_table(
-        "3.5 Current receipts (on an accrued basis)",
+    sheets[f"{chapter}.5"] = receipts_table(
+        f"{chapter}.5 Current receipts (on an accrued basis)",
         first_year,
         [("Business rates", (99.0,) * len(levels["great_britain"]))],
         outturn_years=outturn_years,
@@ -568,8 +571,8 @@ def make_receipts_xlsx(
         first_column=4,
         outturn_years=outturn_years,
     )
-    sheets["3.18"] = sheet_318
-    sheets["3.19"] = sheet_319
+    sheets[f"{chapter}.18"] = sheet_318
+    sheets[f"{chapter}.19"] = sheet_319
     return make_workbook(sheets)
 
 
@@ -1411,31 +1414,46 @@ def test_rendered_growth_compounds_the_published_levels(years, data):
     assert render(rendered, current=current, previous=previous) == rendered
 
 
-# Published OBR receipts levels as the workbooks hold them (£bn): the March
-# 2026 EFO from 2024-25 and the March 2025 EFO from 2023-24.
+# Published OBR receipts levels as the workbooks hold them (£bn): the October
+# 2026 EFO from 2025-26 and the March 2026 EFO from 2024-25.
+OCTOBER_2026_RECEIPTS = {
+    "residential": ("11.55444496305409", "11.598497804863152", "12.81121827423391", "14.275385542155488", "15.523034837312446", "16.708206755202507", "17.97120998332108"),
+    "non_residential": ("3.6048001541859174", "3.4392848579522055", "4.060008995487192", "4.6692547224804075", "4.8746831796154595", "5.306606478148783", "5.725680069577546"),
+    "great_britain": ("33.929814327646056", "35.43608032863263", "37.21735218338801", "38.66510919685915", "41.462982206056644", "42.42035811098974", "43.447399285510656"),
+    "northern_ireland": ("0.3955394050104385", "0.40595301023058955", "0.414556055466312", "0.4226801104356366", "0.43095512116333085", "0.4394491849889923", "0.44783993918412923"),
+}  # fmt: skip
 MARCH_2026_RECEIPTS = {
     "residential": ("10.379999999999999", "11.731471524432562", "13.428906667032589", "14.984943814530874", "16.673948133476184", "17.964513468126285", "19.057301113969185"),
     "non_residential": ("3.5049999999999999", "3.6750451743530199", "4.72127759316189", "5.3288288104799904", "5.9009139798817092", "6.5330695355310402", "7.1046581772762902"),
     "great_britain": ("32.376814327646052", "34.051963932489258", "37.413586572144581", "38.240930947824609", "39.111850954748434", "42.419067764546902", "42.463193622519263"),
     "northern_ireland": ("0.38233350730688931", "0.39471664406441903", "0.40263364127921164", "0.41045270712298504", "0.41810894612429189", "0.42590403232705243", "0.43449009714292341"),
 }  # fmt: skip
-MARCH_2025_RECEIPTS = {
-    "residential": ("8.57", "10.067621905140079", "11.260655778417849", "13.448356441943533", "15.629462727222798", "17.837320625934193", "19.309303893346414"),
-    "non_residential": ("3.0449999999999999", "3.51897590165244", "2.8597545561212101", "3.7329253327014698", "4.2294622915006306", "4.6980571035732099", "5.2115072362568595"),
-    "great_britain": ("29.599814327646055", "32.080747417794186", "34.009749097370083", "37.622908483210999", "37.878733699384433", "38.522006059307493", "39.56809170547703"),
-    "northern_ireland": ("0.37029404557706441", "0.38436854999535813", "0.39453673994468591", "0.40107161940999719", "0.40924102844267779", "0.41720986951771938", "0.42505803014305893"),
-}  # fmt: skip
 
 
-def test_march_2026_tables_reproduce_the_committed_series():
-    """yoy_growth.yaml holds exactly what the importer writes from the March
-    2026 receipts tables (Tables 3.7, 3.8 and 3.2) and the March 2025 ones
-    (3.7, 3.9 and 3.2): rerunning it on the committed file changes nothing."""
+def test_october_2026_tables_reproduce_the_committed_series():
+    """yoy_growth.yaml holds exactly what the importer writes from the
+    October 2026 receipts tables (Tables 4.7, 4.8 and 4.2) and the March 2026
+    ones (3.7, 3.8 and 3.2): rerunning it on the committed file changes
+    nothing."""
     committed = get_yoy_growth_path().read_text()
     rendered = render(
         committed,
-        current=make_receipts_xlsx(levels=MARCH_2026_RECEIPTS),
-        previous=make_previous_receipts_xlsx(levels=MARCH_2025_RECEIPTS),
+        current=make_receipts_xlsx(
+            release="October 2026",
+            first_year=2025,
+            levels=OCTOBER_2026_RECEIPTS,
+            cash_table="4.8",
+            chapter=4,
+        ),
+        previous=make_previous_receipts_xlsx(
+            release="March 2026",
+            first_year=2024,
+            levels=MARCH_2026_RECEIPTS,
+            cash_table="3.8",
+            northern_ireland_label="Northern Ireland business rates",
+        ),
+        release=("October", 2026),
+        previous_release=("March", 2026),
     )
     assert rendered == committed
 
@@ -1445,6 +1463,10 @@ REAL_RECEIPTS = {
     year: (REAL_RECEIPTS_DIR / f"obr_efo_march_{year}_receipts.xlsx").read_bytes()
     for year in (2025, 2026)
 }
+REAL_OCTOBER_2026_RECEIPTS = (
+    REAL_RECEIPTS_DIR / "obr_efo_october_2026_receipts.xlsx"
+).read_bytes()
+COMMITTED_RELEASES = {"release": ("October", 2026), "previous_release": ("March", 2026)}
 XLSX_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 XLSX_NS = {"m": XLSX_MAIN}
 
@@ -1462,7 +1484,7 @@ def mutate_real_receipts(workbook, table, unit, scale=1):
             for node in ET.fromstring(source.read("xl/sharedStrings.xml"))
         ]
         sheet = ET.fromstring(source.read(path))
-        first_column = "D" if table in ("3.8", "3.9") else "C"
+        first_column = "D" if table in ("3.8", "3.9", "4.8") else "C"
         cell = sheet.find(f"m:sheetData/m:row/m:c[@r='{first_column}3']", XLSX_NS)
         cell.clear()
         cell.attrib.update(r=f"{first_column}3", t="inlineStr")
@@ -1489,9 +1511,19 @@ def mutate_real_receipts(workbook, table, unit, scale=1):
 def test_real_receipts_workbooks_reproduce_committed_yaml_byte_for_byte():
     committed = get_yoy_growth_path().read_bytes()
     rendered = render(
-        committed.decode(), current=REAL_RECEIPTS[2026], previous=REAL_RECEIPTS[2025]
+        committed.decode(),
+        current=REAL_OCTOBER_2026_RECEIPTS,
+        previous=REAL_RECEIPTS[2026],
+        **COMMITTED_RELEASES,
     )
     assert rendered.encode() == committed
+
+
+def test_october_2026_cash_receipts_cite_the_sheet_not_the_misprinted_title():
+    # The October 2026 workbook titles sheet 4.8 "43.8 Current receipts (on a
+    # cash basis)"; its contents sheet and sheet name say 4.8.
+    growth = compute_receipts_growth(REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026])
+    assert growth[("business_rates", "great_britain")].line.table == "4.8"
 
 
 @pytest.mark.parametrize(
@@ -1544,8 +1576,9 @@ def test_explicit_billion_unit_aliases_preserve_the_real_workbook_output(unit):
     assert (
         render(
             get_yoy_growth_path().read_text(),
-            current=mutate_real_receipts(REAL_RECEIPTS[2026], "3.8", unit),
-            previous=mutate_real_receipts(REAL_RECEIPTS[2025], "3.9", unit),
+            current=mutate_real_receipts(REAL_OCTOBER_2026_RECEIPTS, "4.8", unit),
+            previous=mutate_real_receipts(REAL_RECEIPTS[2026], "3.8", unit),
+            **COMMITTED_RELEASES,
         ).encode()
         == get_yoy_growth_path().read_bytes()
     )

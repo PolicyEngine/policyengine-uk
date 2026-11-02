@@ -5,7 +5,7 @@ class lifetime_isa_payments(Variable):
     value_type = float
     entity = Person
     label = "Lifetime ISA qualifying payments"
-    documentation = "Current-year qualifying additions to a Lifetime ISA, including qualifying transfers from other ISA types. Exclude bonuses, interest and growth, Lifetime-ISA-to-Lifetime-ISA transfers, returned failed-purchase withdrawals, defaulted payments and rebated fees. Contributions at ages 40 to 49 assume an account first funded before age 40. Annual age and payment timing are approximations."
+    documentation = "Current-year qualifying additions to a Lifetime ISA, including qualifying transfers from other ISA types. Exclude bonuses, interest and growth, Lifetime-ISA-to-Lifetime-ISA transfers, returned failed-purchase withdrawals, repayments of a withdrawal charge under Schedule paragraph 10A (from 29 October 2026), defaulted payments and rebated fees. Contributions at ages 40 to 49 assume an account first funded before age 40. Annual age and payment timing are approximations."
     definition_period = YEAR
     unit = GBP
     quantity_type = FLOW

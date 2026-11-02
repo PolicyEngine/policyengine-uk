@@ -41,10 +41,11 @@
         members: [person1]
         country: ENGLAND
   output:
-    household_benefits: 156.65 * 52
+    # Plus the £100 Household Energy Payment: band D (the default) in England.
+    household_benefits: 156.65 * 52 + 100
     hbai_benefits: 156.65 * 52
-    gov_spending: 156.65 * 52
-    pre_budget_change_household_benefits: 156.65 * 52
+    gov_spending: 156.65 * 52 + 100
+    pre_budget_change_household_benefits: 156.65 * 52 + 100
     # 8,145.80 is below the personal allowance.
     income_tax: 0
 
@@ -95,9 +96,11 @@
         members: [parent, child]
         country: ENGLAND
   output:
-    # IS Regs 1987 Sch 9 para 16(h), then the model's £20 lone parent
-    # disregard.
-    income_support_applicable_income: (156.65 - 10 - 20) * 52
+    # IS Regs 1987 Sch 9 para 16(h): (£156.65 - £10) x 52 = £7,625.80.
+    # With no earnings, no Schedule 8 disregard applies to the allowance.
+    income_support_net_earnings: 0
+    income_support_earnings_disregard: 0
+    income_support_applicable_income: (156.65 - 10) * 52
 
 - name: Widowed Parent's Allowance overlaps with Carer's Allowance
   period: 2026

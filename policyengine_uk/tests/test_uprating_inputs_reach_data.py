@@ -52,7 +52,7 @@ UNMAPPED_INDEX = "gov.economic_assumptions.indices.obr.average_earnings"
 PERSONAL_ALLOWANCE = "gov.hmrc.income_tax.allowances.personal_allowance.amount"
 HF_URL = "hf://policyengine/policyengine-uk-data-private/mock_frs_2025_26.h5"
 GCS_URL = "gs://policyengine-uk-data-private/mock_frs_2025_26.h5"
-CURRENT_LAW_2027 = 0.024  # yoy_growth.obr.average_earnings for 2027
+CURRENT_LAW_2027 = 0.0299  # yoy_growth.obr.average_earnings for 2027
 
 PROPERTY_SETTINGS = settings(
     max_examples=8,

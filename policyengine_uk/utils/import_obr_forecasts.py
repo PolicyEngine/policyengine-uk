@@ -586,6 +586,7 @@ def update_forecast_gap_yaml(
 
 
 TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
+TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
 
@@ -844,6 +845,12 @@ def find_receipts_line(
     ordered = sorted(levels)
     if ordered != list(range(ordered[0], ordered[-1] + 1)):
         raise ValueError(f"{where} skips a year: {ordered}")
+    # The sheet name and the contents sheet number each table too, so a sheet
+    # named as a table number gives the table's number, whatever its title
+    # cell says: October 2026 titles sheet 4.8 "43.8 Current receipts (on a
+    # cash basis)".
+    if TABLE_NUMBER_RE.fullmatch(sheet):
+        table = sheet
     return ReceiptsLine(
         table=table,
         label=FOOTNOTE_RE.sub("", " ".join(str(label).split())),

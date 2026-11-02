@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.household_subset import household_subset
 
 # Inputs to income tax that do not depend on how property profits are
 # computed. Resolving them before branching lets both branches reuse them.
@@ -83,23 +84,27 @@ def ceiling_bounds_the_charge(simulation, period):
     return True
 
 
-def with_route(simulation, name, period, uses_allowance, variables):
+def with_route(households, name, period, uses_allowance, variables):
     """Each person's values of the variables with the given choices of
-    property allowance.
+    property allowance, worked out in a branch of the households subset
+    (utils.household_subset), and nil for the people it leaves out.
 
     A route can change the person's total income, which is after the
     property allowance, and their Pension Credit, and so whether the winter
     fuel payment charge applies (s.681I(1)(b) and (4)). The branch shares the
-    simulation's cached arrays until it writes, and is dropped afterwards so
+    subset's cached arrays until it writes, and is dropped afterwards so
     a later period starts from a fresh branch.
     """
+    simulation = households.simulation
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
     branch = simulation.get_branch(name)
     try:
-        branch.set_input("uses_property_allowance", period, uses_allowance)
+        branch.set_input(
+            "uses_property_allowance", period, households.take(uses_allowance)
+        )
         person = branch.populations["person"]
-        return [person(variable, period) for variable in variables]
+        return [households.expand(person(variable, period)) for variable in variables]
     finally:
         del simulation.branches[name]
 
@@ -208,80 +213,89 @@ class uses_property_allowance(Variable):
         changed = np.zeros(person.count, dtype=bool)
         done = deciders == 0
         bounded = ceiling_bounds_the_charge(simulation, period)
-        while not done.all():
-            deciding = choosing & ~done & (order == rank)
-            using = route | deciding
-            not_using = route & ~deciding
-            if bounded:
-                tax_using, most_charge_using = with_route(
-                    simulation, "property_allowance_used", period, using, BEFORE_CHARGE
-                )
-                tax_not_using, most_charge_not_using = with_route(
-                    simulation,
-                    "property_allowance_not_used",
-                    period,
-                    not_using,
-                    BEFORE_CHARGE,
-                )
-                # On each route the charge is between nothing and its
-                # ceiling, so the allowance saves at least the saving before
-                # the charge less the ceiling using it, and at most that
-                # saving plus the ceiling not using it. Where those bounds
-                # share a sign, beyond a penny and float32 rounding, the
-                # choice is the one tax including the charge gives.
-                saving = tax_not_using - tax_using
-                rounding = 0.01 + 1e-6 * (abs(tax_using) + abs(tax_not_using))
-                unsettled = (
-                    deciding
-                    & ((most_charge_using > 0) | (most_charge_not_using > 0))
-                    & (saving - most_charge_using < rounding)
-                    & (saving + most_charge_not_using > -rounding)
-                )
-            else:
-                # Nothing bounds the charge: every choice turns on it.
-                most_charge_using = most_charge_not_using = np.full(
-                    person.count, np.inf
-                )
-                unsettled = deciding
-            if (deciding & ~unsettled).any():
-                # The rest wait, and their households with them, until no
-                # household can decide without the charge.
-                deciding = deciding & ~unsettled
-            else:
-                # Every household's next decision turns on the charge:
-                # compare them all on income tax including it, worked out on
-                # each route where some ceiling is above nothing (where it is
-                # nothing, so is the charge, and tax before it is the tax).
-                if (unsettled & (most_charge_using > 0)).any():
-                    (tax_using,) = with_route(
-                        simulation,
+        # The comparisons concern only the households with someone choosing,
+        # so they run in a branch holding only those households.
+        with household_subset(
+            simulation, "property_allowance_households", choosing
+        ) as households:
+            while not done.all():
+                deciding = choosing & ~done & (order == rank)
+                using = route | deciding
+                not_using = route & ~deciding
+                if bounded:
+                    tax_using, most_charge_using = with_route(
+                        households,
                         "property_allowance_used",
                         period,
                         using,
-                        ["income_tax"],
+                        BEFORE_CHARGE,
                     )
-                if (unsettled & (most_charge_not_using > 0)).any():
-                    (tax_not_using,) = with_route(
-                        simulation,
+                    tax_not_using, most_charge_not_using = with_route(
+                        households,
                         "property_allowance_not_used",
                         period,
                         not_using,
-                        ["income_tax"],
+                        BEFORE_CHARGE,
                     )
-            # Tax is computed to the penny; smaller differences are rounding.
-            saving = np.round(tax_not_using - tax_using, 2)
-            prefers_allowance = where(full_relief, saving >= 0, saving > 0)
-            decided = where(deciding, prefers_allowance, route)
-            changed = changed | person.household.any(decided != route)
-            route = decided
-            # Each household that decided moves to its next decider, and at
-            # the end of a round to another round or to its settled routes.
-            moved = person.household.any(deciding)
-            rank = where(moved, rank + 1, rank)
-            round_over = moved & (rank == deciders)
-            again = round_over & changed & (deciders > 1) & (rounds < MAX_ROUNDS)
-            done = done | (round_over & ~again)
-            rank = where(again, 0, rank)
-            rounds = where(again, rounds + 1, rounds)
-            changed = changed & ~round_over
+                    # On each route the charge is between nothing and its
+                    # ceiling, so the allowance saves at least the saving before
+                    # the charge less the ceiling using it, and at most that
+                    # saving plus the ceiling not using it. Where those bounds
+                    # share a sign, beyond a penny and float32 rounding, the
+                    # choice is the one tax including the charge gives.
+                    saving = tax_not_using - tax_using
+                    rounding = 0.01 + 1e-6 * (abs(tax_using) + abs(tax_not_using))
+                    unsettled = (
+                        deciding
+                        & ((most_charge_using > 0) | (most_charge_not_using > 0))
+                        & (saving - most_charge_using < rounding)
+                        & (saving + most_charge_not_using > -rounding)
+                    )
+                else:
+                    # Nothing bounds the charge: every choice turns on it.
+                    most_charge_using = most_charge_not_using = np.full(
+                        person.count, np.inf
+                    )
+                    unsettled = deciding
+                if (deciding & ~unsettled).any():
+                    # The rest wait, and their households with them, until no
+                    # household can decide without the charge.
+                    deciding = deciding & ~unsettled
+                else:
+                    # Every household's next decision turns on the charge:
+                    # compare them all on income tax including it, worked out on
+                    # each route where some ceiling is above nothing (where it is
+                    # nothing, so is the charge, and tax before it is the tax).
+                    if (unsettled & (most_charge_using > 0)).any():
+                        (tax_using,) = with_route(
+                            households,
+                            "property_allowance_used",
+                            period,
+                            using,
+                            ["income_tax"],
+                        )
+                    if (unsettled & (most_charge_not_using > 0)).any():
+                        (tax_not_using,) = with_route(
+                            households,
+                            "property_allowance_not_used",
+                            period,
+                            not_using,
+                            ["income_tax"],
+                        )
+                # Tax is computed to the penny; smaller differences are rounding.
+                saving = np.round(tax_not_using - tax_using, 2)
+                prefers_allowance = where(full_relief, saving >= 0, saving > 0)
+                decided = where(deciding, prefers_allowance, route)
+                changed = changed | person.household.any(decided != route)
+                route = decided
+                # Each household that decided moves to its next decider, and at
+                # the end of a round to another round or to its settled routes.
+                moved = person.household.any(deciding)
+                rank = where(moved, rank + 1, rank)
+                round_over = moved & (rank == deciders)
+                again = round_over & changed & (deciders > 1) & (rounds < MAX_ROUNDS)
+                done = done | (round_over & ~again)
+                rank = where(again, 0, rank)
+                rounds = where(again, rounds + 1, rounds)
+                changed = changed & ~round_over
         return route
