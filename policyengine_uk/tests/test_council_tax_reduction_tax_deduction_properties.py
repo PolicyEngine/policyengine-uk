@@ -141,7 +141,25 @@ def household(draw, countries=tuple(REGIONS), pensioner=None, **kwargs):
     country = draw(st.sampled_from(countries))
     is_pensioner = draw(st.booleans()) if pensioner is None else pensioner
     adults = draw(st.lists(adult(is_pensioner, **kwargs), min_size=1, max_size=2))
-    return dict(country=country, benunits=[adults], pensioner=is_pensioner)
+    h = dict(country=country, benunits=[adults], pensioner=is_pensioner)
+    if country == "SCOTLAND" and not is_pensioner and draw(st.booleans()):
+        # A Universal Credit claim with two children, and earnings, profit,
+        # pension and property income low enough for an award. Savings
+        # interest, dividends and the other uncounted income stay as drawn:
+        # Universal Credit does not count them.
+        h["uc"] = True
+        for a in adults:
+            for variable in ["employment_income", "self_employment_income"]:
+                a[variable] = min(a[variable], 10_000.0)
+            a["private_pension_income"] = 0.0
+            a["property_income"] = 0.0
+        adults += [dict(age=4), dict(age=7)]
+    return h
+
+
+def grown_ups(people):
+    """Indices of the adults among a benefit unit's members."""
+    return [i for i, p in enumerate(people) if p["age"] >= 18]
 
 
 def schemes(simulation, households):
@@ -207,7 +225,7 @@ def test_pensioner_deduction_ignores_uncounted_income_without_earnings(
     changed = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
-        who = len(adults) - 1 if partner else 0
+        who = grown_ups(adults)[-1] if partner else 0
         adults[who][uncounted] = adults[who][uncounted] + change
         changed.append({**h, "benunits": [adults]})
     before = simulate(households)
@@ -235,13 +253,7 @@ def test_pensioner_deduction_ignores_uncounted_income_without_earnings(
 
 @st.composite
 def any_household(draw):
-    h = draw(household())
-    if h["country"] == "SCOTLAND" and not h["pensioner"]:
-        # Children make a Universal Credit award likely.
-        h["uc"] = draw(st.booleans())
-        if h["uc"]:
-            h["benunits"][0] += [dict(age=4), dict(age=7)]
-    return h
+    return draw(household())
 
 
 @PROPERTY_SETTINGS
@@ -322,9 +334,11 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     raised = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
-        who = len(adults) - 1 if partner else 0
+        who = grown_ups(adults)[-1] if partner else 0
         adults[who]["employment_income"] += rise
-        raised.append({**h, "benunits": [adults]})
+        raised.append({**h, "uc": False, "benunits": [adults]})
+    # The invariant is for families without Universal Credit.
+    households = [{**h, "uc": False} for h in households]
     before = simulate(households)
     after = simulate(raised)
     schemes(before, households)
