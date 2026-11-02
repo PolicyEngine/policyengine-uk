@@ -18,8 +18,8 @@ leaves it in place in 2027 and only the claim ends it (art. 3A(3)):
    partner no income-related ESA (claimant_or_partner_esa_income), and
    neither of them is on it (is_on_income_related_esa). So Universal Credit
    and the claimant's or partner's income-related ESA are never both paid.
-   Without a claim the gate is inert: esa_income_report_closed is
-   person_legacy_benefits_closed.
+   Without a claim the gate is inert: for each member who reports an award,
+   esa_income_report_closed is person_legacy_benefits_closed.
 2. Differential: claiming Universal Credit gives the same income-related ESA
    outcomes (esa_income, claimant_or_partner_esa_income, esa_income_eligible
    and each member's is_on_income_related_esa) as not claiming with the
@@ -178,7 +178,11 @@ def test_a_universal_credit_claim_ends_the_couples_income_related_esa(units):
         ), year
         paid_uc = v["universal_credit"] > 0
         assert not np.any(paid_uc & (v["claimant_or_partner_esa_income"] > 0)), year
-        not_claiming = ~claims[benunit]
+        # A member who reports nothing has no award for the gate to end.
+        reports = np.array(
+            [m["esa_income_reported"] > 0 for unit in units for m in unit["members"]]
+        )
+        not_claiming = ~claims[benunit] & reports
         assert np.array_equal(
             v["esa_income_report_closed"][not_claiming],
             v["person_legacy_benefits_closed"][not_claiming],
