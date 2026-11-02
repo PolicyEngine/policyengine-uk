@@ -1,10 +1,11 @@
 """The State Pension a survey reports, read back at 52 weeks a year.
 
-basic_state_pension, new_state_pension and additional_state_pension divide
-state_pension_reported by policyengine-core's 52 weeks a year and split the
-weekly amount at the data year's full rate for the type the person has in the
-simulated year. A dataset must therefore annualise the State Pension at 52
-weeks. At 365.25 / 7, which
+basic_state_pension, new_state_pension and additional_state_pension take
+state_pension_reported less any age addition
+(state_pension_reported_excluding_age_addition), divide it by
+policyengine-core's 52 weeks a year and split the weekly amount at the data
+year's full rate for the type the person has in the simulated year. A dataset
+must therefore annualise the State Pension at 52 weeks. At 365.25 / 7, which
 policyengine-uk-data used until policyengine-uk-data#644, every full-rate
 pensioner read 0.34% above the full rate and carried an add-on they do not
 get, which put people whose only income is the full new State Pension on the
@@ -14,8 +15,14 @@ These cases build simulations from 2024-25 data projected forward, as survey
 data is (ages held fixed, at ages whose type stays the same in every year), and
 check the route from a reported weekly amount to Income Tax:
 
-- a pensioner reporting exactly the data year's full rate has no add-on in any
-  year;
+- a pensioner reporting the data year's full rate has no add-on in any
+  year. The new State Pension reporter is 70 and reports the full new rate.
+  The basic State Pension reporter is 85. With ages held fixed, the model
+  gives these women the basic type in every year to 2030-31 only from 78. At
+  85 a basic State Pension recipient is over 80, so DWP pays her the 25p a
+  week age addition with the full basic rate. She reports both, and the model
+  pays the full rate as basic State Pension and the 25p, never uprated, as the
+  age addition;
 - Steph, whose only income is the full new State Pension, pays no Income Tax
   in 2027-28 to 2029-30, as HM Treasury's explainer says, and the same as when
   her State Pension is given directly;
@@ -95,11 +102,19 @@ def full_rates(year) -> dict:
     }
 
 
+# The weekly age addition in the data year. DWP pays it to a basic State
+# Pension recipient aged 80 or over and never uprates it.
+AGE_ADDITION = system.parameters.gov.dwp.state_pension.age_addition.amount(DATA_YEAR)
+
+
 @pytest.fixture(scope="module")
 def full_rate_reporters():
+    """A new State Pension reporter at the full new rate, and a basic State
+    Pension reporter, aged 85, at the full basic rate plus the age addition."""
     types = ["NEW", "BASIC"]
     rates = full_rates(DATA_YEAR)
-    return survey_simulation([rates[t] for t in types], types), types
+    weekly = [rates["NEW"], rates["BASIC"] + AGE_ADDITION]
+    return survey_simulation(weekly, types), types
 
 
 @pytest.mark.parametrize("year", range(DATA_YEAR, 2031))
@@ -114,6 +129,11 @@ def test_full_rate_reporters_have_no_add_on_in_any_year(full_rate_reporters, yea
     )
     assert calculate(sim, "basic_state_pension", year)[1] == pytest.approx(
         WEEKS_IN_YEAR * rates["BASIC"], abs=PENNY
+    )
+    # The data year's 25p in every year, so not uprated, and none on the new
+    # State Pension.
+    assert calculate(sim, "state_pension_age_addition", year).tolist() == (
+        pytest.approx([0, WEEKS_IN_YEAR * AGE_ADDITION], abs=PENNY)
     )
 
 
