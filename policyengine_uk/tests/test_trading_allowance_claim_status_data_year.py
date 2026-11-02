@@ -370,6 +370,30 @@ def test_a_neutralised_deduction_keeps_a_raise_from_costing_a_claimant_their_los
     assert simulation.calculate("income_tax", 2026).tolist() == pytest.approx([3_686])
 
 
+def test_a_deduction_the_model_sets_is_weighed_at_its_value():
+    # A value a scenario stores as the model's (set_model_value) applies like
+    # a supplied one: pinned at nil under a raise to £3,000, it saves nothing
+    # over the claimant's expenses, so they keep their £1,500 loss.
+    import numpy as np
+
+    from policyengine_uk.utils.supplied_inputs import set_model_value
+
+    person = {
+        "age": {2026: 40},
+        "employment_income": {2026: 30_000},
+        "self_employment_income": {2026: 2_500},
+        "trading_loss": {2026: 1_500},
+        "trading_allowance_claim_status": {2026: "CLAIMANT"},
+    }
+    simulation = Simulation(
+        situation=situation(person), reform={ALLOWANCE: {"2026": 3_000}}
+    )
+    set_model_value(simulation, "trading_allowance_deduction", 2026, np.array([0.0]))
+    assert simulation.calculate("uses_trading_allowance", 2026).tolist() == [False]
+    # (30,000 + 2,500 - 1,500 - 12,570) x 20%
+    assert simulation.calculate("income_tax", 2026).tolist() == pytest.approx([3_686])
+
+
 DEDUCTIONS = (
     "trading_allowance_deduction",
     "miscellaneous_income_trading_allowance_deduction",
