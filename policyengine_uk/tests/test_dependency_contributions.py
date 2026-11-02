@@ -1,16 +1,19 @@
 """Tests for calculate_dependency_contributions in policyengine_uk.utils.dependencies.
 
 The contribution of a variable the target reads directly (a direct dependency)
-is the mean of the target minus the mean of the target recalculated with that
-dependency zero in the year and every other value as already calculated. For
-any household drawn below:
+is the mean of the target minus the mean of the target recalculated over the
+year with that dependency zero (over the year, and over any other period the
+target read it) and every other variable the target read held at the value it
+read. The trace shows which variables the target's calculation over that year
+read, and over which periods. For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
    from a fresh simulation in which the target's float direct dependencies are
    inputs at their calculated values, except the zeroed one. The reference
    uses no branches and deletes nothing.
 2. Adds up: for a target defined only by `adds` and `subtracts` of its direct
-   dependencies, the contributions sum to the mean of the target.
+   dependencies, the contributions sum to the mean of the target, also when
+   one dependency feeds another (pension contributions get tax relief).
 3. Leaves the simulation as it was: every value it stored before the call is
    stored, unchanged, after it, and nothing is added (no values, no recorded
    inputs, no branches). So a second call returns the same contributions.
@@ -30,7 +33,20 @@ from hypothesis import strategies as st
 from plotly import graph_objects as go
 
 from policyengine_core import periods
+from policyengine_core.entities import build_entity
+from policyengine_core.simulations import Simulation as CoreSimulation
+from policyengine_core.taxbenefitsystems import TaxBenefitSystem
+from policyengine_core.variables import Variable as CoreVariable
 from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.model_api import (
+    ETERNITY,
+    MONTH,
+    YEAR,
+    Person,
+    QuantityType,
+    Reform,
+    Variable,
+)
 from policyengine_uk.utils.dependencies import (
     calculate_dependency_contribution_change,
     calculate_dependency_contributions,
@@ -70,10 +86,11 @@ def tolerance(*amounts):
 
 def make_situation(year, adults, child_ages):
     people = {}
-    for i, (age, earnings) in enumerate(adults):
+    for i, (age, earnings, pension_contributions) in enumerate(adults):
         people[f"adult_{i}"] = {
             "age": {year: age},
             "employment_income": {year: earnings},
+            "personal_pension_contributions": {year: pension_contributions},
         }
     for i, age in enumerate(child_ages):
         people[f"child_{i}"] = {"age": {year: age}}
@@ -87,7 +104,10 @@ def make_situation(year, adults, child_ages):
 
 # Earnings above the upper earnings limit, and a child: every monthly
 # dependency above is non-zero.
-EARNER_WITH_CHILD = (2026, [(40, 80_000.0)], [3])
+EARNER_WITH_CHILD = (2026, [(40, 80_000.0, 0.0)], [3])
+# Pension contributions reduce income tax through relief, so recalculating
+# household_tax with them zero would move it.
+EARNER_WITH_PENSION = (2026, [(40, 80_000.0, 10_000.0)], [])
 
 
 @st.composite
@@ -97,9 +117,17 @@ def households(draw):
         st.floats(0, 250_000, allow_nan=False, allow_infinity=False),
         st.integers(0, 250_000).map(float),
     )
+    pension_contributions = st.one_of(
+        st.just(0.0),
+        st.floats(0, 40_000, allow_nan=False, allow_infinity=False),
+    )
     year = draw(st.sampled_from(YEARS))
     adults = draw(
-        st.lists(st.tuples(st.integers(18, 90), earnings), min_size=1, max_size=2)
+        st.lists(
+            st.tuples(st.integers(18, 90), earnings, pension_contributions),
+            min_size=1,
+            max_size=2,
+        )
     )
     child_ages = draw(st.lists(st.integers(0, 17), max_size=3))
     return year, adults, child_ages
@@ -112,10 +140,10 @@ def traced_simulation(year, adults, child_ages, targets=TARGETS):
     return sim
 
 
-def float_dependencies(sim, target):
+def float_dependencies(sim, target, year):
     return [
         dependency
-        for dependency in dict.fromkeys(get_variable_dependencies(target, sim))
+        for dependency in dict.fromkeys(get_variable_dependencies(target, sim, year))
         if sim.tax_benefit_system.get_variable(dependency).value_type == float
     ]
 
@@ -195,38 +223,89 @@ def test_monthly_target_reads_its_months_dependencies():
     year, adults, child_ages = EARNER_WITH_CHILD
     sim = traced_simulation(year, adults, child_ages, ["ni_class_1_employee"])
 
-    dependencies = set(get_variable_dependencies("ni_class_1_employee", sim))
-
-    assert dependencies == {
+    expected = {
         "ni_liable",
         "ni_class_1_employee_primary",
         "ni_class_1_employee_additional",
     }
+    assert set(get_variable_dependencies("ni_class_1_employee", sim)) == expected
+    assert set(get_variable_dependencies("ni_class_1_employee", sim, year)) == expected
 
 
-def test_dependency_that_matters_contributes():
+def test_the_calculation_over_the_year_asked_for():
+    # The trace shows the target over 2026 first. Its contributions in 2024
+    # are those of its calculation over 2024, at 2024's NI rates.
+    _, adults, child_ages = EARNER_WITH_CHILD
+    sim = traced_simulation(2024, adults, child_ages, [])
+    for year in (2026, 2024):
+        sim.calculate("ni_class_1_employee", year)
+
+    for year in (2024, 2026):
+        contributions = calculate_dependency_contributions(
+            sim, "ni_class_1_employee", year
+        )
+        primary = sim.calculate("ni_class_1_employee_primary", year).mean()
+        mean = sim.calculate("ni_class_1_employee", year).mean()
+        assert contributions["ni_class_1_employee_primary"] == pytest.approx(
+            primary, abs=tolerance(primary)
+        )
+        assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
+    assert sim.calculate("ni_class_1_employee_primary", 2024)[0] > 0
+    assert sim.calculate("ni_class_1_employee", 2024)[0] != pytest.approx(
+        sim.calculate("ni_class_1_employee", 2026)[0]
+    )
+
+
+def test_months_calculated_before_their_year():
+    # Each month is stored before the year is calculated, so the year's trace
+    # node has a child for each month that only read the stored value; the
+    # months' own calculations show what they read.
     year, adults, child_ages = EARNER_WITH_CHILD
+    sim = traced_simulation(year, adults, child_ages, [])
+    for month in periods.period(year).get_subperiods(periods.MONTH):
+        sim.calculate("ni_class_1_employee", month)
+    sim.calculate("ni_class_1_employee", year)
+
+    contributions = calculate_dependency_contributions(sim, "ni_class_1_employee", year)
+
+    assert set(contributions.index) == {
+        "ni_liable",
+        "ni_class_1_employee_primary",
+        "ni_class_1_employee_additional",
+    }
+    mean = sim.calculate("ni_class_1_employee", year).mean()
+    assert mean > 0
+    assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
+
+
+def test_each_dependency_contributes_with_the_others_held():
+    year, adults, child_ages = EARNER_WITH_PENSION
     sim = traced_simulation(year, adults, child_ages, ["household_net_income"])
 
     contributions = calculate_dependency_contributions(
         sim, "household_net_income", year
     )
 
+    # household_tax stays at its value with the pension contributions, so they
+    # contribute minus themselves, not minus themselves net of tax relief.
     for dependency, sign in [
         ("household_market_income", 1),
         ("household_benefits", 1),
         ("household_tax", -1),
+        ("pension_contributions", -1),
     ]:
         expected = sign * sim.calculate(dependency, year).mean()
         assert expected != 0
         assert contributions[dependency] == pytest.approx(
             expected, abs=tolerance(expected)
         )
+    mean = sim.calculate("household_net_income", year).mean()
+    assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
 
 
 def test_additive_targets_are_sums():
     system = Simulation(
-        situation=make_situation(2026, [(40, 0.0)], [])
+        situation=make_situation(2026, [(40, 0.0, 0.0)], [])
     ).tax_benefit_system
     for target in ADDITIVE_TARGETS:
         variable = system.get_variable(target)
@@ -237,6 +316,9 @@ def test_additive_targets_are_sums():
 @PROPERTY_SETTINGS
 @given(households())
 @example(EARNER_WITH_CHILD)
+@example(EARNER_WITH_PENSION)
+# Found by Hypothesis: the trace shows each target over later years first.
+@example((2024, [(18, 69_876.0, 0.0)], []))
 def test_contributions_add_up_and_leave_the_simulation_unchanged(household):
     year, adults, child_ages = household
     sim = traced_simulation(year, adults, child_ages)
@@ -249,10 +331,10 @@ def test_contributions_add_up_and_leave_the_simulation_unchanged(household):
             calculate_dependency_contributions(sim, target, year), contributions
         )
 
-        floats = float_dependencies(sim, target)
+        floats = float_dependencies(sim, target, year)
         assert set(contributions.index) == {
             dependency
-            for dependency in get_variable_dependencies(target, sim)
+            for dependency in get_variable_dependencies(target, sim, year)
             if "weight" not in dependency
         }
         for dependency in contributions.index.difference(floats):
@@ -272,7 +354,7 @@ def test_contributions_add_up_and_leave_the_simulation_unchanged(household):
 def test_contributions_match_a_reference_without_branches(household, target):
     year, adults, child_ages = household
     sim = traced_simulation(year, adults, child_ages, [target])
-    dependencies = float_dependencies(sim, target)
+    dependencies = float_dependencies(sim, target, year)
     values = {
         dependency: {
             period: sim.calculate(dependency, period)
@@ -322,7 +404,7 @@ def test_weighted_mean_in_a_microsimulation():
 
 def test_map_to_and_filter():
     year = 2026
-    adults = [(40, 80_000.0), (38, 30_000.0)]
+    adults = [(40, 80_000.0, 0.0), (38, 30_000.0, 0.0)]
     sim = traced_simulation(year, adults, [3], ["ni_employee"])
     household_ni = sim.calculate("ni_employee", year, map_to="household")
 
@@ -403,3 +485,216 @@ def test_contribution_change_and_waterfall_chart():
     )
     assert isinstance(figure, go.Figure)
     assert list(figure.data[0].x) == ["ni_class_1_employee"]
+
+
+# Variables that read over periods other than their own, and one that feeds
+# another, added to the model by a reform.
+class toy_annual(Variable):
+    label = "Toy annual"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return 1_200
+
+
+class toy_monthly(Variable):
+    label = "Toy monthly"
+    value_type = float
+    entity = Person
+    definition_period = MONTH
+
+    def formula(person, period, parameters):
+        return period.start.month
+
+
+class toy_stock(Variable):
+    label = "Toy stock"
+    value_type = float
+    entity = Person
+    definition_period = MONTH
+    quantity_type = QuantityType.STOCK
+
+    def formula(person, period, parameters):
+        return period.start.month
+
+
+class toy_eternal(Variable):
+    label = "Toy eternal"
+    value_type = float
+    entity = Person
+    definition_period = ETERNITY
+
+    def formula(person, period, parameters):
+        return 77
+
+
+class toy_annual_in_january(Variable):
+    label = "Toy annual in January"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("toy_annual", period.first_month)
+
+
+class toy_monthly_sum(Variable):
+    label = "Toy monthly sum"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("toy_monthly", period)
+
+
+class toy_stock_at_year(Variable):
+    label = "Toy stock at year"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("toy_stock", period)
+
+
+class toy_eternal_at_year(Variable):
+    label = "Toy eternal at year"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("toy_eternal", period)
+
+
+class toy_double(Variable):
+    label = "Toy double"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return 2 * person("toy_annual", period)
+
+
+class toy_diamond(Variable):
+    label = "Toy diamond"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return person("toy_annual", period) + person("toy_double", period)
+
+
+class toy_running_total(Variable):
+    label = "Toy running total"
+    value_type = float
+    entity = Person
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        if period.start.year <= 2025:
+            return 10
+        return person("toy_annual", period) + person(
+            "toy_running_total", period.last_year
+        )
+
+
+TOY_VARIABLES = [
+    toy_annual,
+    toy_monthly,
+    toy_stock,
+    toy_eternal,
+    toy_annual_in_january,
+    toy_monthly_sum,
+    toy_stock_at_year,
+    toy_eternal_at_year,
+    toy_double,
+    toy_diamond,
+    toy_running_total,
+]
+# A target, and the contribution of each variable it reads.
+TOY_CONTRIBUTIONS = [
+    # A yearly variable read over a month: its year is zeroed.
+    ("toy_annual_in_january", {"toy_annual": 100}),
+    # A monthly flow summed over the year.
+    ("toy_monthly_sum", {"toy_monthly": 78}),
+    # A monthly stock read over a year: its last month.
+    ("toy_stock_at_year", {"toy_stock": 12}),
+    ("toy_eternal_at_year", {"toy_eternal": 77}),
+    # toy_double reads toy_annual, but is held at 2,400 when toy_annual is
+    # zeroed.
+    ("toy_diamond", {"toy_annual": 1_200, "toy_double": 2_400}),
+    # Last year's value, zeroed where it was read as well as over the year.
+    ("toy_running_total", {"toy_annual": 1_200, "toy_running_total": 10}),
+]
+
+
+class add_toy_variables(Reform):
+    def apply(self):
+        for variable in TOY_VARIABLES:
+            self.add_variable(variable)
+
+
+@pytest.fixture(scope="module")
+def toy_simulation():
+    situation = make_situation(2026, [(40, 0.0, 0.0)], [])
+    return Simulation(situation=situation, reform=add_toy_variables, trace=True)
+
+
+@pytest.mark.parametrize("target,expected", TOY_CONTRIBUTIONS)
+def test_reads_over_other_periods(toy_simulation, target, expected):
+    sim = toy_simulation
+    sim.calculate(target, 2026)
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(sim, target, 2026)
+
+    assert contributions.to_dict() == pytest.approx(expected)
+    assert contributions.sum() == pytest.approx(sim.calculate(target, 2026).mean())
+    assert_unchanged(sim, before)
+
+
+def test_the_same_variable_on_another_branch_is_a_dependency():
+    person = build_entity("person", "people", "Person", is_person=True)
+
+    class branch_leaf(CoreVariable):
+        label = "Branch leaf"
+        value_type = float
+        entity = person
+        definition_period = YEAR
+
+        def formula(person, period):
+            return 10.0
+
+    class branch_target(CoreVariable):
+        label = "Branch target"
+        value_type = float
+        entity = person
+        definition_period = YEAR
+
+        def formula(person, period):
+            sim = person.simulation
+            if sim.branch_name == "comparison":
+                return person("branch_leaf", period)
+            return sim.get_branch("comparison").calculate("branch_target", period)
+
+    system = TaxBenefitSystem([person])
+    system.add_variable(branch_leaf)
+    system.add_variable(branch_target)
+    sim = CoreSimulation(
+        tax_benefit_system=system, situation={"people": {"person": {}}}, trace=True
+    )
+    sim.calculate("branch_target", 2026)
+    [comparison] = sim.tracer.trees[0].children
+    assert (comparison.name, comparison.branch_name) == (
+        "branch_target",
+        "comparison",
+    )
+    assert comparison.period == sim.tracer.trees[0].period
+
+    assert get_variable_dependencies("branch_target", sim) == ["branch_target"]

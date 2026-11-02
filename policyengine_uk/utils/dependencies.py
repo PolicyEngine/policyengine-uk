@@ -34,29 +34,124 @@ def find_variable_in_tree_recursive(variable_name, node):
     return None
 
 
-def get_dependency_nodes(node):
+def index_calculations(tracer):
+    """The trace node of each calculation, by (variable, period, branch name).
+
+    A variable read again after it was calculated gets a node without
+    children, so the index keeps the first node with children: the one that
+    shows what the calculation read.
+    """
+    index = {}
+    stack = list(reversed(tracer.trees))
+    while stack:
+        node = stack.pop()
+        if node.children:
+            key = (node.name, periods.period(node.period), node.branch_name)
+            index.setdefault(key, node)
+            stack.extend(reversed(node.children))
+    return index
+
+
+def find_calculation(variable_name, period, sim, index):
+    # The node of variable_name's calculation over period: on sim's branch,
+    # else on the nearest ancestor (a branch reads the values its ancestors
+    # calculated), else on any branch, else the first node of variable_name
+    # over any period.
+    period = periods.period(period)
+    ancestor = sim
+    while ancestor is not None:
+        node = index.get((variable_name, period, ancestor.branch_name))
+        if node is not None:
+            return node
+        ancestor = getattr(ancestor, "parent_branch", None)
+    for (name, node_period, _), node in index.items():
+        if name == variable_name and node_period == period:
+            return node
+    return find_variable_in_trees(variable_name, sim.tracer)
+
+
+def get_dependency_nodes(node, index=None):
     # A variable calculated over a period other than its definition period (a
     # monthly one summed over a year, or a yearly one divided into a month)
-    # has itself as a child for each period it is calculated over; what it
-    # reads is under those children.
+    # has itself as a child on the same branch for each period it is
+    # calculated over; what it reads is under those children. A child that
+    # read a value already stored has no children of its own, so index (from
+    # index_calculations) gives the calculation that stored it. The variable
+    # read on another branch is a dependency, as is the variable read over a
+    # period that neither contains nor is contained in its own.
     nodes = []
     node_period = periods.period(node.period)
     for child in node.children:
         child_period = periods.period(child.period)
-        if child.name == node.name and (
-            node_period.contains(child_period) or child_period.contains(node_period)
+        if (
+            child.name == node.name
+            and child.branch_name == node.branch_name
+            and (
+                node_period.contains(child_period) or child_period.contains(node_period)
+            )
         ):
-            nodes.extend(get_dependency_nodes(child))
+            if not child.children and index is not None:
+                child = index.get((child.name, child_period, child.branch_name), child)
+            nodes.extend(get_dependency_nodes(child, index))
         else:
             nodes.append(child)
     return nodes
 
 
-def get_variable_dependencies(variable_name, sim):
-    node = find_variable_in_trees(variable_name, sim.tracer)
-    if not node:
-        return []
-    return [child.name for child in get_dependency_nodes(node)]
+def get_variable_dependencies(variable_name, sim, period=None):
+    """The variables variable_name reads directly, from sim's trace.
+
+    With period, those its calculation over period read; otherwise those of
+    the first calculation of variable_name the trace shows.
+    """
+    if period is None:
+        node = find_variable_in_trees(variable_name, sim.tracer)
+        if not node:
+            return []
+        return [child.name for child in get_dependency_nodes(node)]
+    index = index_calculations(sim.tracer)
+    node = find_calculation(variable_name, period, sim, index)
+    return [child.name for child in get_dependency_nodes(node, index)]
+
+
+def get_direct_reads(variable_name, sim, period):
+    """The periods variable_name, calculated over period, read each variable
+    over on its own branch: a dict from variable name to periods, from sim's
+    trace."""
+    index = index_calculations(sim.tracer)
+    node = find_calculation(variable_name, period, sim, index)
+    return reads_on_branch(node, get_dependency_nodes(node, index))
+
+
+def reads_on_branch(node, dependency_nodes):
+    # The periods node read each of dependency_nodes over, on its own branch.
+    reads = {}
+    for child in dependency_nodes:
+        if child.branch_name == node.branch_name:
+            read_periods = reads.setdefault(child.name, [])
+            read_period = periods.period(child.period)
+            if read_period not in read_periods:
+                read_periods.append(read_period)
+    return reads
+
+
+def definition_periods(variable, read_periods):
+    # The periods variable is defined for that make up each read period, or
+    # that contain it (the year a month of a yearly variable is in).
+    unit = variable.definition_period
+    result = []
+    for read_period in read_periods:
+        if unit == periods.ETERNITY:
+            covering = [periods.period(periods.ETERNITY)]
+        elif periods.unit_weight(unit) <= periods.unit_weight(read_period.unit):
+            covering = read_period.get_subperiods(unit)
+        else:
+            covering = [
+                subperiod.this_year if unit == periods.YEAR else subperiod.first_month
+                for subperiod in read_period.get_subperiods(read_period.unit)
+            ]
+        result.extend(p for p in covering if p not in result)
+    return result
 
 
 def extract_variables_regex(formula_source):
@@ -81,37 +176,59 @@ def unused_branch_name(sim, base_name="dependency-contribution"):
     return name
 
 
-def calculate_with_dependency_zeroed(sim, variable_name, dependency, year, map_to=None):
-    """Recalculate variable_name with dependency set to zero in year.
+def calculate_with_dependency_zeroed(
+    sim, variable_name, dependency, year, map_to=None, reads=None
+):
+    """Recalculate variable_name over year with dependency zero.
+
+    reads (by default get_direct_reads(variable_name, sim, year)) gives the
+    periods variable_name read each variable over. dependency is set to zero
+    for each period it is defined for that makes up or contains year or a
+    period variable_name read it over. Every other variable variable_name
+    read is held at the value sim holds, as an input, so the result is the
+    change from dependency alone: on a branch, an input drops the values
+    calculated from the one it replaces, which would otherwise be
+    recalculated with dependency zero.
 
     Runs on a new untraced branch of sim, removed from sim.branches before
-    returning: what the branch inputs or deletes stays in the branch, so sim is
-    left as it was. In the branch, the dependency's values within year
-    (inputs, calculated values, and annual sums of monthly values) are deleted
-    and replaced by a zero input for each period it is defined for. Inputting
-    each defined period directly means no set_input helper has to split an
-    annual value across months that already hold values, which core refuses
-    when they do not add up to it. variable_name's values within year are
-    then deleted so that it is recalculated; every other variable keeps the
-    value sim had calculated.
+    returning: what the branch inputs or deletes stays in the branch, so sim
+    is left as it was. Inputting each defined period directly means no
+    set_input helper has to split an annual value across months that already
+    hold values, which core refuses when they do not add up to it.
     """
     period = periods.period(year)
-    variable = sim.tax_benefit_system.get_variable(dependency)
-    if periods.unit_weight(variable.definition_period) < periods.unit_weight(
-        period.unit
-    ):
-        input_periods = period.get_subperiods(variable.definition_period)
-    else:
-        input_periods = [period]
+    variables = sim.tax_benefit_system.variables
+    if reads is None:
+        reads = get_direct_reads(variable_name, sim, period)
+    zeroed_reads = [period] + reads.get(dependency, [])
+    zeroed = definition_periods(variables[dependency], zeroed_reads)
+    held = {
+        name: definition_periods(variables[name], read_periods)
+        for name, read_periods in reads.items()
+        if name not in (dependency, variable_name)
+        and not variables[name].is_neutralized
+    }
     zeros = np.zeros(sim.get_variable_population(dependency).count)
 
     branch_name = unused_branch_name(sim)
     branch = sim.get_branch(branch_name)
     try:
         branch.trace = False
-        branch.delete_arrays(dependency, period)
-        for input_period in input_periods:
-            branch.set_input(dependency, input_period, zeros)
+        # What sim holds for each held read, taken before the branch changes.
+        held_values = {}
+        for name, held_periods in held.items():
+            holder = branch.get_holder(name)
+            for held_period in held_periods:
+                value = holder.get_array(held_period, branch.branch_name)
+                if value is None:
+                    value = branch.calculate(name, held_period)
+                held_values[name, held_period] = value
+        for zeroed_period in zeroed_reads + zeroed:
+            branch.delete_arrays(dependency, zeroed_period)
+        for zeroed_period in zeroed:
+            branch.set_input(dependency, zeroed_period, zeros)
+        for (name, held_period), value in held_values.items():
+            branch.set_input(name, held_period, value)
         branch.delete_arrays(variable_name, period)
         return branch.calculate(variable_name, period, map_to=map_to)
     finally:
@@ -123,12 +240,15 @@ def calculate_dependency_contributions(
 ):
     """Mean change in variable_name from zeroing each variable it reads directly.
 
-    The variables variable_name reads directly come from sim's trace, so sim
-    needs trace=True. A float one's contribution is the mean of variable_name
-    minus variable_name recalculated with that variable zero in year (see
+    The variables variable_name reads directly in its calculation over year,
+    and the periods it reads them over, come from sim's trace, so sim needs
+    trace=True. A float one's contribution is the mean of variable_name minus
+    variable_name recalculated with that variable zero over year and where
+    it was read, and every other variable read held (see
     calculate_with_dependency_zeroed), after mapping to map_to and selecting
-    filter if given. Other variables contribute zero. sim's values are left
-    unchanged.
+    filter if given. So for a target that adds and subtracts what it reads,
+    the contributions sum to its mean. Other variables contribute zero. sim's
+    values are left unchanged.
     """
     original_values = sim.calculate(variable_name, year)
 
@@ -143,14 +263,18 @@ def calculate_dependency_contributions(
         original_values_mapped = original_values
 
     dependency_contributions = {}
-    first_level_dependencies = get_variable_dependencies(variable_name, sim)
+    index = index_calculations(sim.tracer)
+    node = find_calculation(variable_name, year, sim, index)
+    dependency_nodes = get_dependency_nodes(node, index)
+    first_level_dependencies = [child.name for child in dependency_nodes]
+    reads = reads_on_branch(node, dependency_nodes)
     for variable in dict.fromkeys(first_level_dependencies):
         if "weight" in variable:
             continue
         value_type = sim.tax_benefit_system.get_variable(variable).value_type
         if value_type == float:
             new_values_mapped = calculate_with_dependency_zeroed(
-                sim, variable_name, variable, year, map_to=map_to
+                sim, variable_name, variable, year, map_to=map_to, reads=reads
             )
         else:
             new_values_mapped = original_values_mapped
