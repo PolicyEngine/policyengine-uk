@@ -7,28 +7,30 @@ credit", and Westminster's summary compares the maximum amount "to the actual
 universal credit award plus any other income and earnings received".
 Parliament sets the award as the maximum amount less the income amounts
 (Welfare Reform Act 2012 s 8(1)), and the Secretary of State reduces it for the
-benefit cap (UC Regs 2013 reg 81(1)). The Secretary of State then pays part of
-it to third parties for the claimant's debts (SI 2013/380 Sch 6 para 2(1)),
-leaving at least a penny payable (para 3(1)(a)).
+benefit cap (UC Regs 2013 reg 81(1)). The Secretary of State then recovers
+debts from it: advances and other payments on account (SI 2013/383 reg 10),
+overpayments (SI 2013/384 reg 10) and the claimant's liabilities to third
+parties (SI 2013/380 Sch 6 para 2(1)). A third-party deduction must leave at
+least a penny payable (Sch 6 para 3(1)(a)).
 
-Invariants, in 2026, for working-age single people, couples and families with
-children in the four councils, across benefit cap reductions from nil to more
-than the award, and deduction demands from nil through the 15% cap to an
-above-cap excess:
+The test checks these conditions in 2026 for working-age single people,
+couples and families with children in the four councils, with benefit cap
+reductions from nil to more than the award and deduction demands from nil
+through the 15% cap to an above-cap excess:
 
-1. Award recovery: universal_credit + uc_deductions equals the award after the
-   cap, max(universal_credit_pre_benefit_cap - uc_benefit_cap_reduction, 0),
-   and a family with deductions keeps at least a penny a month payable.
-2. Deduction invariance: while the award exceeds nil, each council's reduction
-   stays the same with and without the deductions.
-3. Differential: where the award exceeds nil, the reduction equals a reference
+1. universal_credit + uc_deductions equals the award after the cap,
+   max(universal_credit_pre_benefit_cap - uc_benefit_cap_reduction, 0), and a
+   family with deductions keeps at least a penny a month payable.
+2. While the award exceeds nil, each council grants the same reduction with
+   and without the deductions.
+3. Where the award exceeds nil, each council's reduction matches a reference
    that the test writes from para 37 and each scheme's rates: max(0, liability
    x maximum support rate - withdrawal rate x max(0, earned income + unearned
    income + award - maximum amount)).
 
-Each example sets its inputs on one simulation that the module builds once.
-It holds a pair of households for each family, one with deductions and one
-without.
+The module builds one simulation, and each example sets its inputs on it. The
+simulation holds a pair of households for each family, one with deductions and
+one without.
 """
 
 import numpy as np
@@ -88,8 +90,8 @@ PROPERTY_SETTINGS = settings(
 
 
 def situation():
-    """Two households for each family in STRUCTURES, each its own benefit
-    unit: slot 2k has no deductions, slot 2k + 1 the drawn ones."""
+    """Build two households per family in STRUCTURES, each its own benefit
+    unit, with no deductions in slot 2k and the drawn ones in slot 2k + 1."""
     people, benunits, households = {}, {}, {}
     for k, (adults, children) in enumerate(STRUCTURES):
         for slot in (2 * k, 2 * k + 1):
@@ -189,7 +191,7 @@ EXPLICIT = [
 
 
 def pairs(values):
-    """One value for each household of each family's pair."""
+    """Repeat each family's value for both households."""
     return np.repeat(np.asarray(values), 2)
 
 
@@ -291,10 +293,11 @@ def test_four_councils_count_the_universal_credit_award_before_deductions(
     ]
 
     if fams == EXPLICIT:
-        # Not vacuous: the issue's case takes 764.82 at the cap and gives a
-        # partial reduction of 1,880 either way; the Newham couple's rate is
-        # the 15% cap plus a 5% excess; the cap takes the fourth family's
-        # whole award; and every other family keeps an award and repays debt.
+        # In the explicit example the Secretary of State deducts the model's
+        # annual 764.82 from the issue's award and Merton grants 1,880 with
+        # and without it. The Newham couple repays at the 15% cap plus a 5%
+        # excess, the cap reduces the fourth family's award to nil, and every
+        # other family keeps an award and repays debt.
         assert np.isclose(deductions[1], 764.82, atol=0.01)
         assert np.allclose(council[:2], 1_880, atol=0.01)
         assert np.isclose(v["uc_deduction_rate"][3], 0.20)

@@ -4,20 +4,25 @@
 # credit", and Westminster compares the maximum amount "to the actual
 # universal credit award plus any other income and earnings received". The
 # Secretary of State pays the claimant's debts out of the award (SI 2013/380
-# Sch 6 para 2(1)), so a deduction leaves the award, and these reductions,
-# where they were.
+# Sch 6 para 2(1)). The council therefore counts the same award and grants
+# the same reduction after a debt deduction.
 #
-# Each case: a single person aged 35 in 2026 earns 8,000 (under the personal
-# allowance and primary threshold), rents from the council at 7,800 a year and
-# owes council tax of 2,600. The maximum amount comes to 424.90 x 12 + 7,800
-# = 12,898.80. With no child and no limited capability for work, the claimant
-# gets no work allowance (UC Regs 2013 reg 22(1)(b)(i)), so the Secretary of
-# State deducts 55% x 8,000 = 4,400 and awards 8,498.80. Income exceeds the
-# applicable amount (the maximum amount) by
-# 8,000 + 8,498.80 - 12,898.80 = 3,600. Merton, Kingston upon Thames and
-# Westminster award 2,600 - 20% x 3,600 = 1,880; Newham awards
-# 70% x 2,600 - 25% x 3,600 = 920. Counting the award net of a 600 deduction
-# would give 2,000 and 1,070.
+# Unless a case says otherwise, each case uses a single claimant aged 35 in
+# 2026 who earns 8,000 (under the personal allowance and primary threshold),
+# rents from the council at 7,800 a year and owes council tax of 2,600. The
+# maximum amount comes to 424.90 x 12 + 7,800 = 12,898.80. With no child and
+# no limited capability for work, the claimant gets no work allowance (UC
+# Regs 2013 reg 22(1)(b)(i)), so the Secretary of State deducts
+# 55% x 8,000 = 4,400 and awards 8,498.80. Income exceeds the applicable
+# amount (the maximum amount) by 8,000 + 8,498.80 - 12,898.80 = 3,600.
+# Merton, Kingston upon Thames and Westminster award
+# 2,600 - 20% x 3,600 = 1,880; Newham awards 70% x 2,600 - 25% x 3,600 = 920.
+# Counting the award net of a 600 deduction would give 2,000 and 1,070.
+#
+# The model works in annual amounts. It takes a deduction at DWP's 15% cap as
+# 15% x 424.90 x 12 = 764.82 a year. The Secretary of State deducts by
+# assessment period and rounds 15% x 424.90 = 63.735 to 63.74 (SI 2013/380 Sch
+# 6 para 1(2)), or 764.88 over twelve assessment periods.
 
 - name: Merton counts the Universal Credit award with no deduction
   period: 2026
@@ -247,7 +252,7 @@
 
 - name: Newham counts the Universal Credit award before a deduction at the cap
   # A third-party deduction demand of 15% of the standard allowance meets the
-  # 15% cap: 15% x 424.90 x 12 = 764.82. The amount payable falls to
+  # 15% cap; the model's annual figure is 764.82. The amount payable falls to
   # 8,498.80 - 764.82 = 7,733.98; the award stays at 8,498.80 and Newham
   # awards 920. Counting the amount payable would give
   # 70% x 2,600 - 25% x (3,600 - 764.82) = 1,111.21.
@@ -285,10 +290,11 @@
 - name: Merton counts the Universal Credit award after the benefit cap and before a deduction at the cap
   # The Secretary of State reduces the award by 1,200 (entered here) for the
   # benefit cap, to 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg 81(1)). A
-  # deduction at the 15% cap, 764.82, leaves 6,533.98 payable. Income exceeds the maximum amount
-  # by 8,000 + 7,298.80 - 12,898.80 = 2,400, so Merton awards
-  # 2,600 - 20% x 2,400 = 2,120. Counting the amount payable would give
-  # 2,272.96, and counting the award before the cap 1,880.
+  # deduction at the 15% cap (the model's annual 764.82) leaves 6,533.98
+  # payable.
+  # Income exceeds the maximum amount by 8,000 + 7,298.80 - 12,898.80 = 2,400,
+  # so Merton awards 2,600 - 20% x 2,400 = 2,120. Counting the amount payable
+  # would give 2,272.96, and counting the award before the cap 1,880.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -320,3 +326,214 @@
     uc_deductions: 764.82
     universal_credit: 6_533.98
     council_tax_reduction: 2_120
+
+- name: Merton counts the Universal Credit award before a 600 debt deduction for a claimant with a private pension
+  # The Secretary of State counts a 1,000 private pension as unearned income
+  # (UC Regs 2013 reg 66(1)(a)) and deducts all of it from the award, which
+  # falls to 12,898.80 - 4,400 - 1,000 = 7,498.80; 6,898.80 is payable after
+  # the deduction. Income exceeds the maximum amount by
+  # 8,000 + 1,000 + 7,498.80 - 12,898.80 = 3,600, so Merton awards 1,880.
+  # Counting the amount payable would give 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+        private_pension_income: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_unearned_income: 1_000
+    universal_credit: 6_898.80
+    council_tax_reduction: 1_880
+
+- name: Kingston upon Thames counts the Universal Credit award before a 600 debt deduction for a claimant with 8,000 of savings
+  # The Secretary of State treats 8,000 of capital as yielding 4.35 a month
+  # for each 250 above 6,000 (UC Regs 2013 reg 72(1)), so 8 x 4.35 x 12 =
+  # 417.60 a year of unearned income. The award falls to
+  # 12,898.80 - 4,400 - 417.60 = 8,081.20, and 7,481.20 is payable after the
+  # deduction. Income exceeds the maximum amount by
+  # 8,000 + 417.60 + 8,081.20 - 12,898.80 = 3,600. The savings fall within
+  # Kingston upon Thames's 16,000 capital limit, so it awards 1,880. Counting
+  # the amount payable would give 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 8_000
+  output:
+    uc_unearned_income: 417.60
+    universal_credit: 7_481.20
+    council_tax_reduction: 1_880
+
+- name: Merton counts the Universal Credit award before a 600 debt deduction in a household with a non-dependant
+  # The claimant heads the household and shares it with a non-dependant aged
+  # 40 who has no income and claims nothing. The Secretary of State deducts a
+  # housing cost contribution of 96.55 a month for the non-dependant (UC Regs
+  # 2013 Sch 4 paras 13(1) and 14(1)), so the maximum amount falls to
+  # 12,898.80 - 96.55 x 12 = 11,740.20 and the award to
+  # 11,740.20 - 4,400 = 7,340.20; 6,740.20 is payable after the deduction.
+  # Income exceeds the maximum amount by 8,000 + 7,340.20 - 11,740.20 = 3,600.
+  # Merton deducts 5.20 a week for a non-dependant out of remunerative work,
+  # 5.20 x 52 = 270.40 a year, and awards 2,600 - 20% x 3,600 - 270.40 =
+  # 1,609.60. Counting the amount payable would give 1,729.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+        is_household_head: true
+      non_dependant:
+        age: 40
+        is_household_head: false
+    benunits:
+      claimant_family:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_deductions: 600
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 7_800
+        council_tax: 2_600
+        savings: 0
+  output:
+    universal_credit: [6_740.20, 0]
+    merton_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    council_tax_reduction: 1_609.60
+
+- name: Merton counts the Universal Credit award after the benefit cap the model applies and before a deduction at the cap
+  # The claimant rents from the council at 17,468.20 a year, so the maximum
+  # amount comes to 424.90 x 12 + 17,468.20 = 22,567 and the award before
+  # the cap to 22,567 - 4,400 = 18,167. Earnings of 8,000 fall short of the
+  # earnings exception, 16 hours a week at the national living wage (UC Regs
+  # 2013 reg 82(1)(a)), so the cap applies. The award exceeds the 16,967 cap
+  # for a single person in Greater London by 1,200, and the Secretary of
+  # State reduces it by that excess to 16,967 (reg 81(1)).
+  # A deduction at the 15% cap (the model's annual 764.82) leaves 16,202.18
+  # payable. Income exceeds the maximum amount by
+  # 8,000 + 16,967 - 22,567 = 2,400, so Merton awards 2,600 - 20% x 2,400 =
+  # 2,120. Counting the amount payable would give 2,272.96, and counting the
+  # award before the cap 1,880.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_has_deduction: true
+        uc_latent_deduction_rate: 0.15
+        uc_deduction_combination: THIRD_PARTY_ONLY
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 17_468.20
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_maximum_amount: 22_567
+    universal_credit_pre_benefit_cap: 18_167
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 16_967
+    uc_benefit_cap_reduction: 1_200
+    uc_benefit_cap_reduction_after_floor: 1_200
+    uc_deductions: 764.82
+    universal_credit: 16_202.18
+    council_tax_reduction: 2_120
+
+- name: Under an 85% protected floor, Merton counts the Universal Credit award after the cap reduction the floor leaves
+  # The same household under a reform that keeps 85% of the standard
+  # allowance payable, so the cap reduction and deductions together may take
+  # at most 15% x 424.90 x 12 = 764.82. The model meets the deduction first,
+  # 764.82, which leaves no room for the 1,200 cap reduction. The award stays
+  # at 18,167, and 18,167 - 764.82 = 17,402.18 is payable. Income exceeds the
+  # maximum amount by 8,000 + 18,167 - 22,567 = 3,600, so Merton awards
+  # 1,880. Counting the award after the whole 1,200 cap reduction would give
+  # 2,120, and counting the amount payable 2,032.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_has_deduction: true
+        uc_latent_deduction_rate: 0.15
+        uc_deduction_combination: THIRD_PARTY_ONLY
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 17_468.20
+        council_tax: 2_600
+        savings: 0
+  output:
+    uc_benefit_cap_reduction: 1_200
+    uc_benefit_cap_reduction_after_floor: 0
+    uc_deductions: 764.82
+    universal_credit: 17_402.18
+    council_tax_reduction: 1_880
