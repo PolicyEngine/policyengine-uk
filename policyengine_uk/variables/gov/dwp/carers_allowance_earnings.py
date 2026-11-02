@@ -201,10 +201,13 @@ def _primary_class_1(person, period, parameters):
     # step of the year's NI income plus 64 steps of the contribution. A
     # larger disagreement would mean the formula worked out here no longer
     # matches the model's, and then the amount calculated is deducted.
-    tolerance = 100 * (
-        np.spacing(np.abs(person("ni_class_1_income", period))).astype(np.float64)
-        + 64 * np.spacing(np.abs(stored)).astype(np.float64)
-    )
+    ni_income = np.abs(person("ni_class_1_income", period))
+    # On macOS arm64 numpy reports the spacing of zero as underflow.
+    with np.errstate(under="ignore"):
+        tolerance = 100 * (
+            np.spacing(ni_income).astype(np.float64)
+            + 64 * np.spacing(np.abs(stored)).astype(np.float64)
+        )
     agrees = np.abs(np.asarray(stored, dtype=np.float64) * 100 - exact) <= tolerance
     return where(agrees, exact, deducted)
 

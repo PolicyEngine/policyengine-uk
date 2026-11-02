@@ -32,7 +32,9 @@ def stored_pence(amount):
     # exact, as are the difference and the half step below.
     pence = amount.astype(np.float64) * 100
     whole = np.round(pence)
-    half_step = np.spacing(np.abs(amount)).astype(np.float64) * 50
+    # On macOS arm64 numpy reports the spacing of zero as underflow.
+    with np.errstate(under="ignore"):
+        half_step = np.spacing(np.abs(amount)).astype(np.float64) * 50
     return np.where(np.abs(pence - whole) <= half_step, whole, pence)
 
 
