@@ -535,7 +535,15 @@ def _delete(path):
     return change
 
 
-# One malformed registry per check the loader makes, with the message it gives.
+def _unflag_term_with_dropped_when(registry):
+    entry = registry["budget_terms"][1]
+    del entry["budget"]
+    entry["budget_dropped_when"] = "gov.contrib.abolish_council_tax"
+
+
+# One malformed registry per check the loader makes, with the message it
+# gives. The checks on budget field names run on both sections, so each
+# section has its own case.
 INVALID = {
     "budget_not_tax_or_benefit": (
         _set(("programs", 0, "budget"), "spending"),
@@ -589,6 +597,14 @@ INVALID = {
     "budget_field_without_flag": (
         _set(("programs", 1, "budget_uprating"), ["all"]),
         "need a budget flag",
+    ),
+    "budget_term_field_without_flag": (
+        _unflag_term_with_dropped_when,
+        "need a budget flag",
+    ),
+    "budget_term_without_variable": (
+        _delete(("budget_terms", 1, "variable")),
+        "needs variable and budget",
     ),
     "flagged_twice": (
         lambda r: r["programs"][1].update(variable="esa_income", budget="benefit"),
