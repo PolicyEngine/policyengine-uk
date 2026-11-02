@@ -2,12 +2,14 @@ description: Rates for Scottish Income Tax.
 # The Scottish Parliament sets these rates and limits by resolution, for one
 # tax year at a time (Scotland Act 1998 s. 80C(3)). Beside each dated value a
 # comment cites the motion and paragraph. In the motions Parliament charges
-# each rate on "income" up to a limit, and ITA 2007 s. 23 deducts the personal
-# allowance at Step 3 before it charges the rates at Step 4, so this file holds
-# limits of income after the allowance. From 2024-25 Parliament adds in the
-# motions that s. 11A charges this income "above the personal allowance".
-# gov.scot's tables add the standard personal allowance to each limit, except
-# at the £150,000 and £125,140 tops, where s. 35(2) leaves no allowance.
+# each rate on "income" up to a limit. The taxpayer deducts the personal
+# allowance at Step 3 and works out the tax at Step 4 on the income that
+# remains (ITA 2007 s. 23), so this file holds limits of income after the
+# allowance. From 2024-25 Parliament adds in the motions that s. 11A charges
+# this income "above the personal allowance".
+# The Scottish Government adds the standard personal allowance to each limit
+# in its tables (gov.scot), except at the £150,000 and £125,140 tops, where no
+# allowance remains (s. 35(2)).
 # The Scottish Government announced higher, advanced and top threshold
 # freezes through 2028-29 in the Scottish Budget 2026-27. Parliament sets
 # Scottish rates and bands by annual resolutions. The model projects CPI

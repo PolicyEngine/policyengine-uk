@@ -10,8 +10,8 @@ from policyengine_uk import Simulation
 from policyengine_uk.system import system
 from policyengine_uk.tax_benefit_system import statutory_parameters
 
-# We transcribe the Scottish Parliament's annual rates and limits paragraph by
-# paragraph from each motion at
+# The Scottish Parliament's rates and limits for each year, paragraph by
+# paragraph, from each motion at
 # https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>.
 # Each pair gives the rate and the upper taxable-income limit; `None` marks the
 # final rate. Taxable income excludes the personal allowance.
