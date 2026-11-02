@@ -371,6 +371,8 @@ EDGES = [
     # Property with other income, savings and dividends.
     (9_000, 30_000, 6_000, 15_000, 0, 0, 0, 0, False, 500),
     (9_000, 30_000, 6_000, 15_000, 0, 0, 0, 0, True, 500),
+    # Scottish property income on 42% beside savings on 44% from 2027-28.
+    (0, 58_000, 24_000, 0, 0, 0, 0, 0, True, 500),
     (0, 20_000, 0, 200_000, 1_000, 0, 0, 0, False, 0),
     (45_000, 20_000, 3_000, 0, 0, 0, 1_260, 0, False, 500),
     # Gift Aid raises the limits.
