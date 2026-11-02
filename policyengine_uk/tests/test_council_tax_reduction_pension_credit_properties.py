@@ -287,7 +287,11 @@ MAIN_INCOME_COMPONENTS = [
 # The means tests deduct income tax before the winter fuel payment charge
 # (ITEPA 2003 s.681I), which recovers a payment rather than taxing the income
 # they assess. A pensioner over £35,000 of total income is charged it.
-MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
+# The income tax and National Insurance each scheme allows. Its own tests
+# (test_council_tax_reduction_tax_deduction_properties.py and
+# council_tax_reduction_tax_deduction.yaml) check it against the law; this file
+# checks the routes around it.
+MAIN_DEDUCTIONS = ["council_tax_reduction_tax_deduction"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
@@ -369,7 +373,7 @@ def calculate(units, guarantee=None, **kwargs):
             benunit_total(["child_benefit"]),
             0,
         )
-        - benunit_total(MAIN_DEDUCTIONS)
+        - sum(np.asarray(sim.calculate(v, YEAR))[claimants] for v in MAIN_DEDUCTIONS)
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
     )
