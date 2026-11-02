@@ -18,7 +18,8 @@ class is_uc_eligible(Variable):
         "claims when DWP moves it off its legacy benefits "
         "(claims_uc_at_legacy_closure). On that claim, a pension-age claimant "
         "can qualify through reg 60A when the claimant or partner reports "
-        "Working Tax Credit; another member's report does not count."
+        "Working Tax Credit; the formula ignores another member's report. "
+        "council_tax_reduction_pensioner reads the same reports."
     )
     definition_period = YEAR
     reference = (
@@ -28,6 +29,7 @@ class is_uc_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
+        "https://www.legislation.gov.uk/ukpga/2002/21/section/10",
     )
 
     def formula(benunit, period, parameters):
@@ -80,12 +82,16 @@ class is_uc_eligible(Variable):
         # regulation refuses the waiver, and one reporting Pension Credit it
         # is not awarded makes no closure claim.
         # The formula reads the Working Tax Credit reports of the claimant and
-        # partner only. Members of a couple claim a tax credit jointly (Tax
-        # Credits Act 2002 s.3(3)(a)), so the couple's award belongs to both,
-        # as reg 60A(1)(b) requires, and either member's report counts for
-        # both. A child, a qualifying young person or another adult in the
-        # benefit unit claims, if at all, as a single person (s.3(3)(b)), so
-        # their award is not the claimant's and does not open the route.
+        # partner only. A couple both aged 16 or over and in the UK must
+        # claim a tax credit together (Tax Credits Act 2002 s.3(3)), and
+        # s.10(1) gives entitlement to the persons who made the claim, so both
+        # members hold the couple's award, as reg 60A(1)(b) requires, and
+        # either member's report counts for both. That includes a partner who
+        # can't be a joint claimant of Universal Credit (UC Regs 2013
+        # reg 3(3)). A child, a qualifying young person or another adult in
+        # the benefit unit claims, if at all, without the claimant (s.3(3)),
+        # so the claimant holds none of that award and it does not open the
+        # route.
         closure_claim = benunit("claims_uc_at_legacy_closure", period)
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
         on_working_tax_credit = (

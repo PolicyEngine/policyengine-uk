@@ -1,13 +1,16 @@
-# SI 2014/1230 reg 60A(1) waives the upper age condition (WRA 2012
-# s.4(1)(b)) for a qualifying claim by a single claimant, or joint claimants
-# both, who have reached the qualifying age for State Pension Credit and are
-# entitled to an award of Working Tax Credit. Members of a couple claim a tax
-# credit jointly (Tax Credits Act 2002 s.3(3)(a)), so the couple's award
-# belongs to both; anyone else in the benefit unit claims as a single person
-# (s.3(3)(b)), so their award is not the claimant's. Each family makes a
-# closure claim (claims_uc_at_legacy_closure), lives in the North East, owns
-# its home outright and has no income, so an eligible family's Universal
-# Credit is 12 times its 2026-27 monthly standard allowance: 12 x £424.90
+# Under SI 2014/1230 reg 60A(1), the upper age condition in WRA 2012
+# s.4(1)(b) does not apply to a qualifying claim by a single claimant, or
+# joint claimants both, who have reached the qualifying age for State Pension
+# Credit, hold an award of Working Tax Credit and hold no award of State
+# Pension Credit when the migration notice is issued. A couple both aged 16
+# or over and in the UK must claim a tax credit together (Tax Credits Act
+# 2002 s.3(3)), and s.10(1) ties entitlement to "the person or persons by
+# whom a claim ... has been made". So both members hold the couple's award,
+# and the claimant holds no part of an award another member claimed. Each
+# family lives in the North East, owns its home outright and has no income,
+# and every family but one makes a closure claim
+# (claims_uc_at_legacy_closure). An eligible family receives 12 times its
+# 2026-27 monthly standard allowance in Universal Credit: 12 x £424.90
 # single and 12 x £666.97 couple.
 
 - name: Reg 60A route opens for a single claimant aged 70 who reports Working Tax Credit
@@ -129,3 +132,54 @@
   output:
     is_uc_eligible: true
     universal_credit: 8_003.64
+
+- name: Reg 60A route stays shut without a closure claim for a single claimant aged 70 who reports Working Tax Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: A 17-year-old partner's Working Tax Credit opens the reg 60A route for a claimant aged 70 who claims alone
+  # The partner can't be a joint claimant (UC Regs 2013 reg 3(3)), so
+  # the claimant claims Universal Credit as a single person. Both members
+  # hold the couple's Working Tax Credit award (TCA 2002 ss.3(3), 10(1)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_uc_single_or_joint_claimant: [true, false]
+    is_uc_eligible: true
+    universal_credit: 5_098.80

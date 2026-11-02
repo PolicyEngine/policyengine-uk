@@ -1,31 +1,31 @@
 """Whose Working Tax Credit opens the reg 60A Universal Credit route.
 
-SI 2014/1230 reg 60A(1) waives the upper age condition in WRA 2012
-s.4(1)(b) for a qualifying claim by a single claimant, or joint claimants
-both, who have reached the qualifying age for State Pension Credit and are
-entitled to an award of Working Tax Credit. Members of a couple claim a tax
-credit jointly (Tax Credits Act 2002 s.3(3)(a)); anyone else claims as a
-single person (s.3(3)(b)). is_uc_eligible therefore reads the Working Tax
-Credit reports of the claimant and partner (is_claimant_or_partner) only.
+Under SI 2014/1230 reg 60A(1), the upper age condition in WRA 2012 s.4(1)(b)
+does not apply to a qualifying claim by a single claimant, or joint
+claimants both, who have reached the qualifying age for State Pension
+Credit, hold an award of Working Tax Credit and hold no award of State
+Pension Credit when the migration notice is issued. A couple both aged 16
+or over and in the UK must claim a tax credit together (Tax Credits Act 2002
+s.3(3)), and s.10(1) ties entitlement to "the person or persons by whom a
+claim ... has been made". is_uc_eligible reads the Working Tax Credit
+reports of the claimant and partner (is_claimant_or_partner) only.
 
 Invariants, for every drawn benefit unit:
 
 P1  On a closure claim (claims_uc_at_legacy_closure), a Working Tax Credit
     report by a member who is neither claimant nor partner never changes
     is_uc_eligible.
-P2  On a closure claim, with capital within the limit and a claimant or
-    partner aged 18 or over, a positive report by the claimant or partner
-    makes the family eligible.
-P3  Without a closure claim, is_uc_eligible equals the formula that sums
-    every member's report, whoever reports Working Tax Credit.
+P2  On a closure claim, with capital within the limit and a claimant aged
+    18 or over, a positive report by the claimant or partner makes the
+    family eligible.
+P3  Without a closure claim, zeroing every member's Working Tax Credit
+    report never changes is_uc_eligible.
 """
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
-from policyengine_uk.model_api import *
 
 MODEL_YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -34,53 +34,20 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-# Half the draws are unambiguously over the State Pension Credit
+# Half the adult draws fall from 67 to 100, past the State Pension Credit
 # qualifying age, where only the reg 60A route can open.
 ADULT_AGE = st.one_of(st.integers(67, 100), st.integers(18, 100))
+# A partner aged 16 or 17 can't be a joint claimant of Universal Credit
+# (UC Regs 2013 reg 3(3)) but still holds the couple's tax credit award.
+PARTNER_AGE = st.one_of(st.integers(67, 100), st.integers(16, 17), ADULT_AGE)
 OTHER_AGE = st.integers(0, 60)
 REPORT = st.sampled_from([0, 1, 500, 2_000, 6_000])
 POSITIVE_REPORT = st.sampled_from([1, 500, 2_000, 6_000])
-# Mostly no report, so other members' reports are often the only ones.
+# Three draws in four report nothing, so another member often reports alone.
 MOSTLY_NO_REPORT = st.sampled_from([0, 0, 0, 2_000])
-# The 2026 capital limit is £16,000; draws straddle it.
+# The draws straddle the £16,000 capital limit for 2026.
 CAPITAL = st.sampled_from([0, 6_000, 15_999, 16_001, 40_000])
-
-
-class is_uc_eligible(Variable):
-    """The formula that sums every benefit-unit member's Working Tax Credit
-    report, the reference for P3."""
-
-    value_type = bool
-    entity = BenUnit
-    label = "Eligible for Universal Credit (any member's Working Tax Credit)"
-    definition_period = YEAR
-
-    def formula(benunit, period, parameters):
-        capital = benunit("uc_assessable_capital", period)
-        limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
-        claimant = benunit.members("is_uc_single_or_joint_claimant", period)
-        meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
-        pension_age = benunit.members(
-            "has_attained_state_pension_credit_qualifying_age", period
-        )
-        has_qualifying_claimant = benunit.any(
-            claimant & meets_minimum_age & ~pension_age
-        )
-        pension_credit_route = benunit("meets_pension_credit_age_conditions", period)
-        closure_claim = benunit("claims_uc_at_legacy_closure", period)
-        on_working_tax_credit = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
-        )
-        reg_60a = on_working_tax_credit & benunit.any(claimant & meets_minimum_age)
-        route = (has_qualifying_claimant & ~pension_credit_route) | (
-            closure_claim & (has_qualifying_claimant | reg_60a)
-        )
-        return route & (capital <= limit)
-
-
-class any_member_working_tax_credit(Reform):
-    def apply(self):
-        self.update_variable(is_uc_eligible)
+WITHIN_LIMIT = 15_999
 
 
 @st.composite
@@ -94,17 +61,21 @@ def families(
     """A claimant, an optional partner and other members, each with
     is_claimant_or_partner set from their role. With couple_reports_wtc, the
     claimant or the partner reports a positive Working Tax Credit."""
-    couple = ["claimant"] + (["partner"] if draw(st.booleans()) else [])
     people = {
-        name: {
+        "claimant": {
             "age": draw(ADULT_AGE),
             "is_claimant_or_partner": True,
             "working_tax_credit_reported": draw(couple_report),
         }
-        for name in couple
     }
+    if draw(st.booleans()):
+        people["partner"] = {
+            "age": draw(PARTNER_AGE),
+            "is_claimant_or_partner": True,
+            "working_tax_credit_reported": draw(couple_report),
+        }
     if couple_reports_wtc:
-        reporter = draw(st.sampled_from(couple))
+        reporter = draw(st.sampled_from(list(people)))
         people[reporter]["working_tax_credit_reported"] = draw(POSITIVE_REPORT)
     for index in range(draw(st.integers(min_others, 2))):
         people[f"other_{index}"] = {
@@ -115,11 +86,16 @@ def families(
     return {"people": people, "capital": draw(CAPITAL)}
 
 
-def eligible(family, closure_claim, others_report=True, reform=None):
+def eligible(family, closure_claim, zero_reports=None):
+    """is_uc_eligible for the family. zero_reports is "others" to zero the
+    reports of members who are neither claimant nor partner, or "all" to
+    zero every member's report."""
     people = {}
     for name, person in family["people"].items():
         values = dict(person)
-        if not others_report and not values["is_claimant_or_partner"]:
+        if zero_reports == "all" or (
+            zero_reports == "others" and not values["is_claimant_or_partner"]
+        ):
             values["working_tax_credit_reported"] = 0
         people[name] = {key: {MODEL_YEAR: value} for key, value in values.items()}
     members = list(people)
@@ -142,8 +118,6 @@ def eligible(family, closure_claim, others_report=True, reform=None):
             },
         }
     )
-    if reform is not None:
-        simulation.apply_reform(reform)
     return bool(simulation.calculate("is_uc_eligible", MODEL_YEAR)[0])
 
 
@@ -153,42 +127,41 @@ def eligible(family, closure_claim, others_report=True, reform=None):
 )
 def test_other_members_working_tax_credit_never_changes_closure_eligibility(family):
     assert eligible(family, closure_claim=True) == eligible(
-        family, closure_claim=True, others_report=False
+        family, closure_claim=True, zero_reports="others"
     )
 
 
 @PROPERTY_SETTINGS
 @given(families(couple_reports_wtc=True))
 def test_claimant_or_partner_working_tax_credit_opens_closure_route(family):
-    family = {**family, "capital": min(family["capital"], 15_999)}
+    family = {**family, "capital": min(family["capital"], WITHIN_LIMIT)}
     assert eligible(family, closure_claim=True)
 
 
 @PROPERTY_SETTINGS
-@given(families(couple_report=MOSTLY_NO_REPORT, other_report=POSITIVE_REPORT))
-def test_no_closure_claim_matches_any_member_reading(family):
+@given(families(couple_reports_wtc=True, other_report=POSITIVE_REPORT))
+def test_working_tax_credit_never_changes_eligibility_without_closure_claim(family):
+    # Every draw has a report by the claimant or partner and capital within
+    # the limit, so a reg 60A route that opened without a closure claim
+    # would make a wholly pension-age family eligible.
+    family = {**family, "capital": min(family["capital"], WITHIN_LIMIT)}
     assert eligible(family, closure_claim=False) == eligible(
-        family, closure_claim=False, reform=any_member_working_tax_credit
+        family, closure_claim=False, zero_reports="all"
     )
 
 
-def test_other_adults_report_opens_route_under_any_member_reading():
-    """The reference formula differs from the model on a closure claim, so
-    P3's agreement without one is not vacuous."""
+def test_working_tax_credit_changes_eligibility_on_closure_claim():
+    """On a closure claim, zeroing a pension-age claimant's own report closes
+    the route, so the comparison in P3 can tell the two claims apart."""
     family = {
         "people": {
             "claimant": {
                 "age": 70,
                 "is_claimant_or_partner": True,
-                "working_tax_credit_reported": 0,
-            },
-            "other_0": {
-                "age": 40,
-                "is_claimant_or_partner": False,
                 "working_tax_credit_reported": 1_000,
             },
         },
         "capital": 0,
     }
-    assert not eligible(family, closure_claim=True)
-    assert eligible(family, closure_claim=True, reform=any_member_working_tax_credit)
+    assert eligible(family, closure_claim=True)
+    assert not eligible(family, closure_claim=True, zero_reports="all")
