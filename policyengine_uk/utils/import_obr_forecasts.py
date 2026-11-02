@@ -1406,12 +1406,13 @@ def validate_clearance_part(
         or not all(NUMBER_RE.fullmatch(text) for text in total[1:])
     ):
         raise ValueError(
-            f"{where} lacks the non-cigarette total's label ({spec.unit_cell!r}, "
-            "as receipts_label gives it) and its figures on the row directly "
-            f'above the "of which:" row over the {".".join(spec.path)} line. '
-            "The line takes its unit from that total's label, so the importer "
-            "needs the label and figures there, with only the total's other "
-            'parts between the "of which:" row and the line.'
+            f"{where} lacks the layout that gives the {'.'.join(spec.path)} line "
+            'its unit: an "of which:" row with no other cell directly above the '
+            "line and the total's other parts, and directly above that row the "
+            f"non-cigarette total's row, which holds its label ({spec.unit_cell!r}, "
+            "as receipts_label gives it), its figures and nothing else. The line "
+            "takes its unit from that total's label, so the importer refuses any "
+            "other layout."
         )
 
 

@@ -3878,12 +3878,13 @@ def not_under_total(table, key):
     ``table``, a part that does not sit under its total."""
     spec = CLEARANCE_SPECS[key]
     return (
-        f"Table {table} (sheet {table}) lacks the non-cigarette total's label "
-        f"({spec.unit_cell!r}, as receipts_label gives it) and its figures on "
-        'the row directly above the "of which:" row over the '
-        f"{'.'.join(spec.path)} line. The line takes its unit from that total's "
-        "label, so the importer needs the label and figures there, with only "
-        'the total\'s other parts between the "of which:" row and the line.'
+        f"Table {table} (sheet {table}) lacks the layout that gives the "
+        f'{".".join(spec.path)} line its unit: an "of which:" row with no other '
+        "cell directly above the line and the total's other parts, and directly "
+        "above that row the non-cigarette total's row, which holds its label "
+        f"({spec.unit_cell!r}, as receipts_label gives it), its figures and "
+        "nothing else. The line takes its unit from that total's label, so the "
+        "importer refuses any other layout."
     )
 
 
@@ -4002,20 +4003,41 @@ def test_a_layout_that_puts_the_parts_under_another_unit_stops_the_run(name):
     assert str(refused.value) == expected["hand_rolling_tobacco"]
 
 
+# Ways to change the rows over the parts of a real tobacco clearances table,
+# each given the rows and the place of the "of which:" row. In all three
+# releases, column N of the total's row and column C of the "of which:" row
+# are empty, so each layout adds a text and overwrites none.
+TOTAL_LAYOUTS = {
+    # A row that holds the total's label and none of its figures.
+    "label-without-figures": lambda rows, of_which: rows.insert(
+        of_which, {"B": "Non-cigarette clearances ('000s kg)"}
+    ),
+    # The total's row holds another text after its figures.
+    "text-on-total-row": lambda rows, of_which: rows[of_which - 1].update(
+        {"N": "Cigarette clearances (million sticks)"}
+    ),
+    # The "of which:" row holds another cell.
+    "text-on-of-which-row": lambda rows, of_which: rows[of_which].update(
+        {"C": "Cigarette clearances (million sticks)"}
+    ),
+    "empty-row-above-of-which": lambda rows, of_which: rows.insert(of_which, {}),
+    "empty-row-below-of-which": lambda rows, of_which: rows.insert(of_which + 1, {}),
+}
+
+
+@pytest.mark.parametrize("layout", sorted(TOTAL_LAYOUTS))
 @pytest.mark.parametrize("release", ["March 2025", "March 2026", "October 2026"])
-def test_a_total_label_without_figures_does_not_count_as_the_total(release):
-    """Insert a row that holds only "Non-cigarette clearances ('000s kg)"
-    directly above the "of which:" row of the real tobacco clearances. The
-    row holds the total's label but none of its figures, so the importer
-    refuses hand-rolled and other tobacco with the part check's message. It
-    reads cigarettes as before."""
+def test_a_part_needs_its_total_directly_above_of_which(release, layout):
+    """Change the rows over the parts of the real tobacco clearances in one
+    way. The importer refuses hand-rolled and other tobacco with the part
+    check's message and reads cigarettes as before."""
     _, sheet = REAL_CLEARANCE_TABLES[release, TOBACCO_CLEARANCES]
     real, start, end, _ = real_clearance_rows(release, TOBACCO_CLEARANCES)
     (of_which,) = [
         i for i in range(start, end) if receipts_label(real[i].get("B")) == "of which:"
     ]
     rows = [dict(row) for row in real]
-    rows.insert(of_which, {"B": "Non-cigarette clearances ('000s kg)"})
+    TOTAL_LAYOUTS[layout](rows, of_which)
     for key in TOBACCO_LINES:
         spec = CLEARANCE_SPECS[key]
         if key == "cigarettes":
