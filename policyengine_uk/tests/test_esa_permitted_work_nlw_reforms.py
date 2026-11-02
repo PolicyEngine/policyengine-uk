@@ -24,11 +24,14 @@ NLW_REFORM = {
 
 
 def _reported_claimants():
+    # SI 2025/1148 art. 3A(2) saves both awards, so each stays payable for the
+    # whole of 2026-27 after the 1 July 2026 abolition of income-related ESA.
     return {
         "claimant": {
             "age": 50,
             "is_claimant_or_partner": True,
             "esa_income_reported": 3_000,
+            "esa_income_appointee_saving": True,
         },
         "partner": {"age": 48, "is_claimant_or_partner": True},
         "outside_adult": {
@@ -37,6 +40,7 @@ def _reported_claimants():
             "employment_income": 10_700,
             "hours_worked": 780,
             "esa_income_reported": 5_000,
+            "esa_income_appointee_saving": True,
         },
     }
 

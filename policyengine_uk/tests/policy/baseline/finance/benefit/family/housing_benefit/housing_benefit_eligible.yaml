@@ -37,3 +37,61 @@
     LHA_eligible: false
   output:
     housing_benefit_eligible: false
+
+- name: The tax credit closure keeps Housing Benefit for specified or temporary accommodation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # Tax credits ended on 5 April 2025, so DWP has moved the family. This
+    # Housing Benefit award doesn't terminate, whichever legacy benefit
+    # closed (SI 2014/1230 reg 46(2)). The closure ends Working Tax Credit,
+    # so the family has no income and the means test pays the whole
+    # eligible rent.
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    working_tax_credit: 0
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+
+- name: The tax credit closure ends Housing Benefit outside that accommodation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    legacy_benefits_closed: true
+    housing_benefit_eligible: false
+    housing_benefit: 0

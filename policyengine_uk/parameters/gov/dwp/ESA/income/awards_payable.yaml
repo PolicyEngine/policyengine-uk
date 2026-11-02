@@ -1,0 +1,59 @@
+description: >-
+  Whether old style income-related Employment and Support Allowance awards are
+  still payable (1) or abolished (0). The Secretary of State appointed 1 July
+  2026 for the Welfare Reform Act 2012 abolition of income-related ESA to
+  reach every remaining award in Great Britain, and the Department for
+  Communities appointed 1 October 2026 in Northern Ireland. Two kinds of award escape that date: one
+  saved for an appointee (esa_income_appointee_saving), and one already due to
+  end at the end of a two-week run-on, which ends on that schedule instead. A
+  claimant with a migration notice deadline of 22 June 2026 who makes no
+  claim keeps the award to 5 July. The model has no claim or deadline dates,
+  so it pays every unsaved award to the general date. A contributory
+  allowance in the same award continues as new style ESA. Ordinary
+  parameters take their 30 April value for a model year, which would leave
+  2026-27 untouched, so these numeric flags use fiscal_year_blend to take the
+  day-weighted average from 6 April to 5 April: 2026-27 carries 86 of its 365
+  days in Great Britain and 178 in Northern Ireland.
+great_britain:
+  description: Whether old style income-related Employment and Support Allowance awards are still payable in Great Britain. SI 2025/1148 art. 3A(1) appoints 1 July 2026 for section 33(1)(b) of the Welfare Reform Act 2012 to come into force for every award it has not yet reached, except an award due to end at the end of a two-week run-on, which ends on that schedule.
+  values:
+    2008-10-27: 1
+    2026-07-01: 0
+  metadata:
+    label: Income-related ESA awards payable in Great Britain
+    unit: /1
+    period: year
+    fiscal_year_blend: true
+    reference:
+      - title: SI 2025/1148 art. 3A (inserted by SI 2026/409 art. 2(4))
+        href: https://www.legislation.gov.uk/uksi/2025/1148/article/3A
+      - title: SI 2026/409, The Welfare Reform Act 2012 (Commencement No. 35) (Abolition of Benefits) (Amendment) Order 2026
+        href: https://www.legislation.gov.uk/uksi/2026/409/made
+      - title: SI 2013/983 art. 4(1) (the amending provisions)
+        href: https://www.legislation.gov.uk/uksi/2013/983/article/4
+      - title: SI 2014/1230 reg 46(1)(a) (termination two weeks after a migration notice deadline)
+        href: https://www.legislation.gov.uk/uksi/2014/1230/regulation/46
+      - title: Welfare Reform Act 2012 s. 33(1)(b)
+        href: https://www.legislation.gov.uk/ukpga/2012/5/section/33
+northern_ireland:
+  description: Whether old style income-related Employment and Support Allowance awards are still payable in Northern Ireland. SR 2025/176 art. 3A(1) appoints 1 October 2026 for Article 39(1)(b) of the Welfare Reform (Northern Ireland) Order 2015 to come into operation for every award it has not yet reached, except an award due to end at the end of a two-week run-on, which ends on that schedule.
+  values:
+    2008-10-27: 1
+    2026-10-01: 0
+  metadata:
+    label: Income-related ESA awards payable in Northern Ireland
+    unit: /1
+    period: year
+    fiscal_year_blend: true
+    reference:
+      - title: SR 2025/176 art. 3A (inserted by SR 2026/115 art. 2(4))
+        href: https://www.legislation.gov.uk/nisr/2025/176/article/3A
+      - title: SR 2026/115, The Welfare Reform (Northern Ireland) Order 2015 (Commencement No. 18) (Abolition of Benefits) (Amendment) Order (Northern Ireland) 2026
+        href: https://www.legislation.gov.uk/nisr/2026/115/made
+      - title: SR 2017/190 art. 6(1) (the amending provisions)
+        href: https://www.legislation.gov.uk/nisr/2017/190/article/6
+      - title: Welfare Reform (Northern Ireland) Order 2015 art. 39(1)(b)
+        href: https://www.legislation.gov.uk/nisi/2015/2006/article/39
+metadata:
+  label: Income-related ESA awards payable
+  economy: false
