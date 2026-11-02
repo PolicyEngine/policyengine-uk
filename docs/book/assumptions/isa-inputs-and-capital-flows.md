@@ -120,19 +120,20 @@ year, the remainder stays in the pool. Where their stored sum exceeds the total,
 the model scales them to sum to the total exactly: it rounds each proportional
 share down to a whole step of the total's float32 spacing and gives the steps
 left over, one each, to the members whose shares lost most in rounding. The pool
-then keeps nothing of that total, each holding passes a capital limit only where
-its proportional share does for totals under £268 million, and a sole holder whose balance reaches the total
-counts exactly the total. For stocks and shares ISAs the model takes the smaller
-of `stocks_and_shares_isa` and `share_like_capital` as the total. Data that
-store only household totals hold no balances, so the pool keeps the whole total.
-The formulas count a balance only while the programme's `sources` lists the
-household source that includes it, so a reform that drops `cash_isa` or
-`share_like_capital` from `sources` drops the balances with it. For a Universal
-Credit unit that reports its capital (`benunit_reported_capital` or
-`uc_reported_capital`, zero or more), the formula leaves the unit's claimant's
-and partner's ISAs in the pool and subtracts the report, as it does for their
-company holdings. A nonnegative `pension_credit_reported_capital` replaces the
-unit's calculated Pension Credit capital.
+then keeps nothing of that total, for totals under £268 million each holding
+passes a capital limit only where its proportional share does, and a sole holder
+whose balance reaches the total counts exactly the total. For stocks and shares
+ISAs the model takes the smaller of `stocks_and_shares_isa` and
+`share_like_capital` as the total. Data that store only household totals hold no
+balances, so the pool keeps the whole total. The formulas count a balance only
+while the programme's `sources` lists the household source that includes it, so
+a reform that drops `cash_isa` or `share_like_capital` from `sources` drops the
+balances with it. For a Universal Credit unit that reports its capital
+(`benunit_reported_capital` or `uc_reported_capital`, zero or more), the formula
+leaves the unit's claimant's and partner's ISAs in the pool and subtracts the
+report, as it does for their company holdings. A nonnegative
+`pension_credit_reported_capital` replaces the unit's calculated Pension Credit
+capital.
 
 Ordinary accessible cash ISA balances enter the capital sources for Universal
 Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and

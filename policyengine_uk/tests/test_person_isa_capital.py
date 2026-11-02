@@ -257,6 +257,8 @@ ALLOCATION_SETTINGS = settings(SETTINGS, max_examples=300)
 @example(allocation=([3e38], [(0, 3e38), (0, 3e38)]))
 # A total of float32's largest value, whose next float32 is infinite.
 @example(allocation=([3.4028235e38], [(0, 3.4028235e38), (0, 3.4028235e38)]))
+# Shares above 2**127, where every float32 lies on a grid of 2**104.
+@example(allocation=([3e38], [(0, 3e38), (0, 2e38)]))
 # Infinite, missing and negative balances, and a negative total.
 @example(
     allocation=(
@@ -308,7 +310,7 @@ def test_holdings_stay_within_the_household_total(allocation):
             * Fraction(float(cap[i]))
             / sum(Fraction(float(held[j])) for j in same)
         )
-        step = Fraction(float(min(np.spacing(cap[i]), np.float32(2.0**104))))
+        step = Fraction(2) ** max(math.frexp(float(cap[i]))[1] - 24, -149)
         slack = exact / 2**48
         below = math.floor((exact - slack) / step) * step
         above = math.ceil((exact + slack) / step) * step

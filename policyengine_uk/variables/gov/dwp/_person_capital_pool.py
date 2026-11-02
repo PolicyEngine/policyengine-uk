@@ -115,13 +115,15 @@ def bounded_holdings(balance, household_total, household_sum, household_rank):
     # A household that doesn't scale takes a total of 0 and a step of 1 here,
     # so an infinite total there stays quiet. Elsewhere the step equals the
     # total's own float32 spacing, as float64. At float32's largest value the
-    # next float32 is infinite, so np.spacing gives infinity there; the cap at
-    # 2**104, the spacing of every float32 from 2**127 up, keeps that step
-    # finite and still divides the total.
+    # next float32 is infinite, so np.spacing gives infinity there and warns
+    # of an overflow, which the formula silences. The cap at 2**104, the
+    # spacing of every float32 from 2**127 up, keeps that step finite and
+    # still divides the total.
     scaled = np.where(over, total, np.float32(0))
-    step = np.minimum(
-        np.spacing(np.where(over, total, np.float32(1))), np.float32(2.0**104)
-    ).astype(np.float64)
+    with np.errstate(over="ignore"):
+        step = np.minimum(
+            np.spacing(np.where(over, total, np.float32(1))), np.float32(2.0**104)
+        ).astype(np.float64)
     # Float64 holds the product of two float32 amounts exactly, so each share
     # rounds once, in the division, and never exceeds the total.
     share = held * scaled.astype(np.float64) / np.where(over, held_sum, 1)
