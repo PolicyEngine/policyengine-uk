@@ -3,10 +3,10 @@
 A 16-year-old outside education, in a 70-year-old's benefit unit, reports
 their own Income Support in 2025, when it is in payment. They are not the
 claimant's qualifying young person, so the claimant gets no child addition,
-until a reform removes Income Support. For Universal Credit, the
-Transitional Provisions Regulations 2014 reg. 28 excludes them through their
-own Income Support report, which a reform that removes the award leaves in
-place.
+until a reform removes Income Support. DWP doesn't count them as a UC
+qualifying young person while they're entitled to Income Support (SI
+2014/1230 reg. 28), so the reform that removes Income Support restores both
+statuses.
 
 A young carer who claims Income Support in their own benefit unit follows
 the calculated award. While they receive it they are no qualifying young
@@ -190,10 +190,12 @@ def test_own_income_support_ends_the_young_person_until_a_reform_removes_it():
     ).tolist() == [False, True]
     assert kept.calculate("child_minimum_guarantee_addition", YEAR).tolist() == [0]
     assert removed.calculate("child_minimum_guarantee_addition", YEAR)[0] > 0
-    for sim in (kept, removed):
-        assert sim.calculate(
-            "is_qualifying_young_person_for_universal_credit", YEAR
-        ).tolist() == [False, False]
+    assert kept.calculate(
+        "is_qualifying_young_person_for_universal_credit", YEAR
+    ).tolist() == [False, False]
+    assert removed.calculate(
+        "is_qualifying_young_person_for_universal_credit", YEAR
+    ).tolist() == [False, True]
 
 
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")

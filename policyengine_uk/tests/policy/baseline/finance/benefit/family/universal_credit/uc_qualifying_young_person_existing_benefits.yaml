@@ -1,14 +1,18 @@
-# The Universal Credit (Transitional Provisions) Regulations 2014 reg. 28
-# excludes from the UC qualifying young person test a person entitled to an
-# existing benefit (reg. 2(1)): income-based JSA, income-related ESA, Income
-# Support, Housing Benefit, Child Tax Credit and Working Tax Credit. The
-# predicate reads the person's own reports and, for a claimant or partner,
-# the couple's joint tax credit award (Tax Credits Act 2002 s.3(3)). The
-# first seven cases follow the table in issue 2804: 2026, North East, owned
-# outright, no income.
+# Under the Universal Credit (Transitional Provisions) Regulations 2014
+# reg. 28, DWP doesn't count a person entitled to an existing benefit (reg.
+# 2(1)) as a UC qualifying young person: income-based JSA, income-related
+# ESA, Income Support, Housing Benefit, Child Tax Credit and Working Tax
+# Credit. The predicate reads the person's own reports and, for a claimant or
+# partner, the couple's joint tax credit award (Tax Credits Act 2002 s.3(3)).
+# It reads a report of Income Support, income-based JSA or a tax credit only
+# in a year the model pays that benefit: Income Support and income-based JSA
+# until 31 March 2026, tax credits until 5 April 2025. The first six cases,
+# and the four after the seventh, share one household: a parent aged 45 and
+# a 17-year-old on a non-advanced course, North East, owned outright, no
+# income.
 
 - name: A parent's young person who reports their own Income Support attracts no child element.
-  period: 2026
+  period: 2025
   input:
     people:
       parent:
@@ -32,7 +36,7 @@
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
     uc_child_element: 0
-    universal_credit: 5_098.80
+    universal_credit: 4_801.68
 
 - name: A parent's young person who reports their own Housing Benefit attracts no child element.
   period: 2026
@@ -89,7 +93,7 @@
     universal_credit: 5_098.80
 
 - name: A parent's young person who reports their own income-based JSA attracts no child element.
-  period: 2026
+  period: 2025
   input:
     people:
       parent:
@@ -113,7 +117,7 @@
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
     uc_child_element: 0
-    universal_credit: 5_098.80
+    universal_credit: 4_801.68
 
 - name: A parent's young person who reports no award attracts the child element.
   period: 2026
@@ -191,6 +195,117 @@
     uc_child_element: 0
     universal_credit: 4_062.96
 
+- name: A young person's own Income Support report after Income Support stops paying leaves the child element.
+  # Income Support stops paying on 1 April 2026 (gov.dwp.income_support.active), so nobody is entitled to it in 2026.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        income_support_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    uc_child_element: 4_222.56
+    universal_credit: 9_321.36
+
+- name: A young person's own income-based JSA report after income-based JSA stops paying leaves the child element.
+  # Income-based JSA stops paying on 1 April 2026 (gov.dwp.JSA.income.active).
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    uc_child_element: 4_222.56
+    universal_credit: 9_321.36
+
+- name: A young person's own Child Tax Credit report while tax credits pay removes the child element.
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        child_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    uc_child_element: 0
+    universal_credit: 4_721.40
+
+- name: A young person's own Child Tax Credit report after tax credits stop paying leaves the child element.
+  # Tax credits stop paying on 6 April 2025 (gov.dwp.tax_credits.active).
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        child_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    uc_child_element: 4_068
+    universal_credit: 8_869.68
+
 - name: A young person's own Child Tax Credit or Working Tax Credit report excludes them.
   period: 2024
   input:
@@ -267,3 +382,45 @@
         members: [claimant, partner, young_person]
   output:
     is_qualifying_young_person_for_universal_credit: [false, false, true]
+
+- name: A partner's own Housing Benefit report leaves an 18-year-old claimant a qualifying young person.
+  # Housing Benefit is paid to the claimant of that benefit, so the
+  # partner's report is their own and the couple branch reads only tax
+  # credits.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, false]
+
+- name: A dependant's own Child Tax Credit award leaves an 18-year-old claimant a qualifying young person.
+  # Tax Credits Act 2002 s.3(3)(b): the dependant claims as a single person,
+  # so their award is not the claimant's.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+        child_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [true, false]

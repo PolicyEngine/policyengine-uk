@@ -1,11 +1,14 @@
-# UC reg. 5(5) and SPC reg. 4A(5) exclude own awards from both QYP routes.
-# The reports identify the recipient whether receives_benefits_in_own_right
-# is omitted or explicitly false. SPC reg. 4A(5) also lists income support,
-# which UC reg. 5(5) does not: is_on_income_support reads it, from the
-# calculated award for a claimant or partner and from their own report for
-# anyone else. For Universal Credit, the Transitional Provisions Regulations
-# 2014 reg. 28 excludes a person entitled to Income Support, and the UC
-# predicate reads the person's own report.
+# UC reg. 5(5) excludes a person receiving Universal Credit, contributory ESA
+# or contribution-based JSA; UC Regs reg. 2 defines ESA and JSA without their
+# income-related and income-based forms. DWP doesn't count a person entitled
+# to income-related ESA, income-based JSA or Income Support as a UC
+# qualifying young person (SI 2014/1230 reg. 28), and the UC predicate reads
+# a report of income-based JSA or Income Support only while the model pays
+# it, until 31 March 2026. SPC reg. 4A(5) excludes own awards from the
+# Pension Credit routes, including income support: is_on_income_support reads
+# it, from the calculated award for a claimant or partner and from their own
+# report for anyone else. The reports identify the recipient whether
+# receives_benefits_in_own_right is omitted or explicitly false.
 
 - name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 40.
   period: 2026
@@ -43,7 +46,8 @@
     child_minimum_guarantee_addition: 0
 
 - name: A 16-year-old reporting income-based JSA does not attract child additions for a parent aged 40.
-  period: 2026
+  # Income-based JSA pays until 31 March 2026 (gov.dwp.JSA.income.active).
+  period: 2025
   input:
     people:
       parent:
@@ -218,7 +222,8 @@
     child_minimum_guarantee_addition: 0
 
 - name: A 16-year-old reporting income-based JSA does not attract child additions for a parent aged 70.
-  period: 2026
+  # Income-based JSA pays until 31 March 2026 (gov.dwp.JSA.income.active).
+  period: 2025
   input:
     people:
       parent:
@@ -358,7 +363,8 @@
     child_minimum_guarantee_addition: 0
 
 - name: A reported award also excludes the education route.
-  period: 2026
+  # Income-based JSA pays until 31 March 2026 (gov.dwp.JSA.income.active).
+  period: 2025
   input:
     age: [18, 18, 18, 18, 18]
     current_education: [UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY]
@@ -430,9 +436,9 @@
     is_qualifying_young_person_for_pension_credit: false
     is_qualifying_young_person_for_child_benefit: true
 
-- name: A 16-year-old reporting their own Income Support is neither a Pension Credit nor a UC young person.
-  # SPC reg. 4A(5) lists income support; for UC, Transitional Provisions
-  # reg. 28 excludes it. Income Support is in payment in 2025
+- name: A 16-year-old reporting their own Income Support counts as neither a Pension Credit nor a UC young person.
+  # SPC reg. 4A(5) lists income support; for UC, TP reg. 28 excludes a
+  # person entitled to it. Income Support is in payment in 2025
   # (gov.dwp.income_support.active).
   period: 2025
   input:
@@ -489,10 +495,10 @@
     is_qualifying_young_person_for_pension_credit: [false, false]
     is_qualifying_young_person_for_universal_credit: [false, false]
 
-- name: A member's Income Support report leaves the Pension Credit route available once Income Support stops paying.
+- name: A member's Income Support report leaves the Pension Credit and UC routes available once Income Support stops paying.
   # Income Support stops paying in 2026 (gov.dwp.income_support.active), so a
-  # report then is no award in payment for Pension Credit. The UC predicate
-  # reads the raw report under Transitional Provisions reg. 28.
+  # report then is no award in payment for Pension Credit, and nobody is
+  # entitled to it for TP reg. 28.
   period: 2026
   input:
     people:
@@ -515,9 +521,9 @@
   output:
     is_on_income_support: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, true]
-    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]
 
-- name: A claimant's calculated Income Support excludes them from the Pension Credit status.
+- name: A claimant's calculated Income Support excludes them from the Pension Credit and UC statuses.
   period: 2025
   input:
     age: 17

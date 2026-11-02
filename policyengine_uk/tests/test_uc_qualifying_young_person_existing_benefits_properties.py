@@ -1,23 +1,27 @@
 """Properties of the UC qualifying young person test under SI 2014/1230 reg. 28.
 
-The Universal Credit (Transitional Provisions) Regulations 2014 reg. 28
-excludes from the UC qualifying young person test a person entitled to an
-existing benefit (reg. 2(1)). The predicate reads the person's own reports of
-Income Support, Housing Benefit, Child Tax Credit and Working Tax Credit and,
-for a claimant or partner, the couple's joint tax credit award (Tax Credits
-Act 2002 s.3(3)). These tests check that:
+DWP doesn't count a person entitled to an existing benefit (SI 2014/1230
+reg. 2(1)) as a UC qualifying young person (reg. 28). The predicate reads the
+person's own reports of income-based JSA, income-related ESA, Income Support,
+Housing Benefit, Child Tax Credit and Working Tax Credit and, for a claimant
+or partner, the couple's joint tax credit award (Tax Credits Act 2002
+s.3(3)). It reads a report of Income Support, income-based JSA or a tax
+credit only in a year the model pays that benefit. These tests check that:
 
-- any positive own report of an existing benefit makes the predicate false;
+- any positive own report of an existing benefit the model pays that year
+  makes the predicate false;
 - with every such report at zero, the predicate equals the UC Regs 2013
-  reg. 5 test with the reg. 5(5) exclusions alone;
+  reg. 5 test less the person's reported UC, ESA and JSA awards;
 - a claimant's or partner's reports never change a dependant's predicate;
 - a parent's Universal Credit never rises when their young person's own
-  report turns positive.
+  report turns positive;
+- the predicate equals the reg. 5 test less reg. 28's exclusions, exactly.
 """
 
 from unittest.mock import patch
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -27,23 +31,33 @@ from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
 )
 
-_PROPERTY_SYSTEM = system.clone()
 EDUCATIONS = tuple(item.name for item in EducationType)
-YEARS = (2024, 2026)
+NON_ADVANCED = ("UPPER_SECONDARY", "POST_SECONDARY")
+YEARS = (2024, 2025, 2026)
 EXISTING_BENEFITS = (
+    "jsa_income_reported",
+    "esa_income_reported",
     "income_support_reported",
     "housing_benefit_reported",
     "child_tax_credit_reported",
     "working_tax_credit_reported",
 )
 TAX_CREDITS = ("child_tax_credit_reported", "working_tax_credit_reported")
+# UC Regs reg. 2 defines ESA and JSA without their income-related and
+# income-based forms, so reg. 5(5) reaches only these.
 REG_5_5_REPORTS = (
     "universal_credit_reported",
-    "esa_income_reported",
     "esa_contrib_reported",
-    "jsa_income_reported",
     "jsa_contrib_reported",
 )
+# The existing benefits the model pays in each year: tax credits until 5 April
+# 2025 (gov.dwp.tax_credits.active), Income Support and income-based JSA until
+# 31 March 2026 (gov.dwp.income_support.active, gov.dwp.JSA.income.active).
+PAYING = {
+    2024: set(EXISTING_BENEFITS),
+    2025: set(EXISTING_BENEFITS) - set(TAX_CREDITS),
+    2026: {"esa_income_reported", "housing_benefit_reported"},
+}
 SETTINGS = settings(
     max_examples=25,
     deadline=None,
@@ -61,8 +75,8 @@ def sometimes(draw):
 
 
 @st.composite
-def member(draw, ages, training):
-    """A person who usually reports no reg. 5(5) award.
+def member(draw, ages, training, educations=EDUCATIONS, own_right=(False, True)):
+    """A person who usually reports no UC, ESA or JSA award under reg. 5(5).
 
     Reg. 5(5) excludes anyone with such a report, so drawing them rarely
     leaves people for reg. 28 to exclude. Each existing benefit report is
@@ -71,10 +85,10 @@ def member(draw, ages, training):
     reg_5_5_report = draw(st.sampled_from((None,) * 4 + REG_5_5_REPORTS))
     return {
         "age": draw(ages),
-        "current_education": draw(st.sampled_from(EDUCATIONS)),
+        "current_education": draw(st.sampled_from(educations)),
         "is_in_approved_training": draw(training),
         "receives_benefits_in_own_right": draw(
-            st.sampled_from((False, False, False, True))
+            st.sampled_from((False,) * 3 + own_right[1:])
         ),
         **{
             name: draw(amount) if name == reg_5_5_report else 0.0
@@ -87,6 +101,11 @@ def member(draw, ages, training):
 young_member = member(st.integers(15, 20), st.booleans())
 # Claimants and partners aged 16 to 19 can be qualifying young people.
 adult = member(st.one_of(st.integers(16, 19), st.integers(20, 70)), st.just(False))
+# Someone who meets reg. 5 unless a report excludes them: 16 to 19, on a
+# non-advanced course and not flagged as receiving benefits in their own right.
+qualifying = member(
+    st.integers(16, 19), st.just(False), NON_ADVANCED, own_right=(False,)
+)
 INPUTS = (
     (
         "age",
@@ -118,14 +137,49 @@ def families(draw):
     return [claimant, second] + dependants
 
 
+@st.composite
+def qualifying_families(draw):
+    """Families where reg. 28 alone decides most members' status.
+
+    The claimant, the partner or dependant, and both dependants would meet
+    reg. 5 two times in three. A partner is otherwise an older adult whose own
+    reports reg. 28 must not pass to the claimant, except for the couple's
+    tax credit award.
+    """
+    couple = draw(st.booleans())
+    claimant = draw(st.one_of(qualifying, qualifying, adult))
+    claimant = dict(claimant, is_claimant_or_partner=True, is_parent=True)
+    second = draw(st.one_of(qualifying, qualifying, adult if couple else young_member))
+    second = dict(second, is_claimant_or_partner=couple, is_parent=couple)
+    dependants = [
+        dict(
+            draw(st.one_of(qualifying, qualifying, young_member)),
+            is_claimant_or_partner=False,
+            is_parent=False,
+        )
+        for _ in range(2)
+    ]
+    return [claimant, second] + dependants
+
+
 units_strategy = st.lists(families(), min_size=UNITS, max_size=UNITS)
-_SIMULATIONS = {}
+qualifying_units_strategy = st.lists(
+    qualifying_families(), min_size=UNITS, max_size=UNITS
+)
+_CACHE = {}
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _release_simulations():
+    """Drop the cloned system and cached simulations when the module ends."""
+    yield
+    _CACHE.clear()
 
 
 def simulate(units, year):
     """Set the inputs on one cached simulation per shape and year."""
     shape = (tuple(len(members) for members in units), year)
-    if shape not in _SIMULATIONS:
+    if shape not in _CACHE:
         situation = {"people": {}, "benunits": {}, "households": {}}
         for i, members in enumerate(units):
             names = [f"p{i}_{j}" for j in range(len(members))]
@@ -133,12 +187,14 @@ def simulate(units, year):
                 situation["people"][name] = {}
             situation["benunits"][f"b{i}"] = {"members": names}
             situation["households"][f"h{i}"] = {"members": names}
+        if "system" not in _CACHE:
+            _CACHE["system"] = system.clone()
         with patch(
             "policyengine_uk.simulation.CountryTaxBenefitSystem",
-            side_effect=_PROPERTY_SYSTEM.clone,
+            side_effect=_CACHE["system"].clone,
         ):
-            _SIMULATIONS[shape] = Simulation(situation=situation)
-    sim = _SIMULATIONS[shape]
+            _CACHE[shape] = Simulation(situation=situation)
+    sim = _CACHE[shape]
     people = flatten(units)
     for variable in INPUTS:
         sim.set_input(variable, year, [p[variable] for p in people])
@@ -163,7 +219,7 @@ def predicate(sim, year):
 
 
 def reg_5_test(sim, year):
-    """UC Regs 2013 reg. 5 with the reg. 5(5) exclusions alone."""
+    """UC Regs 2013 reg. 5 less the person's reported UC, ESA and JSA awards."""
 
     def get(name):
         return sim.calculate(name, year)
@@ -187,25 +243,32 @@ def reg_5_test(sim, year):
     )
 
 
-@SETTINGS
-@given(units=units_strategy, year=st.sampled_from(YEARS))
-def test_any_own_existing_benefit_report_excludes_the_person(units, year):
-    sim = simulate(units, year)
-    people = flatten(units)
-    own = np.array([any(p[n] > 0 for n in EXISTING_BENEFITS) for p in people])
+def reg_28_exclusions(units, year):
+    """Who reg. 28 excludes: own reports of benefits the model pays that year,
+    and, for a claimant or partner, the couple's tax credit award."""
+    paying = PAYING[year]
+    own = np.array([any(p[n] > 0 for n in paying) for p in flatten(units)], dtype=bool)
     couple_tax_credits = np.array(
         [
             p["is_claimant_or_partner"]
             and any(
                 q["is_claimant_or_partner"] and q[n] > 0
                 for q in members
-                for n in TAX_CREDITS
+                for n in paying.intersection(TAX_CREDITS)
             )
             for members in units
             for p in members
-        ]
+        ],
+        dtype=bool,
     )
-    assert not np.any(predicate(sim, year) & (own | couple_tax_credits))
+    return own | couple_tax_credits
+
+
+@SETTINGS
+@given(units=units_strategy, year=st.sampled_from(YEARS))
+def test_any_own_existing_benefit_report_excludes_the_person(units, year):
+    sim = simulate(units, year)
+    assert not np.any(predicate(sim, year) & reg_28_exclusions(units, year))
 
 
 @SETTINGS
@@ -214,6 +277,12 @@ def test_zero_existing_benefit_reports_leave_the_reg_5_test(units, year):
     zeroed = with_zero(units, EXISTING_BENEFITS, lambda p: True)
     sim = simulate(zeroed, year)
     assert predicate(sim, year).tolist() == reg_5_test(sim, year).tolist()
+    assert (
+        reg_5_test(sim, year).tolist()
+        == sim.calculate(
+            "is_qualifying_young_person_under_universal_credit_regulation_5", year
+        ).tolist()
+    )
     # With reports present, reg. 28 only removes people from the test.
     sim = simulate(units, year)
     assert not np.any(predicate(sim, year) & ~reg_5_test(sim, year))
@@ -272,3 +341,11 @@ def test_a_young_persons_report_never_raises_the_parents_award(
     without = simulate(family(0.0), year).calculate("universal_credit", year)[0]
     with_report = simulate(family(report), year).calculate("universal_credit", year)[0]
     assert with_report <= without + 1e-6
+
+
+@SETTINGS
+@given(units=qualifying_units_strategy, year=st.sampled_from(YEARS))
+def test_the_predicate_is_reg_5_less_reg_28(units, year):
+    sim = simulate(units, year)
+    expected = reg_5_test(sim, year) & ~reg_28_exclusions(units, year)
+    assert predicate(sim, year).tolist() == expected.tolist()
