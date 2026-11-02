@@ -201,6 +201,16 @@
   output:
     stamp_duty_land_tax: 40_000
 
+- name: Non-residential purchase, £250,000, model year 2015, pays the lower band's percentage of the whole price
+  # 1% x 250,000: under s. 55(2) Table B a price of £250,000 is "More than
+  # £150,000 but not more than £250,000", before 17 March 2016 (FA 2016 s. 127(12)).
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    non_residential_property_purchased: 250_000
+  output:
+    stamp_duty_land_tax: 2_500
+
 - name: Non-residential purchase, £1,000,000, model year 2016, pays the sliced rates
   # 2% x 100,000 + 5% x 750,000, from 17 March 2016 (FA 2016 s. 127(12)).
   period: 2016

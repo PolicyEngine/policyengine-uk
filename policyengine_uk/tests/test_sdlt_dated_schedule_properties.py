@@ -1,8 +1,8 @@
 """Property-based tests for the dated residential SDLT schedules (issue #2245).
 
 The reference below restates the legislation's own tables, for effective
-dates from 12 February 2015, the date from which the model's main rates take
-their s55(1B) Table A values:
+dates from 4 December 2014, the date from which s55(1B) Table A has effect
+(Stamp Duty Land Tax Act 2015 s1(3), s2(2)):
 
 - Finance Act 2003 s55(1B) Table A (main rates); Sch4ZA para 1(2) (higher
   rates for additional dwellings, the main rates plus 3 points, or 5 from
@@ -74,7 +74,7 @@ FIRST_TIME_BUYER_2022_25 = (425_000, 625_000)
 # First effective date, main rates, first-time buyers' relief (nil band,
 # maximum price) or None, higher-rates surcharge or None, lease rent nil band.
 TIMELINE = (
-    (date(2015, 2, 12), STANDARD, None, None, 125_000),
+    (date(2014, 12, 4), STANDARD, None, None, 125_000),
     (date(2016, 4, 1), STANDARD, None, 0.03, 125_000),
     (date(2017, 11, 22), STANDARD, FIRST_TIME_BUYER, 0.03, 125_000),
     (date(2018, 3, 15), STANDARD, FIRST_TIME_BUYER, 0.03, 125_000),
@@ -187,8 +187,7 @@ BOUNDARY_PRICES = sorted(
 )
 
 
-@pytest.mark.parametrize("effective_date", CHANGE_DAYS, ids=str)
-def test_each_change_day_and_its_eve_match_the_statutory_tables(effective_date):
+def _check_statutory_tables(effective_date):
     residential = RAW(effective_date.isoformat())
     price = np.array(BOUNDARY_PRICES)
     for buyer in BUYERS:
@@ -204,6 +203,19 @@ def test_each_change_day_and_its_eve_match_the_statutory_tables(effective_date):
     np.testing.assert_allclose(
         residential.rent.calc(price), expected, rtol=1e-12, atol=1e-6
     )
+
+
+@pytest.mark.parametrize("effective_date", CHANGE_DAYS, ids=str)
+def test_each_change_day_and_its_eve_match_the_statutory_tables(effective_date):
+    _check_statutory_tables(effective_date)
+
+
+def test_table_a_starts_on_4_december_2014():
+    # Stamp Duty Land Tax Act 2015 s2(2): s55(1B) Table A has effect from 4
+    # December 2014. The day before, the main rates hold other bands.
+    _check_statutory_tables(FIRST_DATE)
+    eve = RAW((FIRST_DATE - timedelta(days=1)).isoformat()).purchase.main.subsequent
+    assert tuple(zip(eve.thresholds, eve.rates)) != STANDARD
 
 
 @PROPERTY_SETTINGS
@@ -265,6 +277,7 @@ def test_omitted_relief_ignores_buyer_status_under_any_rates(
     _change_rates_over_initial_relief(main.subsequent, main_rates)
     _change_rates_over_initial_relief(main.first.rate, first_time_buyer_rates)
     purchase = residential(effective_date.isoformat()).purchase
+    assert purchase.main.first.max == 0
     assert list(purchase.main.subsequent.rates) == main_rates
     assert list(purchase.main.first.rate.rates) == first_time_buyer_rates
     price = np.array(price_list, dtype=float)

@@ -3,10 +3,12 @@ values:
   2003-07-10:
     value: false
     metadata:
-      note: Before 1 April 2016 HMRC charged a buyer of an additional dwelling the main rates in s. 55(1B) Table A at any price.
+      note: From 4 December 2014 (Stamp Duty Land Tax Act 2015 s. 2(2)) to 31 March 2016, HMRC charged a buyer of an additional dwelling the main rates in s. 55(1B) Table A at any price. Before 4 December 2014 that buyer paid the rates any other buyer paid.
       reference:
         - title: Finance Act 2003 s. 55(1B) Table A, as at 30 April 2015
           href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2015-04-30
+        - title: Stamp Duty Land Tax Act 2015 s. 2(2)
+          href: https://www.legislation.gov.uk/ukpga/2015/1/section/2
   2016-04-01:
     value: true
     metadata:

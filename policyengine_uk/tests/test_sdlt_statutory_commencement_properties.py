@@ -195,6 +195,50 @@ def test_table_b_charges_the_whole_price_in_2015(prices):
     np.testing.assert_allclose(tax, expected, rtol=1e-6, atol=0.01)
 
 
+def _whole_price_tax(table, price):
+    # The rate for the highest band whose threshold the price exceeds, on the
+    # whole price, or nothing when the price exceeds no threshold.
+    rates = [rate for threshold, rate in table if price > threshold]
+    return rates[-1] * price if rates else 0.0
+
+
+NON_RESIDENTIAL_FIRST_BAND = "gov.hmrc.stamp_duty.non_residential.purchase[0]"
+
+
+@settings(PROPERTY_SETTINGS, max_examples=10)
+@example(10_000, 0.005, [0, 5_000, 9_999.5, 10_000, 10_000.5, 20_000, 150_000.5])
+@given(
+    st.integers(1, 149_999),
+    st.sampled_from([0.001, 0.005, 0.0075]),
+    st.lists(
+        st.one_of(threshold_prices, st.integers(0, 3_000_000)), min_size=1, max_size=20
+    ),
+)
+def test_reformed_first_threshold_charges_the_whole_price_above_it(
+    threshold, rate, prices
+):
+    # A reform gives Table B's first band a positive threshold and rate in
+    # model year 2015. A price that exceeds no threshold pays nothing, and a
+    # price above the first threshold pays its band's rate on the whole price.
+    table = ((threshold, rate),) + TABLE_B[1:]
+    prices = prices + [threshold, threshold + 0.5, threshold + 1]
+    households = [
+        {"region": "LONDON", "non_residential_property_purchased": price}
+        for price in prices
+    ]
+    period = f"{TABLE_B_YEAR}-01-01.{TABLE_B_YEAR}-12-31"
+    reform = {
+        f"{NON_RESIDENTIAL_FIRST_BAND}.threshold": {period: threshold},
+        f"{NON_RESIDENTIAL_FIRST_BAND}.rate": {period: rate},
+    }
+    simulation = Simulation(
+        situation=_situation(households, [TABLE_B_YEAR]), reform=reform
+    )
+    tax = _calculate(simulation, "stamp_duty_land_tax", TABLE_B_YEAR)
+    expected = [_whole_price_tax(table, price) for price in prices]
+    np.testing.assert_allclose(tax, expected, rtol=1e-6, atol=0.01, err_msg=str(table))
+
+
 @settings(PROPERTY_SETTINGS, max_examples=6)
 @given(
     st.lists(
@@ -319,7 +363,11 @@ def _check_raw_switches(effective_date):
     assert bool(purchase.additional.higher_rates_apply) == (
         effective_date >= HIGHER_RATES_START
     )
-    assert (purchase.main.first.max > 0) == (effective_date >= RELIEF_START)
+    # first.max holds 0 from 8 July 2020 to 30 June 2021, which
+    # test_sdlt_dated_schedule_properties.py checks in
+    # test_omitted_relief_ignores_buyer_status_under_any_rates.
+    if effective_date < date(2020, 7, 8):
+        assert (purchase.main.first.max > 0) == (effective_date >= RELIEF_START)
 
 
 @pytest.mark.parametrize("effective_date", RAW_DAYS, ids=str)
@@ -367,7 +415,7 @@ def _residential_tax(purchase, price, buyer):
 @example(HIGHER_RATES_START - timedelta(days=1), [40_000, 300_000, 1_000_000])
 @example(RELIEF_START - timedelta(days=1), [200_000, 300_000, 500_000])
 @given(
-    st.dates(min_value=date(2015, 2, 12), max_value=RELIEF_START - timedelta(days=1)),
+    st.dates(min_value=date(2014, 12, 4), max_value=RELIEF_START - timedelta(days=1)),
     st.lists(residential_prices, min_size=1, max_size=8),
 )
 def test_raw_buyers_pay_the_main_rates_before_their_schedules_start(
