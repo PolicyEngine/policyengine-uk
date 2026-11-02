@@ -1,3 +1,10 @@
+## [2.170.2] - 2026-11-02
+
+### Fixed
+
+- The programme registry identifies the correct responsible bodies and nations for Scottish income tax, tax credits, the Energy Price Guarantee, Council Tax, Council Tax Reduction and Winter Fuel Payment.
+
+
 ## [2.170.1] - 2026-11-02
 
 ### Fixed
