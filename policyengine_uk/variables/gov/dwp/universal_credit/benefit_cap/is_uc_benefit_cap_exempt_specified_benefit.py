@@ -29,6 +29,7 @@ CLAIMANT_BENEFITS = [
     "attendance_allowance",
     "armed_forces_independence_payment",
     "iidb",
+    "war_widows_pension",
     "afcs",
 ]
 
@@ -61,7 +62,10 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "allowance (including armed forces independence payment, reg. 2), a "
         "war pension or armed forces compensation, disability living "
         "allowance, personal independence payment, carer's allowance or "
-        "carer support payment. A claimant is the single claimant or each "
+        "carer support payment. War pensions include a widow's, widower's "
+        "or surviving civil partner's pension (GB reg. 83(1)(d) and "
+        "(2)(a)(i); NI UC Regs 2016 reg. 83(1)(e) and (2)(a)(i)). "
+        "A claimant is the single claimant or each "
         "joint claimant (is_uc_assessed_claimant): a partner who cannot be a "
         "joint claimant, so that the other member claims as a single person "
         "(reg. 3(3)), is not one, and another member of the benefit unit, "
@@ -73,6 +77,7 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/83",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/83",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
