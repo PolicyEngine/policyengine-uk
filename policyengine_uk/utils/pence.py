@@ -79,10 +79,13 @@ def summed(total, parts) -> Pence:
     # Each rounding is relative, at most 2^-24 of its result, so the partial
     # sums exceed ``bound`` by under count * 2^-23 of it. Take the step of the
     # next float32 up, so that converting to float32 cannot shrink it.
-    largest = np.nextafter(
-        (bound * (1 + count * 2.0**-23)).astype(np.float32), np.float32(np.inf)
-    )
-    tolerance = count * np.spacing(largest).astype(np.float64) * 100
+    with np.errstate(under="ignore"):
+        # The step above zero is the smallest subnormal float32, which numpy
+        # reports as underflow; that step still bounds the rounding.
+        largest = np.nextafter(
+            (bound * (1 + count * 2.0**-23)).astype(np.float32), np.float32(np.inf)
+        )
+        tolerance = count * np.spacing(largest).astype(np.float64) * 100
     is_sum = np.abs(total.astype(np.float64) * 100 - exact) <= tolerance
     entered = stored(total)
     return Pence(
@@ -161,8 +164,11 @@ def months_summed(total, months) -> Pence:
 def _step(bound):
     """The float32 step, in pounds, of the next float32 above ``bound``, a
     magnitude in pounds as float64: at least that of any float32 up to it."""
-    largest = np.nextafter(np.asarray(bound, dtype=np.float32), np.float32(np.inf))
-    return np.spacing(largest).astype(np.float64)
+    with np.errstate(under="ignore"):
+        # The step above zero is the smallest subnormal float32, which numpy
+        # reports as underflow; that step still bounds the rounding.
+        largest = np.nextafter(np.asarray(bound, dtype=np.float32), np.float32(np.inf))
+        return np.spacing(largest).astype(np.float64)
 
 
 def _amount(population, variable_name, period) -> Pence:

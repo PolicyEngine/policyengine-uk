@@ -35,8 +35,18 @@ months_summed: a monthly flow summed over a year, in pence.
    all come back as exactly the sum of their pence.
 10. Bounded: the result is the exact sum of the months as stored, or a whole
     penny within a float32 step of each month and of the year of it.
+
+Zero amounts:
+
+11. Nothing underflows: stored_pence, summed and months_summed read zero
+    amounts, whose bound is zero, as 0 pence without raising a warning when
+    numpy warns on every floating-point error and warnings are errors, and
+    summed and months_summed give the same Pence under that state as under
+    numpy's default one.
 """
 
+import warnings
+from contextlib import contextmanager
 from fractions import Fraction
 from functools import reduce
 
@@ -248,3 +258,67 @@ def test_moves_the_months_sum_only_to_a_whole_penny_within_their_rounding(months
             float(result),
             float(exact),
         )
+
+
+@contextmanager
+def _strict():
+    """numpy warns on every floating-point error, and every warning raises."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with np.errstate(all="warn"):
+            yield
+
+
+# numpy's default error state, under which underflow passes silently.
+NUMPY_DEFAULT = dict(divide="warn", over="warn", under="ignore", invalid="warn")
+
+
+def test_zero_amounts_read_as_zero_pence_without_a_warning():
+    zero = np.zeros(3, dtype=np.float32)
+    with _strict():
+        pence = stored_pence(zero)
+        read = stored(zero)
+        total = summed(zero, [read, read])
+        months = months_summed(zero, [read] * 12)
+    assert np.array_equal(pence, np.zeros(3))
+    for result, count in ((read, 1), (total, 2), (months, 12)):
+        assert np.array_equal(result.pence, np.zeros(3))
+        assert np.array_equal(result.bound, np.zeros(3))
+        assert np.array_equal(result.count, np.full(3, count))
+
+
+def _same(a, b):
+    return all(np.array_equal(x, y) for x, y in zip(a, b))
+
+
+# Whole pence of either sign up to £131,072, with zero drawn often.
+whole_pence = st.one_of(st.just(0), st.integers(-LIMIT_PENCE, LIMIT_PENCE))
+
+
+@settings(max_examples=300, deadline=None, derandomize=True)
+@given(
+    parts=st.lists(whole_pence, min_size=1, max_size=5),
+    months=st.lists(whole_pence, min_size=12, max_size=12),
+)
+@example(parts=[0, 0], months=[0] * 12)
+@example(parts=[1, -1], months=[0] * 11 + [1])
+def test_zero_bounds_read_the_same_under_a_strict_error_state(parts, months):
+    """summed and months_summed give the same Pence whether numpy warns on
+    underflow or ignores it, and raise nothing when it warns, for float32
+    amounts in whole pence from -£131,072 to £131,072, including zeros whose
+    bound is zero."""
+    parts = [np.float32(p / 100) for p in parts]
+    months = [np.float32(m / 100) for m in months]
+
+    def read():
+        return (
+            summed(reduce(np.add, parts), [stored(p) for p in parts]),
+            months_summed(reduce(np.add, months), [stored(m) for m in months]),
+        )
+
+    with np.errstate(**NUMPY_DEFAULT):
+        default = read()
+    with _strict():
+        strict = read()
+    for a, b in zip(default, strict):
+        assert _same(a, b), (a, b)
