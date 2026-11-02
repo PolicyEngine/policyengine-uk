@@ -1,10 +1,10 @@
 """Properties of VAT grossing that hold for every input (#2633).
 
 `vat` is the statutory liability on recorded consumption divided by one
-grossing factor, less private school fees' share of VAT receipts, plus VAT on
-energy bills. The factor is the survey coverage times the household share of
-receipts, unless a reform moves the deprecated combined parameter, in which
-case that value is used.
+grossing factor, times one minus private school fees' share of VAT receipts,
+plus VAT on energy bills, which is not grossed up. The factor is the survey
+coverage times the household share of receipts, unless a reform moves the
+deprecated combined parameter, in which case that value is used.
 """
 
 from types import SimpleNamespace
@@ -93,7 +93,7 @@ def household_vat(spend, year):
 
 
 def expected_vat(full, reduced, year):
-    """Statutory liability over the shipped product, less the school share."""
+    """Statutory liability over the shipped product, times (1 - school share)."""
     p = system.parameters(year).gov
     product = (
         p.simulation.vat.survey_consumption_coverage
@@ -106,7 +106,7 @@ def expected_vat(full, reduced, year):
 # Each spend pair is (full_rate_vat_consumption, reduced_rate_vat_consumption).
 @settings(max_examples=5, deadline=None)
 @given(spend=st.lists(st.tuples(SPEND, SPEND), min_size=1, max_size=20))
-@example(spend=[(0.0, 15_438.0)])
+@example(spend=[(0.0, 15_438.0), (10_000.0, 0.0)])
 def test_vat_is_statutory_liability_over_the_shipped_product(spend):
     # One simulation of many households, so the property is checked on a
     # vector: VAT is linear in each household's recorded consumption, with
