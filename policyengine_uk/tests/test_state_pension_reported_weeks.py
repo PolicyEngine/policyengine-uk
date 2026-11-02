@@ -3,8 +3,8 @@
 basic_state_pension, new_state_pension and additional_state_pension divide
 state_pension_reported by policyengine-core's 52 weeks a year and split the
 weekly amount at the data year's full rate for the type the person has in the
-year being calculated. A dataset must therefore annualise the State Pension at
-52 weeks. At 365.25 / 7, which
+simulated year. A dataset must therefore annualise the State Pension at 52
+weeks. At 365.25 / 7, which
 policyengine-uk-data used until policyengine-uk-data#644, every full-rate
 pensioner read 0.34% above the full rate and carried an add-on they do not
 get, which put people whose only income is the full new State Pension on the
