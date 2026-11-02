@@ -10,11 +10,11 @@ from policyengine_uk import Simulation
 from policyengine_uk.system import system
 from policyengine_uk.tax_benefit_system import statutory_parameters
 
-# Each year's Scottish rate resolution, restated paragraph by paragraph from
-# the motion at
-# https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>:
-# the rate, and the limit of taxable income where it stops (None for the last
-# rate, which has no limit). Taxable income excludes the personal allowance.
+# We transcribe the Scottish Parliament's annual rates and limits paragraph by
+# paragraph from each motion at
+# https://www.parliament.scot/chamber-and-committees/votes-and-motions/<motion>.
+# Each pair gives the rate and the upper taxable-income limit; `None` marks the
+# final rate. Taxable income excludes the personal allowance.
 SCOTTISH_RATE_RESOLUTIONS = {
     2017: ("S5M-03912", [(0.20, 31_500), (0.40, 150_000), (0.45, None)]),
     2018: (
@@ -126,9 +126,10 @@ def test_scottish_income_tax_thresholds_match_the_resolution(year, thresholds):
 
 @pytest.mark.parametrize("year", [2026, 2027, 2028, 2029, 2030])
 def test_scottish_announced_threshold_freeze_then_cpi_projection(year):
-    # Scottish Budget 2026-27, Income Tax Policy: the higher, advanced and
-    # top cash thresholds stay fixed through 2028-29. Future CPI uprating
-    # is the model's existing projection, not a Budget commitment.
+    # The Scottish Government announced fixed higher, advanced and top cash
+    # thresholds through 2028-29 in the Scottish Budget 2026-27. The model
+    # projects CPI uprating afterwards; the government has made no commitment
+    # to it.
     # https://www.gov.scot/publications/scottish-budget-2026-2027/pages/4/
     rates = system.parameters.gov.hmrc.income_tax.rates.scotland.rates(year)
     cpi = system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
@@ -147,7 +148,7 @@ def test_scottish_announced_threshold_freeze_then_cpi_projection(year):
 
 @pytest.mark.parametrize("year", YEARS)
 def test_scottish_rates_and_limits_match_each_resolution(year):
-    """Each model year carries the schedule its year's resolution sets.
+    """Check each model year against the schedule the Scottish Parliament set for that year.
 
     The model reads each tax year's parameters at 30 April, so the year
     label 2019 carries the 2019-20 resolution.
