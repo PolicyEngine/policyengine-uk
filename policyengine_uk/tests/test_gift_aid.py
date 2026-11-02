@@ -302,9 +302,9 @@ def test_zero_gift_preserves_baseline_outputs_bit_for_bit():
         # The fourth row outside Scotland sets £1,300 of the Personal
         # Allowance against pay and £11,270 against savings (ITA 2007
         # s. 25(2), #2106): pay and property reach the £37,700 basic rate
-        # limit, and the £500 savings allowance covers savings that would be
-        # taxed at 40%, so its tax falls by £100. In Scotland the pay above
-        # £31,092 would be taxed at 42%, so the order is unchanged.
+        # limit, and the £500 savings allowance covers savings that would
+        # bear 40%, so its tax falls by £100. In Scotland the pay above
+        # £31,092 would bear 42%, so the model keeps the old order.
         "earned_taxable_income": [17_430, 47_430, 150_000, 28_700, 0, 88_930]
         + [17_430, 47_430, 150_000, 17_430, 0, 88_930],
         "received_allowances_earned_income": [12_570, 12_570, 0, 1_300, 10_000, 12_070]

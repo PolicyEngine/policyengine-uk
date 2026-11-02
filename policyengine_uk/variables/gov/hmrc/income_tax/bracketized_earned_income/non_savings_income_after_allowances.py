@@ -10,11 +10,11 @@ class non_savings_income_after_allowances(Variable):
         "does not reduce the income charged to tax) less savings and dividend "
         "income and the reliefs and allowances set against non-savings "
         "income, floored at nil: the income below savings and dividends "
-        "(ITA 2007 s. 16) once Steps 2 and 3 are done. ITA 2007 s. 25(2) "
-        "decides how much of the reliefs and allowances comes off it, and "
-        "from 2027-28 s. 25(3A) takes them off the rest of it before property "
-        "income. property_income_tax and taxable_property_income_after_allowances "
-        "both read it."
+        "(ITA 2007 s. 16) after Steps 2 and 3. The taxpayer sets the reliefs "
+        "and allowances against it in the way that gives the least tax (ITA "
+        "2007 s. 25(2)), and from 2027-28 against the rest of it before "
+        "property income (s. 25(3A)). property_income_tax and "
+        "taxable_property_income_after_allowances both read it."
     )
     definition_period = YEAR
     reference = [

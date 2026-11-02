@@ -15,7 +15,7 @@ interest and dividends drawn freely:
    after the allowances set against them, floored at nil
    (earned_taxable_income also subtracts Marriage Allowance; #1947). Under
    ITA 2007 s. 25(2) the model can set allowances against savings or
-   dividends while non-savings income is left, so the savings and dividends
+   dividends while non-savings income remains, so the savings and dividends
    left, not their full amounts, sit above it.
 3. Monotonic: more property income never lowers the income tax. Savings or
    dividend tax alone can fall, because under s. 25(2) the model can move

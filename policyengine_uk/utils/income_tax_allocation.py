@@ -189,8 +189,8 @@ def _build(inputs, income_tax):
     savings = np.maximum(0, columns["savings"])
     dividends = np.maximum(0, columns["dividends"])
     relief = columns["relief"]
-    # net_income, not its components, so a supplied adjusted net income or a
-    # reform that sets net income is followed, as the default order does.
+    # net_income, not its components, so the search follows a supplied adjusted
+    # net income or a reform that sets net income, as the default order does.
     non_savings = np.maximum(0, columns["net_income"] + relief - savings - dividends)
     property_income = np.minimum(np.maximum(0, columns["property"]), non_savings)
     deductions = relief + columns["allowances"]

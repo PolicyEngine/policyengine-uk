@@ -46,10 +46,10 @@
     taxable_savings_interest_income: 2_000
     taxable_dividend_income: 1_000
   output:
-    # After the pay, £1,000 of income is left. Left as £1,000 of dividends,
-    # £500 would be taxed at 8.75% (s. 13A nil rate on the first £500). Left
+    # After the pay, £1,000 of income remains. Left as £1,000 of dividends,
+    # £500 would bear 8.75% (s. 13A nil rate on the first £500). Left
     # as £500 of savings, in the starting rate band, and £500 of dividends,
-    # within the nil rate, it is all taxed at 0%.
+    # within the nil rate, it all bears 0%.
     received_allowances_savings_income: 1_500
     received_allowances_dividend_income: 500
     dividend_income_tax: 0
@@ -72,9 +72,9 @@
     taxable_savings_interest_income: 2_000
     taxable_dividend_income: 1_000
   output:
-    # £1,430 is left after the pay. Up to £500 of dividends are taxed at 0%
-    # (s. 13A) and savings in the starting rate band at 0% (s. 12), so £930
-    # of savings and £500 of dividends are left: £1,070 of the allowances
+    # £1,430 remains after the pay. Up to £500 of dividends bear 0%
+    # (s. 13A) and savings in the starting rate band 0% (s. 12), so £930
+    # of savings and £500 of dividends remain: £1,070 of the allowances
     # go to savings and £500 to dividends.
     received_allowances_savings_income: 1_070
     received_allowances_dividend_income: 500

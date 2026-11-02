@@ -32,7 +32,7 @@
     dividend_income: 20_000
   output:
     # The £4,000 of savings is the lowest part of Step 3 income, within the
-    # £5,000 starting rate band, so it is taxed at 0% (s. 12). Set against
+    # £5,000 starting rate band, so it bears 0% (s. 12). Set against
     # it, the allowance would save nothing; set against dividends it saves
     # 10.75%. So all £12,570 comes off dividends, and the tax is as in case 1:
     # (20,000 - 12,570 - 500) x 10.75%.
@@ -41,7 +41,7 @@
     savings_income_tax: 0
     income_tax: 744.975
 
-- name: Case 3, a trading loss is set against dividends rather than savings at the starting rate
+- name: Case 3, the taxpayer sets a trading loss against dividends rather than savings at the starting rate
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -67,7 +67,7 @@
     savings_income_tax: 0
     income_tax: 65_466.71
 
-- name: Case 4, in 2027-28 a trading loss is set against property income rather than dividends
+- name: Case 4, in 2027-28 the taxpayer sets a trading loss against property income rather than dividends
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -126,11 +126,11 @@
     savings_interest_income: 10_000
     region: SCOTLAND
   output:
-    # Pay of £37,430 after the allowance is taxed at the Scottish rates:
+    # Pay of £37,430 after the allowance bears the Scottish rates:
     # 3,967 x 19% + 12,989 x 20% + 14,136 x 21% + 6,338 x 42% = 8,982.05.
     # Savings run from £37,430 to £47,430. Step 3 income would be higher
     # rate income outside Scotland, so the savings allowance is £500
-    # (s. 12B(8)(b)(iv)), and the other £9,500 is above the UK basic rate
+    # (s. 12B(8)(b)(iv)), and the other £9,500 lies above the UK basic rate
     # limit, at 40% (s. 11D(6)): 3,800. Moving £270 of the allowance to
     # savings, as in case 7, would tax £270 more pay at 42% to take £270 of
     # savings out of the 40% band: £5.40 more.
@@ -148,10 +148,10 @@
     employment_income: 50_000
     savings_interest_income: 10_000
   output:
-    # With all £12,570 against pay, pay of £37,430 is taxed at 20% and the
+    # With all £12,570 against pay, pay of £37,430 bears 20% and the
     # £500 savings allowance covers savings from £37,430 to £37,930, all but
-    # £230 of it below the basic rate limit, where savings would be taxed
-    # at 20% anyway. Setting £270 against savings instead puts the pay at
+    # £230 of it below the basic rate limit, where savings would bear
+    # 20% anyway. Setting £270 against savings instead puts the pay at
     # £37,700 and the savings allowance above the limit, where it saves 40%:
     # pay 37,700 x 20% = 7,540; savings (47,430 - 38,200) x 40% = 3,692.
     # The order pay, savings, dividends charges 7,486 + 3,800 = 11,286.

@@ -123,13 +123,13 @@
     trade_loss_relief_against_savings_and_dividends: 15_000
     # ITA 2007 s. 25(2) sets the £32,570 of relief and Personal Allowance
     # against income in the way that gives the least tax. The pay takes
-    # £5,000. Of Step 3 income of £12,430, savings up to £6,000 are taxed at
+    # £5,000. Of Step 3 income of £12,430, savings up to £6,000 bear
     # 0%: £5,000 at the starting rate (s. 12) and £1,000 within the savings
     # allowance (s. 12A). So savings take £4,000 and dividends £23,570.
     received_allowances_earned_income: 0
     received_allowances_savings_income: 4_000
     received_allowances_dividend_income: 23_570
-    # £6,430 of dividends is left: (6,430 - 500) x 10.75%.
+    # £6,430 of dividends remains: (6,430 - 500) x 10.75%.
     income_tax: 637.475
 
 - name: Adjusted total income is total income after employment expenses
