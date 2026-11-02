@@ -197,9 +197,17 @@ eligibility from `is_SP_age` or the individual threshold from `state_pension_age
 State Pension flat-rate parameters live in
 `gov/dwp/state_pension/basic_state_pension/amount.yaml` and
 `gov/dwp/state_pension/new_state_pension/amount.yaml`. Published rates run
-to 2026-27; later years are uprated by
+to 2026-27. Each later April, `create_rate_projection.py` raises the
+previous year's rate by that year's growth in
 `gov.economic_assumptions.indices.triple_lock`, built from the yearly rates
-in `gov.economic_assumptions.yoy_growth.triple_lock`.
+in `gov.economic_assumptions.yoy_growth.triple_lock`, and rounds the result
+to the nearest 5p (`gov.dwp.state_pension.weekly_rate_rounding`). The
+Up-rating Orders round the full rates the same way
+([Explanatory Memorandum to SI 2020/234](https://www.legislation.gov.uk/uksi/2020/234/pdfs/uksiem_20200234_en.pdf),
+paragraph 7.17), and the previous published rate, uprated and rounded to
+the nearest 5p, gives every published basic rate from April 2011 and every
+full new rate from April 2017
+(`policyengine_uk/tests/test_triple_lock_outturn.py`).
 
 The part of a reported State Pension above the full rate is uprated by
 `gov.economic_assumptions.indices.september_cpi_uprating` instead (see
