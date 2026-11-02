@@ -37,7 +37,8 @@ def pension_credit_follows_model_formulas(benunit, period, parameters):
     (would_claim_pc).
 
     pension_credit equals the entitlement where the family would claim and
-    nil otherwise. The entitlement sums the guarantee and savings credits for
+    the couple has no income-related ESA (claimant_or_partner_esa_income),
+    and nil otherwise. The entitlement sums the guarantee and savings credits for
     a family eligible for Pension Credit (is_pension_credit_eligible), and
     gives nil to any other, and only a family that meets the age conditions
     is eligible. A parameter reform keeps these definitions, and the age
@@ -90,11 +91,18 @@ def pension_credit_without_income_related_esa(benunit, period):
     the claim (would_claim_pc) and an entered award. Where that Pension
     Credit pays, the screen refuses the couple's award, and the
     simulation's own Pension Credit then equals the branch's. Where it pays
-    nothing, the model pays the award. If the award then makes Pension
-    Credit pay, through the higher earnings disregard, no consistent state
-    exists: with Pension Credit in payment the family could not have the
-    award, and without the award it would get no Pension Credit. The model
-    then pays the award beside the Pension Credit it works out on it.
+    nothing, the model pays the award, and pension_credit pays nothing while
+    the couple has it, even where the award would make Pension Credit pay
+    through the higher earnings disregard. With Pension Credit in payment the
+    award would stop, and with it the disregard of SPC Regs 2002 Sch VI para
+    4(1)(a)(vii). Para 4(2) keeps £20 only where £20 of earnings was
+    disregarded in the award, and ESA Regs 2008 Sch 7 para 5 disregards a
+    claimant's permitted-work earnings up to the limit in whole, so such a
+    family would lose its Pension Credit and get the award back.
+    pension_credit_earnings_disregard does not apply para 4(2), and the model
+    holds no record of how an award started, so a couple whose award
+    disregarded £20 of a partner's part-time earnings (Sch 7 para 7(4)) gets
+    the award and no Pension Credit too.
 
     In a year with tax credits, a calculation in this branch opens the
     passport branch (pension_credit_with_passported_tax_credits), and one in
@@ -148,9 +156,10 @@ class esa_income_eligible(Variable):
         "and would claim, so the screen works it out only for such a couple. DWP "
         "disregards £20 a week of earnings while the claimant or partner receives "
         "ESA (SPC Regs 2002 Sch VI para 4(1)(a)(vii)). Where the family gets Pension "
-        "Credit only with that disregard, no consistent state exists, and the family "
-        "gets both. A member who claims in their own right keeps their claim whatever the "
-        "couple's Pension Credit. The claimant must not engage in remunerative work "
+        "Credit only with that disregard, the screen passes the couple's claim, and "
+        "pension_credit pays nothing while the couple has the award. A member who "
+        "claims in their own right keeps their claim whatever the couple's Pension "
+        "Credit. The claimant must not engage in remunerative work "
         "(para 6(1)(e); esa_income_claimant_remunerative_work). The other member of "
         "the couple must not engage in remunerative work (para 6(1)(f)): paid work of "
         "24 hours a week or more (ESA Regs 2008 reg 42(1)), subject to the existing "

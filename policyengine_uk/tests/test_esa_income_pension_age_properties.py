@@ -25,13 +25,13 @@ Against it, for every family drawn here:
   (is_SP_age) and B(0);
 - nobody who has reached pensionable age is on income-related ESA
   (is_on_income_related_esa), and a family whose every report comes from such
-  a member gets none.
+  a member gets none;
+- no family has both Pension Credit and the couple's income-related ESA.
 
 DWP disregards £20 a week of earnings while the claimant or partner
 receives ESA (SPC Regs 2002 Sch VI para 4(1)(a)(vii)), so some families get
-Pension Credit only with the award. Such a family gets both: no state is
-consistent there. The test counts such families and asserts nothing more of
-them.
+Pension Credit only with the award. The model pays such a family the award
+and no Pension Credit (pension_credit), and the test counts them.
 
 The years are 2016, when a man born before 6 December 1953 could be over the
 qualifying age for State Pension Credit but under his pensionable age of 65
@@ -339,8 +339,10 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
         ("Pension Credit pays without the award", barred),
         ("Pension Credit refuses a couple with a report", refused & reports[claims]),
         (
-            "both awards paid",
-            (couple_esa[claims] > 0) & (pension_credit[claims] > 0),
+            "Pension Credit pays only with the award",
+            refused
+            & (couple_esa[claims] > 0)
+            & (sim.calculate("pension_credit_entitlement", year)[claims] > 0),
         ),
     ]:
         if mask.any():
@@ -359,6 +361,17 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
     assert np.allclose(esa[claims][refused], esa[declines][refused], atol=0.01), units
     # Claiming Pension Credit never raises income-related ESA.
     assert (esa[claims] <= esa[declines] + 0.01).all(), units
+    # Sch 1 para 6(1)(c) and (d): no family has both the couple's award and
+    # Pension Credit, whether or not it would claim.
+    assert not ((couple_esa > 0) & (pension_credit > 0)).any(), units
+    if units == ROWS:
+        # The third row is case 18: B(0) nil and B(e) 525.20, so the man
+        # keeps his award and gets no Pension Credit.
+        assert couple_esa[2] == pytest.approx(5_491.20, abs=0.01)
+        assert sim.calculate("pension_credit_entitlement", year)[2] == pytest.approx(
+            525.20, abs=0.01
+        )
+        assert pension_credit[2] == 0
 
     # The screen, family by family.
     eligible = sim.calculate("esa_income_eligible", year)
