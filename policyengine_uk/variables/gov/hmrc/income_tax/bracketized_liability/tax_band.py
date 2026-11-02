@@ -42,11 +42,11 @@ def scottish_tax_band(person, period, parameters):
     bear the rates they would bear outside Scotland (ss. 11D(6) and 13(5)).
     Compare the rest-of-UK band only when taxable savings or dividends
     remain, then return the higher band. Keep income at each upper limit in
-    the lower band: s. 10(2) to (3A) charges income "up to" a limit at the
-    lower rate, and each resolution charges a rate "on income above" one
-    limit "and up to" the next. Keep income charged at a nil rate in the
-    band where it sits, as for every taxpayer; the Marriage Allowance has its
-    own rate test (liable_only_at_marriage_allowance_rates).
+    the lower band. Parliament charges income "up to" a limit at the lower
+    rate (s. 10(2) to (3A)), and the Scottish Parliament charges each rate
+    "on income above" one limit "and up to" the next. Keep income charged at
+    a nil rate in the band where it sits, as for every taxpayer; the Marriage
+    Allowance has its own rate test (liable_only_at_marriage_allowance_rates).
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)
@@ -64,11 +64,12 @@ def scottish_tax_band(person, period, parameters):
             TaxBand.HIGHER,
         ] + [TaxBand.ADDITIONAL] * (len(scale.thresholds) - 4)
     labels = np.array([band.index for band in [TaxBand.NONE] + scottish_bands])
-    # Allowances go to this income first, as in earned_income_tax. Marriage
-    # Allowance is a tax reduction (s. 55B(1)), so it does not move the band.
+    # Allowances go to this income first, as in earned_income_tax. Parliament
+    # gives the Marriage Allowance as a tax reduction (s. 55B(1)), so it does
+    # not move the band.
     non_savings = person("non_savings_income_after_allowances", period)
-    # s. 414(2)(b) raises the Scottish basic rate's upper limit and every
-    # limit above it by the grossed-up gift.
+    # Parliament raises the Scottish basic rate's upper limit and every limit
+    # above it by the grossed-up gift (s. 414(2)(b)).
     first_extended = first_extended_scottish_threshold(scale)
     limits_exceeded = sum(
         non_savings > threshold + (gross_gift if index >= first_extended else 0)
@@ -77,8 +78,9 @@ def scottish_tax_band(person, period, parameters):
     scottish_band = labels[limits_exceeded]
     uk_limits = rates.uk.thresholds
     taxable_income = person("net_income", period) - person("allowances", period)
-    # Taxable income above the non-savings income is savings or dividends.
-    # s. 414(2)(b) raises the basic and higher rate limits by the gift too.
+    # Savings and dividends make up the taxable income above the non-savings
+    # income. Parliament raises the basic and higher rate limits by the gift
+    # too (s. 414(2)(b)).
     uk_band = select(
         [
             taxable_income <= non_savings,

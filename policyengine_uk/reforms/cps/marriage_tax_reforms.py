@@ -50,8 +50,8 @@ def create_expanded_ma_reform(
             base_eligible = liable_only_at_marriage_allowance_rates(
                 person, period, parameters
             )
-            # Expand to people liable above those rates if the reform's
-            # expansion conditions are met.
+            # Expand to people liable above those rates who meet the reform's
+            # expansion conditions.
             expansion = person("meets_expanded_ma_conditions", period) & ~base_eligible
             return base_eligible | expansion
 

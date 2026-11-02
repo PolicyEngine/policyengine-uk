@@ -1,13 +1,13 @@
 # ITA 2007 s. 55B(2)(b) and (ba): the person receiving the allowance may be
 # liable only at the basic rates, the Scottish starter and intermediate rates
-# (from 2018-19, SI 2018/459 art. 6(2)), the dividend ordinary rate and the
-# nil and starting rates for savings, and dividends count as if the dividend
-# nil rate (s. 13A) did not exist. From 2021-22 to 2026-27 the personal
-# allowance is £12,570 and the basic rate limit £37,700, and the Scottish
-# higher rate starts at £31,092 of taxable income (S6M-16531 for 2025-26,
-# S6M-20844 for 2026-27). In 2026-27 the dividend allowance is £500 and the
-# Personal Savings Allowance £1,000, or £500 with income above the basic rate
-# limit (s. 12B).
+# (from 2018-19, SI 2018/459 art. 6(2)), the dividend ordinary rate and the nil
+# and starting rates for savings, and dividends count as if the dividend nil
+# rate (s. 13A) did not exist. From 2021-22 to 2026-27 Parliament sets the
+# personal allowance at £12,570 and the basic rate limit at £37,700, and the
+# Scottish Parliament starts the Scottish higher rate at £31,092 of taxable
+# income (S6M-16531 for 2025-26, S6M-20844 for 2026-27). In 2026-27 Parliament
+# sets the dividend allowance at £500 and the Personal Savings Allowance at
+# £1,000, or £500 with income above the basic rate limit (s. 12B).
 
 - name: Basic-rate earner meets the Marriage Allowance income conditions
   period: 2021
@@ -68,10 +68,10 @@
   input:
     # The Scottish higher rate moves to 37,702 of taxable income. Pay leaves
     # 50,270 - 12,570 = 37,700, all below it. The 1 of interest takes taxable
-    # income to 37,701, above the basic rate limit, so the Personal Savings
-    # Allowance is 500 (s. 12B) and charges it at the savings nil rate
-    # (s. 12A), which s. 55B(2)(b) allows. The model bands the person HIGHER
-    # on that pound alone.
+    # income to 37,701, above the basic rate limit, so Parliament sets the
+    # Personal Savings Allowance at 500 (s. 12B) and charges the pound at the
+    # savings nil rate (s. 12A), which it allows for the Marriage Allowance
+    # (s. 55B(2)(b)). The model bands the person HIGHER on that pound alone.
     gov.hmrc.income_tax.rates.scotland.rates[3].threshold: 37_702
     employment_income: 50_270
     savings_interest_income: 1
@@ -113,10 +113,11 @@
 - name: Savings at a raised starting rate limit and the savings nil rate meet the conditions
   period: 2026
   input:
-    # A reform raises the starting rate limit for savings to 37,500. Pay
-    # uses the personal allowance. Section 12 charges 37,500 of interest at
-    # the starting rate, and s. 12A charges the 500 above that limit at the
-    # savings nil rate. Section 55B(2)(b) permits both.
+    # A reform raises the starting rate limit for savings to 37,500. Pay uses
+    # the personal allowance. Parliament charges 37,500 of interest at the
+    # starting rate (s. 12) and the 500 above that limit at the savings nil
+    # rate (s. 12A), and permits both for the Marriage Allowance
+    # (s. 55B(2)(b)).
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 37_500
     employment_income: 12_570
     savings_interest_income: 38_000
@@ -130,14 +131,14 @@
 - name: Under a starting rate limit above the basic rate limit, savings past the basic rate limit fail the conditions
   period: 2026
   input:
-    # A reform raises the starting rate limit for savings to 40,000. Pay
-    # uses the personal allowance. Section 12(1)(b) charges the starting
-    # rate only on income that would otherwise bear the basic rate, so it
-    # covers 37,700 of the 38,000 of interest. Section 12A applies only to
-    # savings above the 40,000 limit, and the interest stops below it, so
-    # the other 300 bears the savings higher rate, which s. 55B(2)(b)
-    # forbids. The model's savings liability charges these 300 at the
-    # savings nil rate.
+    # A reform raises the starting rate limit for savings to 40,000. Pay uses
+    # the personal allowance. Parliament charges the starting rate only on
+    # income that would otherwise bear the basic rate (s. 12(1)(b)), so it
+    # covers 37,700 of the 38,000 of interest, and the savings nil rate only on
+    # savings above the 40,000 limit (s. 12A). The interest stops below that
+    # limit, so the other 300 bears the savings higher rate, which Parliament
+    # forbids for the Marriage Allowance (s. 55B(2)(b)). The model's savings
+    # liability charges these 300 at the savings nil rate.
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
     employment_income: 12_570
     savings_interest_income: 38_000
@@ -148,8 +149,8 @@
 - name: Taxable income at the basic rate limit meets the conditions
   period: 2026
   input:
-    # 50,270 - 12,570 = 37,700: s. 10(2) charges income up to the basic rate
-    # limit at the basic rate.
+    # 50,270 - 12,570 = 37,700: Parliament charges income up to the basic rate
+    # limit at the basic rate (s. 10(2)).
     employment_income: 50_270
     region: NORTH_EAST
   output:
@@ -167,8 +168,9 @@
 - name: Scottish taxable income at the start of the higher rate meets the conditions
   period: 2026
   input:
-    # 43,662 - 12,570 = 31,092: S6M-20844 charges the intermediate rate on
-    # income up to 31,092 and the higher rate only above it.
+    # 43,662 - 12,570 = 31,092: the Scottish Parliament charges the
+    # intermediate rate on income up to 31,092 and the higher rate only above
+    # it (S6M-20844).
     employment_income: 43_662
     region: SCOTLAND
   output:
@@ -186,7 +188,7 @@
   period: 2026
   input:
     # 37,500 of pay, then 500 of dividends, all within the 500 dividend
-    # allowance (s. 13A). Without s. 13A, 300 of them would be at the dividend
+    # allowance (s. 13A). Without s. 13A, 300 of them would bear the dividend
     # upper rate (37,500 + 500 = 38,000), so s. 55B(2)(ba) fails, though the
     # person pays no dividend tax.
     employment_income: 50_070
@@ -199,7 +201,7 @@
 - name: Dividends that reach the basic rate limit exactly meet the conditions
   period: 2026
   input:
-    # 37,500 + 200 = 37,700: none would be at the dividend upper rate.
+    # 37,500 + 200 = 37,700: none would bear the dividend upper rate.
     employment_income: 50_070
     dividend_income: 200
     region: NORTH_EAST
@@ -246,24 +248,24 @@
   output:
     meets_marriage_allowance_income_conditions: false
 
-- name: In 2015-16 a Scottish taxpayer's limit is the basic rate limit
+- name: In 2015-16 the basic rate limit bounds a Scottish taxpayer's income
   period: 2015
   input:
-    # Section 11A takes effect in 2016-17 (SI 2015/2000 art. 3), and the
-    # 2015-16 s. 55B(2)(b) allows the basic rate. 42,200 - 10,600 = 31,600,
-    # below the basic rate limit, though above the 31,500 the model reads
-    # from its 2017-18 Scottish scale.
+    # The Scottish rates of s. 11A start in 2016-17 (SI 2015/2000 art. 3), and
+    # in 2015-16 Parliament allows the basic rate (s. 55B(2)(b)).
+    # 42,200 - 10,600 = 31,600, below the basic rate limit, though above the
+    # 31,500 the model reads from its 2017-18 Scottish scale.
     employment_income: 42_200
     region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: In 2016-17 a Scottish taxpayer's limit is the basic rate limit
+- name: In 2016-17 the basic rate limit bounds a Scottish taxpayer's income
   period: 2016
   input:
-    # The Treasury added the Scottish basic rate to s. 55B(2)(b) (SI
-    # 2015/1810 art. 14(3)), and the 2016-17 s. 11A(1) charges it on
-    # non-savings income that would otherwise bear the basic rate.
+    # The Treasury added the Scottish basic rate to s. 55B(2)(b) (SI 2015/1810
+    # art. 14(3)), and in 2016-17 Parliament charges it on non-savings income
+    # that would otherwise bear the basic rate (s. 11A(1)).
     # 42,700 - 11,000 = 31,700, below the basic rate limit.
     employment_income: 42_700
     region: SCOTLAND
@@ -273,9 +275,9 @@
 - name: In 2017-18 the Scottish higher rate fails the conditions
   period: 2017
   input:
-    # The 2017-18 s. 55B(2)(b) allows the Scottish basic rate only. With an
-    # 11,500 allowance, the Scottish higher rate starts at 31,500 of taxable
-    # income: 43,001 - 11,500 = 31,501.
+    # In 2017-18 Parliament allows only the Scottish basic rate (s. 55B(2)(b)).
+    # With an 11,500 allowance, the Scottish higher rate starts at 31,500 of
+    # taxable income: 43,001 - 11,500 = 31,501.
     employment_income: 43_001
     region: SCOTLAND
   output:
@@ -302,8 +304,9 @@
 - name: In 2018-19 the Scottish intermediate rate meets the conditions
   period: 2018
   input:
-    # SI 2018/459 art. 6(2) adds the Scottish starter and intermediate rates
-    # to s. 55B(2)(b). 40,000 - 11,850 = 28,150, at the intermediate rate.
+    # The Treasury adds the Scottish starter and intermediate rates to
+    # s. 55B(2)(b) (SI 2018/459 art. 6(2)). 40,000 - 11,850 = 28,150, at the
+    # intermediate rate.
     employment_income: 40_000
     region: SCOTLAND
   output:
@@ -312,12 +315,12 @@
 - name: In 2015-16 dividends above the basic rate limit fail the conditions
   period: 2015
   input:
-    # 42,600 - 10,600 = 32,000 of pay, at the model's basic rate limit, then
-    # 1 of dividends. Section 13(2) charges the dividend upper rate on
-    # dividends that would otherwise bear the higher rate, which starts at
-    # the basic rate limit (s. 10(3)). Among the dividend rates, the 2015-16
-    # s. 55B(2)(b) permits only the dividend ordinary rate. The model's
-    # dividend scale starts the upper rate at 37,500 that year.
+    # 42,600 - 10,600 = 32,000 of pay, at the model's basic rate limit, then 1
+    # of dividends. Parliament charges the dividend upper rate on dividends
+    # that would otherwise bear the higher rate (s. 13(2)), and the higher rate
+    # starts at the basic rate limit (s. 10(3)). In 2015-16 Parliament permits
+    # only the dividend ordinary rate among the dividend rates (s. 55B(2)(b)).
+    # The model's dividend scale starts the upper rate at 37,500 that year.
     employment_income: 42_600
     dividend_income: 1
     region: NORTH_EAST
@@ -327,9 +330,9 @@
 - name: At the statutory 2015-16 basic rate limit a pound of dividends fails the conditions
   period: 2015
   input:
-    # A reform sets the basic rate limit to the statutory 31,785 (s. 10(5)
-    # for 2015-16). 42,385 - 10,600 = 31,785 of pay, then 1 of dividends,
-    # which s. 13(2) charges at the dividend upper rate.
+    # A reform sets the basic rate limit to the statutory 31,785 (s. 10(5) for
+    # 2015-16). 42,385 - 10,600 = 31,785 of pay, then 1 of dividends, which
+    # Parliament charges at the dividend upper rate (s. 13(2)).
     gov.hmrc.income_tax.rates.uk[1].threshold: 31_785
     employment_income: 42_385
     dividend_income: 1
@@ -340,10 +343,10 @@
 - name: In 2015-16 savings above the basic rate limit fail the conditions
   period: 2015
   input:
-    # 32,000 of pay, then 1 of interest. FA 2016 s. 4(17) gives the savings
-    # nil rate effect from 2016-17, so in 2015-16 the pound bears the higher
-    # rate, which s. 55B(2)(b) forbids. The model applies its Personal
-    # Savings Allowance in 2015-16 too.
+    # 32,000 of pay, then 1 of interest. Parliament gave the savings nil rate
+    # effect from 2016-17 (FA 2016 s. 4(17)), so in 2015-16 the pound bears the
+    # higher rate, which it forbids for the Marriage Allowance (s. 55B(2)(b)).
+    # The model applies its Personal Savings Allowance in 2015-16 too.
     employment_income: 42_600
     savings_interest_income: 1
     region: NORTH_EAST

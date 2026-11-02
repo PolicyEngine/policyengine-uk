@@ -128,19 +128,20 @@
     earned_income_tax: 50034.35
     income_tax: 50034.35
 
-# tax_band for a Scottish taxpayer with savings or dividends (#2350). The
-# Scottish rates charge only income that is neither savings nor dividends
-# (ITA 2007 s. 11A(1A); S6M-16531 for 2025-26). Savings and dividends are the
-# top slice (s. 16) and take the rates and bands they would bear outside
-# Scotland (ss. 11D(6) and 13(5)). The model returns the higher band. In
-# 2025-26 the personal allowance is £12,570, the Scottish limits on taxable
-# income are £2,827, £14,921, £31,092, £62,430 and £125,140 (19%, 20%, 21%,
-# 42%, 45%, 48%), the basic rate limit is £37,700, the dividend allowance is
-# £500 (8.75% ordinary, 33.75% upper) and the Personal Savings Allowance is
-# £1,000, or £500 with higher-rate income (s. 12B). Marriage Allowance
-# applies the rate conditions of s. 55B(2)(b) and the dividend counterfactual
-# of s. 55B(2)(ba). Savings at the savings nil rate do not bar the Marriage
-# Allowance.
+# tax_band for a Scottish taxpayer with savings or dividends (#2350).
+# Parliament charges the Scottish rates only on income that is neither
+# savings nor dividends (ITA 2007 s. 11A(1A); S6M-16531 for 2025-26).
+# Savings and dividends form the top slice (s. 16) and take the rates and
+# bands they would bear outside Scotland (ss. 11D(6) and 13(5)). The model
+# returns the higher band. In 2025-26 Parliament sets the personal allowance
+# at £12,570, the basic rate limit at £37,700, the dividend allowance at £500
+# (8.75% ordinary, 33.75% upper) and the Personal Savings Allowance at
+# £1,000, or £500 with higher-rate income (s. 12B). The Scottish Parliament
+# sets the Scottish limits on taxable income at £2,827, £14,921, £31,092,
+# £62,430 and £125,140 (19%, 20%, 21%, 42%, 45%, 48%). The Marriage
+# Allowance test applies the rate conditions of s. 55B(2)(b) and the
+# dividend counterfactual of s. 55B(2)(ba). Savings at the savings nil rate
+# do not bar the Marriage Allowance.
 
 - name: Scottish 2025 pay of 40000 and dividends of 5000 reaches the intermediate band
   period: 2025
@@ -441,8 +442,8 @@
         members: [person]
         country: SCOTLAND
   output:
-    # 1,430 taxable, all at 19% = 271.70. Nothing is savings or dividends,
-    # so the basic rate limit does not apply.
+    # 1,430 taxable, all at 19% = 271.70. The person has no savings or
+    # dividends, so the basic rate limit does not apply.
     tax_band: STARTER
     earned_income_tax: 271.70
 
@@ -502,8 +503,9 @@
   output:
     # gov.scot, Income tax rates set (2017): the Scottish higher rate starts
     # at £43,000 of income, £31,500 above the £11,500 allowance. 32,500
-    # taxable: 31,500 x 20% + 1,000 x 40% = 6,700. The 2017-18 s. 55B(2)(b)
-    # allows the Scottish basic rate but not the Scottish higher rate.
+    # taxable: 31,500 x 20% + 1,000 x 40% = 6,700. In 2017-18 Parliament
+    # allows the Scottish basic rate but not the Scottish higher rate
+    # (s. 55B(2)(b)).
     tax_band: HIGHER
     meets_marriage_allowance_income_conditions: false
     earned_income_tax: 6_700
@@ -640,11 +642,12 @@
         members: [person]
         country: SCOTLAND
   output:
-    # Income of 125,140 withdraws the whole personal allowance (s. 35), so
-    # all 125,140 is taxable, up to the 125,140 higher rate limit and not
-    # above it. With no other income, 5,000 is at the starting rate for
-    # savings (s. 12) and the higher-rate allowance covers 500 (s. 12B); the
-    # rest of the 37,700 is at 20% and the 87,440 above it at 40%:
+    # At income of 125,140 Parliament withdraws the whole personal allowance
+    # (s. 35), so the person pays tax on all 125,140, up to the 125,140
+    # higher rate limit and not above it. With no other income, 5,000 bears
+    # the starting rate for savings (s. 12) and the higher-rate allowance
+    # covers 500 (s. 12B); the rest of the 37,700 bears 20% and the 87,440
+    # above it 40%:
     # 32,200 x 20% + 87,440 x 40% = 6,440 + 34,976 = 41,416.
     tax_band: HIGHER
     meets_marriage_allowance_income_conditions: false

@@ -15,9 +15,9 @@ class savings_allowance(Variable):
         "Welsh taxpayer, so the bands are the rest-of-UK ones for everyone. "
         "For Scottish taxpayers, tax_band also uses Scottish limits for "
         "non-savings income. This calculation uses the rest-of-UK limits "
-        "directly. Taxable income is taken, as in tax_band, as net income less allowances, and "
-        "a Gift Aid gift raises the basic and higher rate limits by its "
-        "grossed-up amount (ITA 2007 s. 414(2)(b))."
+        "directly. Like tax_band's rest-of-UK band, it takes taxable income "
+        "as net income less allowances, and Parliament raises the basic and "
+        "higher rate limits by the grossed-up gift (ITA 2007 s. 414(2)(b))."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/12B"
