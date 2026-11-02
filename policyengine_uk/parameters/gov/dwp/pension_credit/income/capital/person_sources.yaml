@@ -2,7 +2,7 @@ description: >
   Person-level model variables counted as Pension Credit capital of the
   person's own benefit unit. The formulas sum these sources over the benefit
   unit's claimant and partner (`is_claimant_or_partner`) and exclude
-  dependants: DWP treats only the partner's capital as the claimant's under
+  dependants: DWP treats the partner's capital as the claimant's under
   section 5 of the State Pension Credit Act 2002.
   `lifetime_isa_countable_capital` values a Lifetime ISA at its surrender
   value: DWP values capital at its current market or surrender value under
@@ -14,11 +14,10 @@ description: >
   and shares ISA balances, bounded by the household total. The account
   investor beneficially owns an ordinary ISA's investments, and the named
   child owns a junior ISA's investments (Individual Savings Account
-  Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). Where no unit reports
-  capital, the formula subtracts each bounded ISA balance from its household
-  source (`cash_isa`, `share_like_capital`) and counts it in the holder's
-  unit. A nonnegative `pension_credit_reported_capital` replaces the unit's
-  calculated capital. When a household's balances exceed its total, the model
+  Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). The formula subtracts each
+  bounded ISA balance from its household source (`cash_isa`,
+  `share_like_capital`) and counts it in the holder's unit. A nonnegative
+  `pension_credit_reported_capital` replaces that unit's calculated capital. When a household's balances exceed its total, the model
   scales them to sum to the total exactly, rounding each share down or up to a
   whole float32 step of the total. When a reform removes a household source
   from `sources`, the formulas exclude the corresponding ISA person source.

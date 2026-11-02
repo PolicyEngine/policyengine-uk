@@ -3,7 +3,8 @@ description: >
   person's own benefit unit. The formulas sum these sources over the benefit
   unit's claimant and partner (`is_claimant_or_partner`) and exclude
   dependants: local authorities exclude children's capital under regulation
-  45. `lifetime_isa_countable_capital` values a Lifetime ISA at its surrender
+  45 (regulation 23(3) of the pension-age regulations).
+  `lifetime_isa_countable_capital` values a Lifetime ISA at its surrender
   value: local authorities value capital at its current market or surrender
   value under regulation 47 (regulation 45 of the pension-age regulations),
   whose words match the DWP benefits' valuation rules, and DWP guidance on

@@ -1,13 +1,14 @@
 # Cash and stocks and shares ISA balances count in the holder's own benefit
 # unit (#2729). The account investor beneficially owns an ordinary ISA's
 # investments, and the named child owns a junior ISA's investments (ISA
-# Regulations 1998 reg 4(6)(a) and reg 2B(c)). The means tests count the
-# claimant's and partner's capital (WRA 2012 s 5; HB Regs 2006 reg 25; SPCA
+# Regulations 1998 reg 4(6)(a) and reg 2B(c)). DWP and local authorities count
+# the claimant's and partner's capital (WRA 2012 s 5; HB Regs 2006 reg 25; SPCA
 # 2002 s 5; IS Regs 1987 reg 23; JSA Regs 1996 reg 88; ESA Regs 2008 reg 83),
 # and not a child's or young person's (HB reg 25(3) and 45; IS reg 23(2); JSA
 # reg 88(2); ESA reg 83(2)). The formula subtracts the identified ISA balances
 # from the household's capital, then allocates the remainder by claimant and
-# partner counts.
+# partner counts, between pension-age adults for Pension Credit, or wholly to
+# a unit on the IS, JSA or ESA claim path.
 
 - name: Case 1, a lodger's cash ISA stays out of the main benefit unit's capital.
   period: 2025
@@ -63,7 +64,7 @@
         members: [parent_1, parent_2, adult_child]
         savings: 9_000
   output:
-    # share_like_capital is the itemised 6,000, all of it the child's ISA.
+    # share_like_capital sums the itemised 6,000, all of it the child's ISA.
     share_like_capital: 6_000
     stocks_and_shares_isa_countable_capital: [0, 0, 6_000]
     # The formula subtracts the child's 6,000 from savings 9,000 plus
@@ -560,8 +561,8 @@
       household:
         members: holder
         stocks_and_shares_isa: 1_000
-        # The means tests count share-like capital, and an input or reform
-        # can set it below the ISA total.
+        # The formulas count share-like capital, and an input or reform can
+        # set it below the ISA total.
         share_like_capital: 100
   output:
     stocks_and_shares_isa_countable_capital: 100

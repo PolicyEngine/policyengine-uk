@@ -2,8 +2,8 @@ description: >
   Person-level model variables counted as Income Support capital of the
   person's own benefit unit. The formulas sum these sources over the benefit
   unit's claimant and partner (`is_claimant_or_partner`) and exclude
-  dependants: DWP excludes children's capital under regulation 47 and, once SI
-  2003/455 applies, regulation 23(2). `lifetime_isa_countable_capital` values
+  dependants: DWP excludes children's capital under regulation 47 until SI
+  2003/455 applies, and regulation 23(2) from then. `lifetime_isa_countable_capital` values
   a Lifetime ISA at its surrender value: DWP values capital at its current
   market or surrender value under regulation 49, and DMG 29665 counts a
   Lifetime ISA at 75% of its value under 60 and in full from 60. Lifetime ISAs

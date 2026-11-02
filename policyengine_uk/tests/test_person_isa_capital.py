@@ -38,10 +38,12 @@ invariants:
    equals it; where it doesn't, each holding equals the balance; a sole
    holder whose balance reaches the total holds exactly the total; each
    holding equals its proportional share rounded down or up to a whole step,
-   the total's float32 spacing, allowing for float64 sum and division
-   rounding, so it lies within one step of the share and passes a capital
-   limit only where the share does; and the same input gives the same
-   output.
+   the total's float32 spacing (at most 2**104, the largest spacing of a
+   finite float32), allowing for float64 sum and division rounding, so it
+   lies within one step of the share and passes a capital limit only where
+   the share does; a holding exceeds its balance by less than one step, and
+   only where the balance falls between steps; and the same input gives the
+   same output.
 """
 
 import math
@@ -253,6 +255,8 @@ ALLOCATION_SETTINGS = settings(SETTINGS, max_examples=300)
 @example(allocation=([1.0], [(0, 1e-30), (0, 3.0)]))
 # Balances whose sum exceeds float32's range.
 @example(allocation=([3e38], [(0, 3e38), (0, 3e38)]))
+# A total of float32's largest value, whose next float32 is infinite.
+@example(allocation=([3.4028235e38], [(0, 3.4028235e38), (0, 3.4028235e38)]))
 # Infinite, missing and negative balances, and a negative total.
 @example(
     allocation=(
@@ -277,7 +281,7 @@ def test_holdings_stay_within_the_household_total(allocation):
     # The plain numpy rank agrees with Core's get_rank.
     person, household = _core_household(household_of)
     assert np.array_equal(household_rank(-held), person.get_rank(household, -held))
-    # No holding is negative or exceeds the household total.
+    # No holding falls below zero or exceeds the household total.
     assert ((0 <= holding) & (holding <= cap)).all()
     with np.errstate(over="ignore"):
         scales = household_sum(held).astype(np.float32) > cap
@@ -285,7 +289,7 @@ def test_holdings_stay_within_the_household_total(allocation):
     # means test nets the whole total from the household source and leaves
     # nothing of it in the pool.
     assert np.array_equal(household_sum(holding)[scales], cap[scales])
-    # Balances whose stored sum is within the total keep their exact values.
+    # Balances whose stored sum doesn't exceed the total keep their exact values.
     assert np.array_equal(holding[~scales], held[~scales])
     # A sole holder whose balance reaches the total holds exactly the total.
     holders = household_sum((held > 0).astype(np.float32))
@@ -295,7 +299,8 @@ def test_holdings_stay_within_the_household_total(allocation):
     # down or up to a whole step, the total's float32 spacing, allowing for
     # float64 sum and division rounding. So it lies within one step of the
     # share and passes a multiple of the step, such as a capital limit, only
-    # where the share does.
+    # where the share does. A holding exceeds its balance by less than one
+    # step, and only where the balance falls between steps.
     for i in np.flatnonzero(scales):
         same = np.flatnonzero(household_of == household_of[i])
         exact = (
@@ -303,11 +308,15 @@ def test_holdings_stay_within_the_household_total(allocation):
             * Fraction(float(cap[i]))
             / sum(Fraction(float(held[j])) for j in same)
         )
-        step = Fraction(float(np.spacing(cap[i])))
+        step = Fraction(float(min(np.spacing(cap[i]), np.float32(2.0**104))))
         slack = exact / 2**48
         below = math.floor((exact - slack) / step) * step
         above = math.ceil((exact + slack) / step) * step
         assert below <= Fraction(float(holding[i])) <= above
+        excess = Fraction(float(holding[i])) - Fraction(float(held[i]))
+        assert excess < step
+        if (Fraction(float(held[i])) / step).denominator == 1:
+            assert excess <= 0
     # The same input gives the same output, and one household's holdings
     # never depend on another's.
     again = bounded_holdings(
@@ -425,9 +434,9 @@ def test_both_forms_in_one_dataset_add_up_to_the_stored_total():
         pool = holdings[0] - counted[2]
         assert uc[1] == pytest.approx(pool / 3 + counted[2], rel=1e-6), year
         assert uc[0] == pytest.approx(2 * pool / 3, rel=1e-6), year
-    # #2781 keeps the stored 15,000: savings 4,000 and its unexplained 5,000
-    # make a pool of 9,000, shared 6,000 and 3,000. The second household's
-    # savings are its whole pool.
+    # #2781 keeps the stored 15,000, so the formula allocates savings of 4,000
+    # and the unexplained 5,000 as 6,000 and 3,000. The second household's
+    # pool holds only its savings.
     assert list(simulation.calculate("cash_isa", YEAR)) == [15_000, 0]
     assert list(simulation.calculate("uc_assessable_capital", YEAR)) == [
         6_000,
