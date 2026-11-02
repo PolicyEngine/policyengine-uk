@@ -38,7 +38,11 @@ class council_tax_reduction_applicable_income(Variable):
         "children or young persons. War pensions and Armed Forces "
         "Compensation Scheme payments are not counted: Scotland disregards or "
         "omits them, and English and Welsh councils may relieve them beyond "
-        "the prescribed £10 a week, so the model takes the full disregard."
+        "the prescribed £10 a week, so the model takes the full disregard. "
+        "The income tax and National Insurance deducted are those the scheme "
+        "allows (council_tax_reduction_tax_deduction): on earnings only in "
+        "Scotland's working-age scheme, on income taken into account in the "
+        "pensioner schemes, and the whole liability in the other schemes."
     )
     definition_period = YEAR
     unit = GBP
@@ -285,12 +289,10 @@ class council_tax_reduction_applicable_income(Variable):
         pension_contributions = add_for_members(
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
-        tax = add_for_members(
-            benunit,
-            period,
-            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
-            members,
-        )
+        # The income tax and National Insurance each scheme allows: on earnings
+        # only in Scotland's working-age scheme, on income taken into account
+        # in the pensioner schemes (council_tax_reduction_tax_deduction).
+        tax = benunit("council_tax_reduction_tax_deduction", period)
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
         # earnings disregards, capped at net earnings. Zero for working-age

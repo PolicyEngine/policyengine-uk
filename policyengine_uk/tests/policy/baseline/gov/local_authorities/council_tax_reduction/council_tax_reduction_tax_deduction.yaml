@@ -1,0 +1,148 @@
+# Income tax and National Insurance deducted from Council Tax Reduction income.
+# - Scotland, working age: the Council Tax Reduction (Scotland) Regulations
+#   2021 (SSI 2021/249) reg 50(3)(a) reads "Earnings do not include— (a) any
+#   amount deducted from them by way of income tax or primary Class 1
+#   contributions under the 1992 Act"; regs 49(6)(b) and 51(2) do the same,
+#   and the unearned income rules (regs 57 to 65) deduct no tax. So only tax
+#   and National Insurance on earnings come off.
+# - Pension age: SSI 2012/319 reg 31(12), "In the case of any income taken
+#   into account for the purpose of calculating a person's income, any amount
+#   payable by way of tax must be disregarded"; SI 2012/2885 Sch 1 para 17(13)
+#   and WSI 2013/3029 Sch 1 para 11(13) read the same. So tax on income not
+#   taken into account (savings interest, dividends, the Scottish Carer
+#   Supplement) does not come off.
+#
+# 2026-27 rates. Personal allowance 12,570. Scottish bands on taxable income:
+# 19% to 3,967, 20% to 16,956, 21% to 31,092. UK basic rate 20% to 37,700.
+# Class 1 primary contributions 8% above 241.73 a week (12,569.96 a year).
+# Each family is a single adult with no Pension Credit or Universal Credit.
+
+- name: Scotland's working-age scheme deducts tax and National Insurance on earnings only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 20_000
+        private_pension_income: 10_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # Tax on earnings, the earnings as the lowest part of income:
+    # 20,000 - 12,570 = 7,430 taxable; 3,967 x 19% = 753.73 and
+    # 3,463 x 20% = 692.60, so 1,446.33. Class 1: (20,000 - 12,569.96) x 8% =
+    # 594.40. The tax on the private pension is not deducted.
+    council_tax_reduction_tax_deduction: 2_040.73
+    # 20,000 + 10,000 - 2,040.73.
+    council_tax_reduction_applicable_income: 27_959.27
+
+- name: England's pensioner scheme deducts no tax on savings interest
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 20_308
+        savings_interest_income: 6_559
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: NORTH_WEST
+        council_tax: 2_000
+  output:
+    # The scheme counts the pension, not the interest. Tax on the pension:
+    # (20,308 - 12,570) x 20% = 1,547.60.
+    council_tax_reduction_tax_deduction: 1_547.60
+    # 20,308 - 1,547.60.
+    council_tax_reduction_applicable_income: 18_760.40
+
+- name: Wales's pensioner scheme deducts no tax on dividends
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 20_000
+        dividend_income: 10_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        region: WALES
+        council_tax: 2_000
+  output:
+    # The scheme counts the pension, not the dividends. Tax on the pension:
+    # (20,000 - 12,570) x 20% = 1,486.
+    council_tax_reduction_tax_deduction: 1_486
+    # 20,000 - 1,486.
+    council_tax_reduction_applicable_income: 18_514
+
+- name: Scotland's pensioner scheme deducts no tax on the Scottish Carer Supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 15_000
+        # 11.70 a week for 52 weeks.
+        scottish_carer_supplement: 608.40
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+  output:
+    # SSI 2012/319 reg 27(1)(j)(xxib) excepts the supplement, so the scheme
+    # counts the pension alone. Tax on the pension with the supplement above
+    # it: (15,000 - 12,570) x 19% = 461.70.
+    council_tax_reduction_tax_deduction: 461.70
+    # 15,000 - 461.70.
+    council_tax_reduction_applicable_income: 14_538.30
+
+- name: Wales's working-age scheme still deducts the whole income tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 20_000
+        private_pension_income: 10_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        country: WALES
+        region: WALES
+        council_tax: 2_000
+  output:
+    # The model keeps the whole liability here, which the cases above do not
+    # cover: (30,000 - 12,570) x 20% = 3,486 and Class 1 594.40.
+    council_tax_reduction_tax_deduction: 4_080.40
+    council_tax_reduction_applicable_income: 25_919.60
