@@ -1096,7 +1096,7 @@ budget_terms:
     name: Two Child Limit Payment
     budget: benefit
     kind: reform_measure
-    notes: A proposed Scottish payment, whose regulations the Scottish Government decided on 3 December 2025 not to lay. Zero unless a reform switches it on.
+    notes: A proposed Scottish payment, whose regulations the Scottish Government confirmed on 3 December 2025 it will not lay. Zero unless a reform switches it on.
 
   - variable: carer_support_payment
     name: Carer Support Payment
