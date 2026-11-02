@@ -226,8 +226,9 @@ def _build(inputs, income_tax):
     # Net pay comes off employment income (FA 2004 s. 193(2)); for relief at
     # source Parliament raises the basic and higher rate limits instead
     # (s. 192(4), and for the Scottish rate limits s. 192(4A)), which
-    # deducting the relief from the bottom of non-savings income matches. So pension relief stays on non-savings income as far
-    # as it reaches; the search shares the rest.
+    # deducting the relief from the bottom of non-savings income matches. So
+    # pension relief stays on non-savings income as far as it reaches; the
+    # search shares the rest.
     # allowances includes the relief, so it never holds more than that.
     pension = np.clip(
         columns.get("pension", np.zeros_like(relief)),
