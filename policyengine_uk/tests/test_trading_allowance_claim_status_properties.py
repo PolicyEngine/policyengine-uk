@@ -175,7 +175,8 @@ def reference(r, allowance, share):
     chapter_8 = np.minimum(np.maximum(r["chapter_8"], 0), np.maximum(r["misc"], 0))
     trading = profit > 0
     claimant = trading & (r["status"] == "CLAIMANT")
-    non_claimant = r["status"] == "NON_CLAIMANT"
+    # Either status describes a positive profit; with none, it is unknown.
+    non_claimant = trading & (r["status"] == "NON_CLAIMANT")
     supplied = (r["receipts"] > 0) & (r["receipts"] >= profit)
     # Trade receipts. A claimant's profit is receipts less the input
     # allowance. Otherwise supplied receipts count; without them, no profit

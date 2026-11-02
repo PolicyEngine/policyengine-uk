@@ -17,16 +17,8 @@ class uses_trading_allowance(Variable):
         "ordinary treatment and claims it: within the allowance by electing "
         "out of full relief (s. 783AL), above it by not electing for partial "
         "relief (s. 783AM). A claimant in the input data "
-        "(trading_allowance_claim_status) counts whenever they take it, even "
-        "where it relieves nothing beyond their input profit. By default, "
-        "with no current loss, they take it at any allowance at or above the "
-        "one their profit already deducts. Where a deduction is an input "
-        "(supplied, or set by the model) or neutralised, their election "
-        "weighs it at the value applied, and the other deduction follows "
-        "that election, so a deduction pinned to the value its formula gives "
-        "changes nothing; a positive one means the allowance applies. A "
-        "reform that replaces either deduction's formula should replace this "
-        "one's too."
+        "(trading_allowance_claim_status) can take it with a deduction of nil "
+        "or less (see policyengine_uk/utils/trading_allowance.py)."
     )
     definition_period = YEAR
     reference = [

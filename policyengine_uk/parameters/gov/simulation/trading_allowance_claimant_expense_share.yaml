@@ -1,17 +1,11 @@
 description: >-
-  Actual expenses and capital allowances of a trading allowance claimant, as a
-  share of the allowance their input profit already deducts; capital
-  allowances supplied for the claimant count where larger. It sets how much a
-  cut below that allowance adds to the taxable profit of people the input data
-  mark as claimants (trading_allowance_claim_status). A claimant keeps
-  claiming unless deducting these expenses instead, which is ordinary
-  treatment and lets a supplied current loss be claimed, is worth more, so
-  with no loss a cut adds the input allowance less the larger of the new
-  allowance and these expenses. The share is between 0 and 1, and a value
-  outside is taken as the nearer bound: expenses cannot be negative, and above
-  the allowance the claimant would have deducted them instead. An allowance at
-  or above the input allowance is unaffected for a claimant with no current
-  loss.
+  Actual expenses and capital allowances of people the input data mark as
+  trading allowance claimants (trading_allowance_claim_status), as a share of
+  the allowance their input profit already deducts; capital allowances
+  supplied for them count where larger. It sets their ordinary treatment:
+  what a cut below that allowance adds to their taxable profit, and what they
+  weigh a supplied current loss against. A value outside 0 to 1 is taken as
+  the nearer bound. The rules are in policyengine_uk/utils/trading_allowance.py.
 # A claimant's expenses and capital allowances are below the allowance they
 # claim, or they would deduct them instead, but no survey records them. With
 # a share of 1, the default, they equal it, so a cut leaves a claimant's

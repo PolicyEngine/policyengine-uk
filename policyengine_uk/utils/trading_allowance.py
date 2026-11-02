@@ -127,7 +127,7 @@ def trading_allowance_reliefs(person, period, parameters):
 
     trading_allowance_claim_status says which receipts lie behind a positive
     profit. A person with no profit has no trade receipts for it to
-    describe, and a claimant is then read as unknown.
+    describe, and either status is then read as unknown.
     - A claimant's profit is their receipts less the allowance legislated
       for the year the profit was measured (the input allowance, see
       _data_year), which reforms do not move. Their claim was an election
@@ -174,8 +174,8 @@ def trading_allowance_reliefs(person, period, parameters):
       change in behaviour after a raise, so takes ordinary treatment unless
       their relevant income is within the allowance: full relief needs no
       election (s. 783AE). Their receipts exceed their profit plus the input
-      allowance and are unknown unless supplied, so only supplied receipts,
-      or casual income alone where there is no profit, can show that.
+      allowance and are unknown unless supplied, so only supplied receipts
+      can show that.
 
     The miscellaneous income is income_not_otherwise_charged, up to the
     person's miscellaneous_income when that is positive (it is part of it).
@@ -214,7 +214,7 @@ def trading_allowance_reliefs(person, period, parameters):
     )
     trading = profit > 0
     claimant = trading & (status == status.possible_values.CLAIMANT)
-    non_claimant = status == status.possible_values.NON_CLAIMANT
+    non_claimant = trading & (status == status.possible_values.NON_CLAIMANT)
 
     # Receipts below profit (including the default zero) mean unknown.
     receipts_known = (receipts > 0) & (receipts >= profit)
@@ -305,13 +305,8 @@ def trading_allowance_reliefs(person, period, parameters):
     if current_loss is None:
         current_loss = person.empty_array()
     # A non-claimant gets the allowance only through full relief, where
-    # supplied receipts, or casual income alone with no profit, show
-    # relevant income within it.
-    within_allowance = where(
-        receipts_known,
-        receipts + miscellaneous_income <= allowance,
-        ~trading & (miscellaneous_income <= allowance),
-    )
+    # supplied receipts show relevant income within it.
+    within_allowance = receipts_known & (receipts + miscellaneous_income <= allowance)
     ordinary = (non_claimant & ~within_allowance) | (current_loss > allowance_saving)
     # A claimant makes the same election against their own options: the
     # allowance unless it does worse than their expenses, or than a larger

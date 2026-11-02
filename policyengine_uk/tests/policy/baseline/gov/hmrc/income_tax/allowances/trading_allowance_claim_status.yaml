@@ -11,9 +11,9 @@
 #   allowances if larger. They keep the allowance unless their expenses, or
 #   a supplied current loss, are worth more (s. 783AM).
 # - Non-claimant: no election for partial relief; full relief needs none
-#   (s. 783AE) and applies where supplied receipts, or casual income alone
-#   with no profit, are within the allowance.
-# - Unknown (the default): unchanged.
+#   (s. 783AE) and applies where supplied receipts are within the allowance.
+# - Unknown (the default): unchanged. Either status describes a positive
+#   profit, so a person with none is read as unknown.
 # The allowance is £1,000 in 2026-27 and £3,000 from 2027-28 (Budget 2026,
 # paragraph 6.254), so the input allowance is £1,000 in the 2026 cases and
 # £3,000 in the 2027 ones. Personal allowance £12,570, basic rate 20%,
@@ -379,7 +379,7 @@
     taxable_miscellaneous_income: 900
     uses_trading_allowance: false
 
-- name: A non-claimant with no trade has casual income within the allowance relieved.
+- name: A non-claimant with no profit is read as unknown, so casual income within the allowance is relieved.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -393,7 +393,7 @@
     # (30,000 - 12,570) x 20%
     income_tax: 3_486
 
-- name: A non-claimant with no trade has casual income exactly at the allowance relieved.
+- name: A non-claimant with no profit has casual income exactly at the allowance relieved.
   period: 2027
   absolute_error_margin: 0
   input:
@@ -403,6 +403,24 @@
   output:
     miscellaneous_income_trading_allowance_deduction: 3_000
     taxable_miscellaneous_income: 0
+
+- name: A non-claimant with no profit gets partial relief on casual income above the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    self_employment_income: 0
+    miscellaneous_income: 2_500
+    income_not_otherwise_charged: 2_500
+    trading_allowance_claim_status: NON_CLAIMANT
+  output:
+    # The status describes a positive profit, so with none they are read as
+    # unknown, as a claimant is: the £1,000 allowance relieves the casual
+    # income.
+    miscellaneous_income_trading_allowance_deduction: 1_000
+    taxable_miscellaneous_income: 1_500
+    # (30,000 + 1,500 - 12,570) x 20%
+    income_tax: 3_786
 
 - name: Unknown status still relieves a profit within the allowance.
   period: 2027
