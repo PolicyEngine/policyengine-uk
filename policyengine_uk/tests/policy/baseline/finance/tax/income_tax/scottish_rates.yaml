@@ -130,7 +130,8 @@
 
 # tax_band for a Scottish taxpayer with savings or dividends (#2350).
 # Parliament charges the Scottish rates only on income that is neither
-# savings nor dividends (ITA 2007 s. 11A(1A); S6M-16531 for 2025-26).
+# savings nor dividends (ITA 2007 s. 11A(1A), (4) and (5), and s. 13;
+# S6M-16531 for 2025-26).
 # Savings and dividends form the top slice (s. 16) and take the rates and
 # bands they would bear outside Scotland (ss. 11D(6) and 13(5)). The model
 # returns the higher band. In 2025-26 Parliament sets the personal allowance

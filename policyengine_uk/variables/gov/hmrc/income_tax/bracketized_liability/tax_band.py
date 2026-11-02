@@ -43,10 +43,11 @@ def scottish_tax_band(person, period, parameters):
     Compare the rest-of-UK band only when taxable savings or dividends
     remain, then return the higher band. Keep income at each upper limit in
     the lower band. Parliament charges income "up to" a limit at the lower
-    rate (s. 10(2) to (3A)), and the Scottish Parliament charges each rate
-    "on income above" one limit "and up to" the next. Keep income charged at
-    a nil rate in the band where it sits, as for every taxpayer; the Marriage
-    Allowance has its own rate test (liable_only_at_marriage_allowance_rates).
+    rate (s. 10(2) to (3A)), and the Scottish Parliament charges each Scottish
+    rate "on income above" one limit "and up to" the next (each Scottish rate
+    resolution). Keep income charged at a nil rate in the band where it sits,
+    as for every taxpayer; the Marriage Allowance has its own rate test
+    (liable_only_at_marriage_allowance_rates).
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)
