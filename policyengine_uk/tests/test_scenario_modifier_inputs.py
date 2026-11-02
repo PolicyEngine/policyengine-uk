@@ -13,6 +13,12 @@ from policyengine_core.periods import period
 
 from policyengine_uk import Microsimulation, Simulation
 from policyengine_uk.model_api import Scenario
+from policyengine_uk.utils.measurement_branches import measurement_branch
+from policyengine_uk.utils.supplied_inputs import (
+    set_model_value,
+    supplied_input,
+    supplied_input_periods,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -732,3 +738,58 @@ def test_default_baseline_drain_failure_retains_pending_inputs(monkeypatch):
         values(simulation, "income_tax"), expected_tax, atol=0.01
     )
     assert not simulation._external_input_change_pending
+
+
+@pytest.mark.parametrize("cleanup", ["automatic", "reset", "measurement"])
+def test_cleanup_preserves_inputs_only_in_their_actual_periods(cleanup):
+    situation = family((2024, 2025, 2026))
+    situation["benunits"]["benunit"][CHILD_BENEFIT] = {2024: 500}
+    parent = Simulation(situation=situation)
+    parent_flag = getattr(parent, "changed_from_baseline", None)
+    parent_2025 = values(parent, CHILD_BENEFIT, 2025)
+    assert parent_2025[0] > 0
+
+    branch = parent.get_branch("mixed_period_inputs", clone_system=True)
+    branch.set_input(CHILD_BENEFIT, 2024, np.array([700.0]))
+    branch.set_input(CHILD_BENEFIT, 2026, np.array([0.0]))
+    # This is a registered model-owned physical input, not a supplied stock.
+    # Routine cleanup must retain both its stored amount and that provenance.
+    model_stock = np.array([11.0, 0.0])
+    set_model_value(branch, "loss_relief", period(2025), model_stock)
+    assert supplied_input(branch.person, "loss_relief", period(2025)) is None
+    assert supplied_input_periods(branch.person, "loss_relief") == []
+    assert values(branch, CHILD_BENEFIT, 2025)[0] > 0
+    # Both False and None occur in callers; routine cleanup must not mark
+    # either one as a change from the baseline merely for clearing caches.
+    unchanged_flag = None if cleanup == "measurement" else False
+    branch.changed_from_baseline = unchanged_flag
+
+    if cleanup == "measurement":
+        target = measurement_branch(
+            branch,
+            "mixed_period_measurement",
+            2025,
+            {"would_claim_child_benefit": np.array([False])},
+        )
+    else:
+        target = branch
+        target.set_input("would_claim_child_benefit", 2025, np.array([False]))
+        if cleanup == "reset":
+            target.reset_calculations()
+
+    # A formula input in 2024 or 2026 does not freeze its computed 2025.
+    # The local 2024 input shadows the parent's, and the future zero is real.
+    np.testing.assert_array_equal(values(target, CHILD_BENEFIT, 2024), [700])
+    np.testing.assert_array_equal(values(target, CHILD_BENEFIT, 2025), [0])
+    np.testing.assert_array_equal(values(target, CHILD_BENEFIT, 2026), [0])
+    np.testing.assert_array_equal(values(target, "loss_relief", 2025), model_stock)
+    assert supplied_input(target.person, "loss_relief", period(2025)) is None
+    assert supplied_input_periods(target.person, "loss_relief") == []
+    assert target.changed_from_baseline is unchanged_flag
+
+    np.testing.assert_array_equal(values(parent, CHILD_BENEFIT, 2024), [500])
+    np.testing.assert_array_equal(values(parent, CHILD_BENEFIT, 2025), parent_2025)
+    np.testing.assert_array_equal(values(parent, "loss_relief", 2025), [0, 0])
+    assert getattr(parent, "changed_from_baseline", None) is parent_flag
+    if cleanup == "measurement":
+        np.testing.assert_array_equal(values(branch, CHILD_BENEFIT, 2025), parent_2025)

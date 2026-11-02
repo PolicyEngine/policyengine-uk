@@ -41,22 +41,29 @@ class trade_loss_relief_against_general_income(Variable):
     ]
 
     def formula(person, period, parameters):
+        current_loss = supplied_input(person, "trading_loss", period)
+        if current_loss is None:
+            return person.empty_array()
+        loss = max_(0, current_loss)
+        # No new loss means no relief, without resolving an allowance
+        # election that can itself read earlier opening-loss balances.
+        if not loss.any():
+            return person.empty_array()
+        # Allowance treatment cannot retain a current expense-generated loss
+        # on another trade in the same individual's tax year.
+        loss = where(
+            person("uses_trading_allowance", period),
+            0,
+            loss,
+        )
+        if not loss.any():
+            return person.empty_array()
         # Ordinary net-pay contributions already reduce Step 1 employment
         # income. That income cannot also consume a Step 2 trading loss.
         net_income = max_(
             0,
             person("net_income_before_trade_loss_relief", period)
             - person("net_pay_pension_relief", period),
-        )
-        current_loss = supplied_input(person, "trading_loss", period)
-        if current_loss is None:
-            current_loss = person.empty_array()
-        # Allowance treatment cannot retain a current expense-generated loss
-        # on another trade in the same individual's tax year.
-        loss = where(
-            person("uses_trading_allowance", period),
-            0,
-            max_(0, current_loss),
         )
         return min_(
             loss,
