@@ -227,11 +227,25 @@ def extract_economy_workbook_bytes(
         return Path(workbook_name).name, archive.read(workbook_name)
 
 
+STRING_TEXT = f"{{{WORKBOOK_NS['main']}}}t"
+STRING_RUN = f"{{{WORKBOOK_NS['main']}}}r"
+
+
 def _string_text(item: ET.Element) -> str:
-    """Join the text of every ``<t>`` in a shared or inline string, so the
-    reader returns the whole text of a string split into formatting runs
-    (``<r>``)."""
-    return "".join(node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS))
+    """Join a shared or inline string's own ``<t>`` and the ``<t>`` of each
+    formatting run (``<r>``), in order, so the reader returns the whole text
+    of a string split into runs. It skips any other child, such as a
+    phonetic run (``<rPh>``), whose ``<t>`` holds a reading of the text, not
+    more of it."""
+    parts = []
+    for child in item:
+        if child.tag == STRING_TEXT:
+            parts.append(child.text or "")
+        elif child.tag == STRING_RUN:
+            parts.extend(
+                node.text or "" for node in child.findall("main:t", WORKBOOK_NS)
+            )
+    return "".join(parts)
 
 
 def _load_shared_strings(archive: ZipFile) -> list[str]:
@@ -713,6 +727,9 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     in which the OBR states the line's unit, as ``CLEARANCE_TABLE_TEXTS``
     lists it. In both EFOs the importer requires that cell and refuses any
     text in the table that the list lacks (``validate_clearance_table``).
+    For a part of a total (``part_of_total``), that cell is the total's
+    label, and the importer requires it on the row directly above the
+    "of which:" row over the line (``validate_clearance_part``).
     Dataset projection grows household weights by ``ons.population``, so
     ``render_receipts_growth_yaml`` writes
     (1 + aggregate clearance growth) / (1 + ons.population growth) - 1
@@ -722,6 +739,7 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     """
 
     unit_cell: str = ""
+    part_of_total: bool = False
 
     def __post_init__(self):
         name = ".".join(self.path)
@@ -809,12 +827,14 @@ CLEARANCE_SERIES_SPECS = (
         title=TOBACCO_CLEARANCES,
         row="hand rolled tobacco clearances",
         unit_cell=TOBACCO_KILOGRAMS,
+        part_of_total=True,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "tobacco_clearances", "other_tobacco_products"),
         title=TOBACCO_CLEARANCES,
         row="other tobacco products",
         unit_cell=TOBACCO_KILOGRAMS,
+        part_of_total=True,
     ),
     ClearanceSeriesSpec(
         path=("per_capita", "alcohol_clearances", "beer_and_cider"),
@@ -1122,11 +1142,11 @@ class ReceiptsGrowth:
     The first year holds outturn growth: this EFO's first (outturn) year
     over the year before in the previous EFO, which marks that year as
     outturn. Each later year holds the ratio of this EFO's consecutive
-    levels. A line with its own
-    outturn starts at that outturn's second year and has no previous line;
-    one with rates grows its base instead (see ``ReceiptsSeriesSpec``). A
-    clearance line holds the clearances' growth, which
-    ``render_receipts_growth_yaml`` writes per head (``per_head_growth``).
+    levels. A line with its own outturn starts at that outturn's second year
+    and has no previous line; one with rates grows its base instead (see
+    ``ReceiptsSeriesSpec``). A clearance line holds the clearances' growth,
+    which ``render_receipts_growth_yaml`` writes per head
+    (``per_head_growth``).
 
     ``ratios`` holds one plus each year's growth before rounding, as
     ``compute_receipts_growth`` finds it, so ``per_head_growth`` rounds the
@@ -1340,6 +1360,57 @@ def validate_clearance_table(
         )
 
 
+def validate_clearance_part(
+    table_rows: list[dict[str, str | None]],
+    line_index: int,
+    spec: ClearanceSeriesSpec,
+    where: str,
+) -> None:
+    """Refuse a part of a total that does not sit under the total.
+
+    The OBR states the unit of hand-rolled and other tobacco only in the
+    label of the total they break down, "Non-cigarette clearances ('000s
+    kg)", on the row directly above an "of which:" row. Going up from the
+    line in ``table_rows`` (the rows below the table's title), past the
+    total's other parts, the importer needs an "of which:" row with no other
+    cell, then a row that holds ``spec.unit_cell`` as its first text and
+    only numbers after it. A table of listed texts could otherwise put the
+    parts under another line, such as "Cigarette clearances (million
+    sticks)", and the importer would read them in the wrong unit.
+    """
+
+    def texts(row: dict[str, str | None]) -> list[str]:
+        return [
+            receipts_label(value)
+            for _, value in sorted(row.items(), key=lambda item: column_index(item[0]))
+            if receipts_label(value)
+        ]
+
+    parts = {
+        other.row
+        for other in CLEARANCE_SERIES_SPECS
+        if other.part_of_total
+        and (other.title, other.unit_cell) == (spec.title, spec.unit_cell)
+    }
+    above = [texts(row) for row in table_rows[:line_index]]
+    while above and above[-1][:1] and above[-1][0] in parts:
+        above.pop()
+    # The two rows above the line and its fellow parts, empty past the top.
+    total, of_which = ([[], []] + above)[-2:]
+    if (
+        of_which != ["of which:"]
+        or total[:1] != [spec.unit_cell]
+        or not all(NUMBER_RE.fullmatch(text) for text in total[1:])
+    ):
+        raise ValueError(
+            f"{where} lacks {spec.unit_cell!r} on the row directly above the "
+            f'"of which:" row over the {".".join(spec.path)} line. The line '
+            "takes its unit from that total's label, so the importer needs the "
+            "label there, with only the total's other parts between the \"of "
+            'which:" row and the line.'
+        )
+
+
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
@@ -1350,7 +1421,10 @@ def find_receipts_line(
     headers and its "Outturn" and "Forecast" markers, which may sit on one
     row or several. Before it reads a clearance line's values, it checks the
     line's table, from its title through its end, against the texts someone
-    has read (``validate_clearance_table``).
+    has read (``validate_clearance_table``). It then refuses any text beside
+    the years in the fiscal-year row over the line, and a part of a total
+    that does not sit under the total (``validate_clearance_part``): a
+    table of listed texts can still put a unit over the wrong lines.
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -1359,12 +1433,14 @@ def find_receipts_line(
                 continue
             where = f"Table {table} (sheet {sheet})"
             years: dict[str, int] = {}
+            year_row: dict[str, str | None] = {}
             markers: dict[str, int] = {}
             header_rows = []
-            for row in table_rows:
+            for index, row in enumerate(table_rows):
                 row_years = _fiscal_year_columns(row)
                 if row_years:
                     years = row_years
+                    year_row = row
                     continue
                 if not years:
                     header_rows.append(row)
@@ -1394,7 +1470,16 @@ def find_receipts_line(
                 ]
                 if labels and receipts_label(labels[0][1]) == spec.row:
                     matches.append(
-                        (table, sheet, labels[0], row, years, markers, header_rows)
+                        (
+                            table,
+                            sheet,
+                            labels[0],
+                            row,
+                            years,
+                            markers,
+                            header_rows,
+                            (year_row, table_rows, index),
+                        )
                     )
 
     name = ".".join(spec.path)
@@ -1404,7 +1489,16 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    table, sheet, (label_column, label), row, years, markers, header_rows = matches[0]
+    (
+        table,
+        sheet,
+        (label_column, label),
+        row,
+        years,
+        markers,
+        header_rows,
+        (year_row, table_rows, line_index),
+    ) = matches[0]
     where = f"Table {table} (sheet {sheet})"
     if isinstance(spec, ClearanceSeriesSpec):
         validate_clearance_table(sheets[sheet], table, spec, where)
@@ -1427,7 +1521,24 @@ def find_receipts_line(
             f"{where} holds {beside} beside the {name} row's label and values; "
             "a unit or note on the row needs deliberate importer support"
         )
-    if not isinstance(spec, ClearanceSeriesSpec):
+    if isinstance(spec, ClearanceSeriesSpec):
+        # The OBR states each clearance unit in a label or a note. A text
+        # beside the years, such as a unit column's heading or a line's label
+        # moved there, could head the values below it with another unit.
+        heading = {
+            column: value
+            for column, value in year_row.items()
+            if normalise_label(value) and column not in years
+        }
+        if heading:
+            raise ValueError(
+                f"{where} holds {heading} in the fiscal-year row over the {name} "
+                "line. A text beside the years could give the line another "
+                "unit, so the importer refuses any text there."
+            )
+        if spec.part_of_total:
+            validate_clearance_part(table_rows, line_index, spec, where)
+    else:
         validate_receipts_unit(header_rows, where)
     levels = {}
     for column, year in years.items():

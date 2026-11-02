@@ -545,11 +545,11 @@ def clearance_table(
     unit: str | None = None,
 ) -> dict[int, list[str]]:
     """Build a table in the layout of the OBR's Tables 4.11 and 4.12: title
-    in column B, the "Outturn" and "Forecast" markers on the next row, fiscal
-    years on the row after, then one row per line and any notes. A clearance
-    table has no
-    unit cell, since the OBR states the unit in a label or a note; ``unit``
-    adds one on a row of its own below the title, as a receipts table has."""
+    in column B, the "Outturn" and "Forecast" markers on the next row,
+    fiscal years on the row after, then one row per line and any notes. A
+    clearance table has no unit cell, since the OBR states the unit in a
+    label or a note; ``unit`` adds one on a row of its own below the title,
+    as a receipts table has."""
     years = max(len(levels) for _, levels in rows)
     columns = [column_letter(3 + i) for i in range(years)]
     sheet = {start: [make_inline_cell(f"B{start}", title)]}
@@ -614,9 +614,8 @@ def tobacco_table(chapter, first_year, levels, outturn_years=1):
 def alcohol_table(chapter, first_year, levels, outturn_years=1, note=None):
     """Build Table 4.12 (3.12 to March 2026): clearances in thousand
     hectolitres of alcohol, which the OBR states in a note, then the duties'
-    receipts in
-    £ billion under the same labels, which the importer must not read for
-    the clearance lines."""
+    receipts in £ billion under the same labels, which the importer must not
+    read for the clearance lines."""
     labels = {
         "beer_and_cider": " Beer and cider",
         "wine": " Wine1",
@@ -3186,9 +3185,8 @@ def test_rendered_clearances_grow_the_weighted_total_with_the_clearances(years, 
     """For any clearances and population growth: in every year the household
     quantity's growth times the household weight's growth equals the
     clearances' growth, to the series' six decimals, and equals 1 after the
-    forecast; the
-    series stays above -100%, so its index stays positive; a second run
-    changes nothing."""
+    forecast; the series stays above -100%, so its index stays positive; a
+    second run changes nothing."""
     base, levels = {}, {}
     for key in CLEARANCE_LEVELS:
         level = data.draw(CLEARANCE_LEVEL)
@@ -3425,11 +3423,11 @@ REAL_OCTOBER_2026_SHEETS = read_workbook_sheets(REAL_OCTOBER_2026_RECEIPTS)
 
 def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
     """Set each cell in ``cells`` to its text, number or, for None, nothing;
-    a tuple of texts gives one string with a formatting run for each. Add
-    the cell and its row where the sheet lacks them. Multiply the cells in
-    ``scale`` by their factors, then append ``notes`` in column B below the
-    sheet's last row. Preserve every other archive entry, including the
-    shared strings."""
+    a tuple of texts gives one string with a formatting run for each, and an
+    element the inline string it holds. Add the cell and its row where the
+    sheet lacks them. Multiply the cells in ``scale`` by their factors, then
+    append ``notes`` in column B below the sheet's last row. Preserve every
+    other archive entry, including the shared strings."""
     cells, scale = dict(cells), dict(scale)
     output = BytesIO()
     with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
@@ -3471,6 +3469,9 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
             elif isinstance(value, tuple):
                 target.set("t", "inlineStr")
                 target.append(formatting_runs("is", value))
+            elif isinstance(value, ET.Element):
+                target.set("t", "inlineStr")
+                target.append(value)
             elif value is not None:
                 ET.SubElement(target, f"{{{XLSX_MAIN}}}v").text = repr(float(value))
         for entry in source.infolist():
@@ -3481,9 +3482,10 @@ def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
     return output.getvalue()
 
 
-def formatting_runs(tag, texts):
+def formatting_runs(tag, texts, reading=None):
     """Build a ``tag`` string element, ``is`` or ``si``, with a formatting
-    run for each of ``texts``, the later runs bold."""
+    run for each of ``texts``, the later runs bold, and with ``reading``, a
+    phonetic run (``<rPh>``) that holds it."""
     string = ET.Element(f"{{{XLSX_MAIN}}}{tag}")
     for index, part in enumerate(texts):
         run = ET.SubElement(string, f"{{{XLSX_MAIN}}}r")
@@ -3494,7 +3496,17 @@ def formatting_runs(tag, texts):
         ET.SubElement(
             run, f"{{{XLSX_MAIN}}}t", {f"{{{XML_NAMESPACE}}}space": "preserve"}
         ).text = part
+    if reading is not None:
+        string.append(phonetic_run(reading, len("".join(texts))))
     return string
+
+
+def phonetic_run(reading, length):
+    """Build a phonetic run (``<rPh>``) that holds ``reading`` over the
+    first ``length`` characters of its string."""
+    run = ET.Element(f"{{{XLSX_MAIN}}}rPh", {"sb": "0", "eb": str(length)})
+    ET.SubElement(run, f"{{{XLSX_MAIN}}}t").text = reading
+    return run
 
 
 def real_levels(workbook, key):
@@ -3842,6 +3854,145 @@ def test_a_real_table_without_its_unit_cell_refuses_the_lines_it_describes():
             )
 
 
+def in_year_row(table, heading, key):
+    """Write out the importer's refusal of the ``key`` line of real Table
+    ``table`` with ``heading`` in the fiscal-year row over the line."""
+    return (
+        f"Table {table} (sheet {table}) holds {heading} in the fiscal-year row "
+        f"over the {'.'.join(CLEARANCE_SPECS[key].path)} line. A text beside "
+        "the years could give the line another unit, so the importer refuses "
+        "any text there."
+    )
+
+
+def not_under_total(table, key):
+    """Write out the importer's refusal of the ``key`` line of real Table
+    ``table``, a part that does not sit under its total."""
+    spec = CLEARANCE_SPECS[key]
+    return (
+        f"Table {table} (sheet {table}) lacks {spec.unit_cell!r} on the row "
+        f'directly above the "of which:" row over the {".".join(spec.path)} '
+        "line. The line takes its unit from that total's label, so the importer "
+        "needs the label there, with only the total's other parts between the "
+        '"of which:" row and the line.'
+    )
+
+
+# A table of listed texts can still put a unit over the wrong lines. Each
+# layout maps rows of the real October 2026 Table 4.11, columns B to I, to
+# the real rows they take: "heading" for the cigarette label beside row 4's
+# fiscal years, None for nothing. The helper halves the hand-rolled and
+# other tobacco figures (real rows 8 and 9) wherever they land, so the two
+# parts sit under the cigarette label's million sticks.
+REAL_TOBACCO_ROWS = {row.number: row for row in REAL_OCTOBER_2026_SHEETS["4.11"]}
+TOBACCO_LAYOUTS = {
+    # The cigarette label heads a second row of years over the parts, in
+    # place of "of which:", and the non-cigarette total moves below them.
+    "cigarette-unit-year-header": ({6: None, 7: "heading", 10: 6}, "year row"),
+    # The cigarette line moves directly above "of which:", and the
+    # non-cigarette total below the parts.
+    "cigarette-unit-of-which": ({5: None, 6: 5, 10: 6}, "total"),
+    # A second row of years, headed by the cigarette label, sits over the
+    # non-cigarette total, "of which:" and the parts, each a row lower.
+    "cigarette-unit-second-year-row": (
+        {6: "heading", 7: 6, 8: 7, 9: 8, 10: 9},
+        "year row",
+    ),
+}
+
+
+def tobacco_layout(name):
+    """Rewrite the real October 2026 Table 4.11 in the layout ``name``."""
+    layout, _ = TOBACCO_LAYOUTS[name]
+    cells = {}
+    for target, source in layout.items():
+        for column in "BCDEFGHI":
+            if source == "heading":
+                value = REAL_TOBACCO_ROWS[5 if column == "B" else 4][column]
+            elif source is None or REAL_TOBACCO_ROWS[source].get(column) is None:
+                value = None
+            elif column == "B":
+                value = REAL_TOBACCO_ROWS[source][column]
+            else:
+                value = float(REAL_TOBACCO_ROWS[source][column])
+                value /= 2 if source in (8, 9) else 1
+            cells[f"{column}{target}"] = value
+    halved = {
+        f"{column}{row}": 0.5
+        for row in (8, 9)
+        if row not in layout
+        for column in "CDEFGHI"
+    }
+    return edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", cells=cells, scale=halved
+    )
+
+
+@pytest.mark.parametrize("name", sorted(TOBACCO_LAYOUTS))
+def test_a_layout_that_puts_the_parts_under_another_unit_stops_the_run(name):
+    """Each layout keeps every text on the list and the non-cigarette
+    total's label in the table, but sets the hand-rolled and other tobacco
+    lines under the cigarette label's million sticks. In thousand kg, the
+    unit March 2026 states for them, the halved figures give 2025-26 growth
+    of -58.6% for hand-rolled tobacco and -56.8% for other tobacco, and the
+    published figures -17.1% and -13.6%. The importer reads cigarettes as
+    before and refuses both parts. It names the fiscal-year row when that
+    row holds the label, and the missing total otherwise. The run stops
+    before it renders anything."""
+    _, check = TOBACCO_LAYOUTS[name]
+    changed = tobacco_layout(name)
+    rows = read_sheet_rows(changed, "4.11")
+    texts = {
+        receipts_label(value)
+        for row in rows[2:]
+        for value in row.values()
+        if receipts_label(value)
+        and not re.fullmatch(r"\d{4}-\d{2}|[\d.]+", receipts_label(value))
+    }
+    assert texts <= CLEARANCE_TABLE_TEXTS[TOBACCO_CLEARANCES]
+    assert CLEARANCE_SPECS["hand_rolling_tobacco"].unit_cell in texts
+    for key, read, real in (
+        ("hand_rolling_tobacco", -0.585697, -0.171394),
+        ("other_tobacco_products", -0.568094, -0.136189),
+    ):
+        (line,) = [
+            row
+            for row in rows
+            if receipts_label(row.get("B")) == CLEARANCE_SPECS[key].row
+        ]
+        before = float(MARCH_2026_CLEARANCES[key][0])
+        assert round(float(line["C"]) / before - 1, 6) == read, key
+        published = float(OCTOBER_2026_CLEARANCES[key][0])
+        assert round(published / before - 1, 6) == real, key
+    sheets = {"4.11": rows, "4.12": REAL_OCTOBER_2026_SHEETS["4.12"]}
+    expected = {}
+    for key in TOBACCO_LINES:
+        if key == "cigarettes":
+            assert (
+                find_receipts_line(sheets, CLEARANCE_SPECS[key]).levels
+                == find_receipts_line(
+                    REAL_OCTOBER_2026_SHEETS, CLEARANCE_SPECS[key]
+                ).levels
+            )
+            continue
+        expected[key] = (
+            in_year_row("4.11", {"B": REAL_TOBACCO_ROWS[5]["B"]}, key)
+            if check == "year row"
+            else not_under_total("4.11", key)
+        )
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line(sheets, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected[key], key
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == expected["hand_rolling_tobacco"]
+
+
 def test_the_alcohol_receipts_table_stays_outside_the_clearance_table():
     """On the real October 2026 sheet 4.12 the OBR follows the alcohol
     clearances with the alcohol receipts forecasts, which hold "£ billion"
@@ -3963,12 +4114,14 @@ UNIT_SHAPED = st.one_of(
 def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
     """Put one text in a real table, in an empty cell of any row from its
     title through the table's end, in any column, or on a new row. Any text
-    outside the table's
-    list, from st.text() or shaped like a unit, stops every line of the
-    table: the importer names the cell, or finds no line or table where the
-    text took a label's or the title's place. A text from the list, other
-    than a line's label or a marker, in a cell outside the lines and the
-    year row, changes nothing: the importer reads every line as before."""
+    outside the table's list, from st.text() or shaped like a unit, stops
+    every line of the table: the importer names the cell, or finds no line
+    or table where the text took a label's or the title's place. A text from
+    the list, other than a line's label or a marker, in a cell outside the
+    lines, stops every line in the fiscal-year row, and a part of a total
+    between the total's row and the part; the importer names the year row or
+    the missing total. Anywhere else it changes nothing: the importer reads
+    every line as before."""
     release, title = table
     _, sheet = REAL_CLEARANCE_TABLES[table]
     real, start, end, _ = real_clearance_rows(release, title)
@@ -3996,27 +4149,48 @@ def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
     column = data.draw(st.sampled_from("ABCDEFGHIJKLM"), label="column")
     if data.draw(st.booleans(), label="new row"):
         lowest = year_row + 1 if listed else start + 1
-        rows.insert(data.draw(st.integers(lowest, end), label="row"), {column: text})
+        place = data.draw(st.integers(lowest, end), label="row")
+        rows.insert(place, {column: text})
     else:
         empty = [
             i for i in range(start, end) if not str(rows[i].get(column) or "").strip()
         ]
         if listed:
             empty = [
-                i
-                for i in empty
-                if i not in line_rows and i != year_row and (i != start or column > "B")
+                i for i in empty if i not in line_rows and (i != start or column > "B")
             ]
         assume(empty)
-        rows[data.draw(st.sampled_from(empty), label="row")][column] = text
+        place = data.draw(st.sampled_from(empty), label="row")
+        rows[place][column] = text
+    # The real rows of each line and of the total that states a part's unit.
+    # A new row at ``place`` sits above the real row there.
+    real_row = {
+        receipts_label(real[i].get("B")): i
+        for i in range(start, end)
+        if real[i].get("B")
+    }
     for key in keys:
         spec = CLEARANCE_SPECS[key]
         if listed:
-            event("listed: read")
-            assert (
-                find_receipts_line({sheet: rows}, spec).levels
-                == find_receipts_line({sheet: real}, spec).levels
-            )
+            if place == year_row:
+                event("listed: fiscal-year row")
+                expected = in_year_row(sheet, {column: text}, key)
+            elif (
+                spec.part_of_total
+                and real_row[spec.unit_cell] < place <= real_row[spec.row]
+            ):
+                event("listed: between a part and its total")
+                expected = not_under_total(sheet, key)
+            else:
+                event("listed: read")
+                assert (
+                    find_receipts_line({sheet: rows}, spec).levels
+                    == find_receipts_line({sheet: real}, spec).levels
+                )
+                continue
+            with pytest.raises(ValueError) as refused:
+                find_receipts_line({sheet: rows}, spec)
+            assert str(refused.value) == expected
             continue
         with pytest.raises(ValueError) as refused:
             find_receipts_line({sheet: rows}, spec)
@@ -4078,15 +4252,16 @@ def test_the_check_reads_every_formatting_run_of_a_cell(name):
     assert str(refused.value) == expected
 
 
-def runs_workbook(texts):
+def runs_workbook(texts, reading=None):
     """Build a one-sheet workbook that holds ``texts`` in A1 as an inline
     string and in A2 as a shared string, each with a formatting run for each
-    text, and their join in A3 as an inline string of one ``<t>``."""
+    text, and their join in A3 as an inline string of one ``<t>``. With
+    ``reading``, each string ends in a phonetic run that holds it."""
     sheet = make_sheet(
         {
             1: [
                 '<c r="A1" t="inlineStr">'
-                + ET.tostring(formatting_runs("is", texts), encoding="unicode")
+                + ET.tostring(formatting_runs("is", texts, reading), encoding="unicode")
                 + "</c>"
             ],
             2: ['<c r="A2" t="s"><v>0</v></c>'],
@@ -4096,8 +4271,12 @@ def runs_workbook(texts):
     sheet = ET.fromstring(sheet)
     joined = sheet.find("m:sheetData/m:row/m:c[@r='A3']/m:is/m:t", XLSX_NS)
     joined.text = "".join(texts)
+    if reading is not None:
+        sheet.find("m:sheetData/m:row/m:c[@r='A3']/m:is", XLSX_NS).append(
+            phonetic_run(reading, len(joined.text))
+        )
     strings = ET.Element(f"{{{XLSX_MAIN}}}sst")
-    strings.append(formatting_runs("si", texts))
+    strings.append(formatting_runs("si", texts, reading))
     output = BytesIO()
     with ZipFile(BytesIO(make_workbook({"1": ET.tostring(sheet)}))) as source:
         with ZipFile(output, "w") as dest:
@@ -4107,32 +4286,69 @@ def runs_workbook(texts):
     return output.getvalue()
 
 
+STRING_TEXT = st.text(st.characters(min_codepoint=0x20, max_codepoint=0xD7FF))
+
+
 @settings(max_examples=100, deadline=None, derandomize=True)
 @given(
-    texts=st.lists(
-        st.text(st.characters(min_codepoint=0x20, max_codepoint=0xD7FF)),
-        min_size=1,
-        max_size=4,
-    )
+    texts=st.lists(STRING_TEXT, min_size=1, max_size=4),
+    reading=st.one_of(st.none(), STRING_TEXT),
 )
-def test_a_string_reads_whole_in_any_formatting_runs(texts):
+def test_a_string_reads_whole_in_any_formatting_runs(texts, reading):
     """However a spreadsheet splits a text into formatting runs, the reader
     returns the whole text, from an inline string and from a shared string
-    alike, as it does from one ``<t>``."""
-    rows = read_sheet_rows(runs_workbook(texts), "1")
+    alike, as it does from one ``<t>``. It leaves out the text of any
+    phonetic run (``<rPh>``) the string holds."""
+    rows = read_sheet_rows(runs_workbook(texts, reading), "1")
     assert [(row.number, row["A"]) for row in rows] == [
         (number, "".join(texts)) for number in (1, 2, 3)
     ]
 
 
-# A sheet that repeats a clearance table's heading must stop the run: the
-# importer would check the text under one and could read a line under the
-# other.
 TEN_THOUSAND_HECTOLITRES = (
     "Note: Spirits forecasts shown in ten thousand hectolitres of alcohol."
 )
 
 
+def test_a_phonetic_run_cannot_end_a_clearance_table():
+    """The helper writes B11 of the real October 2026 sheet 4.12, empty in
+    the published sheet, as an inline string with no text of its own and a
+    phonetic run that holds "4.12 Alcohol receipts forecasts". It puts a
+    note in ten thousand hectolitres in C11 and divides the spirits
+    forecasts by ten. A reader that kept the phonetic run would end the
+    clearance table at B11, above the note, and the importer would read
+    2026-27 spirits growth of -90.1% in place of -0.8%. This reader returns
+    B11 empty, so the table runs to the real title in row 12, and the
+    importer refuses every alcohol line and names the note."""
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS,
+        "4.12",
+        cells={
+            "B11": formatting_runs("is", ("",), "4.12 Alcohol receipts forecasts"),
+            "C11": TEN_THOUSAND_HECTOLITRES,
+        },
+        scale={f"{column}7": 0.1 for column in "DEFGHI"},
+    )
+    rows = read_sheet_rows(changed, "4.12")
+    (row,) = [row for row in rows if row.number == 11]
+    assert (row["B"], row["C"]) == ("", TEN_THOUSAND_HECTOLITRES)
+    (spirits,) = [line for line in rows if line.number == 7]
+    assert round(float(spirits["D"]) / float(spirits["C"]) - 1, 6) == -0.900793
+    expected = unread("4.12", ALCOHOL_CLEARANCES, (TEN_THOUSAND_HECTOLITRES, "C"))
+    for key in ALCOHOL_LINES:
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({"4.12": rows}, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected, key
+    with pytest.raises(ValueError) as refused:
+        compute_receipts_growth(
+            changed, REAL_RECEIPTS[2026], specs=CLEARANCE_SERIES_SPECS
+        )
+    assert str(refused.value) == expected
+
+
+# A sheet that repeats a clearance table's heading must stop the run: the
+# importer would check the text under one and could read a line under the
+# other.
 def repeat_alcohol_heading(workbook, sheet):
     """Clear the lines of the real alcohol clearance table on ``sheet``, rows
     5 to 7, and repeat its rows 2 to 10 below the sheet's last row, so a
@@ -4177,13 +4393,12 @@ def test_a_repeated_clearance_heading_stops_the_run(tmp_path):
     "4.12 Alcohol clearance forecasts" heading in row 53. It divides the
     repeated spirits forecasts by ten and states ten thousand hectolitres in
     a note below them. Each line then sits once, under the second heading,
-    and the first keeps the table's listed note. Read in thousand
-    hectolitres, the repeated figures give 2026-27 spirits growth of -90.1%,
-    where the published figures give -0.8%. The importer refuses every
-    alcohol line and names both headings' rows, and the renderer gets no
-    growth. A run on the real March 2026 tables, changed the same way, stops
-    before it writes anything. The importer reads the tobacco lines as
-    before."""
+    and the first keeps the table's listed note. In thousand hectolitres,
+    the repeated figures give 2026-27 spirits growth of -90.1%, and the
+    published figures -0.8%. The importer refuses every alcohol line and
+    names both headings' rows, and the renderer gets no growth. A run on the
+    real March 2026 tables, changed the same way, stops before it writes
+    anything. The importer reads the tobacco lines as before."""
     changed, row = repeat_alcohol_heading(REAL_OCTOBER_2026_RECEIPTS, "4.12")
     assert row == 53
     rows = read_sheet_rows(changed, "4.12")

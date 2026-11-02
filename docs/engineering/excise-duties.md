@@ -293,16 +293,25 @@ numbers and fiscal years, and stops before writing anything when:
 - the table lacks the cell that states a line's unit: the cigarette label's
   "(million sticks)", the non-cigarette total's "('000s kg)" for hand-rolled
   and other tobacco, or Table 4.12's note for alcohol;
+- a text sits beside the years in the fiscal-year row over a line, such as
+  a unit column's heading or a line's label moved there;
+- hand-rolled or other tobacco does not sit under an "of which:" row
+  directly below the non-cigarette total's label, with only the total's
+  other parts between;
 - the OBR puts any cell beside a line's label and values;
 - the sheet repeats the table's heading, since the importer would check the
   text under one heading and could read a line under another.
 
-The importer reads every formatting run of a cell's text. It names the
-table and each unread cell, or the rows that repeat the heading. Whoever
-runs it reads the text, converts the table's figures to the listed units if
-it states another, and adds the text to the list. The importer checks no
-cell above a table's title or below its end, so that person reads any note
-there too.
+The list alone does not settle a line's unit: a rearranged copy of the real
+October 2026 Table 4.11 can put the two tobacco parts under the cigarette
+label's million sticks with every text on the list. The two layout checks
+stop it. The importer reads every formatting run of a cell's text, and
+leaves out any phonetic run. It names the table and each unread cell, the
+text in the fiscal-year row, the missing total or the rows that repeat the
+heading. Whoever runs it reads the text, converts the table's figures to
+the listed units if it states another, and adds the text to the list. The
+importer checks no cell above a table's title or below its end, so that
+person reads any note there too.
 
 ### Budget measures and reforms
 

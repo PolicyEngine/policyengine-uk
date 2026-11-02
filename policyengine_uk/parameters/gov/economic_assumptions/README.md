@@ -511,33 +511,35 @@ the forecast levels, though not their growth.
    The same run also refreshes the six alcohol and tobacco clearance series
    under `per_capita` from the new EFO's tobacco clearances and alcohol
    clearance forecasts, and the previous EFO's for the outturn year's base.
-   From each table's title through its configured end, the importer
-   compares text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. The end
-   falls on the row above a title `CLEARANCE_TABLE_ENDS` lists, or on the
-   sheet's last row. It skips the title cell, numbers and fiscal years. It
-   also needs the cell that
-   states each line's unit: million sticks in the cigarette label,
-   thousand kilograms in the non-cigarette total's label and thousand
-   hectolitres of alcohol in Table 4.12's note. It stops before writing on
-   any other text and names the table and the cell. Read that text, convert
-   the table's figures to these units if it states another, and add the
-   text to the list. The importer also stops on any cell beside a line's
-   label and values. When a sheet repeats a clearance table's heading, it
-   stops and names the rows. It checks no cell above a table's title or
-   below its end, so read any note there yourself. The list holds each
-   EFO's footnotes as the OBR wrote them, and the importer does not compare
-   the products one EFO's line covers with another's. Check that each
-   alcohol line covers the same products in both EFOs: in March 2026 the
-   OBR added "Includes other fermented products" to the wine line. The
-   importer writes
+   From each table's title through its configured end, the importer compares
+   text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. The end falls on
+   the row above a title `CLEARANCE_TABLE_ENDS` lists, or on the sheet's
+   last row. It skips the title cell, numbers and fiscal years. It also
+   needs the cell that states each line's unit: million sticks in the
+   cigarette label, thousand kilograms in the non-cigarette total's label
+   and thousand hectolitres of alcohol in Table 4.12's note. It stops before
+   writing on any other text and names the table and the cell. Read that
+   text, convert the table's figures to these units if it states another,
+   and add the text to the list. A table of listed texts can still put a
+   unit over the wrong lines, so the importer also stops on any text beside
+   the years in the fiscal-year row over a line, and when hand-rolled or
+   other tobacco does not sit under an "of which:" row directly below the
+   non-cigarette total's label, with only the total's other parts between.
+   It stops on any cell beside a line's label and values too. When a sheet
+   repeats a clearance table's heading, the importer stops and names the
+   rows. It checks no cell above a table's title or below its end, so read
+   any note there yourself. The list holds each EFO's footnotes as the OBR
+   wrote them, and the importer does not compare the products one EFO's line
+   covers with another's. Check that each alcohol line covers the same
+   products in both EFOs: in March 2026 the OBR added "Includes other
+   fermented products" to the wine line. The importer writes
    `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,
    using the population in `yoy_growth.yaml`, so rerun it whenever that
    series changes. Until then the six clearance series and the seven
-   gambling bases keep the values the importer wrote for the old
-   population, and the byte-for-byte test fails. Then update
-   the published levels in
-   `policyengine_uk/tests/test_excise_quantity_projection.py`
-   (`CLEARANCES`) and `policyengine_uk/tests/test_import_obr_forecasts.py`
+   gambling bases keep the values the importer wrote for the old population,
+   and the byte-for-byte test fails. Then update the published levels in
+   `policyengine_uk/tests/test_excise_quantity_projection.py` (`CLEARANCES`)
+   and `policyengine_uk/tests/test_import_obr_forecasts.py`
    (`OCTOBER_2026_CLEARANCES` and `MARCH_2026_CLEARANCES`, renamed for the
    new EFOs), the values those tests check by hand, the index table in
    `docs/engineering/excise-duties.md`, and the real-table fixtures in
