@@ -60,10 +60,11 @@ def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=Tr
     )
     # The slice follows the order non-savings, savings, dividends, not the
     # least-tax share of the reliefs and allowances (ITA 2007 s. 25(2)):
-    # PAYE codes set the allowances against the job, and moving them onto
-    # savings or dividends to lower the year's tax would otherwise raise
-    # the tax on earnings. So the earnings slice reads the old order's
-    # deductions, and more savings or dividends never raise it.
+    # the model follows PAYE coding, which sets the allowances against the
+    # job; moving them onto savings or dividends to lower the year's tax
+    # would otherwise raise the tax on earnings. So the earnings slice reads
+    # the old order's deductions, and more savings or dividends never raise
+    # it.
     default = default_order_deductions(person, period)
     # The income left in earned taxable income before allowances, under
     # that order. The part of it above earnings is the person's other

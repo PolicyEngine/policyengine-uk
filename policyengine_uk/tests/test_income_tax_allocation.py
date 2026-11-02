@@ -713,10 +713,13 @@ def test_fast_path_reads_the_scottish_starter_rate(system):
 
 def test_pension_relief_stays_on_non_savings_income(system):
     """Pay of £40,000 with £10,000 of pension relief and £30,000 of savings in
-    2026-27. The relief stays on the pay (FA 2004 ss. 192(4) and 193(2)), so
-    only the £12,570 allowance moves, and every share keeps the savings
-    allowance below the basic rate limit: the old order stands. Sharing the
-    pension relief would put the pay at the limit and save £100."""
+    2026-27. The relief stays on the pay: the employer deducts net pay
+    contributions from employment income (FA 2004 s. 193(2)), and for relief
+    at source Parliament raises the basic and higher rate limits instead
+    (s. 192(4)). So only the £12,570 allowance moves, and every share keeps
+    the savings allowance below the basic rate limit: the old order stands.
+    Sharing the pension relief would put the pay at the limit and save
+    £100."""
     income_tax = system.parameters("2026").gov.hmrc.income_tax
     inputs, default = one_person(
         savings=30_000,

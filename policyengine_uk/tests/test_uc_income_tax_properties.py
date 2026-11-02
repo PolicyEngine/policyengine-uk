@@ -2,11 +2,12 @@
 earnings (uc_income_tax_on_earnings and uc_income_tax_on_trade).
 
 The helper takes earnings as the lowest slice of non-savings income, after the
-allowances set against non-savings income first, as PAYE codes set them
-against the job. The least-tax share of the reliefs and allowances (ITA 2007
-s. 25(2)) can move the allowances onto savings or dividends to lower the
-year's tax, but the slice follows the order non-savings, savings, dividends,
-so tax on other income never comes off earnings:
+allowances set against non-savings income first: the model follows PAYE
+coding, which sets them against the job. The least-tax share of the reliefs
+and allowances (ITA 2007 s. 25(2)) can move the allowances onto savings or
+dividends to lower the year's tax, but the slice follows the order
+non-savings, savings, dividends, so tax on other income never comes off
+earnings:
 
 - adding savings or dividend income never raises either slice, for every
   person whose allowances it leaves unchanged (more income can taper the

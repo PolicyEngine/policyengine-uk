@@ -21,11 +21,15 @@ each, so the search shares out the sum.
 
 Pension relief is the exception. The model takes employee contributions as a
 net pay arrangement, which the employer deducts from employment income (FA
-2004 s. 193(2)), and personal contributions as relief at source, which
-extends the rate bands (s. 192(4)). Neither is a Step 2 deduction the
-taxpayer can set against savings or dividends, so the search holds
-``min(pension relief, non-savings income)`` on non-savings income and shares
-only the rest.
+2004 s. 193(2)), and personal contributions as relief at source, under which
+the payer keeps basic rate tax on the contribution (s. 192(1)) and, on a
+claim where higher or additional rate tax is chargeable, Parliament raises
+the basic and higher rate limits by the contribution (s. 192(4)). Deducting
+the contribution from the bottom of non-savings income moves every slice of
+income down against those limits, as raising them does. Neither arrangement
+gives a Step 2 deduction the taxpayer can set against savings or dividends,
+so the search holds ``min(pension relief, non-savings income)`` on
+non-savings income and shares only the rest.
 
 How the search finds the least tax
 ----------------------------------
@@ -73,10 +77,12 @@ a phase-out of one pound of starting rate band for each pound of non-savings
 income (s. 12) and a first UK rate threshold at nil, as in every year
 modelled. A reform that sets that threshold above nil leaves savings below it
 untaxed and adds lines on which ``x + w`` stays constant, which the search
-doesn't list, so the search can then miss the least tax; the fast path sends
-everyone to the search under such a reform. The search keeps the
-order non-savings, savings, dividends unless another share gives less tax, so
-it never charges more than that order.
+doesn't list, so the search can then miss the least tax. On 6,520 synthetic
+people with that threshold at £2,000, a 101 x 101 grid found less tax than
+the search for 32 in 2026-27 (by up to £181.70) and 38 in 2027-28 (by up to
+£214.75). The fast path sends everyone to the search under such a reform.
+The search keeps the order non-savings, savings, dividends unless another
+share gives less tax, so it never charges more than that order.
 
 The search ignores the Marriage Allowance. Parliament gives it as a tax
 reduction (s. 55B(1)), which the taxpayer deducts at Step 6, not as a
@@ -216,9 +222,11 @@ def _build(inputs, income_tax):
     # net_income, not its components, so the search follows a supplied adjusted
     # net income or a reform that sets net income, as the default order does.
     non_savings = np.maximum(0, columns["net_income"] + relief - savings - dividends)
-    # Net pay comes off employment income (FA 2004 s. 193(2)) and relief at
-    # source extends the bands (s. 192(4)), so pension relief stays on
-    # non-savings income as far as it reaches; the search shares the rest.
+    # Net pay comes off employment income (FA 2004 s. 193(2)); for relief at
+    # source Parliament raises the basic and higher rate limits instead
+    # (s. 192(4)), which deducting the relief from the bottom of non-savings
+    # income matches. So pension relief stays on non-savings income as far
+    # as it reaches; the search shares the rest.
     # allowances includes the relief, so it never holds more than that.
     pension = np.clip(
         columns.get("pension", np.zeros_like(relief)),
@@ -667,7 +675,8 @@ def non_savings_deductions(person, period):
     non-savings, savings, dividends, the function returns that order's
     amounts exactly. Elsewhere it takes the non-savings income left from the
     share's own arithmetic, in float64, so float32 rounding in a sum of
-    net income and the relief added back leaves no residue above nil.
+    net income and the relief added back leaves no residue above nil beyond
+    the float32 rounding of the moved share, under a penny.
     """
     default = default_order_deductions(person, period)
     to_savings = person("received_allowances_savings_income", period)

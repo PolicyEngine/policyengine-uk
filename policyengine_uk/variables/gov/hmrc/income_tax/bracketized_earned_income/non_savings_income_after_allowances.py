@@ -17,7 +17,8 @@ class non_savings_income_after_allowances(Variable):
         "property income (s. 25(3A)). The allocation computes it from its own "
         "share, without the float32 rounding of a sum that adds the relief "
         "back. property_income_tax, taxable_property_income_after_allowances "
-        "and earned_taxable_income read it."
+        "and earned_taxable_income read it, and non_savings_taxable_income "
+        "reads it through the last two."
     )
     definition_period = YEAR
     reference = [

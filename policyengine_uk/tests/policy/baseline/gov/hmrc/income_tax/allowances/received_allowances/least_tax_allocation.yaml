@@ -314,10 +314,13 @@
     personal_pension_contributions: 10_000
     savings_interest_income: 30_000
   output:
-    # The model takes personal contributions as relief at source, which
-    # extends the rate bands (FA 2004 s. 192(4)) rather than giving a Step 2
-    # deduction the taxpayer can set against savings. The model deducts the
-    # relief from non-savings income, so the tax matches case 14.
+    # The model takes personal contributions as relief at source. Parliament
+    # deducts nothing from income: the payer keeps basic rate tax on the
+    # contribution (FA 2004 s. 192(1)) and, on a claim, the basic and higher
+    # rate limits rise by the contribution (s. 192(4)). Under the law the
+    # liability is £13,332 and the payer keeps £2,000; the model deducts the
+    # relief from non-savings income instead, which gives the same net
+    # £11,332, as in case 14.
     pension_contributions_relief: 10_000
     received_allowances_earned_income: 22_570
     received_allowances_savings_income: 0
