@@ -38,10 +38,11 @@ Invariants, each over generated families and the explicit examples:
    schemes' size criteria to give the same number of bedrooms. The old
    category read the Universal Credit count (``LHA_allowed_bedrooms``);
    #2006 gave Housing Benefit its own (HB Regs 2006 reg. 13D(3),
-   ``housing_benefit_LHA_allowed_bedrooms``), which counts a young person
-   in the family whom the Universal Credit count leaves out, such as one
-   who is not a qualifying young person for Universal Credit. This change
-   leaves both counts as main has them.
+   ``housing_benefit_LHA_allowed_bedrooms``), which can differ from the
+   Universal Credit count: it gives a bedroom to a qualifying young person
+   a local authority looks after, whom UC Regs 2013 Sch 4 para 9(2)(g)
+   leaves out, and pools the children of other occupiers' families. This
+   change leaves both counts as main has them.
 4. Reductions. 0 <= each scheme's reduction <= the excess of the welfare
    benefits over that scheme's cap; the UC reduction is the excess, with
    Housing Benefit counted as nil (reg. 80(2A)), less the childcare costs
@@ -874,13 +875,12 @@ def test_examples_reach_the_cases():
     assert v["is_uc_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["is_housing_benefit_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["reference_is_benefit_cap_single_claimant_rate"][lone_parent]
-    # HB's size criteria give the young person a bedroom (reg. 13D(3)(b)),
-    # so the LHA comparisons leave this family out (invariant 3).
+    # Both schemes' size criteria give the young person a bedroom: HB as a
+    # person who is not a child (reg. 13D(3)(b)), UC as a non-dependant who
+    # is not a child (Sch 4 paras 9(2) and 10(1)(c)).
     assert v["housing_benefit_LHA_category"][lone_parent] == "C"
-    assert (
-        v["LHA_allowed_bedrooms"][lone_parent]
-        != v["housing_benefit_LHA_allowed_bedrooms"][lone_parent]
-    )
+    assert v["LHA_allowed_bedrooms"][lone_parent] == 2
+    assert v["housing_benefit_LHA_allowed_bedrooms"][lone_parent] == 2
     # AFIP: excepted from both shared rates, and lifts both caps, which the
     # old lists did not do.
     assert v["LHA_category"][afip] == v["housing_benefit_LHA_category"][afip] == "B"
