@@ -73,17 +73,18 @@ and a non-dependant family of one or two adults:
    its traced calculation reads no Housing Benefit variable but the reported
    award. Inputs that supply benefit_cap_welfare_benefits, a total that
    includes Housing Benefit, also supply housing_benefit_pre_benefit_cap or
-   uc_benefit_cap_welfare_benefits, or the basket raises ValueError. A non-dependant family's gross income
-   counts its award after the cap and before debt deductions: universal_credit
-   plus uc_deductions, which equals the award before the cap less the cap
-   reduction applied, under current law and under an 85% protected minimum
-   floor; the floor never lowers an award. Under a reform that scales
-   universal_credit, each household's deductions equal those of the same
-   household with the reformed award supplied, and the Housing Benefit
-   deduction is the band of wages plus that award, so it moves when the
-   award crosses a band. (test_non_dependant_cycle_contracts.py checks the
-   supplied-total contract over mixed populations, and that a reform making
-   Universal Credit read calculated Housing Benefit raises CycleError.)
+   uc_benefit_cap_welfare_benefits, or the basket raises ValueError. A
+   non-dependant family's gross income counts its award after the cap and
+   before debt deductions: universal_credit plus uc_deductions, which equals
+   the award before the cap less the cap reduction applied, under current law
+   and under an 85% protected minimum floor; the floor never lowers an award.
+   Under a reform that scales universal_credit, each household's deductions
+   equal those of the same household with the reformed award supplied, and
+   the Housing Benefit deduction is the band of wages plus that award, so it
+   moves when the award crosses a band.
+   (test_non_dependant_cycle_contracts.py checks the supplied-total contract
+   over mixed populations, and that a reform making Universal Credit read
+   calculated Housing Benefit raises CycleError.)
 13. Differential: the Universal Credit exemption's earned-income test agrees
    with Universal Credit's own calculation (uc_individual_earned_income)
    across employment expenses, trading losses, company income attributed to
