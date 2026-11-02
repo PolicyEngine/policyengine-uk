@@ -354,18 +354,18 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
             (income_without + without[CTR_TAX][i])[general],
             atol=0.01,
         ), (fam, income[general], income_without[general])
-        has_earnings = any(
-            a.get("employment_income", 0.0) > 0 for a in fam["adults"]
-        )
+        has_earnings = any(a.get("employment_income", 0.0) > 0 for a in fam["adults"])
         award = g["council_tax_benefit"][i]
         award_without = without["council_tax_benefit"][i]
         # The supplement never lowers the award, even on the Pension Credit
         # routes (whose income follows invariant 4).
         assert np.all(award >= award_without - 0.01), fam
         if not has_earnings:
-            assert np.allclose(
-                income[general], income_without[general], atol=0.01
-            ), (fam, income[general], income_without[general])
+            assert np.allclose(income[general], income_without[general], atol=0.01), (
+                fam,
+                income[general],
+                income_without[general],
+            )
             assert np.allclose(award[general], award_without[general], atol=0.01), fam
         # Without a claim there is no supplement, so nothing moves.
         assert np.allclose(income[:, 1], income_without[:, 1], atol=0.01), fam

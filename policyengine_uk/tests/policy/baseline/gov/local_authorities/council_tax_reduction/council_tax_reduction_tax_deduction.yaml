@@ -231,6 +231,9 @@
     # allowance, 1,430 x 20% = 286. The profit adds 3,461.70. Class 4
     # charged: 145.80.
     council_tax_reduction_tax_deduction: 3_607.50
+    # 15,000 - 3,607.50, plus Universal Credit 7,190.20 and Child Benefit
+    # (27.05 + 17.90) x 52 = 2,337.40. The interest is not counted.
+    council_tax_reduction_applicable_income: 20_920.10
 
 - name: Scotland's working-age scheme counted Class 2 in the notional deduction before 2024-25
   period: 2023

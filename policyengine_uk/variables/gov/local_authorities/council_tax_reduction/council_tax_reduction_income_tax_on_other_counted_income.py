@@ -51,4 +51,3 @@ class council_tax_reduction_income_tax_on_other_counted_income(Variable):
             + ["self_employment_income"]
             + PENSIONER_UNCOUNTED_INCOME,
         )
-

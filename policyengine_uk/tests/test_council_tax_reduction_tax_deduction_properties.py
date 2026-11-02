@@ -216,9 +216,7 @@ def test_pensioner_deduction_ignores_uncounted_income_without_earnings(
 
     def without_notional(simulation):
         notional = np.where(
-            np.asarray(
-                [h["country"] == "SCOTLAND" for h in households], dtype=bool
-            ),
+            np.asarray([h["country"] == "SCOTLAND" for h in households], dtype=bool),
             applicant_total(
                 simulation, "council_tax_reduction_scotland_self_employment_deductions"
             ),
@@ -315,7 +313,12 @@ def test_scottish_working_age_deducts_nothing_without_earnings(households):
 def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, partner):
     """Invariant 5. At working age in Scotland without Universal Credit,
     raising either member's employment income never raises Council Tax
-    Reduction."""
+    Reduction, except where the rise crosses a cliff in the income tax
+    system: losing Marriage Allowance, or the personal savings allowance
+    falling as the person enters a higher band. Those cliffs raise the tax
+    the earnings add by more than the rise in pay, as the ruling intends; for
+    example a Scottish couple whose pay rises from 43,661 to 43,662 loses
+    Marriage Allowance and its Council Tax Reduction rises by 52.78."""
     raised = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
@@ -327,7 +330,14 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     schemes(before, households)
     reduction_before = np.asarray(before.calculate("council_tax_reduction", YEAR))
     reduction_after = np.asarray(after.calculate("council_tax_reduction", YEAR))
-    assert np.all(reduction_after <= reduction_before + 0.01), (
+    cliff = np.zeros(len(households), dtype=bool)
+    for variable in ["marriage_allowance", "savings_allowance"]:
+        cliff |= ~np.isclose(
+            applicant_total(before, variable), applicant_total(after, variable)
+        )
+    for crossed in cliff:
+        event("crosses a tax cliff" if crossed else "no tax cliff")
+    assert np.all((reduction_after <= reduction_before + 0.01) | cliff), (
         households,
         rise,
         partner,
@@ -352,9 +362,7 @@ def test_non_dependant_income_never_changes_the_deduction(
     with_non_dependant = [
         {**h, "benunits": h["benunits"] + [[non_dependant]]} for h in households
     ]
-    changed = [
-        {**h, "benunits": h["benunits"] + [[other_income]]} for h in households
-    ]
+    changed = [{**h, "benunits": h["benunits"] + [[other_income]]} for h in households]
     alone = simulate(households)
     schemes(alone, households)
     first = simulate(with_non_dependant)
@@ -373,7 +381,9 @@ CASES = [
         country="SCOTLAND",
         benunits=[[dict(age=40, employment_income=30_000.0, dividend_income=9_000.0)]],
     ),
-    dict(country="SCOTLAND", benunits=[[dict(age=40, self_employment_income=15_000.0)]]),
+    dict(
+        country="SCOTLAND", benunits=[[dict(age=40, self_employment_income=15_000.0)]]
+    ),
     dict(
         country="SCOTLAND",
         uc=True,
@@ -385,7 +395,9 @@ CASES = [
             ]
         ],
     ),
-    dict(country="SCOTLAND", benunits=[[dict(age=70, private_pension_income=15_000.0)]]),
+    dict(
+        country="SCOTLAND", benunits=[[dict(age=70, private_pension_income=15_000.0)]]
+    ),
     dict(
         country="ENGLAND",
         benunits=[[dict(age=70, employment_income=20_000.0)]],
