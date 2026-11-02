@@ -2,13 +2,13 @@
 
 The contribution of a variable the target reads directly (a direct dependency)
 is the mean of the target minus the mean of the target recalculated over the
-year with that dependency zero (over the year, and over any other period the
-target read it) and every other variable the target read held at the value it
-read, on the branch it read it. The trace shows which variables the target's
-latest calculation over that year read, over which periods, on which branch,
-and the values it read. A target that reads its own value within the year
-raises, since recalculating it over the year replaces that value. For any
-household drawn below:
+year with that dependency zero wherever the target read it (each period, on
+each branch) and every other variable the target read held at the value it
+read. The trace shows which variables the target read, over which periods and
+on which branch, in the latest calculation that gave the value the simulation
+holds. A target that reads its own value within the year raises, since
+recalculating it over the year replaces that value. For any household drawn
+below:
 
 1. Matches a reference: each float dependency's contribution equals the one
    from a fresh simulation in which the target's float direct dependencies are
@@ -37,6 +37,7 @@ from plotly import graph_objects as go
 
 from policyengine_core import periods
 from policyengine_core.entities import build_entity
+from policyengine_core.parameters import ParameterNode
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable as CoreVariable
@@ -48,6 +49,7 @@ from policyengine_uk.model_api import (
     Person,
     QuantityType,
     Reform,
+    Scenario,
     Variable,
 )
 from policyengine_uk.utils.dependencies import (
@@ -56,6 +58,8 @@ from policyengine_uk.utils.dependencies import (
     create_waterfall_chart,
     get_variable_dependencies,
 )
+from policyengine_uk.utils.labour_supply_responses import response_source
+from policyengine_uk.utils.measurement_branches import BEHAVIOURAL_RESPONSES
 
 YEARS = [2024, 2025, 2026, 2027]
 # Defined only by adds and subtracts of their direct dependencies.
@@ -741,6 +745,9 @@ def test_months_inherited_from_the_parent_simulation():
 
 def core_toy_simulation(*variables, cache_blacklist=None):
     system = TaxBenefitSystem([CORE_PERSON])
+    # Without parameters a system cannot be cloned, as a branch with a system
+    # of its own needs.
+    system.parameters = ParameterNode("", data={})
     for variable in variables:
         system.add_variable(variable)
     if cache_blacklist:
@@ -897,3 +904,363 @@ def test_the_same_variable_on_another_branch_is_a_dependency():
     assert comparison.period == sim.tracer.trees[0].period
 
     assert get_variable_dependencies("branch_target", sim) == ["branch_target"]
+
+
+def test_a_year_starting_in_july():
+    # Each variable is held, and zeroed, for the year from July: not for the
+    # calendar year, which a yearly variable stores under another key.
+    year, adults, child_ages = EARNER_WITH_PENSION
+    period = "year:2026-07"
+    sim = traced_simulation(year, adults, child_ages, [])
+    sim.calculate("household_net_income", period)
+
+    contributions = calculate_dependency_contributions(
+        sim, "household_net_income", period
+    )
+
+    market_income = sim.calculate("household_market_income", period).mean()
+    assert market_income > 0
+    for dependency, sign in [
+        ("household_market_income", 1),
+        ("household_benefits", 1),
+        ("household_tax", -1),
+        ("pension_contributions", -1),
+    ]:
+        expected = sign * sim.calculate(dependency, period).mean()
+        assert contributions[dependency] == pytest.approx(
+            expected, abs=tolerance(expected)
+        )
+    mean = sim.calculate("household_net_income", period).mean()
+    assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
+
+
+def test_a_dependency_already_zero_contributes_nothing():
+    # marginal_tax_rate reads household_net_income on pay-rise branches it
+    # names afresh each time. Zeroing a response that is already zero, with
+    # every other read held, leaves it as it was.
+    year, adults, child_ages = EARNER_WITH_CHILD
+    sim = traced_simulation(year, adults, child_ages, ["marginal_tax_rate"])
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(sim, "marginal_tax_rate", year)
+
+    for response in BEHAVIOURAL_RESPONSES:
+        assert not sim.calculate(response, year).any()
+        assert contributions[response] == 0
+    assert_unchanged(sim, before)
+
+
+def test_a_labour_supply_response():
+    # response_source sends a branch that shares its parent's tax-benefit
+    # system to the parent's response; the new branch has a system of its own,
+    # so the response is recalculated from what it read there.
+    year = 2025
+    target = "employment_income_behavioral_response"
+    scenario = Scenario(
+        parameter_changes={
+            "gov.hmrc.income_tax.rates.uk[0].rate": {year: 0.30},
+            "gov.simulation.labour_supply_responses.income_elasticity": {year: -0.05},
+            "gov.simulation.labour_supply_responses.substitution_elasticity": {
+                year: 0.25
+            },
+            "gov.simulation.capital_gains_responses.elasticity": {year: 0},
+            "gov.simulation.capital_gains_responses.mtr_elasticity": {year: 0},
+        }
+    )
+    sim = Simulation(
+        situation=make_situation(year, [(45, 40_000.0, 0.0)], []),
+        scenario=scenario,
+        trace=True,
+    )
+    response = sim.calculate(target, year).mean()
+    before = snapshot(sim)
+    roots = len(sim.tracer.trees)
+
+    contributions = calculate_dependency_contributions(sim, target, year)
+
+    # Only calculate_dependency_contributions' own read of the target.
+    assert len(sim.tracer.trees) == roots + 1
+    assert response != 0
+    for term in ["income_elasticity_lsr", "substitution_elasticity_lsr"]:
+        expected = sim.calculate(term, year).mean()
+        assert expected != 0
+        assert contributions[term] == pytest.approx(expected, abs=tolerance(expected))
+    assert contributions.sum() == pytest.approx(response, abs=tolerance(response))
+    assert_unchanged(sim, before)
+
+
+def test_a_target_that_reads_no_variables():
+    sim = Simulation(situation=make_situation(2026, [(40, 0.0, 0.0)], []), trace=True)
+    sim.calculate("local_bus_single_fare_share", 2026)
+
+    contributions = calculate_dependency_contributions(
+        sim, "local_bus_single_fare_share", 2026
+    )
+
+    assert contributions.empty
+
+
+class core_from_fresh_branch(CoreVariable):
+    label = "Core from a fresh branch"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        # A name no branch has, and the branch removed after reading it, as
+        # marginal_tax_rate and measurement branches do.
+        sim = person.simulation
+        name = "fresh"
+        while name in sim.branches or name == sim.branch_name:
+            name += "_"
+        branch = sim.get_branch(name)
+        try:
+            return branch.calculate("core_leaf", period) + branch.calculate(
+                "core_double", period
+            )
+        finally:
+            del sim.branches[name]
+
+
+class core_from_same_system(CoreVariable):
+    label = "Core from the nearest ancestor with the same system"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        source = response_source(person.simulation)
+        if source is not person.simulation:
+            return source.calculate("core_from_same_system", period)
+        return person("core_leaf", period) + person("core_double", period)
+
+
+class core_switch(CoreVariable):
+    label = "Core switch"
+    value_type = bool
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+
+class core_twenty(CoreVariable):
+    label = "Core twenty"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return 20.0
+
+
+class core_chosen(CoreVariable):
+    label = "Core chosen"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        if person("core_switch", period).any():
+            return person("core_twenty", period)
+        return person("core_leaf", period)
+
+
+class core_annual(CoreVariable):
+    label = "Core annual"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return 1200.0
+
+
+class core_january_and_leaf(CoreVariable):
+    label = "Core January and leaf"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return person("core_annual", period.first_month) + person("core_leaf", period)
+
+
+class core_input(CoreVariable):
+    label = "Core input"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+    default_value = 10.0
+
+
+class core_from_input(CoreVariable):
+    label = "Core from input"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return person("core_input", period)
+
+
+class core_restarting(CoreVariable):
+    label = "Core restarting"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        # The input set while calculating makes core calculate it again.
+        value = person("core_from_input", period) + person("core_twenty", period)
+        person.simulation.set_input("core_input", period, [20.0])
+        return value
+
+
+class core_sets_itself(CoreVariable):
+    label = "Core sets itself"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        person.simulation.set_input("core_sets_itself", period, [10.0])
+        return person("core_sets_itself", period)
+
+
+class core_from_july(CoreVariable):
+    label = "Core from July"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        if period.start.month == 7:
+            return 2 * person("core_leaf", period.this_year.offset(1, YEAR))
+        return person("core_leaf", period) + person("core_from_july", "year:2025-07")
+
+
+class core_month_stock(CoreVariable):
+    label = "Core month stock"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = MONTH
+    quantity_type = QuantityType.STOCK
+
+    def formula(person, period):
+        return 10.0 * period.start.month
+
+
+class core_stock_and_leaf(CoreVariable):
+    label = "Core stock and leaf"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        # A monthly stock over a year is its December value.
+        return person("core_leaf", period) + person("core_month_stock", period)
+
+
+def test_reads_on_a_branch_named_afresh():
+    sim = core_toy_simulation(core_leaf, core_double, core_from_fresh_branch)
+    sim.calculate("core_from_fresh_branch", 2026)
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(
+        sim, "core_from_fresh_branch", 2026
+    )
+
+    assert contributions.to_dict() == {"core_leaf": 10, "core_double": 20}
+    assert_unchanged(sim, before)
+
+
+def test_a_formula_that_reads_the_nearest_ancestor_with_its_system():
+    sim = core_toy_simulation(core_leaf, core_double, core_from_same_system)
+    sim.calculate("core_from_same_system", 2026)
+    roots = len(sim.tracer.trees)
+
+    contributions = calculate_dependency_contributions(
+        sim, "core_from_same_system", 2026
+    )
+
+    assert contributions.to_dict() == {"core_leaf": 10, "core_double": 20}
+    # Only calculate_dependency_contributions' own read of the target.
+    assert len(sim.tracer.trees) == roots + 1
+
+
+def test_a_branch_holds_what_its_parent_held_when_it_was_created():
+    root = core_toy_simulation(
+        core_leaf,
+        core_twenty,
+        core_switch,
+        core_chosen,
+        core_annual,
+        core_january_and_leaf,
+    )
+    parent = root.get_branch("parent")
+    parent.calculate("core_chosen", 2026)
+    parent.calculate("core_annual", "2026-01")
+    branch = parent.get_branch("scenario")
+    branch.calculate("core_january_and_leaf", 2026)
+    # The parent then reads another variable, and another annual value.
+    parent.set_input("core_switch", 2026, [True])
+    parent.calculate("core_chosen", 2026)
+    parent.set_input("core_annual", 2026, [2400.0])
+    parent.calculate("core_annual", 2026)
+
+    assert calculate_dependency_contributions(
+        branch, "core_chosen", 2026
+    ).to_dict() == {"core_switch": 0, "core_leaf": 10}
+    assert calculate_dependency_contributions(
+        branch, "core_january_and_leaf", 2026
+    ).to_dict() == {"core_annual": 100, "core_leaf": 10}
+
+
+def test_a_calculation_that_restarts():
+    sim = core_toy_simulation(core_input, core_from_input, core_twenty, core_restarting)
+    branch = sim.get_branch("scenario")
+    assert branch.calculate("core_restarting", 2026) == 40
+
+    contributions = calculate_dependency_contributions(branch, "core_restarting", 2026)
+
+    # The values of the calculation that gave 40, not of the first attempt.
+    assert contributions.to_dict() == {"core_from_input": 20, "core_twenty": 20}
+
+
+def test_a_target_that_reads_its_own_value_over_the_same_year():
+    sim = core_toy_simulation(core_sets_itself)
+    sim.calculate("core_sets_itself", 2026)
+
+    with pytest.raises(ValueError, match="reads its own value"):
+        calculate_dependency_contributions(sim, "core_sets_itself", 2026)
+
+
+def test_a_core_target_that_reads_no_variables():
+    sim = core_toy_simulation(core_leaf)
+    sim.calculate("core_leaf", 2026)
+
+    assert calculate_dependency_contributions(sim, "core_leaf", 2026).empty
+
+
+def test_its_own_value_over_a_year_starting_in_july():
+    # year:2025-07 overlaps 2026 but is stored under another key.
+    sim = core_toy_simulation(core_leaf, core_from_july)
+    sim.calculate("core_from_july", 2026)
+
+    contributions = calculate_dependency_contributions(sim, "core_from_july", 2026)
+
+    assert contributions.to_dict() == {"core_leaf": 10, "core_from_july": 20}
+
+
+@pytest.mark.parametrize("cache_blacklist", [None, ["core_month_stock"]])
+def test_a_monthly_stock_read_over_a_year_is_held_at_december(cache_blacklist):
+    sim = core_toy_simulation(
+        core_leaf,
+        core_month_stock,
+        core_stock_and_leaf,
+        cache_blacklist=cache_blacklist,
+    )
+    assert sim.calculate("core_stock_and_leaf", 2026) == 130
+
+    contributions = calculate_dependency_contributions(sim, "core_stock_and_leaf", 2026)
+
+    assert contributions.to_dict() == {"core_leaf": 10, "core_month_stock": 120}
