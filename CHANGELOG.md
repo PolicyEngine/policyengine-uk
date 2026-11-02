@@ -1,3 +1,10 @@
+## [2.170.3] - 2026-11-02
+
+### Fixed
+
+- The aggregate checker detects movement in undeclared tax heads independently of their baseline levels, and counts an infinite or NaN response as movement.
+
+
 ## [2.170.2] - 2026-11-02
 
 ### Fixed
