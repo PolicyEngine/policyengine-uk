@@ -35,6 +35,15 @@ Invariants, for any generated population of households:
    the non-dependants, and which families are liable for the rent, are read
    from the model; they are tested elsewhere. Universal Credit does not yet
    count other families' children (a separate change).
+4. In-unit non-dependants: every member of a benefit unit aged 16 or over
+   who is neither the claimant nor partner nor a Universal Credit qualifying
+   young person is a non-dependant (para 9(2)) with a bedroom (para
+   10(1)(c)). So their family has one more Universal Credit bedroom with
+   them than without them, and making them qualifying young persons the
+   renter is responsible for (para 10(1)(b)) leaves every family's
+   Universal Credit bedrooms unchanged. This ties the bedroom to the same
+   definition that marks a benefit-unit member as a non-dependant for the
+   non-dependant deduction.
 """
 
 from itertools import combinations
@@ -281,3 +290,60 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
         uc_children = fewest_rooms_for_children(fam["children"])
         assert uc[b] == 1 + own_uc + outside_uc + uc_children
         assert hb[b] == 1 + own_hb + outside_hb + fewest_rooms_for_children(hb_children)
+
+
+def in_unit_non_dependants(sim):
+    """Each person: aged 16 or over, neither the claimant nor partner, and
+    not a Universal Credit qualifying young person (UC Regs 2013 Sch 4 para
+    9(2))."""
+    age = np.asarray(sim.calculate("age", YEAR))
+    claimant_or_partner = np.asarray(sim.calculate("is_claimant_or_partner", YEAR))
+    qualifying = np.asarray(
+        sim.calculate("is_qualifying_young_person_for_universal_credit", YEAR)
+    )
+    return (age >= 16) & ~claimant_or_partner & ~qualifying
+
+
+@PROPERTY_SETTINGS
+@given(scenario())
+def test_every_in_unit_non_dependant_has_a_bedroom(case):
+    population, target, person = case
+    situation, keys = build(population, (target, person))
+    sim, uc, _ = bedrooms(situation)
+    marked = in_unit_non_dependants(sim)
+    names = list(situation["people"])
+    # 4. A marked member has a bedroom of their own: without them, their
+    # family has one fewer, and so does the claim counting the household's
+    # non-dependants if they are in a non-dependant's family. Only the added
+    # person can be marked: the generated adults are claimants or partners
+    # and the generated children are under 16.
+    if marked[names.index(f"h{target[0]}_f{target[1]}_added")]:
+        without, _ = build(population)
+        _, uc_without, _ = bedrooms(without)
+        expected = np.zeros(len(keys))
+        expected[keys.index(target)] = 1
+        if population[target[0]][target[1]]["role"] == "non_dependant":
+            counted, _ = claim_roles(sim)
+            same_household = np.array([h == target[0] for h, _ in keys])
+            expected[same_household & counted] += 1
+        assert np.array_equal(uc - uc_without, expected)
+    # Making every marked member a qualifying young person the renter is
+    # responsible for leaves every family's bedrooms unchanged.
+    as_dependants = {
+        **situation,
+        "people": {
+            name: (
+                {
+                    **attributes,
+                    "is_qualifying_young_person_for_universal_credit": True,
+                    "is_looked_after_by_local_authority": False,
+                }
+                if marked[i]
+                else attributes
+            )
+            for i, (name, attributes) in enumerate(situation["people"].items())
+        },
+    }
+    sim_as_dependants, uc_as_dependants, _ = bedrooms(as_dependants)
+    assert not in_unit_non_dependants(sim_as_dependants).any()
+    assert np.array_equal(uc, uc_as_dependants)

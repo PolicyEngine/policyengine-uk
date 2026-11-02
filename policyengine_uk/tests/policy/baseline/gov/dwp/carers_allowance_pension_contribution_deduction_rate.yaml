@@ -1,0 +1,123 @@
+# Carer's Allowance net earnings deduct one-half of pension contributions
+# (Computation of Earnings Regulations 1996 reg. 10(4)(b)) and of pension
+# premiums from trading profit (regs. 13(1)(b)(ii), (4)(c) and (10)(b)). The
+# share is gov.dwp.carers_allowance.pension_contribution_deduction_rate. Rates
+# other than 0.5 below are model reforms, not current law.
+#
+# 2026-27: personal allowance, NI primary threshold and Class 4 lower profits
+# limit £12,570; Class 4 main rate 6%; basic rate 20%. The earnings limit is
+# £204 a week (£10,608 a year) and Carer's Allowance is £86.45 a week. Pay of
+# £12,000 is under the allowance and the threshold, so the earnings test
+# deducts no tax (it takes PAYE on the pay alone) and no Class 1.
+
+- name: At current law Carer's Allowance earnings deduct half of pension contributions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 12_000
+    personal_pension_contributions: 3_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 12,000 - 0.5 x 3,000 = 10,500, or £201.92 a week: under the limit.
+    pension_contributions: 3_000
+    ni_class_1_employee: 0
+    carers_allowance_earnings: 10_500
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: A lower share raises earnings by contributions times the change and ends entitlement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Model reform, not current law.
+    gov.dwp.carers_allowance.pension_contribution_deduction_rate: 0.25
+    age: 45
+    employment_income: 12_000
+    personal_pension_contributions: 3_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 12,000 - 0.25 x 3,000 = 11,250, or £216.35 a week: over the limit.
+    # That is 750 more than at half: 3,000 x (0.5 - 0.25).
+    carers_allowance_earnings: 11_250
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance_pre_overlap: 0
+    carers_allowance: 0
+
+- name: At current law a carer with smaller contributions is over the earnings limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 12_000
+    personal_pension_contributions: 2_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 12,000 - 0.5 x 2,000 = 11,000, or £211.54 a week: over the limit.
+    carers_allowance_earnings: 11_000
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: A higher share lowers earnings by contributions times the change and restores entitlement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Model reform, not current law.
+    gov.dwp.carers_allowance.pension_contribution_deduction_rate: 0.75
+    age: 45
+    employment_income: 12_000
+    personal_pension_contributions: 2_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 12,000 - 0.75 x 2,000 = 10,500, or £201.92 a week: under the limit.
+    # That is 500 less than at half: 2,000 x (0.75 - 0.5).
+    carers_allowance_earnings: 10_500
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: A lower share raises trading earnings by premiums times the change
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Model reform, not current law.
+    gov.dwp.carers_allowance.pension_contribution_deduction_rate: 0.4
+    age: 45
+    self_employment_income: 15_000
+    personal_pension_contributions: 7_700
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Notional tax 20% x 2,430 = 486 and Class 4 6% x 2,430 = 145.80 (reg.
+    # 14). At half: 15,000 - 486 - 145.80 - 3,850 = 10,518.20, or £202.27 a
+    # week, under the limit. At 0.4: 15,000 - 486 - 145.80 - 3,080 =
+    # 11,288.20, or £217.08 a week, over it: 770 more, 7,700 x (0.5 - 0.4).
+    carers_allowance_earnings: 11_288.20
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: A reform of the Housing Benefit share leaves Carer's Allowance earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Model reform, not current law.
+    gov.dwp.housing_benefit.means_test.pension_contribution_deduction_rate: 0.25
+    age: 45
+    employment_income: 12_000
+    personal_pension_contributions: 2_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # The carer is over the limit, so no Carer's Allowance is paid and the
+    # £12,000 of pay, less relief on the contributions, is the only income:
+    # no income tax. Housing Benefit net earnings: 12,000 - 0.25 x 2,000 =
+    # 11,500. Carer's Allowance keeps its own half: 12,000 - 0.5 x 2,000 =
+    # 11,000, still £211.54 a week.
+    income_tax: 0
+    housing_benefit_net_earnings: 11_500
+    carers_allowance_earnings: 11_000
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0

@@ -7,7 +7,7 @@ class uc_individual_severely_disabled_child_element(Variable):
     label = "Universal Credit severely disabled child element"
     definition_period = YEAR
     unit = GBP
-    defined_for = "is_severely_disabled_for_benefits"
+    defined_for = "meets_uc_higher_disabled_child_condition"
     reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/24/2"
 
     def formula(person, period, parameters):

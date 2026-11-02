@@ -7,6 +7,11 @@ class relative_capital_gains_mtr_change(Variable):
     value_type = float
     entity = Person
     label = "relative change in capital gains tax rate"
+    documentation = (
+        "Log change in the marginal tax rate on gains, for the marginal tax "
+        "rate convention. Zero, without measuring, where the simulation has no "
+        "baseline or applies its baseline's rules."
+    )
     unit = "/1"
     definition_period = YEAR
 

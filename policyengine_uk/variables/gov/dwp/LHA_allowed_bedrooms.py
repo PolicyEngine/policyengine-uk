@@ -1,9 +1,4 @@
 from policyengine_uk.model_api import *
-import pandas as pd
-import warnings
-from policyengine_core.model_api import *
-
-warnings.filterwarnings("ignore")
 
 
 def child_bedrooms(boys_under_10, boys_10_to_15, girls_under_10, girls_10_to_15):

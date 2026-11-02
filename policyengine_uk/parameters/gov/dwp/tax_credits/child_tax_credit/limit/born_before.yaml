@@ -1,0 +1,12 @@
+description: The Child Tax Credit child limit applies to children and qualifying young persons born on or after this date, written as a YYYYMMDD number; those born before it are exempt.
+values:
+  0001-01-01: 20170406
+metadata:
+  unit: date
+  period: year
+  label: Child Tax Credit child limit cutoff date of birth
+  reference:
+    - title: Tax Credits Act 2002 s. 9(3A) and (3B)
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/9
+    - title: The Child Tax Credit Regulations 2002 reg. 9 (exceptions to the restriction on numbers)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/9

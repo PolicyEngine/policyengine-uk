@@ -11,6 +11,9 @@ class substitution_elasticity_lsr(Variable):
 
     def formula(person, period, parameters):
         lsr = parameters(period).gov.simulation.labour_supply_responses
+        if lsr.substitution_elasticity == 0:
+            # Zero without measuring relative_wage_change, which needs a measurement.
+            return 0
         employment_income = max_(person("employment_income_before_lsr", period), 0)
         wage_change = person("relative_wage_change", period)
 

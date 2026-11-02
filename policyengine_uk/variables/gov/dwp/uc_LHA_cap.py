@@ -1,13 +1,5 @@
 from policyengine_uk.model_api import *
-import pandas as pd
-import warnings
-from policyengine_core.model_api import *
-from policyengine_uk.variables.gov.dwp.LHA_category import (
-    category_maximum,
-    MONTHLY_MAXIMUM_FIRST_YEAR,
-)
-
-warnings.filterwarnings("ignore")
+from policyengine_uk.utils.lha import benunit_lha
 
 
 class uc_LHA_cap(Variable):
@@ -17,23 +9,20 @@ class uc_LHA_cap(Variable):
     documentation = "Rent covered by the Local Housing Allowance for Universal Credit"
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/2013/382/schedule/1"
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2013/382/schedule/1",
+        "https://www.gov.uk/government/collections/universal-credit-local-housing-allowance-rates",
+    ]
 
     def formula(benunit, period, parameters):
-        """Universal Credit applies a monthly national maximum.
+        """Universal Credit uses a monthly LHA determination.
 
-        The monthly figures in Schedule 1 to the Rent Officers (Universal
-        Credit Functions) Order 2013 are set independently of the weekly
-        Housing Benefit maxima and are slightly higher, so annualising the
-        weekly figure would impose a ceiling below the statutory one.
+        Schedule 1 to the Rent Officers (Universal Credit Functions) Order 2013
+        determines monthly rates from monthly rents, with monthly national
+        maxima set independently of the weekly Housing Benefit ones, so the
+        weekly rate is not simply annualised. Before April 2020 the published
+        monthly rates are used as they stand.
         """
         rent = benunit("benunit_rent", period)
-
-        if period.start.year < MONTHLY_MAXIMUM_FIRST_YEAR:
-            # Before the monthly series begins, fall back to the weekly
-            # Housing Benefit rate, as the model did previously.
-            return min_(rent, benunit("BRMA_LHA_rate", period))
-
-        rate = benunit("uncapped_BRMA_LHA_rate", period)
-        maximum = category_maximum(benunit, period, "maximum_monthly")
-        return min_(rent, min_(rate, maximum * MONTHS_IN_YEAR))
+        monthly = benunit_lha(benunit, period, "rate", universal_credit=True)
+        return min_(rent, monthly * MONTHS_IN_YEAR)

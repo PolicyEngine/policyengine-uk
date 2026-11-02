@@ -1,8 +1,13 @@
+description: Winter Fuel Payment for a person under 80, unless a shared amount applies or they are on a relevant benefit with a partner aged 80 or over.
 values:
   2000-01-01: 200
 metadata:
   unit: currency-GBP
   label: Winter Fuel Payment lower amount
   reference:
-    - href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2
-      title: The Social Fund Winter Fuel Payment Regulations 2000
+    - title: The Social Fund Winter Fuel Payment Regulations 2000, reg. 2(1)(i) (as in force for the 2023 qualifying week)
+      href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2/2023-09-18
+    - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 3(c)
+      href: https://www.legislation.gov.uk/uksi/2024/869/regulation/3/made
+    - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 3(1)
+      href: https://www.legislation.gov.uk/uksi/2025/969/regulation/3/made

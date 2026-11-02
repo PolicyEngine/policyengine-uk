@@ -1,0 +1,79 @@
+# Means tests count property income after the costs of dwelling-related
+# loans. Tax credits do so by statute: The Tax Credits (Definition and
+# Calculation of Income) Regulations 2002 reg. 11(2A) disregards the ITTOIA
+# 2005 s. 272A restriction, and reg. 11(1) counts "annual taxable profits", so
+# costs above the profit leave nil rather than a loss. The legacy means tests
+# deduct income tax, which the finance-cost reduction lowers, so they count
+# the profit after the costs too.
+
+- name: Finance costs are deducted from property income for tax credits
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    property_income_after_finance_costs: 6_000
+    # 6,000 less the 300 disregard on non-earned income.
+    tax_credits_applicable_income: 5_700
+
+- name: Finance costs above the profit leave nil
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+    property_finance_costs: 8_000
+  output:
+    property_income_after_finance_costs: 0
+
+- name: Without finance costs property income is unchanged
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+  output:
+    property_income_after_finance_costs: 3_000
+
+- name: A property loss is unchanged
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: -500
+    property_finance_costs: 1_000
+  output:
+    property_income_after_finance_costs: -500
+
+- name: Housing Benefit, no finance costs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 16_000
+    state_pension: 12_000
+    property_income: 6_000
+    tenure_type: RENT_FROM_COUNCIL
+    rent: 12_000
+  output:
+    # (16,000 + 12,000 + 6,000 - 12,570) x 20%.
+    income_tax: 4_286
+    # 16,000 + 12,000 + 6,000 - 4,286, less the 5 a week earnings disregard.
+    housing_benefit_applicable_income: 29_454
+
+- name: Housing Benefit, finance costs equal to the profit do not lower it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 16_000
+    state_pension: 12_000
+    property_income: 6_000
+    property_finance_costs: 6_000
+    tenure_type: RENT_FROM_COUNCIL
+    rent: 12_000
+  output:
+    # 4,286 less the 20% x 6,000 reduction.
+    income_tax: 3_086
+    property_income_after_finance_costs: 0
+    # 16,000 + 12,000 - 3,086 - 260: the property income nets to nil, so the
+    # lower tax does not raise the income counted.
+    housing_benefit_applicable_income: 24_654

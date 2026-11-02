@@ -16,4 +16,4 @@ class capital_gains_residential_property(Variable):
     unit = GBP
     quantity_type = FLOW
     reference = "Taxation of Chargeable Gains Act 1992 ss. 1H-1I"
-    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
+    uprating = "gov.economic_assumptions.indices.capital_gains"

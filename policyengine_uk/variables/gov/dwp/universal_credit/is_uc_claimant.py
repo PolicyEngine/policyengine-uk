@@ -8,7 +8,10 @@ class is_uc_claimant(Variable):
     a couple jointly; children and qualifying young persons are people a
     claimant is responsible for. This is the benefit unit's claimant or
     partner (`is_claimant_or_partner`). It does not establish eligibility:
-    the UC age and other basic conditions are applied separately.
+    the UC age and other basic conditions are applied separately. A partner
+    who cannot be a joint claimant (`uc_is_ineligible_partner`, reg. 3(3)) is
+    still flagged here: their capital and income count. The claimant in the
+    sense of WRA 2012 s. 40 is `is_uc_single_or_joint_claimant`.
     """
 
     value_type = bool

@@ -1,0 +1,15 @@
+description: Benefits that count as a relevant benefit for the Pension Age Winter Heating Payment, other than tax credits (see minimum_tax_credit_award). For the 2024 qualifying week one was a condition of entitlement; from the 2025 qualifying week a person on one receives the full amount whoever they live with. A member of a couple is treated as entitled to a relevant benefit when the other member is, and the other member of a couple on one is not paid.
+values:
+  2024-01-01:
+    value:
+      - is_on_pension_credit
+      - is_on_income_based_jsa
+      - is_on_income_related_esa
+      - is_on_income_support
+      - is_on_universal_credit
+    reference:
+      - title: The Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351), reg. 2 "relevant benefit" (as made and as amended)
+        href: https://www.legislation.gov.uk/ssi/2024/351/regulation/2
+metadata:
+  unit: list
+  label: PAWHP relevant benefits

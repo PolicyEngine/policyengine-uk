@@ -32,19 +32,24 @@ Invariants, for any generated population of households:
    on the meals in the rent; with a board finding it is the rent less the
    deduction, floored at zero.
 7. Council tax: in a household whose rent is shared, the jointly liable
-   claim shares never exceed one in total.
+   claim shares never exceed one in total, each claim's scheme follows its
+   own family's pensioner status, and the simulated reductions of the
+   household's claims never exceed its eligible council tax.
 8. Monotonicity: a family's rent is non-decreasing in the household's rent.
 9. No-op: in a household with no sharers, boarders or lodgers, the household
    head's family has the whole rent and everyone else none, as before; and
    where the head's family claims Universal Credit, its non-dependant
    deductions and bedrooms equal the previous formulas (a deduction for
    everyone outside the family and a bedroom for each of them aged 16 or
-   over).
+   over); and Council Tax Reduction keeps the household's single claim,
+   scheme and simulated-or-reported choice.
 """
 
 import numpy as np
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
+from policyengine_core.periods import period as make_period
 
 from policyengine_uk import Simulation
 
@@ -67,7 +72,8 @@ MEALS = ["NONE", "BREAKFAST_ONLY", "FEWER_THAN_THREE_A_DAY", "AT_LEAST_THREE_A_D
 money = st.floats(0, 30_000, allow_nan=False, allow_infinity=False)
 earnings = st.one_of(st.just(0.0), st.floats(1_000, 60_000, allow_nan=False))
 adult = st.tuples(st.integers(18, 85), earnings)
-# One household with every role, so that no selection is empty.
+# One household with every role, and a lodger who meets the severe disability
+# premium conditions, so that no selection is empty.
 SENTINEL = dict(
     head_adults=[(45, 0.0)],
     head_child_age=None,
@@ -76,12 +82,13 @@ SENTINEL = dict(
     council_tax=1_800.0,
     others=[
         dict(role=role, adults=[(age, pay)], child_age=None, payment=5_200.0)
-        | dict(meals="AT_LEAST_THREE_A_DAY", pip=False)
-        for role, age, pay in [
-            ("sharer", 40, 0.0),
-            ("boarder", 50, 0.0),
-            ("lodger", 30, 0.0),
-            ("non_dependant", 25, 25_000.0),
+        | dict(meals="AT_LEAST_THREE_A_DAY", pip=pip)
+        for role, age, pay, pip in [
+            ("sharer", 40, 0.0, False),
+            ("boarder", 50, 0.0, False),
+            ("lodger", 30, 0.0, False),
+            ("lodger", 35, 0.0, True),
+            ("non_dependant", 25, 25_000.0, False),
         ]
     ],
     shared=False,
@@ -207,6 +214,12 @@ def per_household(simulation, benunit_values):
     return simulation.map_result(benunit_values, "benunit", "household")
 
 
+def of_household(simulation, variable):
+    """A household variable's value for each family in the household."""
+    families = simulation.populations["benunit"]
+    return np.asarray(families.household(variable, make_period(YEAR)))
+
+
 @PROPERTY_SETTINGS
 @given(population)
 def test_conservation_bounds_and_tenure(population):
@@ -304,6 +317,7 @@ def test_lha_categories(population):
         assert np.all(category[selected] == "A")
         # The severe disability premium conditions keep a claimant off the
         # shared rate (reg 13D(2)(a)).
+        assert sdp.any()
         assert not np.any(category[sdp] == "A")
 
 
@@ -330,9 +344,9 @@ def test_meals_and_council_tax(population):
         np.maximum(0, rent - deduction)[boarder],
         atol=0.01,
     )
-    # 7. Council tax shares, where the rent is shared. (Elsewhere the family
-    # of the household's oldest adult claims, and families tied for oldest
-    # both do: a separate, existing issue.)
+    # 7. Council tax shares, where the rent is shared. (Elsewhere only the
+    # household head's family claims: test_council_tax_reduction_claimant_
+    # properties.py.)
     claimant = calc(a, "council_tax_reduction_claimant_benunit")
     share = calc(a, "council_tax_reduction_joint_liability_share")
     total = per_household(a, claimant * share)
@@ -340,6 +354,20 @@ def test_meals_and_council_tax(population):
     shared = per_household(a, sharer) > 0
     assert shared.any()
     assert np.all(total[shared] <= 1 + 1e-6)
+    # Each claim there follows its own family's pensioner status, not the
+    # household head's family's (SI 2012/2885 reg 3). These households are in
+    # Maidstone, whose working-age scheme the model does not simulate, so a
+    # family's scheme is simulated exactly when it is a pensioner.
+    in_shared = of_household(a, "council_tax_reduction_claims_are_joint")
+    assert np.array_equal(
+        calc(a, "council_tax_reduction_scheme_supported")[in_shared],
+        calc(a, "council_tax_reduction_pensioner")[in_shared],
+    )
+    # The simulated reductions of the household's claims never exceed its
+    # eligible council tax.
+    simulated = calc(a, "simulated_council_tax_reduction_benunit")
+    liability = calc(a, "council_tax_reduction_maximum_eligible_liability")
+    assert np.all(per_household(a, simulated)[shared] <= liability[shared] + 0.01)
 
 
 @PROPERTY_SETTINGS
@@ -367,7 +395,7 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
     claims_uc = calc(sim, "uc_non_dependants_counted")
     assert np.array_equal(
         claims_uc,
-        head & calc(sim, "is_uc_eligible") & calc(sim, "would_claim_uc"),
+        head & calc(sim, "is_uc_eligible") & calc(sim, "claims_universal_credit"),
     )
     person_head_family = sim.map_result(head, "benunit", "person") > 0
     individual = calc(sim, "uc_individual_non_dep_deduction")
@@ -389,4 +417,23 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
     assert np.allclose(
         head_bedrooms[head_claims],
         (bedrooms_alone + adults_outside)[head_claims],
+    )
+    # Council Tax Reduction: one claim, the household head's family's, on its
+    # own scheme; every family's reduction is simulated or reported as that
+    # claim's scheme is.
+    assert not calc(sim, "council_tax_reduction_claims_are_joint").any()
+    assert np.array_equal(calc(sim, "council_tax_reduction_claimant_benunit"), head)
+    head_scheme = (
+        per_household(sim, calc(sim, "council_tax_reduction_scheme_supported") & head)
+        > 0
+    )
+    supported = sim.map_result(head_scheme, "household", "benunit") > 0
+    assert np.allclose(
+        calc(sim, "council_tax_benefit"),
+        np.where(
+            supported,
+            calc(sim, "simulated_council_tax_reduction_benunit"),
+            calc(sim, "council_tax_benefit_reported", "benunit"),
+        ),
+        atol=0.01,
     )

@@ -1,0 +1,166 @@
+# Literal marginal-band sums from WSI 2022/1027 reg 7 and WSI 2024/1311 reg 6.
+# Annual parameters sample 30 April; these are not dated/protected-contract cases.
+- name: Main purchase retains the April 2022 table
+  period: 2022
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 4_950
+
+- name: Main purchase uses the new table in annual 2023
+  period: 2023
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 4_500
+
+- name: Main purchase at 400000 retains the April 2022 table
+  period: 2022
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 400_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 9_950
+
+- name: New main table raises tax at the 400000 boundary
+  period: 2023
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 400_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 10_500
+
+- name: Additional purchase retains the April 2024 table
+  period: 2024
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 16_950
+
+- name: Additional purchase uses the new table in annual 2025
+  period: 2025
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 19_950
+
+- name: Distinct main and additional purchases use their respective tables
+  period: 2026
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 24_450
+
+- name: Main purchase reaches every current residential band
+  period: 2025
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 2_000_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 171_750
+
+- name: Additional purchase reaches every current higher band
+  period: 2025
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 2_000_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 271_200
+
+- name: No purchase leaves Welsh LTT at zero
+  period: 2025
+  input:
+    age: 45
+    region: WALES
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 0
+
+- name: English purchases do not incur Welsh LTT
+  period: 2025
+  input:
+    age: 45
+    region: LONDON
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_transaction_tax: 0

@@ -1,0 +1,17 @@
+description: Smallest award of child tax credit or working tax credit that counts as a relevant benefit for the Pension Age Winter Heating Payment. Tax credits counted only for the 2024 qualifying week; infinity means they do not count.
+values:
+  2024-01-01:
+    value: 26
+    reference:
+      - title: The Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351), reg. 2 "relevant benefit" (as made)
+        href: https://www.legislation.gov.uk/ssi/2024/351/regulation/2/made
+  # SSI 2025/195 reg. 9(2) omitted the tax credit words from 23 June 2025,
+  # before the qualifying week in September 2025.
+  2025-01-01:
+    value: .inf
+    reference:
+      - title: The Social Security (Miscellaneous Amendment) (Scotland) Regulations 2025 (SSI 2025/195), reg. 9(2)
+        href: https://www.legislation.gov.uk/ssi/2025/195/regulation/9/made
+metadata:
+  unit: currency-GBP
+  label: PAWHP minimum tax credit award

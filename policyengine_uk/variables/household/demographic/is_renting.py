@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.geography import Region
+from policyengine_uk.utils.tenure import is_renting_tenure
 
 
 class is_renting(Variable):
@@ -9,11 +9,4 @@ class is_renting(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        tenure = household("tenure_type", period)
-        tenures = tenure.possible_values
-        RENT_TENURES = [
-            tenures.RENT_PRIVATELY,
-            tenures.RENT_FROM_COUNCIL,
-            tenures.RENT_PRIVATELY,
-        ]
-        return is_in(tenure, RENT_TENURES)
+        return is_renting_tenure(household("tenure_type", period))

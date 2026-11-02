@@ -6,6 +6,11 @@ and duty on LPG and natural road fuel gas from supplied household inputs.
 diesel duty. These totals combine the different annual bases described below.
 The incidence assumption is full pass-through to consumers.
 
+The model also includes seven gambling duty families from supplied attributed
+household bases. [Household gambling duties](gambling-duties.md) documents the
+rates, casino incidence proxy, period conventions and outstanding population
+data, machine-premises and VAT work.
+
 ## Coverage and periods
 
 Alcohol, tobacco and car duty calculations cover 2024/25 to 2026/27. The alcohol
@@ -13,9 +18,11 @@ parameter history starts on 1 August 2023; the preceding alcohol regime and a
 complete 2023/24 calculation are outside this implementation. Tobacco rates
 start on 22 November 2023. The new alcohol, tobacco and car formulas return their
 default zero before 2024; that is an unmodelled period, not a statutory exemption.
-Gas duty covers 2022/23 onwards and includes the announced September 2026,
-December 2026 and March 2027 increases. Rates after the last dated entry stay
-constant; these new parameters do not forecast future inflation increases.
+Gas duty covers 2022/23 onwards. SI 2026/555 removed the September 2026 step
+that Budget 2025 announced and moved the December 2026 step to 1 January 2027.
+Budget 2026 then kept the proportionate cut to 1 July 2027, when the gas rates
+return to their full levels with RPI growth on top, and rise by RPI each 1 April
+from 2028, as petrol and diesel do (see below).
 
 For alcohol and tobacco, a model year such as `2026` represents 6 April 2026 to
 5 April 2027. Quantities and cigarette retail prices are constant across that
@@ -33,16 +40,17 @@ Annual `Scenario.parameter_changes` and bare-year legacy reform dictionaries
 apply to a complete UK fiscal year. Explicit date ranges retain the dates the
 caller supplies.
 
-The linear gas rates use the existing `fiscal_year_blend: true` machinery.
-Petrol and diesel retain their existing calendar-year averaged rate path.
-Monthly `fuel_duty` allocates one twelfth of each annual volume and uses the
-model's annual rate; it does not represent duty on a dated purchase.
+The linear fuel duty rates on petrol, diesel and road fuel gases use the
+existing `fiscal_year_blend: true` machinery. Each rate is keyed to the date it
+takes effect and day-weighted across the model year, 6 April to 5 April. Time
+of day is not modelled. Monthly `fuel_duty` allocates one twelfth of each annual
+volume and uses the model's annual rate; it does not represent duty on a dated
+purchase.
 
 Consequently, `household_tax` and `gov_tax` mix year bases. For model period
-`2026`, alcohol, tobacco and road fuel gas duty use 6 April 2026 to 5 April 2027,
-and VED uses 1 April 2026 to 31 March 2027. They are added to existing annual
-components, including income tax and VAT, and the calendar-year petrol and
-diesel duty calculation. Aggregation does not realign or prorate these components
+`2026`, alcohol, tobacco and fuel duty use 6 April 2026 to 5 April 2027, and VED
+uses 1 April 2026 to 31 March 2027. They are added to existing annual components,
+including income tax and VAT. Aggregation does not realign or prorate these components
 to a common reporting year. The totals therefore do not represent a consistent
 January-to-December receipts period. Before comparing `gov_tax` with
 calendar-year receipts, align each component to that calendar year; changing the
@@ -146,17 +154,54 @@ matching the legislation. No universal litre-to-kilogram density is assumed.
 The existing `fuel_duty` output includes these charges. Rural fuel duty relief
 continues to apply only to petrol and diesel.
 
-From 1 March 2027 onwards, the gas parameters hold LPG at £0.3161/kg and natural
-gas at £0.2470/kg. This implementation stops at the last numerical rates in the
-HMRC 2026-to-2027 schedule and does not extrapolate gas rates using an inflation
-forecast. This is a modelling limitation: HMRC states that RPI uprating resumes
-from 2027/28. The existing petrol and diesel path includes forecast uprating
-from April 2027, with dated annual values through 2030, so its rates rise while
-the gas rates stay flat. Later-year gas duty is therefore lower than it would be
-under the same uprating assumption. Analyses beyond March 2027 that require
-consistent fuel-duty forecasts must supply an uprated gas-rate path explicitly.
+Budget 2026's costing says that on 1 July 2027 "fuel duty rates will increase
+by 5ppl and will be uprated in line with the Retail Prices Index (RPI)", and
+applies the cut to other fuels in proportion. So on 1 July 2027 the gas rates
+return to their full rates before the 2022 cut (LPG £0.3161/kg, natural gas
+£0.2470/kg), with the same RPI growth as petrol and diesel. HM Treasury
+publishes the rates from 1 July 2027 in Annex A of Budget 2026's Overview
+of Tax Legislation and Rates: £0.3305/kg and £0.2582/kg (the uprating gives
+£0.2583/kg for natural gas, and the model uses HM Treasury's rate). Each
+1 April from 2028 they rise by the previous calendar
+year's RPI growth. `calculate_fuel_duty_rates.py` writes these steps to
+1 April 2031, as it does for petrol and diesel, and the parameters' uprating
+metadata continues them. That is policy, not law.
 
-Source: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027).
+Sources: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027)
+(RPI uprating from 2027/28),
+[HMRC amended fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/amended-fuel-duty-rates-for-2026-to-2027/amended-fuel-duty-rates-2026-to-2027)
+[SI 2026/164 as amended by SI 2026/555](https://www.legislation.gov.uk/uksi/2026/164)
+and [Budget 2026 policy costings, page 13](https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=13).
+
+## Petrol and diesel rate
+
+The main rate on unleaded petrol and diesel is keyed to each statutory change:
+52.95p a litre from 23 March 2022, continued by annual orders to 31 December 2026
+(SI 2026/164 as amended by SI 2026/555). Those orders then stepped to 55.95p on
+1 January 2027 and to the Hydrocarbon Oil Duties Act 1979 rate of 57.95p on
+1 March 2027. Budget 2026 (paragraph 6.211) cancelled both steps and kept the
+cut to 1 July 2027. Its costing (page 13) says: "On 1 July 2027, fuel duty rates
+will increase by 5ppl and will be uprated in line with the Retail Prices Index
+(RPI). From 1 April 2028, fuel duty rates will be uprated annually in line with
+RPI." That is policy, not law. The OBR's October 2026 EFO (paragraph 3.19)
+puts the rate at 60.59p from 1 July 2027: RPI growth in the year to 2027 Q1
+(4.5565%, economy Table 1.7) on the 57.95p pre-cut rate. The model
+uses that figure, and `calculate_fuel_duty_rates.py` refuses to write any
+other July rate. From 1 April 2028, each step applies the previous calendar
+year's RPI growth from the OBR forecast in
+`gov.economic_assumptions.yoy_growth.obr.rpi`, rounded to the nearest
+hundredth of a penny. The script writes the steps to 1 April 2031, and a test
+fails when they fall out of date with the RPI forecast. After a new EFO, set
+the script's July rate and RPI growth to its forecast and rerun it. Later steps come from the parameter's uprating metadata.
+The RPI index ends in 2039, so the last step is 1 April 2040.
+
+An annual reform names a model year and replaces the rate for all of it. For
+model years to 2030 it leaves other years unchanged. `Scenario.parameter_changes`
+reapplies uprating after the change, so an override from model year 2031, where
+the steps come from uprating metadata, restarts uprating from the last written
+rate: every later year stays one 1 April step behind. Reform classes and legacy
+reform dictionaries change the annual values after uprating and are not
+affected.
 
 ## Population data follow-ups
 

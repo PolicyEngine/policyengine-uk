@@ -8,10 +8,15 @@ from policyengine_uk.model_api import *
 
 class bus_fare_spending(Variable):
     label = "bus and coach fare spending"
-    documentation = "Household spending on bus and coach fares (COICOP 7.3.2)."
+    documentation = (
+        "Household bus fares summed from each person's journeys where supplied. "
+        "Without journey data, retains reported bus and coach spending "
+        "(COICOP 7.3.2), allocated across people by age. Already included in "
+        "transport_consumption; do not add it to consumption again."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
+    adds = ["person_bus_fare_spending"]

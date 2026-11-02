@@ -1,0 +1,132 @@
+# DfE guidance effective 1 April 2026, A1.2 and A1.4; SI 2014/2147 reg 3.
+# https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026
+# https://www.legislation.gov.uk/uksi/2014/2147/regulation/3
+# The existing annual proxy values 190 targeted hours per funded term at
+# £8.90 in 2026. It is not a provider fee or a claim about actual term lengths.
+
+- name: Case 1, a late second birthday starts targeted hours in January.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 1
+    date_of_birth: 20241007
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 1_691
+    universal_childcare_entitlement: 0
+
+- name: Case 2, a second birthday on 31 March funds all three terms.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20240331
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 5_073
+
+- name: Case 3, a second birthday on 1 April waits for September.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20240401
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 3_382
+
+- name: Case 4, a second birthday on 31 August starts in September.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20240831
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 3_382
+
+- name: Case 5, a second birthday on 1 September waits for January.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20240901
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 1_691
+
+- name: Case 6, a second birthday on 31 December funds January.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 1
+    date_of_birth: 20241231
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 1_691
+
+- name: Case 7, a second birthday on 1 January waits until the next model year.
+  period: 2026
+  input:
+    age: 1
+    date_of_birth: 20250101
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 0
+
+- name: Case 8, a qualifying family route remains necessary.
+  period: 2026
+  input:
+    age: 1
+    date_of_birth: 20241007
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: false
+    extended_childcare_entitlement_eligible: false
+  output:
+    targeted_childcare_entitlement: 0
+
+- name: Case 9, a new targeted term uses the same band as its working parent hours.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 1
+    date_of_birth: 20241007
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: true
+    would_claim_targeted_childcare: false
+  output:
+    # April/September use the under-two proxy, January the targeted band.
+    extended_childcare_entitlement_total_per_child: 12_532.40
+    targeted_childcare_entitlement: 1_691
+    extended_childcare_entitlement_per_child: 10_841.40
+
+- name: Case 10, targeted and working parent starts share the same two terms in 2024.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 2
+    date_of_birth: 20220406
+    country: ENGLAND
+    targeted_childcare_entitlement_eligible: true
+    extended_childcare_entitlement_eligible: true
+    would_claim_targeted_childcare: false
+  output:
+    # Two common terms * 190 hours * the unchanged 2024 £8.28 proxy.
+    targeted_childcare_entitlement: 3_146.40
+    extended_childcare_entitlement_total_per_child: 3_146.40
+    extended_childcare_entitlement_per_child: 0

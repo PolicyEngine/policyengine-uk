@@ -1,101 +1,357 @@
-from policyengine_uk.model_api import Scenario
+from policyengine_uk.model_api import Scenario, Variable
 from policyengine_uk import Microsimulation
-from policyengine_uk.variables.gov.dwp.universal_credit.standard_allowance.uc_standard_allowance_claimant_type import (
-    UCClaimantType,
-)
+from policyengine_uk.utils.data_source import built_from_data
+from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
+from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 import numpy as np
+import warnings
+from weakref import WeakKeyDictionary
+from policyengine_core.periods import instant, period as period_
 
 
-BASELINE_UC_REBALANCING_YEAR = 2025
+# Universal Credit Act 2025: the first tax year of the rebalancing (2026-27,
+# ss. 2 to 4) and the last the s. 4 duty covers (2029-30).
+FIRST_REBALANCING_YEAR = 2026
+SECTION_4_LAST_YEAR = 2029
+# The tax years in which the scenario sets the element: from the first year of
+# the rebalancing to the end of the data's projection. Other code reads this
+# (for example to warn that a reform to elements.disabled.amount does not reach
+# these years' awards). Later years fall to the uc_LCWRA_element formula, which
+# pays every claimant the new-claimant amount.
+REBALANCING_YEARS = range(FIRST_REBALANCING_YEAR, PROJECTION_END_YEAR + 1)
 
 
-def _benefit_uprating_ratio(sim: Microsimulation, year: int) -> float:
-    parameters = sim.tax_benefit_system.parameters
-    current_index = float(parameters(str(year)).gov.benefit_uprating_cpi)
-    baseline_index = float(
-        parameters(str(BASELINE_UC_REBALANCING_YEAR)).gov.benefit_uprating_cpi
-    )
-    return current_index / baseline_index
+# The standard allowance amounts the protected LCWRA amount is paired with in
+# the Universal Credit Act 2025 s. 4(2) duty: every amount of the allowance.
+STANDARD_ALLOWANCE_TYPES = (
+    "SINGLE_YOUNG",
+    "SINGLE_OLD",
+    "COUPLE_YOUNG",
+    "COUPLE_OLD",
+)
 
 
-def _rebalanced_standard_allowance_monthly(
-    sim: Microsimulation, year: int, claimant_type: str
+def protected_lcwra_floor(
+    previous_amount: float,
+    previous_standard_allowances: dict,
+    standard_allowances: dict,
+    cpi_factor: float,
 ) -> float:
-    current = sim.tax_benefit_system.parameters(str(year))
-    return float(
-        current.gov.dwp.universal_credit.standard_allowance.amount[claimant_type]
+    """The lowest protected LCWRA amount the Universal Credit Act 2025 allows.
+
+    s. 4(2): for each standard allowance amount, the protected LCWRA amount
+    plus that allowance must be at least the previous tax year's sum,
+    increased by the relevant CPI percentage (never below 0%, s. 4(4)(a)). s. 3
+    switches off the element's ordinary uprating, so the amount otherwise stays
+    where it was. All amounts are monthly.
+    """
+    factor = max(float(cpi_factor), 1.0)
+    required = max(
+        (previous_amount + previous_standard_allowances[claimant_type]) * factor
+        - standard_allowances[claimant_type]
+        for claimant_type in STANDARD_ALLOWANCE_TYPES
     )
+    return max(float(previous_amount), required)
+
+
+def _standard_allowances_monthly(sim: Microsimulation, year: int) -> dict:
+    amounts = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.universal_credit.standard_allowance.amount
+    return {
+        claimant_type: float(amounts[claimant_type])
+        for claimant_type in STANDARD_ALLOWANCE_TYPES
+    }
+
+
+def _relevant_cpi_factor(sim: Microsimulation, year: int) -> float:
+    """1 + the relevant CPI percentage for a tax year (UC Act 2025 s. 4(4)(a)):
+    the CPI 12-month rate in the September before it. The 0% floor is applied
+    in :func:`protected_lcwra_floor`."""
+    inputs = sim.tax_benefit_system.parameters.gov.economic_assumptions.statutory_uprating_inputs
+    return 1 + float(inputs.cpi_september(f"{year - 1}-09-01"))
+
+
+# The date the fiscal-year annualisation samples a parameter at
+# (policyengine_uk.utils.parameters).
+FISCAL_YEAR_SAMPLE_DATE = "04-30"
+
+
+def _protected_amount_parameter(sim: Microsimulation):
+    return sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing.protected_health_element
 
 
 def _protected_existing_health_element_monthly(
     sim: Microsimulation, year: int
 ) -> float:
-    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
-    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
-        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD)
-        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
+    """The protected LCWRA amount for a tax year, monthly.
+
+    UC Regs 2013 reg. 36 gives one amount to every pre-2026, severe conditions
+    criteria or terminally ill claimant, whatever their age or couple status
+    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). Any non-null amount,
+    legislated or set by a reform, is used as given. A tax year whose amount
+    is null (not yet legislated):
+
+    - to 2029-30 takes the s. 4 floor from the year before;
+    - from 2030-31 takes the year before's amount uprated by the element's
+      uprating index. The row stays in reg. 36 (s. 2 only relabels it), s. 4
+      covers only 2026-27 to 2029-30, and s. 3 disapplies the SSAA 1992
+      s. 150 up-rating only in the tax years ending 5 April 2026 to 5 April
+      2029, so the review in 2029-30 governs the April 2030 rate again. The
+      index is the one the new-claimant amount follows
+      (``rebalancing/create_health_element_uprating.py``): the benefit
+      uprating index, held in any year the freeze is in force, never falling.
+    """
+    parameter = _protected_amount_parameter(sim)
+    amount = parameter(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+    if amount is not None:
+        return float(amount)
+    first = min(
+        int(entry.instant_str[:4])
+        for entry in parameter.values_list
+        if entry.value is not None
     )
-    return protected_combined_award - _rebalanced_standard_allowance_monthly(
-        sim, year, "SINGLE_OLD"
+    if year <= first:
+        raise ValueError(
+            f"No protected LCWRA amount is set for {year} or any earlier year."
+        )
+    previous = _protected_existing_health_element_monthly(sim, year - 1)
+    if year > SECTION_4_LAST_YEAR:
+        index = sim.tax_benefit_system.parameters.gov.economic_assumptions.indices.uc_health_element
+        return previous * (
+            index(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+            / index(f"{year - 1}-{FISCAL_YEAR_SAMPLE_DATE}")
+        )
+    return protected_lcwra_floor(
+        previous,
+        _standard_allowances_monthly(sim, year - 1),
+        _standard_allowances_monthly(sim, year),
+        _relevant_cpi_factor(sim, year),
     )
 
 
-def _protected_single_young_health_element_monthly(
-    sim: Microsimulation, year: int
-) -> float:
-    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
-    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
-        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG)
-        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
+NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
+LCWRA_AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
+
+
+class UCHealthElementOverrideWarning(UserWarning):
+    """An LCWRA amount reform is superseded by the rebalancing inputs."""
+
+
+def warn_shadowed_lcwra_reform(sim) -> None:
+    """Warn once when a reformed amount is read in an active rebalancing year.
+
+    Statutory changes are sampled when annualising the LCWRA parameter;
+    overrides of the built parameters are read at 1 January. Construction
+    and Scenario.apply defer this check until all their changes have run,
+    so a reform that also switches rebalancing off does not warn.
+    """
+    from policyengine_uk.utils.dated_reforms import legacy_override_bounds
+
+    if getattr(sim, "_defer_uc_health_warning", False) or getattr(
+        sim, "_uc_health_amount_warning_emitted", False
+    ):
+        return
+    system = getattr(sim, "tax_benefit_system", None)
+    if system is None:
+        return
+    assignments = [
+        change
+        for change in getattr(system, "dated_assignments", ())
+        if change.path == LCWRA_AMOUNT
+    ]
+    override_windows = [
+        legacy_override_bounds(change, system.parameters)
+        for change in getattr(system, "legacy_overrides", ())
+        if change.path == LCWRA_AMOUNT
+    ]
+    if not assignments and not override_windows:
+        return
+    rebalancing = system.parameters.gov.dwp.universal_credit.rebalancing
+    years = []
+    for year in REBALANCING_YEARS:
+        if not rebalancing.active(year):
+            continue
+        statutory_sample = instant(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+        annual_sample = instant(f"{year}-01-01")
+        if any(
+            change.start <= statutory_sample <= change.stop for change in assignments
+        ) or any(start <= annual_sample <= stop for start, stop in override_windows):
+            years.append(year)
+    if years:
+        warnings.warn(
+            f"A reform to {LCWRA_AMOUNT} is superseded in "
+            f"{', '.join(map(str, years))} by Universal Credit rebalancing inputs. "
+            "For a health element reform in these years change "
+            "gov.dwp.universal_credit.rebalancing.protected_health_element and "
+            "gov.dwp.universal_credit.rebalancing.new_claimant_health_element.",
+            UCHealthElementOverrideWarning,
+            stacklevel=2,
+        )
+        sim._uc_health_amount_warning_emitted = True
+
+
+def _new_claimant_health_element_status(
+    sim: Microsimulation, year: int, drawn: np.ndarray, built_from_data: bool
+) -> np.ndarray:
+    """Which benefit units get the new-claimant LCWRA rate in a year.
+
+    A value the situation or dataset supplies is used as given. Data without
+    one takes the seeded draw, recorded as an input. A household situation
+    without one gets the protected amount (the variable's default): a draw
+    there would make a household's award depend on its position among the
+    other benefit units in the simulation.
+    """
+    # sim.get_array reads the simulation's own branch (and the branches it
+    # inherits from); the holder's get_array reads only the default branch.
+    supplied = sim.get_array(NEW_CLAIMANT_STATUS, year)
+    if supplied is not None:
+        return np.asarray(supplied, dtype=bool)
+    if built_from_data:
+        status = np.asarray(drawn, dtype=bool)
+    else:
+        status = np.zeros(len(drawn), dtype=bool)
+    sim.set_input(NEW_CLAIMANT_STATUS, year, status)
+    return status
+
+
+def _lcwra_amount_is_overridden(sim, year: int) -> bool:
+    """An explicit LCWRA amount keeps precedence over the inactive path."""
+    from policyengine_uk.utils.dated_reforms import legacy_override_bounds
+    from policyengine_uk.tax_benefit_system import (
+        reform_parameter_defines,
+        parameter_reads_calendar_years,
     )
-    return protected_combined_award - _rebalanced_standard_allowance_monthly(
-        sim, year, "SINGLE_YOUNG"
+
+    system = sim.tax_benefit_system
+    overrides = list(getattr(system, "legacy_overrides", ()))
+    # Single-day constructor overrides run after this modifier. Respect
+    # their requested window before caching an inactive award.
+    for dated in getattr(sim, "_building_dated_reforms", None) or ():
+        _, pending = dated.read(
+            reform_parameter_defines(),
+            calendar_years=parameter_reads_calendar_years(),
+        )
+        overrides.extend(pending)
+    statutory_sample = instant(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+    annual_sample = instant(f"{year}-01-01")
+    return any(
+        change.path == LCWRA_AMOUNT and change.start <= statutory_sample <= change.stop
+        for change in getattr(system, "dated_assignments", ())
+    ) or any(
+        change.path == LCWRA_AMOUNT and start <= annual_sample <= stop
+        for change in overrides
+        for start, stop in [legacy_override_bounds(change, system.parameters)]
     )
+
+
+def _inactive_health_element_monthly(sim, year: int) -> float:
+    """The CPI-only counterfactual, independent of previous paid awards.
+
+    Anchor 2026-27 to the pre-Act amount increased by September 2025 CPI,
+    rounded to monthly pennies. This is a scenario convention, not an
+    enacted LCWRA rate or a uniquely required SSAA 1992 s.150 rounding rule.
+    Later years follow the ordinary benefit index from that 2026 anchor.
+    """
+    parameters = sim.tax_benefit_system.parameters
+    before = parameters(str(FIRST_REBALANCING_YEAR - 1)).gov
+    anchor = round(
+        float(before.dwp.universal_credit.elements.disabled.amount)
+        * _relevant_cpi_factor(sim, FIRST_REBALANCING_YEAR),
+        2,
+    )
+    anchor_index = parameters(str(FIRST_REBALANCING_YEAR)).gov.benefit_uprating_cpi
+    return anchor * parameters(str(year)).gov.benefit_uprating_cpi / anchor_index
+
+
+# Only functions registered here are this internal amount wrapper. External
+# wrappers, even ones copying function attributes, keep their own provenance.
+_INACTIVE_HEALTH_ELEMENT_ORIGINS = WeakKeyDictionary()
+
+
+def lcwra_formula_origin(formula, period):
+    """Resolve the formula delegated by our internal LCWRA amount wrapper."""
+    if formula is None:
+        return None
+    original = _INACTIVE_HEALTH_ELEMENT_ORIGINS.get(formula)
+    return original.get_formula(period) if original is not None else formula
+
+
+def _add_inactive_health_element_formula(sim):
+    """Keep the counterfactual as calculated output, invalidated by reforms."""
+    system = sim.tax_benefit_system
+    original = system.get_variable("uc_LCWRA_element")
+    if getattr(original, "_inactive_health_element_formula", False):
+        return
+
+    class uc_LCWRA_element(Variable):
+        def formula(benunit, period, parameters):
+            current = original.get_formula(period)(benunit, period, parameters)
+            year = period.start.year
+            if year not in REBALANCING_YEARS:
+                return current
+            simulation = benunit.simulation
+            p = parameters(period).gov.dwp.universal_credit
+            if p.rebalancing.active or _lcwra_amount_is_overridden(simulation, year):
+                return current
+            amount = p.elements.disabled.amount
+            if amount == 0:
+                return current
+            return current * _inactive_health_element_monthly(simulation, year) / amount
+
+    _INACTIVE_HEALTH_ELEMENT_ORIGINS[uc_LCWRA_element.formula] = original
+    variable = system.update_variable(uc_LCWRA_element)
+    variable._inactive_health_element_formula = True
 
 
 def add_universal_credit_reform(sim: Microsimulation):
+    _add_inactive_health_element_formula(sim)
     rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
     generator = np.random.default_rng(43)
 
     uc_seed = generator.random(len(sim.calculate("benunit_id")))
-    post_2025_claimant_share = {
-        2025: 0,
-        2026: 0.11,
-        2027: 0.13,
-        2028: 0.16,
-        2029: 0.22,
-    }  # WPI Economics for Trussell Trust based on admin PIP data, 2025
+    # rebalancing.new_claimant_share: WPI Economics' estimates for 2026-27 to
+    # 2029-30, held after that (an assumption; see the parameter).
+    new_claimant_share = rebalancing.new_claimant_share
     new_claimant_health_element = rebalancing.new_claimant_health_element
-    for year in range(2026, 2030):
+    is_data = built_from_data(sim)
+    for year in REBALANCING_YEARS:
         if not rebalancing.active(year):
+            population = sim.get_variable_population("uc_LCWRA_element")
+            if (
+                supplied_input(population, "uc_LCWRA_element", period_(year))
+                is not None
+            ):
+                continue
+            # Recalculate through the formula, preserving user-supplied awards.
+            sim.delete_arrays("uc_LCWRA_element", year)
             continue
-        is_post_2025_claimant = uc_seed < post_2025_claimant_share[year]
+        is_post_2025_claimant = _new_claimant_health_element_status(
+            sim, year, uc_seed < new_claimant_share(year), is_data
+        )
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.
         current_health_element = np.array(sim.calculate("uc_LCWRA_element", year))
-        claimant_type = sim.calculate("uc_standard_allowance_claimant_type", year)
         has_health_element = current_health_element > 0
-        protected_health_element = np.full(
-            current_health_element.shape,
-            _protected_existing_health_element_monthly(sim, year) * 12,
-            dtype=current_health_element.dtype,
-        )
-        protected_health_element[claimant_type == UCClaimantType.SINGLE_YOUNG.name] = (
-            _protected_single_young_health_element_monthly(sim, year) * 12
-        )
+        # One protected amount for every pre-2026 claimant (reg. 36).
         current_health_element[has_health_element & ~is_post_2025_claimant] = (
-            protected_health_element[has_health_element & ~is_post_2025_claimant]
+            _protected_existing_health_element_monthly(sim, year) * 12
         )
-        # Set post-April 2026 claimants to £217.26/month.
-        # https://bills.parliament.uk/publications/62123/documents/6889#page=16
+        # New claimants: £217.26 a month from April 2026 (UC Act 2025 s. 2),
+        # frozen to 2029-30 (s. 3) and uprated after.
         current_health_element[has_health_element & is_post_2025_claimant] = (
             new_claimant_health_element(year) * 12
         )  # Monthly amount * 12
-        sim.set_input("uc_LCWRA_element", year, current_health_element)
+        # Stored as an input, so that reforms keep it, but still the model's
+        # own element unless one was entered (the benefit cap's LCWRA
+        # exception reads entries differently).
+        set_model_value(sim, "uc_LCWRA_element", year, current_health_element)
 
-    # Standard allowance uplift is handled in the formula itself so user
-    # reforms to the base amount are applied before the uplift.
+    # The standard allowance uplift is applied through the allowance's
+    # uprating index (rebalancing/create_standard_allowance_uprating.py), so a
+    # reform to the amount itself is used as given.
+    warn_shadowed_lcwra_reform(sim)
 
 
 universal_credit_july_2025_reform = Scenario(

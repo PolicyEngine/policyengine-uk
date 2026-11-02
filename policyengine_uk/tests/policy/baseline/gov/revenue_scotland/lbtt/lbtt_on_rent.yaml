@@ -1,0 +1,118 @@
+# LBTT on lease rent. Table C of the Schedule to SSI 2015/126, as amended by
+# SSI 2020/24 article 2 for effective dates on or after 7 February 2020:
+#   nil rate band: not more than £150,000, 0%
+#   first band: more than £150,000 but not more than £2 million, 1%
+#   second band: more than £2 million, 2%
+# Before 7 February 2020 the first band (1%) had no upper limit. Model years
+# are fiscal years, with parameters read at 30 April, so 2019 is 2019-20 (old
+# table) and 2025 is 2025-26 (current table).
+# Residential leases are exempt transactions: LBTT (Scotland) Act 2013
+# schedule 1 paragraph 3(1)(a).
+
+- name: Case 1, non-residential lease rent above £2 million in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 2_100_000
+  output:
+    # 1% x (2,000,000 - 150,000) + 2% x (2,100,000 - 2,000,000)
+    # = 18,500 + 2,000 = 20,500
+    lbtt_on_non_residential_property_rent: 20_500
+    lbtt_on_rent: 20_500
+    land_and_buildings_transaction_tax: 20_500
+
+- name: Case 2, non-residential lease rent just above £2 million.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 2_000_100
+  output:
+    # 1% x (2,000,000 - 150,000) + 2% x 100 = 18,500 + 2 = 18,502
+    lbtt_on_non_residential_property_rent: 18_502
+
+- name: Case 3, non-residential lease rent exactly £2 million.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 2_000_000
+  output:
+    # 1% x (2,000,000 - 150,000) = 18,500
+    lbtt_on_non_residential_property_rent: 18_500
+
+- name: Case 4, non-residential lease rent at the £150,000 nil rate band limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 150_000
+  output:
+    lbtt_on_non_residential_property_rent: 0
+
+- name: Case 5, no band above £2 million in 2019-20.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 2_100_000
+  output:
+    # 1% x (2,100,000 - 150,000) = 19,500
+    lbtt_on_non_residential_property_rent: 19_500
+
+- name: Case 6, first year of the £2 million band in 2020-21.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    non_residential_rent: 2_100_000
+  output:
+    # 18,500 + 2% x 100,000 = 20,500
+    lbtt_on_non_residential_property_rent: 20_500
+
+- name: Case 7, rent crossing £2 million on top of earlier cumulative rent.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    cumulative_non_residential_rent: 1_900_000
+    non_residential_rent: 200_000
+  output:
+    # 1% x (2,000,000 - 1,900,000) + 2% x (2,100,000 - 2,000,000)
+    # = 1,000 + 2,000 = 3,000
+    lbtt_on_non_residential_property_rent: 3_000
+
+- name: Case 8, residential lease rent is exempt.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    cumulative_residential_rent: 2_000_000
+    rent: 200_000
+  output:
+    # Exempt: schedule 1 paragraph 3(1)(a). Charged, the rent bands would
+    # give 2% x 200,000 = 4,000.
+    lbtt_on_residential_property_rent: 0
+    lbtt_on_rent: 0
+    land_and_buildings_transaction_tax: 0
+
+- name: Case 9, residential and non-residential rent together.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: SCOTLAND
+    rent: 300_000
+    non_residential_rent: 2_100_000
+  output:
+    lbtt_on_residential_property_rent: 0
+    lbtt_on_rent: 20_500
+
+- name: Case 10, no LBTT on lease rent outside Scotland.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    non_residential_rent: 2_100_000
+  output:
+    land_and_buildings_transaction_tax: 0

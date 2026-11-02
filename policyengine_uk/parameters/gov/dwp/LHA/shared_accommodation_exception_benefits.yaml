@@ -1,12 +1,15 @@
-description: Disability benefits whose recipients under 35 are excepted from the shared accommodation rate.
+description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate.
 values:
   2013-04-29:
     - attendance_allowance
     - dla_sc_middle_plus
     - pip_dl
+    - armed_forces_independence_payment
 metadata:
   unit: list
-  label: shared accommodation rate disability exceptions
+  label: Universal Credit shared accommodation rate disability exceptions
   reference:
     - title: Universal Credit Regulations 2013 Sch 4 para 29(5)
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/29
+    - title: Universal Credit Regulations 2013 reg 2 ("attendance allowance" includes armed forces independence payment)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2

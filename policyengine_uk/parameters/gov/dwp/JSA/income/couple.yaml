@@ -1,5 +1,7 @@
 description: Weekly contributory Jobseeker's Allowance for couples.
 values:
+  # 2023-24 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
   2015-04-01: 114.85
   2016-04-01: 114.85
   2017-04-01: 114.85
@@ -8,9 +10,25 @@ values:
   2020-04-01: 116.80
   2021-04-01: 117.40
   2022-04-01: 121.05
+  2023-04-01: 133.3
+  2024-04-01: 142.25
+  2025-04-01: 144.65
+  2026-04-01: 150.15
 metadata:
   period: week
   unit: currency-GBP
   label: Income-based JSA (couple)
   uprating: gov.benefit_uprating_cpi
-  reference: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+  reference:
+    - title: UKMOD country report (EUROMOD), page 24
+      href: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=24
+    - title: Benefit and pension rates 2023 to 2024 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made

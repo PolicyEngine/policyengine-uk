@@ -4,8 +4,9 @@ from policyengine_uk.model_api import *
 class employee_pension_contributions(Variable):
     label = "employee pension contributions"
     documentation = (
-        "Total employee pension contributions including reported contributions "
-        "and any excess salary sacrifice redirected to regular pension contributions."
+        "Actual reported employee pension contributions, plus any explicitly "
+        "supplied legacy return to ordinary pay/member payments. The "
+        "NIC-only salary-sacrifice excess is not a member contribution."
     )
     entity = Person
     definition_period = YEAR

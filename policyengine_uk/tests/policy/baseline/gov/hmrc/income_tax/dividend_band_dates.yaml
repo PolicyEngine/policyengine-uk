@@ -1,0 +1,101 @@
+# Literal official-source band arithmetic; the dividend nil rate occupies band capacity.
+# PA0 cases isolate2016/2017/2021/2026 bands from separate allowance limitations.
+- name: 2016 dividends with wages 0 and dividends 160000
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 0
+    dividend_income: 160000
+  output:
+    dividend_income_tax: 44185.0
+    income_tax: 44185.0
+- name: 2017 dividends with wages 0 and dividends 160000
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 0
+    dividend_income: 160000
+  output:
+    dividend_income_tax: 43810.0
+    income_tax: 43810.0
+- name: 2018 dividends with wages 40000 and dividends 10000
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 40000
+    dividend_income: 10000
+  output:
+    dividend_income_tax: 1512.5
+    income_tax: 7142.5
+- name: 2019 dividends with wages 40000 and dividends 10000
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 40000
+    dividend_income: 10000
+  output:
+    dividend_income_tax: 600.0
+    income_tax: 6100.0
+- name: 2021 dividends with wages 0 and dividends 160000
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 0
+    dividend_income: 160000
+  output:
+    dividend_income_tax: 42985.0
+    income_tax: 42985.0
+- name: 2023 dividends with wages 130000 and dividends 10000
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 130000
+    dividend_income: 10000
+  output:
+    dividend_income_tax: 3541.5
+    income_tax: 48244.5
+- name: 2025 dividends with wages 49000 and dividends 2000
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 49000
+    dividend_income: 2000
+  output:
+    dividend_income_tax: 313.75
+    income_tax: 7599.75
+- name: 2025 dividends with wages 130000 and dividends 10000
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 130000
+    dividend_income: 10000
+  output:
+    dividend_income_tax: 3738.25
+    income_tax: 48441.25
+- name: 2026 dividends with wages 0 and dividends 160000
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 0
+    dividend_income: 160000
+  output:
+    dividend_income_tax: 48976.21
+    income_tax: 48976.21

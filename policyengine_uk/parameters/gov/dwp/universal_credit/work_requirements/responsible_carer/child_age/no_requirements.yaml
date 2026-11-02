@@ -1,0 +1,11 @@
+description: >-
+  Age below which a child puts their responsible carer in the Universal Credit
+  group subject to no work-related requirements.
+values:
+  2013-04-29: 1
+metadata:
+  unit: year
+  label: Universal Credit responsible carer no work-related requirements child age limit
+  reference:
+    - title: Welfare Reform Act 2012 s. 19(2)(c)
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/19

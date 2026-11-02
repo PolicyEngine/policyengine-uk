@@ -2,6 +2,9 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.country import Country
 from policyengine_uk.variables.household.demographic.locations import LocalAuthority
 
+# Scheme selection takes has_pensioner per claim: whether the applicant's own
+# family is a pensioner for Council Tax Reduction (council_tax_reduction_pensioner).
+
 
 def is_england_pensioner_scheme(country, has_pensioner):
     return (country == Country.ENGLAND) & has_pensioner
@@ -19,46 +22,60 @@ def is_merton(local_authority):
     return local_authority == LocalAuthority.MERTON
 
 
+def is_merton_area(local_authority, country):
+    return (country == Country.ENGLAND) & is_merton(local_authority)
+
+
 def is_merton_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
+    return is_merton_area(local_authority, country) & ~has_pensioner
 
 
 def is_kingston_upon_thames(local_authority):
     return local_authority == LocalAuthority.KINGSTON_UPON_THAMES
 
 
+def is_kingston_upon_thames_area(local_authority, country):
+    return (country == Country.ENGLAND) & is_kingston_upon_thames(local_authority)
+
+
 def is_kingston_upon_thames_working_age(local_authority, country, has_pensioner):
-    return (
-        (country == Country.ENGLAND)
-        & ~has_pensioner
-        & is_kingston_upon_thames(local_authority)
-    )
+    return is_kingston_upon_thames_area(local_authority, country) & ~has_pensioner
 
 
 def is_newham(local_authority):
     return local_authority == LocalAuthority.NEWHAM
 
 
+def is_newham_area(local_authority, country):
+    return (country == Country.ENGLAND) & is_newham(local_authority)
+
+
 def is_newham_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_newham(local_authority)
+    return is_newham_area(local_authority, country) & ~has_pensioner
 
 
 def is_westminster(local_authority):
     return local_authority == LocalAuthority.WESTMINSTER
 
 
+def is_westminster_area(local_authority, country):
+    return (country == Country.ENGLAND) & is_westminster(local_authority)
+
+
 def is_westminster_working_age(local_authority, country, has_pensioner):
-    return (
-        (country == Country.ENGLAND) & ~has_pensioner & is_westminster(local_authority)
-    )
+    return is_westminster_area(local_authority, country) & ~has_pensioner
 
 
 def is_oxford(local_authority):
     return local_authority == LocalAuthority.OXFORD
 
 
+def is_oxford_area(local_authority, country):
+    return (country == Country.ENGLAND) & is_oxford(local_authority)
+
+
 def is_oxford_working_age(local_authority, country, has_pensioner):
-    return (country == Country.ENGLAND) & ~has_pensioner & is_oxford(local_authority)
+    return is_oxford_area(local_authority, country) & ~has_pensioner
 
 
 def is_supported_scheme(country, has_pensioner, local_authority):

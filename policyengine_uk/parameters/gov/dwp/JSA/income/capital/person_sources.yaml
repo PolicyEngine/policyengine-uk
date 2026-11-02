@@ -1,10 +1,10 @@
 description: >
   Person-level model variables counted as income-based Jobseeker's Allowance
   capital of the person's own benefit unit. They are summed over the benefit
-  unit's claimant and partner (`is_uc_claimant`), so they need none of the
-  household proxy that the household `sources` use, and a dependant's holding
-  is left out: regulation 109 kept a child's or young person's capital out of
-  the claimant's, and since children moved to child tax credit they are
+  unit's claimant and partner (`is_claimant_or_partner`), so they need none of
+  the household proxy that the household `sources` use, and a dependant's
+  holding is left out: regulation 109 kept a child's or young person's capital
+  out of the claimant's, and since children moved to child tax credit they are
   outside the assessment altogether. `lifetime_isa_countable_capital` is a
   Lifetime ISA at its surrender value: regulation 111 values capital at its
   current market or surrender value, and DMG 29665 counts a Lifetime ISA at

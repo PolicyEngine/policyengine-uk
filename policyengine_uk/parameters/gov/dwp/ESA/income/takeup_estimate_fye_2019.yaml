@@ -1,0 +1,28 @@
+description: Published joint Income Support and income-related Employment and Support Allowance caseload take-up estimate for FYE 2019, for eligible families in private households in Great Britain. The point estimate is 90%, with a 95% sampling confidence interval of 89–92%; it is not an ESA-only or expenditure estimate. This unused fixed-vintage observation becomes available on publication, 29 October 2020, which is not policy commencement. Later retrieval still refers to FYE 2019 and does not set current or future participation or a Northern Ireland rate.
+values:
+  # Guard the model's 2015 backdating anchor: no observation is available yet.
+  2015-01-01: null
+  # Publication availability of the fixed FYE 2019 record, not a policy date.
+  2020-10-29: 0.90
+metadata:
+  economy: false
+  label: Joint IS/ESA caseload take-up, FYE 2019
+  unit: /1
+  preserve_calendar_dates: true
+  observation_period: FYE 2019
+  publication_date: "2020-10-29"
+  geography: Great Britain
+  population: eligible families in private households
+  benefits:
+    - income_support
+    - income_related_esa
+  measure: caseload
+  confidence_interval:
+    level: 0.95
+    lower: 0.89
+    upper: 0.92
+  reference:
+    - title: "DWP, Income-related benefits: estimates of take-up, financial year 2018 to 2019, section 6"
+      href: https://www.gov.uk/government/statistics/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019/income-related-benefits-estimates-of-take-up-financial-year-2018-to-2019
+    - title: "DWP, Income Support and Employment and Support Allowance tables 2018 to 2019, ISESA1 C41 and D41:E41"
+      href: https://assets.publishing.service.gov.uk/media/5f97e0a08fa8f543f9433c6b/income-support-and-employment-and-support-allowance-tables-2018-2019.ods

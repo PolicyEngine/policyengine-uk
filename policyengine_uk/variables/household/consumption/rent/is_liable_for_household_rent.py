@@ -17,6 +17,6 @@ class is_liable_for_household_rent(Variable):
     )
 
     def formula(person, period, parameters):
-        head_family = person.benunit.any(person("is_household_head", period))
+        head_family = person.benunit("benunit_contains_household_head", period)
         sharer = person.benunit("liable_for_share_of_household_rent", period)
         return person("is_claimant_or_partner", period) & (head_family | sharer)
