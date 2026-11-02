@@ -1,80 +1,55 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.universal_credit.deductions.uc_deduction_combination import (
-    UCDeductionCombination,
+from policyengine_uk.variables.gov.dwp.universal_credit.deductions._deduction_amounts import (
+    deduction_type_shares,
+    estimated_advance_repayment_amount,
 )
 
 
 class uc_deduction_rate(Variable):
     label = "UC deduction rate"
     documentation = (
-        "Deductions taken from this benefit unit's Universal Credit award as "
-        "a fraction of the standard allowance, after removing any abolished "
-        "deduction types and applying the deductions cap. The above-cap "
-        "excess (latent demand above 25% of the standard allowance, covering "
-        "last resort and child maintenance deductions) sits on top of the "
-        "cap."
+        "Deductions as a fraction of the current Universal Credit standard allowance, "
+        "after removing abolished ordinary debt types and applying the cap. "
+        "Advance demand is held in cash through an allowance reform; the rate "
+        "therefore adjusts when the allowance changes. An explicitly supplied "
+        "rate retains its existing precedence in the final award. The legacy "
+        "above-cap excess is unchanged."
     )
     entity = BenUnit
     definition_period = YEAR
     value_type = float
 
     def formula(benunit, period, parameters):
-        # Law: the cap and abolition switches. Estimation: the mean amounts
-        # by type (gov.simulation), used only to split a household's total
-        # rate across its deduction types.
         law = parameters(period).gov.dwp.universal_credit.deductions
-        m = parameters(period).gov.simulation.uc_deductions.mean_monthly_amount_by_type
-        latent = benunit("uc_latent_deduction_rate", period)
-        combination = benunit("uc_deduction_combination", period)
-
-        advance_weight = 0.0 if law.abolish.advance else m.ADVANCE
-        third_party_weight = 0.0 if law.abolish.third_party else m.THIRD_PARTY
-        government_weight = 0.0 if law.abolish.government else m.GOVERNMENT
-
-        def retained(kept, total):
-            return kept / max(total, 1e-9)
-
-        retained_share = select(
-            [
-                combination == UCDeductionCombination.ADVANCE_ONLY,
-                combination == UCDeductionCombination.THIRD_PARTY_ONLY,
-                combination == UCDeductionCombination.GOVERNMENT_ONLY,
-                combination == UCDeductionCombination.ADVANCE_AND_GOVERNMENT,
-                combination == UCDeductionCombination.ADVANCE_AND_THIRD_PARTY,
-                combination == UCDeductionCombination.THIRD_PARTY_AND_GOVERNMENT,
-                combination == UCDeductionCombination.ALL_THREE,
-            ],
-            [
-                retained(advance_weight, m.ADVANCE),
-                retained(third_party_weight, m.THIRD_PARTY),
-                retained(government_weight, m.GOVERNMENT),
-                retained(
-                    advance_weight + government_weight,
-                    m.ADVANCE + m.GOVERNMENT,
-                ),
-                retained(
-                    advance_weight + third_party_weight,
-                    m.ADVANCE + m.THIRD_PARTY,
-                ),
-                retained(
-                    third_party_weight + government_weight,
-                    m.THIRD_PARTY + m.GOVERNMENT,
-                ),
-                retained(
-                    advance_weight + third_party_weight + government_weight,
-                    m.ADVANCE + m.THIRD_PARTY + m.GOVERNMENT,
-                ),
-            ],
-            default=0.0,
-        )
-        # The cappable portion covers the three modeled deduction types
-        # (advances, third party, government debt) and responds to the cap
-        # and abolition switches. Latent demand above the calibration-window
-        # cap belongs to categories permitted to exceed the cap (last resort
-        # and child maintenance deductions), exempt from both.
         calibration_cap = parameters(
             period
         ).gov.simulation.uc_deductions.calibration_cap
-        cappable = min_(latent, calibration_cap) * retained_share
+        _, third_share, government_share = deduction_type_shares(
+            benunit, period, parameters
+        )
+        remaining_share = third_share * (
+            not law.abolish.third_party
+        ) + government_share * (not law.abolish.government)
+        allowance = benunit("uc_standard_allowance", period)
+        latent = benunit("uc_latent_deduction_rate", period)
+        other_rate = min_(latent, calibration_cap) * remaining_share
+        advance = benunit("uc_advance_repayment_amount", period)
+        # A partially supplied input array contains -1 for omitted units.
+        # Resolve those units independently, retaining explicitly supplied zero.
+        advance = where(
+            advance >= 0,
+            advance,
+            estimated_advance_repayment_amount(benunit, period, parameters),
+        )
+        if law.abolish.advance:
+            advance = 0
+        advance_rate = np.divide(
+            max_(advance, 0),
+            allowance,
+            out=np.zeros_like(allowance),
+            where=allowance > 0,
+        )
+        # Preserve the original unclassified above-cap proxy. Its legal
+        # categories and time path need separate data/policy work (#2410).
         above_cap_excess = max_(latent - calibration_cap, 0)
-        return min_(cappable, law.cap) + above_cap_excess
+        return min_(advance_rate + other_rate, law.cap) + above_cap_excess

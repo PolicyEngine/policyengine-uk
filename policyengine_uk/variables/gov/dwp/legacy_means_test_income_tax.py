@@ -16,7 +16,8 @@ class legacy_means_test_income_tax(Variable):
         "which covers earnings, pensions and taxable benefits) at Step 4 of "
         "Income Tax Act 2007 s.23, less that income's share of the Step 6 tax "
         "reductions (the married couple's allowance, other tax credits and "
-        "the residential finance-cost reduction). Most reductions are not "
+        "the residential finance-cost reduction and the Pension Tax "
+        "Allowance). Most reductions are not "
         "tied to any income: s.27 orders them only to give the greatest "
         "reduction in liability. Two are: foreign tax credit relief reduces "
         "the tax on the income the foreign tax was paid on (Taxation "
@@ -34,12 +35,14 @@ class legacy_means_test_income_tax(Variable):
         "credit for foreign tax on rent is therefore partly attributed to "
         "counted income, and the tax deducted is too low. Step 7 charges, "
         "such as the High Income "
-        "Child Benefit Charge and the pension annual allowance charge (s.30), "
-        "are not tax calculated on any of this income and are not deducted. "
-        "The result is income_tax less the tax attributed to capital and the "
-        "charges, floored at nil, so a supplied income_tax value flows "
-        "through; if it differs from the tax the components imply, the "
-        "difference falls on the tax on counted income."
+        "Child Benefit Charge, the pension annual allowance charge (s.30) "
+        "and the winter fuel payment charge, are not tax calculated on any "
+        "of this income and are not deducted. The result is "
+        "income_tax_before_winter_fuel_payment_charge, the tax every means "
+        "test starts from, less the tax attributed to capital and the other "
+        "charges, floored at nil, so a supplied value of it flows through; "
+        "if it differs from the tax the components imply, the difference "
+        "falls on the tax on counted income."
     )
     definition_period = YEAR
     unit = GBP
@@ -59,7 +62,6 @@ class legacy_means_test_income_tax(Variable):
     ]
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.hmrc.income_tax
         # Step 4 tax on the income the means tests count, and on the income
         # they treat as capital.
         counted = person("earned_income_tax", period)
@@ -69,18 +71,15 @@ class legacy_means_test_income_tax(Variable):
             ["savings_income_tax", "dividend_income_tax", "property_income_tax"],
         )
         before_reductions = counted + capital
-        # Step 7 charges: everything income tax adds beyond the Step 4 tax.
-        charges = max_(
-            0, add(person, period, p.income_tax_additions) - before_reductions
-        )
-        # Step 6 reductions. The residential finance-cost reduction is relief
-        # for the property business's costs, given on at most its profits
-        # (ITTOIA 2005 ss.274A-274AA), so it comes off the tax on property
-        # income first. The rest have no recorded source and are shared in
-        # proportion to the Step 4 tax left.
-        reductions = min_(
-            add(person, period, p.income_tax_subtractions), before_reductions
-        )
+        # Step 7 charges other than the winter fuel payment charge, which the
+        # starting value below already leaves out.
+        charges = person("income_tax_charges", period)
+        # Step 6 reductions, limited to the Step 5 tax. The residential
+        # finance-cost reduction is relief for the property business's costs,
+        # given on at most its profits (ITTOIA 2005 ss.274A-274AA), so it
+        # comes off the tax on property income first. The rest have no
+        # recorded source and are shared in proportion to the Step 4 tax left.
+        reductions = min_(person("income_tax_reductions", period), before_reductions)
         finance_cost_relief = min_(
             person("property_finance_cost_relief", period),
             min_(person("property_income_tax", period), reductions),
@@ -97,10 +96,12 @@ class legacy_means_test_income_tax(Variable):
         capital_after_reductions = (
             capital_after_relief - general_reductions * capital_share
         )
-        # Starting from income tax keeps any supplied income_tax value: the
-        # result is the tax on counted income less its share of reductions
-        # whenever income tax is calculated.
+        # Starting from the income tax the means tests deduct keeps any
+        # supplied value: the result is the tax on counted income less its
+        # share of reductions whenever that tax is calculated.
         return max_(
             0,
-            person("income_tax", period) - capital_after_reductions - charges,
+            person("income_tax_before_winter_fuel_payment_charge", period)
+            - capital_after_reductions
+            - charges,
         )

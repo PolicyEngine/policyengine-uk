@@ -56,11 +56,12 @@ class pension_credit_self_employment_deductions(Variable):
             - person("married_couples_allowance_deduction", period),
         )
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
-        lower = class_4.thresholds.lower_profits_limit
-        upper = class_4.thresholds.upper_profits_limit
+        lower = class_4.contribution_scale.components[1].threshold
+        upper = class_4.contribution_scale.components[2].threshold
         notional_class_4 = where(
             person("ni_class_4_liable", period),
-            class_4.rates.main * min_(max_(0, profit - lower), upper - lower),
+            class_4.contribution_scale.components[1].rate
+            * min_(max_(0, profit - lower), upper - lower),
             0,
         )
         class_2 = parameters(period).gov.hmrc.national_insurance.class_2

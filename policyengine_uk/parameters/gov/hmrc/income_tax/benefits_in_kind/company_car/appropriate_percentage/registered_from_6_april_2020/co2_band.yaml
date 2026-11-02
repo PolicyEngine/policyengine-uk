@@ -1,0 +1,43 @@
+description: Appropriate percentage under ITEPA 2003 s. 139A for a company car first registered on or after 6 April 2020 with a CO2 emissions figure of 51 to 74 g/km, while s. 139A is in effect.
+metadata:
+  type: single_amount
+  threshold_unit: g/km
+  amount_unit: /1
+  period: year
+  label: Appropriate percentage by CO2 emissions, cars first registered from 6 April 2020
+  reference:
+    - title: Finance Act 2020 s. 9(3) (tax year 2020-21)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/9/enacted
+    - title: Finance Act 2020 s. 10(3) (tax year 2021-22)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/10/enacted
+brackets:
+  # 51 to 54 g/km.
+  - threshold:
+      2020-04-06: 51
+    amount:
+      2020-04-06: 0.13
+      2021-04-06: 0.14
+  # 55 to 59 g/km.
+  - threshold:
+      2020-04-06: 55
+    amount:
+      2020-04-06: 0.14
+      2021-04-06: 0.15
+  # 60 to 64 g/km.
+  - threshold:
+      2020-04-06: 60
+    amount:
+      2020-04-06: 0.15
+      2021-04-06: 0.16
+  # 65 to 69 g/km.
+  - threshold:
+      2020-04-06: 65
+    amount:
+      2020-04-06: 0.16
+      2021-04-06: 0.17
+  # 70 to 74 g/km.
+  - threshold:
+      2020-04-06: 70
+    amount:
+      2020-04-06: 0.17
+      2021-04-06: 0.18

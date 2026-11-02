@@ -1,0 +1,166 @@
+# Income-related ESA ends when the family claims Universal Credit.
+# A claim for Universal Credit brings the abolition of income-related ESA
+# (Welfare Reform Act 2012 s.33(1)(b)) into force for the claimant's old style
+# ESA award from the first day of the period claimed for, whether or not
+# Universal Credit is awarded (SI 2013/983 art. 4(1), (2)(a), (3)(a) and (9);
+# Northern Ireland: Welfare Reform (NI) Order 2015 art. 39(1)(b) and SR
+# 2017/190 art. 6). The two-week run-on (SI 2019/1152 reg. 5) is not modelled
+# in an annual model. A member who is neither the claimant nor the partner
+# claims in their own right and is not part of the family's claim.
+# No case has capital, so no tariff income: the award is the reported amount.
+
+- name: Case 1, a single claimant who claims Universal Credit loses income-related ESA.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income_eligible: false
+    # The UC claim ends the award: 0, not the 5_000 reported.
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+    is_on_income_related_esa: false
+
+- name: Case 2, the same claimant without a Universal Credit claim keeps income-related ESA.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    claims_universal_credit: false
+    esa_income_report_closed: false
+    esa_income_eligible: true
+    # No claim, no tariff income: the reported 5_000.
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    is_on_income_related_esa: true
+
+- name: Case 3, a Universal Credit claim ends income-related ESA even when no Universal Credit is awarded.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        private_pension_income: 40_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    claims_universal_credit: true
+    # £40,000 of pension income is UC unearned income above the £4,801.68
+    # 2025-26 standard allowance (12 x £400.14), so nothing is awarded.
+    universal_credit: 0
+    esa_income_report_closed: true
+    # The claim still ends the old style award (art. 4(9) of SI 2013/983).
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+
+- name: Case 4, the couple's Universal Credit claim leaves a non-dependent adult's own income-related ESA.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      person2:
+        age: 38
+        is_claimant_or_partner: true
+      person3:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 2_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    claims_universal_credit: true
+    esa_income_report_closed: [true, true, false]
+    # Only person3's own claim is left, and person3 does not work.
+    esa_income_eligible: true
+    # 2_000, person3's own award, not 5_000 + 2_000.
+    esa_income: 2_000
+    claimant_or_partner_esa_income: 0
+    is_on_income_related_esa: [false, false, true]
+
+- name: Case 5, the gate applies in 2027, after income-related ESA's 1 July 2026 abolition date.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+
+- name: Case 6, a Universal Credit claim ends income-related ESA in Northern Ireland.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+  output:
+    claims_universal_credit: true
+    esa_income_report_closed: true
+    esa_income: 0
+    claimant_or_partner_esa_income: 0

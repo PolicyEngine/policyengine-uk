@@ -1,0 +1,62 @@
+description: Appropriate percentage for a company car with a CO2 emissions figure of 0, the share of the car's price taxed each year as its benefit.
+# The tax year 2030-31 keeps 2029-30's 9%. Budget 2026 announced 10% for
+# 2030-31, to be legislated in Finance Bill 2026-27; the
+# company_car_tax_rise_2030 scenario applies it.
+values:
+  2020-04-06:
+    value: 0
+    metadata:
+      reference:
+        - title: Finance Act 2020 s. 9(2)(a) (tax year 2020-21)
+          href: https://www.legislation.gov.uk/ukpga/2020/14/section/9/enacted
+  2021-04-06:
+    value: 0.01
+    metadata:
+      reference:
+        - title: Finance Act 2020 s. 10(2)(a) (tax year 2021-22)
+          href: https://www.legislation.gov.uk/ukpga/2020/14/section/10/enacted
+  2022-04-06:
+    value: 0.02
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2017 s. 2(2), substituting ITEPA 2003 s. 139(1)
+          href: https://www.legislation.gov.uk/ukpga/2017/32/section/2/enacted
+  2025-04-06:
+    value: 0.03
+    metadata:
+      reference:
+        - title: Finance Act 2023 s. 11(1) and (2) (tax year 2025-26)
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/11/enacted
+  2026-04-06:
+    value: 0.04
+    metadata:
+      reference:
+        - title: Finance Act 2023 s. 11(5) and (6) (tax year 2026-27)
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/11/enacted
+  2027-04-06:
+    value: 0.05
+    metadata:
+      reference:
+        - title: Finance Act 2023 s. 11(7) and (8) (tax year 2027-28)
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/11/enacted
+  2028-04-06:
+    value: 0.07
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 5(2) and (9) (tax year 2028-29)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/5/enacted
+  2029-04-06:
+    value: 0.09
+    metadata:
+      reference:
+        - title: Finance Act 2025 s. 6(2) and (9) (tax year 2029-30 and subsequent tax years)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/6/enacted
+metadata:
+  unit: /1
+  period: year
+  label: Zero-emission company car appropriate percentage
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(1)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139
+    - title: "HMRC 480 Appendix 2: appropriate percentages for 2020-21 to 2026-27"
+      href: https://www.gov.uk/guidance/company-car-benefit-the-appropriate-percentage-480-appendix-2

@@ -308,7 +308,9 @@ def situation(units, capital_as_savings, esa_income, jsa_income):
             people[name] = {k: {YEAR: v} for k, v in inputs.items()}
             people[name]["is_claimant_or_partner"] = {YEAR: claimant_or_partner}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        # Legacy claimants: a Universal Credit claim would end the couple's
+        # income-related ESA (esa_income_report_closed).
+        benunits[f"b{i}"] = {"members": names, "would_claim_uc": {YEAR: False}}
         households[f"h{i}"] = {"members": names}
         if capital_as_savings:
             households[f"h{i}"]["savings"] = {YEAR: capital}

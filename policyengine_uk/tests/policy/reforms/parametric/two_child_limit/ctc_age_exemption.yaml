@@ -17,6 +17,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
         claims_all_entitled_benefits: true
   output:
     CTC_child_element: 6470  # CTC for only the first 2 children
@@ -41,6 +42,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
         claims_all_entitled_benefits: true
   output:
     CTC_child_element: 12940  # CTC for all children
@@ -65,6 +67,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
         claims_all_entitled_benefits: true
   output:
     CTC_child_element: 6470  # CTC for only first 2 children
@@ -88,6 +91,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
         claims_all_entitled_benefits: true
   output:
     CTC_child_element: 6470  # CTC for only first 2 children
@@ -112,6 +116,7 @@
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
+        would_claim_uc: false
         claims_all_entitled_benefits: true
   output:
     CTC_child_element: 12940  # CTC for all children due to exemption

@@ -49,10 +49,11 @@
     savings_allowance: 500
     basic_rate_savings_income: 0
     higher_rate_savings_income: 500
-    savings_income_tax: 210
+    # 500 x 44% savings higher rate (2027-28)
+    savings_income_tax: 220
     taxed_dividend_income: 500
     dividend_income_tax: 178.75
-    income_tax: 7_874.75
+    income_tax: 7_884.75
 
 - name: Personal allowance caps savings starter rate before dividends.
   period: 2027

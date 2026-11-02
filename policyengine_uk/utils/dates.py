@@ -198,3 +198,11 @@ def birth_day(person, period) -> np.ndarray:
     """A person's day of birth as a YYYYMMDD number: date_of_birth where
     given, and otherwise the day age and months_since_last_birthday place."""
     return grid_months_to_yyyymmdd(birth_instant(person, period))
+
+
+def term_starts(year: int) -> tuple:
+    """The YYYYMMDD days the year's three school terms begin, for rules
+    that turn on terms, such as funded early years hours. The year runs from
+    April, so they are 1 April and 1 September of the year and 1 January of
+    the next; each counts as a third of the year."""
+    return (year * 10_000 + 401, year * 10_000 + 901, (year + 1) * 10_000 + 101)

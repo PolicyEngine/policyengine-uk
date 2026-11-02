@@ -12,9 +12,11 @@ class baseline_business_rates(Variable):
     def formula(household, period, parameters):
         br = parameters(period).gov.hmrc.business_rates.statistics.revenue
         total_revenue = (
-            br.ENGLAND  # HMRC
-            + br.SCOTLAND  # Revenue Scotland
-            + br.WALES  # Welsh Revenue Authority
-            + br.NORTHERN_IRELAND  # HMRC
+            br.ENGLAND  # Local rating lists, collected by councils
+            + br.ENGLAND_CENTRAL_LIST  # Paid to the Secretary of State
+            + br.SCOTLAND  # Collected by councils
+            + br.WALES  # Local rating lists, collected by councils
+            + br.WALES_CENTRAL_LIST  # Paid to the Welsh Government
+            + br.NORTHERN_IRELAND  # Collected by Land & Property Services
         )
         return household("shareholding", period) * total_revenue

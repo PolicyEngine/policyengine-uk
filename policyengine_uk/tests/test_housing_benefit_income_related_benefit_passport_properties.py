@@ -108,6 +108,10 @@ def situation(units, bump=0.0, awards=None, ages=None):
             age = adult["age"] if ages is None else ages[i][j]
             person = {
                 "age": {YEAR: age},
+                # The drawn adults are the claimant and partner, however far
+                # apart their ages; the age presumption alone would read a
+                # partner 20 or more years younger as the claimant's child.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: adult["employment_income"] + bump},
                 "private_pension_income": {
                     YEAR: adult["private_pension_income"] + bump
@@ -121,7 +125,10 @@ def situation(units, bump=0.0, awards=None, ages=None):
             members.append(name)
         for k, child_age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: child_age}}
+            people[name] = {
+                "age": {YEAR: child_age},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             members.append(name)
         family_awards = unit["awards"] if awards is None else awards[i]
         benunits[f"b{i}"] = {
@@ -134,6 +141,8 @@ def situation(units, bump=0.0, awards=None, ages=None):
             name = f"n{i}"
             people[name] = {
                 "age": {YEAR: 30},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: unit["non_dependant_earnings"]},
             }
             benunits[f"nb{i}"] = {"members": [name], "would_claim_uc": {YEAR: False}}

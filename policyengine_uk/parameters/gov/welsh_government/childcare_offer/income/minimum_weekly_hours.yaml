@@ -1,0 +1,12 @@
+description: The Childcare Offer for Wales requires a working parent to earn on average at least the relevant minimum wage for this many hours a week.
+metadata:
+  unit: hour
+  period: week
+  label: Childcare Offer for Wales minimum weekly hours at the minimum wage
+  reference:
+    - title: Welsh Government, Evaluation of the early implementation of the Childcare Offer for Wales (2018), paragraph 1.36
+      href: https://www.gov.wales/sites/default/files/statistics-and-research/2019-06/181122-evaluation-early-implementation-childcare-offer-en.pdf
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraphs 57 and 63
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  2019-08-01: 16

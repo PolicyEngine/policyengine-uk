@@ -7,12 +7,21 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "employment_income",
     "self_employment_income",
     "savings_interest_income",
+    # National Savings, gilt and other securities interest, which income
+    # tax charges as savings income (taxable_savings_interest_income).
+    "other_investment_income",
+    "tax_free_savings_income",
+    "individual_savings_account_dividend_income",
     "dividend_income",
     "miscellaneous_income",
-    "property_income",
+    # Landlords' profit after mortgage interest: HBAI uses FRS rent from
+    # property, reported after the mortgage payments and loan interest on
+    # show card K6. property_income is before those finance costs.
+    "property_income_after_finance_costs",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",
+    "spousal_maintenance_income",
     "free_school_meals",
     "free_school_fruit_veg",
     "free_school_milk",
@@ -33,6 +42,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "afcs",
     "bsp",
     "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",
@@ -53,6 +63,23 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "scottish_child_payment",
     "carer_support_payment",
     "scottish_carer_supplement",
+    # HBAI classifies the Warm Home Discount as miscellaneous income:
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025
+    "warm_home_discount",
+    # HBAI classifies the £400 Energy Bills Support Scheme (£600 in Northern
+    # Ireland) and the £150 Council Tax Rebate as miscellaneous income, not
+    # state support. DWP imputes receipt, since the FRS did not ask about
+    # them, so no FRS income field behind miscellaneous_income holds them.
+    # HBAI counts the whole credit in FYE 2023; the model sums it by
+    # calendar year here as in household net income (see
+    # docs/book/programs/gov/treasury/cost-of-living-payments.md):
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023
+    "energy_bills_rebate",
+    # HBAI counted the 2022 £150 Council Tax Rebate and the Energy Bills
+    # Support Scheme as miscellaneous income (HBAI quality and methodology
+    # report FYE 2023). The Household Energy Payment is the same kind of
+    # one-off support to the same council tax bands, so it counts too.
+    "household_energy_payment",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 
@@ -60,6 +87,7 @@ HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
     "council_tax",
     "domestic_rates",
     "income_tax",
+    "isa_cash_interest_flat_rate_charge",
     "national_insurance",
     "student_loan_repayments",
     # Self-employment losses count as negative income in HBAI.

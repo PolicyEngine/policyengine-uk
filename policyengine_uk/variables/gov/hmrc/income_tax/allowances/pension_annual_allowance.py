@@ -1,19 +1,5 @@
 from policyengine_uk.model_api import *
-
-
-def _tapered_allowance(person, period, allowance, reduction_rate):
-    adjusted = person("pension_annual_allowance_adjusted_income", period)
-    threshold = person("pension_annual_allowance_threshold_income", period)
-    # s. 228ZA(3)(b) derives the threshold limit from the standard allowance.
-    high_income = (adjusted > allowance.taper) & (
-        threshold > allowance.taper - allowance.default
-    )
-    reduction = np.floor(max_(0, adjusted - allowance.taper) * reduction_rate)
-    return where(
-        high_income,
-        max_(allowance.minimum, allowance.default - reduction),
-        allowance.default,
-    )
+from policyengine_uk.utils.pensions import annual_allowance_for_year
 
 
 class pension_annual_allowance(Variable):
@@ -37,12 +23,9 @@ class pension_annual_allowance(Variable):
         ).gov.hmrc.income_tax.allowances.annual_allowance.default
 
     def formula_2016(person, period, parameters):
-        allowance = parameters(period).gov.hmrc.income_tax.allowances.annual_allowance
-        # Original s. 228ZA(1): (A - £10,000) / £60,000, equal to one half
-        # at the statutory £40,000 standard allowance.
-        rate = (allowance.default - allowance.minimum) / allowance.taper_income_range
-        return _tapered_allowance(person, period, allowance, rate)
-
-    def formula_2020(person, period, parameters):
-        allowance = parameters(period).gov.hmrc.income_tax.allowances.annual_allowance
-        return _tapered_allowance(person, period, allowance, allowance.reduction_rate)
+        return annual_allowance_for_year(
+            person("pension_annual_allowance_adjusted_income", period),
+            person("pension_annual_allowance_threshold_income", period),
+            parameters(period).gov.hmrc.income_tax.allowances.annual_allowance,
+            period.start.year,
+        )

@@ -1,0 +1,16 @@
+description: Whether ITEPA 2003 s. 139A gives a company car first registered on or after 6 April 2020 its own, lower appropriate percentages. Finance Act 2020 inserted s. 139A for 2020-21 (s. 9(3)) and again for 2021-22 (s. 10(3)); from 2022-23 every car takes the s. 139 rates.
+values:
+  0000-01-01: false
+  2020-04-06: true
+  2022-04-06: false
+metadata:
+  unit: bool
+  period: year
+  label: Separate appropriate percentages for cars first registered from 6 April 2020
+  reference:
+    - title: Finance Act 2020 s. 9(3) (tax year 2020-21)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/9/enacted
+    - title: Finance Act 2020 s. 10(3) (tax year 2021-22)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/10/enacted
+    - title: "HMRC 480 Appendix 2: NEDC and WLTP columns for 2020-21 and 2021-22"
+      href: https://www.gov.uk/guidance/company-car-benefit-the-appropriate-percentage-480-appendix-2

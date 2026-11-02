@@ -181,7 +181,8 @@
   # 2025-26. Wages 10,000 and State Pension 12,000: non-savings tax (22,000 -
   # 12,570) x 20% = 1,886. Dividends 30,000 fill the rest of the 37,700 basic
   # band: 28,270, of which 500 is the dividend allowance, so 27,770 x 8.75% =
-  # 2,429.875, and 1,730 x 33.75% = 583.875. Income tax 4,899.75.
+  # 2,429.875, and 1,730 x 33.75% = 583.875. Income tax before the winter
+  # fuel payment charge 4,899.75; the charge is not deducted.
   # Without wages, the 570 of allowance the State Pension leaves covers
   # dividends: (30,000 - 570 - 500) x 8.75% = 2,531.375, all tax on dividends,
   # which Pension Credit does not count (reg 17(10)(a), Sch IV para 18), so it
@@ -205,7 +206,7 @@
       household:
         members: [person]
   output:
-    income_tax: 4_899.75
+    income_tax_before_winter_fuel_payment_charge: 4_899.75
     pension_credit_employment_income_tax: 2_368.375
     pension_credit_uncounted_income_tax_without_earnings: 2_531.375
     pension_credit_earnings_disregard: 260
@@ -420,15 +421,14 @@
     income_tax: 1_986
     legacy_means_test_income_tax: 1_486
 
-- name: Tax on counted income is floored at nil when the supplied income tax is below the charges
-  # An isolation of the helper's floor with income_tax supplied, not a
-  # statutory tax calculation. Step 4 tax is 286 on earnings and 1,000 on
-  # rent; 2,000 of Step 6 reductions leave nil (ITA 2007 s.29(2): only so far
-  # as there is Step 5 tax), and the 500 Step 7 charge is then added (s.23
-  # Step 7), so the statutory liability is 500. Supplied at nil, as the
-  # model's income_tax currently nets the charge against the reductions, the
-  # helper gives 0 - 0 (rent's tax after its share of reductions) - 500
-  # (the charge), floored at nil; with 500 it gives 500 - 0 - 500 = 0.
+- name: Tax on counted income is nil when Step 6 reductions exceed the Step 5 tax
+  # Step 4 tax is 286 on earnings and 1,000 on rent. The 2,000 of Step 6
+  # reductions are deducted only so far as there is Step 5 tax (ITA 2007
+  # s.29(2)), so 1,286 is used and the tax left is nil; the 500 Step 7
+  # charge is then added (s.23 Step 7), so the liability before the winter
+  # fuel payment charge is 500. Rent bears 1,286 x 1,000 / 1,286 = 1,000 of
+  # the reductions, so its tax after them is nil, and the helper gives
+  # 500 - 0 - 500 (the charge) = 0.
   period: 2025
   input:
     age: 40
@@ -437,7 +437,28 @@
     property_rental_income: 6_000
     other_tax_credits: 2_000
     CB_HITC: 500
-    income_tax: 0
+  output:
+    earned_income_tax: 286
+    property_income_tax: 1_000
+    income_tax_reductions: 1_286
+    income_tax_before_winter_fuel_payment_charge: 500
+    legacy_means_test_income_tax: 0
+
+- name: Tax on counted income is floored at nil when the supplied tax is below the charges
+  # An isolation of the helper's floor, not a statutory tax calculation: the
+  # case above with the income tax before the winter fuel payment charge
+  # supplied at nil rather than its statutory 500. The helper gives 0 - 0
+  # (rent's tax after its share of reductions) - 500 (the charge), floored
+  # at nil.
+  period: 2025
+  input:
+    age: 40
+    employment_income: 14_000
+    property_income: 6_000
+    property_rental_income: 6_000
+    other_tax_credits: 2_000
+    CB_HITC: 500
+    income_tax_before_winter_fuel_payment_charge: 0
   output:
     earned_income_tax: 286
     property_income_tax: 1_000
@@ -581,15 +602,17 @@
   # SSI 2021/249 reg 3(1)(b)(ii): it applies where the applicant has reached
   # pensionable age but the applicant or partner has an award of UC. Its reg
   # 57(1) has no head for sub-tenant rent, so only the UC (1,000, an input)
-  # counts here.
+  # counts here. The couple are 30 years apart, so their roles are supplied.
   period: 2026
   input:
     people:
       claimant:
         age: 70
         sublet_income: 5_200
+        is_claimant_or_partner: true
       partner:
         age: 40
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [claimant, partner]

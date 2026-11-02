@@ -26,6 +26,10 @@ Invariants:
 5. Monotonicity: the April 2028 State Pension is non-decreasing in the
    minimum rate.
 6. Baselines stay current law: ``sim.baseline`` and ``parameters.baseline``.
+
+Each April the State Pension rates are the year before's raised by the
+triple lock rate and rounded to the nearest 5p, so the checks of 1 and 3
+compare them with ``uprated``, exactly.
 """
 
 from decimal import ROUND_HALF_UP, Decimal
@@ -52,6 +56,7 @@ AVERAGE_EARNINGS = f"{GROWTH}.obr.average_earnings"
 TRIPLE_LOCK = f"{GROWTH}.triple_lock"
 LAGGED_CPI = f"{GROWTH}.obr.lagged_cpi"
 INDICES = "gov.economic_assumptions.indices"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
 CPI_INDEX = f"{INDICES}.obr.consumer_price_index"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 AWE = f"{INPUTS}.awe_total_pay_may_july"
@@ -111,6 +116,12 @@ def published(rate):
     return float(Decimal(repr(float(rate))).quantize(Decimal("0.001"), ROUND_HALF_UP))
 
 
+def uprated(previous, rate):
+    """A weekly State Pension rate raised by ``rate``, to the nearest 5p."""
+    amount = Decimal(repr(float(previous))) * (1 + Decimal(repr(float(rate))))
+    return float((amount / Decimal("0.05")).quantize(Decimal(1), ROUND_HALF_UP) / 20)
+
+
 def via_reform_dict(change, situation=PENSIONER):
     return Simulation(situation=situation, reform=change)
 
@@ -154,7 +165,7 @@ def test_the_minimum_rate_moves_the_triple_lock_and_the_state_pension(
             # scalar applies from 2023 (or 2000) and so raises it too.
             assert weekly(reformed, path, 2027) == weekly(baseline, path, 2027)
         assert weekly(reformed, path, 2028) == pytest.approx(
-            weekly(reformed, path, 2027) * 1.1, abs=0.006
+            uprated(weekly(reformed, path, 2027), 0.1), abs=1e-9
         )
     pension = float(reformed.calculate("new_state_pension", 2028).sum())
     assert pension == pytest.approx(
@@ -201,7 +212,7 @@ def test_earnings_growth_sets_the_next_aprils_triple_lock_by_its_rule(
         baseline, TRIPLE_LOCK, f"{year}-01-01"
     )
     assert weekly(reformed, NEW_STATE_PENSION, year + 1) == pytest.approx(
-        weekly(reformed, NEW_STATE_PENSION, year) * (1 + expected), abs=0.006
+        uprated(weekly(reformed, NEW_STATE_PENSION, year), expected), abs=1e-9
     )
 
 
@@ -250,7 +261,10 @@ def test_the_growth_shown_for_a_year_is_the_growth_used_for_it(baseline):
     gap = value(baseline, AWE_GAP, "2027-07-01")
     assert value(reformed, AWE, "2027-07-01") == pytest.approx(0.2 + gap)
     assert value(reformed, AWE, "2028-07-01") == value(baseline, AWE, "2028-07-01")
-    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.2)
+    # The triple lock rounds May-July earnings, 20% plus the OBR gap, to 0.1pp.
+    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(
+        round(0.2 + gap, 3)
+    )
     assert value(reformed, TRIPLE_LOCK, "2029-01-01") == value(
         baseline, TRIPLE_LOCK, "2029-01-01"
     )
@@ -310,7 +324,9 @@ def test_calendar_year_series_are_the_growth_rates_indices_and_household_tree():
     for path in paths:
         if path.startswith("baseline."):
             continue
-        expected = path.startswith((f"{GROWTH}.", f"{INDICES}.", "household."))
+        expected = path.startswith(
+            (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.", "household.")
+        )
         assert reads(path) is expected, path
     assert not reads("gov.not.a.parameter")
 
@@ -352,7 +368,7 @@ def test_a_triple_lock_rate_set_by_reform_uprates_the_state_pension(
     ]
     assert pensions == reference
     assert pensions[2] == pytest.approx(
-        weekly(baseline, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(baseline, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
@@ -360,7 +376,7 @@ def test_reform_from_dict_sets_a_generated_series(baseline):
     change = {TRIPLE_LOCK: {"2028-01-01.2028-12-31": 0.05}}
     reformed = Simulation(situation=PENSIONER, reform=Reform.from_dict(change))
     assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
-        weekly(baseline, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(baseline, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
@@ -387,14 +403,38 @@ def test_generated_parameters_are_the_series_processing_builds():
     generates = tbs_module.generated_parameter_defines()
     statutory = tbs_module.statutory_parameter_defines()
     processed = tbs_module.processed_parameters()
+    protected_allowance_index = (
+        "gov.dwp.housing_benefit.allowances.protected_pension_age_uprating"
+    )
+    savings_credit_index = "gov.dwp.pension_credit.savings_credit.threshold_uprating"
+    # Pension-age forecast indices are generated in their program trees, and
+    # the energy price indices beside their inputs.
+    generated_prefixes = (
+        f"{INDICES}.",
+        f"{GROWTH}.",
+        f"{protected_allowance_index}.",
+        f"{savings_credit_index}.",
+        *(
+            f"{ENERGY_PRICES}.{kind}."
+            for kind in ("quarterly", "calendar_year", "fiscal_year")
+        ),
+    )
     for path in tbs_module._leaf_paths(processed):
         if path.startswith("baseline.") or path.startswith(
             "gov.simulation.labor_supply_responses."
         ):
             assert not generates(path), path
             continue
-        built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
+        built = path.startswith(generated_prefixes) and not statutory(path)
         assert generates(path) is built, path
+    for relationship in ("single", "lone_parent", "couple"):
+        assert generates(f"{protected_allowance_index}.{relationship}")
+        assert not generates(f"gov.dwp.housing_benefit.allowances.{relationship}.aged")
+    for relationship in ("SINGLE", "COUPLE"):
+        assert generates(f"{savings_credit_index}.{relationship}")
+        assert not generates(
+            f"gov.dwp.pension_credit.savings_credit.threshold.{relationship}"
+        )
     assert generates(TRIPLE_LOCK)
     assert generates(f"{INDICES}.uc_standard_allowance")
     assert not generates(MINIMUM_RATE)
@@ -444,7 +484,7 @@ def test_a_reprocessing_modifier_keeps_a_generated_series_change(baseline):
     reformed = Simulation(situation=PENSIONER, scenario=scenario)
     assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.05)
     assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
-        weekly(reformed, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(reformed, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
