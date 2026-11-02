@@ -24,9 +24,10 @@ net pay arrangement, which the employer deducts from employment income (FA
 2004 s. 193(2)), and personal contributions as relief at source, under which
 the payer keeps basic rate tax on the contribution (s. 192(1)) and, on a
 claim where higher or additional rate tax is chargeable, Parliament raises
-the basic and higher rate limits by the contribution (s. 192(4)). Deducting
-the contribution from the bottom of non-savings income moves every slice of
-income down against those limits, as raising them does. Neither arrangement
+the basic and higher rate limits by the contribution (s. 192(4), and for
+the Scottish rate limits s. 192(4A)). Deducting the contribution from the
+bottom of non-savings income moves every slice of income down against those
+limits, as raising them does. Neither arrangement
 gives a Step 2 deduction the taxpayer can set against savings or dividends,
 so the search holds ``min(pension relief, non-savings income)`` on
 non-savings income and shares only the rest.
@@ -224,8 +225,8 @@ def _build(inputs, income_tax):
     non_savings = np.maximum(0, columns["net_income"] + relief - savings - dividends)
     # Net pay comes off employment income (FA 2004 s. 193(2)); for relief at
     # source Parliament raises the basic and higher rate limits instead
-    # (s. 192(4)), which deducting the relief from the bottom of non-savings
-    # income matches. So pension relief stays on non-savings income as far
+    # (s. 192(4), and for the Scottish rate limits s. 192(4A)), which
+    # deducting the relief from the bottom of non-savings income matches. So pension relief stays on non-savings income as far
     # as it reaches; the search shares the rest.
     # allowances includes the relief, so it never holds more than that.
     pension = np.clip(
