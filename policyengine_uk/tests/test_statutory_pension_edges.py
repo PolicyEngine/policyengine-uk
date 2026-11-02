@@ -263,13 +263,18 @@ def _assert_ani_input_path(sim, year, supplied_ani):
     assert [str(period) for period in periods] == ([str(year)] if supplied_ani else [])
 
 
-def _charge_with_fixed_ordinary_tax_inputs(results, year):
+def _charges_with_fixed_ordinary_tax_inputs(result_sets, year):
     """Test the AA inputs to the charge separately from ordinary income tax.
 
     A fixed additional-rate base, no RAS and no allowances keep the charge
     independent of the cap's separate effects on ANI/personal allowances.
     The taper incomes and pension input above are always calculated from
     the original pay/contribution inputs, without these overrides.
+
+    One simulation holds the people of every result set. Each person has
+    their own benefit unit and household and supplies the same inputs as
+    every other, so no person's charge reads another's. Returns each result
+    set's charges.
     """
     people = [
         {
@@ -281,6 +286,7 @@ def _charge_with_fixed_ordinary_tax_inputs(results, year):
             "pension_contributions_for_annual_allowance": float(pension_input),
             "pension_annual_allowance": float(allowance),
         }
+        for results in result_sets
         for pension_input, allowance in zip(
             results["pension_contributions_for_annual_allowance"],
             results["pension_annual_allowance"],
@@ -288,13 +294,59 @@ def _charge_with_fixed_ordinary_tax_inputs(results, year):
     ]
     sim = _population_simulation(people, year)
     charge = np.asarray(sim.calculate("personal_pension_contributions_tax", year))
-    excess = np.maximum(
-        0,
-        results["pension_contributions_for_annual_allowance"]
-        - results["pension_annual_allowance"],
-    )
-    np.testing.assert_allclose(charge, excess * 0.45, rtol=0, atol=0.05)
-    return charge
+    sizes = [len(results["pension_annual_allowance"]) for results in result_sets]
+    charges = np.split(charge, np.cumsum(sizes)[:-1])
+    for results, set_charge in zip(result_sets, charges):
+        excess = np.maximum(
+            0,
+            results["pension_contributions_for_annual_allowance"]
+            - results["pension_annual_allowance"],
+        )
+        np.testing.assert_allclose(set_charge, excess * 0.45, rtol=0, atol=0.05)
+    return charges
+
+
+def _aa_results_under_both_caps(people, year, scheme, supplied_ani):
+    """The AA variables with the NICs cap at 2,000 and with no cap."""
+    results = []
+    for cap in [2_000, float("inf")]:
+        sim = _population_simulation(people, year, cap)
+        _assert_pension_input_path(sim, year, scheme)
+        _assert_ani_input_path(sim, year, supplied_ani)
+        results.append(
+            {
+                variable: np.asarray(sim.calculate(variable, year))
+                for variable in AA_VARIABLES
+            }
+        )
+    return results
+
+
+def _assert_caps_agree(groups, year):
+    """Each group's AA variables and charge agree under both cap settings.
+
+    ``groups`` maps a label to the results ``_aa_results_under_both_caps``
+    returns. One charge simulation serves every group and both caps.
+    """
+    for label, results in groups.items():
+        for variable in AA_VARIABLES:
+            np.testing.assert_allclose(
+                results[0][variable],
+                results[1][variable],
+                rtol=0,
+                atol=0.05,
+                err_msg=f"{label}: {variable}",
+            )
+    result_sets = [results[cap] for results in groups.values() for cap in (0, 1)]
+    charges = _charges_with_fixed_ordinary_tax_inputs(result_sets, year)
+    for index, label in enumerate(groups):
+        np.testing.assert_allclose(
+            charges[2 * index],
+            charges[2 * index + 1],
+            rtol=0,
+            atol=0.05,
+            err_msg=f"{label}: personal_pension_contributions_tax",
+        )
 
 
 @pytest.mark.parametrize("year", [2029, 2030])
@@ -315,6 +367,8 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
 
     The charge comparison fixes ordinary tax inputs. It makes no unrestricted
     claim about the charge, ANI, personal allowances or ordinary income tax.
+    The fixed populations with a supplied ANI are tested once, in
+    ``test_nics_cap_preserves_aa_inputs_and_charge_with_supplied_ani``.
     """
     # Keep every default DC record, including the fixed witnesses, separate
     # from supplied DB inputs, which otherwise zero the DC input array.
@@ -333,6 +387,25 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
             "personal_pension_contributions": 3_600,
         },
     ] + dc_people
+    groups = {
+        "DC": _aa_results_under_both_caps(dc_people, year, "DC", False),
+        "DB": _aa_results_under_both_caps(db_people, year, "DB", False),
+    }
+    for results in groups["DC"]:
+        np.testing.assert_array_equal(
+            results["pension_contributions_for_annual_allowance"][:2],
+            [130_000, 304_600],
+        )
+    _assert_caps_agree(groups, year)
+
+
+@pytest.mark.parametrize("year", [2029, 2030])
+def test_nics_cap_preserves_aa_inputs_and_charge_with_supplied_ani(year):
+    """Supplied ANI fixes threshold income whatever the NICs cap.
+
+    These populations do not depend on any drawn value, so they are tested
+    once for each year rather than with every generated population.
+    """
     # ANI is a partial-input override, so each person in these separate
     # simulations must supply it. Loss relief is already reflected in ANI;
     # neither actual nor synthetic pay/loss relief can reconstruct it again.
@@ -358,64 +431,34 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
         {**person, "pension_contributions_for_annual_allowance": 350_000}
         for person in ani_people
     ]
-    for scheme, people, supplied_ani in [
-        ("DC", dc_people, False),
-        ("DB", db_people, False),
-        ("DC", ani_people, True),
-        ("DB", ani_db_people, True),
-    ]:
-        results = []
-        for cap in [2_000, float("inf")]:
-            sim = _population_simulation(people, year, cap)
-            _assert_pension_input_path(sim, year, scheme)
-            _assert_ani_input_path(sim, year, supplied_ani)
-            results.append(
-                {
-                    variable: np.asarray(sim.calculate(variable, year))
-                    for variable in AA_VARIABLES
-                }
+    groups = {
+        "DC with ANI": _aa_results_under_both_caps(ani_people, year, "DC", True),
+        "DB with ANI": _aa_results_under_both_caps(ani_db_people, year, "DB", True),
+    }
+    # Gross Gift Aid is 1,000. At age 45 actual earnings allow 2,000 net-pay
+    # relief or 3,600 RAS relief; age 80 allows neither. The loss never
+    # changes an already supplied ANI.
+    expected_adjusted = {
+        "DC with ANI": [451_000, 454_000, 455_600] * 2
+        + [451_000, 448_000, 448_000] * 2,
+        "DB with ANI": [500_000, 499_000, 500_600] * 2
+        + [500_000, 497_000, 497_000] * 2,
+    }
+    for label, both_caps in groups.items():
+        for results in both_caps:
+            np.testing.assert_array_equal(
+                results["pension_annual_allowance_threshold_income"],
+                [351_000, 352_000, 352_000] * 4,
             )
-            if supplied_ani:
-                # Gross Gift Aid is 1,000. At age 45 actual earnings allow
-                # 2,000 net-pay relief or 3,600 RAS relief; age 80 allows
-                # neither. The loss never changes an already supplied ANI.
-                expected_adjusted = (
-                    [451_000, 454_000, 455_600] * 2 + [451_000, 448_000, 448_000] * 2
-                    if scheme == "DC"
-                    else [500_000, 499_000, 500_600] * 2
-                    + [500_000, 497_000, 497_000] * 2
-                )
-                np.testing.assert_array_equal(
-                    results[-1]["pension_annual_allowance_threshold_income"],
-                    [351_000, 352_000, 352_000] * 4,
-                )
-                np.testing.assert_array_equal(
-                    results[-1]["pension_annual_allowance_adjusted_income"],
-                    expected_adjusted,
-                )
-                np.testing.assert_array_equal(
-                    results[-1]["pension_annual_allowance"],
-                    np.full(len(people), 10_000),
-                )
-            elif scheme == "DC":
-                np.testing.assert_array_equal(
-                    results[-1]["pension_contributions_for_annual_allowance"][:2],
-                    [130_000, 304_600],
-                )
-        for variable in AA_VARIABLES:
-            np.testing.assert_allclose(
-                results[0][variable],
-                results[1][variable],
-                rtol=0,
-                atol=0.05,
-                err_msg=f"{scheme}: {variable}",
+            np.testing.assert_array_equal(
+                results["pension_annual_allowance_adjusted_income"],
+                expected_adjusted[label],
             )
-        np.testing.assert_allclose(
-            _charge_with_fixed_ordinary_tax_inputs(results[0], year),
-            _charge_with_fixed_ordinary_tax_inputs(results[1], year),
-            rtol=0,
-            atol=0.05,
-        )
+            np.testing.assert_array_equal(
+                results["pension_annual_allowance"],
+                np.full(len(ani_people), 10_000),
+            )
+    _assert_caps_agree(groups, year)
 
 
 @pytest.mark.parametrize("year", [2029, 2030])

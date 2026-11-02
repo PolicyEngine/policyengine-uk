@@ -169,10 +169,19 @@ def new_simulation(**kwargs):
         return Simulation(**kwargs)
 
 
-def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
-    """One Simulation: each family appears once per value in ``eligible``."""
+def simulate(families, year, eligible=(), variants=None):
+    """One Simulation: each family appears once per value in ``eligible``.
+
+    ``variants`` instead lists one ``(eligible, cap_bump, hours_bump)`` for
+    each copy, which adds ``cap_bump`` to the family's maximum hours used and
+    ``hours_bump`` to each child's hours used. Every copy's families have
+    their own benefit units and households, and every copy supplies the same
+    inputs, so no copy reads another's.
+    """
+    if variants is None:
+        variants = [(is_eligible, 0, 0) for is_eligible in eligible]
     situation = {"people": {}, "benunits": {}, "households": {}}
-    for copy, is_eligible in enumerate(eligible):
+    for copy, (is_eligible, cap_bump, hours_bump) in enumerate(variants):
         for i, f in enumerate(families):
             members = []
             for j, c in enumerate(f["children"]):
@@ -668,12 +677,17 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
 @PROPERTY_SETTINGS
 @given(years, st.lists(family, min_size=1, max_size=5), st.sampled_from([1, 5, 15]))
 def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
-    lower = split(simulate(families, year, eligible=[True]), families, 1)[0]
-    for cap_bump, hours_bump in ((bump, 0), (0, bump)):
-        raised = simulate(
-            families, year, eligible=[True], cap_bump=cap_bump, hours_bump=hours_bump
-        )
-        higher = split(raised, families, 1)[0]
+    raises = ((bump, 0), (0, bump))
+    lower, *raised = split(
+        simulate(
+            families,
+            year,
+            variants=[(True, 0, 0)] + [(True, *raise_) for raise_ in raises],
+        ),
+        families,
+        1 + len(raises),
+    )
+    for (cap_bump, hours_bump), higher in zip(raises, raised):
         for f, lo, hi in zip(families, lower, higher):
             for c, a, b in zip(f["children"], lo, hi):
                 assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
@@ -730,8 +744,10 @@ def test_raising_the_income_limit_never_lowers_support_or_income(h):
         },
         "households": {"hh": {"members": members, "country": {year: "ENGLAND"}}},
     }
-    base = new_simulation(situation=situation)
     reform = new_simulation(situation=situation, reform={INCOME_LIMIT: math.inf})
+    # A reformed Simulation builds its baseline as a current-law Simulation of
+    # the same situation.
+    base = reform.baseline
 
     def total(sim, variable):
         return float(sim.calculate(variable, year).sum())
