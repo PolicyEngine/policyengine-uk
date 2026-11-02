@@ -80,8 +80,9 @@ def summed(total, parts) -> Pence:
     # sums exceed ``bound`` by under count * 2^-23 of it. Take the step of the
     # next float32 up, so that converting to float32 cannot shrink it.
     with np.errstate(under="ignore"):
-        # The step above zero is the smallest subnormal float32, which numpy
-        # reports as underflow; that step still bounds the rounding.
+        # The step above zero is the smallest subnormal float32: numpy reports
+        # both nextafter, which returns it, and spacing of it as underflow. That
+        # step still bounds the rounding.
         largest = np.nextafter(
             (bound * (1 + count * 2.0**-23)).astype(np.float32), np.float32(np.inf)
         )
@@ -165,8 +166,9 @@ def _step(bound):
     """The float32 step, in pounds, of the next float32 above ``bound``, a
     magnitude in pounds as float64: at least that of any float32 up to it."""
     with np.errstate(under="ignore"):
-        # The step above zero is the smallest subnormal float32, which numpy
-        # reports as underflow; that step still bounds the rounding.
+        # The step above zero is the smallest subnormal float32: numpy reports
+        # both nextafter, which returns it, and spacing of it as underflow. That
+        # step still bounds the rounding.
         largest = np.nextafter(np.asarray(bound, dtype=np.float32), np.float32(np.inf))
         return np.spacing(largest).astype(np.float64)
 

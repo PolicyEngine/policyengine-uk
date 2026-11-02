@@ -63,9 +63,10 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     # weekly earnings above the limit.
     taper = ca.earnings_taper
     country = person.household("country", period).decode_to_str()
-    # The excess is whole pence, which float32 holds only to within half a
-    # step (1p as 0.0099999998); stored_pence reads them back exactly, in
-    # float64, so the formula subtracts them from the rate in float64.
+    # For a limit in whole pence the excess is whole pence, which float32 holds
+    # only to within half a step (1p as 0.0099999998); stored_pence reads them
+    # back exactly, in float64, so the formula subtracts them from the rate in
+    # float64.
     excess = (
         stored_pence(person("carers_allowance_weekly_earnings_above_limit", period))
         / 100
