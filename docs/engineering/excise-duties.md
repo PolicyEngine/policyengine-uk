@@ -296,8 +296,8 @@ numbers and fiscal years, and stops before writing anything when:
 - a text sits beside the years in the fiscal-year row over a line, such as
   a unit column's heading or a line's label;
 - hand-rolled or other tobacco does not sit under an "of which:" row
-  directly below the non-cigarette total's label, with only the total's
-  other parts between;
+  directly below the non-cigarette total's row, which holds its label and
+  figures, with only the total's other parts between;
 - the OBR puts any cell beside a line's label and values;
 - the sheet repeats the table's heading, since the importer would check the
   text under one heading and could read a line under another.

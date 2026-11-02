@@ -524,8 +524,8 @@ the forecast levels, though not their growth.
    unit over the wrong lines, so the importer also stops on any text beside
    the years in the fiscal-year row over a line. It stops when hand-rolled
    or other tobacco does not sit under an "of which:" row directly below the
-   non-cigarette total's label, with only the total's other parts between,
-   and on any cell beside a line's label and values. When a sheet repeats a
+   non-cigarette total's row, which holds its label and figures, with only
+   the total's other parts between, and on any cell beside a line's label and values. When a sheet repeats a
    clearance table's heading, the importer stops and names the rows. It
    checks no cell above a table's title or below its end, so read any note
    there yourself. The list holds each EFO's footnotes as the OBR wrote

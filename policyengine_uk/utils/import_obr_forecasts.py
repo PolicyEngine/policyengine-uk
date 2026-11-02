@@ -728,8 +728,8 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     lists it. In both EFOs the importer requires that cell and refuses any
     text in the table that the list lacks (``validate_clearance_table``).
     For a part of a total (``part_of_total``), the OBR states the unit in
-    the total's label, and the importer requires that label on the row
-    directly above the "of which:" row over the line
+    the total's label, and the importer requires that label and the total's
+    figures on the row directly above the "of which:" row over the line
     (``validate_clearance_part``).
     Dataset projection grows household weights by ``ons.population``, so
     ``render_receipts_growth_yaml`` writes
@@ -1374,10 +1374,11 @@ def validate_clearance_part(
     kg)", on the row directly above an "of which:" row. Going up from the
     line in ``table_rows`` (the rows below the table's title), past the
     total's other parts, the importer needs an "of which:" row with no other
-    cell, then a row that holds ``spec.unit_cell`` as its first text and
-    only numbers after it. A table of listed texts could otherwise put the
-    parts under another line, such as "Cigarette clearances (million
-    sticks)", and the importer would read them in the wrong unit.
+    cell, then a row that holds ``spec.unit_cell`` as its first text and one
+    or more numbers after it, and nothing else. A table of listed texts
+    could otherwise put the parts under another line, such as "Cigarette
+    clearances (million sticks)", and the importer would read them in the
+    wrong unit.
     """
 
     def texts(row: dict[str, str | None]) -> list[str]:
@@ -1401,14 +1402,16 @@ def validate_clearance_part(
     if (
         of_which != ["of which:"]
         or total[:1] != [spec.unit_cell]
+        or not total[1:]
         or not all(NUMBER_RE.fullmatch(text) for text in total[1:])
     ):
         raise ValueError(
-            f"{where} lacks {spec.unit_cell!r} on the row directly above the "
-            f'"of which:" row over the {".".join(spec.path)} line. The line '
-            "takes its unit from that total's label, so the importer needs the "
-            "label there, with only the total's other parts between the \"of "
-            'which:" row and the line.'
+            f"{where} lacks the non-cigarette total's label ({spec.unit_cell!r}, "
+            "as receipts_label gives it) and its figures on the row directly "
+            f'above the "of which:" row over the {".".join(spec.path)} line. '
+            "The line takes its unit from that total's label, so the importer "
+            "needs the label and figures there, with only the total's other "
+            'parts between the "of which:" row and the line.'
         )
 
 

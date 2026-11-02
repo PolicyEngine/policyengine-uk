@@ -3870,11 +3870,12 @@ def not_under_total(table, key):
     ``table``, a part that does not sit under its total."""
     spec = CLEARANCE_SPECS[key]
     return (
-        f"Table {table} (sheet {table}) lacks {spec.unit_cell!r} on the row "
-        f'directly above the "of which:" row over the {".".join(spec.path)} '
-        "line. The line takes its unit from that total's label, so the importer "
-        "needs the label there, with only the total's other parts between the "
-        '"of which:" row and the line.'
+        f"Table {table} (sheet {table}) lacks the non-cigarette total's label "
+        f"({spec.unit_cell!r}, as receipts_label gives it) and its figures on "
+        'the row directly above the "of which:" row over the '
+        f"{'.'.join(spec.path)} line. The line takes its unit from that total's "
+        "label, so the importer needs the label and figures there, with only "
+        'the total\'s other parts between the "of which:" row and the line.'
     )
 
 
@@ -3991,6 +3992,33 @@ def test_a_layout_that_puts_the_parts_under_another_unit_stops_the_run(name):
             **COMMITTED_RELEASES,
         )
     assert str(refused.value) == expected["hand_rolling_tobacco"]
+
+
+@pytest.mark.parametrize("release", ["March 2025", "March 2026", "October 2026"])
+def test_a_total_label_without_figures_does_not_count_as_the_total(release):
+    """Insert a row that holds only "Non-cigarette clearances ('000s kg)"
+    directly above the "of which:" row of the real tobacco clearances. The
+    row holds the total's label but none of its figures, so the importer
+    refuses hand-rolled and other tobacco with the part check's message. It
+    reads cigarettes as before."""
+    _, sheet = REAL_CLEARANCE_TABLES[release, TOBACCO_CLEARANCES]
+    real, start, end, _ = real_clearance_rows(release, TOBACCO_CLEARANCES)
+    (of_which,) = [
+        i for i in range(start, end) if receipts_label(real[i].get("B")) == "of which:"
+    ]
+    rows = [dict(row) for row in real]
+    rows.insert(of_which, {"B": "Non-cigarette clearances ('000s kg)"})
+    for key in TOBACCO_LINES:
+        spec = CLEARANCE_SPECS[key]
+        if key == "cigarettes":
+            assert (
+                find_receipts_line({sheet: rows}, spec).levels
+                == find_receipts_line({sheet: real}, spec).levels
+            )
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({sheet: rows}, spec)
+        assert str(refused.value) == not_under_total(sheet, key), key
 
 
 def test_the_alcohol_receipts_table_stays_outside_the_clearance_table():
