@@ -1,0 +1,61 @@
+# The welfare benefits the Universal Credit cap counts, with Housing Benefit
+# at nil (UC Regs 2013 reg 80(2A)).
+
+- name: The Universal Credit cap leaves out Housing Benefit the family receives
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 30
+    benunits:
+      family:
+        members: [adult]
+        universal_credit_pre_benefit_cap: 15_000
+        housing_benefit_pre_benefit_cap: 10_000
+        child_benefit: 5_000
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        uc_benefit_cap: 14_753
+        uc_childcare_element: 0
+        uc_deductions: 0
+    households:
+      household:
+        members: [adult]
+        country: ENGLAND
+  output:
+    # The Housing Benefit cap counts all three awards (HB Regs 2006 reg
+    # 75C(2)(b)); the Universal Credit cap counts 15,000 + 5,000 = 20,000,
+    # 5,247 over the cap (reg 81).
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap_welfare_benefits: 20_000
+    uc_benefit_cap_reduction: 5_247
+    universal_credit: 9_753
+
+- name: A supplied benefit cap total includes Housing Benefit, which the Universal Credit cap takes out
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 30
+    benunits:
+      family:
+        members: [adult]
+        universal_credit_pre_benefit_cap: 20_000
+        housing_benefit_pre_benefit_cap: 6_000
+        benefit_cap_welfare_benefits: 26_000
+        uc_benefit_cap: 14_753
+        uc_childcare_element: 0
+        uc_deductions: 0
+    households:
+      household:
+        members: [adult]
+        country: ENGLAND
+  output:
+    # 26,000 - 6,000 = 20,000, 5,247 over the cap, so the award is 14,753.
+    uc_benefit_cap_welfare_benefits: 20_000
+    uc_benefit_cap_reduction: 5_247
+    universal_credit: 14_753
