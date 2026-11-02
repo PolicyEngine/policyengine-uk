@@ -44,12 +44,13 @@ income-related ESA to reach every remaining award (SI 2025/1148 art. 3A(1)),
 and an appointee saving keeps an award in payment (art. 3A(2)), so every
 adult drawn in 2026 has the saving (esa_income_appointee_saving) and each
 award stays payable for the whole year;
-test_esa_income_abolition_properties.py tests unsaved awards. Adults have earnings, pensions and household savings, so some families pass
-Pension Credit's means test and others fail it, and in 2016 and 2018 some
-report working tax credit, which HMRC pays without its income test to a
-family on the award (TCA 2002 s.7(2)). A member outside the couple claims in
-their own right and keeps that claim while below pensionable age, whatever
-the couple's Pension Credit.
+test_esa_income_abolition_properties.py tests unsaved awards. Adults have
+earnings, pensions and household savings, so some families pass Pension
+Credit's means test and others fail it, and in 2016 and 2018 some report
+working tax credit, which HMRC pays without its income test to a family on
+the award (TCA 2002 s.7(2)). A member outside the couple claims in their own
+right and keeps that claim while below pensionable age, whatever the couple's
+Pension Credit.
 
 Each of would_claim_uc, claims_all_entitled_benefits and the mixed-age saving
 would otherwise read the ESA report, so the generator enters them, and no one
