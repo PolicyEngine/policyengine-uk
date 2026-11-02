@@ -41,8 +41,7 @@ Invariants, each over generated families and the explicit examples:
    ``housing_benefit_LHA_allowed_bedrooms``), which can differ from the
    Universal Credit count: it gives a bedroom to a qualifying young person
    a local authority looks after, whom UC Regs 2013 Sch 4 para 9(2)(g)
-   leaves out, and pools the children of other occupiers' families. This
-   change leaves both counts as main has them.
+   leaves out, and pools the children of other occupiers' families.
 4. Reductions. 0 <= each scheme's reduction <= the excess of the welfare
    benefits over that scheme's cap; the UC reduction is the excess, with
    Housing Benefit counted as nil (reg. 80(2A)), less the childcare costs

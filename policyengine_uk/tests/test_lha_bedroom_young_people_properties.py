@@ -37,11 +37,13 @@ Invariants, for any generated population of households:
    count other families' children (a separate change).
 4. In-unit non-dependants: every member of a benefit unit aged 16 or over
    who is neither the claimant nor partner nor a Universal Credit qualifying
-   young person is a non-dependant (para 9(2)) with a bedroom (para
-   10(1)(c)). So their family has one more Universal Credit bedroom with
-   them than without them, and making them qualifying young persons the
-   renter is responsible for (para 10(1)(b)) leaves every family's
-   Universal Credit bedrooms unchanged. This ties the bedroom to the same
+   young person nor the household head (the householder in whose name the
+   accommodation is rented, whom para 9(2)(d) excludes as liable for the
+   rent) is a non-dependant (para 9(2)) with a bedroom (para 10(1)(c)). So
+   their family has one more Universal Credit bedroom with them than
+   without them, and making them qualifying young persons the renter is
+   responsible for (para 10(1)(b)) leaves every family's Universal Credit
+   bedrooms unchanged. This ties the bedroom to the same
    definition that marks a benefit-unit member as a non-dependant for the
    non-dependant deduction.
 """
@@ -49,7 +51,7 @@ Invariants, for any generated population of households:
 from itertools import combinations
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -226,6 +228,23 @@ def test_adding_a_person_aged_16_to_19_never_lowers_bedrooms(case, supply_roles)
 
 @PROPERTY_SETTINGS
 @given(scenario())
+# A qualifying young person a local authority looks after, added to the
+# head's family: no Universal Credit bedroom (para 9(2)(g)).
+@example(
+    (
+        [[dict(role="head", adults=[40], children=[])]],
+        (0, 0),
+        dict(
+            age=17,
+            is_male=True,
+            current_education="UPPER_SECONDARY",
+            age_started_or_accepted_current_education_or_training=16,
+            is_before_universal_credit_qualifying_young_person_terminal_date=True,
+            is_looked_after_by_local_authority=True,
+            receives_benefits_in_own_right=False,
+        ),
+    )
+)
 def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     population, target, person = case
     before, keys = build(population)
@@ -293,15 +312,17 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
 
 
 def in_unit_non_dependants(sim):
-    """Each person: aged 16 or over, neither the claimant nor partner, and
-    not a Universal Credit qualifying young person (UC Regs 2013 Sch 4 para
-    9(2))."""
+    """Each person: aged 16 or over, neither the claimant nor partner, not a
+    Universal Credit qualifying young person, and not the household head
+    (UC Regs 2013 Sch 4 para 9(2), with (d) for the head, the householder
+    in whose name the accommodation is rented)."""
     age = np.asarray(sim.calculate("age", YEAR))
     claimant_or_partner = np.asarray(sim.calculate("is_claimant_or_partner", YEAR))
     qualifying = np.asarray(
         sim.calculate("is_qualifying_young_person_for_universal_credit", YEAR)
     )
-    return (age >= 16) & ~claimant_or_partner & ~qualifying
+    household_head = np.asarray(sim.calculate("is_resolved_household_head", YEAR))
+    return (age >= 16) & ~claimant_or_partner & ~qualifying & ~household_head
 
 
 @PROPERTY_SETTINGS

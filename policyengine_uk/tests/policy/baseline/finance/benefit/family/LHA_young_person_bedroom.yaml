@@ -11,10 +11,9 @@
 # Housing Benefit: HB Regs 2006 and HB (SPC) Regs 2006 reg 13D(3)(b), "a
 # person who is not a child", where a child is a person under 16 (reg 2(1)).
 #
-# Rents of £200 a week (£10,400 a year) sit between the published Maidstone
-# one-bedroom (B) and two-bedroom (C) rates (VOA, LHA April 2024, held for
-# 2025-26: B £172.60, C £208.27 a week), so the bedroom decides whether the
-# rent is met in full.
+# Rents of £200 a week (£10,400 a year) sit between the model's Maidstone
+# one-bedroom (B, £173.08 a week) and two-bedroom (C, £208.85 a week) rates,
+# so the bedroom decides whether the rent is met in full.
 
 - name: A qualifying young person has their own bedroom
   period: 2026

@@ -80,7 +80,11 @@ class LHA_allowed_bedrooms(Variable):
         # responsible (regs 4 and 5).
         qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
-        # non-dependant.
+        # non-dependant with a bedroom. The formula does not read
+        # is_resolved_household_head, so it also gives this bedroom to a
+        # member who heads the household, although para 9(2)(d) stops a
+        # person liable to make payments on a commercial basis for their
+        # occupation being a non-dependant.
         family_non_dependant = family_member & ~qualifying
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 10(1)(c): a non-dependant from another family who is not a
