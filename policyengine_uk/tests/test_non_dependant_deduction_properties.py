@@ -1067,6 +1067,14 @@ def scaled_award_system():
     return ScaledAward(SYSTEM)
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_scaled_award_system():
+    # The system also keeps its last simulation alive. Drop it once this
+    # module's tests are done, instead of for the rest of the test process.
+    yield
+    scaled_award_system.cache_clear()
+
+
 AWARD_YEAR = 2025
 AWARD_HOUSEHOLD = st.fixed_dictionaries(
     dict(
