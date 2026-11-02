@@ -5,9 +5,9 @@
 # disability addition (SPC Regs 2002 Sch I para 1(1)(a)(iii) and (b), with
 # para 1(4)): they withhold the premium or addition when a carer "has an
 # award of universal credit which includes the carer element in respect of
-# caring for" the claimant. DWP includes the carer element for regular and substantial caring
-# for a severely disabled person, whether or not the carer claims Carer's
-# Allowance (UC Regs 2013 regs 29 and 30(2)).
+# caring for" the claimant. DWP includes the carer element for regular and
+# substantial caring for a severely disabled person, whether or not the carer
+# claims Carer's Allowance (UC Regs 2013 regs 29 and 30(2)).
 #
 # Amounts for 2026-27 (DWP benefit and pension rates 2026 to 2027; the Social
 # Security Benefits Up-rating Order 2026, SI 2026/148): severe disability
@@ -192,17 +192,15 @@
 
 - name: A carer whose income tapers the award to nil has no award and does not bar the premium
   # The carer's maximum amount comes to (424.90 + 209.34) x 12 = 7,610.88.
-  # Earnings
-  # of £25,000 less income tax (25,000 - 12,570) x 0.20 = 2,486.00 and
-  # National Insurance (25,000 - 12,570) x 0.08 = 994.40 leave 21,519.60, and
-  # with no work allowance the taper takes 0.55 x 21,519.60 = 11,835.78. That
-  # exceeds the maximum amount even with no non-dependant deduction
+  # Earnings of £25,000 less income tax (25,000 - 12,570) x 0.20 = 2,486.00
+  # and National Insurance (25,000 - 12,570) x 0.08 = 994.40 leave 21,519.60,
+  # and with no work allowance the taper takes 0.55 x 21,519.60 = 11,835.78.
+  # That exceeds the maximum amount even with no non-dependant deduction
   # (uc_award_upper_bound; the disabled person's family, which does not
   # claim, has a bound of its standard allowance, 424.90 x 12 = 5,098.80), so
   # the award comes to nil, which leaves no award (Welfare Reform Act 2012
-  # s.5(1)(b); UC Regs 2013 reg 17). No one has an award in
-  # respect of caring for the disabled person, who keeps the premium, 86.05 x
-  # 52 = 4,474.60.
+  # s.5(1)(b); UC Regs 2013 reg 17). No one has an award in respect of caring
+  # for the disabled person, who keeps the premium, 86.05 x 52 = 4,474.60.
   period: 2026
   absolute_error_margin: 0.01
   input:
