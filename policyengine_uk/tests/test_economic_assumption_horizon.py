@@ -13,7 +13,8 @@ Invariants:
    later in a year counts from the next year.
 2. Compounding: each index is 1 in its first year and, for every later year to
    the horizon, the previous year's value times one plus that year's growth,
-   rounded to 5 decimal places (the earnings index keeps its full precision).
+   rounded to 5 decimal places (the earnings and triple lock indices keep their
+   full precision).
    A series that ends sooner holds its final growth rate.
 3. Uprating: every parameter uprated by an index that still moves after 2039
    moves with it, unless its value is zero.
@@ -33,6 +34,7 @@ from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
 from policyengine_uk import Simulation, system
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    UNROUNDED_INDICES,
     create_economic_assumption_indices,
     growth_horizon,
     last_year,
@@ -49,7 +51,6 @@ YOY_GROWTH_FILE = (
 )
 # The year the indices stopped at before they followed the growth series.
 OLD_LAST_INDEX_YEAR = 2039
-EARNINGS_UPRATING = "gov.economic_assumptions.yoy_growth.earnings_uprating"
 CPI_GROWTH = "gov.economic_assumptions.yoy_growth.obr.consumer_price_index"
 RPI_GROWTH = "gov.economic_assumptions.yoy_growth.obr.rpi"
 
@@ -111,7 +112,7 @@ def test_every_index_compounds_its_growth_through_the_horizon():
         )
         for year in range(first_checked, HORIZON + 1):
             expected = index(str(year - 1)) * (1 + growth(str(year)))
-            if growth.name != EARNINGS_UPRATING:
+            if growth.name not in UNROUNDED_INDICES:
                 expected = round(expected, 5)
             assert index(str(year)) == pytest.approx(expected, rel=1e-12), (
                 index.name,
@@ -122,7 +123,12 @@ def test_every_index_compounds_its_growth_through_the_horizon():
 
 
 def test_the_state_pension_keeps_rising_after_2039():
-    """Both State Pension rates move with the triple lock index to the horizon."""
+    """Both State Pension rates move with the triple lock index to the horizon.
+
+    Each April's rate is the year before's raised by the index's growth and
+    rounded to the nearest 5p (``create_rate_projection``), so it lands within
+    2.5p of the unrounded product.
+    """
     triple_lock = ECONOMIC_ASSUMPTIONS.indices.triple_lock
     state_pension = system.parameters.gov.dwp.state_pension
 
@@ -132,9 +138,14 @@ def test_the_state_pension_keeps_rising_after_2039():
     ):
         for year in range(OLD_LAST_INDEX_YEAR + 1, HORIZON + 1):
             assert amount(str(year)) > amount(str(year - 1)), (amount.name, year)
-            assert amount(str(year)) / amount(str(year - 1)) == pytest.approx(
-                triple_lock(str(year)) / triple_lock(str(year - 1)), rel=1e-12
-            ), (amount.name, year)
+            unrounded = amount(str(year - 1)) * (
+                triple_lock(str(year)) / triple_lock(str(year - 1))
+            )
+            assert abs(amount(str(year)) - unrounded) <= 0.025 + 1e-9, (
+                amount.name,
+                year,
+            )
+        assert last_year(amount) == HORIZON, amount.name
 
 
 def test_no_uprated_parameter_freezes_after_2039():
