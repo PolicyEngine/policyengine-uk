@@ -1,11 +1,11 @@
-# An award of Universal Credit which includes the carer element counts as a
-# carer benefit in the carer condition of the legacy severe disability premium
-# (HB Regs 2006 Sch 3 para 14(2)(a)(iii) and (b); HB(SPC) Regs 2006 Sch 3
-# para 6(2)) and of the Pension Credit severe disability addition (SPC Regs
-# 2002 Sch I para 1(1)(a)(iii) and (b), with para 1(4)): DWP and councils
-# withhold the premium or addition when a carer "has an award of universal
-# credit which includes the carer element in respect of caring for" the
-# claimant. DWP includes the carer element for regular and substantial caring
+# DWP and councils count an award of Universal Credit which includes the
+# carer element as a carer benefit in the carer condition of the legacy
+# severe disability premium (HB Regs 2006 Sch 3 para 14(2)(a)(iii) and (b);
+# HB(SPC) Regs 2006 Sch 3 para 6(2)) and of the Pension Credit severe
+# disability addition (SPC Regs 2002 Sch I para 1(1)(a)(iii) and (b), with
+# para 1(4)): they withhold the premium or addition when a carer "has an
+# award of universal credit which includes the carer element in respect of
+# caring for" the claimant. DWP includes the carer element for regular and substantial caring
 # for a severely disabled person, whether or not the carer claims Carer's
 # Allowance (UC Regs 2013 regs 29 and 30(2)).
 #
@@ -16,11 +16,11 @@
 # over) and £666.97 (joint, either 25 or over), carer element £209.34 a month.
 
 - name: A blind carer's Universal Credit carer element bars the premium of the person they care for
-  # The carer is a non-dependant who is blind, so the non-dependant condition
-  # ignores them (para 14(4)(b)); their award bars the premium instead.
-  # Carer element 209.34 x 12 = 2,512.08; award (424.90 + 209.34) x 12 =
-  # 7,610.88. Without the limb the model paid the premium, 86.05 x 52 =
-  # 4,474.60.
+  # The council ignores the carer, a blind non-dependant, under the
+  # non-dependant condition (para 14(4)(b)), and the carer's award bars the
+  # premium instead. Carer element 209.34 x 12 = 2,512.08; award (424.90 +
+  # 209.34) x 12 = 7,610.88. Without the award, the council would include the
+  # premium, 86.05 x 52 = 4,474.60.
   period: 2026
   input:
     people:
@@ -50,10 +50,11 @@
     severe_disability_premium: [0, 0]
 
 - name: A partner whose joint award includes the carer element leaves a couple who both qualify the single rate
-  # Para 14(2)(b)(iii): a carer element in respect of caring for only one of
-  # the couple gives one single rate, 86.05 x 52 = 4,474.60, where no carer
-  # gave the double rate, 172.10 x 52 = 8,949.20. Joint award (666.97 +
-  # 209.34) x 12 = 10,515.72.
+  # The joint award includes a carer element in respect of caring for only
+  # one of the couple, so the council includes one single rate, 86.05 x 52 =
+  # 4,474.60, and not the double rate, 172.10 x 52 = 8,949.20, that it
+  # includes where no one cares for either (para 14(2)(b)(iii)). Joint award
+  # (666.97 + 209.34) x 12 = 10,515.72.
   period: 2026
   input:
     people:
@@ -80,9 +81,10 @@
     severe_disability_premium: 4_474.60
 
 - name: A son's Universal Credit carer element in another benefit unit bars a pensioner's severe disability addition
-  # SPC Regs 2002 Sch I para 1(1)(a)(iii) and (4). The son is blind, so the
-  # residence condition ignores him (para 2). Without the limb the model paid
-  # the addition, 86.05 x 52 = 4,474.60, and the pension-age Housing Benefit
+  # DWP ignores the blind son as a resident (SPC Regs 2002 Sch I para
+  # 2(2)(b)), and his award with the carer element bars the addition (para
+  # 1(1)(a)(iii) and (4)). Without the award, DWP would include the addition,
+  # 86.05 x 52 = 4,474.60, and the council the pension-age Housing Benefit
   # premium at the same amount (HB(SPC) Regs 2006 Sch 3 para 6(2)(a)(iii)).
   period: 2026
   input:
@@ -189,7 +191,8 @@
     is_cared_for_by_carer_benefit_recipient: [false, false, true, false]
 
 - name: A carer whose income tapers the award to nil has no award and does not bar the premium
-  # The carer's maximum amount is (424.90 + 209.34) x 12 = 7,610.88. Earnings
+  # The carer's maximum amount comes to (424.90 + 209.34) x 12 = 7,610.88.
+  # Earnings
   # of £25,000 less income tax (25,000 - 12,570) x 0.20 = 2,486.00 and
   # National Insurance (25,000 - 12,570) x 0.08 = 994.40 leave 21,519.60, and
   # with no work allowance the taper takes 0.55 x 21,519.60 = 11,835.78. That

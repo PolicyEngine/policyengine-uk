@@ -12,7 +12,7 @@ class uc_award_upper_bound(Variable):
         "awards the maximum amount less the income reduction (UC Regs 2013 "
         "reg 22). The maximum amount includes the housing costs element "
         "(uc_housing_costs_element): the rent a renter may claim less DWP's "
-        "non-dependant deductions. Where that element is positive, DWP "
+        "non-dependant deductions. Where that element exceeds nil, DWP "
         "applies the lower work allowance (reg 22(2)(b)). Where DWP deducts "
         "less than the rent, the award stays at or below the award with no "
         "deduction. Where it deducts at least the rent, DWP calculates the "

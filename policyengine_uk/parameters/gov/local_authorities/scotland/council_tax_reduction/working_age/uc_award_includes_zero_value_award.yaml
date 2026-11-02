@@ -1,4 +1,4 @@
-description: Whether Scottish councils count a Universal Credit award with a value of zero when deciding the working-age Council Tax Reduction carer premium. The model reads that to include a nil award that earnings bring about, a reading the sources leave open.
+description: Whether Scottish councils count a Universal Credit award with a value of zero when deciding the working-age Council Tax Reduction carer premium. The model reads that definition as reaching an award that DWP tapers to nil because of the carer's earnings; the sources leave that reading open.
 values:
   2013-04-01: false
   2022-04-01: true

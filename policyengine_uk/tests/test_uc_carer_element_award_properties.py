@@ -16,10 +16,9 @@ simulation stores the award. Scotland's carer premium reads the positive award
 (receives_uc_carer_element), or from 1 April 2022 to 31 March 2025, when the
 model counts a nil award as one with a value of zero, the award's conditions.
 Each example simulates the households as drawn, and again with
-has_uc_award_with_carer_element supplied as false for everyone, the
-attribution as it ran before the limb (its carers then come from
-receives_carer_benefit alone). carer_premium gives the Scottish premium's
-counterpart without the limb.
+has_uc_award_with_carer_element supplied as false for everyone, which leaves
+receives_carer_benefit as the attribution's only source of carers.
+carer_premium gives the Scottish premium's counterpart without the limb.
 
 Invariants, on generated households under baseline law:
 
@@ -61,10 +60,6 @@ Invariants, on generated households under baseline law:
 
 A reform that makes is_uc_eligible read Pension Credit would cycle through the
 attribution, which reads eligibility; these tests do not cover reforms.
-
-The no-change invariant compares the two code paths in this tree; the
-differential against origin/main itself runs on hand-built datasets outside
-the test suite (see the pull request).
 """
 
 import numpy as np
@@ -132,9 +127,10 @@ def adult(draw, age):
         age=draw(age),
         disability=draw(st.sampled_from(["none", "none", "pip_standard", "aa_higher"])),
         blind=draw(st.sampled_from([False, False, True])),
-        # The qualifying hours, with or without a Carer's Allowance claim: the
-        # Universal Credit carer element needs no claim (UC Regs 2013 reg
-        # 30(2)), and its test ignores the allowance's earnings limit.
+        # Draw the qualifying hours with or without a Carer's Allowance claim:
+        # DWP includes the Universal Credit carer element without a claim and
+        # above the allowance's earnings limit (UC Regs 2013 reg 30(1)(a)(i)
+        # and (2)).
         care_hours=draw(st.sampled_from([0, 35, 35])),
         would_claim_carers_allowance=draw(st.booleans()),
         earnings=draw(st.sampled_from([0, 0, 8_000, 25_000])),
@@ -268,8 +264,8 @@ def single(age=40, **inputs):
 
 
 EXAMPLES = [
-    # The blind carer: a Universal Credit carer element in another benefit
-    # unit bars the disabled person's premium.
+    # A blind carer's Universal Credit carer element, in another benefit
+    # unit, bars the disabled person's premium.
     dict(
         country="ENGLAND",
         units=[
@@ -303,7 +299,7 @@ EXAMPLES = [
             )
         ],
     ),
-    # A pensioner cared for by a son on a qualifying benefit.
+    # A pensioner whose son, on a qualifying benefit, cares for her.
     dict(
         country="WALES",
         units=[
@@ -318,11 +314,10 @@ EXAMPLES = [
 
 
 def test_issue_households_read_the_carer_element_award():
-    # #2120: the blind carer's award includes the carer element, 209.34 x 12,
-    # so the disabled person has no severe disability premium (86.05 x 52
-    # without it). #2124: the Scottish carer's applicable amount includes the
-    # carer premium, (95.55 + 48.15) x 52, not 95.55 x 52. The test reads
-    # only variables that predate the fix, so it also runs on the old code.
+    # In #2120 the blind carer's award includes the carer element, 209.34 x
+    # 12, so the disabled person has no severe disability premium (86.05 x 52
+    # without it). In #2124 the Scottish carer's applicable amount includes
+    # the carer premium, (95.55 + 48.15) x 52, not 95.55 x 52.
     sim = Simulation(situation=situation(EXAMPLES[:1] + EXAMPLES[2:3]))
     severe = sim.calculate("severe_disability_premium", YEAR)
     carer_element = sim.calculate("uc_carer_element", YEAR)
@@ -502,8 +497,8 @@ def test_a_stored_award_is_the_award_and_reads_no_cycle(order):
 
 
 def test_a_reform_that_abolishes_universal_credit_leaves_no_carer_element_award():
-    # A neutralized award reads no other variable and comes to nil, so no one has
-    # an award and the blind carer of the issue no longer bars the premium.
+    # A neutralized award reads no other variable and comes to nil, so no one
+    # has an award, and the issue's blind carer does not bar the premium.
     from policyengine_core.reforms import Reform
 
     class AbolishUniversalCredit(Reform):
@@ -676,16 +671,16 @@ def small_housing_situation():
     strict=True,
     reason=(
         "#2795: the bound's calculation without housing costs takes the "
-        "higher work allowance and stays positive when this award is nil."
+        "higher work allowance and stays positive when this award comes to nil."
     ),
 )
 def test_small_housing_costs_with_a_work_allowance_leave_no_award():
     # DWP has determined that the carer has limited capability for work, so
     # her award has a work allowance (UC Regs 2013 reg 22(1)(b)), and she
-    # gets the carer element with it: reg 29(4) gives the LCWRA element in
-    # its place only for limited capability for work and work-related
-    # activity, and reg 30(1)(a)(i) and (2) ignore the allowance's earnings
-    # limit and the missing claim. Her award has a housing costs element of
+    # gets the carer element with it: DWP gives the LCWRA element in its
+    # place only for limited capability for work and work-related activity
+    # (reg 29(4)), and ignores the allowance's earnings limit and the missing
+    # claim (reg 30(1)(a)(i) and (2)). Her award has a housing costs element of
     # £600, so DWP applies the lower work allowance, £427 a month (reg
     # 22(2)(b)). The taper then exceeds the maximum amount, and the award
     # comes to nil (Welfare Reform Act 2012 s.5(1)(b); reg 17). The bound
