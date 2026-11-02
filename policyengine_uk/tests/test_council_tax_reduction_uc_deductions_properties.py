@@ -10,12 +10,13 @@ Parliament sets the award as the maximum amount less the income amounts
 benefit cap (UC Regs 2013 reg 81(1)). The Secretary of State then recovers
 debts from it: advances and other payments on account (SI 2013/383 reg 10),
 overpayments (SI 2013/384 reg 10) and the claimant's liabilities to third
-parties (SI 2013/380 Sch 6 para 2(1)). A third-party deduction must leave at
-least a penny payable (Sch 6 para 3(1)(a)).
+parties (SI 2013/380 Sch 6 para 2(1)). The Secretary of State may not make a
+third-party deduction that leaves less than a penny payable (Sch 6 para
+3(1)(a)).
 
 The test checks these conditions in 2026 for working-age single people,
-couples and families with children in the four councils, with benefit cap
-reductions from nil to more than the award and deduction demands from nil
+couples and families with children in the four councils. It draws benefit cap
+reductions from nil to more than the award, and deduction demands from nil
 through the 15% cap to an above-cap excess:
 
 1. universal_credit + uc_deductions equals the award after the cap,
@@ -42,9 +43,10 @@ from policyengine_uk import Simulation
 
 YEAR = 2026
 PENNY_A_MONTH = 0.01 * 12
-# Maximum support rate and weekly withdrawal rate of each 2026-27 scheme:
-# Merton and Kingston upon Thames take 2 6/7% a day, Newham 3 4/7% a day of
-# the excess income on 70% of the liability, and Westminster 20%.
+# Each 2026-27 scheme's maximum support rate and weekly withdrawal rate.
+# Merton and Kingston upon Thames withdraw 2 6/7% of the excess income a day
+# (20% a week); Newham supports 70% of the liability and withdraws 3 4/7% a
+# day (25% a week); Westminster withdraws 20% a week.
 SCHEMES = {
     "MERTON": (1.0, 0.20),
     "KINGSTON_UPON_THAMES": (1.0, 0.20),
@@ -296,8 +298,9 @@ def test_four_councils_count_the_universal_credit_award_before_deductions(
         # In the explicit example the Secretary of State deducts the model's
         # annual 764.82 from the issue's award and Merton grants 1,880 with
         # and without it. The Newham couple repays at the 15% cap plus a 5%
-        # excess, the cap reduces the fourth family's award to nil, and every
-        # other family keeps an award and repays debt.
+        # excess, the Secretary of State reduces the fourth family's award to
+        # nil for the cap, and every other family keeps an award and repays
+        # debt.
         assert np.isclose(deductions[1], 764.82, atol=0.01)
         assert np.allclose(council[:2], 1_880, atol=0.01)
         assert np.isclose(v["uc_deduction_rate"][3], 0.20)

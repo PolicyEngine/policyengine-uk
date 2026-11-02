@@ -35,26 +35,27 @@ def legacy_council_tax_reduction(
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
     has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
-    # The schemes use "the calculation or estimate of the amount of the
+    # The councils use "the calculation or estimate of the amount of the
     # income of the applicant ... made by the Secretary of State for the
     # purpose of determining the award of universal credit", plus "the amount
     # of the award of universal credit" (Council Tax Reduction Schemes
     # (Default Scheme) (England) Regulations 2012, Sch. para. 37(1) and
-    # (3)(a); Kingston upon Thames and Merton reproduce it, Newham refers to
-    # the same calculation and counts "the amount of entitlement to universal
-    # credit", and Westminster bases its scheme on the Default Scheme). The
-    # model takes that income as earned income after tax, National Insurance
-    # and pension contributions, plus unearned income. The Secretary of State
-    # applies the work allowance and taper to the award (UC Regs 2013 reg.
-    # 22), not to the income, so the model counts earned income before the
-    # work allowance. The Secretary of State reduces the award for the benefit
-    # cap (reg. 81(1)), then recovers debts from it: payments on account such
-    # as advances (SI 2013/383 reg. 10), overpayments (SI 2013/384 reg. 10)
-    # and the claimant's liabilities to third parties (SI 2013/380 Sch. 6
-    # para. 2(1)). A third-party deduction must leave at least a penny payable
-    # (Sch. 6 para. 3(1)(a)), and in para. 11(5) the Secretary of State treats
-    # the award and the amount payable as two figures. The councils count the
-    # award after the benefit cap and before debt deductions.
+    # (3)(a)). Kingston upon Thames and Merton reproduce para. 37, Newham
+    # refers to the same calculation and counts "the amount of entitlement to
+    # universal credit", and Westminster bases its scheme on the Default
+    # Scheme. The model takes that income as earned income after tax,
+    # National Insurance and pension contributions, plus unearned income. The
+    # Secretary of State applies the work allowance and taper to the award
+    # (UC Regs 2013 reg. 22), not to the income, so the model counts earned
+    # income before the work allowance. The Secretary of State reduces the
+    # award for the benefit cap (reg. 81(1)), then recovers debts from it:
+    # payments on account such as advances (SI 2013/383 reg. 10),
+    # overpayments (SI 2013/384 reg. 10) and the claimant's liabilities to
+    # third parties (SI 2013/380 Sch. 6 para. 2(1)). The Secretary of State
+    # may not make a third-party deduction that leaves less than a penny
+    # payable (Sch. 6 para. 3(1)(a)), and in para. 11(5) treats the award and
+    # the amount payable as two figures. The councils count the award after
+    # the benefit cap and before debt deductions.
     # universal_credit gives the amount payable, so the model adds
     # uc_deductions to it to recover that award.
     uc_award = benunit("universal_credit", period) + benunit("uc_deductions", period)

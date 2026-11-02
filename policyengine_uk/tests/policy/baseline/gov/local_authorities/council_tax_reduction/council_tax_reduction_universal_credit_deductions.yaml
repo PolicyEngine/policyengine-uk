@@ -13,8 +13,9 @@
 # maximum amount comes to 424.90 x 12 + 7,800 = 12,898.80. With no child and
 # no limited capability for work, the claimant gets no work allowance (UC
 # Regs 2013 reg 22(1)(b)(i)), so the Secretary of State deducts
-# 55% x 8,000 = 4,400 and awards 8,498.80. Income exceeds the applicable
-# amount (the maximum amount) by 8,000 + 8,498.80 - 12,898.80 = 3,600.
+# 55% x 8,000 = 4,400 and awards 8,498.80. The councils take the maximum
+# amount as the applicable amount, and income exceeds it by
+# 8,000 + 8,498.80 - 12,898.80 = 3,600.
 # Merton, Kingston upon Thames and Westminster award
 # 2,600 - 20% x 3,600 = 1,880; Newham awards 70% x 2,600 - 25% x 3,600 = 920.
 # Counting the amount payable after a 600 deduction would give 2,000 and
@@ -256,7 +257,7 @@
   # 15% cap, and the model takes it as 764.82 a year. The amount payable
   # falls to 8,498.80 - 764.82 = 7,733.98; the award stays at 8,498.80 and
   # Newham awards 920. Counting the amount payable would give
-  # 70% x 2,600 - 25% x (3,600 - 764.82) = 1,111.21.
+  # 70% x 2,600 - 25% x (3,600 - 764.82) = 1,111.205.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -289,10 +290,10 @@
     council_tax_reduction: 920
 
 - name: Merton counts the Universal Credit award after the benefit cap and before a deduction at the cap
-  # The Secretary of State reduces the award by 1,200 (entered here) for the
-  # benefit cap, to 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg 81(1)). A
-  # deduction at the 15% cap (the model's annual 764.82) leaves 6,533.98
-  # payable.
+  # This case enters a 1,200 benefit cap reduction, and the Secretary of State
+  # reduces the award by it to 8,498.80 - 1,200 = 7,298.80 (UC Regs 2013 reg
+  # 81(1)). A deduction at the 15% cap (the model's annual 764.82) leaves
+  # 6,533.98 payable.
   # Income exceeds the maximum amount by 8,000 + 7,298.80 - 12,898.80 = 2,400,
   # so Merton awards 2,600 - 20% x 2,400 = 2,120. Counting the amount payable
   # would give 2,272.96, and counting the award before the cap 1,880.
@@ -331,8 +332,8 @@
 - name: Merton counts the Universal Credit award before a 600 debt deduction for a claimant with a private pension
   # The Secretary of State counts a 1,000 private pension as unearned income
   # (UC Regs 2013 reg 66(1)(a)) and deducts all of it from the award, which
-  # falls to 12,898.80 - 4,400 - 1,000 = 7,498.80; 6,898.80 is payable after
-  # the deduction. Income exceeds the maximum amount by
+  # falls to 12,898.80 - 4,400 - 1,000 = 7,498.80, and the 600 deduction
+  # leaves 6,898.80 payable. Income exceeds the maximum amount by
   # 8,000 + 1,000 + 7,498.80 - 12,898.80 = 3,600, so Merton awards 1,880.
   # Counting the amount payable would give 2,000.
   period: 2026
@@ -368,8 +369,8 @@
   # The Secretary of State treats 8,000 of capital as yielding 4.35 a month
   # for each 250 above 6,000 (UC Regs 2013 reg 72(1)), so 8 x 4.35 x 12 =
   # 417.60 a year of unearned income. The award falls to
-  # 12,898.80 - 4,400 - 417.60 = 8,081.20, and 7,481.20 is payable after the
-  # deduction. Income exceeds the maximum amount by
+  # 12,898.80 - 4,400 - 417.60 = 8,081.20, and the 600 deduction leaves
+  # 7,481.20 payable. Income exceeds the maximum amount by
   # 8,000 + 417.60 + 8,081.20 - 12,898.80 = 3,600. The savings fall within
   # Kingston upon Thames's 16,000 capital limit, so it awards 1,880. Counting
   # the amount payable would give 2,000.
@@ -407,7 +408,8 @@
   # housing cost contribution of 96.55 a month for the non-dependant (UC Regs
   # 2013 Sch 4 paras 13(1) and 14(1)), so the maximum amount falls to
   # 12,898.80 - 96.55 x 12 = 11,740.20 and the award to
-  # 11,740.20 - 4,400 = 7,340.20; 6,740.20 is payable after the deduction.
+  # 11,740.20 - 4,400 = 7,340.20, and the 600 deduction leaves 6,740.20
+  # payable.
   # Income exceeds the maximum amount by 8,000 + 7,340.20 - 11,740.20 = 3,600.
   # Merton deducts 5.20 a week for a non-dependant out of remunerative work,
   # 5.20 x 52 = 270.40 a year, and awards 2,600 - 20% x 3,600 - 270.40 =
@@ -498,11 +500,12 @@
     council_tax_reduction: 2_120
 
 - name: Under an 85% protected floor, Merton counts the Universal Credit award after the cap reduction the floor leaves
-  # A reform keeps 85% of the standard allowance payable for the same
-  # household, so the cap reduction and deductions together may take at most
-  # 15% x 424.90 x 12 = 764.82. The model meets the deduction first,
-  # 764.82, which leaves no room for the 1,200 cap reduction. The award stays
-  # at 18,167, and 18,167 - 764.82 = 17,402.18 is payable. Income exceeds the
+  # Under a reform that protects 85% of the standard allowance, the Secretary
+  # of State may take at most 15% x 424.90 x 12 = 764.82 from the same
+  # household's award through the cap reduction and deductions together.
+  # The model meets the deduction first, 764.82, which leaves no
+  # room for the 1,200 cap reduction. The award stays at 18,167, and the
+  # deduction leaves 18,167 - 764.82 = 17,402.18 payable. Income exceeds the
   # maximum amount by 8,000 + 18,167 - 22,567 = 3,600, so Merton awards
   # 1,880. Counting the award after the whole 1,200 cap reduction would give
   # 2,120, and counting the amount payable 2,032.96.
