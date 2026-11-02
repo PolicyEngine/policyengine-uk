@@ -1,15 +1,16 @@
 """Properties of VAT grossing that hold for every input (#2633).
 
 `vat` is the statutory liability on recorded consumption divided by one
-grossing factor. The factor is the survey coverage times the household share
-of receipts, unless a reform moves the deprecated combined parameter, in which
+grossing factor, less private school fees' share of VAT receipts, plus VAT on
+energy bills. The factor is the survey coverage times the household share of
+receipts, unless a reform moves the deprecated combined parameter, in which
 case that value is used.
 """
 
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import assume, given, settings
+from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -71,33 +72,46 @@ def test_legacy_factor_either_side_of_the_band(multiple, moved):
     assert factor == (legacy if moved else pytest.approx(0.35))
 
 
+def household_vat(spend, year):
+    """`vat` for one household per (full-rate, reduced-rate) spend pair."""
+    situation = {
+        "people": {f"p{i}": {"age": {year: 40}} for i in range(len(spend))},
+        "benunits": {f"b{i}": {"members": [f"p{i}"]} for i in range(len(spend))},
+        "households": {
+            f"h{i}": {
+                "members": [f"p{i}"],
+                "full_rate_vat_consumption": {year: full},
+                "reduced_rate_vat_consumption": {year: reduced},
+            }
+            for i, (full, reduced) in enumerate(spend)
+        },
+    }
+    sim = Simulation(situation=situation)
+    # The households record no energy bills, so no energy-bill VAT is added.
+    assert (sim.calculate("domestic_energy_vat", year) == 0).all()
+    return sim.calculate("vat", year)
+
+
+def expected_vat(full, reduced, year):
+    """Statutory liability over the shipped product, less the school share."""
+    p = system.parameters(year).gov
+    product = (
+        p.simulation.vat.survey_consumption_coverage
+        * p.simulation.vat.household_share_of_receipts
+    )
+    liability = full * p.hmrc.vat.standard_rate + reduced * p.hmrc.vat.reduced_rate
+    return liability / product * (1 - p.simulation.vat.private_school_share_of_receipts)
+
+
+# Each spend pair is (full_rate_vat_consumption, reduced_rate_vat_consumption).
 @settings(max_examples=5, deadline=None)
 @given(spend=st.lists(st.tuples(SPEND, SPEND), min_size=1, max_size=20))
+@example(spend=[(0.0, 15_438.0)])
 def test_vat_is_statutory_liability_over_the_shipped_product(spend):
     # One simulation of many households, so the property is checked on a
     # vector: VAT is linear in each household's recorded consumption, with
     # no cross-household term.
-    p = system.parameters.gov
-    product = p.simulation.vat.survey_consumption_coverage(
-        2025
-    ) * p.simulation.vat.household_share_of_receipts(2025)
-    names = [f"h{i}" for i in range(len(spend))]
-    situation = {
-        "people": {f"p{i}": {"age": {2025: 40}} for i in range(len(spend))},
-        "benunits": {f"b{i}": {"members": [f"p{i}"]} for i in range(len(spend))},
-        "households": {
-            name: {
-                "members": [f"p{i}"],
-                "full_rate_vat_consumption": {2025: full},
-                "reduced_rate_vat_consumption": {2025: reduced},
-            }
-            for i, (name, (full, reduced)) in enumerate(zip(names, spend))
-        },
-    }
-    vat = Simulation(situation=situation).calculate("vat", 2025)
+    vat = household_vat(spend, 2025)
     for value, (full, reduced) in zip(vat, spend):
-        expected = (
-            full * p.hmrc.vat.standard_rate(2025)
-            + reduced * p.hmrc.vat.reduced_rate(2025)
-        ) / product
+        expected = expected_vat(full, reduced, 2025)
         assert value == pytest.approx(expected, rel=1e-5, abs=1e-2)
