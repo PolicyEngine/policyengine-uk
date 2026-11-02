@@ -120,8 +120,8 @@ year, the remainder stays in the pool. Where their stored sum exceeds the total,
 the model scales them to sum to the total exactly: it rounds each proportional
 share down to a whole step of the total's float32 spacing and gives the steps
 left over, one each, to the members whose shares lost most in rounding. The pool
-then keeps nothing of that total, for totals under £268 million each holding
-passes a capital limit only where its proportional share does, and a sole holder
+then keeps nothing of that total; for totals under £268 million, each holding
+passes a capital limit only where its proportional share does; and a sole holder
 whose balance reaches the total counts exactly the total. For stocks and shares
 ISAs the model takes the smaller of `stocks_and_shares_isa` and
 `share_like_capital` as the total. Data that store only household totals hold no
