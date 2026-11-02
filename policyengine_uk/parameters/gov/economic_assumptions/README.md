@@ -522,14 +522,14 @@ the forecast levels, though not their growth.
    text, convert the table's figures to these units if it states another,
    and add the text to the list. A table of listed texts can still put a
    unit over the wrong lines, so the importer also stops on any text beside
-   the years in the fiscal-year row over a line, and when hand-rolled or
-   other tobacco does not sit under an "of which:" row directly below the
-   non-cigarette total's label, with only the total's other parts between.
-   It stops on any cell beside a line's label and values too. When a sheet
-   repeats a clearance table's heading, the importer stops and names the
-   rows. It checks no cell above a table's title or below its end, so read
-   any note there yourself. The list holds each EFO's footnotes as the OBR
-   wrote them, and the importer does not compare the products one EFO's line
+   the years in the fiscal-year row over a line. It stops when hand-rolled
+   or other tobacco does not sit under an "of which:" row directly below the
+   non-cigarette total's label, with only the total's other parts between,
+   and on any cell beside a line's label and values. When a sheet repeats a
+   clearance table's heading, the importer stops and names the rows. It
+   checks no cell above a table's title or below its end, so read any note
+   there yourself. The list holds each EFO's footnotes as the OBR wrote
+   them, and the importer does not compare the products one EFO's line
    covers with another's. Check that each alcohol line covers the same
    products in both EFOs: in March 2026 the OBR added "Includes other
    fermented products" to the wine line. The importer writes

@@ -3892,7 +3892,7 @@ TOBACCO_LAYOUTS = {
     # The cigarette line moves directly above "of which:", and the
     # non-cigarette total below the parts.
     "cigarette-unit-of-which": ({5: None, 6: 5, 10: 6}, "total"),
-    # A second row of years, headed by the cigarette label, sits over the
+    # A second row of years, which the cigarette label heads, sits over the
     # non-cigarette total, "of which:" and the parts, each a row lower.
     "cigarette-unit-second-year-row": (
         {6: "heading", 7: 6, 8: 7, 9: 8, 10: 9},
@@ -4118,10 +4118,10 @@ def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
     every line of the table: the importer names the cell, or finds no line
     or table where the text took a label's or the title's place. A text from
     the list, other than a line's label or a marker, in a cell outside the
-    lines, stops every line in the fiscal-year row, and a part of a total
-    between the total's row and the part; the importer names the year row or
-    the missing total. Anywhere else it changes nothing: the importer reads
-    every line as before."""
+    lines, stops every line when it sits in the fiscal-year row, and a part
+    of a total when it sits between the part and the total's row; the
+    importer names the year row or the missing total. Anywhere else it
+    changes nothing: the importer reads every line as before."""
     release, title = table
     _, sheet = REAL_CLEARANCE_TABLES[table]
     real, start, end, _ = real_clearance_rows(release, title)

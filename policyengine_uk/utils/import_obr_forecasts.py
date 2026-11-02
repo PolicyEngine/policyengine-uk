@@ -727,9 +727,10 @@ class ClearanceSeriesSpec(ReceiptsSeriesSpec):
     in which the OBR states the line's unit, as ``CLEARANCE_TABLE_TEXTS``
     lists it. In both EFOs the importer requires that cell and refuses any
     text in the table that the list lacks (``validate_clearance_table``).
-    For a part of a total (``part_of_total``), that cell is the total's
-    label, and the importer requires it on the row directly above the
-    "of which:" row over the line (``validate_clearance_part``).
+    For a part of a total (``part_of_total``), the OBR states the unit in
+    the total's label, and the importer requires that label on the row
+    directly above the "of which:" row over the line
+    (``validate_clearance_part``).
     Dataset projection grows household weights by ``ons.population``, so
     ``render_receipts_growth_yaml`` writes
     (1 + aggregate clearance growth) / (1 + ons.population growth) - 1
@@ -1523,8 +1524,8 @@ def find_receipts_line(
         )
     if isinstance(spec, ClearanceSeriesSpec):
         # The OBR states each clearance unit in a label or a note. A text
-        # beside the years, such as a unit column's heading or a line's label
-        # moved there, could head the values below it with another unit.
+        # beside the years, such as a unit column's heading or a line's label,
+        # could head the values below it with another unit.
         heading = {
             column: value
             for column, value in year_row.items()
