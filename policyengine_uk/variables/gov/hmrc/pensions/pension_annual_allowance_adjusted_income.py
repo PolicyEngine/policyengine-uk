@@ -13,8 +13,8 @@ class pension_annual_allowance_adjusted_income(Variable):
         "and exclude taxable lump-sum death benefits already included in "
         "income. The pension input amount can be supplied to include statutory "
         "defined-benefit accrual; its default is a cash-contribution proxy. "
-        "The NICs-only returned salary sacrifice is removed from both model "
-        "income and member contributions. All actual own contributions are "
+        "The NICs-only excess enters neither model income nor member "
+        "contributions. All actual own contributions are "
         "subtracted, including unrelievable contributions from age 75."
     )
     definition_period = YEAR
@@ -22,9 +22,8 @@ class pension_annual_allowance_adjusted_income(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA/4"
 
     def formula(person, period, parameters):
-        returned = person("salary_sacrifice_returned_to_income", period)
         actual_income = annual_allowance_net_income(person, period, parameters)
-        actual_member_contributions = person("pension_contributions", period) - returned
+        actual_member_contributions = person("pension_contributions", period)
         return (
             actual_income
             + person("pension_contributions_for_annual_allowance", period)

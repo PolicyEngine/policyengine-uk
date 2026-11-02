@@ -29,11 +29,10 @@ class uc_benefit_cap_reduction(Variable):
     def formula(benunit, period, parameters):
         # Reg 80(2A): where the welfare benefit is Housing Benefit, "the
         # amount to be used is nil". benefit_cap_welfare_benefits counts it
-        # for the Housing Benefit cap (HB Regs 2006 reg 75C(2)(b)), so it is
-        # taken out here; a family paid both is capped on its other benefits.
-        welfare_benefits = benunit("benefit_cap_welfare_benefits", period) - benunit(
-            "housing_benefit_pre_benefit_cap", period
-        )
+        # for the Housing Benefit cap (HB Regs 2006 reg 75C(2)(b));
+        # uc_benefit_cap_welfare_benefits leaves it out, so Universal Credit
+        # caps a family paid both on its other benefits.
+        welfare_benefits = benunit("uc_benefit_cap_welfare_benefits", period)
         excess = max_(welfare_benefits - benunit("uc_benefit_cap", period), 0)
         reduction = max_(excess - benunit("uc_childcare_element", period), 0)
         has_award = benunit("universal_credit_pre_benefit_cap", period) > 0

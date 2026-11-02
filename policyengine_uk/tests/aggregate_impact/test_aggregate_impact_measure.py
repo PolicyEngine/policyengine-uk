@@ -546,7 +546,7 @@ class StubSim:
         return np.asarray(self.values.get(variable, np.zeros(self.n)), dtype=float)
 
 
-def _measured_year(values):
+def _measured_year(values, partition=None):
     from policyengine_uk.utils.aggregate_impact.measure import measure_year
     from policyengine_uk.utils.aggregate_impact.partition import (
         default_partition_path,
@@ -557,13 +557,52 @@ def _measured_year(values):
     rec.scope = "2026"
     measure_year(
         StubSim(values),
-        load_partition(default_partition_path()),
+        partition or load_partition(default_partition_path()),
         load_spec(),
         2026,
         rec,
         households,
     )
     return rec, households
+
+
+def _corporate_sdlt_double_counted():
+    """The shipped partition in its shape before the #2159 fix: expected_sdlt
+    carries corporate SDLT, declared as a double count rather than a head.
+    The fix left the model with no double counts, so the tests of how a
+    declared one is measured use this."""
+    import yaml
+
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        parse_partition,
+    )
+
+    with open(default_partition_path()) as f:
+        raw = yaml.safe_load(f)
+    totals = next(h for h in raw["tax_heads"] if h["id"] == "sdlt_corporate")["totals"]
+    raw["tax_heads"] = [h for h in raw["tax_heads"] if h["id"] != "sdlt_corporate"]
+
+    def repoint(ids):
+        return list(
+            dict.fromkeys("sdlt_household" if i == "sdlt_corporate" else i for i in ids)
+        )
+
+    for exclusion in raw["exclusions"]:
+        if exclusion.get("spans"):
+            exclusion["spans"] = repoint(exclusion["spans"])
+        if exclusion.get("head") == "sdlt_corporate":
+            exclusion["head"] = "sdlt_household"
+    for guard in raw["overlap_guards"]:
+        guard["heads"] = repoint(guard.get("heads") or [])
+    raw["model_double_counts"] = [
+        {
+            "variable": "corporate_sdlt",
+            "contained_in": "expected_sdlt",
+            "totals": totals,
+        }
+    ]
+    return parse_partition(raw)
 
 
 def _first(n, value):
@@ -589,7 +628,8 @@ def test_a_double_count_from_few_records_is_suppressed_and_left_out():
             "household_tax": model_tax,
             "pre_budget_change_household_tax": model_tax,
             "gov_balance": model_tax,
-        }
+        },
+        _corporate_sdlt_double_counted(),
     )
     published = _published(rec)
     assert published["double_counts.corporate_sdlt"] is None

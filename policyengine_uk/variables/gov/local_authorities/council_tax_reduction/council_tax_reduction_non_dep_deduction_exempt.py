@@ -8,7 +8,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._nati
 class council_tax_reduction_non_dep_deduction_exempt(Variable):
     value_type = bool
     entity = Person
-    label = "national Council Tax Reduction makes no non-dependant deduction for this person"
+    label = "Exempt from national Council Tax Reduction non-dependant deductions"
     documentation = (
         "Modelled exemptions in the England pensioner, Scottish and Welsh "
         "schemes: a full-time student; a non-dependant on Income Support, "
@@ -17,10 +17,10 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         "partner is on Income Support, income-based JSA or income-related ESA "
         "and who is not on Universal Credit; an adult for whom someone else is "
         "entitled to child benefit (LGFA 1992 Sch 1 para 3); and, from the year "
-        "each scheme added it, "
-        "one entitled to Universal Credit calculated on no earned income. Wales excludes "
-        "members of the ESA work-related activity group; with no ESA group "
-        "input, income-related ESA is treated as exempt. Not modelled: other "
+        "each scheme added it, one entitled to Universal Credit calculated on "
+        "no earned income. Welsh councils deduct for members of the ESA "
+        "work-related activity group; with no ESA group input, the model "
+        "exempts every income-related ESA recipient. Not modelled: other "
         "persons disregarded for council tax discounts (LGFA 1992 Sch 1), "
         "youth training allowances, a normal home elsewhere, and "
         "absence in hospital or on armed forces operations."

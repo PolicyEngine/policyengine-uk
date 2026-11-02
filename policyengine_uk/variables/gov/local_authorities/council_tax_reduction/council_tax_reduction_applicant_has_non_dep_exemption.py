@@ -6,7 +6,7 @@ class council_tax_reduction_applicant_has_non_dep_exemption(Variable):
     entity = BenUnit
     label = "No non-dependant deductions from this family's Council Tax Reduction"
     documentation = (
-        "Whether no deduction is made for any non-dependant from this family's "
+        "Whether the council makes no deduction for any non-dependant from this family's "
         "Council Tax Reduction because the applicant or partner is blind, or "
         "receives in respect of themselves Attendance Allowance, the care "
         "component of Disability Living Allowance, the daily living component "

@@ -40,6 +40,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -63,6 +64,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -88,6 +90,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -112,6 +115,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -135,6 +139,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -159,6 +164,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -181,6 +187,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -205,6 +212,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -226,6 +234,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -248,6 +257,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -275,6 +285,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -299,6 +310,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -320,6 +332,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -348,6 +361,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -383,6 +397,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -410,6 +425,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -433,6 +449,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -458,6 +475,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -483,6 +501,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -514,6 +533,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -540,6 +560,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -571,6 +592,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -596,6 +618,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -620,6 +643,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -646,6 +670,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -678,6 +703,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -703,6 +729,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -734,6 +761,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -760,6 +788,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -791,6 +820,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -818,6 +848,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -843,6 +874,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -868,6 +900,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -899,6 +932,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -924,6 +958,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -949,6 +984,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -975,6 +1011,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -1000,6 +1037,7 @@
     benunits:
       couple:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]
@@ -1027,6 +1065,7 @@
     benunits:
       couple:
         members: [first, second]
+        would_claim_uc: false
     households:
       household:
         members: [first, second]
@@ -1053,6 +1092,7 @@
     benunits:
       couple:
         members: [first, second]
+        would_claim_uc: false
     households:
       household:
         members: [first, second]
@@ -1107,6 +1147,7 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
@@ -1134,6 +1175,7 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
@@ -1167,19 +1209,19 @@
     benunits:
       benunit:
         members: [claimant, lodger]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, lodger]
   output:
-    # The benefit unit's award applies the claimant's failed screen to every
-    # report in it, so it is nil.
+    # The claimant fails, but the outside adult's separate own award pays.
     esa_income_eligible: false
-    esa_income: 0
+    esa_income: 5_000
     claimant_or_partner_esa_income: 0
     # The lodger's own claim passes, so they are on it; the claimant is not.
     is_on_income_related_esa: [false, true]
 
-- name: A non-dependent adult's own ESA ends once the family's legacy benefits have closed
+- name: A non-dependent adult's own ESA remains open when only the couple's legacy benefits close
   period: 2025
   absolute_error_margin: 0
   input:
@@ -1205,15 +1247,13 @@
         members: [claimant, lodger, child]
   output:
     legacy_benefits_closed: true
-    # The lodger does not work, so the screen fails only on the closure.
+    # The separate non-working claim remains open under the annual proxy.
     esa_income_claimant_remunerative_work: [false, false, false]
-    esa_income_eligible: false
-    esa_income: 0
-    # The model ends every member's award once the family's legacy benefits
-    # close, the lodger's own claim included, so nobody is on it. That is a
-    # model simplification: in law the migration notice reaches only the
-    # claimant and partner (SI 2014/1230 regs 44(1), (4) and 46(1)).
-    is_on_income_related_esa: [false, false, false]
+    esa_income_eligible: true
+    esa_income: 5000
+    claimant_or_partner_esa_income: 0
+    # Only the claimant's own award closes; the lodger's own claim passes.
+    is_on_income_related_esa: [false, true, false]
 
 # The Income Support gate reads the screened award (s.124(1)(h)).
 
@@ -1239,6 +1279,7 @@
       couple:
         members: [carer, partner]
         income_support_assessable_capital: 0
+        would_claim_uc: false
     households:
       household:
         members: [carer, partner]
@@ -1248,3 +1289,33 @@
     # Without the work test the partner's award would count as income-related
     # ESA of the other member of the couple and bar the claim.
     income_support_eligible: true
+
+- name: Issue 2395 outside closed IS report leaves the couple ESA award open
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+      outside:
+        age: 40
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 1_000
+    benunits:
+      unit:
+        members: [claimant, partner, outside]
+        esa_income_assessable_capital: 0
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, outside]
+  output:
+    legacy_benefits_closed: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000

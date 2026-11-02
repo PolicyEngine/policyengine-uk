@@ -94,8 +94,8 @@
         members: [person]
         country: ENGLAND
   output:
-    # Property income at the 22% property basic rate: 27,430 x 22% = 6,034.60.
-    property_income_tax: 6_034.60
+    # Property income at the 24% property basic rate: 27,430 x 24% = 6,583.20.
+    property_income_tax: 6_583.20
     dividend_income_tax: 4_528.75
 
 - name: Case 6, the annual allowance charge reads the rate on property income too.

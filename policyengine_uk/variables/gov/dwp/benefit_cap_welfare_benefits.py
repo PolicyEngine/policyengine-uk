@@ -1,8 +1,12 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.benefit_unit import award_of_couple
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
-from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
+from policyengine_uk.variables.gov.dwp.jsa_income import (
+    income_related_jsa_award_on_reports,
+)
 
 # Welfare benefits (Welfare Reform Act 2012 s. 96(10)) the benefit cap counts.
 # The cap counts those "to which the single person or couple is entitled" (UC
@@ -12,10 +16,10 @@ from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_awar
 # contributory or income-related benefit; it still counts in household income.
 # Housing Benefit counts its own amount before the cap (HB Regs 2006
 # reg. 75C(2)(b)), so this total includes it. Universal Credit counts Housing
-# Benefit as nil (UC Regs 2013 reg. 80(2A)): uc_benefit_cap_reduction takes it
-# out. Universal Credit before the cap is in the total too; a family receiving
-# it is outside the Housing Benefit cap (HB Regs 2006 reg. 75F(1)(g)). With
-# those two adjustments one total serves both schemes. Reg. 75C(2)(a) counts
+# Benefit as nil (UC Regs 2013 reg. 80(2A)), so its cap reads
+# uc_benefit_cap_welfare_benefits, these benefits without Housing Benefit.
+# Universal Credit before the cap is in the total too; HB reg. 75F(1)(g) puts a
+# family receiving it outside the Housing Benefit cap. Reg. 75C(2)(a) counts
 # Housing Benefit for specified accommodation as nil; the model's input
 # in_specified_or_temporary_accommodation does not separate specified from
 # temporary accommodation, so that Housing Benefit is counted at its amount
@@ -25,6 +29,8 @@ CLAIMANT_OR_PARTNER_BENEFITS = [
     "esa_contrib",
     "incapacity_benefit",
     "sda",
+    # s. 96(10)(n).
+    "widowed_parents_allowance",
 ]
 FAMILY_BENEFITS = [
     "child_benefit",
@@ -47,15 +53,24 @@ class benefit_cap_welfare_benefits(Variable):
         "is its claimants (is_uc_assessed_claimant), including the other "
         "member of a couple where one member claims as a single person; "
         "otherwise it is the claimant and partner (is_claimant_or_partner). "
-        "The two are the same unless is_uc_claimant is entered. Benefits "
+        "The two couples match unless the inputs set is_uc_claimant. Benefits "
         "another member of the benefit unit claims in their own right do not "
         "count. The total includes Universal Credit and Housing Benefit "
         "before the cap (universal_credit_pre_benefit_cap, "
-        "housing_benefit_pre_benefit_cap). Universal Credit counts Housing "
-        "Benefit as nil (UC Regs 2013 reg. 80(2A)), so "
-        "uc_benefit_cap_reduction subtracts it; an entered total should "
-        "include it. Maternity allowance and the bereavement benefits, also "
-        "welfare benefits, are not modelled here."
+        "housing_benefit_pre_benefit_cap). Universal Credit's cap reads "
+        "uc_benefit_cap_welfare_benefits, which totals the same benefits "
+        "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Inputs that "
+        "supply this total include Housing Benefit in it. They also supply "
+        "housing_benefit_pre_benefit_cap, which "
+        "uc_benefit_cap_welfare_benefits subtracts, or supply "
+        "uc_benefit_cap_welfare_benefits itself, with a value for every "
+        "benefit unit; otherwise the model raises ValueError when it "
+        "calculates Universal Credit's cap. A reform of this variable changes "
+        "the Housing Benefit cap. To change the Universal Credit cap's basket, "
+        "replace uc_benefit_cap_welfare_benefits. Widowed parent's allowance "
+        "counts. The model has no variable for maternity allowance or the "
+        "other bereavement benefits, which Parliament also lists as welfare "
+        "benefits (Welfare Reform Act 2012 s. 96(10))."
     )
     definition_period = YEAR
     unit = GBP
@@ -80,14 +95,14 @@ class benefit_cap_welfare_benefits(Variable):
             period,
             "jsa_income",
             "jsa_income_reported",
-            income_related_jsa_award,
+            income_related_jsa_award_on_reports,
             couple,
         ) + award_of_couple(
             benunit,
             period,
             "esa_income",
             "esa_income_reported",
-            income_related_esa_award,
+            income_related_esa_award_on_reports,
             couple,
         )
         return income_based + add_for_members(

@@ -11,7 +11,8 @@ class winter_fuel_payment(Variable):
         "benefit receives the full amount (the higher amount if they or their "
         "partner have reached 80), once per couple. Anyone else receives the "
         "full amount if no other person in their household is eligible, and "
-        "a shared amount otherwise."
+        "a shared amount otherwise. This is the amount paid, before any "
+        "winter fuel payment charge (winter_fuel_payment_charge)."
     )
     definition_period = YEAR
     unit = GBP

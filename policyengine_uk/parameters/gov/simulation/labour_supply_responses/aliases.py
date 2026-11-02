@@ -10,6 +10,7 @@ new path; remove this alias once that ships.
 """
 
 from policyengine_core.parameters import ParameterNode
+from policyengine_uk.utils.ni_parameter_scales import canonicalize_ni_parameter_path
 
 
 _LEGACY_LSR_PATH = "gov.simulation.labor_supply_responses"
@@ -35,7 +36,7 @@ def canonicalize_parameter_changes(changes: dict) -> dict:
     """
     canonical = {}
     for path, value in changes.items():
-        name = canonicalize_lsr_parameter_path(path)
+        name = canonicalize_ni_parameter_path(canonicalize_lsr_parameter_path(path))
         if name not in canonical:
             canonical[name] = value
         elif isinstance(canonical[name], dict) and isinstance(value, dict):

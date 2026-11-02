@@ -6,3 +6,118 @@
     total_wealth: 2_000
   output:
     wealth_tax: 10
+
+# The cases below tax net wealth, as the documentation of wealth_tax says
+# (#2556): assets less mortgage, consumer and student loan debt. Most use the
+# measure reported for the 28 October 2026 Budget, "an annual wealth tax of 2%
+# on net assets above £10m" (policyengine-scorecard
+# ab2026__wealth_tax_2pc_above_10m), with the third band's rate also set to 2%
+# so that wealth above the default third threshold (£1bn) is still taxed.
+
+- name: A mortgage that takes net wealth below £10m leaves no wealth tax (issue 2556).
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    property_wealth: 15_000_000
+    mortgage_debt: 6_000_000
+  output:
+    # Net wealth £15m - £6m = £9m, below the £10m threshold.
+    net_wealth: 9_000_000
+    wealth_tax: 0
+
+- name: Wealth tax is 2% of net wealth above £10m after the mortgage.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    property_wealth: 15_000_000
+    mortgage_debt: 2_000_000
+  output:
+    # 2% x (£15m - £2m - £10m) = 2% x £3m.
+    wealth_tax: 60_000
+
+- name: Consumer debt is deducted from the wealth tax base.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    corporate_wealth: 11_000_000
+    consumer_debt: 500_000
+  output:
+    # 2% x (£11m - £0.5m - £10m) = 2% x £0.5m.
+    wealth_tax: 10_000
+
+- name: Student loan balances are deducted from the wealth tax base.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    savings: 10_100_000
+    student_loan_balance: 50_000
+  output:
+    # 2% x (£10.1m - £0.05m - £10m) = 2% x £50,000.
+    wealth_tax: 1_000
+
+- name: Private pension wealth is in the wealth tax base, net of debt.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    property_wealth: 8_000_000
+    private_pension_wealth: 4_000_000
+    mortgage_debt: 1_000_000
+  output:
+    # 2% x (£8m + £4m - £1m - £10m) = 2% x £1m.
+    wealth_tax: 20_000
+
+- name: Net wealth above £1bn is taxed at 2% across both upper bands.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    corporate_wealth: 1_500_000_000
+    mortgage_debt: 100_000_000
+  output:
+    # 2% x (£1.5bn - £0.1bn - £10m) = 2% x £1.39bn.
+    wealth_tax: 27_800_000
+
+- name: Two bands apply to net wealth, 1% above £2m and 2% above £10m.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[0].rate: 0.01
+    gov.contrib.ubi_center.wealth_tax[0].threshold: 2_000_000
+    gov.contrib.ubi_center.wealth_tax[1].rate: 0.02
+    gov.contrib.ubi_center.wealth_tax[1].threshold: 10_000_000
+    gov.contrib.ubi_center.wealth_tax[2].rate: 0.02
+    property_wealth: 20_000_000
+    mortgage_debt: 5_000_000
+  output:
+    # Net wealth £15m: 1% x (£10m - £2m) + 2% x (£15m - £10m) = £80,000 + £100,000.
+    wealth_tax: 180_000
+
+- name: Debts above assets leave no wealth tax, even from a zero threshold.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    gov.contrib.ubi_center.wealth_tax[0].rate: 0.01
+    gov.contrib.ubi_center.wealth_tax[0].threshold: 0
+    savings: 50_000
+    mortgage_debt: 120_000
+  output:
+    # Net wealth £50,000 - £120,000 = -£70,000: nothing to tax.
+    net_wealth: -70_000
+    wealth_tax: 0

@@ -31,11 +31,15 @@ class housing_benefit_non_dep_deductions(Variable):
     )
 
     def formula(benunit, period, parameters):
-        # Deductions are made for non-dependants residing with the claimant
+        # The council deducts for non-dependants residing with the claimant
         # (HB Regs 2006 reg 74; HB (SPC) Regs 2006 reg 55). Joint occupiers,
         # boarders, lodgers and the landlord's household are not
-        # non-dependants (reg 3(2)(d)-(e), 3(4)). A family bearing a share
-        # of the rent is a joint occupier, never another family's
+        # non-dependants (reg 3(2)(d)-(e), 3(4)). For a couple the council deducts once,
+        # the higher amount (reg 74(3)). For a non-dependant of more than one joint
+        # occupier, the council apportions the deduction by their shares of the
+        # payments (reg 74(5); SPC reg 55(5)), so each family liable for the
+        # household's rent bears its share; a boarder or lodger bears none of it.
+        # A family bearing a share is a joint occupier, never another family's
         # non-dependant, even where the rent is nil and so the family is not
         # benunit_is_rent_liable.
         person = benunit.members

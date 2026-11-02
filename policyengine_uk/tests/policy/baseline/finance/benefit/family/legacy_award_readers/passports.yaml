@@ -45,6 +45,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -153,6 +154,7 @@
         child_tax_credit: 0
         working_tax_credit: 0
         pension_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [parent, child, other]
@@ -272,6 +274,7 @@
         meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
         working_tax_credit_run_on: false
         extended_childcare_entitlement_eligible: false
+        would_claim_uc: false
     households:
       household:
         members: [parent, child, other]
@@ -382,6 +385,7 @@
       benunit:
         members: [claimant, other]
         working_tax_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [claimant, other]
@@ -413,6 +417,7 @@
     benunits:
       benunit:
         members: [parent, student]
+        would_claim_uc: false
     households:
       household:
         members: [parent, student]
@@ -459,6 +464,7 @@
     benunits:
       benunit:
         members: [student, partner]
+        would_claim_uc: false
     households:
       household:
         members: [student, partner]
@@ -483,6 +489,7 @@
     benunits:
       benunit:
         members: [student, partner]
+        would_claim_uc: false
     households:
       household:
         members: [student, partner]
@@ -552,10 +559,10 @@
   output:
     # Savings of £7,000 are £1,000 above £6,000: 4 steps of £250, so tariff
     # income of £4 a week, £208 a year (ESA Regs 2008 reg 118). The student's
-    # £200 alone gives no award; the other adult's £3,000 gives £2,792. The
-    # benefit unit's award on both reports, £2,992, is household income but
-    # does not make the student's report paid.
-    esa_income: [2_992]
+    # £200 alone gives no award; the other adult's £3,000 gives £2,792.
+    # Their separate claims total £0 + £2,792 = £2,792 in household income.
+    # The other adult's report does not make the student's report paid.
+    esa_income: [2_792]
     claimant_or_partner_esa_income: [0]
     is_on_income_related_esa: [false, false, true]
     maintenance_loan_entitled_to_benefits: [false, false, true]

@@ -42,6 +42,24 @@
   output:
     housing_benefit_non_dep_deductions_claimant_exempt: true
 
+- name: Partner on the PIP daily living component
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 38
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_non_dep_deductions_claimant_exempt: true
+
 - name: Claimant on Armed Forces Independence Payment
   period: 2026
   input:

@@ -4,7 +4,8 @@ PolicyEngine does not currently calculate ordinary child personal allowances in
 the Housing Benefit applicable amount. This omission applies before, during and
 after the historical two-child restriction. The model calculates an adult
 personal allowance from the benefit unit's composition and age, then adds the
-premiums selected by `benefits_premiums`. It does not calculate an ordinary
+premiums selected by `benefits_premiums`, the child disability premiums and the
+protected family premium. It does not calculate an ordinary
 allowance for either the first two children or additional children. See
 `housing_benefit_applicable_amount` in
 [`policyengine_uk/variables/gov/dwp/housing_benefit/`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/dwp/housing_benefit/housing_benefit_applicable_amount.py).
@@ -111,8 +112,9 @@ included-child count is one possible interface for that discussion; it is not
 a supported model input. This documentation introduces no claim-history or
 exception inputs and changes no calculation.
 
-Child disability premiums and the protected family premium are separate work
-under [#2221](https://github.com/PolicyEngine/policyengine-uk/issues/2221) and
-[#2223](https://github.com/PolicyEngine/policyengine-uk/issues/2223). This page
+The model adds child disability premiums and the protected family premium
+separately, from
+[#2221](https://github.com/PolicyEngine/policyengine-uk/pull/2221) and
+[#2223](https://github.com/PolicyEngine/policyengine-uk/pull/2223). This page
 does not revive [closed PR #2198](https://github.com/PolicyEngine/policyengine-uk/pull/2198)
 or its associated issues.

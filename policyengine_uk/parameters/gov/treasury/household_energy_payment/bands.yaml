@@ -1,0 +1,15 @@
+description: Council tax bands whose households receive the Household Energy Payment.
+values:
+  0001-01-01:
+    - A
+    - B
+    - C
+    - D
+metadata:
+  economy: false
+  unit: list
+  period: year
+  label: Household Energy Payment council tax bands
+  reference:
+    - title: Budget 2026, paragraph 6.24 (households in bands A to D)
+      href: https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=117
