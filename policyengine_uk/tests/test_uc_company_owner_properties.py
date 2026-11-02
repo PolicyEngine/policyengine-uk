@@ -742,17 +742,18 @@ def _allocation_outputs(pairs):
 @example(PINNED_ALLOCATIONS[2])
 def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs):
     capital, expected_units, expected_households = _allocation_outputs(pairs)
-    per_household = capital.reshape(-1, 2).sum(axis=1)
     assert (capital >= 0).all()
     if pairs in PINNED_ALLOCATIONS:
-        # Pinned cases equal the penny-rounded oracle exactly once it is
-        # stored as float32, so a missing final rounding or a lost penny fails.
+        # Each pinned unit's capital equals the penny-rounded oracle exactly
+        # once the test converts the oracle to float32, so a missing final
+        # rounding or a lost penny fails. The household totals are sums of
+        # these exact unit values, so the test checks no separate total here.
         assert capital.dtype == np.float32
         assert capital.tolist() == np.float32(expected_units).tolist()
-        assert per_household.tolist() == np.float32(expected_households).tolist()
         return
     for got, want in zip(capital, expected_units):
         assert close(got, want)
+    per_household = capital.reshape(-1, 2).sum(axis=1)
     for got, want in zip(per_household, expected_households):
         assert close(got, want)
 

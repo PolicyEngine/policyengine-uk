@@ -19,8 +19,8 @@ class pension_credit_reported_capital(Variable):
         "A dataset that stores a financial-only survey total, such as the "
         "Family Resources Survey's TOTCAPB4, in this column rather than in "
         "benunit_reported_capital makes that total a complete override, so "
-        "the formula then counts none of the household's land or property for "
-        "Pension Credit."
+        "the pension_credit_assessable_capital formula then counts none of the "
+        "household's land or property."
     )
     definition_period = YEAR
     unit = GBP

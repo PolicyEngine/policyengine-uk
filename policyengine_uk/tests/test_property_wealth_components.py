@@ -513,8 +513,10 @@ def test_legacy_stored_total_overrides_formula_until_removed_by_data_release():
 # neither overseas_property_value nor other_property_value. Row 8 pins wealth,
 # land and Universal Credit capital; row 9 pins wealth and land only. The
 # sale-expense valuation of other residential and non-residential property and
-# of corporate_wealth changes the other capital outputs of those rows
-# independently of the new inputs.
+# of corporate_wealth changes the Housing Benefit, JSA, ESA and Income Support
+# capital of both rows, and row 9's Universal Credit capital, independently of
+# the new inputs. Each row pins a prefix of the outputs, so neither pins
+# Pension Credit capital, which is nil at age 45.
 WEALTH_AND_LAND = ("property_wealth", "total_wealth", "household_land_value")
 CAPITAL = (
     "uc_assessable_capital",
