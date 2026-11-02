@@ -52,6 +52,7 @@ AVERAGE_EARNINGS = f"{GROWTH}.obr.average_earnings"
 TRIPLE_LOCK = f"{GROWTH}.triple_lock"
 LAGGED_CPI = f"{GROWTH}.obr.lagged_cpi"
 INDICES = "gov.economic_assumptions.indices"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
 CPI_INDEX = f"{INDICES}.obr.consumer_price_index"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 AWE = f"{INPUTS}.awe_total_pay_may_july"
@@ -250,7 +251,10 @@ def test_the_growth_shown_for_a_year_is_the_growth_used_for_it(baseline):
     gap = value(baseline, AWE_GAP, "2027-07-01")
     assert value(reformed, AWE, "2027-07-01") == pytest.approx(0.2 + gap)
     assert value(reformed, AWE, "2028-07-01") == value(baseline, AWE, "2028-07-01")
-    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.2)
+    # The triple lock rounds May-July earnings, 20% plus the OBR gap, to 0.1pp.
+    assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(
+        round(0.2 + gap, 3)
+    )
     assert value(reformed, TRIPLE_LOCK, "2029-01-01") == value(
         baseline, TRIPLE_LOCK, "2029-01-01"
     )
@@ -310,7 +314,9 @@ def test_calendar_year_series_are_the_growth_rates_indices_and_household_tree():
     for path in paths:
         if path.startswith("baseline."):
             continue
-        expected = path.startswith((f"{GROWTH}.", f"{INDICES}.", "household."))
+        expected = path.startswith(
+            (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.", "household.")
+        )
         assert reads(path) is expected, path
     assert not reads("gov.not.a.parameter")
 
@@ -387,14 +393,38 @@ def test_generated_parameters_are_the_series_processing_builds():
     generates = tbs_module.generated_parameter_defines()
     statutory = tbs_module.statutory_parameter_defines()
     processed = tbs_module.processed_parameters()
+    protected_allowance_index = (
+        "gov.dwp.housing_benefit.allowances.protected_pension_age_uprating"
+    )
+    savings_credit_index = "gov.dwp.pension_credit.savings_credit.threshold_uprating"
+    # Pension-age forecast indices are generated in their program trees, and
+    # the energy price indices beside their inputs.
+    generated_prefixes = (
+        f"{INDICES}.",
+        f"{GROWTH}.",
+        f"{protected_allowance_index}.",
+        f"{savings_credit_index}.",
+        *(
+            f"{ENERGY_PRICES}.{kind}."
+            for kind in ("quarterly", "calendar_year", "fiscal_year")
+        ),
+    )
     for path in tbs_module._leaf_paths(processed):
         if path.startswith("baseline.") or path.startswith(
             "gov.simulation.labor_supply_responses."
         ):
             assert not generates(path), path
             continue
-        built = path.startswith((f"{INDICES}.", f"{GROWTH}.")) and not statutory(path)
+        built = path.startswith(generated_prefixes) and not statutory(path)
         assert generates(path) is built, path
+    for relationship in ("single", "lone_parent", "couple"):
+        assert generates(f"{protected_allowance_index}.{relationship}")
+        assert not generates(f"gov.dwp.housing_benefit.allowances.{relationship}.aged")
+    for relationship in ("SINGLE", "COUPLE"):
+        assert generates(f"{savings_credit_index}.{relationship}")
+        assert not generates(
+            f"gov.dwp.pension_credit.savings_credit.threshold.{relationship}"
+        )
     assert generates(TRIPLE_LOCK)
     assert generates(f"{INDICES}.uc_standard_allowance")
     assert not generates(MINIMUM_RATE)

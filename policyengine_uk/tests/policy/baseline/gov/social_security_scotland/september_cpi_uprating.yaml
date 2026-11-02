@@ -6,7 +6,7 @@
 # Annual model periods use the fiscal-year parameter amounts.
 
 - name: Scottish Child Payment projects to 29.20 a week in April 2027
-  # 28.20 x 1.035 = 29.187 -> 29.20, then 29.20 x 365.25 / 7 = 1523.614286.
+  # 28.20 x 1.035 = 29.187 -> 29.20, then 29.20 x 52 = 1518.40.
   period: 2027
   absolute_error_margin: 0.01
   input:

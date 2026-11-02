@@ -13,8 +13,9 @@ The second simulation gives the liability without the excess from
 the model's own liability variables, so it does not depend on the formulas
 under test.
 
-Invariants, for any pay, salary sacrifice, age, statutory sick pay and
-employer pension contribution:
+Invariants, for any pay, salary sacrifice, age, statutory sick pay, employer
+pension contribution, full-year Category A director status and apprentice
+status:
 
 1. Difference of complete liabilities: the employee measure equals
    ni_class_1_employee with the excess less ni_class_1_employee

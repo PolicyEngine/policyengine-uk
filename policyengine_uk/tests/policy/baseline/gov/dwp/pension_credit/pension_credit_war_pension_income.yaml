@@ -323,10 +323,11 @@
     war_widows_pension: 30 * 52
     # It joins the gross benefit totals that bsp is in, so moving FRS code 9
     # from bsp to this variable leaves the totals unchanged.
-    household_benefits: 30 * 52
+    # Plus the £100 Household Energy Payment: band D (the default) in England.
+    household_benefits: 30 * 52 + 100
     hbai_benefits: 30 * 52
-    gov_spending: 30 * 52
-    pre_budget_change_household_benefits: 30 * 52
+    gov_spending: 30 * 52 + 100
+    pre_budget_change_household_benefits: 30 * 52 + 100
     # ITEPA 2003 s.639: no income tax on war widow's pensions.
     social_security_income: 0
     income_tax: 0

@@ -167,8 +167,9 @@ Add to v2 over time as published OBR / RF reforms become available
 benchmarks:
 
 - Reinstate the two-child limit. The baseline removes it from 6 April
-  2026, and [child-poverty-tcl.md](child-poverty-tcl.md) compares its
-  removal with the DWP, Budget 2025 and Resolution Foundation estimates.
+  2026, and [child-poverty-tcl.md](child-poverty-tcl.md) links to
+  Scorecard's comparison of its removal with the DWP, HM Treasury and
+  Resolution Foundation estimates.
 - Freeze the Personal Allowance for an additional year (to 2031-32, so
   it needs a later reference year than 2029).
 - 1pp employer NI change.
@@ -197,7 +198,7 @@ relevant pages are:
 
 - [nowcasting-comparison.md](../assumptions/nowcasting-comparison.md) (PolicyEngine vs RF).
 - [rf-nowcasting-methodology.md](../assumptions/rf-nowcasting-methodology.md) (RF methodology detail).
-- [child-poverty-tcl.md](child-poverty-tcl.md) (the child-poverty impact and cost of removing the two-child limit, against DWP, Budget 2025 and Resolution Foundation estimates).
+- [child-poverty-tcl.md](child-poverty-tcl.md) (how PolicyEngine UK estimates the child-poverty impact and cost of removing the two-child limit, with links to Scorecard's comparison against DWP, HM Treasury and Resolution Foundation estimates).
 
 ## Open questions
 

@@ -99,3 +99,16 @@
     pension_credit_reported_capital: [0, 5_000]
   output:
     pension_credit_assessable_capital: [0, 5_000]
+
+- name: A person's cash ISA balance enters capital through the household total
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    would_claim_uc: false
+    savings: 5_000
+    cash_isa_balance: 3_000
+  output:
+    cash_isa: 3_000
+    uc_assessable_capital: 8_000
+    housing_benefit_assessable_capital: 8_000

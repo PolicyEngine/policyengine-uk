@@ -191,14 +191,14 @@
     other_local_bus_trips: 100
     bus_pass_eligible: false
   output:
-    # 100 * 1.252853758464 * GBP 2.550929922065 * 1.034 (OBR CPI, 2025 over
-    # 2024, as the engine's index rounds it: 1.61059 / 1.55763).
-    person_bus_fare_spending: 330.46
+    # 100 * 1.252853758464 * GBP 2.550929922065 * 1.0337 (OBR CPI, 2025 over
+    # 2024, as the engine's index rounds it: 1.61012 / 1.55763).
+    person_bus_fare_spending: 330.36
 
 # Cap changes use the table of uncapped single fares in
 # gov.dft.bus.uncapped_single_fares: 56% of singles at GBP 1.70, 31% at
-# GBP 2.21 and 13% at GBP 3.96 at FY2024-25 prices, uprated with OBR CPI
-# (FY2025-26 x 1.61059 / 1.55763 = 1.0340). Case 10's passenger has 100 trips
+# GBP 2.21 and 13% at GBP 3.95 at FY2024-25 prices, uprated with OBR CPI
+# (FY2025-26 x 1.61012 / 1.55763 = 1.0337). Case 10's passenger has 100 trips
 # * 1.12466920264 boardings * 0.7 single share = 78.7268 single boardings, at
 # a GBP 181.06 baseline.
 - name: Case 14, without a cap in 2025-26 the singles above GBP 3 pay in full.
@@ -211,9 +211,9 @@
     local_bus_single_fare_share: 0.7
     gov.dft.bus.fares.cap: .inf
   output:
-    # Only the high band (3.96 * 1.0340 = 4.0946) is above GBP 3:
-    # 181.0594 + 78.7268 * 0.13 * 1.0946.
-    person_bus_fare_spending: 192.26
+    # Only the high band (3.95 * 1.0337 = 4.0831) is above GBP 3:
+    # 181.0594 + 78.7268 * 0.13 * 1.0831.
+    person_bus_fare_spending: 192.14
 
 - name: Case 15, a GBP 2 cap in 2025-26 saves the middle and high bands.
   period: 2025
@@ -225,9 +225,9 @@
     local_bus_single_fare_share: 0.7
     gov.dft.bus.fares.cap: 2
   output:
-    # Middle band 2.21 * 1.0340 = 2.2851 falls to 2; the high band falls
-    # from 3 to 2: 181.0594 - 78.7268 * (0.31 * 0.2851 + 0.13 * 1).
-    person_bus_fare_spending: 163.87
+    # Middle band 2.21 * 1.0337 = 2.2845 falls to 2; the high band falls
+    # from 3 to 2: 181.0594 - 78.7268 * (0.31 * 0.2845 + 0.13 * 1).
+    person_bus_fare_spending: 163.88
 
 - name: Case 16, paying youth journeys remain priced and free-pass journeys cost nothing.
   period: 2024

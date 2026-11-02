@@ -39,16 +39,16 @@ FEES = "gov.simulation.private_school_vat.private_school_fees"
 BASIS = "gov.simulation.private_school_vat.private_school_vat_basis"
 FACTOR = 0.67 * 0.7
 # HMRC's OBR-certified costing of VAT on private school fees (Autumn Budget
-# 2024 Table 5.1, £m) and OBR cash-basis VAT receipts (March 2026 EFO detailed
-# forecast tables, receipts, sheet 3.8, row 13, cells E13:I13, £m), by the
-# model year of each fiscal year.
+# 2024 Table 5.1, £m) and OBR cash-basis VAT receipts (October 2026 EFO
+# detailed forecast tables, receipts, sheet 4.8, row 13, cells D13:H13, £m),
+# by the model year of each fiscal year.
 COSTING = {2025: 1_505, 2026: 1_560, 2027: 1_610, 2028: 1_665, 2029: 1_725}
 RECEIPTS = {
-    2025: 180_168.94,
-    2026: 187_704.37,
-    2027: 195_922.62,
-    2028: 204_591.27,
-    2029: 213_118.19,
+    2025: 179_861.00,
+    2026: 186_154.08,
+    2027: 193_973.60,
+    2028: 203_284.38,
+    2029: 211_700.88,
 }
 # The share is zero before the 2025-26 model year and the 2029-30 value is
 # held from then on.
@@ -353,10 +353,14 @@ NI_ELECTRICITY = "gov.hmrc.vat.domestic_electricity_rate.northern_ireland"
 
 def electricity_rate(region, year):
     # SI 2026/987 zero-rates domestic electricity in Great Britain from
-    # 1 October 2026 to 31 March 2027: 183 of model year 2026's 365 days are
-    # at 5%. Northern Ireland and every other year stay at 5%.
-    if region != "NORTHERN_IRELAND" and year == 2026:
-        return 0.05 * 183 / 365
+    # 1 October 2026, and Budget 2026 extends that to 1 July 2027 and to
+    # Northern Ireland from 1 April 2027. Model year 2026 has 178 of 365 days
+    # at 5% in Great Britain and 360 in Northern Ireland; model year 2027 has
+    # 280 of 366 in both. Every other year stays at 5%.
+    if year == 2026:
+        return 0.05 * (360 if region == "NORTHERN_IRELAND" else 178) / 365
+    if year == 2027:
+        return 0.05 * 280 / 366
     return 0.05
 
 

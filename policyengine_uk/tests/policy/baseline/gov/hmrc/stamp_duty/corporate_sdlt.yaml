@@ -1,11 +1,12 @@
 # Corporate SDLT is shareholding x (residential + non-residential corporate
 # SDLT revenue) (gov.hmrc.stamp_duty.statistics). For 2026-27 that revenue is
 # HMRC's 2024-25 receipts from non-natural persons uprated with the OBR's
-# receipts for each property type (March 2026 EFO, Table 3.7):
-#   residential      £1,230m x 13.4289 / 10.380 = £1,591.29m
-#   non-residential  £3,260m x  4.7213 /  3.505 = £4,391.26m
-#   total                                       = £5,982.55m
-# so a shareholding of 1e-6 gives £5,982.55 and 3e-6 gives £17,947.64. The
+# receipts for each property type (2024-25 outturn from the March 2026 EFO,
+# Table 3.7; 2026-27 from the October 2026 EFO, Table 4.7):
+#   residential      £1,230m x 11.5985 / 10.380 = £1,374.39m
+#   non-residential  £3,260m x  3.4393 /  3.505 = £3,198.88m
+#   total                                       = £4,573.27m
+# so a shareholding of 1e-6 gives £4,573.27 and 3e-6 gives £13,719.80. The
 # model chains the OBR's year-on-year growth rates (six decimals) into an
 # index rounded to five, so it lands within £0.10 of these; the margins are
 # £0.50. business_rates is set to 0 so the totals isolate SDLT. A £500,000
@@ -21,12 +22,12 @@
     council_tax: 0
     household_owns_tv: false
   output:
-    corporate_sdlt: 5_982.55
+    corporate_sdlt: 4_573.27
     expected_sdlt: 0
-    corporate_tax_incidence: 5_982.55
-    household_tax: 5_982.55
-    gov_tax: 5_982.55
-    pre_budget_change_household_tax: 5_982.55
+    corporate_tax_incidence: 4_573.27
+    household_tax: 4_573.27
+    gov_tax: 4_573.27
+    pre_budget_change_household_tax: 4_573.27
 - name: Household and corporate SDLT each enter the totals once
   period: 2026
   absolute_error_margin: 0.5
@@ -40,10 +41,10 @@
     household_owns_tv: false
   output:
     expected_sdlt: 15_000
-    corporate_sdlt: 5_982.55
-    household_tax: 20_982.55
-    gov_tax: 20_982.55
-    pre_budget_change_household_tax: 20_982.55
+    corporate_sdlt: 4_573.27
+    household_tax: 19_573.27
+    gov_tax: 19_573.27
+    pre_budget_change_household_tax: 19_573.27
 - name: Abolishing SDLT removes household and corporate SDLT from the totals
   period: 2026
   absolute_error_margin: 0.5
@@ -97,9 +98,9 @@
         household_owns_tv: false
   output:
     expected_sdlt: [15_000, 0]
-    corporate_sdlt: [5_982.55, 17_947.64]
-    household_tax: [20_982.55, 17_947.64]
-    gov_tax: [20_982.55, 17_947.64]
+    corporate_sdlt: [4_573.27, 13_719.80]
+    household_tax: [19_573.27, 13_719.80]
+    gov_tax: [19_573.27, 13_719.80]
 - name: Two households, SDLT abolished - no SDLT left in either household's totals
   period: 2026
   absolute_error_margin: 0.5
@@ -151,11 +152,11 @@
     household_owns_tv: false
   output:
     expected_sdlt: 0
-    corporate_sdlt: 5_982.55
-    corporate_tax_incidence: 6_482.55
-    household_tax: 6_482.55
-    gov_tax: 6_482.55
-    pre_budget_change_household_tax: 6_482.55
+    corporate_sdlt: 4_573.27
+    corporate_tax_incidence: 5_073.27
+    household_tax: 5_073.27
+    gov_tax: 5_073.27
+    pre_budget_change_household_tax: 5_073.27
 - name: Abolishing SDLT removes the Welsh shareholder's corporate SDLT and keeps business rates
   period: 2026
   absolute_error_margin: 0.5

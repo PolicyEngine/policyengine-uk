@@ -41,7 +41,7 @@ FACTS = {
     # GBP 400 million backing the GBP 2 cap in 2027 (GBP m), read as GBP 2
     # against no cap: the GBP 3 scheme is funded only to December 2026 and the
     # GBP 2 scheme replaces it. Read as GBP 2 against a continued GBP 3 cap, the
-    # fitted table gives about GBP 253m, 37% below (see UNFITTED below).
+    # fitted table gives about GBP 269m, 33% below (see UNFITTED below).
     "cap_2_in_2027": (400, 0.20, "relative"),
     # Frontier Economics and SYSTRA for DfT, Table 6: all single tickets
     # averaged GBP 2.15 before the cap; those above GBP 2 averaged GBP 2.73,

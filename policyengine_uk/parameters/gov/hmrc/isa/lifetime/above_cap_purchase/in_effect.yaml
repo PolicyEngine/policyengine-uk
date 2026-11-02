@@ -1,0 +1,17 @@
+description: >
+  Whether a Lifetime ISA withdrawal towards a first home that meets every
+  first-time purchase condition except the property price cap pays the reduced
+  above-cap charge, rather than the withdrawal charge. It has effect for
+  withdrawals from 29 October 2026. The annual model reads parameters on 30
+  April, so it applies from fiscal 2027-28: in the model, a withdrawal from 29
+  October 2026 to 5 April 2027 pays the withdrawal charge.
+values:
+  2000-01-01: false
+  2026-10-29: true
+metadata:
+  label: Lifetime ISA reduced charge above the price cap in effect
+  period: year
+  unit: bool
+  reference:
+    - title: Individual Savings Account (Amendment) (No. 3) Regulations 2026 regulation 1
+      href: https://www.legislation.gov.uk/uksi/2026/1130/regulation/1/made
