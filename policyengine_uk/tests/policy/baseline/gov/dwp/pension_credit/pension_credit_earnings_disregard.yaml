@@ -464,6 +464,40 @@
     pension_credit_uncounted_income_tax_without_earnings: 1_086
     pension_credit_income: 12_000
 
+- name: Statutory sick pay leaves Pension Credit income unchanged when the tax on interest is uncounted, as wages do.
+  # The wages case above with 1,040 of statutory sick pay in place of the
+  # wages. SPC Regs 2002 reg 17A(2)(h) makes it earnings of an employed
+  # earner, so the tax without earnings is measured with it zeroed. The tax
+  # is the same: 94 non-savings and 1,294 on interest, 1,388 in all; 1,086
+  # without the sick pay. The 1,086 due without earnings is all tax on
+  # interest, which Pension Credit does not count (reg 17(10)(a), Sch IV
+  # para 18), so it is not deducted; the 302 the sick pay adds is tax on
+  # earnings. Net earnings and the disregard are 1,040 - 302 = 738, and
+  # income is 12,000 + 1,040 - 302 - 738 = 12,000. Measuring the uncounted
+  # tax with the sick pay left in would take 1,388 - 1,294 = 94 as counted
+  # tax and leave 1,086 - 94 = 992 uncounted.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        savings_interest_income: 12_000
+        attendance_allowance: 3_000
+        statutory_sick_pay: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    income_tax_before_winter_fuel_payment_charge: 1_388
+    pension_credit_employment_income_tax: 302
+    pension_credit_uncounted_income_tax_without_earnings: 1_086
+    pension_credit_earnings_disregard: 738
+    pension_credit_income: 12_000
+
 - name: Pension contribution relief already available without earnings does not reduce tax attributed to earnings.
   period: 2024
   input:
