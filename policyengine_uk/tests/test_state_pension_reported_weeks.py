@@ -2,16 +2,17 @@
 
 basic_state_pension, new_state_pension and additional_state_pension divide
 state_pension_reported by policyengine-core's 52 weeks a year and split the
-weekly amount at the full rate of the person's type in the data year. A dataset
-must therefore annualise the State Pension at 52 weeks. At 365.25 / 7, which
+weekly amount at the data year's full rate for the type the person has in the
+year being calculated. A dataset must therefore annualise the State Pension at
+52 weeks. At 365.25 / 7, which
 policyengine-uk-data used until policyengine-uk-data#644, every full-rate
 pensioner read 0.34% above the full rate and carried an add-on they do not
 get, which put people whose only income is the full new State Pension on the
 Pension Tax Allowance's taper, paying tax.
 
 These cases build simulations from 2024-25 data projected forward, as survey
-data is (ages held fixed), and check the route from a reported weekly amount to
-Income Tax:
+data is (ages held fixed, at ages whose type stays the same in every year), and
+check the route from a reported weekly amount to Income Tax:
 
 - a pensioner reporting exactly the data year's full rate has no add-on in any
   year;
@@ -23,7 +24,8 @@ Income Tax:
   third of it off the allowance).
 
 policyengine-core holds amounts as float32, so £11,502.40 reads back about a
-ten-thousandth of a penny above £221.20 a week; comparisons allow a penny.
+thousandth of a penny above £221.20 a week (0.0012p, or 0.063p a year);
+comparisons allow a penny.
 """
 
 import numpy as np
