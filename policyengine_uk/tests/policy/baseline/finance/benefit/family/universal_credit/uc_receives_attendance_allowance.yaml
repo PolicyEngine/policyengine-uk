@@ -4,7 +4,7 @@
 # Scheme 1983 payment or an analogous payment; (e) an attendance addition to a
 # war disablement pension; and (f) armed forces independence payment. The
 # Secretary of State omitted head (c) in 2013 (S.I. 2013/1508). Any amount of
-# AFIP in payment qualifies, so the cases use illustrative amounts.
+# AFIP in payment qualifies: £9,000 stands for any positive amount.
 - name: Case 1, attendance allowance at the higher rate counts under head (a).
   period: 2026
   input:
@@ -35,7 +35,7 @@
   output:
     uc_receives_attendance_allowance: false
 
-- name: Case 5, the DLA care component is not attendance allowance.
+- name: Case 5, the DLA care component does not count as attendance allowance.
   period: 2026
   input:
     dla_sc_category: HIGHER
@@ -43,21 +43,21 @@
     dla_sc_middle_plus: true
     uc_receives_attendance_allowance: false
 
-- name: Case 6, the PIP daily living component is not attendance allowance.
+- name: Case 6, the PIP daily living component does not count as attendance allowance.
   period: 2026
   input:
     pip_dl_category: ENHANCED
   output:
     uc_receives_attendance_allowance: false
 
-- name: Case 7, disablement pension without a constant attendance increase is not attendance allowance.
+- name: Case 7, disablement pension without a constant attendance increase does not count as attendance allowance.
   period: 2026
   input:
     iidb_reported: 5_000
   output:
     uc_receives_attendance_allowance: false
 
-- name: Case 8, Armed Forces Compensation Scheme payments and a war disablement pension without an attendance addition are not attendance allowance.
+- name: Case 8, a reported Armed Forces Compensation Scheme amount does not count as attendance allowance.
   period: 2026
   input:
     afcs_reported: 5_000

@@ -22,6 +22,8 @@ non-dependant, the renter or both. Invariants:
    element rises by no more than the contributions fall (under para 14(3),
    DWP reduces the element to nil and no further), and Universal Credit rises
    by no more than the element.
+4. One non-dependant's AFIP changes only that person's own attendance
+   allowance result, exemption and contribution.
 """
 
 import numpy as np
@@ -34,8 +36,8 @@ from policyengine_uk import Simulation
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
-# Fixed slots, so one simulation serves every example. Each slot's tenure and
-# region are fixed; the generated inputs change from example to example.
+# Fixed slots, so one simulation serves every example. Each slot keeps its tenure
+# and region; the generated inputs change from example to example.
 TENURES = ["RENT_FROM_COUNCIL", "RENT_FROM_HA", "RENT_PRIVATELY"]
 REGIONS = ["NORTH_WEST", "LONDON", "SCOTLAND", "WALES"]
 SLOTS = 12
@@ -320,3 +322,89 @@ def test_shared_accommodation_exceptions_match_the_previous_list(
         sim.drop_computed_arrays()
     for name in RENTER_OUTPUTS:
         np.testing.assert_array_equal(current[name], previous[name], err_msg=name)
+
+
+# Under Sch 4 para 16(1), DWP deducts no contribution "in respect of any
+# non-dependant" to whom para 16(2) applies, so one person's AFIP opens the
+# exemption for that person alone. Each slot holds a renter and a non-dependant
+# couple in one household, which separates the person from the benefit unit and
+# from the household.
+PERSON_OUTPUTS = [
+    "uc_receives_attendance_allowance",
+    "uc_non_dep_deduction_exempt",
+    "uc_individual_non_dep_deduction",
+]
+PEOPLE_PER_SLOT = 3
+
+
+def non_dependant_couples():
+    people, benunits, households = {}, {}, {}
+    for i in range(SLOTS):
+        renter, first, second = f"renter_{i}", f"first_{i}", f"second_{i}"
+        for name in (renter, first, second):
+            people[name] = {
+                "age": {YEAR: 40 if name == renter else 25},
+                "is_household_head": {YEAR: name == renter},
+                "is_claimant_or_partner": {YEAR: True},
+                "employment_income": {YEAR: 0},
+                "armed_forces_independence_payment": {YEAR: 0},
+            }
+        benunits[f"renter_family_{i}"] = {
+            "members": [renter],
+            "would_claim_uc": {YEAR: True},
+            "claims_all_entitled_benefits": {YEAR: False},
+        }
+        benunits[f"non_dependant_family_{i}"] = {
+            "members": [first, second],
+            "would_claim_uc": {YEAR: False},
+            "claims_all_entitled_benefits": {YEAR: False},
+        }
+        households[f"household_{i}"] = {
+            "members": [renter, first, second],
+            "rent": {YEAR: 6_000},
+            "tenure_type": {YEAR: TENURES[i % len(TENURES)]},
+            "region": {YEAR: REGIONS[i % len(REGIONS)]},
+        }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.fixture(scope="module")
+def couple_simulation(cloned_uk_tax_benefit_system):
+    return Simulation(situation=non_dependant_couples())
+
+
+def person_outputs(sim, afip):
+    sim.set_input("armed_forces_independence_payment", YEAR, afip)
+    sim.drop_computed_arrays()
+    return {name: np.asarray(sim.calculate(name, YEAR)) for name in PERSON_OUTPUTS}
+
+
+@PROPERTY_SETTINGS
+@given(
+    earnings=st.lists(
+        st.one_of(st.just(0.0), money),
+        min_size=PEOPLE_PER_SLOT * SLOTS,
+        max_size=PEOPLE_PER_SLOT * SLOTS,
+    ),
+    # 1 is the couple's first member and 2 the second; the renter takes no AFIP.
+    recipients=st.lists(st.integers(1, 2), min_size=SLOTS, max_size=SLOTS),
+    afip=positive_afip,
+)
+def test_one_persons_afip_moves_only_their_own_exemption(
+    couple_simulation, earnings, recipients, afip
+):
+    sim = couple_simulation
+    sim.set_input("employment_income", YEAR, np.array(earnings))
+    before = person_outputs(sim, np.zeros(PEOPLE_PER_SLOT * SLOTS))
+    amounts = np.zeros(PEOPLE_PER_SLOT * SLOTS)
+    amounts[PEOPLE_PER_SLOT * np.arange(SLOTS) + np.array(recipients)] = afip
+    after = person_outputs(sim, amounts)
+
+    received = amounts > 0
+    assert after["uc_receives_attendance_allowance"][received].all()
+    assert after["uc_non_dep_deduction_exempt"][received].all()
+    np.testing.assert_array_equal(after["uc_individual_non_dep_deduction"][received], 0)
+    for name in PERSON_OUTPUTS:
+        np.testing.assert_array_equal(
+            after[name][~received], before[name][~received], err_msg=name
+        )

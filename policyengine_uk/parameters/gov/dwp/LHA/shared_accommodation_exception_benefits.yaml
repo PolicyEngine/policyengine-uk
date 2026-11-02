@@ -1,4 +1,4 @@
-description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate. The list names uc_receives_attendance_allowance for attendance allowance, so the model applies the Universal Credit definition and counts armed forces independence payment.
+description: Disability benefits whose receipt makes a renter under 35 an excepted person, so DWP does not apply the Universal Credit shared accommodation rate. For attendance allowance the model reads uc_receives_attendance_allowance, which counts armed forces independence payment. The model has no variables for the three Scottish heads of paragraph 29(5).
 values:
   2013-04-29:
     - uc_receives_attendance_allowance

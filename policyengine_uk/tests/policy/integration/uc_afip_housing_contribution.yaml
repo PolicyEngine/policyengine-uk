@@ -10,7 +10,7 @@
 # The renter has no earnings or capital and pays the council 6,000 a year, so
 # UC = 5,098.80 + 6,000 - contributions.
 # The non-dependant's own family does not claim UC. Any amount of AFIP in
-# payment qualifies, so the cases use illustrative amounts.
+# payment qualifies: £9,000 stands for any positive amount.
 
 - name: Case 1, a non-dependant with no qualifying benefit bears a contribution.
   period: 2026
@@ -267,3 +267,60 @@
     uc_non_dep_deductions: [2_317.2, 0]
     uc_housing_costs_element: [3_682.8, 0]
     universal_credit: [8_781.6, 0]
+
+- name: Case 8, a non-dependant with a penny of armed forces independence payment bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        armed_forces_independence_payment: 0.01
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_receives_attendance_allowance: [false, true]
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_non_dep_deductions: [0, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 9, a private renter aged 30 with a penny of armed forces independence payment keeps the full LHA rate.
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_household_head: true
+        armed_forces_independence_payment: 0.01
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_WEST
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false
