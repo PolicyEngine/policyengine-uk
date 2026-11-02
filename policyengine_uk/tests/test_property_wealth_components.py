@@ -467,3 +467,125 @@ def test_legacy_stored_total_overrides_formula_until_removed_by_data_release():
     sim = Simulation(dataset=components_only)
     assert _value(sim, "property_wealth") == 150_000
     _assert_projected_component_accounting(sim, COMPONENT_VALUES, 2026)
+
+
+# Outputs pinned from a run of these situations on main at 2da212ab, which has
+# neither overseas_property_value nor other_property_value. The legacy-benefit
+# capital of the last two rows is omitted: the sale-expense valuation of
+# other property and corporate_wealth changes it independently of the new
+# inputs.
+WEALTH_AND_LAND = ("property_wealth", "total_wealth", "household_land_value")
+CAPITAL = (
+    "uc_assessable_capital",
+    "housing_benefit_assessable_capital",
+    "pension_credit_assessable_capital",
+    "jsa_income_assessable_capital",
+    "esa_income_assessable_capital",
+    "income_support_assessable_capital",
+)
+ZERO_INPUT_GRID = (
+    (
+        (40,),
+        "LONDON",
+        {"savings": 5_000, "main_residence_value": 200_000},
+        None,
+        (200_000, 205_000, 170_000, 5_000, 0, 0, 5_000, 5_000, 5_000),
+    ),
+    (
+        (40,),
+        "NORTH_EAST",
+        {"savings": 17_000},
+        None,
+        (0, 17_000, 0, 17_000, 17_000, 0, 17_000, 17_000, 17_000),
+    ),
+    (
+        (30, 32),
+        "WALES",
+        {"savings": 9_000, "main_residence_value": 150_000},
+        None,
+        (150_000, 159_000, 70_500, 9_000, 0, 0, 9_000, 9_000, 9_000),
+    ),
+    (
+        (70,),
+        "SCOTLAND",
+        {"savings": 12_000, "main_residence_value": 300_000},
+        None,
+        (300_000, 312_000, 132_000, 12_000, 0, 12_000, 12_000, 12_000, 12_000),
+    ),
+    (
+        (72, 69),
+        "SOUTH_WEST",
+        {"savings": 30_000},
+        None,
+        (0, 30_000, 0, 30_000, 0, 30_000, 30_000, 30_000, 30_000),
+    ),
+    (
+        (40,),
+        "LONDON",
+        {"savings": 5_000},
+        2_000,
+        (0, 5_000, 0, 2_000, 0, 0, 5_000, 5_000, 5_000),
+    ),
+    (
+        (70,),
+        "YORKSHIRE",
+        {"savings": 8_000},
+        4_000,
+        (0, 8_000, 0, 4_000, 0, 4_000, 8_000, 8_000, 8_000),
+    ),
+    (
+        (45,),
+        "LONDON",
+        {
+            "main_residence_value": 400_000,
+            "other_residential_property_value": 150_000,
+            "non_residential_property_value": 80_000,
+        },
+        None,
+        (630_000, 630_000, 535_500),
+    ),
+    (
+        (45,),
+        "EAST_MIDLANDS",
+        {
+            "main_residence_value": 220_000,
+            "non_residential_property_value": 35_000,
+            "corporate_wealth": 10_000,
+            "private_pension_wealth": 90_000,
+        },
+        None,
+        (255_000, 355_000, 122_400),
+    ),
+)
+
+
+def _grid_situation(ages, region, assets, reported, year=2026):
+    people = {f"person_{i}": {"age": {year: age}} for i, age in enumerate(ages)}
+    benunit = {"members": list(people)}
+    if reported is not None:
+        benunit["benunit_reported_capital"] = {year: reported}
+    return {
+        "people": people,
+        "benunits": {"benunit": benunit},
+        "households": {
+            "household": {
+                "members": list(people),
+                "region": {year: region},
+                **{variable: {year: value} for variable, value in assets.items()},
+            }
+        },
+    }
+
+
+@pytest.mark.parametrize("explicit_zero", [False, True])
+@pytest.mark.parametrize("ages,region,assets,reported,expected", ZERO_INPUT_GRID)
+def test_new_inputs_at_zero_reproduce_main(
+    ages, region, assets, reported, expected, explicit_zero
+):
+    if explicit_zero:
+        assets = {**assets, "overseas_property_value": 0, "other_property_value": 0}
+    sim = Simulation(situation=_grid_situation(ages, region, assets, reported))
+    outputs = (*WEALTH_AND_LAND, *CAPITAL)[: len(expected)]
+
+    actual = tuple(_value(sim, variable, 2026) for variable in outputs)
+    assert actual == pytest.approx(expected, abs=0.01)

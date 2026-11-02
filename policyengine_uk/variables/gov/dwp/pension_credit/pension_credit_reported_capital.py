@@ -15,7 +15,11 @@ class pension_credit_reported_capital(Variable):
         "separately valued land and property remain counted; with neither "
         "report the household proxy and person-level sources apply. This "
         "variable does not derive from the financial-only observation. An "
-        "override set directly applies only in the supplied assessment year."
+        "override set directly applies only in the supplied assessment year. "
+        "A dataset that stores a financial-only survey total, such as the "
+        "Family Resources Survey's TOTCAPB4, in this column rather than in "
+        "benunit_reported_capital makes that total a complete override, so "
+        "Pension Credit then counts none of the household's land or property."
     )
     definition_period = YEAR
     unit = GBP
