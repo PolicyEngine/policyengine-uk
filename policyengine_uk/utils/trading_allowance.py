@@ -21,7 +21,13 @@ from policyengine_uk.utils.supplied_inputs import (
 
 def branch_root(simulation):
     """The simulation a branch was made from, through every level of
-    branching; a simulation that is not a branch is its own."""
+    branching; a simulation that is not a branch is its own.
+
+    A household subset (utils.household_subset) is a branch too. What
+    _data_year reads there, the years a profit was supplied for and a
+    dataset's first year, is the same for every household, since each
+    year's input covers them all, so the subset reads the whole
+    population's data year, as it should."""
     while getattr(simulation, "parent_branch", None) is not None:
         simulation = simulation.parent_branch
     return simulation
