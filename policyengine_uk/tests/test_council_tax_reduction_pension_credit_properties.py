@@ -35,6 +35,33 @@ liability, ND the non-dependant deductions and A the applicable amount:
 8. Under the Pension Credit freeze, receipt and the savings credit payable
    follow the frozen (baseline) award, even where the reform alone would
    change which credit is received.
+
+Invariants 2 to 4 and 7's assessment under invariant 4 are the shared
+formula's, so they apply where council_tax_reduction_devolved_working_age is
+false. A Scottish or Welsh claim that is not a pensioner's takes the devolved
+working-age route instead, where these hold:
+
+9. Scheme: in Scotland and Wales a claim takes the working-age route exactly
+   when no applicant or partner has reached the qualifying age for State
+   Pension Credit, or one has but the family has an award of Universal Credit
+   with a member under that age, or is on Income Support, income-based JSA or
+   income-related ESA (WSI 2013/3029 reg 3; SSI 2021/249 reg 3). So a
+   mixed-age couple on Universal Credit takes it. Recomputed here from the
+   generated ages (67 or over, or 60 or under) and Universal Credit
+   entitlement.
+10. No Pension Credit route: a working-age claim is never in receipt of a
+    guarantee credit or of savings credit only.
+11. Taper on the route's own measures: CTR is max(0, L - 0.2 x max(0, I_wa -
+    A_wa) - ND) when the working-age capital is within 16,000, and nothing
+    otherwise, where I_wa and A_wa are the working-age income and applicable
+    amount.
+12. Passport: a claimant on Income Support, income-based JSA or
+    income-related ESA without Universal Credit has nil working-age income
+    (SSI 2021/249 reg 13(11); WSI 2013/3029 Sch 9 and 10 para 8).
+13. Welsh Universal Credit: a Welsh claim with Universal Credit counts the
+    Secretary of State's earned income plus Universal Credit unearned income
+    plus the award, against the Universal Credit maximum amount (WSI
+    2013/3029 Sch 6 paras 3 and 9).
 """
 
 import numpy as np
@@ -258,6 +285,18 @@ BENUNIT_VARIABLES = [
     "pension_credit_income",
     "pension_credit_assessable_capital",
     "council_tax_reduction_pensioner",
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_working_age_capital",
+    "council_tax_reduction_working_age_passported",
+    "council_tax_reduction_working_age_has_universal_credit",
+    "council_tax_reduction_working_age_earned_income",
+    "council_tax_reduction_working_age_universal_credit_award",
+    "council_tax_reduction_relevant_income_based_benefit",
+    "is_uc_entitled",
+    "uc_unearned_income",
+    "uc_maximum_amount",
 ]
 # council_tax_reduction_applicable_income on main before this change (1c5b4d04):
 # these incomes and benefits, less income tax, National Insurance and half of
@@ -417,11 +456,58 @@ def test_savings_credit_only_awards_use_the_pension_credit_assessment(units):
     check_routes(units, values)
 
 
+def check_devolved_route(unit, values, i):
+    """Invariants 9 to 13 for a Scottish or Welsh claim."""
+    pension_age = any(age >= 67 for age in unit["ages"])
+    working_age = any(age <= 60 for age in unit["ages"])
+    universal_credit = bool(values["is_uc_entitled"][i])
+    income_based = bool(
+        values["council_tax_reduction_relevant_income_based_benefit"][i]
+    )
+    expected = not pension_age or (universal_credit and working_age) or income_based
+    devolved = bool(values["council_tax_reduction_devolved_working_age"][i])
+    assert devolved == expected, (unit, devolved)
+    if not devolved:
+        return
+    assert not values["in_receipt_of_guarantee_credit"][i], unit
+    assert not values["in_receipt_of_savings_credit_only"][i], unit
+    ctr = values["simulated_council_tax_reduction_benunit"][i]
+    liability = values["council_tax_reduction_maximum_eligible_liability"][i]
+    non_dep = values["council_tax_reduction_non_dep_deductions"][i]
+    income = values["council_tax_reduction_working_age_applicable_income"][i]
+    amount = values["council_tax_reduction_working_age_applicable_amount"][i]
+    has_universal_credit = values[
+        "council_tax_reduction_working_age_has_universal_credit"
+    ][i]
+    if values["council_tax_reduction_working_age_passported"][i]:
+        assert not has_universal_credit, unit
+        assert income == 0, unit
+    if unit["country"] == "WALES" and has_universal_credit:
+        assert (
+            abs(
+                income
+                - values["council_tax_reduction_working_age_earned_income"][i]
+                - values["uc_unearned_income"][i]
+                - values["council_tax_reduction_working_age_universal_credit_award"][i]
+            )
+            < 0.01
+        ), unit
+        assert abs(amount - values["uc_maximum_amount"][i]) < 0.01, unit
+    expected_ctr = tapered(liability, income, amount, non_dep) * (
+        values["council_tax_reduction_working_age_capital"][i] <= CAPITAL_LIMIT
+    )
+    assert abs(ctr - expected_ctr) < 0.01, (unit, ctr, expected_ctr)
+
+
 def check_routes(units, values):
     check_structural(values)
     for i, unit in enumerate(units):
         if not values["national"][i]:
             continue
+        if unit["country"] != "ENGLAND":
+            check_devolved_route(unit, values, i)
+            if values["council_tax_reduction_devolved_working_age"][i]:
+                continue
         ctr = values["simulated_council_tax_reduction_benunit"][i]
         liability = values["council_tax_reduction_maximum_eligible_liability"][i]
         non_dep = values["council_tax_reduction_non_dep_deductions"][i]
