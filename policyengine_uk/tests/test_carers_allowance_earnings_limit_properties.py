@@ -297,11 +297,20 @@ PENNY_STEPS = ((0.0, False), (0.51, False), (0.52, True))
 
 
 def _penny_steps_misjudged(variable, limits_by_year):
+    """The penny steps the model misjudges, with the Budget 2026 earnings
+    taper switched off, so that earnings over the limit end entitlement in
+    every year. test_carers_allowance_weekly_earnings_above_limit_properties
+    tests the same steps under the taper."""
     amounts = {
         year: [WEEKS * limit + step for step, _ in PENNY_STEPS]
         for year, limit in limits_by_year
     }
-    simulation = _carers(variable, amounts)
+    without_taper = {
+        "gov.dwp.carers_allowance.earnings_taper.applies": {
+            str(year): 0 for year in amounts
+        }
+    }
+    simulation = _carers(variable, amounts, without_taper)
     misjudged = []
     for year, limit in limits_by_year:
         assert (
