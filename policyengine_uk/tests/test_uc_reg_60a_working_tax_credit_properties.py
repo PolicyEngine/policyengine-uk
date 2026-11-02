@@ -20,6 +20,8 @@ P2  On a closure claim, with capital within the limit and a claimant aged
     family eligible.
 P3  Without a closure claim, zeroing every member's Working Tax Credit
     report never changes is_uc_eligible.
+P4  On a closure claim, moving a Working Tax Credit report between claimant
+    and partner never changes is_uc_eligible.
 """
 
 from hypothesis import HealthCheck, given, settings
@@ -152,7 +154,8 @@ def test_working_tax_credit_never_changes_eligibility_without_closure_claim(fami
 
 def test_working_tax_credit_changes_eligibility_on_closure_claim():
     """On a closure claim, zeroing a pension-age claimant's own report closes
-    the route, so the comparison in P3 can tell the two claims apart."""
+    the route, so the zeroing that P3 applies without a closure claim can
+    change is_uc_eligible."""
     family = {
         "people": {
             "claimant": {
@@ -165,3 +168,50 @@ def test_working_tax_credit_changes_eligibility_on_closure_claim():
     }
     assert eligible(family, closure_claim=True)
     assert not eligible(family, closure_claim=True, zero_reports="all")
+
+
+@st.composite
+def couples(draw):
+    """A claimant and a partner, one of whom reports Working Tax Credit."""
+    people = {
+        "claimant": {
+            "age": draw(ADULT_AGE),
+            "is_claimant_or_partner": True,
+            "working_tax_credit_reported": 0,
+        },
+        "partner": {
+            "age": draw(PARTNER_AGE),
+            "is_claimant_or_partner": True,
+            "working_tax_credit_reported": 0,
+        },
+    }
+    people[draw(st.sampled_from(["claimant", "partner"]))][
+        "working_tax_credit_reported"
+    ] = draw(POSITIVE_REPORT)
+    for index in range(draw(st.integers(0, 1))):
+        people[f"other_{index}"] = {
+            "age": draw(OTHER_AGE),
+            "is_claimant_or_partner": False,
+            "working_tax_credit_reported": 0,
+        }
+    return {"people": people, "capital": WITHIN_LIMIT}
+
+
+def swapped(family):
+    people = {name: dict(person) for name, person in family["people"].items()}
+    claimant, partner = people["claimant"], people["partner"]
+    claimant["working_tax_credit_reported"], partner["working_tax_credit_reported"] = (
+        partner["working_tax_credit_reported"],
+        claimant["working_tax_credit_reported"],
+    )
+    return {**family, "people": people}
+
+
+@PROPERTY_SETTINGS
+@given(couples())
+def test_moving_report_between_claimant_and_partner_never_changes_closure_eligibility(
+    family,
+):
+    assert eligible(family, closure_claim=True) == eligible(
+        swapped(family), closure_claim=True
+    )
