@@ -26,12 +26,16 @@ UC_FAMILY_BENEFITS = [
 def supplied_total_without_housing_benefit(period) -> str:
     return (
         f"The inputs supply benefit_cap_welfare_benefits for {period}, a total "
-        "that includes Housing Benefit, which the Universal Credit cap counts "
-        "as nil (UC Regs 2013 reg. 80(2A)). Supply "
-        "housing_benefit_pre_benefit_cap for the same period, for the cap to "
-        "subtract, or supply uc_benefit_cap_welfare_benefits. The model doesn't "
-        "calculate that Housing Benefit for Universal Credit, because the "
-        "Housing Benefit non-dependant deductions read universal_credit."
+        "that includes Housing Benefit, which DWP counts as nil for the "
+        "Universal Credit cap (UC Regs 2013 reg. 80(2A)). Supply "
+        "housing_benefit_pre_benefit_cap for the same period, for the model to "
+        "subtract, or supply uc_benefit_cap_welfare_benefits, with a value for "
+        "every benefit unit: a situation that sets either for some benefit "
+        "units stores nil for the rest. The model doesn't calculate that "
+        "Housing Benefit for Universal Credit, because the Housing Benefit "
+        "non-dependant deductions read universal_credit. A reform that "
+        "neutralizes housing_benefit_pre_benefit_cap drops a supplied value; "
+        "supply uc_benefit_cap_welfare_benefits instead."
     )
 
 
@@ -46,8 +50,9 @@ class uc_benefit_cap_welfare_benefits(Variable):
         "inputs supply benefit_cap_welfare_benefits, whose total includes "
         "Housing Benefit, this subtracts the supplied "
         "housing_benefit_pre_benefit_cap. Inputs that supply the combined "
-        "total also supply housing_benefit_pre_benefit_cap or this variable; "
-        "otherwise the formula raises ValueError. No baseline formula on "
+        "total also supply housing_benefit_pre_benefit_cap or this variable, "
+        "with a value for every benefit unit; otherwise the formula raises "
+        "ValueError. No baseline formula on "
         "Universal Credit's route calculates Housing Benefit, so the Housing "
         "Benefit non-dependant deductions can read universal_credit."
     )

@@ -44,7 +44,7 @@ def benefit_cap_couple(benunit, period):
     uc_benefit_cap_welfare_benefits without Housing Benefit). Universal Credit
     alone caps a family receiving both awards (UC Regs 2013 reg 80(2A); HB
     Regs 2006 reg 75F(1)(g)), so the Universal Credit couple counts. The two
-    couples are the same unless is_uc_claimant is entered.
+    couples match unless the inputs set is_uc_claimant.
     """
     person = benunit.members
     on_universal_credit = benunit("universal_credit_pre_benefit_cap", period) > 0

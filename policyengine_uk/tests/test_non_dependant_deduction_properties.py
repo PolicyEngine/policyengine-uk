@@ -72,8 +72,8 @@ and a non-dependant family of one or two adults:
    baseline formula on universal_credit's route calculates Housing Benefit:
    its traced calculation reads no Housing Benefit variable but the reported
    award. Inputs that supply benefit_cap_welfare_benefits, a total that
-   includes Housing Benefit, also supply housing_benefit_pre_benefit_cap,
-   or the basket raises ValueError. A non-dependant family's gross income
+   includes Housing Benefit, also supply housing_benefit_pre_benefit_cap or
+   uc_benefit_cap_welfare_benefits, or the basket raises ValueError. A non-dependant family's gross income
    counts its award after the cap and before debt deductions: universal_credit
    plus uc_deductions, which equals the award before the cap less the cap
    reduction applied, under current law and under an 85% protected minimum
@@ -1069,8 +1069,9 @@ def scaled_award_system():
 
 @pytest.fixture(scope="module", autouse=True)
 def release_scaled_award_system():
-    # The system also keeps its last simulation alive. Drop it once this
-    # module's tests are done, instead of for the rest of the test process.
+    # The system also keeps its last simulation alive. Clear the cache after
+    # this module's last test, so the system doesn't stay in memory for the
+    # rest of the test process.
     yield
     scaled_award_system.cache_clear()
 
@@ -1148,9 +1149,10 @@ def test_universal_credit_reads_no_calculated_housing_benefit():
     Benefit variable but the reported award, so the deductions can read
     universal_credit. Inputs that supply benefit_cap_welfare_benefits, a
     total that includes Housing Benefit, also supply
-    housing_benefit_pre_benefit_cap, and Universal Credit reads that input
-    without calculating Housing Benefit. A supplied total without it raises
-    ValueError."""
+    housing_benefit_pre_benefit_cap or uc_benefit_cap_welfare_benefits, or
+    the basket raises ValueError. Where they supply
+    housing_benefit_pre_benefit_cap, Universal Credit reads that input
+    without calculating Housing Benefit."""
     year = 2025
     situation = award_households([BAND_CROSSING], scaled=False)
     sim = core_simulation(situation, year, trace=True)
