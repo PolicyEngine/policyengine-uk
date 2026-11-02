@@ -230,16 +230,19 @@ def esa_abolition_claim(couple, parameters):
     reports (esa_income_report_closed).
 
     The abolition reaches every remaining award on 1 July 2026 in England
-    (SI 2025/1148 art. 3A), the households' default country, and no member
-    here has the appointee saving, so it reaches any award reported in a
-    year with less than all of it payable. would_claim_uc_at_legacy_closure
+    (SI 2025/1148 art. 3A), the households' default country, so it reaches
+    any award reported in a year with less than all of it payable. An
+    appointee saving (art. 3A(2), esa_income_appointee_saving) for a member
+    who reports the award keeps the whole claim payable, and a saving for a
+    member who reports nothing keeps nothing. would_claim_uc_at_legacy_closure
     keeps its default, true. The conditions are those of the other
     working-age closures: no Pension Credit report, and not all pension age.
     """
     payable = parameters.gov.dwp.ESA.income.awards_payable.great_britain
-    reports_award = any(m.get("esa_income_reported", 0) > 0 for m in couple)
+    reporters = [m for m in couple if m.get("esa_income_reported", 0) > 0]
+    saved = any(m.get("esa_income_appointee_saving", False) for m in reporters)
     on_pension_credit = any(m.get("pension_credit_reported", 0) > 0 for m in couple)
-    if not reports_award or payable >= 1 or on_pension_credit:
+    if not reporters or saved or payable >= 1 or on_pension_credit:
         return False
     assert all(not 65 <= adult["age"] < 70 for adult in couple), couple
     return not all(adult["age"] >= 70 for adult in couple)

@@ -39,7 +39,12 @@ qualifying age for State Pension Credit but under his pensionable age of 65
 mixed-age couples (SPCA 2002 s.4(1A), from 15 May 2019), and 2026, when only
 a mixed-age couple that keeps the SI 2019/37 art 4 saving
 (has_mixed_age_couple_pension_credit_saving, drawn) can get Pension Credit.
-Adults have earnings, pensions and household savings, so some families pass
+The Secretary of State appointed 1 July 2026 for the abolition of
+income-related ESA to reach every remaining award (SI 2025/1148 art. 3A(1)),
+and an appointee saving keeps an award in payment (art. 3A(2)), so every
+adult drawn in 2026 has the saving (esa_income_appointee_saving) and each
+award stays payable for the whole year;
+test_esa_income_abolition_properties.py tests unsaved awards. Adults have earnings, pensions and household savings, so some families pass
 Pension Credit's means test and others fail it, and in 2016 and 2018 some
 report working tax credit, which HMRC pays without its income test to a
 family on the award (TCA 2002 s.7(2)). A member outside the couple claims in
@@ -118,7 +123,7 @@ SAVINGS = [0, 0, 8_000, 14_000, 40_000]
 
 
 @st.composite
-def adults(draw, outside=False, tax_credits=False):
+def adults(draw, outside=False, tax_credits=False, saved=False):
     adult = {
         "age": draw(st.sampled_from(AGES)),
         "months_since_last_birthday": draw(st.sampled_from([0, 3, 8, 11])),
@@ -129,6 +134,8 @@ def adults(draw, outside=False, tax_credits=False):
         "employment_income": draw(st.sampled_from(EARNINGS)),
         "private_pension_income": draw(st.sampled_from(PENSIONS)),
     }
+    if saved:
+        adult["esa_income_appointee_saving"] = True
     if outside:
         adult["current_education"] = "NOT_IN_EDUCATION"
     elif tax_credits:
@@ -137,14 +144,19 @@ def adults(draw, outside=False, tax_credits=False):
 
 
 @st.composite
-def families(draw, tax_credits):
+def families(draw, tax_credits, saved):
     """A claimant, an optional partner, an optional member outside the couple,
     the couple's saving and the household's savings. Members of the couple
-    report working tax credit only in a year with tax credits."""
-    couple = [draw(adults(tax_credits=tax_credits))]
+    report working tax credit only in a year with tax credits. With saved,
+    every adult has the appointee saving for income-related ESA."""
+    couple = [draw(adults(tax_credits=tax_credits, saved=saved))]
     if draw(st.booleans()):
-        couple.append(draw(adults(tax_credits=tax_credits)))
-    others = [draw(adults(outside=True))] if draw(st.integers(0, 3)) == 0 else []
+        couple.append(draw(adults(tax_credits=tax_credits, saved=saved)))
+    others = (
+        [draw(adults(outside=True, saved=saved))]
+        if draw(st.integers(0, 3)) == 0
+        else []
+    )
     saving = draw(st.booleans())
     return couple, others, saving, draw(st.sampled_from(SAVINGS))
 
@@ -154,7 +166,11 @@ def examples(draw):
     year = draw(st.sampled_from(YEARS))
     # Tax credits ended on 5 April 2025.
     tax_credits = year < 2025
-    units = draw(st.lists(families(tax_credits), min_size=4, max_size=12))
+    # The abolition of income-related ESA reaches unsaved awards from 1 July
+    # 2026 (SI 2025/1148 art. 3A(1)), so every adult drawn in 2026 has the
+    # appointee saving (art. 3A(2)), which keeps the award payable all year.
+    saved = year >= 2026
+    units = draw(st.lists(families(tax_credits, saved), min_size=4, max_size=12))
     return units, year
 
 
@@ -377,6 +393,11 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
         start += len(members)
 
 
+# An appointee saving for income-related ESA (SI 2025/1148 art. 3A(2)), which
+# keeps the award payable after the abolition of 1 July 2026.
+SAVED = {"esa_income_appointee_saving": True}
+
+
 class BranchLog:
     """Records each branch Core creates, with the simulation it branches."""
 
@@ -439,15 +460,19 @@ def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
     the award, a couple aged 70 and 60 without the saving (case 4's kind), a
     pensioner without a report, a member outside the couple reporting beside
     a pensioner, and a pensioner reporting the award, who has reached
-    pensionable age and so has no claim whatever Pension Credit pays."""
+    pensionable age and so has no claim whatever Pension Credit pays. Each
+    reporter has the appointee saving (SI 2025/1148 art. 3A(2)), so the
+    abolition of income-related ESA on 1 July 2026 leaves each award payable
+    for the whole year."""
     log = BranchLog(monkeypatch)
     year = 2026
     adult = {"is_claimant_or_partner": True}
+    reports = {"esa_income_reported": 5_000, **SAVED}
     sim = Simulation(
         situation=combine(
-            household([dict(adult, age=45, esa_income_reported=5_000)], year),
+            household([dict(adult, age=45, **reports)], year),
             household(
-                [dict(adult, age=70), dict(adult, age=60, esa_income_reported=5_000)],
+                [dict(adult, age=70), dict(adult, age=60, **reports)],
                 year,
             ),
             household([dict(adult, age=75)], year),
@@ -458,12 +483,12 @@ def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
                         "age": 40,
                         "is_claimant_or_partner": False,
                         "current_education": "NOT_IN_EDUCATION",
-                        "esa_income_reported": 5_000,
+                        **reports,
                     },
                 ],
                 year,
             ),
-            household([dict(adult, age=75, esa_income_reported=5_000)], year),
+            household([dict(adult, age=75, **reports)], year),
         )
     )
     assert sim.calculate("esa_income", year).tolist() == [5_000, 5_000, 0, 5_000, 0]
@@ -669,7 +694,10 @@ def test_a_parameter_reform_keeps_the_age_and_take_up_conditions(monkeypatch):
     parameters. A couple aged 70 and 60 without the saving then meets the
     age conditions, so the model reads its Pension Credit and refuses the
     younger member's award. With only a working-age claimant, no couple meets
-    them, and the model opens no branch, under the reform or without it."""
+    them, and the model opens no branch, under the reform or without it. Each
+    reporter has the appointee saving (SI 2025/1148 art. 3A(2)), so the
+    abolition of income-related ESA on 1 July 2026 leaves each award payable
+    for the whole year."""
     log = BranchLog(monkeypatch)
     year = 2026
     reform = {
@@ -677,9 +705,11 @@ def test_a_parameter_reform_keeps_the_age_and_take_up_conditions(monkeypatch):
             f"{year}-01-01.{year}-12-31": False
         }
     }
-    working_age = household([dict(ADULT, age=45, esa_income_reported=5_000)], year)
+    working_age = household(
+        [dict(ADULT, age=45, esa_income_reported=5_000, **SAVED)], year
+    )
     mixed = household(
-        [dict(ADULT, age=70), dict(ADULT, age=60, esa_income_reported=5_000)],
+        [dict(ADULT, age=70), dict(ADULT, age=60, esa_income_reported=5_000, **SAVED)],
         year,
         has_mixed_age_couple_pension_credit_saving=False,
     )
@@ -1100,11 +1130,13 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
     remunerative work, and a member outside the couple aged 40 reporting
     beside a pensioner, whose own claim passes. The screen then reads neither
     the Pension Credit age conditions nor the claim. A claimant aged 45 out of
-    work passes, and the screen reads both."""
+    work passes, and the screen reads both. Each reporter has the appointee
+    saving (SI 2025/1148 art. 3A(2)), so the abolition of income-related ESA
+    on 1 July 2026 leaves each report open for the whole year."""
     reads = ScreenReads(monkeypatch)
     year = 2026
     no_couple_claim = [
-        household([dict(ADULT, age=75, esa_income_reported=5_000)], year),
+        household([dict(ADULT, age=75, esa_income_reported=5_000, **SAVED)], year),
         household(
             [
                 dict(
@@ -1113,6 +1145,7 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
                     esa_income_reported=5_000,
                     employment_income=15_000,
                     hours_worked=1_560,
+                    **SAVED,
                 )
             ],
             year,
@@ -1125,6 +1158,7 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
                     "is_claimant_or_partner": False,
                     "current_education": "NOT_IN_EDUCATION",
                     "esa_income_reported": 5_000,
+                    **SAVED,
                 },
             ],
             year,
@@ -1136,7 +1170,9 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
     assert not PENSION_CREDIT_CONDITIONS & reads.variables(year), reads.reads
 
     reads.reads.clear()
-    out_of_work = household([dict(ADULT, age=45, esa_income_reported=5_000)], year)
+    out_of_work = household(
+        [dict(ADULT, age=45, esa_income_reported=5_000, **SAVED)], year
+    )
     sim = Simulation(situation=combine(*no_couple_claim, out_of_work))
     assert sim.calculate("esa_income_eligible", year).tolist() == [
         False,
