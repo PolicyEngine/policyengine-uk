@@ -1,3 +1,19 @@
+## [2.171.0] - 2026-11-02
+
+### Added
+
+- The aggregate impact report now records why it withholds a standard reform's costing and target change in a year. For each withheld year, `withheld_because` names every condition that holds (`suppressed_component_changed`, `small_component_left`, `small_balance_change`, `small_target_change` or `no_baseline`) and the component or variable it holds for, in `result.json` and in the long-format report that qualification reads. The pull request comment lists the reasons under the reform costings. No reason gives a count or an amount.
+
+### Changed
+
+- Test statutory paternity pay as wages at every pension contribution level, and share the cloned tax-benefit system in the UC work-related groups property tests.
+- Spread the Python tests across seven shards to reduce the work per job.
+
+### Fixed
+
+- Keep the household ISA totals a dataset stores after the years it holds, grown like the person balances they sum, so means-tested capital no longer drops by those holdings from 2033.
+
+
 ## [2.170.4] - 2026-11-02
 
 ### Fixed
