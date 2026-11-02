@@ -11,8 +11,8 @@ Invariants, for any generated population of households:
    family gains one Housing Benefit bedroom, and one Universal Credit bedroom
    unless they are a qualifying young person no one is responsible for (para
    9(2)(g)) or they head the household and are not a qualifying young person
-   (the model treats the household head as liable for the rent, so such a
-   member is neither a renter nor a non-dependant: paras 1(2), 9(1) and
+   (the formula treats the household head as liable for the rent, so such
+   a member is neither a renter nor a non-dependant: paras 1(2), 9(1)(a) and
    9(2)(d)). If they join a non-dependant's family, the claim that counts the
    household's non-dependants (uc_non_dependants_counted) gains one Universal
    Credit bedroom unless they are a qualifying young person no one is
@@ -42,8 +42,8 @@ Invariants, for any generated population of households:
 4. In-unit non-dependants: every member of a benefit unit aged 16 or over
    who is neither the claimant nor partner nor a Universal Credit qualifying
    young person nor the household head (the householder in whose name the
-   accommodation is rented, whom para 9(2)(d) excludes as liable for the
-   rent) is a non-dependant (para 9(2)) with a bedroom (para 10(1)(c)). So
+   accommodation is rented, whom the formula reads as liable for the rent,
+   so that para 9(2)(d) excludes them) is a non-dependant (para 9(2)) with a bedroom (para 10(1)(c)). So
    their family has one more Universal Credit bedroom with them than
    without them, and making them qualifying young persons the renter is
    responsible for (para 10(1)(b)) leaves every family's Universal Credit
@@ -111,8 +111,8 @@ def scenario(draw):
     h = draw(st.integers(0, len(population) - 1))
     f = draw(st.integers(0, len(population[h]) - 1))
     person = draw(young_person())
-    # On some draws the person added to the head's family heads the
-    # household in place of its claimant.
+    # On some draws the person added to the head's family heads the household
+    # in place of its first adult, who stays the claimant.
     if f == 0:
         person["is_household_head"] = draw(st.booleans())
     return population, (h, f), person
@@ -206,7 +206,7 @@ def has_own_uc_bedroom(sim, situation):
     person the renter is responsible for has one (para 10(1)(b)); one no one
     is responsible for has none (para 9(2)(g)). Anyone else has one as a
     non-dependant (para 10(1)(c)), unless they head the household, whom the
-    model treats as liable for the rent (para 9(2)(d))."""
+    formula treats as liable for the rent (para 9(2)(d))."""
     qualifying = np.asarray(
         sim.calculate("is_qualifying_young_person_for_universal_credit", YEAR)
     )

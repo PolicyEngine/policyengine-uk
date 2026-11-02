@@ -1,17 +1,18 @@
 # A member of the benefit unit aged 16 or over who is not the claimant or
-# partner has their own bedroom in the size criteria.
+# partner has their own bedroom in the size criteria, with the exceptions below.
 #
 # Universal Credit: UC Regs 2013 Sch 4 para 10(1)(b), "a qualifying young
 # person for whom the renter or either joint renter is responsible"; anyone
 # else aged 16 or over living with the renter is a non-dependant (para 9(2))
 # with a bedroom under para 10(1)(c), "a non-dependant who is not a child",
 # except a qualifying young person no one is responsible for (para 9(2)(g))
-# and a member who heads the household, whom the model treats as liable for
-# the rent (para 9(2)(d)).
+# and a member who heads the household and is not a qualifying young person
+# the renter is responsible for, whom the formula treats as liable for the
+# rent (para 9(2)(d)).
 # A child is a person under 16 (WRA 2012 s.40).
 #
 # Housing Benefit: HB Regs 2006 and HB (SPC) Regs 2006 reg 13D(3)(b), "a
-# person who is not a child", where a child is a person under 16 (reg 2(1)).
+# person who is not a child".
 #
 # Rents of £200 a week (£10,400 a year) sit between the model's Maidstone
 # one-bedroom (B, £173.08 a week) and two-bedroom (C, £208.85 a week) rates,
@@ -346,11 +347,51 @@
     is_resolved_household_head: [false, true]
     is_claimant_or_partner: [true, false]
     is_qualifying_young_person_for_universal_credit: [false, false]
-    # The model treats the son, as household head, as the householder in
+    # The formula reads the son, as household head, as the householder in
     # whose name the home is rented. He does not claim, so he is not a
-    # renter (Sch 4 paras 1(2) and 9(1)(a)), not a qualifying young person
-    # (para 9(1)(b)) and, liable for his occupation, not a non-dependant
-    # (para 9(2)(d)). Only the renter's bedroom counts (para 10(1)(a)): 1
-    # bedroom, category B.
+    # renter (Sch 4 paras 1(2) and 9(1)(a)). Aged 20 and not in education, he
+    # is not a qualifying young person (para 9(1)(b)). Liable for his
+    # occupation, he is not a non-dependant (para 9(2)(d)). Only the renter's
+    # bedroom counts (para 10(1)(a)): 1 bedroom, category B.
     LHA_allowed_bedrooms: 1
     LHA_category: B
+
+- name: A household head who is a qualifying young person the renter is responsible for has their own bedroom
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 45
+        is_male: false
+        is_parent: true
+      daughter:
+        age: 17
+        is_male: false
+        current_education: UPPER_SECONDARY
+        is_household_head: true
+    benunits:
+      family:
+        members: [mother, daughter]
+    households:
+      home:
+        members: [mother, daughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_resolved_household_head: [false, true]
+    is_claimant_or_partner: [true, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    # The daughter heads the household but is a qualifying young person her
+    # mother is responsible for, so she is in the extended benefit unit
+    # (Sch 4 para 9(1)(b)) whoever is liable for the rent. The renter
+    # (para 10(1)(a)) and the qualifying young person (para 10(1)(b)):
+    # 2 bedrooms, category C, and the rent is met in full.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    uc_housing_costs_element: 10_400
+    # HB: one bedroom each for the claimant and the daughter, an occupier
+    # who is not a child (reg 13D(3)(b)).
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C

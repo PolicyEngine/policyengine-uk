@@ -43,13 +43,14 @@ class LHA_allowed_bedrooms(Variable):
     label = "The number of bedrooms covered by LHA for the benefit unit"
     documentation = (
         "Universal Credit size criteria: one bedroom for the renter or "
-        "couple, one for each member of the benefit unit aged 16 or over who "
-        "is not the claimant or partner, one for each non-dependant aged 16 or "
-        "over, and the children's bedrooms. A qualifying young person the "
-        "renter is responsible for has their own bedroom; any other member "
-        "aged 16 or over is a non-dependant and has one too, unless they "
-        "head the household: the model treats the household head as liable "
-        "for the rent, so a head who does not claim has no bedroom. A qualifying "
+        "couple, one for each qualifying young person the renter is "
+        "responsible for, one for each other member of the benefit unit aged "
+        "16 or over who is not the claimant, partner or household head, one "
+        "for each non-dependant aged 16 or over from another family, and the "
+        "children's bedrooms. The formula treats the household head as liable "
+        "for the rent, so a head who does not claim is not a non-dependant "
+        "(para 9(2)(d)); a head who is a qualifying young person the renter is "
+        "responsible for keeps their bedroom. A qualifying "
         "young person no one is responsible for, such as one looked after by "
         "a local authority, is not a non-dependant and has no bedroom, in "
         "this family or another. Joint tenants and other sharers of the rent, "
@@ -83,12 +84,13 @@ class LHA_allowed_bedrooms(Variable):
         qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
         # non-dependant with a bedroom, unless they head the household. The
-        # model treats the household head (is_resolved_household_head) as
-        # the householder in whose name the accommodation is rented, and so
-        # as liable to make payments for their occupation. Such a member who
-        # does not claim is not a renter (paras 1(2) and 9(1)(a)), is not a
-        # qualifying young person (para 9(1)(b)) and is not a non-dependant
-        # (para 9(2)(d)), so para 10(1) gives them no bedroom.
+        # formula reads the household head (is_resolved_household_head, the
+        # householder in whose name the accommodation is rented) as liable to
+        # make payments on a commercial basis for their occupation, so para
+        # 9(2)(d) stops them being a non-dependant. A head who does not claim
+        # is not a renter either (paras 1(2) and 9(1)(a)). A head who is a
+        # qualifying young person the renter is responsible for keeps the
+        # para 10(1)(b) bedroom above (para 9(1)(b)).
         family_non_dependant = (
             family_member & ~qualifying & ~person("is_resolved_household_head", period)
         )
