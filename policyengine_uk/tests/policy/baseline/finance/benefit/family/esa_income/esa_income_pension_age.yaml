@@ -139,6 +139,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1, person2]
@@ -175,6 +179,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1, person2]
@@ -203,6 +211,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1]
@@ -377,6 +389,10 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1, person2]
@@ -404,10 +420,18 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1, person2]
@@ -438,11 +462,19 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
         esa_includes_support_component: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
+        # payment after the 1 July 2026 abolition, so the model pays it for
+        # the whole of 2026-27 (esa_income_payable_share).
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: [person1, person2]
