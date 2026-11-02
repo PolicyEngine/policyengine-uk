@@ -3,12 +3,13 @@
 ``programs.yaml`` lists the programmes the model covers. Its ``budget`` fields
 also define the budget totals: ``household_tax`` adds every term flagged
 ``budget: tax`` and ``household_benefits`` every term flagged
-``budget: benefit``, in the order ``budget_order`` gives. The headline budget
-impact is the change in ``household_tax`` less the change in
-``household_benefits``.
+``budget: benefit``, in the order ``budget_order`` gives. PolicyEngine's
+simulation API reports the change in ``household_tax`` less the change in
+``household_benefits`` as the headline budget impact.
 
-This module reads only the YAML file, never the package's top level, so the
-variable modules can import it while the tax-benefit system is being built.
+This module imports only the standard library and ``yaml``, never the
+package's top level, so the variable modules can import it while the package
+builds the tax-benefit system.
 """
 
 from __future__ import annotations
@@ -30,6 +31,13 @@ TERM_KINDS = ("programme_measure", PROGRAMME, "reform_measure", "public_service"
 # The gov.contrib.benefit_uprating parameters, in the order
 # household_benefits applies them, and the default for a benefit term.
 UPRATING_PARAMETERS = ("all", "non_sp")
+# The fields that place a term in the totals. The loader refuses any other
+# field whose name starts with "budget", so a misspelt one fails loudly.
+BUDGET_FIELDS = ("budget", "budget_dropped_when", "budget_uprating")
+# Every field a `budget_terms` entry may carry.
+TERM_FIELDS = BUDGET_FIELDS + ("variable", "name", "kind", "program", "group", "notes")
+# The C parser when PyYAML has it, which parses the registry far faster.
+_YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
 class RegistryError(ValueError):
@@ -78,7 +86,21 @@ class BudgetProgram:
 @lru_cache(maxsize=1)
 def load_registry() -> dict:
     """The parsed ``programs.yaml``."""
-    return yaml.safe_load(REGISTRY_PATH.read_text())
+    return yaml.load(REGISTRY_PATH.read_text(), Loader=_YAML_LOADER)
+
+
+def _check_budget_fields(entry: dict, name: str) -> None:
+    unknown = sorted(
+        key
+        for key in entry
+        if str(key).startswith("budget") and key not in BUDGET_FIELDS
+    )
+    if unknown:
+        raise RegistryError(f"{name}: unknown budget fields {unknown}")
+    if "budget" not in entry:
+        stray = sorted(key for key in entry if key in BUDGET_FIELDS)
+        if stray:
+            raise RegistryError(f"{name}: {stray} need a budget flag")
 
 
 def _term(entry: dict, kind: str, program: Optional[str]) -> BudgetProgram:
@@ -102,6 +124,9 @@ def _term(entry: dict, kind: str, program: Optional[str]) -> BudgetProgram:
     group = entry.get("group")
     if group is not None and not isinstance(group, str):
         raise RegistryError(f"{variable}: group must be a string")
+    dropped_when = entry.get("budget_dropped_when")
+    if dropped_when is not None and not isinstance(dropped_when, str):
+        raise RegistryError(f"{variable}: budget_dropped_when must be a parameter path")
     return BudgetProgram(
         variable=variable,
         label=entry["name"],
@@ -109,7 +134,7 @@ def _term(entry: dict, kind: str, program: Optional[str]) -> BudgetProgram:
         group=group,
         kind=kind,
         program=program,
-        dropped_when=entry.get("budget_dropped_when"),
+        dropped_when=dropped_when,
         uprating=uprating,
     )
 
@@ -119,9 +144,10 @@ def budget_programs() -> tuple:
     """Every term of the budget totals, as ``BudgetProgram`` records.
 
     The household_tax terms come first, then the household_benefits terms,
-    each in the order the total adds them. The result is the same on every
-    call; it raises ``RegistryError`` if the registry's budget fields
-    disagree with ``budget_order``.
+    each in the order the total adds them. Every call returns the same
+    tuple. Raises ``RegistryError`` if a budget field is malformed or
+    misspelt, or if the registry's budget fields disagree with
+    ``budget_order``.
     """
     return build_budget_programs(load_registry())
 
@@ -137,11 +163,21 @@ def build_budget_programs(registry: dict) -> tuple:
         terms[term.variable] = term
 
     for entry in registry["programs"]:
+        _check_budget_fields(entry, entry.get("id", entry.get("variable")))
         if "budget" in entry:
             if "variable" not in entry:
                 raise RegistryError(f"{entry['id']}: a budget entry needs a variable")
             add(_term(entry, PROGRAMME, entry["id"]))
     for entry in registry.get("budget_terms", []):
+        name = entry.get("variable")
+        _check_budget_fields(entry, name)
+        unknown = sorted(str(key) for key in entry if key not in TERM_FIELDS)
+        if unknown:
+            raise RegistryError(f"{name}: unknown budget_terms fields {unknown}")
+        if "variable" not in entry or "budget" not in entry:
+            raise RegistryError(
+                f"{name}: a budget_terms entry needs variable and budget"
+            )
         kind = entry.get("kind")
         if kind not in TERM_KINDS:
             raise RegistryError(f"{entry['variable']}: unknown kind {kind!r}")

@@ -14,10 +14,10 @@ class household_benefits(Variable):
     entity = Household
     label = "household benefits"
     documentation = (
-        "Total value of benefits received by household: the programs.yaml "
-        "terms flagged budget: benefit, less any whose budget_dropped_when "
-        "parameter is true, plus the gov.contrib.benefit_uprating rates "
-        "times the terms each rate scales (budget_uprating)."
+        "Total value of the benefits the household receives, less any a "
+        "reform removes, such as Council Tax Reduction when a reform "
+        "abolishes council tax, plus each benefit uprating rate a reform sets "
+        "times the benefits that rate covers."
     )
     definition_period = YEAR
     unit = GBP

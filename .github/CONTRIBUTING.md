@@ -58,7 +58,7 @@ flagged `budget: tax` and `household_benefits` every entry flagged
 `policyengine_uk.programs.budget_programs()` returns those terms with their
 labels, `tax` or `benefit` and `group`; downstream code reads that function, or
 `HOUSEHOLD_TAX_VARIABLES` and `HOUSEHOLD_BENEFIT_VARIABLES`, rather than its own
-copy. The budget fields are:
+copy. Four fields set a term's place in the totals:
 
 - `budget`: `tax` or `benefit` on each entry whose `variable` a total adds;
   leave it off the rest.
@@ -68,8 +68,8 @@ copy. The budget fields are:
   from its total while true (`gov.contrib.abolish_council_tax` on council tax,
   the High Value Council Tax Surcharge and Council Tax Reduction).
 - `budget_uprating`: which of `gov.contrib.benefit_uprating`'s `all` and
-  `non_sp` rates scale a benefit term; absent means both. The State Pension
-  takes `[all]` and basic income `[]`.
+  `non_sp` rates scale a benefit term. A benefit term without it takes both.
+  The State Pension takes `[all]` and basic income `[]`.
 
 A total's term that no programme entry carries goes under `budget_terms`, with a
 `kind`: `programme_measure` (the amount counted for the programme that `program`
@@ -78,9 +78,23 @@ does not carry yet), `reform_measure` (not a programme: a hypothetical tax or
 benefit, or a change from baseline such as `vat_change`, zero unless a reform
 sets it) or `public_service` (public services in kind). These entries stay out
 of `programs`, so the coverage page never lists them, and they carry no
-verified-year fields. To add a term to a total, flag its entry and append its
-variable to the end of `budget_order`'s list; the package refuses to load when
-the flags and `budget_order` disagree.
+verified-year fields. The package refuses to load when a budget field is
+misspelt or the flags and `budget_order` disagree.
+
+To add a term to a total:
+
+1. Flag its entry with `budget`, or add a `budget_terms` entry for it.
+2. Append its variable to the end of `budget_order`'s list for that total.
+3. Add a head for it to `policyengine_uk/data/fiscal_partition.yaml` that lists
+   the total in its `totals`: a `tax_heads` entry for a tax term, a
+   `spending_heads` entry for a benefit term. If the term carries
+   `budget_dropped_when`, add it under that parameter in the total's
+   `dropped_when` there too.
+4. For a benefit term, also add its variable to `GOV_SPENDING_VARIABLES` in
+   `policyengine_uk/variables/gov/gov_spending.py`, or, if government does not
+   pay it, to `NOT_PAID_BY_GOVERNMENT` in
+   `policyengine_uk/tests/code_health/test_household_benefits_in_government_spending.py`
+   with the reason.
 
 ## Axiom parity
 

@@ -68,8 +68,8 @@ The registry also defines the budget totals `household_tax` and
 their terms to downstream code. The `Program registry` section of
 `.github/CONTRIBUTING.md` defines the budget fields (`budget`, `group`,
 `budget_dropped_when`, `budget_uprating`), the `budget_terms` section and
-`budget_order`. Add or remove a term of either total there, never in the
-formula modules.
+`budget_order`. Add or remove a term of either total in `programs.yaml`, never
+in the formula modules.
 
 ## Refactoring Recovery Lessons
 

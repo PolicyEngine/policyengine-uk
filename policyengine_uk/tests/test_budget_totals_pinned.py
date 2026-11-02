@@ -1,13 +1,13 @@
 """household_tax, household_benefits and household_net_income stay exact.
 
 household_tax and household_benefits read their terms from programs.yaml.
-EXPECTED holds the three totals for twelve hand-built households in four
+EXPECTED holds the three totals for thirteen hand-built households in four
 years under four reforms, computed with the lists that the formula modules
 held as literals at commit 2da212abcf2086337fc088a4a1236f4ae7b6af63. The
 reforms switch on gov.contrib.abolish_council_tax, the two
 gov.contrib.benefit_uprating rates, and a flat basic income, which the
-uprating leaves out. Equality is exact: the totals add the same float32
-terms in the same order.
+uprating leaves out. The test compares with exact equality, because the
+totals add the same float32 terms in the same order.
 """
 
 import pytest
@@ -31,7 +31,8 @@ REFORMS = {
     },
 }
 
-# Each household: region, tenure, rent, council tax, and its people.
+# Each household: region, tenure, rent, council tax, main residence value,
+# and its people.
 HOUSEHOLDS = {
     "single_renter_london": dict(
         region="LONDON",
@@ -148,9 +149,24 @@ HOUSEHOLDS = {
             "b": dict(age=67, state_pension_reported=10_500, bsp_reported=1_000),
         },
     ),
+    # Owns a £3m main residence, so pays the High Value Council Tax
+    # Surcharge from 2028.
+    "london_high_value_owner": dict(
+        region="LONDON",
+        tenure_type="OWNED_OUTRIGHT",
+        council_tax=3_800,
+        main_residence_value=3_000_000,
+        people={"a": dict(age=58, employment_income=180_000)},
+    ),
 }
 
-HOUSEHOLD_INPUTS = ("region", "tenure_type", "rent", "council_tax")
+HOUSEHOLD_INPUTS = (
+    "region",
+    "tenure_type",
+    "rent",
+    "council_tax",
+    "main_residence_value",
+)
 OUTPUTS = ("household_tax", "household_benefits", "household_net_income")
 
 
@@ -221,6 +237,11 @@ EXPECTED = {
         12201.0,
         41116.39453125,
     ),
+    ("baseline", 2023, "london_high_value_owner"): (
+        79902.2265625,
+        201.0,
+        100298.7734375,
+    ),
     ("baseline", 2025, "single_renter_london"): (5154.9033203125, 0.0, 19845.09765625),
     ("baseline", 2025, "couple_two_children_uc"): (
         2842.903076171875,
@@ -261,6 +282,7 @@ EXPECTED = {
         11700.0,
         41297.09765625,
     ),
+    ("baseline", 2025, "london_high_value_owner"): (76788.1015625, 0.0, 103211.8984375),
     ("baseline", 2026, "single_renter_london"): (
         5160.4033203125,
         100.0,
@@ -296,6 +318,11 @@ EXPECTED = {
         8408.4033203125,
         11800.0,
         41391.59765625,
+    ),
+    ("baseline", 2026, "london_high_value_owner"): (
+        76793.6015625,
+        100.0,
+        103306.3984375,
     ),
     ("baseline", 2028, "single_renter_london"): (5160.4033203125, 0.0, 19839.59765625),
     ("baseline", 2028, "couple_two_children_uc"): (
@@ -337,6 +364,7 @@ EXPECTED = {
         11700.0009765625,
         41291.59765625,
     ),
+    ("baseline", 2028, "london_high_value_owner"): (80293.6015625, 0.0, 99706.3984375),
     ("abolish_council_tax", 2023, "single_renter_london"): (
         4136.60498046875,
         201.0,
@@ -392,6 +420,11 @@ EXPECTED = {
         7084.6044921875,
         12201.0,
         43116.39453125,
+    ),
+    ("abolish_council_tax", 2023, "london_high_value_owner"): (
+        76102.2265625,
+        201.0,
+        104098.7734375,
     ),
     ("abolish_council_tax", 2025, "single_renter_london"): (
         3654.903076171875,
@@ -449,6 +482,11 @@ EXPECTED = {
         11700.0,
         43297.09765625,
     ),
+    ("abolish_council_tax", 2025, "london_high_value_owner"): (
+        72988.1015625,
+        0.0,
+        107011.8984375,
+    ),
     ("abolish_council_tax", 2026, "single_renter_london"): (
         3660.403076171875,
         100.0,
@@ -504,6 +542,11 @@ EXPECTED = {
         6408.4033203125,
         11800.0,
         43391.59765625,
+    ),
+    ("abolish_council_tax", 2026, "london_high_value_owner"): (
+        72993.6015625,
+        100.0,
+        107106.3984375,
     ),
     ("abolish_council_tax", 2028, "single_renter_london"): (
         3660.403076171875,
@@ -565,6 +608,11 @@ EXPECTED = {
         11700.0009765625,
         43291.59765625,
     ),
+    ("abolish_council_tax", 2028, "london_high_value_owner"): (
+        72993.6015625,
+        0.0,
+        107006.3984375,
+    ),
     ("uprating", 2023, "single_renter_london"): (
         5636.60498046875,
         231.14999389648438,
@@ -613,6 +661,11 @@ EXPECTED = {
         12981.150390625,
         41896.54296875,
     ),
+    ("uprating", 2023, "london_high_value_owner"): (
+        79902.2265625,
+        231.14999389648438,
+        100328.9296875,
+    ),
     ("uprating", 2025, "single_renter_london"): (5154.9033203125, 0.0, 19845.09765625),
     ("uprating", 2025, "couple_two_children_uc"): (
         2842.903076171875,
@@ -649,6 +702,7 @@ EXPECTED = {
         12405.0,
         42002.09765625,
     ),
+    ("uprating", 2025, "london_high_value_owner"): (76788.1015625, 0.0, 103211.8984375),
     ("uprating", 2026, "single_renter_london"): (
         5160.4033203125,
         115.0,
@@ -693,6 +747,11 @@ EXPECTED = {
         12520.0,
         42111.59765625,
     ),
+    ("uprating", 2026, "london_high_value_owner"): (
+        76793.6015625,
+        115.0,
+        103321.3984375,
+    ),
     ("uprating", 2028, "single_renter_london"): (5160.4033203125, 0.0, 19839.59765625),
     ("uprating", 2028, "couple_two_children_uc"): (
         2848.403076171875,
@@ -733,6 +792,7 @@ EXPECTED = {
         12405.0009765625,
         41996.59765625,
     ),
+    ("uprating", 2028, "london_high_value_owner"): (80293.6015625, 0.0, 99706.3984375),
     ("abolish_uprating_basic_income", 2023, "single_renter_london"): (
         4136.60498046875,
         2289.0400390625,
@@ -792,6 +852,11 @@ EXPECTED = {
         7084.6044921875,
         16114.0400390625,
         47029.43359375,
+    ),
+    ("abolish_uprating_basic_income", 2023, "london_high_value_owner"): (
+        76102.2265625,
+        2289.0400390625,
+        106186.8203125,
     ),
     ("abolish_uprating_basic_income", 2025, "single_renter_london"): (
         3654.903076171875,
@@ -853,6 +918,11 @@ EXPECTED = {
         15593.0,
         47190.09765625,
     ),
+    ("abolish_uprating_basic_income", 2025, "london_high_value_owner"): (
+        72988.1015625,
+        2080.0,
+        109091.8984375,
+    ),
     ("abolish_uprating_basic_income", 2026, "single_renter_london"): (
         3660.403076171875,
         2184.0,
@@ -912,6 +982,11 @@ EXPECTED = {
         6408.4033203125,
         15697.0,
         47288.59765625,
+    ),
+    ("abolish_uprating_basic_income", 2026, "london_high_value_owner"): (
+        72993.6015625,
+        2184.0,
+        109190.3984375,
     ),
     ("abolish_uprating_basic_income", 2028, "single_renter_london"): (
         3660.403076171875,
@@ -973,6 +1048,11 @@ EXPECTED = {
         15593.0009765625,
         47184.59765625,
     ),
+    ("abolish_uprating_basic_income", 2028, "london_high_value_owner"): (
+        72993.6015625,
+        2080.0,
+        109086.3984375,
+    ),
 }
 
 
@@ -994,7 +1074,7 @@ def test_budget_totals_match_pinned_values(reform_name, year):
 
 
 def test_pinned_grid_is_complete():
-    assert len(HOUSEHOLDS) >= 12
+    assert len(HOUSEHOLDS) >= 13
     assert set(EXPECTED) == {
         (reform, year, household)
         for reform in REFORMS

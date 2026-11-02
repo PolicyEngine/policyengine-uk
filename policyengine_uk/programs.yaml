@@ -18,7 +18,8 @@
 #                        leaves the term out while the parameter is true.
 #   budget_uprating      benefit terms only: which of
 #                        gov.contrib.benefit_uprating's `all` and `non_sp`
-#                        scale the term. Absent means [all, non_sp].
+#                        scale the term. A benefit term without it takes
+#                        both.
 #
 # `budget_terms` lists the terms that no `programs` entry carries. They stay
 # out of the coverage list, and each has a `kind`:
@@ -28,10 +29,14 @@
 #                      has no coverage or verified-year fields until someone
 #                      confirms them and moves it into `programs`
 #   reform_measure     not a programme: a hypothetical tax or benefit, or a
-#                      change from baseline, which is zero unless a reform
-#                      sets it; `program` may name the programme it changes
-#   public_service     not a programme: public services in kind, valued at
-#                      cost
+#                      change from baseline; it stays zero until a reform
+#                      sets it, and `program` may name the programme it
+#                      changes
+#   public_service     not a programme: public services in kind, at their
+#                      cost to government
+#
+# The loader refuses a misspelt field whose name starts with `budget`, and
+# any `budget_terms` field outside the ones above and `name` and `notes`.
 
 programs:
   # --- HMRC programs ---
@@ -793,9 +798,9 @@ programs:
     notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25. From winter 2025-26 recovered by the winter fuel payment charge (income tax) above £35,000 of total income
 
 # Budget terms that no programme entry above carries. The coverage list
-# (`programs`) leaves these out: some are parts of a listed programme, some
-# are programmes the coverage list does not carry yet, and some are not
-# programmes at all. `kind` says which; see the header.
+# (`programs`) leaves these out: some measure part of a listed programme,
+# some a programme the list doesn't carry yet, some no programme. `kind`
+# says which; see the header.
 budget_terms:
   # --- Taxes ---
   - variable: expected_sdlt
@@ -806,7 +811,7 @@ budget_terms:
     group: property_transaction_taxes
 
   - variable: expected_ltt
-    name: Land Transaction Tax
+    name: Land Transaction Tax on household purchases
     budget: tax
     kind: programme
     group: property_transaction_taxes
@@ -825,7 +830,7 @@ budget_terms:
     kind: programme_measure
     program: stamp_duty_land_tax
     group: property_transaction_taxes
-    notes: Stamp Duty Land Tax that companies pay, allocated to households by shareholding.
+    notes: Stamp Duty Land Tax that companies pay; the model shares it across households by shareholding.
 
   - variable: high_value_council_tax_surcharge
     name: High Value Council Tax Surcharge
@@ -877,6 +882,7 @@ budget_terms:
     name: Change in private school VAT
     budget: tax
     kind: reform_measure
+    program: vat
     group: vat
     notes: Private school VAT less its baseline.
 
@@ -884,13 +890,13 @@ budget_terms:
     name: Unspecified tax change borne by capital
     budget: tax
     kind: reform_measure
-    notes: A lump-sum revenue change that a reform sets, allocated to households by shareholding.
+    notes: A lump-sum revenue change that a reform sets; the model shares it across households by shareholding.
 
   - variable: consumer_incident_tax_revenue_change
     name: Unspecified tax change borne by consumers
     budget: tax
     kind: reform_measure
-    notes: A lump-sum revenue change that a reform sets, allocated to households by consumption.
+    notes: A lump-sum revenue change that a reform sets; the model shares it across households by consumption.
 
   - variable: employer_ni_response_capital_incidence
     name: Employer National Insurance change borne by capital
@@ -1064,21 +1070,21 @@ budget_terms:
     budget: benefit
     kind: public_service
     group: public_services_in_kind
-    notes: Public services the household uses, valued at cost. Not a cash programme.
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
 
   - variable: dfe_education_spending
     name: State education spending
     budget: benefit
     kind: public_service
     group: public_services_in_kind
-    notes: Public services the household uses, valued at cost. Not a cash programme.
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
 
   - variable: dft_subsidy_spending
     name: Transport subsidy spending
     budget: benefit
     kind: public_service
     group: public_services_in_kind
-    notes: Public services the household uses, valued at cost. Not a cash programme.
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
 
   - variable: healthy_start_vouchers
     name: Healthy Start vouchers
@@ -1090,7 +1096,7 @@ budget_terms:
     name: Two Child Limit Payment
     budget: benefit
     kind: reform_measure
-    notes: A proposed Scottish payment whose regulations were not laid. Zero unless a reform switches it on.
+    notes: A proposed Scottish payment, whose regulations the Scottish Government decided on 3 December 2025 not to lay. Zero unless a reform switches it on.
 
   - variable: carer_support_payment
     name: Carer Support Payment

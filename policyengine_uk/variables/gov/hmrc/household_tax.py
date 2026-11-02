@@ -10,8 +10,9 @@ class household_tax(Variable):
     entity = Household
     label = "household taxes"
     documentation = (
-        "Total taxes owed by the household: the programs.yaml terms flagged "
-        "budget: tax, less any whose budget_dropped_when parameter is true."
+        "Total taxes the household owes: each tax the model counts against "
+        "the household, less any a reform removes, such as council tax when "
+        "a reform abolishes it."
     )
     definition_period = YEAR
     unit = GBP

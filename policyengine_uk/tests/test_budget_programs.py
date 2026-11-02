@@ -1,27 +1,36 @@
-"""The budget totals add exactly the budget terms in programs.yaml.
+"""The budget totals add the budget terms in programs.yaml and no others.
 
 household_tax adds the programs.yaml terms flagged ``budget: tax`` and
 household_benefits those flagged ``budget: benefit``, in ``budget_order``.
-These tests read the YAML without policyengine_uk.programs and check:
+The drift tests parse the YAML themselves rather than through
+policyengine_uk.programs. The tests check:
 
-1. Drift: the variables each total's formula reads are exactly the flagged
-   terms, less those whose ``budget_dropped_when`` parameter is true, and
-   household_tax reads them in ``budget_order``.
+1. Drift: each total's formula reads the flagged terms and no others, less
+   those whose ``budget_dropped_when`` parameter is true, in the order its
+   ``add`` calls imply; the fiscal partition's ``dropped_when`` for each
+   total names the same terms as the registry.
 2. Differential: HOUSEHOLD_TAX_VARIABLES and HOUSEHOLD_BENEFIT_VARIABLES
    equal, in order, the lists the formula modules held as literals at commit
    2da212abcf2086337fc088a4a1236f4ae7b6af63, and the council tax and
    uprating rules match the ones those formulas applied.
 3. budget_programs() returns the same records in a fresh interpreter,
    whichever module that interpreter imports first.
-4. Properties (Hypothesis): every budget_programs() variable exists, none
-   repeats, and each sign agrees with the list it came from; on generated
-   registries, the loader keeps budget_order's order and refuses a registry
-   whose flags and order disagree.
+4. Properties: every budget_programs() variable exists, none repeats, and
+   each sign agrees with the list it came from; budget_variables_in_effect
+   and uprated_benefit_variables return subsequences of budget_order, in
+   order; on generated registries (Hypothesis), the loader keeps
+   budget_order's order and refuses a registry whose flags and order
+   disagree.
+5. Validation: the loader refuses each kind of malformed or misspelt budget
+   field.
 """
 
+import copy
 import json
+import re
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -36,6 +45,12 @@ from policyengine_uk.programs import (
     build_budget_programs,
     budget_programs,
     budget_variables,
+    budget_variables_in_effect,
+    uprated_benefit_variables,
+)
+from policyengine_uk.utils.aggregate_impact.partition import (
+    default_partition_path,
+    load_partition,
 )
 from policyengine_uk.variables.gov.hmrc.household_tax import HOUSEHOLD_TAX_VARIABLES
 from policyengine_uk.variables.household.income.household_benefits import (
@@ -199,8 +214,54 @@ def test_totals_read_exactly_the_registry_terms(budget, abolish):
     read = read_by_formula(TOTALS[budget], reform)
     assert set(read) == set(expected)
     if budget == "tax":
-        # household_tax makes one add() call, so the reads are its order.
+        # household_tax makes one add() call, so the trace lists its reads in
+        # summation order.
         assert read == expected
+    else:
+        # household_benefits adds the terms the `all` rate scales, then those
+        # the `non_sp` rate scales, then every term; the trace lists the
+        # first read of each term in that order.
+        assert list(dict.fromkeys(read)) == list(
+            dict.fromkeys(
+                raw_uprated(expected, "all")
+                + raw_uprated(expected, "non_sp")
+                + expected
+            )
+        )
+
+
+def raw_uprated(benefits, rate):
+    """The entries of ``benefits`` the raw YAML lets ``rate`` scale, in order."""
+    uprating = {
+        entry["variable"]: entry.get("budget_uprating", ["all", "non_sp"])
+        for entry in RAW["programs"] + RAW["budget_terms"]
+        if entry.get("budget") == "benefit"
+    }
+    return [benefit for benefit in benefits if rate in uprating[benefit]]
+
+
+@pytest.mark.parametrize("budget", ["tax", "benefit"])
+def test_partition_drops_the_registry_terms(budget):
+    """fiscal_partition.yaml's dropped_when for each total names the terms
+    that carry the same budget_dropped_when in programs.yaml."""
+    partition = load_partition(default_partition_path())
+    entries = [
+        entry
+        for entry in RAW["programs"] + RAW["budget_terms"]
+        if entry.get("budget") == budget
+    ]
+    switches = {
+        entry["budget_dropped_when"]
+        for entry in entries
+        if "budget_dropped_when" in entry
+    } | set(partition.dropped_when_parameters())
+    assert switches
+    for switch in switches:
+        assert partition.dropped(TOTALS[budget], [switch]) == {
+            entry["variable"]
+            for entry in entries
+            if entry.get("budget_dropped_when") == switch
+        }, switch
 
 
 # 2. Differential against main
@@ -292,8 +353,7 @@ def test_budget_programs_have_labels_and_kinds():
 PROGRAMS = budget_programs()
 
 
-@settings(max_examples=50, deadline=None, derandomize=True)
-@given(st.sampled_from(PROGRAMS))
+@pytest.mark.parametrize("program", PROGRAMS, ids=lambda p: p.variable)
 def test_each_budget_program_exists_once_with_its_list_sign(program):
     assert program.variable in SYSTEM.variables
     assert [p.variable for p in PROGRAMS].count(program.variable) == 1
@@ -305,6 +365,57 @@ def test_each_budget_program_exists_once_with_its_list_sign(program):
     )
     assert program.variable in own
     assert program.variable not in other
+
+
+def is_ordered_subsequence(part, whole):
+    position = iter(whole)
+    return all(item in position for item in part)
+
+
+def parameters_with(switches):
+    """A stand-in for parameters at an instant, with each switch path set."""
+    root = SimpleNamespace()
+    for path, value in switches.items():
+        node = root
+        *parents, leaf = path.split(".")
+        for name in parents:
+            if not hasattr(node, name):
+                setattr(node, name, SimpleNamespace())
+            node = getattr(node, name)
+        setattr(node, leaf, value)
+    return root
+
+
+SWITCHES = sorted({p.dropped_when for p in PROGRAMS if p.dropped_when})
+
+
+@settings(max_examples=100, deadline=None, derandomize=True)
+@given(
+    st.sampled_from(["tax", "benefit"]),
+    st.fixed_dictionaries({switch: st.booleans() for switch in SWITCHES}),
+    st.sampled_from(["all", "non_sp"]),
+    st.data(),
+)
+def test_selections_are_ordered_subsequences_of_budget_order(
+    budget, switches, rate, data
+):
+    order = RAW["budget_order"][budget]
+    in_effect = budget_variables_in_effect(budget, parameters_with(switches))
+    assert is_ordered_subsequence(in_effect, order)
+    on = {path for path, value in switches.items() if value}
+    assert in_effect == [
+        p.variable for p in PROGRAMS if p.budget == budget and p.dropped_when not in on
+    ]
+    benefits = RAW["budget_order"]["benefit"]
+    chosen = data.draw(st.lists(st.sampled_from(benefits), unique=True))
+    subset = [benefit for benefit in benefits if benefit in chosen]
+    for selection in (
+        subset,
+        budget_variables_in_effect("benefit", parameters_with(switches)),
+    ):
+        uprated = uprated_benefit_variables(selection, rate)
+        assert is_ordered_subsequence(uprated, selection)
+        assert is_ordered_subsequence(uprated, benefits)
 
 
 names = st.text(alphabet="abcdefghij_", min_size=1, max_size=8)
@@ -361,3 +472,140 @@ def test_loader_refuses_order_that_disagrees_with_flags(registry, data):
     broken = {**registry, "budget_order": {**registry["budget_order"], budget: order}}
     with pytest.raises(RegistryError):
         build_budget_programs(broken)
+
+
+# 5. Validation
+
+VALID = {
+    "programs": [
+        {
+            "id": "council_tax",
+            "name": "Council Tax",
+            "variable": "council_tax",
+            "budget": "tax",
+            "budget_dropped_when": "gov.contrib.abolish_council_tax",
+        },
+        {"id": "esa", "name": "ESA", "variable": "esa"},
+    ],
+    "budget_terms": [
+        {
+            "variable": "basic_income",
+            "name": "Basic income",
+            "budget": "benefit",
+            "kind": "reform_measure",
+            "budget_uprating": [],
+        },
+        {
+            "variable": "esa_income",
+            "name": "ESA (income-related)",
+            "budget": "benefit",
+            "kind": "programme_measure",
+            "program": "esa",
+            "group": "esa",
+        },
+    ],
+    "budget_order": {
+        "tax": ["council_tax"],
+        "benefit": ["basic_income", "esa_income"],
+    },
+}
+
+
+def test_valid_example_registry_loads():
+    built = build_budget_programs(VALID)
+    assert [p.variable for p in built] == ["council_tax", "basic_income", "esa_income"]
+    assert built[0].dropped_when == "gov.contrib.abolish_council_tax"
+    assert built[1].uprating == ()
+    assert built[2].uprating == ("all", "non_sp")
+
+
+def _set(path, value):
+    def change(registry):
+        section, index, key = path
+        registry[section][index][key] = value
+
+    return change
+
+
+def _delete(path):
+    def change(registry):
+        section, index, key = path
+        del registry[section][index][key]
+
+    return change
+
+
+# One malformed registry per check the loader makes, with the message it gives.
+INVALID = {
+    "budget_not_tax_or_benefit": (
+        _set(("programs", 0, "budget"), "spending"),
+        "budget must be tax or benefit",
+    ),
+    "uprating_on_a_tax": (
+        _set(("programs", 0, "budget_uprating"), ["all"]),
+        "only benefit terms take budget_uprating",
+    ),
+    "unknown_uprating": (
+        _set(("budget_terms", 0, "budget_uprating"), ["sp"]),
+        "unknown budget_uprating",
+    ),
+    "group_not_a_string": (
+        _set(("budget_terms", 1, "group"), ["esa"]),
+        "group must be a string",
+    ),
+    "dropped_when_not_a_path": (
+        _set(("programs", 0, "budget_dropped_when"), True),
+        "budget_dropped_when must be a parameter path",
+    ),
+    "flagged_programme_without_variable": (
+        _delete(("programs", 0, "variable")),
+        "a budget entry needs a variable",
+    ),
+    "unknown_kind": (_set(("budget_terms", 0, "kind"), "measure"), "unknown kind"),
+    "unknown_program": (
+        _set(("budget_terms", 1, "program"), "esa_typo"),
+        "unknown program",
+    ),
+    "programme_measure_without_program": (
+        _delete(("budget_terms", 1, "program")),
+        "a programme_measure needs a program",
+    ),
+    "budget_term_without_budget": (
+        _delete(("budget_terms", 1, "budget")),
+        "needs variable and budget",
+    ),
+    "misspelt_dropped_when": (
+        _set(("programs", 0, "budget_droped_when"), "gov.contrib.abolish_council_tax"),
+        "unknown budget fields ['budget_droped_when']",
+    ),
+    "misspelt_uprating": (
+        _set(("budget_terms", 0, "budget_upratng"), []),
+        "unknown budget fields ['budget_upratng']",
+    ),
+    "unknown_budget_terms_field": (
+        _set(("budget_terms", 1, "dropped_when"), "gov.contrib.abolish_council_tax"),
+        "unknown budget_terms fields ['dropped_when']",
+    ),
+    "budget_field_without_flag": (
+        _set(("programs", 1, "budget_uprating"), ["all"]),
+        "need a budget flag",
+    ),
+    "flagged_twice": (
+        lambda r: r["programs"][1].update(variable="esa_income", budget="benefit"),
+        "carries a budget flag twice",
+    ),
+    "order_repeats": (
+        lambda r: r["budget_order"]["tax"].append("council_tax"),
+        "repeats a variable",
+    ),
+    "order_disagrees": (lambda r: r["budget_order"]["benefit"].pop(), "differ"),
+}
+
+
+@pytest.mark.parametrize("case", list(INVALID))
+def test_loader_refuses_malformed_registry(case):
+    change, message = INVALID[case]
+    registry = copy.deepcopy(VALID)
+    change(registry)
+    with pytest.raises(RegistryError, match=re.escape(message)):
+        build_budget_programs(registry)
