@@ -122,6 +122,10 @@ def family(draw, min_age=67):
 def person_inputs(fam, j, a, private_pension, afcs, war_widows_pension):
     person = {
         "age": {YEAR: a["age"]},
+        # The drawn adults are the claimant and partner, however far apart
+        # their ages; the age presumption alone would read a partner 20 or
+        # more years younger as the claimant's child.
+        "is_claimant_or_partner": {YEAR: True},
         "state_pension": {YEAR: a["state_pension"]},
         # All private pension goes to the first adult.
         "private_pension_income": {YEAR: float(private_pension) * (j == 0)},

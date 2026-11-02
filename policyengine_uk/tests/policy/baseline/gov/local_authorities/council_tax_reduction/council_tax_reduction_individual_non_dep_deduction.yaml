@@ -1,9 +1,8 @@
-# The national Council Tax Reduction non-dependant deduction bands on gross
-# income, but SI 2012/2885 Sch 1 para 8(2) applies the bands only to a
-# non-dependant in remunerative work, which this formula does not yet test
-# (#2007). Other investment income, now in total_income, is left out of the
-# band until it does, so a non-worker whose only income is investment income
-# is not banded on it.
+# Income bands apply only in remunerative work (SI 2012/2885 Sch 1 para
+# 8(1)-(2)). This scoped gate retains the existing HB scale and the exclusion
+# of other investment income from gross income, and leaves a non-worker with
+# no banding income at the scale's zero; national CTR rates, the exemptions
+# and any extension of the income base remain for #2007.
 
 - name: Other investment income does not band a non-worker for CTR
   period: 2025

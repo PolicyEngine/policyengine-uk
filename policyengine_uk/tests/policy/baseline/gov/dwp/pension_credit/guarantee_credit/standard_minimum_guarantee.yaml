@@ -25,3 +25,58 @@
         members: [person1, person2]
   output:
     standard_minimum_guarantee: 18_889
+
+# SSAA 1992 s150A(2): May-July 2026 AWE growth of 3.9% applies in
+# April 2027. These are projections before any ministerial 5p rounding:
+# single 238 * 1.039 = 247.282 weekly; couple 363.25 * 1.039 = 377.41675.
+- name: April 2027 single minimum guarantee rises by earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 81
+    relation_type: SINGLE
+  output:
+    standard_minimum_guarantee: 12_858.664  # 247.282 * 52
+
+- name: April 2027 couple minimum guarantee rises by earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      partner:
+        age: 79
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    standard_minimum_guarantee: 19_625.671  # 377.41675 * 52
+
+- name: Case 3, 2025 single-person standard minimum guarantee uses the published rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+    benunits:
+      benunit:
+        members: [person1]
+  output:
+    standard_minimum_guarantee: 11_809.2
+
+- name: Case 4, 2025 couple standard minimum guarantee uses the published rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+      person2:
+        age: 78
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    standard_minimum_guarantee: 18_023.2
