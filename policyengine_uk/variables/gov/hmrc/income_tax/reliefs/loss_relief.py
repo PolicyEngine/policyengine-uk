@@ -7,10 +7,16 @@ class loss_relief(Variable):
     value_type = float
     entity = Person
     label = "Unrelieved trade losses at the start of the year"
-    reference = dict(
-        title="Income Tax Act 2007 s. 83",
-        href="https://www.legislation.gov.uk/ukpga/2007/3/section/83",
-    )
+    reference = [
+        dict(
+            title="Income Tax Act 2007 s. 83",
+            href="https://www.legislation.gov.uk/ukpga/2007/3/section/83",
+        ),
+        dict(
+            title="Income Tax (Trading and Other Income) Act 2005 s. 783AF",
+            href="https://www.legislation.gov.uk/ukpga/2005/5/section/783AF",
+        ),
+    ]
     documentation = (
         "Opening unrelieved losses available against profits of the same "
         "continuing trade, or a caller-preassessed eligible trade pool "
@@ -51,7 +57,7 @@ class loss_relief(Variable):
             if current_loss is None:
                 current_loss = person.empty_array()
             eligible_loss = where(
-                person("trading_allowance_deduction", year) > 0,
+                person("uses_trading_allowance", year),
                 0,
                 max_(0, current_loss),
             )

@@ -291,6 +291,9 @@ def test_income_tax_never_falls_as_statutory_paternity_pay_rises(population):
                 )
                 + results.family_total("CB_HITC", i, LOW)
             )
+            # This margin relies on even-pound base incomes: PAY's
+            # 388.64 -> 389 pair cannot cross a personal-allowance
+            # taper-rounding step.
             assert gain <= family["high"] - family["low"] + TOLERANCE, family
 
 

@@ -1,8 +1,9 @@
 """External energy observations retain a coherent amount group and price basis.
 
-CPI levels 100/125/150 are controlled test inputs, not an economic forecast.
-The later FY2026 observation must extend to 2027 by 150 / 125 after reset
-and serialization; the original external observations must remain untouched.
+CPI and energy price index levels 100/125/150 are controlled test inputs, not
+an economic forecast. The later FY2026 observation must extend to 2027 by
+150 / 125 after reset and serialization; the original external observations
+must remain untouched.
 """
 
 from copy import deepcopy
@@ -68,11 +69,16 @@ def _state(observation):
 @pytest.fixture
 def controlled_parameters():
     parameters = CountryTaxBenefitSystem().parameters.clone()
-    index = parameters.get_child(
-        "gov.economic_assumptions.indices.obr.consumer_price_index"
-    )
-    for year, level in {2024: 100.0, 2026: 125.0, 2027: 150.0}.items():
-        index.update(period=str(year), value=level)
+    # Ordinary consumption grows with CPI, energy with its price indices.
+    paths = ["gov.economic_assumptions.indices.obr.consumer_price_index"] + [
+        f"gov.economic_assumptions.energy_prices.{kind}.{series}"
+        for kind in ("calendar_year", "fiscal_year")
+        for series in ("electricity", "gas", "electricity_gas_and_solid_fuels")
+    ]
+    for path in paths:
+        index = parameters.get_child(path)
+        for year, level in {2024: 100.0, 2026: 125.0, 2027: 150.0}.items():
+            index.update(period=str(year), value=level)
     return parameters
 
 

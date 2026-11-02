@@ -1,4 +1,6 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   Model variables currently mapped to countable Housing Benefit capital. The
   Housing Benefit Regulations 2006 treat the whole of a claimant's capital as
   assessable unless it is disregarded under Schedule 6. The current mappings
@@ -45,6 +47,7 @@ metadata:
 values:
   2006-04-10:
     - savings
+    - cash_isa
     - owned_land
     - share_like_capital
     - other_residential_property_value

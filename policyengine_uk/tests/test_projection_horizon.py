@@ -32,10 +32,19 @@ from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
 )
+from policyengine_uk.data.savings_income_projection import (
+    OBR_SAVINGS_INCOME_2022_2025,
+)
 from policyengine_uk.system import system
 
 BASE_YEAR = 2024
 GROWTH = parameters.gov.economic_assumptions.yoy_growth
+# The fixture declares the OBR savings income projection, under which the
+# savings income series grows its inputs only from 2022 to 2025; GDP per head
+# serves the other years. Undeclared data is checked in
+# test_savings_income_uprating.py.
+SAVINGS_INCOME = "gov.economic_assumptions.yoy_growth.obr.per_capita.savings_income"
+GDP_PER_HEAD = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
 UPRATING_INDICES = yaml.safe_load(
     (Path(economic_assumptions.__file__).parent / "uprating_indices.yaml").read_text()
 )
@@ -91,6 +100,15 @@ WATER_SERIES = {
 }
 
 
+def _growth(index, year, savings_rule=OBR_SAVINGS_INCOME_2022_2025):
+    """The growth uprating_indices.yaml's ``index`` gives into ``year``."""
+    if index == SAVINGS_INCOME and not (
+        savings_rule == OBR_SAVINGS_INCOME_2022_2025 and 2022 <= year <= 2025
+    ):
+        index = GDP_PER_HEAD
+    return parameters.get_child(index)(year)
+
+
 def _dataset(amount=1_000.0, base_year=BASE_YEAR):
     """One person per household, with every indexed input and excluded energy
     input set to ``amount`` (or one amount per household), plus rent and
@@ -131,6 +149,7 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
         benunit=pd.DataFrame(tables["benunit"]),
         household=pd.DataFrame(tables["household"]),
         fiscal_year=base_year,
+        savings_income_projection=OBR_SAVINGS_INCOME_2022_2025,
     )
 
 
@@ -195,7 +214,8 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
     """For every variable uprating_indices.yaml lists and every projected
     year, check its index: residential stocks use the original observation
     and cumulative HPI. This fixture stores the completed bereavement split,
-    so BSP stays flat; other inputs grow from the previous year's raw YoY."""
+    so BSP stays flat; other inputs grow from the previous year's raw YoY,
+    with savings income on GDP per head outside 2022 to 2025."""
     observed = _dataset()
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         for variable, index in INDEX_OF.items():
@@ -205,7 +225,7 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
                 expected = _residential_stock_level(original, variable, year)
             else:
                 previous = _table(projected[year - 1], variable)[variable].to_numpy()
-                growth = parameters.get_child(index)(year)
+                growth = _growth(index, year)
                 expected = (
                     previous if variable == "bsp_reported" else previous * (1 + growth)
                 )
@@ -320,7 +340,7 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     elif variable == "bsp_reported":
         expected_ratio = np.ones(len(amounts))
     else:
-        index = parameters.get_child(INDEX_OF[variable])(year)
+        index = _growth(INDEX_OF[variable], year)
         expected_ratio = np.full(len(amounts), 1 + index)
     assert ratio == pytest.approx(expected_ratio)
 
@@ -421,6 +441,15 @@ def test_tax_free_savings_formula_takes_over_after_the_horizon():
     """
     dataset = _dataset()
     dataset.person["tax_free_savings_income"] = 1_000.0
+    # The generic fixture includes indexed ISA-interest total and detail inputs.
+    # This legacy case omits both sources of the formula's ISA-interest default.
+    dataset.person = dataset.person.drop(
+        columns=[
+            "individual_savings_account_interest_income",
+            "non_cash_isa_cash_interest",
+        ],
+        errors="ignore",
+    )
     # Enhanced FRS 2024-25 does not store the formula's ISA-interest source.
     simulation = Microsimulation(dataset=dataset)
     assert simulation.calculate(
@@ -429,3 +458,75 @@ def test_tax_free_savings_formula_takes_over_after_the_horizon():
     assert simulation.calculate(
         "tax_free_savings_income", PROJECTION_END_YEAR + 1
     ).values == pytest.approx(np.zeros(len(HOUSEHOLDS)))
+
+
+def test_positive_effective_losses_preserve_the_projection_horizon(record_property):
+    """The horizon constructor also works when allowance election leaves a loss.
+
+    Change only the loss column of the public fixture. Qualify the 2024
+    election explicitly: later years retain their actual policy, including
+    the allowance increase from 2027.
+    """
+    import json
+
+    from policyengine_core.periods import period
+    from policyengine_uk.utils.supplied_inputs import supplied_input
+
+    dataset = _dataset()
+    dataset.person["trading_loss"] = 2_000.0
+    simulation = Microsimulation(dataset=dataset)
+    years = list(range(BASE_YEAR, PROJECTION_END_YEAR + 1))
+    assert [int(year) for year in simulation.dataset.years] == years
+
+    uses_allowance = np.asarray(
+        simulation.calculate("uses_trading_allowance", BASE_YEAR), dtype=bool
+    )
+    supplied_loss = supplied_input(
+        simulation.populations["person"], "trading_loss", period(BASE_YEAR)
+    )
+    assert supplied_loss is not None
+    supplied_loss = np.asarray(supplied_loss, dtype=float)
+    effective_loss = np.where(uses_allowance, 0, np.maximum(0, supplied_loss))
+    record_property(
+        "positive_effective_loss_premise",
+        json.dumps(
+            {
+                "base_year": BASE_YEAR,
+                "uses_trading_allowance": uses_allowance.tolist(),
+                "supplied_trading_loss": supplied_loss.tolist(),
+                "effective_current_loss": effective_loss.tolist(),
+            },
+            sort_keys=True,
+        ),
+    )
+    np.testing.assert_array_equal(uses_allowance, np.zeros(len(HOUSEHOLDS), dtype=bool))
+    np.testing.assert_array_equal(supplied_loss, np.full(len(HOUSEHOLDS), 2_000))
+    np.testing.assert_array_equal(effective_loss, np.full(len(HOUSEHOLDS), 2_000))
+    general_relief = np.asarray(
+        simulation.calculate("trade_loss_relief_against_general_income", BASE_YEAR),
+        dtype=float,
+    )
+    record_property("actual_general_income_relief", json.dumps(general_relief.tolist()))
+    assert np.isfinite(general_relief).all()
+    assert ((general_relief >= 0) & (general_relief <= effective_loss)).all()
+    assert (general_relief > 0).all()
+    horizon_stock = np.asarray(
+        simulation.calculate("loss_relief", PROJECTION_END_YEAR), dtype=float
+    )
+    record_property(
+        "positive_effective_loss_qualification",
+        json.dumps(
+            {
+                "base_year": BASE_YEAR,
+                "uses_trading_allowance": uses_allowance.tolist(),
+                "supplied_trading_loss": supplied_loss.tolist(),
+                "effective_current_loss": effective_loss.tolist(),
+                "actual_general_income_relief": general_relief.tolist(),
+                "horizon_year": PROJECTION_END_YEAR,
+                "horizon_opening_stock": horizon_stock.tolist(),
+            },
+            sort_keys=True,
+        ),
+    )
+    assert np.isfinite(horizon_stock).all()
+    assert (horizon_stock >= 0).all()

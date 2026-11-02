@@ -63,29 +63,32 @@ BUSINESS_RATES_OUTTURN = {
                                 702_804_905, 741_337_437, 766_153_718)),
 }  # fmt: skip
 
-# OBR receipts, £bn, as published: 2023-24 outturn from the March 2025 EFO
-# and 2024-25 outturn to 2030-31 from the March 2026 EFO (receipts Tables 3.7
-# for SDLT by property type, 3.8 (March 2025: 3.9) for business rates and 3.2
-# for Northern Ireland business rates).
+# OBR receipts, £bn, as published: 2023-24 outturn from the March 2025 EFO,
+# 2024-25 outturn from the March 2026 EFO, and 2025-26 outturn to 2031-32
+# from the October 2026 EFO (receipts Tables 4.7 for SDLT by property type,
+# 4.8 for business rates and 4.2 for Northern Ireland business rates; March
+# 2026: 3.7, 3.8 and 3.2; March 2025: 3.7, 3.9 and 3.2).
 OBR_FROM = 2023
 OBR_RECEIPTS_BN = {
     "stamp_duty_land_tax.residential": (
-        8.57, 10.38, 11.731471524432562, 13.428906667032589, 14.984943814530874,
-        16.673948133476184, 17.964513468126285, 19.057301113969185,
+        8.57, 10.38, 11.55444496305409, 11.598497804863152, 12.81121827423391,
+        14.275385542155488, 15.523034837312446, 16.708206755202507,
+        17.97120998332108,
     ),
     "stamp_duty_land_tax.non_residential": (
-        3.045, 3.505, 3.67504517435302, 4.72127759316189, 5.32882881047999,
-        5.900913979881709, 6.53306953553104, 7.10465817727629,
+        3.045, 3.505, 3.6048001541859174, 3.4392848579522055, 4.060008995487192,
+        4.6692547224804075, 4.8746831796154595, 5.306606478148783,
+        5.725680069577546,
     ),
     "business_rates.great_britain": (
-        29.599814327646055, 32.37681432764605, 34.05196393248926,
-        37.41358657214458, 38.24093094782461, 39.111850954748434,
-        42.4190677645469, 42.46319362251926,
+        29.599814327646055, 32.37681432764605, 33.929814327646056,
+        35.43608032863263, 37.21735218338801, 38.66510919685915,
+        41.462982206056644, 42.42035811098974, 43.447399285510656,
     ),
     "business_rates.northern_ireland": (
-        0.3702940455770644, 0.3823335073068893, 0.39471664406441903,
-        0.40263364127921164, 0.41045270712298504, 0.4181089461242919,
-        0.42590403232705243, 0.4344900971429234,
+        0.3702940455770644, 0.3823335073068893, 0.3955394050104385,
+        0.40595301023058955, 0.414556055466312, 0.4226801104356366,
+        0.43095512116333085, 0.4394491849889923, 0.44783993918412923,
     ),
 }  # fmt: skip
 OBR_LAST_YEAR = OBR_FROM + len(OBR_RECEIPTS_BN["business_rates.great_britain"]) - 1
@@ -160,9 +163,10 @@ def test_northern_ireland_business_rates_are_total_rates_less_domestic(offset):
     )
 
 
-# OBR's Business rates line (cash basis, receipts Table 3.8, £bn): 2024-25
-# outturn and 2025-26 forecast. England, Scotland and Wales, local and
-# central lists together, should cover the same receipts.
+# OBR's Business rates line (cash basis, £bn): the 2024-25 outturn (March 2026
+# EFO, receipts Table 3.8) and the 2025-26 outturn (October 2026 EFO, Table
+# 4.8). England, Scotland and Wales, local and central lists together, should
+# cover the same receipts.
 GB_SERIES = (
     "ENGLAND",
     "ENGLAND_CENTRAL_LIST",

@@ -1,4 +1,6 @@
 description: >
+  Ordinary cash ISA balances are separate from savings and are included at
+  their accessible cash value, without a generic cash sale-cost deduction.
   Household financial proxies for Universal Credit: savings and share-like
   financial wealth. `share_like_capital` is `corporate_wealth` as supplied, or
   the sum of its itemised components (`directly_held_shares`,
@@ -45,4 +47,5 @@ metadata:
 values:
   2013-04-29:
     - savings
+    - cash_isa
     - share_like_capital

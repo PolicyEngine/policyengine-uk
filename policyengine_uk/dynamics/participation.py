@@ -319,6 +319,7 @@ def calculate_gain_to_work(
     hours_for_new_entrants: float = 18.8,
     count_adults: int = 1,
     impute_nonworker_wages: bool = True,
+    imputed_wages: np.ndarray | None = None,
 ) -> pd.DataFrame:
     """Calculate gain-to-work metric for each individual.
 
@@ -332,6 +333,9 @@ def calculate_gain_to_work(
         hours_for_new_entrants: Weekly hours for new labour market entrants
         count_adults: Number of adults to calculate responses for
         impute_nonworker_wages: Whether to impute wages for non-workers
+        imputed_wages: Pre-computed output of :func:`impute_wages_for_nonworkers`
+            for ``sim``, ``year`` and ``hours_for_new_entrants``. Pass it to
+            avoid recomputing the imputation; it is computed here when omitted.
 
     Returns:
         DataFrame with in-work income, out-of-work income, and gain-to-work
@@ -344,7 +348,10 @@ def calculate_gain_to_work(
 
     # Impute wages for non-workers if requested
     if impute_nonworker_wages:
-        imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
+        if imputed_wages is None:
+            imputed_wages = impute_wages_for_nonworkers(
+                sim, year, hours_for_new_entrants
+            )
         # For non-workers, use imputed wages; for workers, use actual income
         working_mask = employment_income > 0
         employment_income_with_imputation = np.where(
@@ -440,6 +447,7 @@ def calculate_earnings_quintile(
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
     random_seed: int = 42,
+    imputed_wages: np.ndarray | None = None,
 ) -> np.ndarray:
     """Calculate earnings quintile for each adult based on potential earnings.
 
@@ -474,6 +482,9 @@ def calculate_earnings_quintile(
         hours_for_new_entrants: Weekly hours assumed for new entrants
         random_seed: Unused. Placement is deterministic; retained so existing
             callers do not break.
+        imputed_wages: Pre-computed output of :func:`impute_wages_for_nonworkers`
+            for ``sim``, ``year`` and ``hours_for_new_entrants``. Pass it to
+            avoid recomputing the imputation; it is computed here when omitted.
 
     Returns:
         Array of quintiles (1-5) for each person. Non-adults are assigned 1;
@@ -513,7 +524,9 @@ def calculate_earnings_quintile(
     # and so the modelled entry response. Callers wanting that bound can pass
     # `hours_for_new_entrants=FULL_TIME_WEEKLY_HOURS` to disable the scaling.
     # Neither end is validated against an observed entry rate — see #1836.
-    imputed = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
+    if imputed_wages is None:
+        imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
+    imputed = np.asarray(imputed_wages, dtype=float)
     full_time_equivalent = imputed * (FULL_TIME_WEEKLY_HOURS / hours_for_new_entrants)
     potential = np.where(employment_income > 0, employment_income, full_time_equivalent)
 
@@ -597,6 +610,16 @@ def apply_participation_responses(
     currently_working = (employment_income > 0) & eligible
     currently_not_working = (employment_income == 0) & eligible
 
+    # Impute non-workers' wages on the reform simulation once, while its inputs
+    # are still the original ones, and reuse the result for the reform
+    # gain-to-work, the earnings quintiles and the entry step below. All three
+    # read the same inputs (calculate_gain_to_work restores employment_income
+    # before returning), so recomputing gave the same array three times. The
+    # baseline keeps its own imputation inside calculate_gain_to_work.
+    imputed_wages = np.asarray(
+        impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
+    )
+
     # Calculate gain-to-work for baseline and reform (with wage imputation)
     baseline_gtw = calculate_gain_to_work(
         sim.baseline,
@@ -611,6 +634,7 @@ def apply_participation_responses(
         hours_for_new_entrants,
         count_adults,
         impute_nonworker_wages=True,
+        imputed_wages=imputed_wages,
     )
 
     # Calculate percentage change in gain-to-work
@@ -626,7 +650,7 @@ def apply_participation_responses(
 
     # Get elasticities
     earnings_quintile = calculate_earnings_quintile(
-        sim, year, hours_for_new_entrants, random_seed
+        sim, year, hours_for_new_entrants, random_seed, imputed_wages
     )
     elasticities_wrt_income = calculate_participation_elasticities(
         sim, earnings_quintile, year
@@ -711,7 +735,6 @@ def apply_participation_responses(
     new_employment_income[exited] = 0
     participation_response[exited] = True
 
-    imputed_wages = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
     nonworkers = np.flatnonzero(currently_not_working)
     entered = nonworkers[
         (

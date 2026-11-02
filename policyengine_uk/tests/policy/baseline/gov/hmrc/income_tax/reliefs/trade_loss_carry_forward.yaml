@@ -285,3 +285,127 @@
       2025: 0
       2026: 0
       2027: 0
+
+# ITTOIA 2005 ss.783AE(1), 783AF(2), 783AG and 783AL:
+# https://www.legislation.gov.uk/ukpga/2005/5/section/783AF
+# Relevant receipts are £400 trade + £600 Chapter 8 income = £1,000.
+# The loss-making trade has £600 expenses and a £200 loss; the model's
+# positive-profit input is zero. No allowance exclusion applies.
+- name: Shared trading allowance carry-forward under full relief on miscellaneous income
+  period: 2026
+  input:
+    age:
+      2025: 40
+      2026: 41
+    employment_income:
+      2025: 0
+      2026: 0
+    taxable_social_security_income:
+      2025: 0
+      2026: 0
+    capital_allowances:
+      2025: 0
+      2026: 0
+    employee_pension_contributions:
+      2025: 0
+      2026: 0
+    personal_pension_contributions:
+      2025: 0
+      2026: 0
+    employer_pension_contributions:
+      2025: 0
+      2026: 0
+    pension_contributions_via_salary_sacrifice:
+      2025: 0
+      2026: 0
+    self_employment_gross_receipts:
+      2025: 400
+      2026: 6_000
+    self_employment_income:
+      2025: 0
+      2026: 5_000
+    trading_loss:
+      2025: 200
+      2026: 0
+    miscellaneous_income:
+      2025: 600
+      2026: 0
+    income_not_otherwise_charged:
+      2025: 600
+      2026: 0
+  output:
+    uses_trading_allowance:
+      2025: true
+    trading_allowance_deduction:
+      2025: 0
+    miscellaneous_income_trading_allowance_deduction:
+      2025: 600
+    taxable_miscellaneous_income:
+      2025: 0
+    trade_loss_relief_against_general_income:
+      2025: 0
+    # Full relief makes the trade's loss nil, even though only the
+    # miscellaneous-income deduction is positive. None carries into 2026.
+    loss_relief: 0
+    taxable_self_employment_income: 5_000
+
+# The same £400 receipts with £1,200 expenses gives an £800 trade loss.
+# Ordinary treatment wins over the £600 allowance saving; £600 of actual
+# general-income relief leaves £200 for the next year's same-trade profit.
+- name: Shared trading allowance carry-forward after ordinary treatment preserves the unused loss
+  period: 2026
+  input:
+    age:
+      2025: 40
+      2026: 41
+    employment_income:
+      2025: 0
+      2026: 0
+    taxable_social_security_income:
+      2025: 0
+      2026: 0
+    capital_allowances:
+      2025: 0
+      2026: 0
+    employee_pension_contributions:
+      2025: 0
+      2026: 0
+    personal_pension_contributions:
+      2025: 0
+      2026: 0
+    employer_pension_contributions:
+      2025: 0
+      2026: 0
+    pension_contributions_via_salary_sacrifice:
+      2025: 0
+      2026: 0
+    self_employment_gross_receipts:
+      2025: 400
+      2026: 6_000
+    self_employment_income:
+      2025: 0
+      2026: 5_000
+    trading_loss:
+      2025: 800
+      2026: 0
+    miscellaneous_income:
+      2025: 600
+      2026: 0
+    income_not_otherwise_charged:
+      2025: 600
+      2026: 0
+  output:
+    uses_trading_allowance:
+      2025: false
+    trading_allowance_deduction:
+      2025: 0
+    miscellaneous_income_trading_allowance_deduction:
+      2025: 0
+    taxable_miscellaneous_income:
+      2025: 600
+    trade_loss_relief_against_general_income:
+      2025: 600
+    loss_relief: 200
+    # £5,000 profit less the £200 remaining old loss; known 2026 expenses
+    # equal the allowance, so no extra trading-allowance deduction applies.
+    taxable_self_employment_income: 4_800

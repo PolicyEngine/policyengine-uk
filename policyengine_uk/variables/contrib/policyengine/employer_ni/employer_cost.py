@@ -3,6 +3,14 @@ from policyengine_uk.model_api import *
 
 class employer_cost(Variable):
     label = "employer cost"
+    documentation = (
+        "Pay, statutory sick, maternity and paternity pay, employer pension "
+        "contributions and the secondary Class 1 contributions on them. "
+        "Benefits in kind and the Class 1A contributions on them are left "
+        "out, as baseline_employer_cost and adjusted_employer_cost leave "
+        "them out, so a fixed-employer-cost response to an employer NI "
+        "reform holds this cost."
+    )
     entity = Person
     definition_period = YEAR
     value_type = float
@@ -20,7 +28,7 @@ class employer_cost(Variable):
         )
         return (
             person("employment_income", period)
-            + person("ni_employer", period)
+            + person("ni_class_1_employer", period)
             + person("employer_pension_contributions", period)
             + benefits
         )

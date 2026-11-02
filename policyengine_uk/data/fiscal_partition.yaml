@@ -88,6 +88,20 @@ sources:
     a forecast of Northern Irish domestic rates to Great Britain's, and are
     net of discounts and reduction schemes. Read 2026-10-11 from
     https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/council-tax/
+  ni_domestic_rates: >-
+    OBR, Economic and fiscal outlook, March 2026, detailed forecast tables:
+    expenditure Table 4.1 ("Council tax receipts"), which its footnote calls
+    a breakdown of Table A.5's council tax line, and receipts Table 3.2
+    ("Other taxes"), which its footnote calls consistent with Table A.5's
+    other taxes line. ONS, Country and regional public sector finances,
+    financial year ending 2025, Northern Ireland revenue rows "Northern
+    Ireland Regional Domestic Rates" and "Northern Ireland District Domestic
+    Rates". Land & Property Services, "Rates paid by District Council and
+    Sector", domestic rates paid. Cells read 2026-10-25. Published at
+    https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/,
+    https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/datasets/countryandregionalpublicsectorfinancesrevenuetables
+    and
+    https://www.data.gov.uk/dataset/30535a44-0a05-4bff-98cf-001301a6b4d6/rates-paid-by-district-council-and-sector
   student_loans: >-
     Student loan repayments are not a row of Table A.5. In the March 2026
     EFO only the interest accrued on the loans enters receipts, in "Interest
@@ -143,7 +157,8 @@ totals:
     label: Government spending in respect of the household
     description: >-
       Cash benefits, childcare and student support, and public services in
-      kind (NHS, education, transport subsidies).
+      kind (NHS, education, transport subsidies), and Lifetime ISA bonuses
+      paid into capital accounts.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
@@ -151,13 +166,38 @@ totals:
     label: Benefits received by the household
     description: >-
       The benefit side of household net income. It is gov_spending without the
-      contributed budget-change line, which is not paid to households.
+      contributed budget-change line and Lifetime ISA capital bonuses;
+      neither is part of household current benefit income.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax_benefit
 
 tax_heads:
   # Income and earnings
+  - id: isa_cash_interest_charge
+    label: Final charge on cash interest in non-cash ISAs
+    variable: isa_cash_interest_flat_rate_charge
+    entity: person
+    obr_line: Income tax
+    obr_table_3_1: Income tax
+    report_group: income_tax
+    payer: household
+    totals: [gov_tax, household_tax]
+    sign: nonnegative
+  - id: lifetime_isa_withdrawal_charge
+    label: Lifetime ISA withdrawal charge
+    variable: lifetime_isa_withdrawal_charge
+    entity: person
+    obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
+    obr_line_note: >-
+      The model records this payment out of account capital as government
+      revenue, outside current household income taxes. No placement in an
+      OBR current-receipts row is asserted here.
+    report_group: lifetime_isa_capital_transfers
+    payer: household
+    totals: [gov_tax]
+    sign: nonnegative
   - id: income_tax
     label: Income tax
     variable: income_tax
@@ -447,8 +487,39 @@ tax_heads:
     obr_line: Council tax
     obr_table_3_1: null
     obr_line_note: >-
-      The OBR adds Northern Irish domestic rates to its council tax receipts
-      (see sources).
+      The head is the whole Northern Ireland domestic bill, the regional rate
+      and the council's district rate together. Land & Property Services
+      (LPS) reports £889.5m of domestic rates paid across NI in 2024-25. The
+      OBR shows NI domestic rates in two places and labels neither as
+      regional or district (see sources): "NI domestic rates" in its council
+      tax receipts, a flat £0.494bn in every year from the 2024-25 outturn to
+      2030-31 (expenditure Table 4.1), which appears to be the district
+      rates; and "Northern Ireland domestic rates" under other taxes, £485.3m
+      in 2024-25 (receipts Table 3.2), which appears to cover the regional
+      rate only. The Office for National Statistics (ONS) records NI
+      regional domestic rates (central government, £498m in 2024-25) and
+      district domestic rates (local government, with council tax, £441m)
+      separately. The reading rests on where each line
+      sits, not on its size: £0.494bn is nearer ONS's regional row than its
+      district row, and the two lines together (£0.979bn in 2024-25) exceed
+      both LPS's figure and ONS's two rows (£0.939bn). The head keeps the
+      Council tax row, where the OBR says its forecast adds NI domestic
+      rates. In the 2024-25 outturn that row (March 2026 Table A.5,
+      £47.417bn) is £0.273bn below Table 4.1's total (£47.690bn), so whether
+      it then includes NI domestic rates is not established; the two agree
+      in the forecast years. If the regional and district reading holds, the
+      head's scope is the two lines together, not either alone. obr_table_3_1 is null because Table
+      3.1's footnotes do not place NI domestic rates and the head appears to
+      span two Table A.5 rows. The
+      comment on gov.economic_assumptions.yoy_growth.finance_ni.domestic_rates
+      gives the evidence for the reading.
+    data_note: >-
+      On the certified dataset (policyengine-uk-data 1.58.1) the head totals
+      £0.52bn in 2024, the Family Resources Survey 2024-25 year, against
+      £0.89bn of LPS domestic
+      rates paid in 2024-25. policyengine-uk-data issue 520 tracks the level
+      and the data build's obr/domestic_rates target, which it reads from the
+      Table 4.1 line alone. Measured 2026-10-25.
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -643,12 +714,15 @@ exclusions:
   - {variable: savings_income_tax, kind: component, head: income_tax}
   - {variable: dividend_income_tax, kind: component, head: income_tax}
   - {variable: property_income_tax, kind: component, head: income_tax}
+  - {variable: income_tax_reductions, kind: component, head: income_tax, note: "Step 6 tax reductions, subtracted inside income_tax."}
+  - {variable: income_tax_charges, kind: component, head: income_tax, note: "Step 7 charges (CB_HITC and the annual allowance charge), added inside income_tax."}
   - {variable: CB_HITC, kind: component, head: income_tax}
   - {variable: personal_pension_contributions_tax, kind: component, head: income_tax}
   - {variable: capped_mcad, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: married_couples_allowance_deduction, kind: component, head: income_tax, note: "Inside capped_mcad."}
   - {variable: other_tax_credits, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: property_finance_cost_relief, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: pension_tax_allowance, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: basic_rate_earned_income_tax, kind: assessment, head: income_tax, note: "Earned income tax by band; earned_income_tax does not read it."}
   - {variable: higher_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
   - {variable: add_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
@@ -672,6 +746,7 @@ exclusions:
   - {variable: employer_ni_fixed_employer_cost_change, kind: change_measure, head: nics_employer, note: "The wage change from an employer NI reform; employment_income already adds it."}
   - {variable: salary_sacrifice_broad_base_haircut, kind: change_measure, head: nics_employer, note: "A wage change employment_income already adds."}
   - {variable: ni_class_1_employer, kind: component, head: nics_employer}
+  - {variable: ni_class_1a, kind: component, head: nics_employer}
   - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to ni_class_1_income, so Class 1 already charges it."}
   - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
   - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
@@ -812,6 +887,13 @@ uncovered_receipts:
   - {obr_line: Other taxes}
 
 spending_heads:
+  - id: lifetime_isa_bonus
+    label: Lifetime ISA bonus
+    variable: lifetime_isa_bonus
+    entity: person
+    report_group: lifetime_isa_capital_transfers
+    totals: [gov_spending]
+    sign: nonnegative
   # Pensioners
   - id: state_pension
     label: State Pension
@@ -1179,7 +1261,7 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
     caseload: false
-  # Cost-of-living and energy support (none in force at current law)
+  # Cost-of-living and energy support
   - id: cost_of_living_support_payment
     label: Cost-of-living support payment
     variable: cost_of_living_support_payment
@@ -1196,6 +1278,14 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
     zero_at_baseline: expected
+  # Paid in 2026-27 only (Budget 2026), so not zero at current law.
+  - id: household_energy_payment
+    label: Household Energy Payment
+    variable: household_energy_payment
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   - id: epg_subsidy
     label: Energy Price Guarantee subsidy
     variable: epg_subsidy

@@ -1,19 +1,21 @@
 """Population growth and the per-capita series come from one OBR vintage.
 
-ons.population, 2023-2073: the population growth row of the OBR's
-"Long-term economic determinants - March 2026 Economic and fiscal outlook"
-(28 May 2026), per cent, fiscal year t-(t+1) stored at t-01-01. To 2030-31 it
-is the OBR's March 2026 forecast; after that, the principal projection of the
-ONS 2024-based national population projections.
+ons.population, 2021-2031: the OBR's October 2026 population, read from the
+October 2026 EFO detailed forecast tables (economy): population at Q2 = Table
+1.1 real GDP / Table 1.5 real GDP per person (total population, index
+2008Q1=100), fiscal year t-(t+1) stored at t-01-01. The long-term economic
+determinants for the October 2026 EFO are not yet published. For the March
+2026 EFO the same ratio on its own tables reproduces the determinants'
+2023-24 to 2030-31 values to 1e-9 per cent, so the tables give the OBR's
+population forecast.
 
-ons.population, 2021-2022: the release starts at 2023-24, so the same OBR
-series is read from the March 2026 EFO detailed forecast tables (economy):
-population at Q2 = Table 1.1 real GDP / Table 1.5 real GDP per person (total
-population, index 2008Q1=100). That ratio reproduces the release's 2023-24 to
-2025-26 values to 1e-9 per cent.
+ons.population, 2032-2073: the population growth row of the OBR's
+"Long-term economic determinants - March 2026 Economic and fiscal outlook"
+(28 May 2026), which from 2031-32 is the principal projection of the ONS
+2024-based national population projections.
 
 per_capita.*: (1 + aggregate growth) / (1 + ons.population) - 1, rounded to 4
-decimals, with calendar-year aggregates from the same EFO tables.
+decimals, with calendar-year aggregates from the October 2026 EFO tables.
 """
 
 import pytest
@@ -78,40 +80,83 @@ LTED_MARCH_2026_POPULATION_GROWTH = {
     2073: -0.10361433924080954,
 }
 
-# March 2026 EFO economy tables, Q2 of each year.
-# Table 1.1 real GDP, GBP billion chain-linked volumes.
-REAL_GDP_Q2 = {
-    2020: 522.356,
-    2021: 655.443,
-    2022: 686.335,
-    2023: 689.491,
-    2024: 695.28,
-    2025: 704.973,
+# EFO economy tables, Q2 of each year: Table 1.1 real GDP (GBP billion
+# chain-linked volumes) and Table 1.5 real GDP per person (total population,
+# index 2008Q1=100).
+MARCH_2026_Q2 = {
+    "real_gdp": {
+        2020: 522.356,
+        2021: 655.443,
+        2022: 686.335,
+        2023: 689.491,
+        2024: 695.28,
+        2025: 704.973,
+        2026: 711.4752108974202,
+        2027: 722.8696711355229,
+        2028: 734.3003452895008,
+        2029: 745.6888920481834,
+        2030: 756.9312657071862,
+    },
+    "per_person": {
+        2020: 82.30813961942992,
+        2021: 102.91179537890864,
+        2022: 106.71381138411466,
+        2023: 105.81216977918598,
+        2024: 105.53778853635153,
+        2025: 106.69186884652444,
+        2026: 107.29895022122213,
+        2027: 108.70379905059379,
+        2028: 110.06817103615971,
+        2029: 111.39939151779004,
+        2030: 112.66949934985858,
+    },
 }
-# Table 1.5 real GDP per person (total population), index 2008Q1=100.
-REAL_GDP_PER_PERSON_Q2 = {
-    2020: 82.30813961942992,
-    2021: 102.91179537890864,
-    2022: 106.71381138411466,
-    2023: 105.81216977918598,
-    2024: 105.53778853635153,
-    2025: 106.69186884652444,
+OCTOBER_2026_Q2 = {
+    "real_gdp": {
+        2020: 522.356,
+        2021: 655.443,
+        2022: 686.335,
+        2023: 689.491,
+        2024: 694.91,
+        2025: 704.274,
+        2026: 712.545,
+        2027: 719.317942019668,
+        2028: 730.6639315269857,
+        2029: 743.9492331304032,
+        2030: 756.6079210550221,
+        2031: 768.8776481950802,
+    },
+    "per_person": {
+        2020: 82.30813961942992,
+        2021: 102.91179537890864,
+        2022: 106.64443479278931,
+        2023: 105.71652105745173,
+        2024: 105.51970228805975,
+        2025: 106.58608094213133,
+        2026: 107.61945209228196,
+        2027: 108.49781352227016,
+        2028: 110.01755336744607,
+        2029: 111.78317881384578,
+        2030: 113.40385957086,
+        2031: 114.96729664409621,
+    },
 }
 
-# March 2026 EFO calendar-year totals, GBP billion.
+# October 2026 EFO calendar-year totals, GBP billion.
 # Table 1.4 nominal GDP (annual growth equals Table A.1 nominal GDP growth).
 NOMINAL_GDP = {
     2020: 2124.72,
     2021: 2322.652,
     2022: 2580.949,
     2023: 2752.164,
-    2024: 2890.664,
-    2025: 3036.746486,
-    2026: 3136.973465,
-    2027: 3248.777377,
-    2028: 3362.463387,
-    2029: 3477.144474,
-    2030: 3599.757631,
+    2024: 2890.254,
+    2025: 3033.866,
+    2026: 3161.458961,
+    2027: 3263.816753,
+    2028: 3381.78475,
+    2029: 3510.878469,
+    2030: 3640.284132,
+    2031: 3770.105082,
 }
 # Table 1.12 mixed income.
 MIXED_INCOME = {
@@ -119,40 +164,52 @@ MIXED_INCOME = {
     2021: 162.369,
     2022: 168.687,
     2023: 169.885,
-    2024: 176.374,
-    2025: 178.87647080000002,
-    2026: 185.0544149,
-    2027: 192.6154851,
-    2028: 200.4094443,
-    2029: 208.40325,
-    2030: 216.8960756,
+    2024: 176.333,
+    2025: 177.725,
+    2026: 183.374482,
+    2027: 189.543244,
+    2028: 196.611717,
+    2029: 204.513402,
+    2030: 213.30725,
+    2031: 222.381054,
 }
 
 
-def q2_population_growth_percent(year):
+def q2_population_growth_percent(tables, year):
     population = {
-        y: REAL_GDP_Q2[y] / REAL_GDP_PER_PERSON_Q2[y] for y in (year - 1, year)
+        y: tables["real_gdp"][y] / tables["per_person"][y] for y in (year - 1, year)
     }
     return (population[year] / population[year - 1] - 1) * 100
 
 
-@pytest.mark.parametrize("year", sorted(LTED_MARCH_2026_POPULATION_GROWTH))
-def test_population_is_the_march_2026_long_term_determinants_row(year):
-    expected = round(LTED_MARCH_2026_POPULATION_GROWTH[year] / 100, 4)
-    assert POPULATION(f"{year}-01-01") == pytest.approx(expected, abs=1e-12)
-
-
-@pytest.mark.parametrize("year", [2023, 2024, 2025])
-def test_efo_tables_reproduce_the_release(year):
-    assert q2_population_growth_percent(year) == pytest.approx(
+@pytest.mark.parametrize("year", range(2023, 2031))
+def test_efo_tables_reproduce_the_long_term_determinants(year):
+    """On the March 2026 EFO, the tables give the determinants' forecast."""
+    assert q2_population_growth_percent(MARCH_2026_Q2, year) == pytest.approx(
         LTED_MARCH_2026_POPULATION_GROWTH[year], abs=1e-9
     )
 
 
-@pytest.mark.parametrize("year, expected", [(2021, 0.0036), (2022, 0.0098)])
-def test_population_before_the_release_comes_from_the_efo_tables(year, expected):
-    # 2021: 0.3566% and 2022: 0.9824%, rounded to 4 decimals.
-    assert round(q2_population_growth_percent(year) / 100, 4) == expected
+@pytest.mark.parametrize("year", range(2021, 2032))
+def test_population_to_2031_is_the_october_2026_efo_tables(year):
+    expected = round(q2_population_growth_percent(OCTOBER_2026_Q2, year) / 100, 4)
+    assert POPULATION(f"{year}-01-01") == pytest.approx(expected, abs=1e-12)
+
+
+def test_october_population_grows_more_slowly_than_march():
+    # 2026-27 to 2030-31: 0.13% to 0.25% a year, against 0.29% to 0.36% in
+    # the March 2026 forecast, about 0.7% lower by 2030-31.
+    level = 1.0
+    for year in range(2026, 2031):
+        level *= (1 + POPULATION(f"{year}-01-01")) / (
+            1 + LTED_MARCH_2026_POPULATION_GROWTH[year] / 100
+        )
+    assert level == pytest.approx(1 - 0.0069, abs=0.0005)
+
+
+@pytest.mark.parametrize("year", range(2032, 2074))
+def test_population_after_2031_is_the_march_2026_determinants_row(year):
+    expected = round(LTED_MARCH_2026_POPULATION_GROWTH[year] / 100, 4)
     assert POPULATION(f"{year}-01-01") == pytest.approx(expected, abs=1e-12)
 
 
@@ -160,7 +217,7 @@ def _per_capita(aggregate_growth, year):
     return round((1 + aggregate_growth) / (1 + POPULATION(f"{year}-01-01")) - 1, 4)
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_gdp_divides_nominal_gdp_by_population(year):
     growth = NOMINAL_GDP[year] / NOMINAL_GDP[year - 1] - 1
     assert YOY.obr.per_capita.gdp(f"{year}-01-01") == pytest.approx(
@@ -168,7 +225,7 @@ def test_per_capita_gdp_divides_nominal_gdp_by_population(year):
     )
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_mixed_income_divides_mixed_income_by_population(year):
     growth = MIXED_INCOME[year] / MIXED_INCOME[year - 1] - 1
     assert YOY.obr.per_capita.mixed_income(f"{year}-01-01") == pytest.approx(
@@ -176,7 +233,7 @@ def test_per_capita_mixed_income_divides_mixed_income_by_population(year):
     )
 
 
-@pytest.mark.parametrize("year", range(2021, 2031))
+@pytest.mark.parametrize("year", range(2021, 2032))
 def test_per_capita_non_labour_income_divides_by_population(year):
     growth = YOY.obr.non_labour_income(f"{year}-01-01")
     assert YOY.obr.per_capita.non_labour_income(f"{year}-01-01") == pytest.approx(
