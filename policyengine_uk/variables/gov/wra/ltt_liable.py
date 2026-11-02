@@ -11,7 +11,12 @@ class ltt_liable(Variable):
     entity = Household
     definition_period = YEAR
     value_type = bool
-    reference = "https://www.legislation.gov.uk/wsi/2018/128/schedule"
+    reference = [
+        # Land Transaction Tax and Anti-avoidance of Devolved Taxes (Wales)
+        # Act 2017 s. 2, in force from 1 April 2018 under WSI 2018/34 art. 3.
+        "https://www.legislation.gov.uk/anaw/2017/1/section/2",
+        "https://www.legislation.gov.uk/wsi/2018/34/article/3/made",
+    ]
 
     def formula(household, period, parameters):
         country = household("country", period)

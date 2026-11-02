@@ -6,7 +6,7 @@ class sdlt_liable(Variable):
     documentation = (
         "Whether the household is liable for Stamp Duty Land Tax: it lives in "
         "England or Northern Ireland, or in Wales while HMRC charges the tax "
-        "there, and the tax has not been abolished."
+        "there, and no reform sets gov.hmrc.stamp_duty.abolish."
     )
     entity = Household
     definition_period = YEAR

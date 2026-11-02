@@ -39,7 +39,7 @@ brackets:
         reference:
         - href: https://www.legislation.gov.uk/ukpga/2016/24/section/127/enacted
           title: Finance Act 2016 s. 127(12)
-description: Stamp Duty Land Tax rates for non-residential property transfers, by band of the price. The purchase_charged_on_whole_price parameter beside this one sets whether HMRC charges the rate for the band the price falls in on the whole price, or each band's rate on the slice of the price in that band.
+description: Stamp Duty Land Tax rates for non-residential property transfers, by band of the price. gov.hmrc.stamp_duty.non_residential.purchase_charged_on_whole_price sets whether HMRC charges the rate for the band the price falls in on the whole price, or each band's rate on the slice of the price in that band.
 metadata:
   economy: false
   label: Stamp Duty on non-residential property

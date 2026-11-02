@@ -1,23 +1,16 @@
 description: Minimum value for taxability of additional residential property.
 values:
-  2014-12-04:
-    value: 0
-    metadata:
-      note: Before the higher rates for additional dwellings started, a buyer of an additional dwelling paid the main rates in s. 55(1B) Table A at any price.
-      reference:
-        - title: Finance Act 2003 s. 55(1B) Table A, as at 30 April 2015
-          href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2015-04-30
   2016-04-01:
     value: 40_000
     metadata:
       reference:
         - title: Finance Act 2016 s. 128(5)
           href: https://www.legislation.gov.uk/ukpga/2016/24/section/128/enacted
-        - title: Finance Act 2003 schedule 4ZA(3)(4)(b)
+        - title: Finance Act 2003 schedule 4ZA paragraph 3(2)
           href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
 metadata:
   unit: currency-GBP
   label: Stamp Duty secondary residence minimum value
   reference:
-    - title: Finance Act 2003 schedule 4ZA(3)(4)(b)
+    - title: Finance Act 2003 schedule 4ZA paragraph 3(2)
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA

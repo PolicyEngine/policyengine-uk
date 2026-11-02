@@ -1,4 +1,4 @@
-description: Whether HMRC charges a non-residential purchase at the single percentage of the whole price that the non-residential purchase rates set for the band the price falls in, rather than at each band's rate on the slice of the price in that band.
+description: Whether HMRC charges a non-residential purchase one percentage of the whole price, the rate for the band the price falls in. When false, HMRC charges each band's rate on the slice of the price in that band.
 values:
   2003-07-10:
     value: true

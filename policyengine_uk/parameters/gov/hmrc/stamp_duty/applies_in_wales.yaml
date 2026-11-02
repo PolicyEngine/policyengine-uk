@@ -9,14 +9,21 @@ values:
   2018-04-01:
     value: false
     metadata:
+      note: Wales Act 2014 s. 16(5) and (6) keep SDLT for transactions under some contracts entered into on or before 17 December 2014. The model has no contract date, so it applies the switch to every purchase.
       reference:
-        - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018, schedule
-          href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+        - title: Wales Act 2014 s. 16(2), (4)
+          href: https://www.legislation.gov.uk/ukpga/2014/29/section/16
+        - title: The Wales Act 2014, Sections 16 and 19 (Disapplication of UK Stamp Duty Land Tax and UK Landfill Tax) (Appointed Date) Order 2018 (SI 2018/214) art. 2(a)
+          href: https://www.legislation.gov.uk/uksi/2018/214/article/2/made
+        - title: Finance Act 2003 s. 48(1)(a), as at 1 April 2018
+          href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/2018-04-01
 metadata:
   unit: bool
   label: Stamp Duty applies in Wales
   reference:
     - title: Finance Act 2003 s. 48(1)(a), as at 30 April 2017
       href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/2017-04-30
-    - title: The Land Transaction Tax (Tax Bands and Tax Rates) (Wales) Regulations 2018, schedule
-      href: https://www.legislation.gov.uk/wsi/2018/128/schedule
+    - title: Wales Act 2014 s. 16(2), (4)
+      href: https://www.legislation.gov.uk/ukpga/2014/29/section/16
+    - title: The Wales Act 2014, Sections 16 and 19 (Disapplication of UK Stamp Duty Land Tax and UK Landfill Tax) (Appointed Date) Order 2018 (SI 2018/214) art. 2(a)
+      href: https://www.legislation.gov.uk/uksi/2018/214/article/2/made

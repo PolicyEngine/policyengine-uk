@@ -6,8 +6,11 @@
 # rates and the 2% lease rent band, from 17 March 2016). Before those dates:
 # Finance Act 2003 s. 55(1B) Table A and s. 55(2) Table B, and Sch 5 para 2(3)
 # Table B, each as at 30 April 2015. HMRC charges SDLT on land in Wales until
-# 1 April 2018 (s. 48(1)(a) as at 30 April 2017); from then the Welsh Revenue
-# Authority charges Land Transaction Tax (WSI 2018/128).
+# 31 March 2018 (s. 48(1)(a) as at 30 April 2017). Parliament ended SDLT in
+# Wales from 1 April 2018 (Wales Act 2014 s. 16(2), (4); SI 2018/214 art.
+# 2(a)), and the Welsh Revenue Authority charges Land Transaction Tax from then
+# (LTTADT(W)A 2017 s. 2; WSI 2018/34 art. 3); the Welsh Ministers set LTT's
+# rates in WSI 2018/128.
 
 - name: First-time buyer, £300,000, model year 2015, pays the main rates
   # 2% x 125,000 + 5% x 50,000 under s. 55(1B) Table A; Sch 6ZA starts on 22 November 2017 (FA 2018 s. 41(8)).
@@ -69,6 +72,16 @@
   output:
     stamp_duty_land_tax: 12_500
 
+- name: First-time buyer, £200,000, model year 2016, pays the main rates
+  # 2% x 75,000 under s. 55(1B) Table A.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 200_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 1_500
+
 - name: First-time buyer, £300,000, model year 2018, gets the relief
   # Sch 6ZA para 4: 0% to £300,000.
   period: 2018
@@ -106,6 +119,24 @@
     additional_residential_property_purchased: 100_000
   output:
     stamp_duty_land_tax: 0
+
+- name: Additional dwelling, £1,000,000, model year 2015, pays the main rates
+  # 2,500 + 33,750 + 10% x 75,000 under s. 55(1B) Table A.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 1_000_000
+  output:
+    stamp_duty_land_tax: 43_750
+
+- name: Additional dwelling, £1,600,000, model year 2015, pays the main rates
+  # 2,500 + 33,750 + 57,500 + 12% x 100,000 under s. 55(1B) Table A.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    additional_residential_property_purchased: 1_600_000
+  output:
+    stamp_duty_land_tax: 105_750
 
 - name: Additional dwelling, £300,000, model year 2016, pays the higher rates
   # 3% x 125,000 + 5% x 125,000 + 8% x 50,000 under Sch 4ZA para 1(2).
@@ -352,3 +383,34 @@
     ltt_liable: false
     stamp_duty_land_tax: 5_000
     land_transaction_tax: 0
+
+- name: A 2015 reform to the main rates reaches a buyer of an additional dwelling
+  # 3% x 125,000 + 5% x 50,000, the reformed main rates.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.residential.purchase.main.subsequent[1].rate: 0.03
+    additional_residential_property_purchased: 300_000
+  output:
+    stamp_duty_land_tax: 6_250
+
+- name: A 2015 reform with a positive first non-residential threshold charges nothing below it
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.non_residential.purchase[0].threshold: 10_000
+    gov.hmrc.stamp_duty.non_residential.purchase[0].rate: 0.005
+    non_residential_property_purchased: 5_000
+  output:
+    stamp_duty_land_tax: 0
+
+- name: A 2015 reform with a positive first non-residential threshold charges its rate above it
+  # 0.5% x 20,000 on the whole price.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.non_residential.purchase[0].threshold: 10_000
+    gov.hmrc.stamp_duty.non_residential.purchase[0].rate: 0.005
+    non_residential_property_purchased: 20_000
+  output:
+    stamp_duty_land_tax: 100
