@@ -1,4 +1,6 @@
 import re
+from dataclasses import dataclass, field
+
 import numpy as np
 from policyengine_core import periods
 from policyengine_uk.system import system
@@ -34,65 +36,103 @@ def find_variable_in_tree_recursive(variable_name, node):
     return None
 
 
-def index_calculations(tracer):
-    """The trace node of each calculation, by (variable, period, branch name).
+@dataclass
+class Read:
+    """How a calculation read one variable on one branch."""
 
-    A variable read again after it was calculated gets a node without
-    children, so the index keeps the first node with children: the one that
-    shows what the calculation read.
+    # The periods it read the variable over.
+    periods: list = field(default_factory=list)
+    # The value the trace shows for the variable over each period read, and
+    # over the periods it is defined for that make them up or contain them.
+    values: dict = field(default_factory=dict)
+
+
+def branch_chain(sim):
+    # The branch names sim reads values under: its own, then each ancestor's.
+    names = []
+    ancestor = sim
+    while ancestor is not None:
+        names.append(ancestor.branch_name)
+        ancestor = getattr(ancestor, "parent_branch", None)
+    return names
+
+
+def index_trace(tracer):
+    """Index the trace by (variable, period, branch name).
+
+    Returns the last node of each calculation, and the last node with a value
+    for each key. A variable read again after it was calculated gets a node
+    without children, so a calculation's node is one with children: the one
+    that shows what it read.
     """
-    index = {}
+    calculations, values = {}, {}
     stack = list(reversed(tracer.trees))
     while stack:
         node = stack.pop()
+        key = (node.name, periods.period(node.period), node.branch_name)
         if node.children:
-            key = (node.name, periods.period(node.period), node.branch_name)
-            index.setdefault(key, node)
+            calculations[key] = node
             stack.extend(reversed(node.children))
-    return index
+        if node.value is not None:
+            values[key] = node
+    return calculations, values
 
 
-def find_calculation(variable_name, period, sim, index):
-    # The node of variable_name's calculation over period: on sim's branch,
-    # else on the nearest ancestor (a branch reads the values its ancestors
-    # calculated), else on any branch, else the first node of variable_name
-    # over any period.
+def branches_read_from(branch_name, chain):
+    # A value read on a branch of chain may have been calculated on any
+    # branch after it in chain (an ancestor's); one read on another branch,
+    # on that branch.
+    if branch_name in chain:
+        return chain[chain.index(branch_name) :]
+    return [branch_name]
+
+
+def find_calculation(variable_name, period, chain, calculations):
+    # The node of variable_name's calculation over period, on the first branch
+    # of chain that calculated it.
     period = periods.period(period)
-    ancestor = sim
-    while ancestor is not None:
-        node = index.get((variable_name, period, ancestor.branch_name))
+    for branch_name in chain:
+        node = calculations.get((variable_name, period, branch_name))
         if node is not None:
             return node
-        ancestor = getattr(ancestor, "parent_branch", None)
-    for (name, node_period, _), node in index.items():
-        if name == variable_name and node_period == period:
-            return node
-    return find_variable_in_trees(variable_name, sim.tracer)
+    raise ValueError(
+        f"The trace shows no calculation of '{variable_name}' over {period}. "
+        f"Calculate it with trace=True, before any value it reads is stored."
+    )
 
 
-def get_dependency_nodes(node, index=None):
+def is_period_wrapper(child, node):
     # A variable calculated over a period other than its definition period (a
     # monthly one summed over a year, or a yearly one divided into a month)
     # has itself as a child on the same branch for each period it is
-    # calculated over; what it reads is under those children. A child that
-    # read a value already stored has no children of its own, so index (from
-    # index_calculations) gives the calculation that stored it. The variable
-    # read on another branch is a dependency, as is the variable read over a
-    # period that neither contains nor is contained in its own.
-    nodes = []
+    # calculated over.
+    child_period = periods.period(child.period)
     node_period = periods.period(node.period)
+    return (
+        child.name == node.name
+        and child.branch_name == node.branch_name
+        and (node_period.contains(child_period) or child_period.contains(node_period))
+    )
+
+
+def get_dependency_nodes(node, calculations=None, chain=None):
+    # The nodes of what node read directly: what it read is under its period
+    # wrappers (see is_period_wrapper). A wrapper that read a value already
+    # stored has no children of its own, so calculations (from index_trace)
+    # gives the calculation that stored it. The variable read on another
+    # branch is a dependency, as is the variable read over a period that
+    # neither contains nor is contained in its own.
+    nodes = []
     for child in node.children:
-        child_period = periods.period(child.period)
-        if (
-            child.name == node.name
-            and child.branch_name == node.branch_name
-            and (
-                node_period.contains(child_period) or child_period.contains(node_period)
-            )
-        ):
-            if not child.children and index is not None:
-                child = index.get((child.name, child_period, child.branch_name), child)
-            nodes.extend(get_dependency_nodes(child, index))
+        if is_period_wrapper(child, node):
+            if not child.children and calculations is not None:
+                child_period = periods.period(child.period)
+                for branch_name in branches_read_from(child.branch_name, chain or []):
+                    key = (child.name, child_period, branch_name)
+                    if key in calculations:
+                        child = calculations[key]
+                        break
+            nodes.extend(get_dependency_nodes(child, calculations, chain))
         else:
             nodes.append(child)
     return nodes
@@ -102,36 +142,61 @@ def get_variable_dependencies(variable_name, sim, period=None):
     """The variables variable_name reads directly, from sim's trace.
 
     With period, those its calculation over period read; otherwise those of
-    the first calculation of variable_name the trace shows.
+    the first node of variable_name the trace shows.
     """
     if period is None:
         node = find_variable_in_trees(variable_name, sim.tracer)
         if not node:
             return []
         return [child.name for child in get_dependency_nodes(node)]
-    index = index_calculations(sim.tracer)
-    node = find_calculation(variable_name, period, sim, index)
-    return [child.name for child in get_dependency_nodes(node, index)]
+    calculations, _ = index_trace(sim.tracer)
+    chain = branch_chain(sim)
+    node = find_calculation(variable_name, period, chain, calculations)
+    return [child.name for child in get_dependency_nodes(node, calculations, chain)]
+
+
+def wrapper_values(node):
+    # The values node and its period wrappers show, by period.
+    values = {}
+    if node.value is not None:
+        values[periods.period(node.period)] = node.value
+    for child in node.children:
+        if is_period_wrapper(child, node):
+            for period, value in wrapper_values(child).items():
+                values.setdefault(period, value)
+    return values
 
 
 def get_direct_reads(variable_name, sim, period):
-    """The periods variable_name, calculated over period, read each variable
-    over on its own branch: a dict from variable name to periods, from sim's
-    trace."""
-    index = index_calculations(sim.tracer)
-    node = find_calculation(variable_name, period, sim, index)
-    return reads_on_branch(node, get_dependency_nodes(node, index))
+    """What variable_name, calculated over period, read directly.
 
-
-def reads_on_branch(node, dependency_nodes):
-    # The periods node read each of dependency_nodes over, on its own branch.
+    From sim's trace: a dict from (branch, variable) to a Read, in the order
+    of the first read of each. branch is None for sim's branch and its
+    ancestors (sim reads their values as its own), and otherwise the name of
+    the branch read.
+    """
+    calculations, values = index_trace(sim.tracer)
+    chain = branch_chain(sim)
+    node = find_calculation(variable_name, period, chain, calculations)
+    variables = sim.tax_benefit_system.variables
     reads = {}
-    for child in dependency_nodes:
-        if child.branch_name == node.branch_name:
-            read_periods = reads.setdefault(child.name, [])
-            read_period = periods.period(child.period)
-            if read_period not in read_periods:
-                read_periods.append(read_period)
+    for child in get_dependency_nodes(node, calculations, chain):
+        on = None if child.branch_name in chain else child.branch_name
+        read = reads.setdefault((on, child.name), Read())
+        child_period = periods.period(child.period)
+        if child_period not in read.periods:
+            read.periods.append(child_period)
+        for value_period, value in wrapper_values(child).items():
+            read.values.setdefault(value_period, value)
+        # A value the read took from storage may show only where it was
+        # calculated.
+        for value_period in definition_periods(variables[child.name], [child_period]):
+            if value_period not in read.values:
+                for branch_name in branches_read_from(child.branch_name, chain):
+                    found = values.get((child.name, value_period, branch_name))
+                    if found is not None:
+                        read.values[value_period] = found.value
+                        break
     return reads
 
 
@@ -164,11 +229,7 @@ def extract_variables_regex(formula_source):
 def unused_branch_name(sim, base_name="dependency-contribution"):
     # A name no branch of sim, sim itself or its ancestors uses, so get_branch
     # creates a new branch instead of returning an existing one.
-    taken = set(sim.branches)
-    ancestor = sim
-    while ancestor is not None:
-        taken.add(ancestor.branch_name)
-        ancestor = getattr(ancestor, "parent_branch", None)
+    taken = set(sim.branches) | set(branch_chain(sim))
     name, suffix = base_name, 1
     while name in taken:
         suffix += 1
@@ -176,59 +237,94 @@ def unused_branch_name(sim, base_name="dependency-contribution"):
     return name
 
 
+def check_reads_of_itself(variable_name, period, reads):
+    # Recalculating variable_name over period replaces its values there, so a
+    # read of its own value within period cannot be held.
+    for read_period in reads.get((None, variable_name), Read()).periods:
+        if period.contains(read_period) or read_period.contains(period):
+            raise ValueError(
+                f"'{variable_name}' reads its own value over {read_period}, "
+                f"within {period}, so its direct dependencies over {period} "
+                f"cannot be zeroed one at a time. Calculate the contributions "
+                f"over each period it is defined for instead."
+            )
+
+
 def calculate_with_dependency_zeroed(
     sim, variable_name, dependency, year, map_to=None, reads=None
 ):
     """Recalculate variable_name over year with dependency zero.
 
-    reads (by default get_direct_reads(variable_name, sim, year)) gives the
-    periods variable_name read each variable over. dependency is set to zero
-    for each period it is defined for that makes up or contains year or a
-    period variable_name read it over. Every other variable variable_name
-    read is held at the value sim holds, as an input, so the result is the
-    change from dependency alone: on a branch, an input drops the values
-    calculated from the one it replaces, which would otherwise be
-    recalculated with dependency zero.
+    reads (by default get_direct_reads(variable_name, sim, year)) gives what
+    variable_name read. dependency is zero over year and over each period
+    variable_name read it, on the branch it read it: zero is input for each
+    period dependency is defined for that makes up or contains one of those.
+    Every other variable variable_name read is held at the value it read, as
+    an input, so the result is the change from dependency alone: on a
+    branch, an input drops the values calculated from the one it replaces,
+    which would otherwise be recalculated with dependency zero.
 
     Runs on a new untraced branch of sim, removed from sim.branches before
     returning: what the branch inputs or deletes stays in the branch, so sim
-    is left as it was. Inputting each defined period directly means no
-    set_input helper has to split an annual value across months that already
-    hold values, which core refuses when they do not add up to it.
+    is left as it was. A read on another branch is changed on a branch of
+    that name created from the new one first, which variable_name gets when
+    it asks the new branch for that branch. Inputting each defined period
+    directly means no set_input helper has to split an annual value across
+    months that already hold values, which core refuses when they do not add
+    up to it.
     """
     period = periods.period(year)
     variables = sim.tax_benefit_system.variables
     if reads is None:
         reads = get_direct_reads(variable_name, sim, period)
-    zeroed_reads = [period] + reads.get(dependency, [])
-    zeroed = definition_periods(variables[dependency], zeroed_reads)
-    held = {
-        name: definition_periods(variables[name], read_periods)
-        for name, read_periods in reads.items()
-        if name not in (dependency, variable_name)
-        and not variables[name].is_neutralized
-    }
+    check_reads_of_itself(variable_name, period, reads)
+    zeroed = {None: [period]}
+    held = {}
+    for (on, name), read in reads.items():
+        if name == dependency:
+            zeroed.setdefault(on, []).extend(read.periods)
+        elif not variables[name].is_neutralized:
+            held.setdefault(on, {})[name] = read
+    others = list(dict.fromkeys(on for on in [*zeroed, *held] if on is not None))
     zeros = np.zeros(sim.get_variable_population(dependency).count)
 
     branch_name = unused_branch_name(sim)
     branch = sim.get_branch(branch_name)
     try:
         branch.trace = False
-        # What sim holds for each held read, taken before the branch changes.
-        held_values = {}
-        for name, held_periods in held.items():
-            holder = branch.get_holder(name)
-            for held_period in held_periods:
-                value = holder.get_array(held_period, branch.branch_name)
-                if value is None:
-                    value = branch.calculate(name, held_period)
-                held_values[name, held_period] = value
-        for zeroed_period in zeroed_reads + zeroed:
-            branch.delete_arrays(dependency, zeroed_period)
-        for zeroed_period in zeroed:
-            branch.set_input(dependency, zeroed_period, zeros)
-        for (name, held_period), value in held_values.items():
-            branch.set_input(name, held_period, value)
+        # The values to hold, taken before the branch changes: from the
+        # trace, else from storage, else calculated.
+        held_values = []
+        for on, held_reads in held.items():
+            source = branch if on is None else sim.branches.get(on)
+            for name, read in held_reads.items():
+                for held_period in definition_periods(variables[name], read.periods):
+                    value = read.values.get(held_period)
+                    if value is None and source is not None:
+                        value = source.get_holder(name).get_array(
+                            held_period, source.branch_name
+                        )
+                    if value is None and on is None:
+                        value = branch.calculate(name, held_period)
+                    if value is not None:
+                        held_values.append((on, name, held_period, value))
+
+        def change(target, on):
+            read_periods = zeroed.get(on, [])
+            zero_periods = definition_periods(variables[dependency], read_periods)
+            for zeroed_period in read_periods + zero_periods:
+                target.delete_arrays(dependency, zeroed_period)
+            for zeroed_period in zero_periods:
+                target.set_input(dependency, zeroed_period, zeros)
+            for held_on, name, held_period, value in held_values:
+                if held_on == on:
+                    target.set_input(name, held_period, value)
+
+        change(branch, None)
+        for on in others:
+            other = branch.get_branch(on)
+            other.trace = False
+            change(other, on)
         branch.delete_arrays(variable_name, period)
         return branch.calculate(variable_name, period, map_to=map_to)
     finally:
@@ -263,12 +359,8 @@ def calculate_dependency_contributions(
         original_values_mapped = original_values
 
     dependency_contributions = {}
-    index = index_calculations(sim.tracer)
-    node = find_calculation(variable_name, year, sim, index)
-    dependency_nodes = get_dependency_nodes(node, index)
-    first_level_dependencies = [child.name for child in dependency_nodes]
-    reads = reads_on_branch(node, dependency_nodes)
-    for variable in dict.fromkeys(first_level_dependencies):
+    reads = get_direct_reads(variable_name, sim, year)
+    for variable in dict.fromkeys(name for _, name in reads):
         if "weight" in variable:
             continue
         value_type = sim.tax_benefit_system.get_variable(variable).value_type
