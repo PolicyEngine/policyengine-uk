@@ -20,6 +20,7 @@ from policyengine_uk.data.isa_income import (
 )
 
 import hashlib
+from types import MappingProxyType
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -165,9 +166,28 @@ def growth_rate(
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# Simulation grows the household totals in STORED_HOUSEHOLD_TOTALS itself.
 # A finite CGT scenario can shorten the whole dataset horizon; it never
 # extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
+
+# Household totals that sum person inputs (`adds`) but that a dataset can
+# store itself (#2740), each with the parts it stands for. For a year with no
+# stored total, Core runs the sum, which falls to zero in data that store
+# only the total, and Core does not let a variable declare both `adds` and
+# `uprating`. So in a simulation built from data, Simulation grows the latest
+# earlier stored total by the index its parts declare, as Core grows the
+# parts, while the total still means what the data stored: a sum of exactly
+# these parts, each a plain input. Core sums the parts where a reform changes
+# that sum or a part, where the data hold no total for that year or an
+# earlier one, or where they hold the parts for a later year than the total.
+STORED_HOUSEHOLD_TOTALS = MappingProxyType(
+    {
+        "cash_isa": frozenset({"cash_isa_balance"}),
+        "stocks_and_shares_isa": frozenset({"stocks_and_shares_isa_balance"}),
+        "household_lifetime_isa_balance": frozenset({"lifetime_isa_balance"}),
+    }
+)
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
 # Preserve that behavior in the newly materialized years without changing
@@ -192,6 +212,25 @@ BEREAVEMENT_SPLIT_INPUTS = frozenset(
 # before this one (Finance Act 2004 s. 228A), a window that moves each year; a
 # projected year uses the variable's own estimate instead (#2523).
 YEAR_SPECIFIC_INPUTS = frozenset({"unused_pension_annual_allowance"})
+
+
+def stored_total_uprating(tax_benefit_system, name: str) -> str | None:
+    """The index that grows a stored household total: its parts' ``uprating``.
+
+    Growing the total like its parts keeps a stored total equal to the sum it
+    replaces. ``None`` holds the total flat, as Core holds parts with no
+    ``uprating``. Parts that declare different indices raise ``ValueError``.
+    """
+    indices = {
+        tax_benefit_system.variables[part].uprating
+        for part in tax_benefit_system.variables[name].adds
+    }
+    if len(indices) != 1:
+        raise ValueError(
+            f"The parts of {name} declare different uprating indices: "
+            f"{sorted(map(str, indices))}."
+        )
+    return indices.pop()
 
 
 def _unmapped_uprating_indices(uprating):

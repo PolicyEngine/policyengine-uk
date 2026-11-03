@@ -1,0 +1,19 @@
+description: >
+  If this is true, the model applies the Royal Borough of Kingston upon
+  Thames's own list (qualifying_benefits) to the enhanced disability premium
+  in its working-age Council Tax Reduction scheme; otherwise it applies the
+  Housing Benefit condition there
+  (receives_enhanced_disability_premium_qualifying_benefit), under the same
+  age limit. The council's resolutions support its own list from 2013-14, when
+  it adopted the Default Scheme, so the model applies the list in every year.
+metadata:
+  label: Kingston upon Thames Council Tax Reduction enhanced disability premium own list in effect
+  period: year
+  unit: bool
+  reference:
+    - title: Council, 11 December 2012, item 42 (a scheme from 1 April 2013 adopting the Default Scheme)
+      href: https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744
+    - title: Decision 2535, 17 December 2013 (the council adopted the Default Scheme for 2013/14)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=2535
+values:
+  2013-04-01: true

@@ -1,0 +1,61 @@
+description: >
+  The London Borough of Newham counts the care component of disability living
+  allowance at the highest rate and the daily living component of personal
+  independence payment at either rate, for the applicant or a member of the
+  applicant's family, towards the enhanced disability premium in its
+  working-age Council Tax Reduction scheme, and from 1 April 2014 armed forces
+  independence payment. It counts each award only for a person under the
+  qualifying age for State Pension Credit. Its scheme texts from 2022 also
+  count the care component of child disability payment at the highest rate,
+  for which the model has no separate variable. The council's texts for 2013,
+  2014, 2017, 2022, 2023 and 2026 set these lists. For the years between, the
+  council's budget reports say the scheme will remain unchanged (2015-16,
+  2016-17) or propose no changes (2020-21, 2021-22), its 2024-25 Council Tax
+  booklet says the council is keeping the scheme in place, and its 2019-20 and
+  2025-26 revisions changed other provisions; the texts on either side of each
+  of those years, and of 2018-19, count the same DLA care, PIP daily living
+  and armed forces independence payment awards. The model reads the list as
+  at 30 April of each year.
+metadata:
+  label: Newham Council Tax Reduction enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: Council, 24 January 2013, minutes (adopting the local scheme in Appendix 1 from 1 April 2013)
+      href: https://mgov.newham.gov.uk/documents/g9739/Printed%20minutes%2024th-Jan-2013%2018.00%20Council.pdf?T=1
+    - title: Council Tax Reduction Scheme 2013 (Appendix 1), Sch. 3 para. 12(1)(b), (c)
+      href: https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf
+    - title: Council, 9 December 2013, minutes (adopting the scheme in Appendix 2 from 1 April 2014)
+      href: https://mgov.newham.gov.uk/documents/g9807/Printed%20minutes%2009th-Dec-2013%2020.00%20Council.pdf?T=1
+    - title: Council Tax Reduction Scheme 2014, Sch. 3 para. 12(1)(b), (c), (d)
+      href: https://mgov.newham.gov.uk/documents/s85542/LB%20Newham%20Local%20CTR%20Scheme_1415_12_11_13A.pdf
+    - title: Budget proposals report (Council, 23 February 2015), appendix 1, para. 7.12 (the 2015/16 scheme "will remain unchanged")
+      href: https://mgov.newham.gov.uk/documents/s94929/Mayors%20Budget%20Proposals%20Report%20-%20appendix%201.pdf
+    - title: Budget proposals report (Council, 22 February 2016), para. 7.15 (the 2016/17 scheme "will remain unchanged")
+      href: https://mgov.newham.gov.uk/documents/s102326/Mayors%20Budget%20Proposals%20Report%20PDF.pdf
+    - title: Council Tax Reduction Scheme 2017 (Appendix 1), Sch. 3 para. 12(1)(b), (c), (d)
+      href: https://mgov.newham.gov.uk/documents/s110300/Appendix%201%20LB%20Newham%20Local%20CTR%20Scheme%201718.pdf
+    - title: Council, 18 February 2019, minutes (a lower minimum contribution from 1 April 2019)
+      href: https://mgov.newham.gov.uk/documents/g12186/Printed%20minutes%2018th-Feb-2019%2019.00%20Council.pdf?T=1
+    - title: Budget report 2020-21 (Council, 2 March 2020), para. 4.31 ("No changes to the council tax support scheme are proposed in 2020/21")
+      href: https://mgov.newham.gov.uk/documents/s135762/Budget%20Report%202020-21%20to%202022-23.pdf
+    - title: Budget report 2021-22 (Council, 1 March 2021), para. 5.19 (no changes proposed)
+      href: https://mgov.newham.gov.uk/documents/s143898/210219%20Budget%20report%202021-22%20-%202023%20FINAL.pdf
+    - title: Council, 28 February 2022, supplementary agenda (Council Tax Reduction Scheme 2022), Sch. 3 para. 12(1)(b), (c), (d)
+      href: https://mgov.newham.gov.uk/documents/b31136/Supplementary%20Agenda%20-%20Council%20Tax%20Reduction%20Scheme%2028th-Feb-2022%2019.00%20Council.pdf?T=9
+    - title: Council Tax Reduction Scheme 2023, Sch. 3 para. 12(1)(b), (c), (d)
+      href: https://www.newham.gov.uk/downloads/file/5876/council-tax-reduction-scheme-2023
+    - title: Council Tax booklet 2024-25, Mayor's message ("keeping firmly in place the 90% council tax reduction scheme")
+      href: https://www.newham.gov.uk/downloads/file/7105/council-tax-2024-25-budget-booklet
+    - title: Budget setting report 2025-26 (Council, 27 February 2025), para. 8.5 (changes to maximum support, taper, capital limit and non-dependant deductions)
+      href: https://mgov.newham.gov.uk/documents/s179147/Final%20Budget%20Setting%20Report%20Full%20Councilx.pdf
+    - title: Council Tax Reduction Scheme 2026, Sch. 3 para. 12(1)(n), (o), (p)
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026
+values:
+  2013-04-01:
+    - has_highest_dla_sc_award
+    - pip_dl
+  2014-04-01:
+    - has_highest_dla_sc_award
+    - pip_dl
+    - armed_forces_independence_payment
