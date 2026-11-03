@@ -37,6 +37,11 @@ Invariants:
 3. Switching a leaver fact on never removes the status.
 4. The benefit unit's child or qualifying young person is a child or
    qualifying young person who is not its claimant or partner.
+5. Reg. 5(4)(c), which reg. 4(2) keeps for the reg. 4 period: a member who
+   is not the claimant or partner and reports Income Support of their own
+   while it is in payment is never a qualifying young person, on any route;
+   once Income Support has stopped paying (from April 2026) or a reform
+   neutralises it, the report does not change the status.
 """
 
 from datetime import date, timedelta
@@ -79,6 +84,7 @@ def person(age, **inputs):
         "weekly_hours": 0,
         EXTENSION: False,
         "is_claimant_or_partner": False,
+        "income_support_reported": 0,
         **inputs,
     }
 
@@ -167,6 +173,66 @@ def test_regulation_4_matches_calendar_arithmetic_in_any_year(births, year):
     births = [born for born in births if age_on_6_october(born, year) >= 0]
     assume(births)
     assert_regulation_4_matches_calendar(births, year)
+
+
+INCOME_SUPPORT_IN_PAYMENT = {2018: True, 2024: True, 2026: False}
+
+
+def qualifying_young_person_given_income_support(p, year):
+    # Reg. 5(4)(c): a member who is not the claimant or partner receives
+    # Income Support on their own report while Income Support is paid.
+    own_income_support = (
+        INCOME_SUPPORT_IN_PAYMENT[year]
+        and not p["is_claimant_or_partner"]
+        and p["income_support_reported"] > 0
+    )
+    return qualifying_young_person(p) and not own_income_support
+
+
+def test_income_support_ends_every_route():
+    # Invariant 5 on every grid row that qualifies without Income Support.
+    qualifying = [p for p in GRID if qualifying_young_person(p)]
+    reporting = [dict(p, income_support_reported=3_000) for p in qualifying]
+    routes = {
+        "education": [first_condition_through_education(p) for p in qualifying],
+        "regulation 4": [
+            p[ROUTE] and not first_condition_through_education(p) for p in qualifying
+        ],
+        "20 weeks": [
+            p[EXTENSION] and not p[ROUTE] and not first_condition_through_education(p)
+            for p in qualifying
+        ],
+    }
+    assert all(any(rows) for rows in routes.values())
+    for year in INCOME_SUPPORT_IN_PAYMENT:
+        units = [
+            [person(45, is_claimant_or_partner=True, **{ROUTE: False}), p]
+            for p in reporting
+        ]
+        status = simulate(units, year).calculate(QYP, year)[1::2]
+        np.testing.assert_array_equal(
+            status,
+            [qualifying_young_person_given_income_support(p, year) for p in reporting],
+        )
+        if INCOME_SUPPORT_IN_PAYMENT[year]:
+            assert not status.any(), year
+        else:
+            assert status.all(), year
+
+
+def test_income_support_does_not_end_the_status_once_neutralised():
+    # Invariant 5: a reform that removes Income Support leaves no award.
+    rows = [
+        person(16, income_support_reported=3_000, **{ROUTE: True}),
+        person(17, current_education="UPPER_SECONDARY", income_support_reported=3_000),
+        person(17, income_support_reported=3_000, **{EXTENSION: True}),
+    ]
+    units = [[person(45, is_claimant_or_partner=True), p] for p in rows]
+    assert not simulate(units, 2018).calculate(QYP, 2018)[1::2].any()
+    removed = simulate(units, 2018)
+    removed.tax_benefit_system.neutralize_variable("income_support")
+    removed.delete_arrays("income_support")
+    assert removed.calculate(QYP, 2018)[1::2].all()
 
 
 def receiving_education_or_training(p):
@@ -310,6 +376,7 @@ member = st.builds(
     receives_benefits_in_own_right=st.booleans(),
     is_looked_after_by_local_authority=st.booleans(),
     weekly_hours=st.sampled_from([0, 10, 23, 24, 40]),
+    income_support_reported=st.sampled_from([0, 0, 3_000]),
     **{ROUTE: st.booleans(), EXTENSION: st.booleans()},
 )
 
@@ -318,23 +385,34 @@ member = st.builds(
 def benefit_units(draw):
     claimants = draw(st.lists(member, min_size=1, max_size=2))
     others = draw(st.lists(member, max_size=4))
-    return [dict(p, is_claimant_or_partner=True) for p in claimants] + others
+    # Claimants report no Income Support, so the family claims none and the
+    # model calculates no award; another member's report is their own claim.
+    return [
+        dict(p, is_claimant_or_partner=True, income_support_reported=0)
+        for p in claimants
+    ] + others
 
 
 @SETTINGS
-@given(st.lists(benefit_units(), min_size=1, max_size=6), st.sampled_from([2020, 2024]))
+@given(
+    st.lists(benefit_units(), min_size=1, max_size=6),
+    st.sampled_from(sorted(INCOME_SUPPORT_IN_PAYMENT)),
+)
 def test_family_members_in_any_benefit_unit(units, year):
-    # Invariants 2 and 4 on benefit units of any shape, where a claimant or
+    # Invariants 2, 4 and 5 on benefit units of any shape, where a claimant or
     # partner can be a qualifying young person by status.
     sim = simulate(units, year)
     people = [p for unit in units for p in unit]
     status = sim.calculate(QYP, year)
-    np.testing.assert_array_equal(status, [qualifying_young_person(p) for p in people])
+    expected_status = [
+        qualifying_young_person_given_income_support(p, year) for p in people
+    ]
+    np.testing.assert_array_equal(status, expected_status)
     family = sim.calculate(
         "is_child_or_qualifying_young_person_for_child_tax_credit", year
     )
     expected = [
-        (p["age"] < 16 or qualifying_young_person(p))
+        (p["age"] < 16 or qualifying_young_person_given_income_support(p, year))
         and not p["is_claimant_or_partner"]
         and not p["is_looked_after_by_local_authority"]
         for p in people
