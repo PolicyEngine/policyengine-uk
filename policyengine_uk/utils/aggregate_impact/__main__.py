@@ -21,6 +21,8 @@ import argparse
 import hashlib
 import json
 import sys
+import time
+from datetime import datetime, timezone
 import traceback
 from pathlib import Path
 
@@ -31,7 +33,45 @@ def _sha256(path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _phase_logger(out, label):
+    """Best-effort, nonfinancial receipts that survive an interrupted call."""
+    started = time.monotonic()
+    destination = Path(out) / "timing.jsonl"
+
+    def checkpoint(event, phase, **scope):
+        try:
+            record = {
+                "event": event,
+                "phase": phase,
+                "label": label,
+                "utc": datetime.now(timezone.utc).isoformat(),
+                "elapsed_seconds": round(time.monotonic() - started, 6),
+            }
+            for key in ("year", "reform"):
+                if scope.get(key) is not None:
+                    record[key] = scope[key]
+            line = json.dumps(record, sort_keys=True)
+        except Exception:  # noqa: BLE001 - diagnostics must not stop measurement
+            return
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with destination.open("a", encoding="utf-8") as stream:
+                stream.write(line + "\n")
+                stream.flush()
+        except Exception:  # noqa: BLE001 - the runner log is an independent sink
+            pass
+        try:
+            print("aggregate-impact-phase " + line, file=sys.stderr, flush=True)
+        except Exception:  # noqa: BLE001 - failed diagnostics do not change results
+            pass
+
+    return checkpoint
+
+
 def cmd_measure(args) -> int:
+    checkpoint = _phase_logger(args.out, args.label)
+    checkpoint("start", "command")
+    checkpoint("start", "setup")
     from .dataset import load_pin, materialise, sha256_file, verify_file
     from .measure import model_fingerprint, model_loaded, write_result
 
@@ -57,6 +97,7 @@ def cmd_measure(args) -> int:
         spec = load_spec(spec_path, years=args.years)
         provenance["spec_sha256"] = _sha256(spec_path)
 
+        checkpoint("start", "dataset")
         if args.pin:
             pin = load_pin(args.pin)
             if args.dataset_file:
@@ -79,6 +120,7 @@ def cmd_measure(args) -> int:
         else:
             raise ValueError("measure needs --pin, --dataset-file or both")
 
+        checkpoint("end", "dataset")
         if args.partition:
             partition_path, partition_source = Path(args.partition), "given"
         else:
@@ -105,14 +147,18 @@ def cmd_measure(args) -> int:
             reforms = load_reforms(reforms_path)
             provenance["reforms_sha256"] = _sha256(reforms_path)
 
+        checkpoint("end", "setup")
+        checkpoint("start", "initial_simulation")
         from policyengine_uk import Microsimulation
 
         sim = Microsimulation(dataset=str(dataset_path))
+        checkpoint("end", "initial_simulation")
         dataset_object = sim.dataset
 
         def factory(reform=None):
             return Microsimulation(dataset=dataset_object, reform=reform or None)
 
+        checkpoint("start", "measure")
         result, households = measure(
             sim,
             factory,
@@ -123,13 +169,17 @@ def cmd_measure(args) -> int:
             run_guard=not args.no_guard,
             provenance=provenance,
             fingerprint_at_start=fingerprint_at_start,
+            checkpoint=checkpoint,
         )
+        checkpoint("end", "measure")
         write_result(args.out, result, households)
         print(
             f"{args.label}: measured {len(result['metrics'])} figures in {result['timings']['total']}s"
         )
+        checkpoint("end", "command")
         return 0
     except Exception:  # noqa: BLE001 - recorded for the comparison, then reported
+        checkpoint("error", "command")
         crash = {
             "schema": TOOL_SCHEMA,
             "status": "crashed",
