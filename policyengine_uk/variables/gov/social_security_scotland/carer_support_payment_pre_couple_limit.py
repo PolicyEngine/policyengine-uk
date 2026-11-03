@@ -31,8 +31,8 @@ class carer_support_payment_pre_couple_limit(Variable):
         meets_age_condition = person("age", period) >= csp.min_age
         weekly_care_hours = person("care_hours", period)
         # Reg 5(1): only care of a person to whom a qualifying disability
-        # benefit is normally payable counts, which the input takes to hold
-        # by default.
+        # benefit is normally payable counts, which the model takes to hold
+        # unless the input says otherwise.
         meets_hours = (weekly_care_hours >= csp.min_hours) & person(
             "cares_for_severely_disabled_person", period
         )

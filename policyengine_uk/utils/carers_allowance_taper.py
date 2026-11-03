@@ -46,7 +46,8 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     receives_ca = person("carers_allowance_reported", period) > 0
     meets_age_condition = person("age", period) >= ca.min_age
     # SSCBA 1992 s. 70(1): the hours count only for caring for a severely
-    # disabled person (s. 70(2)), which the input takes to hold by default.
+    # disabled person (s. 70(2)), which the model takes to hold unless the
+    # input says otherwise.
     meets_work_condition = (person("care_hours", period) >= ca.min_hours) & person(
         "cares_for_severely_disabled_person", period
     )
