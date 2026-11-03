@@ -127,7 +127,8 @@ class housing_benefit_applicable_income(Variable):
         "Credit award is savings credit only, it is the Secretary of State's "
         "assessment of income plus the savings credit payable, less childcare "
         "charges and the earnings disregards. Otherwise it is the family's "
-        "income under the Housing Benefit rules."
+        "income under the Housing Benefit rules, including the separate "
+        "Working Tax Credit disregard before childcare."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
@@ -145,6 +146,7 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/5",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/40",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/56",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
@@ -163,12 +165,15 @@ class housing_benefit_applicable_income(Variable):
             "housing_benefit_pension_age_regulations_apply", period
         )
         disregard = benunit("housing_benefit_applicable_income_disregard", period)
+        # Reg 40(2), Sch 5 para 56: this comes from WTC, separately from
+        # the Sch 4 earnings disregard, before reg 27(1)(c) childcare.
+        wtc_disregard = benunit("housing_benefit_wtc_disregard", period)
         childcare_element = benunit(
             "housing_benefit_applicable_income_childcare_element", period
         )
         income_under_general_rules = max_(
             0,
-            income_before_deductions - disregard - childcare_element,
+            income_before_deductions - disregard - wtc_disregard - childcare_element,
         )
         # SI 2006/214 reg 27 (NI: SR 2006/406 reg 25): where the award of
         # Pension Credit is savings credit only, the Secretary of State's
