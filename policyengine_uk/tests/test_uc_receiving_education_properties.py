@@ -63,12 +63,17 @@ liable for the rent, and the model assigns non-dependants to the household
 head's eligible claim first. test_student_head_moves_non_dependant_to_joint_tenant
 pins it; the invariants above hold for families with households of their own.
 
-test_reg_60_protection_follows_the_closure_dates checks one more invariant,
+test_reg_60_protection_follows_the_closure_dates checks two more invariants,
 in model years 2020 to 2028, on single people aged 25 to 59 with no child, no
-listed disability benefit and no foster role: uc_is_excepted_from_education_condition
-holds exactly when, that year, they report a legacy benefit whose active
-parameter reads false and their family claims at closure. It reads the
-closure dates from the parameters.
+listed disability benefit, no foster role, no capital and no other benefit
+report, when the model derives claims_uc_at_legacy_closure itself:
+uc_is_excepted_from_education_condition holds exactly when, that year, they
+report a legacy benefit whose active parameter reads false and their family
+claims at closure; and is_uc_eligible holds for a full-time degree student
+exactly when that exception holds, and for anyone else always. It reads the
+closure dates from the parameters. An explicit claims_uc_at_legacy_closure,
+which test_education_condition_invariants draws in 2019, 2021 and 2024,
+excepts them in any year.
 """
 
 import json
@@ -786,9 +791,10 @@ CLOSURE_SETTINGS = settings(
 @st.composite
 def single_people_at_closure(draw):
     """A model year from 2020 to 2028 and single people aged 25 to 59 with no
-    child, no listed disability benefit and no foster role, each in a
-    household of their own. Each draws the four reports, both claim flags,
-    a region and whether they take a full-time degree."""
+    child, no listed disability benefit, no foster role, no capital and no
+    other benefit report, each in a household of their own. For each person,
+    Hypothesis draws the four reports, both claim flags, a region and whether
+    they take a full-time degree."""
     year = draw(st.sampled_from(CLOSURE_YEARS))
     people = draw(
         st.lists(
@@ -814,24 +820,26 @@ def single_people_at_closure(draw):
 
 def closure_grid(year):
     """Each report alone, and none, with each closure claim flag, on a
-    full-time degree or not: 20 people, every fourth in Northern Ireland."""
+    full-time degree or not, in North East England and in Northern Ireland:
+    40 people."""
     people = []
-    for report in [None, *CLOSING_REPORTS]:
-        for at_closure in (False, True):
-            for full_time in (False, True):
-                people.append(
-                    dict(
-                        age=25 + len(people),
-                        is_in_full_time_education=full_time,
-                        region=REGIONS[len(people) % len(REGIONS)],
-                        would_claim_uc=not at_closure,
-                        would_claim_uc_at_legacy_closure=at_closure,
-                        **{
-                            name: 1_000 if name == report else 0
-                            for name in CLOSING_REPORTS
-                        },
+    for region in ("NORTH_EAST", "NORTHERN_IRELAND"):
+        for report in [None, *CLOSING_REPORTS]:
+            for at_closure in (False, True):
+                for full_time in (False, True):
+                    people.append(
+                        dict(
+                            age=25 + len(people) % 35,
+                            is_in_full_time_education=full_time,
+                            region=region,
+                            would_claim_uc=not at_closure,
+                            would_claim_uc_at_legacy_closure=at_closure,
+                            **{
+                                name: 1_000 if name == report else 0
+                                for name in CLOSING_REPORTS
+                            },
+                        )
                     )
-                )
     return dict(year=year, people=people)
 
 
@@ -858,25 +866,35 @@ def closure_situation(case):
 
 
 @CLOSURE_SETTINGS
-# 2024: every legacy benefit open; 2025: tax credits closed; 2026: all closed.
+# 2024: tax credits, Income Support and income-based JSA open; 2025: tax
+# credits closed; 2026: Income Support and income-based JSA closed too.
+# test_closure_grids_straddle_each_closure checks these against the
+# parameters.
 @example(closure_grid(2024))
 @example(closure_grid(2025))
 @example(closure_grid(2026))
 @given(single_people_at_closure())
 def test_reg_60_protection_follows_the_closure_dates(case):
     """For single people aged 25 to 59 with no child, no listed disability
-    benefit and no foster role, uc_is_excepted_from_education_condition holds
-    exactly when, in that model year, they report a legacy benefit whose
-    active parameter reads false and their family claims at closure
-    (would_claim_uc_at_legacy_closure). No reg. 14(1) limb reaches them, so
-    the reg. 60(1) protection decides the exception, and the model takes the
-    closure from the active parameters. The model then finds a full-time
+    benefit, no foster role, no capital and no other benefit report, where the
+    model derives claims_uc_at_legacy_closure itself,
+    uc_is_excepted_from_education_condition holds exactly when, in that model
+    year, they report a legacy benefit whose active parameter reads false and
+    their family claims at closure (would_claim_uc_at_legacy_closure). None of
+    them meets a reg. 14(1) limb, so the model excepts them only under its
+    reg. 60(1) rule (SR 2016/226 reg. 61(1) in Northern Ireland), and it takes
+    the closure from the active parameters. The model then finds a full-time
     degree student among them eligible for Universal Credit exactly when the
-    exception holds, and anyone else eligible either way."""
+    exception holds, and anyone else eligible either way. For a person off a
+    course the model keeps the exception, although reg. 60(1) lifts the
+    condition only while they continue the course (case 38 of
+    uc_receiving_education.yaml); this test pins that proxy."""
     year = case["year"]
     simulation = Simulation(situation=closure_situation(case))
-    # The formulas read parameters at the start of the model year, and the
-    # model moves each value to the fiscal year it starts in.
+    # The formulas read parameters at 1 January of the model year, and the
+    # model gives that date the value in force on 30 April
+    # (convert_to_fiscal_year_parameters), so the 1 April 2026 Income Support
+    # and income-based JSA closures first count in model year 2026.
     dwp = simulation.tax_benefit_system.parameters(f"{year}-01-01").gov.dwp
 
     def closed(path):
@@ -905,3 +923,23 @@ def test_reg_60_protection_follows_the_closure_dates(case):
     np.testing.assert_array_equal(
         simulation.calculate("is_uc_eligible", year), ~full_time | expected, context
     )
+
+
+def test_closure_grids_straddle_each_closure():
+    """The explicit grids for 2024, 2025 and 2026 fall either side of each
+    closure the active parameters set: tax credits open in 2024 and closed in
+    2025, and Income Support and income-based JSA open in 2025 and closed in
+    2026."""
+    system = Simulation(situation={"people": {"p": {}}}).tax_benefit_system
+
+    def active(year, path):
+        node = system.parameters(f"{year}-01-01").gov.dwp
+        for key in path.split("."):
+            node = getattr(node, key)
+        return bool(node)
+
+    assert active(2024, "tax_credits.active")
+    assert not active(2025, "tax_credits.active")
+    for path in ("income_support.active", "JSA.income.active"):
+        assert active(2025, path)
+        assert not active(2026, path)

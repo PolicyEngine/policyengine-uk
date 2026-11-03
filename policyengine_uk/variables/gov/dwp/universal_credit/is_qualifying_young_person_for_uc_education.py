@@ -36,7 +36,8 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "out. In Northern Ireland the decision maker applies the same rule "
         "under reg. 29 of the Universal Credit (Transitional Provisions) "
         "Regulations (Northern Ireland) 2016, with reg. 6 of the Universal "
-        "Credit Regulations (Northern Ireland) 2016 in place of reg. 5."
+        "Credit Regulations (Northern Ireland) 2016 in place of the Universal "
+        "Credit Regulations 2013 reg. 5."
     )
     definition_period = YEAR
     reference = (
