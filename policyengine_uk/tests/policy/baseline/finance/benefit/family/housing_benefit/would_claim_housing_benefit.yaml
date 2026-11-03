@@ -27,3 +27,24 @@
     housing_benefit_entitlement: 0
   output:
     would_claim_housing_benefit: false
+
+- name: Ineligible with the accommodation status set false
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    in_specified_or_temporary_accommodation: false
+  output:
+    would_claim_housing_benefit: false
+
+# Universal Credit leaves the rent of specified or temporary accommodation out
+# of its housing costs element, so a hand-entered family with the status
+# claims Housing Benefit whatever else it reports.
+- name: The accommodation status claims without a report
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    in_specified_or_temporary_accommodation: true
+  output:
+    would_claim_housing_benefit: true

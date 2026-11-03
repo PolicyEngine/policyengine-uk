@@ -23,7 +23,9 @@ class in_specified_or_temporary_accommodation(Variable):
         "(SI 2014/1230 regs 6A(2), 8(3) and 46(2); NI: SR 2016/226 regs "
         "4A(2), 6(3) and 47(2)), and the Universal Credit housing costs "
         "element is nil for it (UC Regs 2013 Sch 1 paras 3(h) and 3(i); NI: "
-        "SR 2016/216 Sch 1 paras 3(e) and 3(ea)). "
+        "SR 2016/216 Sch 1 paras 3(e) and 3(ea)). A hand-entered family "
+        "with this status takes Housing Benefit up unless a situation sets "
+        "would_claim_housing_benefit. "
         "It defaults to False when absent from household or dataset inputs."
     )
     definition_period = YEAR

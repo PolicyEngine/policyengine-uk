@@ -126,7 +126,7 @@ def situation(units, would_claim_uc=None, drop_couple_reports=False):
                 "esa_income_reported": every_year(report),
                 "employment_income": every_year(member["employment_income"]),
                 "weekly_hours": every_year(member["weekly_hours"]),
-                # Art. 3A(2) keeps the award open after the abolition.
+                # Under art. 3A(2), the award stays open after the abolition.
                 "esa_income_appointee_saving": every_year(True),
             }
             names.append(name)

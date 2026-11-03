@@ -10,22 +10,22 @@
 # June 2026 (25 + 31 + 30) and a Northern Ireland award for the 178 days from
 # 6 April to 30 September 2026 (25 + 31 + 30 + 31 + 31 + 30). So in 2026-27
 # the model pays the annual award times 86/365 = 0.235616 or 178/365 =
-# 0.487671, and it pays no unsaved income-related ESA from 2027-28. Art.
-# 3A(1)(b) leaves an award already due to end at
-# the end of a two-week run-on to that schedule; the annual model pays every
-# award to the general date.
+# 0.487671, and it pays no unsaved income-related ESA from 2027-28. Under
+# art. 3A(1)(b), an award already due to end at the end of a two-week run-on
+# ends on that schedule; the annual model pays every award to the general
+# date.
 #
 # When the abolition reaches the claimant's or partner's award, the family
 # claims Universal Credit if would_claim_uc_at_legacy_closure (default true),
 # and the claim ends the award. From 2027-28 the award has ended and DWP
 # moves the family off its legacy benefits (legacy_benefits_closed). Cases
 # that test the 2026-27 share set would_claim_uc_at_legacy_closure to false.
-# DWP's move ends the family's Housing Benefit, except for specified or
-# temporary accommodation (SI 2014/1230 reg 46(2)); a claim ends it there
-# too, because the model's Universal Credit pays the rent, subject to the
-# benefit cap.
+# DWP's move ends the family's Housing Benefit, and so does a Universal
+# Credit claim, except for specified or temporary accommodation (SI
+# 2014/1230 regs 8(3) and 46(2)), whose rent Universal Credit leaves out.
 #
-# Art. 3A(2) saves an award for an appointee (esa_income_appointee_saving).
+# Under art. 3A(2), an award saved for an appointee stays payable
+# (esa_income_appointee_saving).
 # A saving for either member who reports a couple's award keeps the whole
 # award. Art. 3A(3): a Universal Credit claim still ends a saved award. A
 # contributory allowance continues as new style ESA (esa_contrib).
@@ -272,8 +272,8 @@
         members: [claimant]
         region: LONDON
   output:
-    # Art. 3A(2) treats the abolition as not in force for this award, so it
-    # neither prompts a claim nor moves the family.
+    # Under art. 3A(2) the abolition doesn't reach this award, so the
+    # family neither claims nor moves.
     esa_income_payable_share: 1
     esa_income_abolition_reached: false
     legacy_benefits_closed: false
@@ -324,8 +324,8 @@
         members: [claimant]
         region: LONDON
   output:
-    # Art. 3A(3): the saving does not stop a claim for Universal Credit from
-    # bringing the abolition into force.
+    # Art. 3A(3): a claim for Universal Credit brings the abolition into
+    # force for a saved award too.
     esa_income_payable_share: 1
     claims_universal_credit: true
     esa_income_report_closed: true
@@ -714,9 +714,9 @@
   output:
     # The family claims on its award's appointed day. The claim doesn't
     # terminate Housing Benefit for specified or temporary accommodation
-    # (SI 2014/1230 reg 8(3)). Universal Credit Regs 2013 Sch 1 paras 3(h)
-    # and (i) exclude this rent from rent payments, so the housing costs
-    # element is nil and Universal Credit pays the standard allowance alone:
+    # (SI 2014/1230 reg 8(3)). The Secretary of State excludes this rent
+    # from rent payments (UC Regs 2013 Sch 1 paras 3(h) and (i)), so the
+    # housing costs element is nil and Universal Credit pays the standard allowance alone:
     # 12 x £424.90 = £5,098.80. Universal Credit passports the Housing
     # Benefit means test, which pays the whole £5,200 rent.
     claims_universal_credit: true
@@ -756,8 +756,8 @@
     # survives the claim (SI 2014/1230 reg 8(3)), and Universal Credit
     # leaves that rent out (UC Regs 2013 Sch 1 paras 3(i) and 3B).
     # Universal Credit: the standard allowance alone, 12 x £424.90 =
-    # £5,098.80. The Universal Credit cap counts Housing Benefit as nil (UC
-    # Regs 2013 reg 80(2A)): £5,098.80 falls below London's £16,967 single
+    # £5,098.80. DWP counts Housing Benefit as nil in the Universal Credit
+    # cap (UC Regs 2013 reg 80(2A)): £5,098.80 falls below London's £16,967 single
     # cap, so no reduction. Housing Benefit: Universal Credit passports the
     # means test, so it pays the whole £30,000 rent, and the Housing Benefit
     # cap doesn't apply to a claimant receiving Universal Credit (HB Regs
@@ -773,6 +773,44 @@
     uc_housing_costs_element: 0
     uc_benefit_cap_reduction: 0
     housing_benefit_benefit_cap_reduction: 0
+    universal_credit: 5_098.80
+    household_net_income: 33_518.80
+
+- name: Great Britain 2026-27, the same London tenant without a Housing Benefit report takes Housing Benefit up for the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_includes_support_component: false
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+        council_tax: 1_500
+  output:
+    # The family reports income-related ESA, so claims_all_entitled_benefits
+    # is false, but the accommodation status makes it claim Housing Benefit
+    # (would_claim_housing_benefit): Universal Credit leaves the rent out.
+    # The figures match the tenant who reports Housing Benefit: Universal
+    # Credit £5,098.80, Housing Benefit £30,000, and household net income
+    # £30,000 + £5,098.80 + £100 - £180 - £1,500 = £33,518.80.
+    claims_all_entitled_benefits: false
+    would_claim_housing_benefit: true
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 30_000
+    uc_housing_costs_element: 0
     universal_credit: 5_098.80
     household_net_income: 33_518.80
 
@@ -801,7 +839,7 @@
   output:
     # The claim ends Housing Benefit after its run-on (SI 2014/1230 reg
     # 8(2A)). Universal Credit before the cap: £5,098.80 standard allowance
-    # + £30,000 social rent = £35,098.80. The cap reduces it by the excess
+    # + £30,000 social rent = £35,098.80. DWP reduces it by the excess
     # over London's £16,967 single cap: £35,098.80 - £16,967 = £18,131.80,
     # leaving £16,967. Household net income: £16,967 + £100 - £180 - £1,500
     # = £15,387.
@@ -813,7 +851,7 @@
     universal_credit: 16_967
     household_net_income: 15_387
 
-- name: Great Britain 2026-27, the benefit cap reduces Universal Credit and leaves temporary accommodation Housing Benefit whole
+- name: Great Britain 2026-27, DWP caps Universal Credit and leaves temporary accommodation Housing Benefit whole
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -849,8 +887,8 @@
     # elements of 12 x (£351.88 for the eldest, born before 6 April 2017, +
     # 3 x £303.94) = £15,164.40, with no housing costs element (UC Regs 2013
     # Sch 1 paras 3(i) and 3B): £20,263.20. Child Benefit: (£27.05 + 3 x
-    # £17.90) x 52 = £4,199.00. The Universal Credit cap counts Housing
-    # Benefit as nil (reg 80(2A)), so the welfare benefits come to £20,263.20
+    # £17.90) x 52 = £4,199.00. DWP counts Housing Benefit as nil in the
+    # Universal Credit cap (reg 80(2A)), so the welfare benefits come to £20,263.20
     # + £4,199.00 = £24,462.20, which exceeds the £22,020 cap outside London
     # for a lone parent by £2,442.20. Universal Credit: £20,263.20 -
     # £2,442.20 = £17,821.00. Housing Benefit pays the whole £15,000 rent,
@@ -1010,7 +1048,7 @@
     claims_universal_credit: true
     esa_income: 0
 
-- name: The claimant's saving keeps the couple's whole award after the abolition
+- name: The couple's whole award stays payable after the abolition under the claimant's saving
   period: 2027
   absolute_error_margin: 0.01
   input:
