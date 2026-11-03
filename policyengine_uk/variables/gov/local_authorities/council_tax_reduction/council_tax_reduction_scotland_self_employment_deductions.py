@@ -29,11 +29,19 @@ class council_tax_reduction_scotland_self_employment_deductions(Variable):
         "allowance left after the taper, because in s. 35(2) Parliament "
         "reduces 'the allowance under subsection (1)'. At pension age, they "
         "allow the relief under ss. 36 or 37 (SSI 2012/319 reg 37(1)). "
-        "Parliament omitted s. 36 (Finance Act "
-        "2014), and in s. 37 gives the section 35 amount only to a person "
-        "born before 6 April 1938; a council that read the reference "
-        "literally would allow nobody younger any relief. The formula reads "
-        "it as the same tapered s. 35 allowance for every applicant. A child "
+        "Parliament omitted s. 36 for 2015-16 and later years and s. 37 for "
+        "2016-17 and later years, and each time extended s. 35 to the people "
+        "the omitted section had covered (Finance Act 2014 s. 2(4), (5) and "
+        "(9); Finance Act 2015 s. 5(4), (5) and (11)). A council that read "
+        "reg 37(1) literally would allow no applicant any relief from "
+        "2016-17. Where an Act "
+        "repeals and re-enacts a provision, Parliament provides that a "
+        "reference to it in subordinate legislation reads as a reference to "
+        "the provision re-enacted (Interpretation Act 1978 ss. 17(2)(a) and "
+        "23(1)). The formula takes each Finance Act as repealing an "
+        "age-related allowance and re-enacting it in the extended s. 35, so "
+        "it reads the reference as the tapered s. 35 allowance, which s. "
+        "35(1) now gives every individual. A child "
         "minder's chargeable income comes to one-third of the earnings; the "
         "model does not identify child minders, so it treats every profit as "
         "chargeable income in full."
@@ -48,6 +56,9 @@ class council_tax_reduction_scotland_self_employment_deductions(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/37",
         "https://www.legislation.gov.uk/ukpga/2007/3/section/35",
         "https://www.legislation.gov.uk/ukpga/2007/3/section/37",
+        "https://www.legislation.gov.uk/ukpga/2014/26/section/2",
+        "https://www.legislation.gov.uk/ukpga/2015/11/section/5",
+        "https://www.legislation.gov.uk/ukpga/1978/30/section/17",
     )
 
     def formula(person, period, parameters):
