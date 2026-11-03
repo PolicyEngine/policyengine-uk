@@ -55,6 +55,39 @@ class SOC2020SubMajorGroup(Enum):
     )
 
 
+# The two-digit SOC 2020 code of each sub-major group, by member name, so that
+# datasets and crosswalks keyed on codes need not rely on member order. A
+# code's first digit is its major group's code. NONE has no code.
+SOC2020_SUB_MAJOR_GROUP_CODES = {
+    "CORPORATE_MANAGERS_AND_DIRECTORS": 11,
+    "OTHER_MANAGERS_AND_PROPRIETORS": 12,
+    "SCIENCE_RESEARCH_ENGINEERING_AND_TECHNOLOGY_PROFESSIONALS": 21,
+    "HEALTH_PROFESSIONALS": 22,
+    "TEACHING_AND_OTHER_EDUCATIONAL_PROFESSIONALS": 23,
+    "BUSINESS_MEDIA_AND_PUBLIC_SERVICE_PROFESSIONALS": 24,
+    "SCIENCE_ENGINEERING_AND_TECHNOLOGY_ASSOCIATE_PROFESSIONALS": 31,
+    "HEALTH_AND_SOCIAL_CARE_ASSOCIATE_PROFESSIONALS": 32,
+    "PROTECTIVE_SERVICE": 33,
+    "CULTURE_MEDIA_AND_SPORTS": 34,
+    "BUSINESS_AND_PUBLIC_SERVICE_ASSOCIATE_PROFESSIONALS": 35,
+    "ADMINISTRATIVE": 41,
+    "SECRETARIAL_AND_RELATED": 42,
+    "SKILLED_AGRICULTURAL_AND_RELATED_TRADES": 51,
+    "SKILLED_METAL_ELECTRICAL_AND_ELECTRONIC_TRADES": 52,
+    "SKILLED_CONSTRUCTION_AND_BUILDING_TRADES": 53,
+    "TEXTILES_PRINTING_AND_OTHER_SKILLED_TRADES": 54,
+    "CARING_PERSONAL_SERVICE": 61,
+    "LEISURE_TRAVEL_AND_RELATED_PERSONAL_SERVICE": 62,
+    "COMMUNITY_AND_CIVIL_ENFORCEMENT": 63,
+    "SALES": 71,
+    "CUSTOMER_SERVICE": 72,
+    "PROCESS_PLANT_AND_MACHINE_OPERATIVES": 81,
+    "TRANSPORT_AND_MOBILE_MACHINE_DRIVERS_AND_OPERATIVES": 82,
+    "ELEMENTARY_TRADES_AND_RELATED": 91,
+    "ELEMENTARY_ADMINISTRATION_AND_SERVICE": 92,
+}
+
+
 class soc2020_sub_major_group(Variable):
     value_type = Enum
     possible_values = SOC2020SubMajorGroup
@@ -68,10 +101,9 @@ class soc2020_sub_major_group(Variable):
         "(soc2020_major_group). The FRS end-user edition codes only the major "
         "group, so a dataset built on it has to impute the sub-major group "
         "within the major group from a survey that codes it, such as the "
-        "Labour Force Survey or the Annual Population Survey. After NONE, the "
-        "members follow the SOC 2020 codes in order: 11, 12, 21, 22, 23, 24, "
-        "31, 32, 33, 34, 35, 41, 42, 51, 52, 53, 54, 61, 62, 63, 71, 72, 81, "
-        "82, 91 and 92."
+        "Labour Force Survey or the Annual Population Survey. "
+        "SOC2020_SUB_MAJOR_GROUP_CODES, in this module, gives each member's "
+        "two-digit SOC 2020 code, whose first digit is its major group's code."
     )
     definition_period = YEAR
     reference = [

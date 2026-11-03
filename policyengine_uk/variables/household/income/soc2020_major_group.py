@@ -14,6 +14,21 @@ class SOC2020MajorGroup(Enum):
     ELEMENTARY = "Elementary occupations"
 
 
+# The SOC 2020 code of each major group, by member name, so that datasets and
+# crosswalks keyed on codes need not rely on member order. NONE has no code.
+SOC2020_MAJOR_GROUP_CODES = {
+    "MANAGERS_DIRECTORS_AND_SENIOR_OFFICIALS": 1,
+    "PROFESSIONAL": 2,
+    "ASSOCIATE_PROFESSIONAL": 3,
+    "ADMINISTRATIVE_AND_SECRETARIAL": 4,
+    "SKILLED_TRADES": 5,
+    "CARING_LEISURE_AND_OTHER_SERVICE": 6,
+    "SALES_AND_CUSTOMER_SERVICE": 7,
+    "PROCESS_PLANT_AND_MACHINE_OPERATIVES": 8,
+    "ELEMENTARY": 9,
+}
+
+
 class soc2020_major_group(Variable):
     value_type = Enum
     possible_values = SOC2020MajorGroup
@@ -26,8 +41,8 @@ class soc2020_major_group(Variable):
         "Sourced from the FRS `SOC2020` field, which codes major groups 1 to "
         "9 as 1000 to 9000; the FRS asks the employment questions of everyone "
         "who has ever worked, so use employment_status to select current "
-        "occupations. After NONE, the members follow the SOC 2020 codes in "
-        "order, 1 to 9."
+        "occupations. SOC2020_MAJOR_GROUP_CODES, in this module, gives each "
+        "member's SOC 2020 code."
     )
     definition_period = YEAR
     reference = [
@@ -36,7 +51,7 @@ class soc2020_major_group(Variable):
             href="https://www.ons.gov.uk/methodology/classificationsandstandards/standardoccupationalclassificationsoc/soc2020/soc2020volume1structureanddescriptionsofunitgroups",
         ),
         dict(
-            title="DWP, Family Resources Survey 2024-25 question instructions (employment details, p. 184)",
+            title="DWP, Family Resources Survey 2024-25 question instructions (details of employment, p. 183; PDF p. 184)",
             href="https://doc.ukdataservice.ac.uk/doc/9563/mrdoc/pdf/9563_frs_2024-25_question_instructions_final.pdf",
         ),
     ]
