@@ -52,7 +52,9 @@ Invariants, for any generated population of households:
    a bedroom (para 10(1)(c)). So their family has one more Universal Credit
    bedroom with them than without them, and making them qualifying young
    persons the renter is responsible for (para 10(1)(b)) leaves every family's
-   Universal Credit bedrooms unchanged. The model's
+   Universal Credit bedrooms unchanged, except that the claim counting the
+   household's non-dependants loses the bedroom of one whose own family
+   makes no claim and is not that claim (para 9(2)(g)). The model's
    is_benefit_unit_non_dependant_for_universal_credit, which the formula
    reads, marks exactly these members.
 5. Rooms and contributions: nobody owes a housing cost contribution without
@@ -447,7 +449,19 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
             expected[same_household & counted] += 1
         assert np.array_equal(uc - uc_without, expected)
     # Making every marked member a qualifying young person the renter is
-    # responsible for leaves every family's bedrooms unchanged.
+    # responsible for leaves every family's bedrooms unchanged, except that
+    # the claim counting the household's non-dependants loses the bedroom of
+    # one whose own family makes no claim and is not that claim: another
+    # family's qualifying young person is not that renter's non-dependant
+    # (para 9(2)(g)).
+    expected_change = np.zeros(len(keys))
+    if marked[names.index(f"h{target[0]}_f{target[1]}_added")]:
+        counted, _ = claim_roles(sim)
+        t = keys.index(target)
+        role = population[target[0]][target[1]]["role"]
+        if role != "non_dependant" and not (own_claims(sim)[t] or counted[t]):
+            same_household = np.array([h == target[0] for h, _ in keys])
+            expected_change[same_household & counted] = -1
     as_dependants = {
         **situation,
         "people": {
@@ -465,7 +479,7 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
     }
     sim_as_dependants, uc_as_dependants, _ = bedrooms(as_dependants)
     assert not in_unit_non_dependants(sim_as_dependants).any()
-    assert np.array_equal(uc, uc_as_dependants)
+    assert np.array_equal(uc_as_dependants - uc, expected_change)
 
 
 @st.composite
