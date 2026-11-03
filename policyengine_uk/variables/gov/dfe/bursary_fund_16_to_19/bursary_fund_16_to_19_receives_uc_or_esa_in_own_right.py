@@ -6,16 +6,19 @@ class bursary_fund_16_to_19_receives_uc_or_esa_in_own_right(Variable):
     entity = Person
     label = "Receives UC or ESA in own right for 16 to 19 Bursary Fund"
     documentation = (
-        "Whether the student receives Universal Credit or Employment and Support Allowance "
-        "in their own right for 16 to 19 Bursary Fund purposes. This can be set explicitly "
-        "in simulations; by default it uses person-level reported benefit proxies."
+        "Whether the student receives UC or ESA in their own right. This can "
+        "be entered explicitly. By default, income-related ESA uses the "
+        "person's assessed payable status, contributory ESA its own value "
+        "(itself a reported-benefit proxy), and UC retains the person-level "
+        "reported-benefit proxy. This signal does not decide age, education "
+        "or the institution's assessment of bursary support."
     )
     definition_period = YEAR
     set_input = set_input_dispatch_by_period
 
     def formula(person, period, parameters):
-        return (person("universal_credit_reported", period) > 0) | (
-            person("esa_income_reported", period)
-            + person("esa_contrib_reported", period)
-            > 0
+        return (
+            (person("universal_credit_reported", period) > 0)
+            | person("is_on_income_related_esa", period)
+            | (person("esa_contrib", period) > 0)
         )

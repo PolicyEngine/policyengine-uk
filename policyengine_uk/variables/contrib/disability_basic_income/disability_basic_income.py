@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    other_member_of_single_claim,
+)
 
 
 class disability_basic_income(Variable):
@@ -13,8 +16,14 @@ class disability_basic_income(Variable):
         amount = parameters(period).gov.contrib.disability_basic_income.amount
         receives_dla = person("dla", period) > 0
         receives_pip = person("pip", period) > 0
-        receives_uc_lcwra = person("uc_limited_capability_for_WRA", period) & (
-            person.benunit("universal_credit", period) > 0
+        # The LCWRA element is a claimant's (UC Regs 2013 reg. 27(1)): a
+        # child's or qualifying young person's limited capability does not
+        # put it in the award.
+        receives_uc_lcwra = (
+            person("is_uc_assessed_claimant", period)
+            & ~other_member_of_single_claim(person, period)
+            & person("uc_limited_capability_for_WRA", period)
+            & (person.benunit("universal_credit", period) > 0)
         )
         eligible = receives_dla | receives_pip | receives_uc_lcwra
         return eligible * amount * WEEKS_IN_YEAR

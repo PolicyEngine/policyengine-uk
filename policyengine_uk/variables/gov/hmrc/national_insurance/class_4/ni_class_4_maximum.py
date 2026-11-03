@@ -11,8 +11,8 @@ class ni_class_4_maximum(Variable):
 
     def formula(person, period, parameters):
         ni = parameters(period).gov.hmrc.national_insurance
-        upl = ni.class_4.thresholds.upper_profits_limit
-        lpl = ni.class_4.thresholds.lower_profits_limit
+        upl = ni.class_4.contribution_scale.components[2].threshold
+        lpl = ni.class_4.contribution_scale.components[1].threshold
         step_1 = upl - lpl
         # Regulation 100 writes its percentages out, but in every year from
         # 2015-16 they match the Class 4 rates: 9% and 2% (Steps Two, Five,
@@ -22,8 +22,8 @@ class ni_class_4_maximum(Variable):
         # Insurance Contributions (Reduction in Rates) Act 2024 s 2(3)) with
         # Steps Eight and Nine still at 2%. So the steps read the rate
         # parameters.
-        main_rate = ni.class_4.rates.main
-        add_rate = ni.class_4.rates.additional
+        main_rate = ni.class_4.contribution_scale.components[1].rate
+        add_rate = ni.class_4.contribution_scale.components[2].rate
         step_2 = step_1 * main_rate
         # Class 2 contributions drop out of regulation 100 from 6 April 2024.
         includes_class_2 = ni.class_4.annual_maximum.includes_class_2

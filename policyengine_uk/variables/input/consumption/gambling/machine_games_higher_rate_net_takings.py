@@ -1,0 +1,11 @@
+from policyengine_uk.model_api import *
+
+
+class machine_games_higher_rate_net_takings(Variable):
+    value_type = float
+    entity = Household
+    definition_period = YEAR
+    default_value = 0
+    unit = GBP
+    label = "Attributed dutiable higher-rate machine games net takings"
+    reference = "https://www.gov.uk/guidance/machine-games-duty-excise-notice-452"

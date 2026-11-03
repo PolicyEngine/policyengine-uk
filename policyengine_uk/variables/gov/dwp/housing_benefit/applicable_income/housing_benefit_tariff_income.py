@@ -10,6 +10,7 @@ class housing_benefit_tariff_income(Variable):
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/52",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/49",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
     )
@@ -31,10 +32,16 @@ class housing_benefit_tariff_income(Variable):
             "in_receipt_of_guarantee_credit", period
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
+        # This statutory category differs from specified/temporary accommodation.
+        working_age_threshold = where(
+            benunit("housing_benefit_residential_capital_exception", period),
+            p.working_age.residential_threshold,
+            p.working_age.tariff_income.threshold,
+        )
         threshold = where(
             pension_age_regulations,
             p.pension_age.tariff_income.threshold,
-            p.working_age.tariff_income.threshold,
+            working_age_threshold,
         )
         step = where(
             pension_age_regulations,

@@ -1,0 +1,1172 @@
+# The winter fuel payment charge, ITEPA 2003 s.681I (inserted by FA 2026
+# Sch. 10 para. 1, for 2025-26 on). Expected values are worked from the law:
+# - P is liable if entitled to a winter fuel payment for the qualifying week
+#   and P's own total income for the tax year exceeds £35,000 (s.681I(1));
+# - the charge equals the payment (s.681I(3));
+# - P is not liable if entitled to income support, income-based JSA, Pension
+#   Credit, income-related ESA or Universal Credit (s.681I(4) and (5));
+# - "winter fuel payment" covers SI 2025/969 (England and Wales), SSI 2024/351
+#   (Scotland's Pension Age Winter Heating Payment) and NISR 2025/142
+#   (Northern Ireland) (s.681I(6)(a));
+# - the charge is additional tax at Step 7 of the income tax calculation (ITA
+#   2007 ss.23 and 30).
+# The payments are worked from SI 2025/969 regs 2 to 4, NISR 2025/142 regs 2
+# and 3, and SSI 2024/351 reg 10 as substituted by SSI 2025/282 (amounts from
+# SSI 2025/100 and SSI 2026/170). Total income is ITA 2007 s.23 Step 1: the
+# income charged to tax, after the deductions made in working out each kind of
+# income and before the Step 2 reliefs. Entitlement to a payment, and so who
+# counts as "a person entitled to a winter fuel payment" for the shared
+# amounts, does not depend on the charge. Benefit-unit awards are entered
+# directly.
+
+- name: 2025 total income of exactly £35,000 is not charged
+  # s.681I(1)(b): total income must exceed £35,000. Reg. 2 and 3(1): £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 35_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    winter_fuel_allowance: 200
+
+- name: 2025 total income of £35,001 is charged the whole payment
+  # s.681I(1) and (3).
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 35_001
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    winter_fuel_allowance: 200
+
+- name: 2025 a pensioner aged 85 with £50,000 is charged £300
+  # Reg. 3(4): £300 at 80 or over, living alone. s.681I(3): charge £300.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 85
+        total_income_charged_to_tax: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+  output:
+    winter_fuel_payment: [300]
+    winter_fuel_payment_charge: [300]
+
+- name: 2025 a couple is charged on each partner's own income
+  # Neither is on a relevant benefit and each lives with a person entitled:
+  # reg. 3(2), £100 each. Only the partner with total income over £35,000 is
+  # charged (s.681I(1)(b)); the other keeps £100.
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 70
+        total_income_charged_to_tax: 50_000
+      partner_2:
+        age: 72
+        total_income_charged_to_tax: 10_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [100, 100]
+    winter_fuel_payment_charge: [100, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 a couple aged 82 and 85 both over £35,000 are each charged £150
+  # Reg. 3(6): over 80, no relevant benefit, living with an entitled person
+  # who has reached 80: £150 each. Both charged in full.
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 82
+        total_income_charged_to_tax: 40_000
+      partner_2:
+        age: 85
+        total_income_charged_to_tax: 40_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [150, 150]
+    winter_fuel_payment_charge: [150, 150]
+    winter_fuel_allowance: 300
+
+- name: 2025 a person charged in full still counts as entitled for the shared amounts
+  # Two pensioners in separate benefit units. The 70-year-old is entitled
+  # under reg. 2 whatever their income, so each lives with a person entitled:
+  # the 70-year-old gets £100 (reg. 3(2)) and the 85-year-old £200 (reg.
+  # 3(5), living with an entitled person under 80), not £300. The charge
+  # recovers the 70-year-old's £100 (total income over £35,000).
+  period: 2025
+  input:
+    people:
+      high_income:
+        age: 70
+        total_income_charged_to_tax: 50_000
+      aged_85:
+        age: 85
+        total_income_charged_to_tax: 10_000
+    benunits:
+      unit_1:
+        members: [high_income]
+        pension_credit: 0
+      unit_2:
+        members: [aged_85]
+        pension_credit: 0
+    households:
+      household:
+        members: [high_income, aged_85]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [100, 200]
+    winter_fuel_payment_charge: [100, 0]
+    winter_fuel_allowance: 300
+
+- name: 2025 a lodger's own income is charged, not the Pension Credit recipient's
+  # The Pension Credit recipient: reg. 3(1), £200, not liable (s.681I(4)).
+  # The lodger, aged 72, on no relevant benefit and living with a person
+  # entitled: reg. 3(2), £100, charged (total income £40,000).
+  period: 2025
+  input:
+    people:
+      on_pension_credit:
+        age: 70
+      lodger:
+        age: 72
+        total_income_charged_to_tax: 40_000
+    benunits:
+      unit_1:
+        members: [on_pension_credit]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [on_pension_credit, lodger]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 100]
+    winter_fuel_payment_charge: [0, 100]
+    winter_fuel_allowance: 300
+
+- name: 2025 a non-dependant's income-related ESA does not exempt the pensioner
+  # s.681I(4) asks whether P is entitled to a relevant benefit. The son's ESA
+  # is his own award. The pensioner: reg. 3(1), £200, charged in full.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 50_000
+      son:
+        age: 40
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        pension_credit: 0
+      son_unit:
+        members: [son]
+        esa_income: 4_000
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 0]
+    winter_fuel_payment_charge: [200, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 a pensioner in a Universal Credit couple is not charged
+  # A couple claims Universal Credit jointly. The 70-year-old is the only
+  # member of pensionable age: reg. 3(1), £200, not liable (s.681I(4) and
+  # (5)(e)) despite total income of £40,000.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 60
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 40_000
+    benunits:
+      couple:
+        members: [claimant, pensioner]
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [0, 200]
+    winter_fuel_payment_charge: [0, 0]
+
+- name: 2025 the partner of a Pension Credit claimant is not entitled and so not charged
+  # One payment for the couple, to the claimant who reports the award (reg.
+  # 4(2)(a)). The partner is not entitled to a winter fuel payment, so
+  # s.681I(1)(a) is not met whatever their income; the claimant is on Pension
+  # Credit (s.681I(4)).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        pension_credit_reported: 1_000
+      partner:
+        age: 72
+        total_income_charged_to_tax: 50_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 0]
+    winter_fuel_payment_charge: [0, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 the partner of an Income Support claimant is paid and charged
+  # The couple's Income Support is the claimant's, who reports it and is
+  # under pensionable age, so is not entitled to a payment. The partner has
+  # reached pensionable age and is entitled (reg. 2), at £200 (reg. 3(1)). The
+  # partner is not entitled to Income Support (only the claimant is), so
+  # s.681I(4) does not exempt them, and their total income exceeds £35,000.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 60
+        income_support_reported: 1_000
+      partner:
+        age: 70
+        total_income_charged_to_tax: 40_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        income_support: 1_000
+        # Only the Income Support award: a Universal Credit award would make
+        # both members joint claimants, entitled to a relevant benefit.
+        universal_credit: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_on_income_support: [true, false]
+    winter_fuel_payment: [0, 200]
+    winter_fuel_payment_charge: [0, 200]
+
+- name: 2025 Northern Ireland pays everyone of pensionable age
+  # NISR 2025/142 reg. 2 has no relevant-benefit condition; reg. 3(1): £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 20_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    winter_fuel_allowance: 200
+
+- name: 2025 the charge recovers a Northern Ireland payment
+  # s.681I(6)(a) includes payments under NISR 2025/142.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 the charge recovers Scotland's Pension Age Winter Heating Payment
+  # SSI 2024/351 reg. 10(5)(a) as substituted by SSI 2025/282: £203.40.
+  # s.681I(6)(a) includes payments under SSI 2024/351.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment: [0]
+    pension_age_winter_heating_payment: [203.40]
+    winter_fuel_payment_charge: [203.40]
+    pawhp: 203.40
+
+- name: 2026 a Scottish couple aged 82 and 85 is charged on each partner's own income
+  # Reg. 10(6)(c) at the SSI 2026/170 amount: £158.35 each. Only the partner
+  # with total income over £35,000 is charged.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      partner_1:
+        age: 82
+        total_income_charged_to_tax: 40_000
+      partner_2:
+        age: 85
+        total_income_charged_to_tax: 20_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [158.35, 158.35]
+    winter_fuel_payment_charge: [158.35, 0]
+    pawhp: 316.70
+
+- name: 2025 a Scottish Pension Credit recipient is not charged
+  # Reg. 10(4)(a): £305.10 at 80 or over on a relevant benefit. Not liable
+  # (s.681I(4)).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 82
+        total_income_charged_to_tax: 40_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [305.10]
+    winter_fuel_payment_charge: [0]
+
+- name: 2024 no charge before the tax year 2025-26
+  # FA 2026 Sch. 10 para. 5: the charge has effect from 2025-26. For the 2024
+  # week a relevant benefit was a condition of entitlement (SI 2024/869 reg.
+  # 2(2)(b)): £200 on Pension Credit, not charged.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+
+- name: 2024 Northern Ireland paid only people on a relevant benefit
+  # NISR 2024/160 reg. 2(2)(b), as SI 2024/869 for England and Wales.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 20_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [0]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 the charge is added to income tax
+  # Private pension £50,000, no other income, England. Personal allowance
+  # £12,570; £37,430 at the basic rate of 20% = £7,486 (within the £37,700
+  # basic rate band). The charge, £200, is added at Step 7: £7,686. HBAI net
+  # income counts the payment and deducts the tax: 50,000 + 200 - 7,686 =
+  # £42,514.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 50_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [50_000]
+    income_tax_before_winter_fuel_payment_charge: [7_486]
+    winter_fuel_payment_charge: [200]
+    income_tax: [7_686]
+    winter_fuel_allowance: 200
+    household_benefits: 200
+    hbai_household_net_income: 42_514
+
+- name: 2025 Council Tax Reduction income deducts income tax before the charge
+  # The pensioner above. Council Tax Reduction income under the general rules
+  # deducts income tax and National Insurance, but not the charge, which
+  # recovers the payment: 50,000 - 7,486 = £42,514, not 50,000 - 7,686.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 50_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge: [200]
+    council_tax_reduction_applicable_income: [42_514]
+
+- name: 2025 the payment is kept at £35,000 of private pension
+  # £22,430 at 20% = £4,486; no charge. HBAI net income: 35,000 + 200 -
+  # 4,486 = £30,714.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 35_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_486]
+    hbai_household_net_income: 30_714
+
+- name: 2025 Scotland's payment is household income
+  # PAWHP counts in household benefits and HBAI income, like the Winter Fuel
+  # Payment it replaced in Scotland. Reg. 10(5)(a): £203.40; no charge.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 20_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment_charge: [0]
+    pawhp: 203.40
+    household_benefits: 203.40
+    hbai_benefits: 203.40
+
+- name: 2025 a landlord's property allowance election can keep total income under £35,000
+  # Private pension £32,000; property receipts £3,500, expenses £200 (profit
+  # £3,300), finance costs £1,500. With expenses: total income £35,300, over
+  # £35,000, so the £200 charge applies; tax (35,300 - 12,570) x 20% =
+  # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246,
+  # and £4,446 with the charge. With partial relief (the £1,000 allowance in
+  # place of £200 of expenses, ITTOIA 2005 s.783BH, and no finance-cost
+  # reduction): property profits £2,500, total income £34,500, no charge;
+  # tax (34,500 - 12,570) x 20% = £4,386. The pensioner elects partial
+  # relief.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 32_000
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 1_500
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true]
+    total_income_charged_to_tax: [34_500]
+    income_tax_before_winter_fuel_payment_charge: [4_386]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 employment expenses come off total income
+  # Employment income is net taxable earnings, after deductible expenses
+  # (ITEPA 2003 ss.11 and 336): 35,500 - 1,000 = £34,500, not over £35,000,
+  # so no charge. Tax: (34,500 - 12,570) x 20% = £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 35_500
+        employment_expenses: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 capital allowances come off total income
+  # Capital allowances are deducted as trading expenses (CAA 2001 s.247):
+  # trading profits 35,500 - 1,000 = £34,500, so no charge. Tax:
+  # (34,500 - 12,570) x 20% = £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 35_500
+        capital_allowances: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 trading income within the trading allowance is not total income
+  # A profit of £800 is within the £1,000 trading allowance, so it is not
+  # charged to tax (ITTOIA 2005 s.783AF): total income is the £34,500
+  # pension, not £35,300, so no charge. Tax: (34,500 - 12,570) x 20% =
+  # £4,386.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 34_500
+        self_employment_income: 800
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_386]
+
+- name: 2025 ISA interest is not total income
+  # Interest of £2,000, £1,500 of it from an ISA, which is exempt (ITTOIA
+  # 2005 s.694): total income is 34,000 + 500 = £34,500, so no charge. Tax:
+  # (34,000 - 12,570) x 20% = £4,286 on the pension; the £500 of interest is
+  # within the £1,000 personal savings allowance.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 34_000
+        savings_interest_income: 500
+        individual_savings_account_interest_income: 1_500
+        # An explicit exemption equal to total ISA interest is consistent.
+        tax_free_savings_income: 1_500
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    taxable_savings_interest_income: [500]
+    tax_free_savings_income: [1_500]
+    capital_income: [2_000]
+    market_income: [36_000]
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_286]
+
+- name: 2025 losses brought forward do not lower total income
+  # Relief for a trade loss carried forward (ITA 2007 s.83) is deducted at
+  # Step 2, after total income: total income is the £40,000 profit, so the
+  # £200 charge applies. Tax before the charge: (40,000 - 10,000 - 12,570) x
+  # 20% = £3,486; with the charge, £3,686.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        self_employment_income: 40_000
+        loss_relief: 10_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income_charged_to_tax: [40_000]
+    winter_fuel_payment_charge: [200]
+    income_tax_before_winter_fuel_payment_charge: [3_486]
+    income_tax: [3_686]
+
+- name: 2025 statutory sick pay counts towards total income
+  # Statutory sick pay is income charged to tax, so it is part of total
+  # income (ITA 2007 s.23 Step 1): £30,000 + £6,000 = £36,000, over £35,000.
+  # Tax before the charge: (36,000 - 12,570) x 20% = £4,686; with the £200
+  # charge, £4,886.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 30_000
+        statutory_sick_pay: 6_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    income_tax_before_winter_fuel_payment_charge: [4_686]
+    income_tax: [4_886]
+
+- name: 2025 trade loss relief does not lower total income
+  # Trade loss relief is deducted at Step 2 (ITA 2007 ss.23 and 64), after
+  # total income is found at Step 1. Total income is £30,000 + £10,000 =
+  # £40,000, so the £200 charge applies. Tax before the charge: net income
+  # 40,000 - 8,000 = £32,000, (32,000 - 12,570) x 20% = £3,886; with the
+  # charge, £4,086.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 30_000
+        private_pension_income: 10_000
+        trading_loss: 8_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    trade_loss_relief_against_general_income: [8_000]
+    total_income_charged_to_tax: [40_000]
+    winter_fuel_payment_charge: [200]
+    income_tax_before_winter_fuel_payment_charge: [3_886]
+    income_tax: [4_086]
+
+- name: 2025 a landlord's property allowance election counts the charge
+  # Private pension £32,520; property receipts £3,500, expenses £200 (profit
+  # £3,300), finance costs £1,500; five children. With expenses: (35,820 -
+  # 12,570) x 20% = £4,650, less the finance-cost reduction 20% x £1,500 =
+  # £300, so £4,350. With partial relief (£1,000 allowance, no reduction):
+  # (35,020 - 12,570) x 20% = £4,490. Total income is over £35,000 either
+  # way (£35,820 and £35,020), so Pension Credit decides the charge. Pension
+  # Credit income is £29,970 with
+  # expenses and £29,830 with the allowance, against the model's minimum
+  # guarantee of £29,893.76 (with the amounts for the children), so only the
+  # allowance route gets Pension Credit, which exempts the pensioner from the
+  # charge (s.681I(4)). Total tax: £4,350 + £200 = £4,550 with expenses,
+  # £4,490 with the allowance, so the pensioner elects for partial relief.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 32_520
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 1_500
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+    benunits:
+      unit:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true, false, false, false, false, false]
+    pension_credit_income: 29_830
+    winter_fuel_payment: [200, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [0, 0, 0, 0, 0, 0]
+    income_tax_before_winter_fuel_payment_charge: [4_490, 0, 0, 0, 0, 0]
+    income_tax: [4_490, 0, 0, 0, 0, 0]
+
+- name: 2025 a landlord without finance costs takes the allowance even where it ends Pension Credit (a model limit)
+  # Private pension £35,207; property receipts £3,500, expenses £200 (profit
+  # £3,300), no finance costs; six children. With partial relief (the £1,000
+  # allowance in place of £200 of expenses): total income £37,707, tax
+  # (37,707 - 12,570) x 20% = £5,027.40. With expenses: total income £38,507,
+  # tax (38,507 - 12,570) x 20% = £5,187.40. Total income is over £35,000
+  # either way, so Pension Credit decides the charge. Pension Credit income
+  # (pension and property profits, less tax before the charge) is £33,479.60
+  # with the allowance and £33,319.60 with expenses, against the model's
+  # minimum guarantee of £33,399.60 (with the amounts for the children), so
+  # only the expenses route gets Pension Credit (£80), which exempts the
+  # pensioner from the £200 charge (s.681I(4)). Total tax: £5,227.40 with the
+  # allowance, £5,187.40 with expenses, so a pensioner choosing the lower tax
+  # would not elect for partial relief. The model does not compare routes for
+  # landlords without finance costs (uses_property_allowance), so it takes the
+  # allowance: no Pension Credit, charged the £200. This case pins that limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 35_207
+        property_rental_income: 3_500
+        property_income: 3_300
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+      child_6:
+        age: 10
+    benunits:
+      unit:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5, child_6]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child_1, child_2, child_3, child_4, child_5, child_6]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true, false, false, false, false, false, false]
+    total_income_charged_to_tax: [37_707, 0, 0, 0, 0, 0, 0]
+    pension_credit_income: 33_479.60
+    pension_credit: 0
+    winter_fuel_payment: [200, 0, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [200, 0, 0, 0, 0, 0, 0]
+    income_tax: [5_227.40, 0, 0, 0, 0, 0, 0]
+
+- name: 2025 landlords in two benefit units of one household each elect with the other's route fixed
+  # One household. Unit A: a claimant aged 70 with private pension
+  # £42,772.55, a partner aged 85 with no income, and five children. Unit B:
+  # an unrelated person aged 85 with private pension £40,000. Each landlord
+  # has property receipts £3,500 and expenses £200 (profit £3,300); finance
+  # costs are £1,200 (A) and £675 (B). Unit A claims Pension Credit; B does
+  # not.
+  # A: with partial relief, total income £45,272.55 and tax before the charge
+  # (45,272.55 - 12,570) x 20% = £6,540.51, less the Marriage Allowance
+  # reduction 20% x £1,260 = £252, so £6,288.51. Unit A then gets Pension
+  # Credit (a savings credit of £16 in the model), which exempts A from the
+  # charge and makes A the person paid for the couple, so A's partner is not
+  # entitled (SI 2025/969 reg 4(2)(a)); A is paid the couple's full £300.
+  # With expenses, A's tax before the charge is £6,700.51 - £252 - 20% x
+  # £1,200 = £6,208.51, unit A gets no Pension Credit, and A's £100 shared
+  # payment is charged: £6,308.51. A elects for partial relief.
+  # B: tax before the charge is (42,500 - 12,570) x 20% = £5,986 with the
+  # allowance and (43,300 - 12,570) x 20% - 20% x £675 = £6,011 with
+  # expenses. B's total income is over £35,000 on both routes, so B is
+  # charged the payment: £200 while B lives with one other entitled person,
+  # A, who is under 80, and £150 when A's partner is entitled too (SI
+  # 2025/969 reg 3(5) and (6)). With A's election held fixed, B is charged
+  # £200 on both routes, so B elects for partial relief: £5,986 + £200 =
+  # £6,186, against £6,011 + £200 = £6,211 with expenses. Switching both
+  # landlords together would set £6,186 against £6,011 + £150 = £6,161 and
+  # wrongly keep B on expenses.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_benunit_head: true
+        private_pension_income: 42_772.55
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 1_200
+      partner:
+        age: 85
+        is_benunit_head: false
+      lodger:
+        age: 85
+        private_pension_income: 40_000
+        property_rental_income: 3_500
+        property_income: 3_300
+        property_finance_costs: 675
+      child_1:
+        age: 10
+      child_2:
+        age: 10
+      child_3:
+        age: 10
+      child_4:
+        age: 10
+      child_5:
+        age: 10
+    benunits:
+      unit_a:
+        members: [claimant, partner, child_1, child_2, child_3, child_4, child_5]
+        would_claim_pc: true
+        would_claim_uc: false
+      unit_b:
+        members: [lodger]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, lodger, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+  output:
+    uses_property_allowance: [true, false, true, false, false, false, false, false]
+    income_tax_before_winter_fuel_payment_charge: [6_288.51, 0, 5_986, 0, 0, 0, 0, 0]
+    pension_credit: [16, 0]
+    winter_fuel_payment: [300, 0, 200, 0, 0, 0, 0, 0]
+    winter_fuel_payment_charge: [0, 0, 200, 0, 0, 0, 0, 0]
+    income_tax: [6_288.51, 0, 6_186, 0, 0, 0, 0, 0]
+
+- name: 2025 net pay pension contributions come off total income
+  # The model takes employee contributions as paid under a net pay
+  # arrangement, which the employer deducts from employment income (FA 2004
+  # s.193(2)), so total income is 36,000 - 2,000 = £34,000, not over £35,000:
+  # no charge. Tax: (34,000 - 12,570) x 20% = £4,286.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 36_000
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_000]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_286]
+
+- name: 2025 pension contributions relieved at source do not lower total income
+  # Personal contributions get relief at source (FA 2004 s.192), which leaves
+  # employment income, and so total income, at £36,000: charged the £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 36_000
+        personal_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [0]
+    total_income_charged_to_tax: [36_000]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 net pay contributions come off total income only up to the relief
+  # Relief is limited to relevant UK earnings, the £1,000 of employment
+  # income (FA 2004 s.190(1); the rise to the basic amount is only for relief
+  # at source, s.191(7)), and the employer deducts it from that income
+  # (s.193(2)). Total income: 1,000 + 35,500 - 1,000 = £35,500, over
+  # £35,000: charged the £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        private_pension_income: 35_500
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [1_000]
+    total_income_charged_to_tax: [35_500]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 statutory sick pay is relevant UK earnings for the net pay deduction
+  # Relevant UK earnings are employment income chargeable to tax, including
+  # taxable statutory sick pay (FA 2004 s.189(2)(a); HMRC PTM044100): 1,000 +
+  # 3,000 = £4,000, enough to relieve the whole £2,000 (s.190(1)), which the
+  # employer deducts from that income (s.193(2)). Total income: 4,000 +
+  # 32,500 - 2,000 = £34,500, not over £35,000: no charge.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        statutory_sick_pay: 3_000
+        private_pension_income: 32_500
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    taxable_employment_income: [4_000]
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 contributions relieved at source leave the net pay deduction alone
+  # The case above with £1,000 of personal contributions as well. They are
+  # relieved at source (FA 2004 s.192), which leaves employment income, so
+  # total income stays £34,500 and there is still no charge.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+        statutory_sick_pay: 3_000
+        private_pension_income: 32_500
+        employee_pension_contributions: 2_000
+        personal_pension_contributions: 1_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [2_000]
+    total_income_charged_to_tax: [34_500]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 contributions from age 75 do not lower total income
+  # Contributions paid from age 75 get no relief (FA 2004 s.188(3)(a)), so
+  # nothing comes off employment income: total income £36,000. Reg. 3(4):
+  # £300 at 80 or over, living alone, charged in full.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 80
+        employment_income: 36_000
+        employee_pension_contributions: 2_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    net_pay_pension_relief: [0]
+    total_income_charged_to_tax: [36_000]
+    winter_fuel_payment: [300]
+    winter_fuel_payment_charge: [300]
+
+# Pension Credit's earnings rules (SPC Regs 2002 regs 17(10) and 17(11) and
+# Sch VI, #2019) take the income tax on earnings, like every means test,
+# before the charge: the charge recovers a payment, and it depends on Pension
+# Credit, so counting it would make the model circular.
+
+- name: 2026 a lone pensioner's earnings disregard works alongside the charge
+  # Review r12's reproducer, which raised CycleError while Pension Credit's
+  # earnings tax read income tax after the charge. London, aged 70, £2,000 of
+  # employment income and no State Pension: income tax nil (under the £12,570
+  # personal allowance) and no National Insurance (over State Pension age).
+  # Sch VI para 5(a): £5 a week for a single claimant, 5 x 52 = £260, under
+  # the net earnings of £2,000. Pension Credit income: 2,000 - 260 = £1,740.
+  # Total income £2,000 is under £35,000: the £200 payment is not charged.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2_000
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    income_tax_before_winter_fuel_payment_charge: [0]
+    pension_credit_employment_income_tax: 0
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 1_740
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    income_tax: [0]
+
+- name: 2026 Pension Credit's tax on earnings leaves out the charge the earnings bring
+  # London, aged 70, £34,000 of private pension and £2,000 of employment
+  # income. Total income £36,000 exceeds £35,000 and there is no relevant
+  # benefit (Pension Credit income is far above the guarantee), so the £200
+  # payment is charged. Tax before the charge: (36,000 - 12,570) x 20% =
+  # £4,686, within the £37,700 basic rate band; with the charge, £4,886.
+  # Without the earnings: (34,000 - 12,570) x 20% = £4,286, and total income
+  # £34,000 is not charged. Taking earnings as the top slice (#2019's option
+  # (a)), they bear 4,686 - 4,286 = £400 of tax; the £200 charge they also
+  # bring is not tax on them. Net earnings 2,000 - 400 = £1,600; disregard
+  # £260. Pension Credit income: 36,000 - 4,686 - 260 = £31,054.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        private_pension_income: 34_000
+        employment_income: 2_000
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    total_income_charged_to_tax: [36_000]
+    income_tax_before_winter_fuel_payment_charge: [4_686]
+    pension_credit_income_tax_without_employment_income: [4_286]
+    pension_credit_employment_income_tax: 400
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 31_054
+    pension_credit: 0
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    income_tax: [4_886]

@@ -1,0 +1,113 @@
+# April 2027 projections, before any ministerial rounding. The lower
+# allowances equal the standard minimum guarantee, which rises by May-July
+# 2026 earnings growth of 3.9%. The higher allowances are the guarantee plus
+# the maximum Savings Credit (HB A3/2021), which rises by September 2026 CPI
+# of 3.5%.
+# Lower single/lone-parent: 238 * 1.039 * 52 = 12,858.664.
+# Lower couple: 363.25 * 1.039 * 52 = 19,625.671.
+# Higher single/lone-parent: (238 * 1.039 + 17.96 * 1.035) * 52
+#   = (247.282 + 18.5886) * 52 = 265.8706 * 52 = 13,825.2712.
+# Higher couple: (363.25 * 1.039 + 20.10 * 1.035) * 52
+#   = (377.41675 + 20.8035) * 52 = 398.22025 * 52 = 20,707.453.
+# Regulation-set/cohort inputs isolate uprating from age-attainment logic.
+- name: April 2027 lower single pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 12_858.664
+
+- name: April 2027 higher single pension-age HB allowance is the guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_attained_pension_age_before_cutoff: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 13_825.2712
+
+- name: April 2027 lower couple pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 68
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 19_625.671
+
+- name: April 2027 higher couple pension-age HB allowance is the guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 20_707.453
+
+- name: April 2027 lower lone-parent pension-age HB allowance follows earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: false
+        benefits_premiums: 0
+  output:
+    is_lone_parent: true
+    housing_benefit_applicable_amount: 12_858.664
+
+- name: April 2027 higher lone-parent pension-age HB allowance is the guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [claimant, child]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        housing_benefit_attained_pension_age_before_cutoff: true
+        benefits_premiums: 0
+  output:
+    is_lone_parent: true
+    housing_benefit_applicable_amount: 13_825.2712

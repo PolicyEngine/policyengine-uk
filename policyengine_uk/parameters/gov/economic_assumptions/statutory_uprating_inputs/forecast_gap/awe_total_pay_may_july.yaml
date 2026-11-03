@@ -2,15 +2,16 @@ description: Forecast difference between May-July earnings growth and calendar-y
 values:
   # No gap applies to published years.
   2010-07-01: 0
-  # OBR EFO March 2026: Q2 average earnings growth on a year earlier (economy Table 1.6) minus calendar-year growth in yoy_growth.yaml.
-  2025-07-01: 0.00259
-  2026-07-01: 0.00274
-  2027-07-01: 0.00027
-  2028-07-01: -0.00021
-  2029-07-01: -0.00015
-  2030-07-01: -0.00011
+  # OBR EFO October 2026: Q2 average earnings growth on a year earlier (economy Table 1.6) minus calendar-year growth in yoy_growth.yaml.
+  2025-07-01: -0.00204
+  2026-07-01: 0.00439
+  2027-07-01: 0.00306
+  2028-07-01: -0.00025
+  2029-07-01: -0.00014
+  2030-07-01: -0.00031
+  2031-07-01: 0.00014
   # After the EFO horizon: no gap, so the forecast is calendar-year growth.
-  2031-07-01: 0
+  2032-07-01: 0
 metadata:
   unit: /1
   label: May-July earnings forecast gap to calendar-year earnings
@@ -28,5 +29,5 @@ metadata:
     gap is zero after the EFO horizon, where the May-July forecast falls back
     to calendar-year growth.
   reference:
-    - title: OBR EFO March 2026 (detailed forecast tables, economy, Table 1.6)
-      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+    - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.6)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/

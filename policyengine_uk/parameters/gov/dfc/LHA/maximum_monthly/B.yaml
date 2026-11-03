@@ -1,0 +1,21 @@
+description: Maximum monthly Local Housing Allowance for category B dwellings (one bedroom, exclusive use) in Northern Ireland, used for Universal Credit. It works as gov.dwp.LHA.maximum_monthly.B does for Great Britain, but follows the Northern Ireland Housing Executive's determinations under Northern Ireland regulations. The values match the Great Britain maximum.
+values:
+  2020-03-30:
+    value: 1283.96
+    metadata:
+      reference:
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations (Northern Ireland) 2020, reg. 4(2)(b)
+          href: https://www.legislation.gov.uk/nisr/2020/53/regulation/4/made
+  2024-01-31:
+    value: 1439.97
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024, reg. 3(2)(b)
+          href: https://www.legislation.gov.uk/nisr/2024/3/regulation/3/made
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Northern Ireland maximum monthly LHA (category B)
+  reference:
+    - title: The Universal Credit Housing Costs (Executive Determinations) Regulations (Northern Ireland) 2016, Schedule 1, paragraph 2(2)(b), paragraph 1(b)
+      href: https://www.legislation.gov.uk/nisr/2016/222/schedule/1

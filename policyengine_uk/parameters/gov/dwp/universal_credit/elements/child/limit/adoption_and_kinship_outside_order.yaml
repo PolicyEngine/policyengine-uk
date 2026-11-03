@@ -1,0 +1,24 @@
+description: Whether a child or qualifying young person with the adoption or non-parental caring arrangements exception gets the Universal Credit child element whatever their place and is left out of the order of children the limit counts. Before 28 November 2018 these exceptions, like the others, applied only to a third or later child, who kept their place in the order.
+values:
+  # Fiscal-year values are read at 30 April, so 2018-19 keeps the earlier
+  # rules and 2019-20 is the first year with the disregard.
+  0001-01-01:
+    value: false
+    reference:
+      - title: The Universal Credit Regulations 2013 reg. 24A(1)(b)(ii) (as in force on 27 November 2018)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24A/2018-11-27
+      - title: The Universal Credit Regulations 2013 reg. 24B (as in force on 27 November 2018)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24B/2018-11-27
+  2018-11-28:
+    value: true
+    reference:
+      - title: The Universal Credit and Jobseeker's Allowance (Miscellaneous Amendments) Regulations 2018 (SI 2018/1129) regs. 1(2), 3(3) and 3(4)
+        href: https://www.legislation.gov.uk/uksi/2018/1129/regulation/3/made
+      - title: The Universal Credit Regulations 2013 reg. 24A(1)(za)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24A/2018-11-28
+      - title: The Universal Credit Regulations 2013 reg. 24B(2A)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24B/2018-11-28
+metadata:
+  unit: bool
+  period: year
+  label: Universal Credit adoption and non-parental caring exceptions outside the order of children

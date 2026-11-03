@@ -17,8 +17,7 @@ class uc_limited_capability_for_work(Variable):
         "work-related activity but not for work. Universal Credit also takes "
         "an ESA determination of limited capability for work (reg 39(1)(a)), "
         "so any ESA award of the person's own would imply it; the model does "
-        "not infer that yet, because the work allowance still reads every "
-        "member of the benefit unit, not only the claimants."
+        "not infer that."
     )
     definition_period = YEAR
     reference = (
