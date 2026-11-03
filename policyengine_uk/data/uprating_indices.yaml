@@ -1,9 +1,9 @@
 # Energy variables use the declaration-aware projector in economic_assumptions.py,
 # rather than an unconditional mapping here. Unlabelled dataset inputs remain
 # flat: legacy builds can already carry FY2026-27 prices despite a 2024 data year.
-# An explicit energy_price_basis opts into the variables' existing annual OBR-CPI
-# assumption from the declared price year. This does not supply an energy-specific
-# forecast or automatically label existing private Microcosm artifacts.
+# An explicit energy_price_basis opts into the household energy price indices
+# (gov.economic_assumptions.energy_prices) from the declared price year. This does
+# not automatically label existing private Microcosm artifacts.
 # liquid_fuel_consumption and solid_fuel_consumption (heating oil, LPG, coal
 # and wood) are not in that group: Ofgem's price cap does not cover them, so
 # they are uprated by CPI from the data year below, like other LCFS spending.
@@ -112,7 +112,9 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
 # cash_isa and stocks_and_shares_isa sum the person balances listed with
 # them; they are listed so a dataset that stores the household totals
-# grows them like their parts.
+# grows them like their parts. Past the projected years, Simulation grows
+# each stored total in STORED_HOUSEHOLD_TOTALS, household_lifetime_isa_balance
+# among them, the same way.
 - cash_isa
 - cash_isa_balance
 - corporate_wealth
@@ -170,6 +172,33 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_gross_receipts
 - trading_loss
 - owned_company_income_share
+# Gambling duty bases grow per person, as household weights grow by
+# population, with the OBR's receipts forecast for their duty divided by the
+# rates the model charges, so the model applies its own rate changes to them
+# once (#2738).
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.general_betting:
+- betting_exchange_commission
+- financial_spread_betting_net_losses
+- horse_and_dog_pool_betting_net_losses
+- land_based_fixed_odds_betting_net_losses
+- other_spread_betting_net_losses
+- remote_other_betting_net_losses
+- remote_uk_horseracing_betting_net_losses
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.pool_betting:
+- pool_betting_net_receipts
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.remote_gaming:
+- remote_gaming_net_losses
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.machine_games:
+- machine_games_higher_rate_net_takings
+- machine_games_lower_rate_net_takings
+- machine_games_standard_rate_higher_stake_net_takings
+- machine_games_standard_rate_net_takings
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.gaming:
+- land_based_casino_net_losses
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.bingo:
+- bingo_net_receipts
+gov.economic_assumptions.yoy_growth.obr.per_capita.gambling_duty_bases.lottery:
+- national_lottery_ticket_spending
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:

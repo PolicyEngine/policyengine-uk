@@ -14,11 +14,13 @@ supplement had no uprating metadata, so the model froze it at 11.70 a week from
 Both rates now rise as Scottish Child Payment and Pension Age Winter Heating
 Payment do: each April by the previous September's CPI
 (gov.benefit_uprating_cpi), rounded to the nearest 5p. Invariants, for every
-year from 2027 to 2039, the last year of the uprating index:
+year from 2027 to the last year of the uprating index:
 
 1. Each April's rate is the previous rounded rate times one plus the
    September CPI rise, rounded to the nearest 5p. The reference here compounds
-   the published 2026 rates in Decimal, independently of the index.
+   the published 2026 rates in Decimal, independently of the index. Intended
+   exception: a rise landing exactly on a 2.5p tie, as 28.75 x 1.02 does in
+   2071, may go either way, because the index keeps five decimal places.
 2. Neither rate falls, since the rise is never negative.
 3. Metamorphic: setting the previous September's CPI to a published rate g
    moves that April's rates to the previous rates times 1 + g, rounded to 5p,
@@ -36,6 +38,9 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.system import system
 
 CARER = "gov.social_security_scotland.carer_support_payment"
@@ -48,7 +53,9 @@ RATES_2026 = {
 # Hand calculations: the 2026 rate x 1.035 (September 2026 CPI, ONS release
 # of 21 October 2026), to the nearest 5p: 11.70 -> 12.1095; 86.45 -> 89.47575.
 APRIL_2027 = {f"{CARER}.supplement": 12.10, f"{CARER}.rate": 89.50}
-YEARS = range(2027, 2040)
+YEARS = range(
+    2027, growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth) + 1
+)
 FIVE_PENCE = Decimal("0.05")
 
 PERSON = {
@@ -87,6 +94,8 @@ def test_each_april_compounds_the_previous_rounded_rate(name):
         growth = 1 + Decimal(str(rise(f"{year}-01-01")))
         expected = nearest_5p(previous * growth)
         actual = weekly_rate(parameters, name, year)
+        if (previous * growth) % FIVE_PENCE == FIVE_PENCE / 2 and actual < expected:
+            expected -= FIVE_PENCE
         assert actual == pytest.approx(float(expected), abs=1e-9), year
         assert actual >= weekly_rate(parameters, name, year - 1), year
         previous = expected

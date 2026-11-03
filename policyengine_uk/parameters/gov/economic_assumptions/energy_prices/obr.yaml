@@ -1,0 +1,35 @@
+# policyengine_uk/utils/import_energy_prices.py writes this file from the
+# OBR economy tables. Rerun the importer on a new EFO; do not edit by hand.
+description: OBR forecasts that the household energy price indices build on.
+utilities:
+  description: OBR forecast of CPI utilities inflation (electricity and gas), year on year, by calendar quarter, from the first quarter ONS has not published in full (2026Q4). The OBR's published rate, so it includes the measures the OBR forecast includes; the generation step removes the electricity VAT change.
+  metadata:
+    unit: /1
+    label: OBR forecast of CPI utilities inflation
+    period: quarter
+    reference:
+      - title: OBR, Economic and fiscal outlook, October 2026, detailed forecast tables (economy), Table 1.19
+        href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+  values:
+    2026-10-01: 0.045313
+    2027-01-01: 0.113241
+    2027-04-01: 0.190038
+    2027-07-01: 0.037959
+    2027-10-01: -0.011437
+    2028-01-01: -0.105705
+    2028-04-01: -0.112697
+    2028-07-01: -0.070888
+    2028-10-01: -0.053906
+    2029-01-01: -0.029833
+    2029-04-01: 0.030000
+    2029-07-01: 0.039129
+    2029-10-01: 0.043442
+    2030-01-01: 0.049671
+    2030-04-01: 0.015595
+    2030-07-01: 0.015609
+    2030-10-01: 0.016184
+    2031-01-01: 0.017247
+    2031-04-01: 0.019232
+    2031-07-01: 0.019247
+    2031-10-01: 0.019256
+    2032-01-01: 0.019263

@@ -30,6 +30,12 @@ LEGACY = {"version": 1, "representation": "legacy_gross", "projection": "legacy_
 NORMALIZED = {"version": 1, "representation": "additive", "projection": "legacy_gross"}
 ADDITIVE = {"version": 1, "representation": "additive", "projection": "additive"}
 GDP_GROWTH = "gov.economic_assumptions.yoy_growth.obr.per_capita.gdp"
+# The energy inputs grow with these, from their declared basis.
+ENERGY_PRICE_INDICES = [
+    f"gov.economic_assumptions.energy_prices.{kind}.{series}"
+    for kind in ("calendar_year", "fiscal_year")
+    for series in ("electricity", "gas", "electricity_gas_and_solid_fuels")
+]
 MACRO = Scenario(
     parameter_changes={
         GDP_GROWTH: {"year:2026-01-01:1": 0.1, "year:2027-01-01:1": 0.2}
@@ -728,8 +734,8 @@ def test_isa_and_energy_contracts_compose_through_reset_export_and_projection(
     Resetting legacy interest gives gross3000 less the later exemption1200.
     Reprojection gives gross3000*1.2=3600, then ordinary2400 plus exempt1200.
     Energy grows by150/100 from the complete reset group's2025 basis, or by
-    150/125 from the preserved later group's2026 basis. CPI levels and growth
-    are controlled test inputs, not forecasts.
+    150/125 from the preserved later group's2026 basis. CPI and energy price
+    levels and growth are controlled test inputs, not forecasts.
     """
     energy = (
         "domestic_energy_consumption",
@@ -787,11 +793,13 @@ def test_isa_and_energy_contracts_compose_through_reset_export_and_projection(
     )
 
     parameters = simulation.tax_benefit_system.parameters.clone()
-    cpi = parameters.get_child(
-        "gov.economic_assumptions.indices.obr.consumer_price_index"
-    )
-    for year, level in {2025: 100, 2026: 125, 2027: 150}.items():
-        cpi.update(period=str(year), value=level)
+    for path in [
+        "gov.economic_assumptions.indices.obr.consumer_price_index",
+        *ENERGY_PRICE_INDICES,
+    ]:
+        index = parameters.get_child(path)
+        for year, level in {2025: 100, 2026: 125, 2027: 150}.items():
+            index.update(period=str(year), value=level)
     parameters.get_child(GDP_GROWTH).update(period="2027", value=0.2)
     projected = extend_single_year_dataset(reloaded, parameters, end_year=2027)
     projected_simulation = Simulation(dataset=projected)
@@ -882,6 +890,10 @@ def test_split_bsp_isa_and_energy_share_reset_and_projection_boundaries():
         },
         "gov.economic_assumptions.yoy_growth.obr.consumer_price_index": {"2027": 0.2},
         GDP_GROWTH: {"2027": 0.2},
+        **{
+            path: {str(year): level for year, level in {2025: 100, 2027: 150}.items()}
+            for path in ENERGY_PRICE_INDICES
+        },
     }
     parameters = simulation.tax_benefit_system.parameters.clone()
     for name, periods in changes.items():
