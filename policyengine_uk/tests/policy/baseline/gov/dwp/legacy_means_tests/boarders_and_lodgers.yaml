@@ -327,8 +327,11 @@
   # 2026-27, England. Earnings 20,000: tax (20,000 - 12,570) x 20% = 1,486,
   # NI 7,430 x 8% = 594.40. Lodger rent 10,000 gives taxable rent-a-room income
   # 2,500 and tax 500, so income tax is 1,986. UC counts neither the rent
-  # (reg 66(1)) nor its tax (reg 55(5)(b)): earned income
-  # 20,000 - 1,486 - 594.40 = 17,919.60, as without the lodger.
+  # (reg 66(1)) nor its tax (reg 55(5)(b)). uc_income_tax_on_earnings takes
+  # earnings as the lowest slice, so the taxable rent raises
+  # earned_taxable_income and the other income above earnings alike and the
+  # tax on earnings stays 1,486: earned income 20,000 - 1,486 - 594.40 =
+  # 17,919.60, as without the lodger.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -353,6 +356,7 @@
   output:
     income_tax: [1_986, 0]
     rent_a_room_income_tax_after_reductions: [500, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
     uc_earned_income: [17_919.60, 0]
 
 - name: Welsh CTR for a UC recipient does not add rent from a lodger
@@ -383,3 +387,226 @@
   output:
     legacy_benefits_home_letting_income: [4_160, 0]
     council_tax_reduction_applicable_income: [5_000, 0]
+
+- name: The finance-cost reduction comes off no more than the property tax on income from capital
+  # 2026-27, England. Private pension 30,000: tax (30,000 - 12,570) x 20% =
+  # 3,486. Property income 2,000 with finance costs 10,000, and a lodger
+  # paying 15,000: taxable rent-a-room income 15,000 - 7,500 = 7,500, so
+  # taxable property income 9,500 and property income tax 1,900, of which
+  # 7,500 / 9,500 x 1,900 = 1,500 falls on the rent-a-room income. The
+  # finance-cost reduction is 20% x min(10,000, 9,500) = 1,900. Counted tax
+  # 3,486 + 1,500 = 4,986; capital tax 1,900 - 1,500 = 400. The reduction
+  # comes off the capital side's 400 only; the other 1,500 is shared in
+  # proportion to the Step 4 tax left (4,986 counted, 0 capital). So the
+  # capital side keeps nil and the tax on counted income is
+  # 4,986 - 1,500 = 3,486, which is the whole income tax. The rent-a-room
+  # tax keeps 1,500 - 1,500 x 1,500 / 4,986 = 1,048.74.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+        private_pension_income: 30_000
+        property_income: 2_000
+        property_finance_costs: 10_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: LONDON
+  output:
+    taxable_property_income: [9_500, 0]
+    property_income_tax: [1_900, 0]
+    rent_a_room_income_tax: [1_500, 0]
+    property_finance_cost_relief: [1_900, 0]
+    income_tax_before_winter_fuel_payment_charge: [3_486, 0]
+    legacy_means_test_income_tax: [3_486, 0]
+    rent_a_room_income_tax_after_reductions: [1_048.74, 0]
+
+- name: Taxable rent-a-room income reaches total income and adjusted net income once
+  # 2026-27, England. Earnings 20,000 and a lodger paying 10,000: taxable
+  # rent-a-room income 2,500. Total income and adjusted net income both take
+  # it through taxable_property_income only: 20,000 + 2,500 = 22,500.
+  # Household post-tax income adds it once through gross_taxable_inputs:
+  # 22,500 less income tax (1,486 + 500 = 1,986) and NI 594.40 = 19,919.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 20_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    taxable_rent_a_room_income: [2_500, 0]
+    taxable_property_income: [2_500, 0]
+    total_income: [22_500, 0]
+    adjusted_net_income: [22_500, 0]
+    gross_taxable_inputs: [22_500, 0]
+    post_tax_income: 19_919.60
+
+- name: CTR on the Universal Credit route with pay deducts the extra tax earnings cause on uncounted rent
+  # 2026-27, England, working age, with a Universal Credit award (set as an
+  # input; Universal Credit itself is nil at this income). Pay 30,000: tax
+  # (30,000 - 12,570) x 20% = 3,486, NI 17,430 x 8% = 1,394.40. A lodger pays
+  # 15,000: taxable rent-a-room income 7,500, taxed at 20%: 1,500. The route
+  # does not count the rent. Without the pay, 7,500 falls inside the 12,570
+  # personal allowance, so the rent bears no tax and nil comes off; the
+  # 1,500 that earnings cause stays deducted. Income: 30,000 - (3,486 +
+  # 1,500) - 1,394.40 = 23,619.60, which is 1,500 below the 25,119.60
+  # without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    rent_a_room_income_tax: [1_500, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [4_986, 0]
+    council_tax_reduction_applicable_income: [23_619.60, 0]
+
+- name: CTR on the Universal Credit route without pay keeps uncounted rent out of income
+  # The same household without the pay. Taxable rent-a-room income 7,500
+  # falls inside the personal allowance, so there is no tax, and the route
+  # counts neither the rent nor any tax on it. Income is the Universal Credit
+  # award alone, the single standard allowance of 424.90 a month: 424.90 x 12
+  # = 5,098.80. The general rules would have added
+  # (15,000 / 52 - 20) x 52 = 13,960.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    legacy_benefits_home_letting_income: [13_960, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    universal_credit: [5_098.80, 0]
+    council_tax_reduction_applicable_income: [5_098.80, 0]
+
+- name: Scottish working-age CTR with pay deducts the extra tax earnings cause on uncounted rent
+  # 2026-27, Scotland, working age, no Universal Credit. Scottish rates above
+  # the 12,570 personal allowance: 19% to 3,967, 20% to 16,956, 21% to
+  # 31,092. Pay 30,000 leaves 17,430 taxable: 3,967 x 19% + 12,989 x 20% +
+  # 474 x 21% = 753.73 + 2,597.80 + 99.54 = 3,451.07. The rent's 7,500
+  # taxable falls at 21%: 1,575. NI 17,430 x 8% = 1,394.40. The scheme does
+  # not list the rent (SSI 2021/249 reg 57(1)). Without the pay the rent
+  # bears no tax, so nil comes off; the deduction keeps the rent's whole
+  # 1,575 at Scottish rates. Income: 30,000 - (3,451.07 + 1,575) - 1,394.40
+  # = 23,579.53, which is 1,575 below the 25,154.53 without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: SCOTLAND
+  output:
+    earned_income_tax: [3_451.07, 0]
+    rent_a_room_income_tax: [1_575, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [5_026.07, 0]
+    council_tax_reduction_applicable_income: [23_579.53, 0]
+
+- name: Scottish working-age CTR without pay keeps uncounted rent out of income
+  # The same household without the pay: no tax, and the scheme counts
+  # neither the rent nor any tax on it: income nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: SCOTLAND
+  output:
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    council_tax_reduction_applicable_income: [0, 0]
