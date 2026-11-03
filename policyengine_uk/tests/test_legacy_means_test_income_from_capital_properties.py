@@ -152,7 +152,7 @@ def taxed_adults(draw, age):
         state_pension=draw(st.floats(0, 10_000)) if age >= 67 else 0.0,
         private_pension_income=draw(st.floats(12_570, 20_000)),
         property_income=draw(st.floats(0, 20_000)),
-        savings_interest_income=draw(st.floats(2_000, 20_000)),
+        savings_interest_income=draw(st.floats(7_000, 20_000)),
         dividend_income=draw(st.floats(0, 20_000)),
         sublet_income=0.0,
     )
@@ -402,10 +402,11 @@ def test_legacy_means_test_income_tax_bounds(units, year):
 @PROPERTY_SETTINGS
 @given(taxed_populations, st.sampled_from(YEARS))
 def test_deducted_tax_without_earnings_is_the_step_4_split(units, year):
-    """Nobody has earnings, and every adult's interest exceeds the personal
-    savings allowance on top of a pension that uses up the personal
-    allowance, so the tax on uncounted income is positive and the deduction
-    must leave all of it out."""
+    """Nobody has earnings, and every adult's interest of at least 7,000
+    exceeds the 5,000 starting rate for savings and the 1,000 personal savings
+    allowance on top of a pension that uses up the personal allowance, so the
+    tax on uncounted income is positive and the deduction must leave all of
+    it out."""
     v = calculate(
         units,
         year,
