@@ -313,12 +313,11 @@ def any_household(draw):
 @PROPERTY_SETTINGS
 @given(st.lists(any_household(), min_size=1, max_size=4))
 def test_deduction_bounds(households):
-    """Invariant 3. The deduction is never negative. Without self-employment
-    income it never exceeds the applicant's and partner's income tax before
-    the winter fuel payment charge plus National Insurance. With it, the
-    notional amount the schemes set on profit can take the deduction above
-    that liability, as the law intends, but never above the liability plus
-    the notional amount."""
+    """Invariant 3. The deduction never falls below zero. Without
+    self-employment income it never exceeds the applicant's and partner's
+    income tax before the winter fuel payment charge plus National Insurance.
+    With it, the notional amount on profit can take the deduction above that
+    liability, but never above the liability plus the notional amount."""
     simulation = simulate(households)
     schemes(simulation, households)
     deduction = benunit_values(simulation, DEDUCTION)

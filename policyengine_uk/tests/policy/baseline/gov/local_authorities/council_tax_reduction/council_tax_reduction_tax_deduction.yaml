@@ -169,7 +169,7 @@
   output:
     # SSI 2012/303 reg 38: (15,000 - 12,570) x 20% = 486 and Class 4
     # (15,000 - 12,570) x 6% = 145.80. That exceeds the 461.70 + 145.80 the
-    # person pays, as the rule intends.
+    # person pays.
     council_tax_reduction_tax_deduction: 631.80
     # 15,000 - 631.80.
     council_tax_reduction_applicable_income: 14_368.20
@@ -655,13 +655,12 @@
   output:
     # Under para 19(2)(a), the council deducts the income tax and primary
     # Class 1 deducted from the partner's pay. T: the pension bears (20,000 -
-    # 12,570) x 20% = 1,486
-    # and the pay the same 1,486, so 2,972. Without the pay the partner has
-    # no income, and the model transfers 1,260 of Marriage Allowance to the
-    # pensioner, whose tax falls to (20,000 - 12,570 - 1,260) x 20% = 1,234:
-    # T(E) = 1,234, so the pay adds 2,972 - 1,234 = 1,738. T(E, S, U) =
-    # 1,234. Class 1 (20,000 - 12,569.96) x 8% = 594.40. 1,738 + 1,234 +
-    # 594.40 = 3,566.40.
+    # 12,570) x 20% = 1,486 and the pay the same 1,486, so 2,972. Without the
+    # pay the partner has no income, and the model transfers 1,260 of
+    # Marriage Allowance to the pensioner, whose tax falls to (20,000 -
+    # 12,570 - 1,260) x 20% = 1,234: T(E) = 1,234, so the pay adds 2,972 -
+    # 1,234 = 1,738. T(E, S, U) = 1,234. Class 1 (20,000 - 12,569.96) x 8% =
+    # 594.40. 1,738 + 1,234 + 594.40 = 3,566.40.
     council_tax_reduction_tax_deduction: 3_566.40
     # 40,000 - 3,566.40 - the 10 a week couple's earnings disregard (520).
     council_tax_reduction_applicable_income: 35_913.60
@@ -692,10 +691,9 @@
     marriage_allowance: [1_260, 0]
     # The Scottish Ministers allow "only the personal relief" (SSI 2012/319
     # reg 37(1)), so the Marriage Allowance does not come off: (30,000 -
-    # 12,570) x 20% = 3,486.
-    # No Class 4 above pension age. T(E, S, U): without the profit the older
-    # partner has no income and the pension bears no tax, so nil. No
-    # employed earnings.
+    # 12,570) x 20% = 3,486. No Class 4 above pension age. T(E, S, U):
+    # without the profit the older partner has no income and the pension
+    # bears no tax, so nil. No employed earnings.
     council_tax_reduction_tax_deduction: 3_486
     # 40,000 - 3,486 - the 10 a week couple's earnings disregard (520).
     council_tax_reduction_applicable_income: 35_994
