@@ -3,10 +3,10 @@
 # income belongs to Step One. Existing ISA income is already additional.
 # https://www.legislation.gov.uk/uksi/2002/2006/regulation/3
 # https://www.legislation.gov.uk/uksi/2002/2006/regulation/10
-# The WTC cases use HMRC 2024-25 basic2435, threshold7955 and taper41%.
-# At16 hours, a60-year-old qualifies without a30-hour or family element.
-# Gross contributions already include relief: never multiply them by1.25.
-# Gift Aid is net, and the existing gross-up turns80 into100.
+# The WTC cases use HMRC 2024-25 basic 2435, threshold 7955 and taper 41%.
+# At 16 hours, a 60-year-old qualifies without a 30-hour or family element.
+# Gross contributions already include relief: never multiply them by 1.25.
+# Gift Aid is net, and the existing gross-up turns 80 into 100.
 
 - name: Other investment income counts above the shared Step One disregard
   period: 2024

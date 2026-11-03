@@ -1,5 +1,5 @@
-# ISA Regulations1998 reg22; additive current household-input convention.
-# SI2026/1018 regs1/15 and FinanceAct2026 s5 for the separate final charge.
+# ISA Regulations 1998 reg 22; additive current household-input convention.
+# SI 2026/1018 regs 1/15 and Finance Act 2026 s 5 for the separate final charge.
 
 - name: Additive ISA income is market income without cancelling unrelated taxable interest
   period: 2026
@@ -92,5 +92,5 @@
     individual_savings_account_dividend_income: 300
   output:
     total_income: 33_000
-    # Step1 ordinary investment income3000, less the300 disregard, plus wages.
+    # Step 1 ordinary investment income 3000, less the 300 disregard, plus wages.
     tax_credits_current_year_income: 32_700
