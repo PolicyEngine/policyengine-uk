@@ -1,3 +1,84 @@
+## [2.173.0] - 2026-11-03
+
+### Added
+
+- Add `soc2020_major_group` and `soc2020_sub_major_group`, person enum inputs for the SOC 2020 major group (9 groups) and sub-major group (26 groups) of the person's main job, or of their last job if they are not in work, with NONE for none or unknown, so that datasets can carry occupation. `SOC2020_MAJOR_GROUP_CODES` and `SOC2020_SUB_MAJOR_GROUP_CODES`, beside the enums, give each member's SOC code. The FRS codes the major group; the sub-major group has to be imputed within it from a survey that codes it.
+
+### Changed
+
+- `sic_industry_division`'s label and documentation now say the division is the main job's, or the last job's for a person not in work, since the FRS asks the employment questions of everyone who has ever worked.
+
+
+## [2.172.1] - 2026-11-03
+
+### Fixed
+
+- Housing Benefit reserves the Working Tax Credit income disregard before deducting childcare costs in historical tax-credit years, and settles it separately before and after the accommodation disregard starts under a reform that keeps tax credits.
+- Housing Benefit helpers apply reform conditions when they rebuild the earnings, Working Tax Credit and accommodation disregards, the childcare deduction, its limit and applicable income.
+
+
+## [2.172.0] - 2026-11-03
+
+### Added
+
+- Add `trading_allowance_claim_status`, a person input saying whether the input data's self-employment profit already deducts the trading allowance (claimant), deducts actual expenses above it (non-claimant), or is unknown (the default, which keeps the current treatment), so that changes to the allowance, such as the Budget 2026 raise to £3,000, reach the traders who already claim it. Add `gov.simulation.trading_allowance_claimant_expense_share`, which sets claimants' unknown expenses, by default so that a cut adds nothing to their taxable profit (a lower bound).
+
+### Changed
+
+- Raise the time limit of the Python test shards from 75 to 90 minutes: on 1 November shards took up to 75 minutes on slower runners and were cancelled with no test failing.
+
+
+## [2.171.1] - 2026-11-03
+
+### Fixed
+
+- Economic assumption indices now end where the growth series end (2074) instead of at 2039, so the State Pension, tax thresholds, benefit rates and every input grown by an index keep moving after 2039 rather than freezing at their 2039 level.
+
+
+## [2.171.0] - 2026-11-02
+
+### Added
+
+- The aggregate impact report now records why it withholds a standard reform's costing and target change in a year. For each withheld year, `withheld_because` names every condition that holds (`suppressed_component_changed`, `small_component_left`, `small_balance_change`, `small_target_change` or `no_baseline`) and the component or variable it holds for, in `result.json` and in the long-format report that qualification reads. The pull request comment lists the reasons under the reform costings. No reason gives a count or an amount.
+
+### Changed
+
+- Test statutory paternity pay as wages at every pension contribution level, and share the cloned tax-benefit system in the UC work-related groups property tests.
+- Spread the Python tests across seven shards to reduce the work per job.
+
+### Fixed
+
+- Keep the household ISA totals a dataset stores after the years it holds, grown like the person balances they sum, so means-tested capital no longer drops by those holdings from 2033.
+
+
+## [2.170.4] - 2026-11-02
+
+### Fixed
+
+- Projected the sixteen gambling duty inputs per person from HMRC's 2025-26 receipts and the OBR's October 2026 betting and gaming forecast (receipts Table 4.10), divided by the rates the model charges and by population growth. The inputs no longer stay at their 2024-25 cash level, their weighted totals follow each duty's base as household weights grow with population, and the 2026 and 2027 remote gambling rate rises and the 2027 higher-stake machine rate rise apply once.
+
+
+## [2.170.3] - 2026-11-02
+
+### Fixed
+
+- The aggregate checker detects movement in undeclared tax heads independently of their baseline levels, and counts an infinite or NaN response as movement.
+
+
+## [2.170.2] - 2026-11-02
+
+### Fixed
+
+- The programme registry identifies the correct responsible bodies and nations for Scottish income tax, tax credits, the Energy Price Guarantee, Council Tax, Council Tax Reduction and Winter Fuel Payment.
+
+
+## [2.170.1] - 2026-11-02
+
+### Fixed
+
+- Round projected State Pension weekly rates as each Up-rating Order does. Each April the model now raises the previous year's full new State Pension and basic State Pension rates by the triple lock and rounds them to the nearest 5p (`gov.dwp.state_pension.weekly_rate_rounding`). It used to multiply the last published rate by the index's growth and leave the product unrounded. On the October 2026 forecast the full new State Pension becomes £250.70, £259.20 and £265.70 a week in 2027-28 to 2029-30 (from £250.71, £259.24 and £265.72). The Pension Tax Allowance threshold, 52 weeks of that rate, moves to £13,036.40 in 2027-28, the figure in HM Treasury's explainer, and in 2028-29 the full allowance falls from £183 to £182. The model no longer rounds the triple lock index to five decimal places.
+
+
 ## [2.170.0] - 2026-10-31
 
 ### Added
