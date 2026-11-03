@@ -152,10 +152,18 @@ Unrounded (£): standard-rated base 407,399,379,048, 422,514,711,572 and
 
 ### Value
 
-The parameter takes 0.69 (product 0.483), the 2024-25 value: as in the
-[`f9d1922c` derivation](#earlier-derivation-on-f9d1922c-october-2026), the
-latest outturn year sets it. Receipts for later years come from OBR forecasts,
-so the factor stays undated. The coverage falls 3.4% from 2024-25 to 2026-27.
+The parameter takes 0.69 (product 0.483). The 2024-25 value sets it, as in
+the [`f9d1922c` derivation](#earlier-derivation-on-f9d1922c-october-2026):
+2024-25 is the cut's own year, which `apply_uprating` leaves as the file gives
+it, and OBR's figure for it is outturn. Later years add the model's uprating
+and, beyond outturn, OBR's forecasts, so the factor stays undated. On the
+March 2026 EFO's receipts the coverage falls 3.4% from 2024-25 to 2026-27.
+
+The runs here predate the October 2026 EFO that `main` now uses. That EFO
+gives 2025-26 outturn of £179.861bn and forecasts £186.154bn for 2026-27, and
+`main` uprates consumption with its October forecasts. The 2025-26 and 2026-27
+rows here record policyengine-uk 2.157.1, which used the March 2026 EFO for
+both.
 
 ### Totals at 0.67 and 0.69
 
