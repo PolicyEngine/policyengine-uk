@@ -71,9 +71,9 @@ uc_is_excepted_from_education_condition holds exactly when, that year, they
 report a legacy benefit whose active parameter reads false and their family
 claims at closure; and is_uc_eligible holds for a full-time degree student
 exactly when that exception holds, and for anyone else always. It reads the
-closure dates from the parameters. An explicit claims_uc_at_legacy_closure,
-which test_education_condition_invariants draws in 2019, 2021 and 2024,
-excepts them in any year.
+closure dates from the parameters. With an explicit
+claims_uc_at_legacy_closure, which test_education_condition_invariants draws
+in 2019, 2021 and 2024, the model excepts them in any year.
 """
 
 import json
@@ -886,8 +886,8 @@ def test_reg_60_protection_follows_the_closure_dates(case):
     the closure from the active parameters. The model then finds a full-time
     degree student among them eligible for Universal Credit exactly when the
     exception holds, and anyone else eligible either way. For a person off a
-    course the model keeps the exception, although reg. 60(1) lifts the
-    condition only while they continue the course (case 38 of
+    course the model keeps the exception, although DWP lifts the condition
+    under reg. 60(1) only while they continue the course (case 38 of
     uc_receiving_education.yaml); this test pins that proxy."""
     year = case["year"]
     simulation = Simulation(situation=closure_situation(case))
@@ -927,9 +927,9 @@ def test_reg_60_protection_follows_the_closure_dates(case):
 
 def test_closure_grids_straddle_each_closure():
     """The explicit grids for 2024, 2025 and 2026 fall either side of each
-    closure the active parameters set: tax credits open in 2024 and closed in
-    2025, and Income Support and income-based JSA open in 2025 and closed in
-    2026."""
+    closure date in the active parameters: tax credits open in 2024 and closed
+    in 2025, and Income Support and income-based JSA open in 2025 and closed
+    in 2026."""
     system = Simulation(situation={"people": {"p": {}}}).tax_benefit_system
 
     def active(year, path):
