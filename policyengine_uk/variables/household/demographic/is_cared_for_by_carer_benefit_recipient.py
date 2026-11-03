@@ -49,17 +49,17 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         "Pension, reduces to nil keeps the entitlement but receives nothing, "
         "so the model does not attribute the allowance. "
         "has_uc_award_with_carer_element gives "
-        "a carer element award from the claim, the award's conditions and an "
-        "upper bound on the award (uc_award_upper_bound), because the "
-        "Universal Credit non-dependant deduction exemption reads Pension "
-        "Credit, which reads the addition. A carer whose bound comes to nil "
-        "has no award (Welfare Reform Act 2012 s.5), and the model attributes "
-        "none. The bound can stay positive after income reduces the actual "
-        "award to nil, when its calculation without housing costs gives a "
-        "higher work allowance. A carer whose award a non-dependant deduction "
-        "takes to nil, or whose family takes Tax-Free Childcare instead, "
-        "still counts too, and can withhold a premium or addition the law "
-        "would pay (#2795). A carer with both an allowance and a carer element "
+        "a carer element award from the family's award before the benefit "
+        "cap: a carer whose award comes to nil, whether income tapers it to "
+        "nil or the family takes Tax-Free Childcare instead, has no award "
+        "(Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17), and the "
+        "model attributes none. The model applies the same attribution in "
+        "Northern Ireland (SPC Regs (NI) 2003 Sch 1 para 1(1) and (4), as SR "
+        "2016/236 reg 31(7) amended it; HB Regs (NI) 2006 Sch 4 para 14(2); "
+        "SR 2016/236 regs 26, 28, 35 and 36 insert the same words in Northern "
+        "Ireland's Income Support, Jobseeker's Allowance, pension-age Housing "
+        "Benefit and ESA schemes). A carer with both an allowance and a "
+        "carer element "
         "counts once. Partners who care for the same severely disabled person "
         "(partners_care_for_same_severely_disabled_person) have one relevant "
         "entitlement between them (s.70(7ZA) and (7A)), so where one of them "
@@ -77,6 +77,13 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/29",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/30",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/5",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/17",
+        "https://www.legislation.gov.uk/nisr/2003/28/schedule/1/paragraph/1",
+        "https://www.legislation.gov.uk/nisr/2016/236/regulation/31",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/4/paragraph/14",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/30",
+        "https://www.legislation.gov.uk/nisi/2015/2006/article/10",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/17",
     )
 
     def formula(person, period, parameters):
