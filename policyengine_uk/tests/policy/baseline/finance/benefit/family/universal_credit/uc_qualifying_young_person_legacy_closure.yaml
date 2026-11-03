@@ -12,7 +12,7 @@
 # gov.dwp.tax_credits.active turn false on 1 April 2026, 1 April 2026 and
 # 6 April 2025). The closure reports exclude nobody, as the benefit has closed.
 #
-# Every case uses one household: a parent aged 45 and a 17-year-old on a
+# Every case but the last uses one household: a parent aged 45 and a 17-year-old on a
 # non-advanced course in the parent's benefit unit, North East, owned
 # outright, no income. The parent claims Universal Credit as a single
 # claimant over 25 (universal_credit/standard_allowance/amount.yaml
@@ -290,3 +290,40 @@
     is_qualifying_young_person_for_universal_credit: [false, true]
     uc_child_element: 4_068
     universal_credit: 8_869.68
+
+- name: A young person's own Housing Benefit report still excludes them where the family meets the Pension Credit age conditions.
+  # A parent aged 70 reports their own Working Tax Credit in 2025, after tax
+  # credits closed, which closes the family's legacy awards. The family meets
+  # the Pension Credit age conditions, so the model keeps paying Housing
+  # Benefit unless the family leaves that route by claiming Universal Credit
+  # (left_pension_route_at_legacy_closure). The predicate can't read that
+  # claim, because claims_universal_credit reads the predicate, so it keeps
+  # the Housing Benefit report. UC: 12 x 400.14 = 4,801.68.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    legacy_benefits_closed: true
+    meets_pension_credit_age_conditions: true
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    uc_child_element: 0
+    universal_credit: 4_801.68
