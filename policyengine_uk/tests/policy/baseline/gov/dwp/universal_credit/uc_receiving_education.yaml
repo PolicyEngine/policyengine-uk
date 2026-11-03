@@ -13,6 +13,15 @@
 # for any other child. Each award comes to 12 times the monthly amount, less
 # 55% of earnings (reg. 22(1)(b)); no case has housing costs except cases 1
 # and 2.
+#
+# Cases 36 to 41 follow one student through the protection in the Universal
+# Credit (Transitional Provisions) Regulations 2014 reg. 60 from 2024 to 2027.
+# For 2025 to 2026 we take DWP's monthly standard allowance for a single
+# claimant aged 25 or over, £400.14, from Benefit and pension rates 2025 to
+# 2026 (gov.uk). The Department for Communities set the same amount in
+# Northern Ireland (Social Security Benefits Up-rating Order (Northern
+# Ireland) 2025, SR 2025/64, art. 32(2) and Schedule 13). DWP hasn't published
+# rates for 2027 to 2028, so case 38 asserts no amount.
 
 - name: Case 1, issue 2346, a full-time university student aged 19 gets no Universal Credit.
   # Reg. 12(2)(a): a full-time course of advanced education (a first degree,
@@ -952,3 +961,225 @@
     meets_uc_education_condition: [false, true]
     is_uc_eligible: false
     universal_credit: 0
+
+- name: Case 36, a full-time student whose family claims when its tax credits close in 2025 keeps the award.
+  # We give one claimant to cases 36 to 41: aged 30 and single, with no child,
+  # no listed disability benefit and no earnings, so no reg. 14(1) exception
+  # applies. They undertake a full-time degree, so they receive education under
+  # reg. 12(2)(a). We set Working Tax Credit of £1,000 to stand in for the
+  # award that closed, and the model closes tax credits from 6 April 2025. The
+  # family claims only because its tax credits close (would_claim_uc false,
+  # would_claim_uc_at_legacy_closure true). Under SI 2014/1230, DWP issues a
+  # migration notice to a person entitled to an existing benefit (reg. 44(1)),
+  # who becomes a notified person (reg. 44(6)). By claiming on or before the
+  # final deadline, the last day of the first assessment period of an award
+  # starting on the deadline day (reg. 46(4)), they make a qualifying claim
+  # (reg. 48). On the migration day, the day before their entitlement starts
+  # (reg. 49), they undertake the course, so DWP doesn't apply the condition in
+  # s. 4(1)(d) to them while they continue it (reg. 60(1)). 12 x £400.14 =
+  # £4,801.68.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 4_801.68
+
+- name: Case 37, the student of case 36 continues the same course in 2026 and keeps the award.
+  # The claimant continues the course they undertook on the migration day, so
+  # DWP still doesn't apply the condition (SI 2014/1230 reg. 60(1)). Under reg.
+  # 60(2), DWP stops the protection only in an assessment period in which a
+  # transitional element would have stopped under reg. 56 or 57, and none of
+  # those events has happened. The claimant has no earned income, so in the
+  # first assessment period it didn't reach the single administrative
+  # threshold, and reg. 56(2) can't apply (reg. 56(2)(a)(ii)); reg. 56(3A)
+  # covers only reg. 60A awards. They haven't joined a couple (reg. 56(4)(b)),
+  # and their award continues, so reg. 57 doesn't apply. 12 x £424.90 =
+  # £5,098.80, as in case 19.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 5_098.80
+
+- name: Case 38, the student of case 36 finishes the course and meets the condition in 2027.
+  # The claimant no longer undertakes the course they undertook on the
+  # migration day, so the protection, which lasts "while they are continuing
+  # to undertake that course" (SI 2014/1230 reg. 60(1)), has stopped. Off the
+  # course, they don't receive education under reg. 12(2), so they meet s.
+  # 4(1)(d) without an exception. DWP hasn't published rates for 2027 to 2028,
+  # so we assert no amount. The model keeps
+  # uc_is_excepted_from_education_condition true here although reg. 60(1) has
+  # stopped, so we don't assert it.
+  period: 2027
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: false
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    uc_receiving_education: [false]
+    meets_uc_education_condition: [true]
+    is_uc_eligible: true
+
+- name: Case 39, the student of case 36 claims outside the migration and gets no Universal Credit.
+  # The family claims Universal Credit (would_claim_uc true), but not when its
+  # tax credits close (would_claim_uc_at_legacy_closure false). A claim after
+  # the final deadline (SI 2014/1230 reg. 46(4)) doesn't count as a qualifying
+  # claim (reg. 48), so DWP doesn't apply reg. 60(1). The claimant receives
+  # education under reg. 12(2)(a) and has no reg. 14(1) exception, so they
+  # don't meet s. 4(1)(d), and DWP pays nothing.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: false
+    claims_universal_credit: true
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 40, the student of case 36 claims before the closure and gets no Universal Credit in 2024.
+  # The model keeps tax credits open in 2024, so legacy_benefits_closed reads
+  # false, and the family claims Universal Credit (would_claim_uc true) with
+  # no closure. A person who claims before any migration notice reaches them
+  # never becomes a notified person (SI 2014/1230 reg. 44(6)), so their claim
+  # doesn't count as a qualifying claim (reg. 48), and DWP doesn't apply reg.
+  # 60(1). Before 27 January 2025, DWP applied reg. 60(1) only to a notified
+  # person (SI 2025/3 reg. 6(9)(a) and (c) replaced those words), so the
+  # claimant gets no protection under either text. They receive education
+  # under reg. 12(2)(a) with no reg. 14(1) exception, and DWP pays nothing. A
+  # family that claimed by the final deadline after DWP issued it a migration
+  # notice in 2024-25 did make a qualifying claim, and a full-time student on
+  # its migration day kept the protection from then. The model, which takes
+  # the closure from the active parameters here, protects such a student only
+  # from 2025-26.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+  output:
+    legacy_benefits_closed: false
+    claims_uc_at_legacy_closure: false
+    claims_universal_credit: true
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 41, the student of case 36 in Northern Ireland keeps the award under SR 2016/226 reg. 61.
+  # Under the Universal Credit (Transitional Provisions) Regulations (Northern
+  # Ireland) 2016, the Department for Communities issues the migration notice
+  # that makes the claimant a notified person (reg. 45(6)). By claiming on or
+  # before the final deadline (reg. 47(4)), they make a qualifying claim (reg.
+  # 49). On the migration day (reg. 50) they undertake the course, so the
+  # Department doesn't apply the condition in the Welfare Reform (Northern
+  # Ireland) Order 2015 art. 9(1)(d) to them while they continue it (reg.
+  # 61(1)). 12 x £400.14 = £4,801.68, the Northern Ireland amount in SR 2025/64
+  # Schedule 13.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+  output:
+    legacy_benefits_closed: true
+    claims_uc_at_legacy_closure: true
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 4_801.68
