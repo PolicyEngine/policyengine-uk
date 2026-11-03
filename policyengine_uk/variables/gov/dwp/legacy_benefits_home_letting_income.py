@@ -1,6 +1,63 @@
 from policyengine_uk.model_api import *
 
 
+def home_letting_income(benunit, period, parameters, counted, pension_age):
+    """Annual rent the `counted` members receive for letting part of their
+    home, after the weekly disregards: the pension-age amounts where
+    `pension_age` holds, else the working-age ones.
+
+    Rent from a sub-tenant outside the household (sublet_income) counts for
+    the `counted` members who receive it, less the sub-tenant disregard for
+    one occupier. Boarders and lodgers in the household pay the household
+    head (is_resolved_household_head), so their payments count where the
+    head is one of the `counted` members: each lodger's payment less the
+    sub-tenant disregard, per person at pension age and per lodger family at
+    working age, and each boarder's payment less the board and lodging
+    disregard.
+    """
+    p = parameters(period).gov.dwp.legacy_means_tests
+    sub_tenant = p.sub_tenant_rent_disregard
+    board = p.board_and_lodging_disregard
+    person = benunit.members
+
+    weekly_sublet = (
+        benunit.sum(person("sublet_income", period) * counted) / WEEKS_IN_YEAR
+    )
+    sublet_disregard = where(
+        pension_age, sub_tenant.pension_age, sub_tenant.working_age
+    )
+    counted_sublet = max_(0, weekly_sublet - sublet_disregard)
+
+    # Boarders and lodgers are household members outside the household
+    # head's benefit unit; what each pays counts for the benefit unit whose
+    # counted members include the head.
+    head = person("is_resolved_household_head", period)
+    pays_head = ~person.benunit("benunit_contains_household_head", period)
+    boarder = person("rent_paid_as_boarder", period) / WEEKS_IN_YEAR * pays_head
+    lodger = person("rent_paid_as_lodger", period) / WEEKS_IN_YEAR * pays_head
+    counted_board = (1 - board.excess_rate) * max_(0, boarder - board.amount)
+    counted_lodger_pension_age = max_(0, lodger - sub_tenant.pension_age)
+    family_lodger = person.benunit.sum(lodger)
+    family_share = np.divide(
+        lodger,
+        family_lodger,
+        out=np.zeros_like(lodger),
+        where=family_lodger > 0,
+    )
+    counted_lodger_working_age = (
+        max_(0, family_lodger - sub_tenant.working_age) * family_share
+    )
+    household = person.household
+    from_occupiers = where(
+        pension_age,
+        benunit.max(household.sum(counted_board + counted_lodger_pension_age)),
+        benunit.max(household.sum(counted_board + counted_lodger_working_age)),
+    )
+    # Each household has one resolved household head.
+    head_share = benunit.any(head & counted)
+    return (counted_sublet + from_occupiers * head_share) * WEEKS_IN_YEAR
+
+
 class legacy_benefits_home_letting_income(Variable):
     value_type = float
     entity = BenUnit
@@ -43,47 +100,9 @@ class legacy_benefits_home_letting_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.legacy_means_tests
-        sub_tenant = p.sub_tenant_rent_disregard
-        board = p.board_and_lodging_disregard
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         pension_age = benunit.any(person("is_SP_age", period) & claimant_or_partner)
-
-        weekly_sublet = (
-            benunit.sum(person("sublet_income", period) * claimant_or_partner)
-            / WEEKS_IN_YEAR
+        return home_letting_income(
+            benunit, period, parameters, claimant_or_partner, pension_age
         )
-        sublet_disregard = where(
-            pension_age, sub_tenant.pension_age, sub_tenant.working_age
-        )
-        counted_sublet = max_(0, weekly_sublet - sublet_disregard)
-
-        # Boarders and lodgers are household members outside the household
-        # head's benefit unit; what each pays counts for the head's benefit
-        # unit when the head is its claimant or partner.
-        head = person("is_resolved_household_head", period)
-        pays_head = ~person.benunit("benunit_contains_household_head", period)
-        boarder = person("rent_paid_as_boarder", period) / WEEKS_IN_YEAR * pays_head
-        lodger = person("rent_paid_as_lodger", period) / WEEKS_IN_YEAR * pays_head
-        counted_board = (1 - board.excess_rate) * max_(0, boarder - board.amount)
-        counted_lodger_pension_age = max_(0, lodger - sub_tenant.pension_age)
-        family_lodger = person.benunit.sum(lodger)
-        family_share = np.divide(
-            lodger,
-            family_lodger,
-            out=np.zeros_like(lodger),
-            where=family_lodger > 0,
-        )
-        counted_lodger_working_age = (
-            max_(0, family_lodger - sub_tenant.working_age) * family_share
-        )
-        household = person.household
-        from_occupiers = where(
-            pension_age,
-            benunit.max(household.sum(counted_board + counted_lodger_pension_age)),
-            benunit.max(household.sum(counted_board + counted_lodger_working_age)),
-        )
-        # Each household has one resolved household head.
-        head_share = benunit.any(head & claimant_or_partner)
-        return (counted_sublet + from_occupiers * head_share) * WEEKS_IN_YEAR
