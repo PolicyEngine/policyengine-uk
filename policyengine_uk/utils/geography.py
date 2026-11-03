@@ -12,6 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+from policyengine_core.enums import Enum as CoreEnum, EnumArray
 from policyengine_core.holders.helpers import get_stored_input
 from policyengine_core.periods import period as period_
 
@@ -22,6 +23,7 @@ GEOGRAPHY_FIELDS = frozenset({"region", "country", "local_authority", "brma"})
 GEOGRAPHY_MASKS = "policyengine_uk.geography_input_masks"
 _HOLDER_MASKS = "_uk_geography_input_masks"
 _DEVOLVED = frozenset({"SCOTLAND", "WALES", "NORTHERN_IRELAND"})
+_CORE_ENUM_DECODER = EnumArray.decode_to_str
 
 
 @lru_cache(maxsize=1)
@@ -38,8 +40,50 @@ def country_from_region(region):
     return np.where(np.isin(region, tuple(_DEVOLVED) + ("UNKNOWN",)), region, "ENGLAND")
 
 
+@lru_cache(maxsize=16)
+def _enum_name_lookup(possible_values):
+    """Read-only names for an ordinary dense enum schema, never input values."""
+    try:
+        members = tuple(possible_values)
+        indices = tuple(member.index for member in members)
+        names = tuple(member.name for member in members)
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if (
+        not members
+        or any(type(index) is not int for index in indices)
+        or indices != tuple(range(len(members)))
+        or any(not isinstance(name, str) for name in names)
+    ):
+        return None
+    # Core's np.select includes this default when choosing the string width.
+    labels = np.asarray((*names, "unknown"))
+    # The backing bytes are immutable; callers receive a separate gathered array.
+    return np.frombuffer(labels[:-1].tobytes(), dtype=labels.dtype)
+
+
 def _names(values, possible_values):
-    return possible_values.encode(values).decode_to_str()
+    encoded = possible_values.encode(values)
+    decoder = encoded.decode_to_str
+    if (
+        type(encoded) is not EnumArray
+        or getattr(decoder, "__func__", None) is not _CORE_ENUM_DECODER
+        or getattr(decoder, "__self__", None) is not encoded
+    ):
+        return decoder()
+    enum_class = getattr(encoded, "possible_values", None)
+    if not isinstance(enum_class, type) or not issubclass(enum_class, CoreEnum):
+        return decoder()
+    indices = np.asarray(encoded)
+    lookup = _enum_name_lookup(enum_class)
+    if (
+        lookup is None
+        or indices.dtype.kind not in "iu"
+        or np.any(indices < 0)
+        or np.any(indices >= len(lookup))
+    ):
+        return decoder()
+    return lookup[indices.reshape(-1)].reshape(indices.shape)
 
 
 def _visible_branches(simulation):
