@@ -1,14 +1,16 @@
-# UC reg. 5(5) excludes a person receiving Universal Credit, contributory ESA
-# or contribution-based JSA; UC Regs reg. 2 defines ESA and JSA without their
-# income-related and income-based forms. DWP doesn't count a person entitled
-# to income-related ESA, income-based JSA or Income Support as a UC
-# qualifying young person (SI 2014/1230 reg. 28), and the UC predicate reads
-# a report of income-based JSA or Income Support only while the model pays
-# it, until 31 March 2026. SPC reg. 4A(5) excludes own awards from the
-# Pension Credit routes, including income support: is_on_income_support reads
-# it, from the calculated award for a claimant or partner and from their own
-# report for anyone else. The reports identify the recipient whether
-# receives_benefits_in_own_right is omitted or explicitly false.
+# The Secretary of State excludes a person receiving Universal Credit,
+# contributory ESA or contribution-based JSA (UC reg. 5(5)), and defines ESA
+# and JSA without their income-related and income-based forms (UC Regs reg.
+# 2). DWP doesn't count a person entitled to income-related ESA, income-based
+# JSA or Income Support as a UC qualifying young person (SI 2014/1230 reg.
+# 28). The UC predicate reads a report only in a year the model pays that
+# benefit (income-based JSA and Income Support until 31 March 2026), and only
+# if no reform neutralises it. The Secretary of State excludes own awards
+# from the Pension Credit routes, including income support (SPC reg. 4A(5)):
+# is_on_income_support reads it, from the calculated award for a claimant or
+# partner and from their own report for anyone else. The reports identify the
+# recipient whether receives_benefits_in_own_right is omitted or explicitly
+# false.
 
 - name: A 16-year-old reporting income-related ESA does not attract child additions for a parent aged 40.
   period: 2026

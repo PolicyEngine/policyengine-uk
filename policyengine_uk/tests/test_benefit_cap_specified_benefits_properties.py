@@ -31,7 +31,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
 Each scheme applies its own exceptions. UC reg 83(1)(f) names a "child or
 qualifying young person"; HB reg 75F(1)(e) names a "child or young person".
 UC includes a 16-year-old school leaver (reg 5(1)(a)) who does not receive
-benefits in their own right (reg 5(5)) and is not looked after (reg 4(6)).
+benefits in their own right (reg 5(5); SI 2014/1230 reg. 28) and is not
+looked after (reg 4(6)).
 HB young persons follow Child Benefit (reg 19), so only the education-based
 young-person role counts for Housing Benefit below. UC reg 83(1)(c) names
 "a claimant" for attendance allowance, which includes armed forces
@@ -278,7 +279,10 @@ def own_esa(m):
 
 
 def own_benefits(m):
-    # UC reg 5(5): a personal report identifies an award in the person's own right.
+    # UC reg. 5(5) (UC, contributory ESA, contribution-based JSA) and SI
+    # 2014/1230 reg. 28 (income-related ESA, and income-based JSA while it
+    # pays, as in 2025): a personal report identifies an award in the
+    # person's own right.
     return any(m.get(report, 0) > 0 for report in OWN_RIGHT_REPORTS)
 
 

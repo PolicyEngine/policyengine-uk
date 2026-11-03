@@ -355,8 +355,9 @@
 - name: Case 11, Scotland working age, a 19-year-old's own Housing Benefit leaves them a young person.
   # The Secretary of State excludes a person entitled to an existing benefit
   # from the qualifying young person only for the purposes of the UC
-  # Regulations and WRA 2012 Part 1 (SI 2014/1230 reg. 28). SSI 2021/249
-  # reg. 6(1) reads UC Regs reg. 5, so the 19-year-old stays in the family.
+  # Regulations and WRA 2012 Part 1 (SI 2014/1230 reg. 28). The Scottish
+  # Ministers define the young person by UC Regs reg. 5 (SSI 2021/249 reg.
+  # 6(1)), so the 19-year-old stays in the family.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -402,6 +403,47 @@
     country: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
   output:
     is_qualifying_young_person_for_universal_credit: [false, false, false, false]
-    # Contribution-based JSA is a reg. 5(5) benefit, so it alone excludes.
+    # The Secretary of State excludes a person receiving contribution-based
+    # JSA (reg. 5(5)), so only that report removes the young person.
     is_qualifying_young_person_under_universal_credit_regulation_5: [true, true, true, false]
     is_child_or_young_person_for_council_tax_reduction: [true, true, true, false]
+
+- name: Case 13, Scotland working age, a 19-year-old's own income-related ESA leaves the earning applicant a lone parent and raises the award.
+  # The Scottish Ministers define the young person by UC Regs reg. 5 (SSI
+  # 2021/249 reg. 6(1)), so the 19-year-old stays in the family and the
+  # 22-year-old applicant is a lone parent: 95.55 * 52 = 4,968.60. Applicable
+  # income is the applicant's earnings, 5,000, and the family's Child Benefit,
+  # 27.05 * 52 = 1,406.60: 6,406.60. The formula withdraws 20% of the excess,
+  # 0.2 * (6,406.60 - 4,968.60) = 287.60, from the 1,800 liability.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        employment_income: 5_000
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_applicable_amount: 4_968.60
+    council_tax_reduction_applicable_income: 6_406.60
+    council_tax_reduction: 1_512.40

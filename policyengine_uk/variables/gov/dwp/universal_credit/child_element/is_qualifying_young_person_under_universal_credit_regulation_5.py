@@ -11,13 +11,14 @@ class is_qualifying_young_person_under_universal_credit_regulation_5(Variable):
         "non-advanced education or approved training that meets the entry and "
         "terminal-date conditions (reg. 5(1)(b), (2) and (3)), and who receives "
         "no Universal Credit, contributory ESA or contribution-based JSA (reg. "
-        "5(5)). Universal Credit Regulations 2013 reg. 2 defines employment and "
-        "support allowance and jobseeker's allowance without their "
-        "income-related and income-based forms, so this test leaves those to "
+        "5(5)). The Secretary of State defines employment and support "
+        "allowance and jobseeker's allowance without their income-related and "
+        "income-based forms (UC Regs 2013 reg. 2), so this test leaves those to "
         "SI 2014/1230 reg. 28, which is_qualifying_young_person_for_universal_credit "
-        "applies. Northern Ireland's twin is UC Regs (NI) 2016 reg. 6. Scotland's "
-        "working-age Council Tax Reduction scheme defines its young person by "
-        "this regulation (SSI 2021/249 reg. 6(1))."
+        "applies. Northern Ireland's twin is reg. 6 of the Universal Credit "
+        "Regulations (Northern Ireland) 2016 (SR 2016/216). The Scottish "
+        "Ministers define the young person for Scotland's working-age Council "
+        "Tax Reduction by this regulation (SSI 2021/249 reg. 6(1))."
     )
     definition_period = YEAR
     reference = [
@@ -47,8 +48,9 @@ class is_qualifying_young_person_under_universal_credit_regulation_5(Variable):
                 period,
             )
         )
-        # Reg. 5(5) excludes a person receiving Universal Credit, contributory
-        # ESA or contribution-based JSA, on both routes. The formula reads raw
+        # The Secretary of State excludes a person receiving Universal Credit,
+        # contributory ESA or contribution-based JSA (reg. 5(5)), on both
+        # routes. The formula reads raw
         # person-level reports, so it calculates no family benefit that
         # depends on qualifying young person status.
         receives_reg_5_5_benefit = (

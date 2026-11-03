@@ -4,9 +4,10 @@
 # ESA, Income Support, Housing Benefit, Child Tax Credit and Working Tax
 # Credit. The predicate reads the person's own reports and, for a claimant or
 # partner, the couple's joint tax credit award (Tax Credits Act 2002 s.3(3)).
-# It reads a report of Income Support, income-based JSA or a tax credit only
-# in a year the model pays that benefit: Income Support and income-based JSA
-# until 31 March 2026, tax credits until 5 April 2025. The first six cases,
+# It reads a report only in a year the model pays that benefit, and only if
+# no reform neutralises it. The model pays Income Support and income-based
+# JSA until 31 March 2026 and tax credits until 5 April 2025, and has no
+# closure date for Housing Benefit or income-related ESA. The first six cases,
 # and the four after the seventh, share one household: a parent aged 45 and
 # a 17-year-old on a non-advanced course, North East, owned outright, no
 # income.
@@ -384,9 +385,8 @@
     is_qualifying_young_person_for_universal_credit: [false, false, true]
 
 - name: A partner's own Housing Benefit report leaves an 18-year-old claimant a qualifying young person.
-  # Housing Benefit is paid to the claimant of that benefit, so the
-  # partner's report is their own and the couple branch reads only tax
-  # credits.
+  # The partner reports their own Housing Benefit, and the formula reads
+  # only tax credits across the couple.
   period: 2024
   input:
     people:

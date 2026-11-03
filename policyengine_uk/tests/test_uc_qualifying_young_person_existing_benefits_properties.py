@@ -5,8 +5,10 @@ reg. 2(1)) as a UC qualifying young person (reg. 28). The predicate reads the
 person's own reports of income-based JSA, income-related ESA, Income Support,
 Housing Benefit, Child Tax Credit and Working Tax Credit and, for a claimant
 or partner, the couple's joint tax credit award (Tax Credits Act 2002
-s.3(3)). It reads a report of Income Support, income-based JSA or a tax
-credit only in a year the model pays that benefit. These tests check that:
+s.3(3)). It reads a report only in a year the model pays that benefit, and
+only if no reform neutralises it; these tests run without a reform, and
+test_uc_qualifying_young_person_neutralised_benefits.py covers reforms.
+These tests check that:
 
 - any positive own report of an existing benefit the model pays that year
   makes the predicate false;
@@ -43,8 +45,8 @@ EXISTING_BENEFITS = (
     "working_tax_credit_reported",
 )
 TAX_CREDITS = ("child_tax_credit_reported", "working_tax_credit_reported")
-# UC Regs reg. 2 defines ESA and JSA without their income-related and
-# income-based forms, so reg. 5(5) reaches only these.
+# The Secretary of State defines ESA and JSA without their income-related and
+# income-based forms (UC Regs reg. 2), so reg. 5(5) reaches only these.
 REG_5_5_REPORTS = (
     "universal_credit_reported",
     "esa_contrib_reported",
@@ -75,14 +77,26 @@ def sometimes(draw):
 
 
 @st.composite
-def member(draw, ages, training, educations=EDUCATIONS, own_right=(False, True)):
+def member(
+    draw,
+    ages,
+    training,
+    educations=EDUCATIONS,
+    own_right=(False, True),
+    reg_5_5_reports=True,
+):
     """A person who usually reports no UC, ESA or JSA award under reg. 5(5).
 
     Reg. 5(5) excludes anyone with such a report, so drawing them rarely
-    leaves people for reg. 28 to exclude. Each existing benefit report is
-    positive one time in three.
+    leaves people for reg. 28 to exclude; with reg_5_5_reports false, the
+    person reports none. Each existing benefit report is positive one time in
+    three.
     """
-    reg_5_5_report = draw(st.sampled_from((None,) * 4 + REG_5_5_REPORTS))
+    reg_5_5_report = (
+        draw(st.sampled_from((None,) * 4 + REG_5_5_REPORTS))
+        if reg_5_5_reports
+        else None
+    )
     return {
         "age": draw(ages),
         "current_education": draw(st.sampled_from(educations)),
@@ -101,10 +115,17 @@ def member(draw, ages, training, educations=EDUCATIONS, own_right=(False, True))
 young_member = member(st.integers(15, 20), st.booleans())
 # Claimants and partners aged 16 to 19 can be qualifying young people.
 adult = member(st.one_of(st.integers(16, 19), st.integers(20, 70)), st.just(False))
-# Someone who meets reg. 5 unless a report excludes them: 16 to 19, on a
-# non-advanced course and not flagged as receiving benefits in their own right.
+# Someone who meets reg. 5 unless reg. 28 excludes them: 16 to 18, on a
+# non-advanced course, not flagged as receiving benefits in their own right
+# and reporting no UC, ESA or JSA award under reg. 5(5). A 19-year-old needs
+# the entry and terminal-date inputs (reg. 5(1)(b) and (2)), which these
+# draws don't set.
 qualifying = member(
-    st.integers(16, 19), st.just(False), NON_ADVANCED, own_right=(False,)
+    st.integers(16, 18),
+    st.just(False),
+    NON_ADVANCED,
+    own_right=(False,),
+    reg_5_5_reports=False,
 )
 INPUTS = (
     (
@@ -141,10 +162,12 @@ def families(draw):
 def qualifying_families(draw):
     """Families where reg. 28 alone decides most members' status.
 
-    The claimant, the partner or dependant, and both dependants would meet
-    reg. 5 two times in three. A partner is otherwise an older adult whose own
-    reports reg. 28 must not pass to the claimant, except for the couple's
-    tax credit award.
+    Each slot is drawn from qualifying, which meets reg. 5, or from the
+    general strategies. Over 10,000 derandomised draws for 2025, the
+    claimant met reg. 5 in 61% of draws, the partner or dependant in 61%,
+    and each dependant in 65%. A partner is otherwise an older adult whose
+    own reports reg. 28 must not pass to the claimant, except for the
+    couple's tax credit award.
     """
     couple = draw(st.booleans())
     claimant = draw(st.one_of(qualifying, qualifying, adult))
