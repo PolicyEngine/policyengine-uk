@@ -1,0 +1,23 @@
+# soc2020_sub_major_group is a person input with no formula: a dataset supplies
+# the SOC 2020 sub-major group (a two-digit code whose first digit is the major
+# group) of each person's main or last job, and 0 means none or unknown.
+
+- name: A supplied sub-major group is read back unchanged beside its major group
+  period: 2026
+  input:
+    age: 40
+    employment_status: FT_EMPLOYED
+    soc2020_major_group: 2
+    soc2020_sub_major_group: 21
+  output:
+    soc2020_major_group: 2
+    soc2020_sub_major_group: 21
+
+- name: A supplied major group does not fill in the sub-major group
+  period: 2026
+  input:
+    age: 40
+    employment_status: FT_EMPLOYED
+    soc2020_major_group: 6
+  output:
+    soc2020_sub_major_group: 0
