@@ -6,8 +6,9 @@
     reduced_rate_vat_consumption: 1_000
   output:
     # (10,000 x 20% + 1,000 x 5%) / (0.69 x 0.7) = 2,050 / 0.483 = 4,244.31,
-    # less private school fees' official share of 2025-26 VAT receipts
-    # (0.008353), which private_school_vat counts separately.
+    # times one minus private school fees' official share of 2025-26 VAT
+    # receipts (0.008353), which private_school_vat counts separately:
+    # 2,050 / 0.483 x (1 - 0.008353) = 4,208.85.
     vat: 4_208.85
     baseline_vat: 4_208.85
 

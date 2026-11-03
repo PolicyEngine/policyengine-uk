@@ -26,24 +26,26 @@ to households in proportion to their own VAT-liable spending.
 
 These two factors replace `gov.simulation.microdata_vat_coverage`, a single
 undated 0.38 added in January 2023 against an older LCFS-based consumption
-imputation, with no derivation recorded. Its product with today's datasets put
-2024-25 VAT 24% above OBR receipts on Microcosm UK 2024-25 and 71% above on
-Enhanced FRS 2024-25 (policyengine-uk-data 1.56.16).
+imputation, with no derivation recorded. Its product with the October 2026
+datasets put 2024-25 VAT 24% above OBR receipts on Microcosm UK 2024-25
+(`f9d1922c`) and 71% above on Enhanced FRS 2024-25 (policyengine-uk-data
+1.56.16).
 
 `gov.simulation.microdata_vat_coverage` is kept as a deprecated parameter so
 that existing reforms to it still work. Its value is now the product of the two
-factors (0.483). If a reform sets it to any other value, `vat` and
-`baseline_vat` use that value in place of the two factors
-(`policyengine_uk/utils/vat.py`); otherwise they use the two factors. New
-reforms should change the two factors instead.
+factors (0.483). If a reform sets it to any other value, `vat` uses that value
+in place of the two factors (`policyengine_uk/utils/vat.py`), and
+`baseline_vat`, which reads the unreformed parameters, keeps the two factors.
+New reforms should change the two factors instead.
 
 ## Which datasets the factor applies to
 
-The survey coverage of 0.69 matches receipts on one dataset: the certified
-Microcosm UK 2024-25 national release `a6299504`. It does not carry over to
-other datasets, because their consumption imputations capture a different
-share of household VAT. On Enhanced FRS 2024-25 (policyengine-uk-data 1.58.1)
-it puts total `vat` 32% to 38% above receipts from 2024-25 to 2026-27 (see
+The survey coverage of 0.69 matches 2024-25 receipts on one dataset: the
+certified Microcosm UK 2024-25 national release `a6299504`. It does not carry
+over to other datasets, because their consumption imputations capture a
+different share of household VAT. On Enhanced FRS 2024-25
+(policyengine-uk-data 1.58.1) it puts total `vat` 38% above receipts in
+2024-25, falling to 32% in 2026-27 (see
 [Derivation on `a6299504`](#derivation-on-a6299504-november-2026)). Re-derive
 the coverage, with the calculation below, whenever the dataset it should match
 changes.
@@ -76,17 +78,18 @@ reform.
 | Build | `uk-frs-calibration-attempt-20261025T091414Z-a6299504`, at Microcosm code pin `67ee2ddf3`, with policyengine-uk 2.151.0 | PolicyEngine/microcosm |
 | Certification | policyengine.py commit `324ecad65` ("Certify the Microcosm UK national a6299504 with policyengine-uk 2.151.0", 26 October 2026, through policyengine.py#720); release 6.11.1 (27 October 2026) shipped it, and release 6.12.0 (2 November 2026) still certifies it | PolicyEngine/policyengine.py |
 | VAT receipts | £170.994bn (2024-25 outturn), £180.169bn (2025-26), £187.704bn (2026-27) | OBR, Economic and fiscal outlook March 2026, detailed forecast tables: receipts, sheet "3.8 Current receipts (on a cash basis)", row 13 "Value added tax", cells D13, E13 and F13 (see below) |
-| Enhanced FRS 2024-25 | `enhanced_frs_2024_25.h5`, Hugging Face model repository `policyengine/policyengine-uk-data-private`, policyengine-uk-data 1.58.1 (revision `2526edbbb687a3b54dbb11272e5389e4b62d2ac2`, SHA-256 `056e80fd8e9151d78f432a25cde863340baee81304c6216a37fb575ce8563784`, 128,409,762 bytes), the file `policyengine_uk/tests/certified_dataset.yaml` names | Private repository |
+| Enhanced FRS 2024-25 | `enhanced_frs_2024_25.h5`, Hugging Face model repository `policyengine/policyengine-uk-data-private`, policyengine-uk-data 1.58.1 (revision `2526edbbb687a3b54dbb11272e5389e4b62d2ac2`, SHA-256 `056e80fd8e9151d78f432a25cde863340baee81304c6216a37fb575ce8563784`, 128,409,762 bytes), the release that `policyengine_uk/tests/certified_dataset.yaml` names | Private repository |
 | Household share of VAT liabilities | 0.7 | `household_share_of_receipts` |
 | Ready reckoner | £8.8bn for one point on the standard rate, 2026-27 | HMRC, Direct effects of illustrative tax changes (June 2025) |
 | Statutory rates | 20% standard, 5% reduced | `gov.hmrc.vat` |
 
 Microcosm's fit for this cut holds `obr.vat` out under a measure exclusion
-(PolicyEngine/microcosm#1278) that runs from 24 October 2026 to 24 January
-2027, so the fitted weights don't target the receipts that this derivation
-compares VAT with. The cut's calibration diagnostics carry one warn-only VAT
-warning, `uk_consumption_drift`: the total `full_rate_vat_base` moves by more
-than 2% of its design value between the design and the final weights.
+(PolicyEngine/microcosm#1278) that a Microcosm maintainer approved on
+24 October 2026 and that expires on 24 January 2027, so the fitted weights
+don't target the receipts that this derivation compares VAT with. The cut's
+calibration diagnostics carry one warn-only VAT warning,
+`uk_consumption_drift`: the total `full_rate_vat_base` moves by more than 2%
+of its design value between the design and the final weights.
 
 OBR publishes the receipts workbook at
 <https://obr.uk/docs/d055fbf02d5b3g6jq8l2/efo-march-2026-detailed-forecast-tables-receipts.xlsx>.
@@ -102,8 +105,8 @@ tax line are on a cash basis".
 
 ### Method
 
-The coverage follows the energy-split method (see
-[Energy bills are not grossed up](#energy-bills-are-not-grossed-up)):
+The coverage follows the energy-split method in
+[the energy section](#energy-bills-are-not-grossed-up):
 
 ```text
 pre-scaling non-energy VAT = 0.20 x sum(full_rate_vat_consumption)
@@ -144,8 +147,8 @@ Unrounded (£): standard-rated base 407,399,379,048, 422,514,711,572 and
 433,745,364,638; energy-bill VAT 2,328,998,935, 2,415,410,320 and
 1,749,888,519; pre-scaling non-energy VAT 81,479,875,810, 84,502,942,314 and
 86,749,072,928; total `vat` at 0.67 176,060,075,948, 181,087,241,846 and
-185,178,679,581. Coverage: 0.690124, 0.679134 and 0.666436. The run read
-private school fees' share of receipts as 0, 0.008353 and 0.008311.
+185,178,679,581. The run read private school fees' share of receipts as 0,
+0.008353 and 0.008311.
 
 ### Value
 
@@ -183,15 +186,15 @@ On `a6299504` two routes bound the coverage, at a household share of 0.7:
 - receipts across 2024-25 to 2026-27 give 0.666 to 0.690;
 - the ready reckoner, which does not use the level of receipts: one point on
   the standard rate raises £4.34bn before scaling in 2026-27 (1% of
-  £433.75bn), so matching HMRC's £8.8bn needs a product of 0.493 (coverage
-  0.704).
+  £433.75bn), so, leaving out the school share, matching HMRC's £8.8bn needs
+  a product of 0.493 (coverage 0.704).
 
 So the coverage lies between 0.666 and 0.704, and 0.69 sits inside that range.
 At 0.69, a run that sets the standard rate to 21% for 2026-27 alone raises
 total `vat` in that year from £179.862bn to £188.767bn, by £8.906bn, exceeding
 the ready reckoner by 1.2%. That rise matches 1% of the 2026-27 standard-rated
 base, times one minus the school share, over the product:
-£4,337,453,646 x (1 - 0.008311) / 0.483 = £8,905,599,522, within £7,934 of the
+£4,337,453,646 x (1 - 0.008311) / 0.483 = £8,905,600,556, within £8,968 of the
 run's £8,905,591,588.
 
 ### Reproducing
@@ -228,7 +231,7 @@ runs above summed ten household chunks (see [Method](#method)).
 For Enhanced FRS, download `enhanced_frs_2024_25.h5` from the model repository
 `policyengine/policyengine-uk-data-private` at policyengine-uk-data 1.58.1
 (`revision="2526edbbb687a3b54dbb11272e5389e4b62d2ac2"`). For an earlier cut,
-set `revision` to the one its inputs table gives.
+set `revision` to the tag or full revision that its inputs table gives.
 
 ## Earlier derivation on `f9d1922c` (October 2026)
 
@@ -326,11 +329,12 @@ over those years.
 
 Run the snippet in
 [Derivation on `a6299504`](#derivation-on-a6299504-november-2026) with
-`revision="f9d1922cddab6b54a0dd37794a9bac74e3780c88"`. The pre-split rows
-above came from policyengine-uk as of #2187, which divided pre-scaling VAT,
-energy bills included, by the receipts themselves (`raw / obr / 0.7`). For
-Enhanced FRS 1.56.16 or 1.58.0, download `enhanced_frs_2024_25.h5` at that
-release tag (for example `revision="1.58.0"`).
+`revision="f9d1922cddab6b54a0dd37794a9bac74e3780c88"`. For the pre-split rows
+above, run it on policyengine-uk as of #2187, before energy bills left
+`reduced_rate_vat_consumption`, and divide pre-scaling VAT by the receipts
+themselves (`raw / obr / 0.7`). For Enhanced FRS 1.56.16 or 1.58.0, download
+`enhanced_frs_2024_25.h5` at that release tag (for example
+`revision="1.58.0"`).
 
 ## Energy bills are not grossed up
 
@@ -386,9 +390,11 @@ by 38% (1.56.16) or 44% (1.58.0). The
 current value.
 
 To reproduce these rows, run the snippet in
-[Derivation on `a6299504`](#derivation-on-a6299504-november-2026), which
-subtracts `sim.calculate("domestic_energy_vat", year).sum()` from the receipts
-before dividing, with each dataset's revision.
+[Derivation on `a6299504`](#derivation-on-a6299504-november-2026) with each
+dataset's revision, and for Enhanced FRS with the repository and file that
+section gives. The snippet subtracts
+`sim.calculate("domestic_energy_vat", year).sum()` from the receipts before
+dividing.
 
 ## Private school VAT: splitting the existing receipts total
 
@@ -484,10 +490,10 @@ run
 [40116746457](https://github.com/PolicyEngine/policyengine-uk/actions/runs/40116746457),
 24 October 2026), the official share changes current-law combined receipts by
 -£0.14bn in 2025-26, -£0.13bn in 2026-27, -£0.10bn in 2027-28, -£0.08bn in
-2028-29 and -£0.01bn in 2029-30, at most 0.06% of that dataset's VAT. Two overstatements
-nearly offset there: VAT is 40% above OBR receipts (£252.5bn against
-£180.2bn in 2025-26), and the modelled school charge is £1.95bn, against
-HMRC's £1.505bn, because
+2028-29 and -£0.01bn in 2029-30, at most 0.06% of that dataset's VAT. Two
+overstatements nearly offset in that run: VAT exceeded OBR receipts by 40%
+(£252.5bn against £180.2bn in 2025-26), and the modelled school charge came to
+£1.95bn, against HMRC's £1.505bn, because
 attendance is imputed for 751,000 weighted pupils (policyengine-uk-data issue
 568). The difference belongs to those two calibrations, not to the split.
 
@@ -511,9 +517,8 @@ VAT; this change does not model its separate timing.
 ## Later Microcosm cuts (24 October 2026)
 
 These runs predate the energy split above, so they use the formula in
-[the `f9d1922c` derivation](#earlier-derivation-on-f9d1922c-october-2026).
-They record why the coverage has to be re-derived
-(PolicyEngine/policyengine-uk#2633). They do not set the parameter.
+[the `f9d1922c` derivation](#earlier-derivation-on-f9d1922c-october-2026). They record why the coverage has to be
+re-derived (PolicyEngine/policyengine-uk#2633). They do not set the parameter.
 
 | Input | Value |
 |---|---|

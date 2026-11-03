@@ -115,13 +115,13 @@ A documented gate must pass before any environment's default changes:
 
 1. Dataset choice stays a runtime setting: no code in this repo branches on
    which dataset is loaded. One parameter is tied to the dataset, though:
-   `gov.simulation.vat.survey_consumption_coverage` matches receipts on one
-   Microcosm UK 2024-25 national cut only
+   `gov.simulation.vat.survey_consumption_coverage` matches 2024-25 receipts
+   on one Microcosm UK 2024-25 national cut only
    (`microcosm-uk-2024-25-national-20261025T091414Z-a6299504`, which
-   policyengine.py 6.11.1 and 6.12.0 certify), puts 2024-25 VAT 38% above
-   receipts on the Enhanced FRS 2024-25 (policyengine-uk-data 1.58.1), and has
-   to be re-derived when the dataset it should match changes
-   (`docs/engineering/vat-coverage.md`).
+   policyengine.py 6.11.1 and 6.12.0 certify), and puts 2024-25 VAT 38% above
+   receipts on the Enhanced FRS 2024-25 (policyengine-uk-data 1.58.1).
+   Re-derive it, with `docs/engineering/vat-coverage.md`, whenever the dataset
+   it should match changes.
 2. While both are in use, CI runs the dataset-dependent tests on both.
 3. The default is set per environment: for direct use of this package
    through `POLICYENGINE_UK_DEFAULT_DATASET`; for this repository's tests
