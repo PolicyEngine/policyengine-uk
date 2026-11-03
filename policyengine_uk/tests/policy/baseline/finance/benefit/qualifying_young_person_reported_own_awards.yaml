@@ -388,10 +388,12 @@
     is_qualifying_young_person_for_pension_credit: [false, false, false, false, false]
 
 - name: An explicit false own-right flag does not erase a reported own ESA award.
-  # The person claims no Universal Credit, so no claim ends their award.
+  # The person claims no Universal Credit, now or when DWP moves them off
+  # their legacy benefits, so no claim ends their award.
   period: 2026
   input:
     would_claim_uc: false
+    would_claim_uc_at_legacy_closure: false
     age: 16
     current_education: NOT_IN_EDUCATION
     receives_benefits_in_own_right: false

@@ -10,8 +10,9 @@
 # young person test (SI 2014/1230 reg. 28) follows those three limbs. For a
 # dependant it doesn't: a parent's claim leaves the dependant's own award.
 #
-# would_claim_uc decides the claim here: no case closes the family's legacy
-# awards, so claims_uc_at_legacy_closure stays false. The reg. 5 variable
+# would_claim_uc decides the claim here. A case without a claim also sets
+# would_claim_uc_at_legacy_closure false, so the family claims nothing when
+# DWP moves it off its legacy benefits either. The reg. 5 variable
 # reads universal_credit_reported and receives_benefits_in_own_right for reg.
 # 5(5), not a calculated Universal Credit award, and these cases leave both
 # at their defaults, so a claimant who claims Universal Credit still meets
@@ -72,6 +73,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -130,6 +132,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -194,6 +197,7 @@
       benunit:
         members: [claimant, child]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant, child]
@@ -264,6 +268,7 @@
       benunit:
         members: [claimant, partner, child]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant, partner, child]
@@ -328,6 +333,7 @@
       benunit:
         members: [parent, young_person]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [parent, young_person]
