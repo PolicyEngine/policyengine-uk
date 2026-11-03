@@ -72,8 +72,9 @@ September after the 16th birthday (UC, PC) or the 31 August before it (Child
 Benefit reg 4, CTC reg 4), which has no education condition, counts for a
 year that starts before that date (invariant 5). Nobody here is in
 remunerative work, which ends CTC's route. The tests here set UC's
-terminal-date input false; PC's terminal date follows the 19th-birthday date
-fact, which is true for everyone under 20 when only an age is given
+terminal-date input, false unless a test varies it; PC's terminal date
+follows the 19th-birthday date fact, which is true for everyone under 20 when
+only an age is given
 (test_qualifying_young_person_terminal_date_properties.py covers both dates).
 Nobody here reports Income Support, which SPC reg 4A(5), Child Benefit reg 8
 and CTC reg 5(4)(c) list and UC reg 5(5) does not.
