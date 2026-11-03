@@ -132,7 +132,12 @@ class council_tax_reduction_tariff_income(Variable):
             ],
             default=working_age_weekly * WEEKS_IN_YEAR,
         )
-        pension_credit_route = benunit(
-            "in_receipt_of_guarantee_credit", period
-        ) | benunit("in_receipt_of_savings_credit_only", period)
+        # The benefit unit's Pension Credit is its claimant's and partner's, not
+        # a household head's who applies alone
+        # (council_tax_reduction_head_applies_alone).
+        applicant_family = ~benunit("council_tax_reduction_head_applies_alone", period)
+        pension_credit_route = applicant_family & (
+            benunit("in_receipt_of_guarantee_credit", period)
+            | benunit("in_receipt_of_savings_credit_only", period)
+        )
         return where(pension_credit_route, 0, tariff_income)

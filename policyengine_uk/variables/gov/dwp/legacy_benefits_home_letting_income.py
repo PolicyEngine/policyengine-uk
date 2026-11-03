@@ -1,6 +1,17 @@
 from policyengine_uk.model_api import *
 
 
+def home_letting_income(benunit, period, parameters, counted, pension_age):
+    """Annual rent the `counted` members receive for letting part of their
+    home, less the weekly sub-tenant disregard for one occupier: the
+    pension-age amount where `pension_age` holds, else the working-age one."""
+    p = parameters(period).gov.dwp.legacy_means_tests.sub_tenant_rent_disregard
+    person = benunit.members
+    weekly_rent = benunit.sum(person("sublet_income", period) * counted) / WEEKS_IN_YEAR
+    disregard = where(pension_age, p.pension_age, p.working_age)
+    return max_(0, weekly_rent - disregard) * WEEKS_IN_YEAR
+
+
 class legacy_benefits_home_letting_income(Variable):
     value_type = float
     entity = BenUnit
@@ -35,13 +46,9 @@ class legacy_benefits_home_letting_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.legacy_means_tests.sub_tenant_rent_disregard
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        weekly_rent = (
-            benunit.sum(person("sublet_income", period) * claimant_or_partner)
-            / WEEKS_IN_YEAR
-        )
         pension_age = benunit.any(person("is_SP_age", period) & claimant_or_partner)
-        disregard = where(pension_age, p.pension_age, p.working_age)
-        return max_(0, weekly_rent - disregard) * WEEKS_IN_YEAR
+        return home_letting_income(
+            benunit, period, parameters, claimant_or_partner, pension_age
+        )

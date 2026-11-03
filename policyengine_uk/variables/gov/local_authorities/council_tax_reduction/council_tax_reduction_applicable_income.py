@@ -54,8 +54,9 @@ class council_tax_reduction_applicable_income(Variable):
         "for pensioners, Wales and Scotland) count the tariff income they "
         "treat capital as yielding (council_tax_reduction_tariff_income); the "
         "English local schemes for people under pension age add their own. "
-        "Rent for letting part of the home counts, less the sub-tenant "
-        "disregard, on the schemes' own income rules. It does not count "
+        "Rent the applicant and partner receive for letting part of the home "
+        "counts, less the sub-tenant disregard, on the schemes' own income "
+        "rules (council_tax_reduction_home_letting_income). It does not count "
         "where a working-age applicant has an award of Universal Credit, "
         "whose income the schemes take from the Secretary of State's "
         "Universal Credit assessment (which does not count it), or in the "
@@ -304,8 +305,9 @@ class council_tax_reduction_applicable_income(Variable):
             - maintenance_disregard
             + widowed_parents_allowance
         )
-        # Rent for letting part of the home counts under the schemes' own
-        # income rules, less the sub-tenant disregard. Two exceptions:
+        # Rent the applicant and partner receive for letting part of the home
+        # counts under the schemes' own income rules, less the sub-tenant
+        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10). Two exceptions:
         # - A working-age applicant with an award of Universal Credit: the
         #   schemes use the Secretary of State's assessment of income for the
         #   award (SI 2012/2886 Sch para 37(1); WSI 2013/3029 Sch 6 para 9(1);
@@ -333,7 +335,7 @@ class council_tax_reduction_applicable_income(Variable):
         )
         increased_income += where(
             counts_home_letting,
-            benunit("legacy_benefits_home_letting_income", period),
+            benunit("council_tax_reduction_home_letting_income", period),
             0,
         )
 
