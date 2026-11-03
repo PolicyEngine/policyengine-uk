@@ -38,7 +38,9 @@ entitlement:
    overlapping-benefit adjustment, and is neither entitled to a carer benefit
    nor a carer for benefits;
 5. setting the input false for the people with a reported award leaves every
-   person's carers_allowance and carer_support_payment as they were.
+   person's carers_allowance and carer_support_payment as they were, and
+   every person's is_carer_for_benefits too, except for a reported recipient
+   who would not claim, whose route through caring hours the input closes.
 
 And for couples where an input supplies each partner's entitlement to a
 carer benefit, true or false:
@@ -401,10 +403,24 @@ def test_reported_award_pays_the_same_whatever_the_input(drawn, year):
         )
         for unit in drawn
     ]
-    values, offsets = calculate(drawn + toggled, year, PERSON_AMOUNTS)
+    variables = PERSON_AMOUNTS + ["is_carer_for_benefits"]
+    values, offsets = calculate(drawn + toggled, year, variables)
     n = offsets[len(drawn)]
     for name in PERSON_AMOUNTS:
         assert np.array_equal(values[name][:n], values[name][n:]), name
+    # A reported award the person would claim keeps them a carer for benefits
+    # whatever the input says, as the reported limb of is_carer_for_benefits
+    # has it; a reported recipient who would not claim relies on the hours.
+    claims = np.array(
+        [
+            member["carers_allowance_reported"] == 0
+            or member["would_claim_carers_allowance"]
+            for unit in drawn
+            for member in unit["members"]
+        ]
+    )
+    carer = values["is_carer_for_benefits"]
+    assert np.array_equal(carer[:n][claims], carer[n:][claims])
 
 
 @SETTINGS
