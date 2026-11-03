@@ -37,9 +37,10 @@ class council_tax_reduction_scotland_self_employment_deductions(Variable):
         "2016-17. Where an Act "
         "repeals and re-enacts a provision, Parliament provides that a "
         "reference to it in subordinate legislation reads as a reference to "
-        "the provision re-enacted (Interpretation Act 1978 ss. 17(2)(a) and "
-        "23(1)). The formula takes each Finance Act as repealing an "
-        "age-related allowance and re-enacting it in the extended s. 35, so "
+        "the provision re-enacted (Interpretation Act 1978 s. 17(2)(a), read "
+        "with s. 23(1) and (2)). The formula takes each Finance Act as "
+        "repealing an age-related allowance and re-enacting it in the "
+        "extended s. 35, so "
         "it reads the reference as the tapered s. 35 allowance, which s. "
         "35(1) now gives every individual. A child "
         "minder's chargeable income comes to one-third of the earnings; the "
@@ -59,6 +60,7 @@ class council_tax_reduction_scotland_self_employment_deductions(Variable):
         "https://www.legislation.gov.uk/ukpga/2014/26/section/2",
         "https://www.legislation.gov.uk/ukpga/2015/11/section/5",
         "https://www.legislation.gov.uk/ukpga/1978/30/section/17",
+        "https://www.legislation.gov.uk/ukpga/1978/30/section/23",
     )
 
     def formula(person, period, parameters):
