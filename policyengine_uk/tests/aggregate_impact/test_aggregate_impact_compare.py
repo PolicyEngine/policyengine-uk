@@ -1648,8 +1648,7 @@ def test_the_failure_names_every_containment_the_base_could_not_confirm():
     assert any(
         "On the base, the check could not confirm whether tax_g contains tax_b "
         "(gov_tax) or whether tax_h contains tax_b (gov_tax), so this change may "
-        "not have introduced them."
-        in failure
+        "not have introduced them." in failure
         for failure in summary["failures"]
     )
 
