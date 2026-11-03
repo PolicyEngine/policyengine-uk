@@ -13,9 +13,10 @@
 # AFIP (Newham's Council Tax Reduction Scheme 2026, Sch 3 para 12(1)). The
 # three London councils keep the qualifying age for State Pension Credit as
 # the age limit. The model applies each council's list from the first scheme
-# year whose text supports it: 2013-14 in Kingston upon Thames and Newham
-# (with AFIP from 2014-15), and 2023-24 in Merton (the 2023 rules). It applies
-# the Housing Benefit condition in Merton before 2023 and in Westminster, and
+# year whose text supports it: Merton's from 2023-24 (the 2023 rules), and
+# Kingston upon Thames's and Newham's in every model year, since their texts
+# support them from 2013-14 (Newham's with AFIP from 2014-15). It applies the
+# Housing Benefit condition in Merton before 2023 and in Westminster, and
 # reads each year's rules at 30 April.
 # 2026-27 amounts: enhanced disability premium £22.00 single, £31.40 couple;
 # severe disability premium £86.05 single.

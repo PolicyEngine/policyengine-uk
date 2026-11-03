@@ -76,7 +76,9 @@ WEEKS_IN_YEAR = 52
 TOLERANCE = 1
 # Each example builds one simulation with inputs for every year from 2015 to
 # 2030, so every example tests both sides of the Northern Ireland PIP date
-# (2017), the Scottish changes (2023) and each council's first year.
+# (2017), the Scottish changes (2023) and Merton's first year (2023).
+# Kingston upon Thames's and Newham's lists start in 2013-14, before the
+# model's first year, so the test checks them in every year.
 YEARS = list(range(2015, 2031))
 # (country, local authority): None keeps the default local authority.
 PLACES = [
