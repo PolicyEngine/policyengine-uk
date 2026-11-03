@@ -40,8 +40,7 @@ class housing_benefit_child_disability_premiums(Variable):
         person = benunit.members
         child = person("is_child_or_young_person_for_legacy_benefits", period)
         disabled, enhanced = child_disability_premium_benefit_conditions(person, period)
-        # Housing Benefit counts AFIP for any child or young person in both
-        # premiums.
+        # The formula counts AFIP for any child or young person in both premiums.
         afip = person("armed_forces_independence_payment", period) > 0
         disabled = disabled | afip
         enhanced = enhanced | afip

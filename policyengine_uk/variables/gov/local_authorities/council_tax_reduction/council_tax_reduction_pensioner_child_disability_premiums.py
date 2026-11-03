@@ -20,8 +20,8 @@ class council_tax_reduction_pensioner_child_disability_premiums(Variable):
         "enhanced condition with the highest DLA care rate "
         "(has_highest_dla_sc_award) or the enhanced PIP daily living rate "
         "(has_enhanced_pip_dl_award), as for Housing Benefit. An armed forces "
-        "independence payment meets each condition where the nation's scheme "
-        "names it for that person in that year: in England, for a child or "
+        "independence payment meets each condition where the nation's "
+        "ministers name it for that person in that year: in England, for a child or "
         "young person for the enhanced premium and for a young person for the "
         "disabled child premium, from 2023-24; in Wales, for a child or young "
         "person for the enhanced premium, and for the disabled child premium "
@@ -68,8 +68,9 @@ class council_tax_reduction_pensioner_child_disability_premiums(Variable):
             return select(in_nation, [get(p) for p in nations], default=default)
 
         disabled, enhanced = child_disability_premium_benefit_conditions(person, period)
-        # Each scheme names the armed forces independence payment for a child,
-        # a young person, both or neither, by premium and year.
+        # The Secretary of State and the Welsh and Scottish Ministers name the
+        # armed forces independence payment for a child, a young person, both or
+        # neither, by premium and year.
         afip = person("armed_forces_independence_payment", period) > 0
         young_person = person("is_qualifying_young_person_for_child_benefit", period)
 

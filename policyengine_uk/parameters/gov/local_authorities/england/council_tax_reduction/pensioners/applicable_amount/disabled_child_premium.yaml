@@ -1,7 +1,7 @@
 description: Weekly amount of the disabled child premium for each child or young person in the applicant's family who meets the condition in Sch. 2 para. 8, in the applicable amount of a pensioner under the England Council Tax Reduction prescribed requirements. The amounts equal the Housing Benefit amounts in every year from 2015-16 to 2026-27.
 values:
-  # We take each value from the table of premium amounts in the version
-  # of the schedule in force on 30 April of that year.
+  # Each value is the weekly amount in the table of premium amounts in the
+  # version of the schedule in force on 30 April of that year.
   2013-04-01:
     value: 57.89
     reference:
@@ -73,5 +73,5 @@ metadata:
   label: England Council Tax Reduction pensioner disabled child premium for a child or young person
   uprating: gov.benefit_uprating_cpi
   reference:
-    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 6(1)(d) and Sch. 2 paras. 8 and 4, Part 4 entry (3)
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 6(1)(d) and Sch. 2 paras. 4 and 8, Part 4 entry (3)
       href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2

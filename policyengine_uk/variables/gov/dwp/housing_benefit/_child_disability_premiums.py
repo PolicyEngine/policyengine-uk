@@ -17,8 +17,9 @@ def child_disability_premium_benefit_conditions(person, period):
     para 7(1)(a)-(b); SSI 2012/319 Sch 1 para 8(1)(a)-(b)). Each caller adds
     its own armed forces independence payment route.
 
-    Both conditions read only DLA and PIP fields, so callers enter a Scottish
-    child disability payment or adult disability payment there.
+    Neither condition reads a field for child disability payment or adult
+    disability payment, which the model lacks, so callers enter those awards
+    in the DLA and PIP fields.
     """
     dla = (person("dla_sc", period) > 0) | (person("dla_m", period) > 0)
     pip = (person("pip_dl", period) > 0) | (person("pip_m", period) > 0)

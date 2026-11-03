@@ -1,7 +1,7 @@
 description: Weekly amount of the disabled child premium for each child or young person in the applicant's family who meets the condition in Sch. 1 para. 9, in the applicable amount of a pensioner under the Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012. The amounts equal the Housing Benefit amounts in every year from 2015-16 to 2026-27.
 values:
-  # We take each value from the table of premium amounts in the version
-  # of the schedule in force on 30 April of that year.
+  # Each value is the weekly amount in the table of premium amounts in the
+  # version of the schedule in force on 30 April of that year.
   2013-04-01:
     value: 57.89
     reference:
