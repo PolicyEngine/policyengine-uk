@@ -478,3 +478,420 @@
     - false
     - false
     - false
+
+# Regulation 12(2) deems both paid work and minimum expected income during a
+# qualified temporary absence. The explicit status asserts regulation 12(1),
+# prior qualifying work under 12(3), and any account-specific 12(4)/9(2A) window.
+# Ordinary/additional maternity leave is included by 12(1)(d)/(e), including
+# unpaid leave: the first case supplies no pay or broad leave flag. These full-
+# year fixtures assert the status for all modeled declaration periods. The
+# older child did not cause the newborn-related leave; only that child's
+# qualifying bill is positive. No automatic child/account date inference is
+# asserted. Regulation 14 annual leave alone is only a work-condition route.
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/12
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/14
+# SI 2024/432 regulations 1 and 2: age-21+ rate GBP11.44 from 1 April 2024.
+# The annual-2024 wage parameter gives 11.44 * 16 * 13 = GBP2379.52 per
+# declaration period; the existing 13/52 annual proxy implies GBP9518.08.
+# https://www.legislation.gov.uk/uksi/2024/432/regulation/2/made
+# An GBP8000 gross qualifying provider bill attracts GBP1600 at 20%, below
+# the GBP2000 annual standard cap. Every family explicitly does not claim UC.
+- name: Reg12 repair - unpaid qualified maternity absence credits the minimum income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        tax_free_childcare_qualifying_temporary_absence: true
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      newborn:
+        age: 0
+        childcare_expenses: 0
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare:
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - false
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    - false
+    adjusted_net_income:
+    - 0
+    - 0
+    - 0
+- name: Reg12 repair - flagged qualified paid maternity absence credits the minimum
+    income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        is_parent: true
+        statutory_maternity_pay: 3000
+        tax_free_childcare_qualifying_temporary_absence: true
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      newborn:
+        age: 0
+        childcare_expenses: 0
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare:
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - false
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    - false
+    adjusted_net_income:
+    - 3000
+    - 0
+    - 0
+- name: Reg12 repair - qualified maternity absence partner credits the minimum income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      working_partner:
+        age: 32
+        employment_income: 30000
+      leave_partner:
+        age: 32
+        statutory_maternity_pay: 3000
+        tax_free_childcare_qualifying_temporary_absence: true
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      newborn:
+        age: 0
+        childcare_expenses: 0
+    benunits:
+      family:
+        members:
+        - working_partner
+        - leave_partner
+        - older_child
+        - newborn
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - working_partner
+        - leave_partner
+        - older_child
+        - newborn
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    - 1600
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - true
+    - false
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - true
+    - false
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - true
+    - false
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - true
+    - false
+    - false
+    adjusted_net_income:
+    - 30000
+    - 3000
+    - 0
+    - 0
+- name: Reg12 repair - ordinary worker at the minimum annual earnings qualifies
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        employment_income: 9518.08
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 1600
+    tax_free_childcare:
+    - 0
+    - 1600
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    adjusted_net_income:
+    - 9518.08
+    - 0
+- name: Reg12 repair - ordinary worker one penny below minimum annual earnings does
+    not qualify
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        employment_income: 9518.07
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    adjusted_net_income:
+    - 9518.07
+    - 0
+- name: Reg12 repair - plain annual leave does not waive the minimum income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        employment_income: 5000
+        tax_free_childcare_on_qualifying_leave: true
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    adjusted_net_income:
+    - 5000
+    - 0
+- name: Reg12 repair - qualified absence retains the adjusted net income ceiling
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        employment_income: 120000
+        statutory_maternity_pay: 3000
+        tax_free_childcare_qualifying_temporary_absence: true
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    tax_free_childcare_work_condition:
+    - true
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    adjusted_net_income:
+    - 123000
+    - 0

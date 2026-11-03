@@ -27,6 +27,10 @@ class tax_free_childcare_treated_as_in_work(Variable):
         )
         return (
             person("in_work", period)
+            # Reg 12(2)(a): the explicit status includes its prior-work and
+            # child/account qualifications; the broader leave flag also
+            # covers reg 14, which does not deem minimum income.
+            | person("tax_free_childcare_qualifying_temporary_absence", period)
             | person("tax_free_childcare_on_qualifying_leave", period)
             | person("tax_free_childcare_on_adoption_leave", period)
             | person("tax_free_childcare_on_shared_parental_leave", period)
