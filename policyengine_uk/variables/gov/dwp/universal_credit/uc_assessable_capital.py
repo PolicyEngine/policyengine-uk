@@ -9,9 +9,6 @@ from policyengine_uk.utils.capital_valuation import (
 from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
     HOLDINGS_SOURCE,
 )
-from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
-    HOLDINGS_SOURCE,
-)
 
 
 class uc_assessable_capital(Variable):
