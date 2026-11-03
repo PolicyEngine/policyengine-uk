@@ -173,6 +173,54 @@ difference = reformed_uc - baseline_uc
 print(f"Average UC increase: £{difference:.2f} per month")
 ```
 
+## Reusing a prepared current-law baseline
+
+For several scenarios on the same verified local H5 dataset, prepare the
+current-law baseline once and pass its opaque token to each consumer:
+
+```python
+from policyengine_uk import Microsimulation, Scenario, Simulation
+
+source = "/absolute/path/to/verified-local.h5"
+prepared = Simulation.prepare_baseline(dataset=source)
+scenario = Scenario(parameter_changes={"gov.hmrc.income_tax.rates.uk[0].rate": 0.25})
+reformed = Microsimulation(
+    dataset=source,
+    scenario=scenario,
+    prepared_baseline=prepared,
+)
+current_law_income = reformed.baseline.calculate("household_net_income", 2026)
+```
+
+The factory builds the same canonical `Simulation` baseline that ordinary
+scenario construction uses. The inherited
+`Microsimulation.prepare_baseline(...)` factory does the same thing; its token
+can be used by either class. The reform simulation still builds its own data
+and applies its scenario normally. Only its separate current-law baseline is
+cloned from the preparation. There is no automatic global baseline cache.
+
+Each use checks the resolved local path and the complete H5 file digest,
+including metadata, together with the model and Core code/version identities,
+capital-gains projection, trace option, default periods and calendar-parameter
+semantics. Prepare a new token if the source or configuration changes. Hashing
+and cloning have their own cost; this API avoids repeated baseline construction
+and makes no guarantee about a national run's speed.
+
+Each consumer receives its own baseline inputs, calculated arrays, parameters,
+trace, dataset metadata and population layout, including the baseline's inner
+current-law copy. Changing one consumer through `set_input`, a parameter reform
+or a branch does not change the preparation or another consumer. The token has
+no public mutation interface.
+
+This first API supports explicit local `.h5` paths. It does not accept a raw
+`Simulation` as the preparation, a situation, a DataFrame, an in-memory dataset,
+a remote URL or the environment's default dataset. An explicit incompatible
+request raises `ValueError` before ordinary source loading; identity is checked
+again after scenario modifiers. Materialise a remote source through its normal
+loader first if a verified local file is available. A prepared token requires a
+scenario or reform. Omitting `prepared_baseline` retains existing fresh
+construction for every supported source.
+
 ## Working with families and children
 
 Family situations require more detailed setup:
