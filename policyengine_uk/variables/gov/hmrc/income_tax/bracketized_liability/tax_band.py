@@ -51,7 +51,7 @@ class tax_band(Variable):
         # s.414(2)(b) extends the limits used to determine the tax band.
         uk_band = select(
             [
-                income < threshold + (gross_gift if index > 0 else 0)
+                income <= threshold + (gross_gift if index > 0 else 0)
                 for index, threshold in enumerate(rates.uk.thresholds[:3])
             ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
@@ -78,7 +78,7 @@ class tax_band(Variable):
         # s.414(2)(b) extends the limits used to determine the tax band.
         uk_band = select(
             [
-                income < threshold + (gross_gift if index > 0 else 0)
+                income <= threshold + (gross_gift if index > 0 else 0)
                 for index, threshold in enumerate(rates.uk.thresholds[:3])
             ],
             [TaxBand.NONE, TaxBand.BASIC, TaxBand.HIGHER],
