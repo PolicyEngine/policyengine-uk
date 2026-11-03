@@ -1622,11 +1622,15 @@ def test_the_failure_names_a_containment_its_details_leave_out():
     only failures the base confirmed. The note still says which containment
     the base could not confirm."""
     shared = [f"gov_tax:tax_{letter}:moves" for letter in "abc"]
-    base = check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:unconfirmed"])
-    head = check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:contains"])
     details = [f"{scope} detail" for scope in shared]
-    base["details"] = [*details, "gov_tax: could not confirm tax_h"]
-    head["details"] = [*details, "gov_tax: tax_h contains tax_b"]
+    base = {
+        **check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:unconfirmed"]),
+        "details": [*details, "gov_tax: could not confirm tax_h"],
+    }
+    head = {
+        **check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:contains"]),
+        "details": [*details, "gov_tax: tax_h contains tax_b"],
+    }
 
     summary = compare(result({}, [base]), result({}, [head]), SPEC)
 
