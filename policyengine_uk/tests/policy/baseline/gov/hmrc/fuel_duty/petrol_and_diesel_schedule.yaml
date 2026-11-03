@@ -1,14 +1,15 @@
 # Fuel duty on 1,000 litres in each model year. A model year runs from
 # 6 April to 5 April, and the dated rates are day-weighted across it:
 #   2025-26: 365 days at 52.95p.
-#   2026-27: 270 days at 52.95p (6 Apr to 31 Dec 2026), 59 at 55.95p
-#            (Jan to Feb 2027), 31 at 57.95p (Mar 2027) and 5 at 60.03p.
-#   2027-28 (366 days): 361 at 60.03p and 5 at 62.62p.
-#   2028-29: 360 at 62.62p and 5 at 64.52p.
-#   2029-30: 360 at 64.52p and 5 at 66.44p.
-#   2030-31: 360 at 66.44p and 5 at 67.96p.
-# Rates from 1 April 2027 are the RPI forecast in petrol_and_diesel.yaml, on
-# the OBR's October 2026 RPI forecast.
+#   2026-27: 365 days at 52.95p (Budget 2026 keeps the cut to 1 July 2027).
+#   2027-28 (366 days): 86 at 52.95p (6 Apr to 30 Jun 2027), 275 at 60.59p
+#            (1 Jul 2027 to 31 Mar 2028) and 5 at 63.21p.
+#   2028-29: 360 at 63.21p and 5 at 65.13p.
+#   2029-30: 360 at 65.13p and 5 at 67.07p.
+#   2030-31: 360 at 67.07p and 5 at 68.61p.
+# The 1 July 2027 rate is the OBR's forecast (EFO October 2026, paragraph
+# 3.19); later rates are the RPI forecast in petrol_and_diesel.yaml, on the
+# OBR's October 2026 RPI forecast.
 - name: Fuel duty for 2025-26 is 52.95p a litre all year
   period: 2025
   absolute_error_margin: 0.01
@@ -17,24 +18,23 @@
     diesel_litres: 0
   output:
     fuel_duty: 529.5
-- name: Fuel duty for 2026-27 carries the January and March 2027 increases
+- name: Fuel duty for 2026-27 stays at 52.95p a litre all year
   period: 2026
   absolute_error_margin: 0.01
   input:
     petrol_litres: 1_000
     diesel_litres: 0
   output:
-    # 1000 * (0.5295 * 270 + 0.5595 * 59 + 0.5795 * 31 + 0.6003 * 5) / 365
-    fuel_duty: 539.5657534246575
-- name: Fuel duty for 2027-28 is the April 2027 RPI-uprated rate
+    fuel_duty: 529.5
+- name: Fuel duty for 2027-28 carries the 1 July 2027 rise
   period: 2027
   absolute_error_margin: 0.01
   input:
     petrol_litres: 600
     diesel_litres: 400
   output:
-    # 1000 * (0.6003 * 361 + 0.6262 * 5) / 366
-    fuel_duty: 600.653825136612
+    # 1000 * (0.5295 * 86 + 0.6059 * 275 + 0.6321 * 5) / 366
+    fuel_duty: 588.3060109289619
 - name: Fuel duty for 2028-29
   period: 2028
   absolute_error_margin: 0.01
@@ -42,8 +42,8 @@
     petrol_litres: 1_000
     diesel_litres: 0
   output:
-    # 1000 * (0.6262 * 360 + 0.6452 * 5) / 365
-    fuel_duty: 626.4602739726027
+    # 1000 * (0.6321 * 360 + 0.6513 * 5) / 365
+    fuel_duty: 632.3630136986301
 - name: Fuel duty for 2029-30
   period: 2029
   absolute_error_margin: 0.01
@@ -51,8 +51,8 @@
     petrol_litres: 1_000
     diesel_litres: 0
   output:
-    # 1000 * (0.6452 * 360 + 0.6644 * 5) / 365
-    fuel_duty: 645.4630136986301
+    # 1000 * (0.6513 * 360 + 0.6707 * 5) / 365
+    fuel_duty: 651.5657534246575
 - name: Fuel duty for 2030-31
   period: 2030
   absolute_error_margin: 0.01
@@ -60,8 +60,8 @@
     petrol_litres: 1_000
     diesel_litres: 0
   output:
-    # 1000 * (0.6644 * 360 + 0.6796 * 5) / 365
-    fuel_duty: 664.6082191780822
+    # 1000 * (0.6707 * 360 + 0.6861 * 5) / 365
+    fuel_duty: 670.9109589041096
 - name: Rural relief takes 5p a litre off the 2027-28 rate
   period: 2027
   absolute_error_margin: 0.01
@@ -70,5 +70,5 @@
     diesel_litres: 0
     in_rural_fuel_duty_relief_area: true
   output:
-    # 600.653825136612 - 1000 * 0.05
-    fuel_duty: 550.653825136612
+    # 588.3060109289619 - 1000 * 0.05
+    fuel_duty: 538.3060109289619

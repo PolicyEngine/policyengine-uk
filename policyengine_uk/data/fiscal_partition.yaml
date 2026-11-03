@@ -714,12 +714,15 @@ exclusions:
   - {variable: savings_income_tax, kind: component, head: income_tax}
   - {variable: dividend_income_tax, kind: component, head: income_tax}
   - {variable: property_income_tax, kind: component, head: income_tax}
+  - {variable: income_tax_reductions, kind: component, head: income_tax, note: "Step 6 tax reductions, subtracted inside income_tax."}
+  - {variable: income_tax_charges, kind: component, head: income_tax, note: "Step 7 charges (CB_HITC and the annual allowance charge), added inside income_tax."}
   - {variable: CB_HITC, kind: component, head: income_tax}
   - {variable: personal_pension_contributions_tax, kind: component, head: income_tax}
   - {variable: capped_mcad, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: married_couples_allowance_deduction, kind: component, head: income_tax, note: "Inside capped_mcad."}
   - {variable: other_tax_credits, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: property_finance_cost_relief, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: pension_tax_allowance, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: basic_rate_earned_income_tax, kind: assessment, head: income_tax, note: "Earned income tax by band; earned_income_tax does not read it."}
   - {variable: higher_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
   - {variable: add_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
@@ -743,6 +746,7 @@ exclusions:
   - {variable: employer_ni_fixed_employer_cost_change, kind: change_measure, head: nics_employer, note: "The wage change from an employer NI reform; employment_income already adds it."}
   - {variable: salary_sacrifice_broad_base_haircut, kind: change_measure, head: nics_employer, note: "A wage change employment_income already adds."}
   - {variable: ni_class_1_employer, kind: component, head: nics_employer}
+  - {variable: ni_class_1a, kind: component, head: nics_employer}
   - {variable: salary_sacrifice_pension_ni_employee, kind: measure_within, head: nics_individual, note: "The excess sacrifice is added back to ni_class_1_income, so Class 1 already charges it."}
   - {variable: salary_sacrifice_pension_ni_employer, kind: measure_within, head: nics_employer, note: "As above, for employer Class 1."}
   - {variable: tax, kind: composite, spans: [income_tax, nics_individual]}
@@ -1257,7 +1261,7 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
     caseload: false
-  # Cost-of-living and energy support (none in force at current law)
+  # Cost-of-living and energy support
   - id: cost_of_living_support_payment
     label: Cost-of-living support payment
     variable: cost_of_living_support_payment
@@ -1274,6 +1278,14 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
     zero_at_baseline: expected
+  # Paid in 2026-27 only (Budget 2026), so not zero at current law.
+  - id: household_energy_payment
+    label: Household Energy Payment
+    variable: household_energy_payment
+    entity: household
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   - id: epg_subsidy
     label: Energy Price Guarantee subsidy
     variable: epg_subsidy

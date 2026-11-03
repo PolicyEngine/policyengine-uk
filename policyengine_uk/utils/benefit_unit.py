@@ -3,7 +3,9 @@
 import numpy as np
 
 # The tolerance for reading a stored award: values within half a penny of
-# each other are the same, and an award within half a penny of zero is none.
+# each other are the same, and an award within half a penny of zero is none,
+# except before the Carer's Allowance couple restriction, which counts any
+# positive award (utils/carers_allowance_taper.py).
 HALF_PENNY = 0.005
 
 # For each award award_of_members reads, the person-level variable saying the

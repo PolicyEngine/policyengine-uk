@@ -7,7 +7,9 @@ class gross_taxable_inputs(Variable):
     This is a modelling choice, not a statutory definition of gross income.
     Employment income excludes statutory pay and employment expenses are not
     deducted. Property and trading income retain signed input values; a net
-    miscellaneous loss is floored inside taxable_miscellaneous_income.
+    miscellaneous loss is floored inside
+    miscellaneous_income_before_trading_allowance, which is before the
+    trading allowance as trading income is.
     """
 
     value_type = float
@@ -34,5 +36,5 @@ class gross_taxable_inputs(Variable):
         "savings_interest_income",
         "other_investment_income",
         "dividend_income",
-        "taxable_miscellaneous_income",
+        "miscellaneous_income_before_trading_allowance",
     ]

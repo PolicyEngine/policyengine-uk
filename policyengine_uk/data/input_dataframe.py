@@ -38,6 +38,9 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
+from policyengine_uk.data.savings_income_projection import (
+    SAVINGS_INCOME_PROJECTION_KEY,
+)
 from policyengine_uk.data.isa_income import (
     ISA_INCOME_CONTRACT_KEY,
     MISSING_CONTRACT,
@@ -447,6 +450,7 @@ def dataset_from_input_dataframe(
             ),
             fiscal_year=fiscal_year,
             isa_income_contract=contracts[fiscal_year],
+            savings_income_projection=df.attrs.get(SAVINGS_INCOME_PROJECTION_KEY),
         )
         for fiscal_year, tables in sorted(years.items())
     ]
