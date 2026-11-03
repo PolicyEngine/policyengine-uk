@@ -25,9 +25,18 @@ class legacy_means_test_deducted_income_tax(Variable):
         "It is not floored: where one partner's earnings move a Step 7 "
         "charge or the marriage allowance off the other partner, that "
         "partner's value can be negative, and the claimant's and partner's "
-        "values together give the extra tax the earnings cause. Pension "
-        "Credit replaces the tax on self-employed profit with notional tax "
-        "(pension_credit_income); the other tests deduct this tax as it is."
+        "values together give the extra tax the earnings cause. Each test "
+        "sums it over the members it counts and floors that sum at nil, so "
+        "where the earner is a member the test does not count (for example "
+        "one the model presumes to be the claimant's child), the counted "
+        "member's negative value adds nothing to income. The floor binds "
+        "only where the sum turns negative. Where the counted member also "
+        "pays tax on counted income, the charge that the uncounted member's "
+        "earnings move off them still lowers the deduction, and the test's "
+        "income rises by up to that charge. Pension Credit takes the tax on "
+        "self-employed profit out of the sum before the floor and adds "
+        "notional tax in its place (pension_credit_income); the other tests "
+        "deduct this tax as it is."
     )
     definition_period = YEAR
     unit = GBP

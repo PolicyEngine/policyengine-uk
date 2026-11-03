@@ -650,3 +650,145 @@
     rent_a_room_income_tax_without_earnings: [1_986, 0]
     legacy_means_test_deducted_income_tax: [8_432, 0]
     council_tax_reduction_applicable_income: [22_159.60, 0]
+
+# Council tax reduction counts rent from letting part of the home for its own
+# applicant and partner (council_tax_reduction_home_letting_income), under its
+# own pension-age test (council_tax_reduction_pensioner). Where the household
+# head applies alone, the head is the applicant, so the rent boarders and
+# lodgers pay the head counts in council tax reduction, though the benefit
+# unit's own legacy measure, which follows its claimant and partner, holds
+# none of it.
+
+- name: A household head applying alone counts a lodger couple's rent in council tax reduction
+  # England (Maidstone), 2026-27. The household head (70) has a private
+  # pension of 12,000 and shares a benefit unit with a young couple (16 and
+  # 16, its claimant and partner) and their baby, so she applies alone. An
+  # unrelated lodger couple (40 and 40), in their own benefit unit, each pay
+  # her 3,640 a year (70 a week): 7,280 in all, within the 7,500 rent-a-room
+  # limit, so no tax. She falls under the pension-age scheme, which
+  # disregards 20 of "the amount paid by that person" (SI 2012/2885 Sch 5
+  # para 10): (70 - 20) x 2 x 52 = 5,200. Income 12,000 + 5,200 = 17,200.
+  # CTR 2,000 - 20% x (17,200 - 12,376) = 2,000 - 964.80 = 1,035.20. The
+  # couple's legacy measure holds none of the rent, which they do not
+  # receive.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: false
+        private_pension_income: 12_000
+      mother:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      father:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      baby:
+        age: 0
+        is_household_head: false
+        is_claimant_or_partner: false
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+      lodger_partner:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+    benunits:
+      family:
+        members: [head, mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, lodger_partner]
+    households:
+      home:
+        members: [head, mother, father, baby, lodger, lodger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [true, false]
+    council_tax_reduction_pensioner: [true, false]
+    rent_from_boarders_and_lodgers: [7_280, 0, 0, 0, 0, 0]
+    legacy_benefits_home_letting_income: [0, 0]
+    council_tax_reduction_home_letting_income: [5_200, 0]
+    council_tax_reduction: 1_035.20
+    benunits:
+      family:
+        council_tax_reduction_applicable_income: 17_200
+
+- name: The same head in her own benefit unit counts the lodger couple's rent in both measures
+  # The control: the head is her own benefit unit's claimant, over State
+  # Pension age, so the legacy measure and council tax reduction both
+  # disregard 20 a week per person: 5,200, and CTR 1,035.20 as above.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        private_pension_income: 12_000
+      mother:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      father:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      baby:
+        age: 0
+        is_household_head: false
+        is_claimant_or_partner: false
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+      lodger_partner:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+    benunits:
+      head_unit:
+        members: [head]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      couple_unit:
+        members: [mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, lodger_partner]
+    households:
+      home:
+        members: [head, mother, father, baby, lodger, lodger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [false, false, false]
+    legacy_benefits_home_letting_income: [5_200, 0, 0]
+    council_tax_reduction_home_letting_income: [5_200, 0, 0]
+    council_tax_reduction: 1_035.20
+    benunits:
+      head_unit:
+        council_tax_reduction_applicable_income: 17_200

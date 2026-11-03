@@ -242,3 +242,128 @@
     income_tax_before_winter_fuel_payment_charge: [14_332, 20_838, 0]
     legacy_means_test_uncounted_income_tax_without_earnings: [15_035, 0, 0]
     legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+
+- name: Where the test counts only the member whose deduction is negative, it floors the sum at nil
+  # The couple's incomes above, with a aged 64 and b aged 44: the model
+  # presumes b, 20 years younger, to be a's child, so each test counts a
+  # alone (is_claimant_or_partner). The taxes stay as above: a's deduction is
+  # 14,332 - 15,035 = -703, b's 20,838. Each test sums the deduction over the
+  # members it counts, here -703, and floors that sum at nil, so it deducts
+  # nothing. Without the floor each would add 703 of tax a never paid on
+  # counted income.
+  # - Income Support counts none of a's interest (reg 48(4)): income 0.
+  # - Pension Credit counts none of it either (Sch IV para 18): income 0.
+  # - Council tax reduction counts the benefit unit's Child Benefit,
+  #   27.05 x 52 = 1,406.60, and nothing else of a's: income 1,406.60.
+  # The household rents at 9,000 and pays council tax of 1,500; the family
+  # claims no Universal Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 64
+        savings_interest_income: 70_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+    income_support_applicable_income: [0]
+    pension_credit_income: [0]
+    council_tax_reduction_applicable_income: [1_406.60]
+
+- name: Housing Benefit's means test floors the counted member's negative deduction at nil
+  # The same household with a child aged 5. It reports no Income Support
+  # award, which income_support_eligible requires, so it gets none
+  # (income_support 0), and it claims no Universal Credit, so Housing Benefit
+  # takes income through its own means test. Housing Benefit counts none of
+  # a's interest (reg 46(4)) and excludes Child Benefit, so a's income is
+  # nil; the sum of the deduction over the members it counts, -703, floors at
+  # nil: income 0, not 703.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 64
+        savings_interest_income: 70_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+    income_support: [0]
+    housing_benefit_pension_age_regulations_apply: [false]
+    housing_benefit_applicable_income: [0]
+
+- name: Pension Credit floors the counted tax after taking off the actual tax on self-employed profit
+  # The floor cases' household, with a aged 70 and a self-employed profit of
+  # 2,000. The model presumes b, 26 years younger, to be a's child, so
+  # Pension Credit counts a alone. b's pay moves the 703 Child Benefit charge
+  # off a, so a's deduction is the 800 of tax the profit adds less 703: 97.
+  # The profit's actual tax (pension_credit_self_employment_income_tax) is
+  # 940: the 800, and the 140 it adds to the charge when b has no pay (843,
+  # 60% of 1,406 rounded down, against 703). The formula replaces that tax
+  # with notional tax, nil on 2,000, and deducts no other tax for a:
+  # max(0, 97 - 940) = 0. Income is the profit less the £20 weekly lone
+  # parent disregard: 2,000 - 1,040 = 960.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 70
+        savings_interest_income: 70_000
+        self_employment_income: 2_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [97, 20_838, 0]
+    pension_credit_self_employment_income_tax: [940]
+    pension_credit_income: [960]

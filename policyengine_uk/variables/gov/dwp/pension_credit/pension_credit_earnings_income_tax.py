@@ -3,9 +3,9 @@ from policyengine_uk.utils.pension_credit import employed_earnings_sources
 
 DECISION = (
     "PolicyEngine does not model PAYE codes, so which part of a person's "
-    "income tax is payable on their earnings is a methodology choice, put to "
-    "Max on PolicyEngine/policyengine-uk#2019 and settled as option (a): treat "
-    "earnings as the top slice of the person's income. "
+    "income tax is payable on their earnings is a methodology choice "
+    "(PolicyEngine/policyengine-uk#2019): earnings are treated as the top "
+    "slice of the person's income. "
 )
 
 # Income tax here is before the winter fuel payment charge, as in every means

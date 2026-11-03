@@ -57,13 +57,25 @@ class pension_credit_income(Variable):
         # notional tax and contributions of the Computation of Earnings
         # Regulations 1996 reg. 14, in place of those actually payable on the
         # profit (reg. 17(11)).
-        tax = benunit.sum(
+        # The deduction can be negative for one person, where another
+        # member's earnings move a Step 7 charge off them. The test takes the
+        # counted members' sum less the tax actually payable on self-employed
+        # profit, which the notional tax replaces, and floors that at nil, so
+        # it never adds tax to income.
+        income_tax = max_(
+            0,
+            benunit.sum(
+                person("legacy_means_test_deducted_income_tax", period)
+                * is_claimant_or_partner
+            )
+            - benunit("pension_credit_self_employment_income_tax", period),
+        )
+        tax = income_tax + benunit.sum(
             (
                 add(
                     person,
                     period,
                     [
-                        "legacy_means_test_deducted_income_tax",
                         "national_insurance",
                         "pension_credit_self_employment_deductions",
                     ],
@@ -71,7 +83,7 @@ class pension_credit_income(Variable):
                 - add(person, period, ["ni_class_2", "ni_class_4"])
             )
             * is_claimant_or_partner
-        ) - benunit("pension_credit_self_employment_income_tax", period)
+        )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
         # Schedule VI earnings disregards (reg. 17(9)).
