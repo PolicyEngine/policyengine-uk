@@ -167,7 +167,10 @@ def test_regulation_4_for_every_date_of_birth():
 @SETTINGS
 @given(
     st.lists(st.dates(date(1990, 1, 1), date(2031, 12, 31)), min_size=1, max_size=30),
-    st.integers(2013, 2031),
+    # From 2015: the status reads is_on_income_support, and Income Support
+    # reads Pension Credit's mixed-age couple date, which has no value
+    # before 2015 (child_tax_credit fails there already).
+    st.integers(2015, 2031),
 )
 def test_regulation_4_matches_calendar_arithmetic_in_any_year(births, year):
     births = [born for born in births if age_on_6_october(born, year) >= 0]
@@ -224,10 +227,17 @@ def test_income_support_does_not_end_the_status_once_neutralised():
     # Invariant 5: a reform that removes Income Support leaves no award.
     rows = [
         person(16, income_support_reported=3_000, **{ROUTE: True}),
-        person(17, current_education="UPPER_SECONDARY", income_support_reported=3_000),
-        person(17, income_support_reported=3_000, **{EXTENSION: True}),
+        person(
+            17,
+            current_education="UPPER_SECONDARY",
+            income_support_reported=3_000,
+            **{ROUTE: False},
+        ),
+        person(17, income_support_reported=3_000, **{ROUTE: False, EXTENSION: True}),
     ]
-    units = [[person(45, is_claimant_or_partner=True), p] for p in rows]
+    units = [
+        [person(45, is_claimant_or_partner=True, **{ROUTE: False}), p] for p in rows
+    ]
     assert not simulate(units, 2018).calculate(QYP, 2018)[1::2].any()
     removed = simulate(units, 2018)
     removed.tax_benefit_system.neutralize_variable("income_support")
