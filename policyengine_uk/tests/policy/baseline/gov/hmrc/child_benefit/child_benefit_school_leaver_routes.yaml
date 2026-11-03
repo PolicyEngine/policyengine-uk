@@ -392,3 +392,51 @@
     is_qualifying_young_person_for_child_benefit: true
     is_child_or_qualifying_young_person_for_child_benefit: false
     child_benefit_entitlement: 0
+
+- name: Case 17, a 16-year-old who reports their own income-related ESA is not a qualifying young person (reg. 8(2)(e)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    receives_benefits_in_own_right: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    child_benefit_entitlement: 0
+    is_lone_parent: false
+
+- name: Case 18, a 16-year-old who reports their own income-based JSA is not a qualifying young person (reg. 8(2)(b)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 5_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    receives_benefits_in_own_right: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    child_benefit_entitlement: 0
+    is_lone_parent: false
