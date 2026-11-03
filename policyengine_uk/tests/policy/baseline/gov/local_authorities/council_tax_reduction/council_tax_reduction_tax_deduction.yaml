@@ -493,9 +493,9 @@
     # 7,540 and 19,730 x 40% = 7,892, so 15,432. Child Benefit 27.05 x 52 =
     # 1,406.60, 1,406 in whole pounds; the charge takes (70,000 - 60,000) /
     # 200 = 50% of it, 703, so income tax before the winter fuel payment
-    # charge comes to 16,135. The scheme does not count Child Benefit, and the
-    # charge recovers it, so the charge is not tax payable on income taken
-    # into account.
+    # charge comes to 16,135. The scheme does not count Child Benefit, and
+    # through the charge HMRC recovers it, so the formula treats the charge as
+    # not tax payable on income taken into account.
     income_tax_before_winter_fuel_payment_charge: [16_135, 0]
     council_tax_reduction_tax_deduction: 15_432
     # 70,000 - 15,432; the scheme does not count Child Benefit.
@@ -598,6 +598,39 @@
     # 80,000 - 20,838 - 1,300.
     council_tax_reduction_applicable_income: 57_862
 
+- name: England's pensioner scheme deducts no pension annual allowance charge
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 70_000
+        personal_pension_contributions: 70_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        region: NORTH_WEST
+        council_tax: 2_000
+  output:
+    # The pensioner has no earnings, so the model gives relief on 3,600 of
+    # the contributions: 70,000 - 3,600 - 12,570 = 53,830 taxable; 37,700 x
+    # 20% = 7,540 and 16,130 x 40% = 6,452, so 13,992. The contributions
+    # exceed the 60,000 annual allowance by 10,000, and the model charges that
+    # amount at the higher rate, 40%, so the charge comes to 4,000 and income
+    # tax before the winter fuel payment charge to 17,992.
+    personal_pension_contributions_tax: 4_000
+    income_tax_before_winter_fuel_payment_charge: 17_992
+    # The charge falls on the contributions, not on income the scheme
+    # counts, so the formula leaves it out of T(E, S, U): the deduction comes
+    # to the 13,992 of tax on the pension.
+    council_tax_reduction_tax_deduction: 13_992
+
 - name: England's pensioner scheme deducts a working-age partner's Class 1 contributions
   period: 2026
   absolute_error_margin: 0.01
@@ -620,8 +653,9 @@
         region: NORTH_WEST
         council_tax: 2_000
   output:
-    # Para 19(2)(a) deducts the income tax and primary Class 1 deducted from
-    # the partner's pay. T: the pension bears (20,000 - 12,570) x 20% = 1,486
+    # Under para 19(2)(a), the council deducts the income tax and primary
+    # Class 1 deducted from the partner's pay. T: the pension bears (20,000 -
+    # 12,570) x 20% = 1,486
     # and the pay the same 1,486, so 2,972. Without the pay the partner has
     # no income, and the model transfers 1,260 of Marriage Allowance to the
     # pensioner, whose tax falls to (20,000 - 12,570 - 1,260) x 20% = 1,234:
@@ -656,8 +690,9 @@
     # The younger partner's pension falls within the personal allowance, so
     # the model transfers 1,260 of Marriage Allowance to the older partner.
     marriage_allowance: [1_260, 0]
-    # SSI 2012/319 reg 37(1) allows "only the personal relief", so the
-    # Marriage Allowance does not come off: (30,000 - 12,570) x 20% = 3,486.
+    # The Scottish Ministers allow "only the personal relief" (SSI 2012/319
+    # reg 37(1)), so the Marriage Allowance does not come off: (30,000 -
+    # 12,570) x 20% = 3,486.
     # No Class 4 above pension age. T(E, S, U): without the profit the older
     # partner has no income and the pension bears no tax, so nil. No
     # employed earnings.
@@ -725,14 +760,14 @@
     # 7,807.80).
     council_tax_reduction: 9_537.87
 
-- name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,662
+- name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,663
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       earner:
         age: 40
-        employment_income: 43_662
+        employment_income: 43_663
       partner:
         age: 40
     benunits:
@@ -746,13 +781,15 @@
         region: SCOTLAND
         council_tax: 15_000
   output:
-    # Taxable 31,092 reaches the Scottish higher band, so no Marriage
-    # Allowance: 753.73 + 2,597.80 + 14,136 x 21% = 2,968.56, so 6,320.09.
-    # Class 1 (43,662 - 12,569.96) x 8% = 2,487.36. 6,320.09 + 2,487.36 =
-    # 8,807.45: one pound of pay raises the deduction by 264.89.
+    # Taxable 31,093 exceeds the Scottish intermediate limit of 31,092, so
+    # the earner pays 1 pound at the higher rate and gets no Marriage
+    # Allowance: 753.73 + 2,597.80 + 14,136 x 21% = 2,968.56 + 1 x 42% =
+    # 0.42, so 6,320.51. Class 1 (43,663 - 12,569.96) x 8% = 2,487.44.
+    # 6,320.51 + 2,487.44 = 8,807.95: two pounds of pay raise the deduction
+    # by 265.39.
     marriage_allowance: [0, 0]
-    council_tax_reduction_tax_deduction: 8_807.45
-    # 43,662 - 8,807.45.
-    council_tax_reduction_applicable_income: 34_854.55
-    # 15,000 - 20% x (34,854.55 - 7,807.80): the reduction rises by 52.78.
-    council_tax_reduction: 9_590.65
+    council_tax_reduction_tax_deduction: 8_807.95
+    # 43,663 - 8,807.95.
+    council_tax_reduction_applicable_income: 34_855.05
+    # 15,000 - 20% x (34,855.05 - 7,807.80): the reduction rises by 52.68.
+    council_tax_reduction: 9_590.55

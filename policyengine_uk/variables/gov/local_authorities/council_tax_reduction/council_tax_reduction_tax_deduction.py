@@ -37,10 +37,11 @@ class council_tax_reduction_tax_deduction(Variable):
         "income taken into account, so the formula deducts T less T(E), "
         "never negative; T(E, S, U), the tax on the other counted income "
         "with the uncounted income above it and without the Step 7 charges in "
-        "income_tax_charges (the High Income Child Benefit Charge recovers "
-        "Child Benefit, which these schemes do not count, and the pension "
-        "annual allowance charge falls on contributions, so neither is tax "
-        "payable on income taken into account); the notional tax and "
+        "income_tax_charges (through the High Income Child Benefit Charge, "
+        "HMRC recovers Child Benefit, which these schemes do not count, and "
+        "the pension annual allowance charge falls on contributions, so the "
+        "formula treats neither as tax payable on income taken into "
+        "account); the notional tax and "
         "contributions on profit (pension_credit_self_employment_deductions "
         "in England and Wales, the Scottish variable in Scotland); and "
         "primary Class 1 contributions. Earnings are the top slice of income "
@@ -136,9 +137,10 @@ class council_tax_reduction_tax_deduction(Variable):
                 )
             )
             # The formula prices the English and Welsh notional tax with
-            # Pension Credit's variable, because SI 2012/2885 Sch 1 para 30 and
-            # WSI 2013/3029 Sch 1 para 24 allow the same personal reliefs (ITA
-            # 2007 Part 3 Chapters 2, 3 and 3A).
+            # Pension Credit's variable, because the Secretary of State and
+            # the Welsh Ministers allow the same personal reliefs (SI
+            # 2012/2885 Sch 1 para 30; WSI 2013/3029 Sch 1 para 24): those
+            # under ITA 2007 Part 3 Chapters 2, 3 and 3A.
             england_and_wales_notional = total(
                 person("pension_credit_self_employment_deductions", period)
             )

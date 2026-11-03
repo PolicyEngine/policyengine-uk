@@ -278,10 +278,11 @@ def pensioner_parent_household(draw):
 def test_pensioner_deduction_ignores_a_child_benefit_claim(households):
     """Invariant 2, for Child Benefit. In every pensioner scheme, with no
     employed earnings, the deduction does not change with a claim for Child
-    Benefit. The pensioner schemes do not count Child Benefit, and the High
-    Income Child Benefit Charge recovers it, so the charge is not tax payable
-    on income taken into account. The test compares two simulations of the
-    same families, one claiming Child Benefit and one not."""
+    Benefit. The pensioner schemes do not count Child Benefit, and through the
+    High Income Child Benefit Charge HMRC recovers it, so the formula treats
+    the charge as not tax payable on income taken into account. The test
+    compares two simulations of the same families, one claiming Child Benefit
+    and one not."""
     claiming = [{**h, "child_benefit": True} for h in households]
     not_claiming = [{**h, "child_benefit": False} for h in households]
     with_claim = simulate(claiming)
@@ -383,12 +384,15 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     (a) passes both through to the deduction: losing Marriage Allowance, and
     the personal savings allowance falling as the person enters a higher
     band. A Scottish couple, one partner with no income and council tax of
-    15,000, whose pay rises from 43,661 to 43,662 loses Marriage Allowance:
-    the deduction rises by 264.89 and the reduction by 52.78 (the YAML cases
-    pin both). The test therefore builds a third simulation of the raised
-    families with marriage_allowance and savings_allowance held at their
-    values before the rise, and asserts there, for every family, that the
-    reduction does not rise."""
+    15,000, whose pay rises from 43,661 to 43,663 loses Marriage Allowance:
+    the deduction rises by 265.39 and the reduction by 52.68 (the YAML cases
+    pin both). The test therefore holds marriage_allowance and
+    savings_allowance at their values before the rise in two more
+    simulations, one of the families before the rise and one of the raised
+    families, and asserts, for every family, that the reduction in the second
+    does not exceed the reduction in the first. Because
+    income_tax_with_inputs_zeroed keeps stored inputs on its branches, the
+    branch without the pay then reads the same held values on both sides."""
     raised = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
@@ -399,12 +403,19 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     households = [{**h, "uc": False} for h in households]
     before = simulate(households)
     after = simulate(raised)
+    # income_tax_with_inputs_zeroed keeps stored inputs on its branches, so
+    # hold the cliffs on both sides.
+    held_before = simulate(households)
     held = simulate(raised)
     cliffs = ["marriage_allowance", "savings_allowance"]
     for variable in cliffs:
-        held.set_input(variable, YEAR, np.asarray(before.calculate(variable, YEAR)))
+        values = np.asarray(before.calculate(variable, YEAR))
+        held_before.set_input(variable, YEAR, values)
+        held.set_input(variable, YEAR, values)
     schemes(before, households)
-    reduction_before = np.asarray(before.calculate("council_tax_reduction", YEAR))
+    reduction_held_before = np.asarray(
+        held_before.calculate("council_tax_reduction", YEAR)
+    )
     reduction_held = np.asarray(held.calculate("council_tax_reduction", YEAR))
     cliff = np.zeros(len(households), dtype=bool)
     for variable in cliffs:
@@ -413,11 +424,11 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
         )
     for crossed in cliff:
         event("crosses a tax cliff" if crossed else "no tax cliff")
-    assert np.all(reduction_held <= reduction_before + 0.01), (
+    assert np.all(reduction_held <= reduction_held_before + 0.01), (
         households,
         rise,
         partner,
-        reduction_before,
+        reduction_held_before,
         reduction_held,
     )
 
