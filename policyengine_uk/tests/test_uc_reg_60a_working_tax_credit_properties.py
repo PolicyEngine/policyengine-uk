@@ -157,8 +157,8 @@ def test_working_tax_credit_never_changes_eligibility_without_closure_claim(fami
 
 def test_working_tax_credit_changes_eligibility_on_closure_claim():
     """On a closure claim, zeroing a pension-age claimant's own report closes
-    the route. So the zeroing that P3 applies can change is_uc_eligible, and
-    P3 checks that it never does without a closure claim."""
+    the route, so the zeroing that P3 applies without a closure claim can
+    change is_uc_eligible."""
     family = {
         "people": {
             "claimant": {
