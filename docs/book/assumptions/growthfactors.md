@@ -151,7 +151,7 @@ A Northern Ireland household's rates bill equals its home's capital value times 
 
 ## Water and sewerage
 
-We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat. These country routes run to the end of the dataset projection in 2032. From 2033 policyengine-core grows every household's charges by the Ofwat index the variable declares, in Scotland and Northern Ireland too, and that index stops growing after 2039, so charges hold from 2040.
+We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat. These country routes run to the end of the dataset projection in 2032. From 2033 policyengine-core grows every household's charges by the Ofwat index the variable declares, in Scotland and Northern Ireland too, and that index grows to 2074, the last year any growth series covers, so charges hold from 2075.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------------|------|------|------|------|------|------|------|------|
@@ -210,6 +210,30 @@ We derive these rates as calendar-year mixed income growth from the OBR's Octobe
 | Growth rate | 2.8% | -0.6% | 2.8% | 0.5% | 3.0% | 3.2% | 3.5% | 3.8% | 4.0% | 4.0% |
 
 We apply this to: `owned_company_income_share`, `self_employment_gross_receipts`, `self_employment_income`, `trading_loss`
+
+## Gambling duty bases
+
+Each gambling duty has its own series: the growth in the duty's base per person, where the base is the duty's receipts divided by the rate the model charges. We take receipts from HMRC's outturn for 2025-26 and the OBR's October 2026 EFO (receipts Table 4.10) from 2026-27, and divide the base's growth by population growth: (1 + base growth) / (1 + population growth) − 1. Growing the base rather than receipts lets the model apply its own rate changes once. See the [gambling duties guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/gambling-duties.md#projection).
+
+| Fiscal year | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
+|-------------|------|------|------|------|------|------|------|
+| General Betting Duty | -4.4% | -4.4% | 2.6% | 4.3% | 3.2% | 2.7% | 2.6% |
+| Pool Betting Duty | -51.3% | -28.9% | -5.4% | 6.5% | -1.0% | 5.3% | 4.1% |
+| Remote Gaming Duty | 13.3% | 9.2% | 0.9% | 2.0% | 2.0% | 1.1% | 0.4% |
+| Machine Games Duty | 4.9% | 5.4% | -0.4% | 3.5% | 0.8% | 0.9% | 2.1% |
+| Gaming Duty | 4.8% | 0.0% | 6.0% | 0.0% | -0.1% | 0.3% | -0.7% |
+| Bingo Duty | 3.0% | -0.2% | -0.1% | -0.2% | -0.2% | -0.2% | -0.2% |
+| Lottery Duty | 4.8% | -15.4% | 2.2% | 2.9% | 3.0% | 2.6% | 2.7% |
+
+We apply each series to its duty's bases:
+
+- General Betting Duty: `betting_exchange_commission`, `financial_spread_betting_net_losses`, `horse_and_dog_pool_betting_net_losses`, `land_based_fixed_odds_betting_net_losses`, `other_spread_betting_net_losses`, `remote_other_betting_net_losses`, `remote_uk_horseracing_betting_net_losses`
+- Pool Betting Duty: `pool_betting_net_receipts`
+- Remote Gaming Duty: `remote_gaming_net_losses`
+- Machine Games Duty: `machine_games_higher_rate_net_takings`, `machine_games_lower_rate_net_takings`, `machine_games_standard_rate_higher_stake_net_takings`, `machine_games_standard_rate_net_takings`
+- Gaming Duty: `land_based_casino_net_losses`
+- Bingo Duty: `bingo_net_receipts`
+- Lottery Duty: `national_lottery_ticket_spending`
 
 ## Rail usage
 
