@@ -5,11 +5,11 @@
 # names Universal Credit, Employment and Support Allowance and Jobseeker's
 # Allowance only.
 #
-# Pension Credit and Child Tax Credit read is_on_income_support: the award the
-# model calculates for a claimant or partner, and the person's own report for
-# any other member. Child Benefit reads receives_income_support_in_own_right,
-# the person's own report, because the family's Income Support reads the
-# Child Benefit test.
+# Pension Credit and Child Tax Credit read is_on_income_support: the benefit
+# unit's calculated award, for whichever of the claimant and partner receives
+# it, and the person's own report for any other member. Child Benefit reads
+# receives_income_support_in_own_right, the person's own report, because the
+# family's Income Support reads the Child Benefit test.
 #
 # Income Support stopped paying on 31 March 2026
 # (gov/dwp/income_support/active.yaml), so reported receipt counts to 2025-26.
@@ -184,10 +184,7 @@
 # Case 8, 2019-20 amounts: standard minimum guarantee £167.25 a week; severe
 # disability addition £65.85 a week; PIP daily living standard rate £58.70 a
 # week; Income Support personal allowance for a single person aged 18 to 24
-# £57.90 a week; winter fuel payment £200; colour TV licence £154.50. The
-# cost-of-living payment parameters start on 1 January 2022 (means-tested
-# £650, pensioner £300, disability £150), and the model applies those first
-# values to earlier years, so the household receives £1,100.
+# £57.90 a week; winter fuel payment £200; colour TV licence £154.50.
 
 - name: Case 8, a student-carer on Income Support of their own is not the pensioner's qualifying young person, so the pensioner gets no severe disability addition.
   period: 2019
@@ -217,6 +214,8 @@
     households:
       household:
         members: [pensioner, student]
+        # DWP first paid cost-of-living payments in 2022.
+        cost_of_living_support_payment: 0
   output:
     # The student claims Income Support for their own benefit unit: no
     # income, so the award is the personal allowance, 57.90 x 52 = 3,010.80.
@@ -229,6 +228,6 @@
     # 167.25 x 52 = 8,697, less the State Pension 5,000.
     pension_credit: [3_697, 0]
     # State Pension 5,000 + PIP 58.70 x 52 = 3,052.40 + Pension Credit 3,697
-    # + Income Support 3,010.80 + cost-of-living payments 1,100 + winter fuel
-    # payment 200, less TV licence 154.50: 15,905.70.
-    household_net_income: 15_905.70
+    # + Income Support 3,010.80 + winter fuel payment 200, less TV licence
+    # 154.50: 14,805.70. The cost-of-living payment is set to zero.
+    household_net_income: 14_805.70
