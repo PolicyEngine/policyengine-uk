@@ -1,4 +1,4 @@
-description: Disability benefits that qualify a person for the Disability Cost of Living Payment. The list follows section 5(2) of the Social Security (Additional Payments) Act 2022 and of the Social Security (Additional Payments) Act 2023. The model has no variables for the other benefits that section lists (constant attendance allowance, Adult Disability Payment, Child Disability Payment and the war pension mobility supplement), so it pays nobody who gets only those.
+description: Disability benefits that qualify a person for the Disability Cost of Living Payment. The list follows section 5(2) of the Social Security (Additional Payments) Act 2022 and of the Social Security (Additional Payments) Act 2023. The model has no variables for the other benefits Parliament listed there (constant attendance allowance, Adult Disability Payment, Child Disability Payment and the war pension mobility supplement), so it pays nobody who gets only those.
 metadata:
   economy: false
   label: Qualifying benefits for support for disabled households

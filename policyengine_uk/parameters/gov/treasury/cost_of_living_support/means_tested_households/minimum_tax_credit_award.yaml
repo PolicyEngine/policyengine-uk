@@ -1,4 +1,4 @@
-description: Smallest yearly award of a qualifying tax credit that qualifies a benefit unit for the means-tested Cost of Living Payment through the tax credit route. Under section 2(2) of the Social Security (Additional Payments) Act 2022, HMRC pays in 2022-23 only where the payment, award or expected award of the credit in question for the tax year comes to at least £26. Parliament set no such minimum in section 3(1) of the Social Security (Additional Payments) Act 2023. The model holds yearly amounts, so the formula compares each credit's yearly award with this amount.
+description: Smallest yearly award of a qualifying tax credit that qualifies a benefit unit for the means-tested Cost of Living Payment through the tax credit route. Under section 2(2) of the Social Security (Additional Payments) Act 2022, a credit counts in 2022-23 only where the payment or award of that credit comes to at least £26, or HMRC expects at least £26 of it for the tax year 2022-23, and under section 4 HMRC makes final payments where the payments or award of a credit for 2022-23 come to at least £26. Parliament set no such minimum in section 3(1) of the Social Security (Additional Payments) Act 2023. The model holds yearly amounts, so the formula compares each credit's yearly award with this amount.
 values:
   2022-01-01: 26
   2023-01-01: 0
@@ -9,5 +9,7 @@ metadata:
   reference:
     - title: Social Security (Additional Payments) Act 2022, section 2(2)
       href: https://www.legislation.gov.uk/ukpga/2022/38/section/2
+    - title: Social Security (Additional Payments) Act 2022, section 4
+      href: https://www.legislation.gov.uk/ukpga/2022/38/section/4
     - title: Social Security (Additional Payments) Act 2023, section 3(1)
       href: https://www.legislation.gov.uk/ukpga/2023/7/section/3

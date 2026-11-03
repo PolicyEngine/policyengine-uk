@@ -124,9 +124,9 @@ payment to each person and the pensioner payment to the household.
 | Disability CoL Payment   | £150 | £150 | DLA, PIP, Attendance Allowance or Armed Forces Independence Payment |
 
 From 2024-01-01 the amounts read zero, so the one-off payments don't
-extrapolate forward. The amounts also read zero before 2022, so the model's
-backdating of each parameter's earliest value to 2015 doesn't pay them in
-2015-16 to 2021-22.
+extrapolate forward. The amounts also read zero before 2022, so although the
+model carries each parameter's earliest value back to 2015, it pays nothing
+in 2015-16 to 2021-22.
 
 ### How PolicyEngine computes the payment
 
@@ -134,7 +134,7 @@ Under the Social Security (Additional Payments) Acts 2022 and 2023, the
 Secretary of State and HMRC pay the means-tested payment to each "person",
 meaning an individual or a couple (section 1(6) of the 2022 Act, section 1(9)
 of the 2023 Act), and the Secretary of State pays the disability payment to
-each individual (section 5(1)). Three variables follow them:
+each individual (section 5(1)). Three variables model these payments:
 
 - `cost_of_living_means_tested_payment` (benefit unit) pays
   `means_tested_households.amount` to a benefit unit with any of
@@ -161,8 +161,8 @@ three.
 The model holds yearly amounts, so it tests receipt of each benefit and tax
 credit over the year rather than in the month ending with each qualifying
 day, and compares each tax credit's yearly award with the £26 minimum. It
-has no variables for the other disability benefits that section 5(2) lists
-(constant attendance allowance, Adult Disability Payment, Child Disability
+has no variables for the other disability benefits that Parliament listed
+in section 5(2) (constant attendance allowance, Adult Disability Payment, Child Disability
 Payment and the war pension mobility supplement), so it pays no disability
 payment to someone who gets only those.
 

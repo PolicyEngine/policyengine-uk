@@ -9,9 +9,9 @@ class cost_of_living_means_tested_payment(Variable):
         "2023 a person means an individual or a couple, so each benefit unit "
         "qualifies on its own. The Secretary of State pays a benefit unit "
         "with a qualifying benefit, and HMRC pays one with a qualifying tax "
-        "credit and no qualifying benefit. In 2022-23 HMRC pays the tax "
-        "credit route only where the yearly award of either credit reaches "
-        "the minimum award."
+        "credit and no qualifying benefit. In 2022-23 HMRC pays a benefit "
+        "unit on tax credits alone only where its yearly award of either "
+        "credit reaches minimum_tax_credit_award."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -20,6 +20,7 @@ class cost_of_living_means_tested_payment(Variable):
     reference = [
         "https://www.legislation.gov.uk/ukpga/2022/38/section/1",
         "https://www.legislation.gov.uk/ukpga/2022/38/section/2",
+        "https://www.legislation.gov.uk/ukpga/2022/38/section/4",
         "https://www.legislation.gov.uk/ukpga/2023/7/section/1",
         "https://www.legislation.gov.uk/ukpga/2023/7/section/3",
     ]

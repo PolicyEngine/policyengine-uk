@@ -65,16 +65,18 @@
 # The cases below set every qualifying benefit and tax credit, and the Winter
 # Fuel Payment, as inputs: with none set, the model computes Universal Credit
 # for a working-age adult with no income and Pension Credit for a pensioner
-# with none. Each expected value comes from the Social Security (Additional
-# Payments) Acts 2022 and 2023. Under the 2022 Act the Secretary of State and
-# HMRC pay £326 and £324 for qualifying days from 25 May 2022 to 31 October
-# 2022 (section 1(1), (2) and (4)), £650 in all, which the model pays in model
-# year 2022 (6 April 2022 to 5 April 2023). Under the 2023 Act they pay £301,
-# £300 and £299 (section 1(1) and (2)), £900 in all, which the model pays in
-# model year 2023. Under section 5(1) of each Act the Secretary of State pays
-# £150 to each individual with a listed disability benefit.
+# with none. Each means-tested and disability amount comes from the Social
+# Security (Additional Payments) Acts 2022 and 2023. Under the 2022 Act the
+# Secretary of State and HMRC pay £326 and £324 for qualifying days from 25
+# May 2022 to 31 October 2022 (section 1(1), (2) and (4)), £650 in all, which
+# the model pays in model year 2022 (6 April 2022 to 5 April 2023). Under the
+# 2023 Act they pay £301, £300 and £299 (section 1(1) and (2)), £900 in all,
+# which the model pays in model year 2023. Under section 5(1) of each Act the
+# Secretary of State pays £150 to each individual with a listed disability
+# benefit. Neither Act covers the £300 pensioner payment: pensioners/amount.yaml
+# takes it from the May 2022 package announcement and DWP's 2023-24 guidance.
 
-- name: 2021 pays no Cost of Living Payment in any strand
+- name: 2021 a household qualifying for every strand gets no Cost of Living Payment
   # Model year 2021 runs from 6 April 2021 to 5 April 2022, before the 2022
   # Act's first qualifying day (25 May 2022), and the pensioner amount starts
   # in 2022. The pensioner, on Pension Credit and Attendance Allowance, the
@@ -118,13 +120,13 @@
     cost_of_living_disability_payment: [0, 0, 0]
     cost_of_living_support_payment: 0
 
-- name: 2022 pays every strand to the household that 2021 pays nothing
+- name: 2022 a household qualifying for every strand gets all three payments
   # The pensioner unit has Pension Credit, listed in section 1(3)(b), so the
   # Secretary of State pays it £326 + £324 = £650 (section 1(1)). The parent
   # unit has Child Tax Credit of £2,000, at least £26 (section 2(2)), and no
   # listed benefit, so HMRC pays it £650 (section 1(2)). The pensioner has
-  # Attendance Allowance, listed in section 5(2)(c): £150. The pensioner
-  # amount adds £300. Total: £650 + £650 + £150 + £300 = £1,750.
+  # Attendance Allowance, listed in section 5(2)(c): £150. The formula adds
+  # the £300 pensioner amount. Total: £650 + £650 + £150 + £300 = £1,750.
   period: 2022
   input:
     people:
@@ -163,7 +165,7 @@
     cost_of_living_disability_payment: [150, 0, 0]
     cost_of_living_support_payment: 1_750
 
-- name: 2022 Housing Benefit alone gets no means-tested payment
+- name: 2022 a benefit unit on Housing Benefit alone gets no means-tested payment
   # Parliament left Housing Benefit out of the list in section 1(3) (Universal
   # Credit, Pension Credit, income-based JSA, income-related ESA and Income
   # Support), and the unit has no tax credit, so neither the Secretary of
@@ -192,7 +194,36 @@
     cost_of_living_means_tested_payment: 0
     cost_of_living_support_payment: 0
 
-- name: 2022 Child Tax Credit alone at the £26 minimum gets the means-tested payment
+- name: 2023 a benefit unit on Housing Benefit alone gets no means-tested payment
+  # Parliament left Housing Benefit out of section 1(3) of the 2023 Act too.
+  # With no minimum award in 2023-24, any tax credit payment would qualify the
+  # unit (section 3(1)), but it has none, so neither the Secretary of State
+  # nor HMRC pays it.
+  period: 2023
+  input:
+    people:
+      tenant:
+        age: 40
+    benunits:
+      tenant_unit:
+        members: [tenant]
+        universal_credit: 0
+        pension_credit: 0
+        jsa_income: 0
+        esa_income: 0
+        income_support: 0
+        housing_benefit: 3_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [tenant]
+        winter_fuel_allowance: 0
+  output:
+    cost_of_living_means_tested_payment: 0
+    cost_of_living_support_payment: 0
+
+- name: 2022 a benefit unit on £26 of Child Tax Credit alone gets the means-tested payment
   # A yearly award of £26 meets section 2(2)'s "at least £26" for 2022-23, and
   # the unit has no listed benefit, so HMRC pays £326 + £324 = £650
   # (section 1(2)).
@@ -221,7 +252,7 @@
     cost_of_living_means_tested_payment: 650
     cost_of_living_support_payment: 650
 
-- name: 2022 Child Tax Credit alone just under the £26 minimum gets nothing
+- name: 2022 a benefit unit on £25.99 of Child Tax Credit alone gets nothing
   # A yearly award of £25.99 falls short of section 2(2)'s £26, so the unit
   # has no qualifying entitlement and HMRC pays nothing.
   period: 2022
@@ -249,7 +280,7 @@
     cost_of_living_means_tested_payment: 0
     cost_of_living_support_payment: 0
 
-- name: 2022 Child Tax Credit and Working Tax Credit each under £26 get nothing
+- name: 2022 a benefit unit on £20 of each tax credit gets nothing
   # Under section 2(2) the award of "the credit in question" must come to at
   # least £26. Neither £20 award does, so the unit has a qualifying
   # entitlement to neither credit, although the two together come to £40.
@@ -278,7 +309,7 @@
     cost_of_living_means_tested_payment: 0
     cost_of_living_support_payment: 0
 
-- name: 2023 a small Child Tax Credit award alone gets the means-tested payment
+- name: 2023 a benefit unit on a small Child Tax Credit award alone gets the means-tested payment
   # Parliament set no minimum award in section 3(1) of the 2023 Act: any
   # payment of the credit counts. With no listed benefit, HMRC pays £301 +
   # £300 + £299 = £900 (section 1(2)).
@@ -307,10 +338,10 @@
     cost_of_living_means_tested_payment: 900
     cost_of_living_support_payment: 900
 
-- name: 2022 Universal Credit with tax credits gets one means-tested payment
+- name: 2022 a benefit unit on Universal Credit and tax credits gets one means-tested payment
   # The unit has Universal Credit, so the Secretary of State pays it £650
   # under section 1(1). HMRC pays tax credit recipients under section 1(2)
-  # only where they have no listed benefit, so it adds nothing.
+  # only where they have no listed benefit, so HMRC pays this unit nothing.
   period: 2022
   input:
     people:
@@ -340,7 +371,7 @@
   # A person means an individual or a couple (section 1(9) of the 2023 Act).
   # The adult son on Universal Credit and his parents on Pension Credit count
   # as two persons, so the Secretary of State pays each £900 (section 1(1)).
-  # The pensioner amount adds £300: £900 + £900 + £300 = £2,100.
+  # The formula adds the £300 pensioner amount: £900 + £900 + £300 = £2,100.
   period: 2023
   input:
     people:
@@ -380,9 +411,9 @@
 
 - name: 2022 two people on PIP get two disability payments
   # Under section 5(1) the Secretary of State pays £150 to each individual
-  # with a disability benefit on the list in section 5(2), which includes PIP
-  # (paragraph (b)). A couple both on PIP gets £150 + £150 = £300, although
-  # the couple counts as one person for the means-tested payment.
+  # with a listed disability benefit, and Parliament listed PIP in section
+  # 5(2)(b). A couple both on PIP gets £150 + £150 = £300, although the couple
+  # counts as one person for the means-tested payment.
   period: 2022
   input:
     people:

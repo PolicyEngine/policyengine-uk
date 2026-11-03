@@ -5,9 +5,9 @@ class cost_of_living_support_payment(Variable):
     label = "Cost-of-living support payment"
     documentation = (
         "The household's Cost of Living Payments in the year: the "
-        "means-tested payment to each of its benefit units, the disability "
-        "payment to each of its members and the pensioner payment, once per "
-        "household with a Winter Fuel Payment."
+        "means-tested payment to each of its qualifying benefit units, the "
+        "disability payment to each of its qualifying members, and the "
+        "pensioner payment once if the household has a Winter Fuel Payment."
     )
     entity = Household
     definition_period = YEAR
