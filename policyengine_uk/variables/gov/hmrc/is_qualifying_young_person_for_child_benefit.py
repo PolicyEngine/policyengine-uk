@@ -26,7 +26,8 @@ class is_qualifying_young_person_for_child_benefit(Variable):
         "income-based Jobseeker's Allowance, the awards reg. 8(2)(b), (e) "
         "and (f) list, and receives_income_support_in_own_right (reg. "
         "8(2)(a)). It does not read the incapacity benefit and tax credits "
-        "that reg. 8 also lists."
+        "that reg. 8 also lists. A positive report for the year ends the "
+        "status for the whole year."
     )
     definition_period = YEAR
     reference = [
