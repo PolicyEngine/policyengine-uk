@@ -46,8 +46,13 @@ class LHA_allowed_bedrooms(Variable):
         "couple, one for each non-dependant aged 16 or over, and the "
         "children's bedrooms. Joint tenants and other sharers of the rent, "
         "boarders and lodgers are not non-dependants, so they add no bedroom "
-        "to anyone's entitlement; the household's non-dependants count in one "
-        "Universal Credit claim only (see uc_non_dependants_counted)."
+        "to anyone's entitlement. Nor does a child or qualifying young person "
+        "for whom no one in the renter's extended benefit unit is "
+        "responsible, such as a lodger's (see "
+        "is_non_dependant_of_household_head_for_universal_credit). The "
+        "household's non-dependants count in one Universal Credit claim only "
+        "(see uc_non_dependants_counted). Housing Benefit has its own size "
+        "criteria: see housing_benefit_LHA_allowed_bedrooms."
     )
     definition_period = YEAR
     reference = (
@@ -59,8 +64,10 @@ class LHA_allowed_bedrooms(Variable):
         person = benunit.members
         aged_16_or_over = person("age", period) >= 16
         # UC Regs 2013 Sch 4 para 10(1)(c): a non-dependant who is not a child.
+        # The formula leaves out a qualifying young person for whom no one in
+        # the renter's extended benefit unit is responsible (para 9(2)(g)).
         non_dependant = aged_16_or_over & person(
-            "is_non_dependant_of_household_head", period
+            "is_non_dependant_of_household_head_for_universal_credit", period
         )
         counted = benunit("uc_non_dependants_counted", period)
         non_dependants = counted * benunit.max(person.household.sum(non_dependant))

@@ -32,9 +32,9 @@ class lha_renter_has_non_dependant(Variable):
             | ((age >= 16) & (age < 17))
         )
         within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_qyp)
-        # UC Regs 2013 Sch 4 para 9(2)(d)-(f); HB Regs 2006 reg 3(2)(d)-(e).
+        # UC Regs 2013 Sch 4 para 9(2)(d)-(g).
         non_dependant_claimants = claimant_or_partner & person(
-            "is_non_dependant_of_household_head", period
+            "is_non_dependant_of_household_head_for_universal_credit", period
         )
         counted = benunit("uc_non_dependants_counted", period)
         other_family_non_dependants = counted * benunit.max(
