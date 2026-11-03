@@ -1202,3 +1202,33 @@
     benunits:
       renter_family:
         housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A child placed with the claimant is not a Housing Benefit non-dependant
+  period: 2026
+  input:
+    people:
+      carer:
+        age: 40
+        is_household_head: true
+      foster_child:
+        age: 10
+        is_looked_after_by_local_authority: true
+      adopted_child:
+        age: 4
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [carer, foster_child, adopted_child]
+    households:
+      home:
+        members: [carer, foster_child, adopted_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Neither child is a member of the carer's household (HB reg 21(3)(a)
+    # and (c)), so neither is a child or young person of the family; reg
+    # 3(2)(c) still takes each out of "non-dependant": the carer has none.
+    is_child_or_young_person_for_legacy_benefits: [false, false, false]
+    is_child_or_young_person_placed_with_family: [false, true, true]
+    housing_benefit_has_non_dependant: false
