@@ -1222,18 +1222,18 @@
   # so they made a qualifying claim (SI 2014/1230 reg. 48). Under reg. 8(2)(a),
   # the claim ended the Working Tax Credit award "on the day before the first
   # date on which the claimant is entitled to universal credit", which is the
-  # migration day (reg. 49). So on the migration day the claimant was entitled
-  # to an existing benefit, and under reg. 28 they didn't count as a qualifying
-  # young person. They had a student loan or grant for their maintenance on a
-  # full-time course, so they received education under the Universal Credit
-  # Regulations 2013 reg. 12(2)(b), and failed the condition in s. 4(1)(d) that
-  # day "because the person is undertaking a full-time course (see regulation
-  # 12(2) and 13 ...)". So DWP doesn't apply the condition to them while they
-  # continue the course (reg. 60(1)), even in a year in which no award of an
-  # existing benefit remains for reg. 28 to read. With no reg. 60(2) event, as
-  # in case 37, 12 assessment periods at the 2026 to 2027 rate for a single
-  # claimant under 25 and no transitional element (reg. 52(1)), the award comes
-  # to 12 x £338.58 = £4,062.96.
+  # migration day (reg. 49). So on the migration day the claimant still had
+  # entitlement to an existing benefit, and under reg. 28 they didn't count as
+  # a qualifying young person. They had a student loan or grant for their
+  # maintenance on a full-time course, so they received education under the
+  # Universal Credit Regulations 2013 reg. 12(2)(b), and failed the condition
+  # in s. 4(1)(d) that day "because the person is undertaking a full-time
+  # course (see regulation 12(2) and 13 ...)". So DWP doesn't apply the
+  # condition to them while they continue the course (reg. 60(1)), even in a
+  # year in which no award of an existing benefit remains for reg. 28 to read.
+  # With no reg. 60(2) event, as in case 37, 12 assessment periods at the 2026
+  # to 2027 rate for a single claimant under 25 and no transitional element
+  # (reg. 52(1)), the award comes to 12 x £338.58 = £4,062.96.
   period: 2026
   absolute_error_margin: 0.01
   input:
