@@ -92,9 +92,9 @@ def _visible_branches(simulation):
 
 def _cell_mask(holder, branch, period):
     key = (branch, str(period))
-    identifiers = tuple(holder.population.ids)
     for recorded, (source_ids, mask) in getattr(holder, _HOLDER_MASKS, ()):
         if recorded == key:
+            identifiers = tuple(holder.population.ids)
             if identifiers == source_ids:
                 return np.asarray(mask, dtype=bool)
             by_id = dict(zip(source_ids, mask))
@@ -190,7 +190,10 @@ def _resolve(region, council, country):
     councils, has_council = council[:2]
     countries, has_country = country[:2]
     mapping = council_regions()
-    from_council = np.array([mapping.get(value, "UNKNOWN") for value in councils])
+    if getattr(regions, "dtype", None) == object and not has_council.any():
+        from_council = np.full(np.shape(councils), "UNKNOWN", dtype=object)
+    else:
+        from_council = np.array([mapping.get(value, "UNKNOWN") for value in councils])
     known_region = has_region & (regions != "UNKNOWN")
     known_country = has_country & (countries != "UNKNOWN")
     mismatch = (
