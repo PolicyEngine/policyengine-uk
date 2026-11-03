@@ -18,7 +18,7 @@ class cost_of_living_support_payment(Variable):
         "https://www.legislation.gov.uk/ukpga/2022/38/section/5",
         "https://www.legislation.gov.uk/ukpga/2023/7/section/1",
         "https://www.legislation.gov.uk/ukpga/2023/7/section/5",
-        "https://www.gov.uk/guidance/cost-of-living-payment-pensioner",
+        "https://www.gov.uk/guidance/cost-of-living-payment#pensioner-cost-of-living-payment",
     ]
 
     def formula(household, period, parameters):
