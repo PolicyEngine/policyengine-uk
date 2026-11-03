@@ -21,10 +21,12 @@ from policyengine_uk.variables.gov.dwp.universal_credit.disability_element.limit
 # UC Regs 2013 reg 83(1) names, for each benefit, whose receipt (or
 # entitlement) lifts the cap.
 
-# "a claimant is receiving" (reg 83(1)(b)-(e)): industrial injuries benefit,
-# attendance allowance, which reg 2 defines to include armed forces
-# independence payment, and a war pension, which includes the Armed Forces
-# Compensation Scheme's guaranteed income payments.
+# "a claimant is receiving" (GB reg 83(1)(b)-(e)): industrial injuries
+# benefit; attendance allowance, which reg 2 defines to include armed
+# forces independence payment; a war pension (GB reg 83(1)(d), NI reg
+# 83(1)(e)), including a widow's, widower's or surviving civil partner's
+# pension ((2)(a)(i) in both); and a guaranteed income payment under the
+# Armed Forces Compensation Scheme (GB reg 83(1)(e), NI reg 83(1)(f)).
 CLAIMANT_BENEFITS = [
     "attendance_allowance",
     "armed_forces_independence_payment",
