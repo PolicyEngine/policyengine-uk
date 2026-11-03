@@ -1,60 +1,80 @@
 """Carer benefits pay on caring hours only for care of a severely disabled
 person.
 
-SSCBA 1992 s.70(1) entitles a person to Carer's Allowance for caring for a
-"severely disabled person", whom s.70(2) defines by the benefit payable for
-them. SSI 2023/302 reg 5(1) pays Carer Support Payment only for care of a
-person "to whom a qualifying disability benefit is normally payable". UC Regs
-2013 reg 30(1)(a) gives the carer element to a person who meets the Carer's
+The Department for Work and Pensions pays Carer's Allowance only for caring
+for a "severely disabled person" (SSCBA 1992 s.70(1)), defined by the benefit
+payable for them (s.70(2)). Social Security Scotland pays Carer Support
+Payment only for care of a person "to whom a qualifying disability benefit is
+normally payable" (SSI 2023/302 reg 5(1)). DWP includes the Universal Credit
+carer element (UC Regs 2013 reg 29) for a claimant who meets the Carer's
 Allowance conditions, or would but for the earnings limit or living in
-Scotland. The input cares_for_severely_disabled_person records whether the
-person cared for gets such a benefit. It defaults to true and gates only the
-route through caring hours: a reported award (carers_allowance_reported)
-still counts.
+Scotland (reg 30(1)(a)). The input cares_for_severely_disabled_person records
+whether the person cared for gets such a benefit. It defaults to true, and
+the model reads it only on the route through caring hours: a reported award
+(carers_allowance_reported) still counts.
 
 Invariants, for benefit units of one or two adults and up to one qualifying
 young person, each with drawn caring hours, reported award, take-up,
 earnings and overlapping benefit, in each country, in 2024 (Scotland still on
 Carer's Allowance), 2026, 2030 (the year the Carer's Allowance earnings
-taper starts) and 2031:
+taper starts) and 2031, where no input supplies a carer benefit amount or
+entitlement:
 
-- leaving the input out gives exactly the values that setting it true gives,
-  for carers_allowance, carer_support_payment, is_carer_for_benefits,
-  is_entitled_to_carer_benefit, uc_carer_element,
-  partners_care_for_same_severely_disabled_person and
-  carer_minimum_guarantee_addition;
-- setting one person's input false never raises that person's
-  carers_allowance or carer_support_payment and never turns that person's
-  is_carer_for_benefits or is_entitled_to_carer_benefit on; it never raises
-  the benefit unit's uc_carer_element or carer_minimum_guarantee_addition,
-  and never turns partners_care_for_same_severely_disabled_person on;
-- before the taper, setting every person's input false never raises any
-  person's carers_allowance or carer_support_payment, or the benefit unit's
-  amounts, and never turns any of those flags on;
-- a person whose input is false and who has no reported award gets no
-  Carer's Allowance or Carer Support Payment, before or after the
-  overlapping-benefit adjustment, and is neither entitled to a carer benefit
-  nor a carer for benefits;
-- setting the input false for the people with a reported award leaves every
-  person's carers_allowance and carer_support_payment as they were.
+1. leaving the input out gives exactly the values that setting it true
+   gives, for carers_allowance, carer_support_payment, is_carer_for_benefits,
+   is_entitled_to_carer_benefit, uc_carer_element,
+   partners_care_for_same_severely_disabled_person and
+   carer_minimum_guarantee_addition;
+2. setting one person's input false never raises that person's
+   carers_allowance or carer_support_payment and never turns that person's
+   is_carer_for_benefits or is_entitled_to_carer_benefit on; it never raises
+   the benefit unit's uc_carer_element or carer_minimum_guarantee_addition,
+   and never turns partners_care_for_same_severely_disabled_person on;
+3. before the taper, setting every person's input false never raises any
+   person's carers_allowance or carer_support_payment, or the benefit unit's
+   amounts, and never turns any of those flags on;
+4. a person whose input is false and who has no reported award gets no
+   Carer's Allowance or Carer Support Payment, before or after the
+   overlapping-benefit adjustment, and is neither entitled to a carer benefit
+   nor a carer for benefits;
+5. setting the input false for the people with a reported award leaves every
+   person's carers_allowance and carer_support_payment as they were.
 
-Partners who care for the same person share one award (SSCBA 1992
-s.70(7ZA); SSI 2023/302 reg 5(3)). So when one partner's input goes false,
-the model can give the award to the other partner, whose amount and
-entitlement then rise, as the law has it; the second invariant therefore
+And for couples where an input supplies each partner's entitlement to a
+carer benefit, true or false:
+
+6. partners_care_for_same_severely_disabled_person is false exactly where
+   both partners have an entitlement and an award: a reported award, or an
+   entitlement that caring hours for a severely disabled person don't explain
+   (fewer than the minimum hours, the input false, or no claim). Leaving the
+   input out gives what setting it true gives, and setting inputs false never
+   turns the flag on.
+
+Only one of two partners who care for the same person can have the award
+(SSCBA 1992 s.70(7ZA); SSI 2023/302 reg 5(3)). So when one partner's input
+goes false, the model can give the award to the other partner, whose amount
+and entitlement then rise, as the law has it; the second invariant therefore
 compares only the person whose input changes, and the benefit unit. Under
-the earnings taper the partners' awards can differ, and the restriction gives
-the award to the larger: setting both inputs false can then give back a
-reported award that the restriction took for the other partner's larger one,
-so the third invariant holds only before the taper. The examples below run
-both cases.
+the earnings taper the partners' awards can differ, and the model gives the
+award to the partner with the larger one: setting both inputs false can then
+give the other partner back a reported award, so the third invariant holds
+only before the taper. Two fixed tests at the end run both cases.
 
-The households supply none of the carer benefit amounts or entitlements that
-the model also takes as inputs: a value supplied for one person fills every
-person in the batched simulation.
+The first five invariants need households where no input supplies a carer
+benefit entitlement or amount. Without one, the input can't change
+partners_care_for_same_severely_disabled_person, so the sixth invariant
+supplies the entitlements. A supplied entitlement that caring hours no longer
+explain counts as a second award: it can turn that flag false and give the
+couple a second carer premium or Universal Credit carer element, as the YAML
+case "A supplied entitlement whose caring hours go to someone not severely
+disabled counts as a second award" shows. Batching needs the same care:
+supplying a value for one person makes it an input for every person in the
+simulation, so the others take its default, not the formula. The sixth
+invariant's households supply the entitlement for every person.
 
-Each example builds every benefit unit twice in one simulation, in separate
-households: once as drawn, and once with the input changed.
+Tests 1, 2, 3, 5 and 6 build each benefit unit more than once in one
+simulation, in separate households: as drawn, and with the input changed.
+Test 4 builds each unit once, with each member's input false or left out.
 """
 
 import numpy as np
@@ -87,10 +107,12 @@ def carer_inputs(draw, earns=True):
         "care_hours": draw(st.sampled_from([0, 20, 34, 35, 40, 40, 60])),
         "carers_allowance_reported": draw(st.sampled_from([0, 0, AWARD])),
         "would_claim_carers_allowance": draw(st.sampled_from([True, True, False])),
-        # Below the earnings limit, above it by less than the rate (so the
-        # taper pays some allowance), and far above it.
+        # From 2026: below the earnings limit, above it by less than the rate
+        # (13,500 exceeds it by 50.60 a week in 2026 and 21.70 in 2031, so the
+        # taper pays some allowance), and far above it. The lower 2024 limit
+        # puts 8,000 and 13,500 above it, by 2.84 and 103.60 a week.
         "employment_income": (
-            draw(st.sampled_from([0, 0, 0, 8_000, 12_500, 30_000])) if earns else 0
+            draw(st.sampled_from([0, 0, 0, 8_000, 13_500, 30_000])) if earns else 0
         ),
         # Above the carer rates, so an overlapping benefit can reduce the
         # payment to nil and leave the entitlement.
@@ -151,7 +173,33 @@ def with_input(unit, values):
     return {**unit, "members": members}
 
 
-def calculate(units, year, variables):
+@st.composite
+def couples_with_supplied_entitlements(draw):
+    """A couple in its own household, where an input supplies each partner's
+    entitlement to a carer benefit, true or false, and each partner's input
+    is false or left out (None)."""
+    head_age = draw(st.integers(18, 85))
+    oldest_partner = min(85, head_age + 19) if head_age >= 20 else head_age + 15
+    ages = [head_age, draw(st.integers(max(18, head_age - 15), oldest_partner))]
+    members = [
+        {
+            "age": age,
+            "is_parent": False,
+            "is_entitled_to_carer_benefit": draw(st.booleans()),
+            **draw(carer_inputs()),
+        }
+        for age in ages
+    ]
+    return {
+        "members": members,
+        "adults": 2,
+        "country": draw(st.sampled_from(COUNTRIES)),
+        "chosen": draw(st.integers(0, 1)),
+        "inputs": [draw(st.sampled_from([False, None])) for _ in members],
+    }
+
+
+def simulate(units, year):
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
@@ -164,8 +212,13 @@ def calculate(units, year, variables):
     sim = Simulation(
         situation={"people": people, "benunits": benunits, "households": households}
     )
-    values = {name: sim.calculate(name, year) for name in variables}
     offsets = np.cumsum([0] + [len(unit["members"]) for unit in units])
+    return sim, offsets
+
+
+def calculate(units, year, variables):
+    sim, offsets = simulate(units, year)
+    values = {name: sim.calculate(name, year) for name in variables}
     return values, offsets
 
 
@@ -217,13 +270,32 @@ TAPERED_COUPLE = {
             "age": 40,
             "care_hours": 40,
             "carers_allowance_reported": AWARD,
-            "employment_income": 12_500,
+            "employment_income": 13_500,
         },
         {**ADULT, "age": 38, "care_hours": 40},
     ],
     "inputs": [False, False],
 }
 SCOTTISH_COUPLE = {**COUPLE, "country": "SCOTLAND"}
+# The elder has a reported award; the younger cares 40 hours a week for
+# someone not severely disabled. Each has a supplied entitlement, so the
+# younger's counts as a second award once the input says the hours don't
+# explain it.
+SUPPLIED_COUPLE = {
+    **COUPLE,
+    "members": [
+        {
+            **ADULT,
+            "age": 40,
+            "care_hours": 40,
+            "carers_allowance_reported": AWARD,
+            "is_entitled_to_carer_benefit": True,
+        },
+        {**ADULT, "age": 38, "care_hours": 40, "is_entitled_to_carer_benefit": True},
+    ],
+    "chosen": 1,
+    "inputs": [None, False],
+}
 
 
 @SETTINGS
@@ -335,6 +407,44 @@ def test_reported_award_pays_the_same_whatever_the_input(drawn, year):
         assert np.array_equal(values[name][:n], values[name][n:]), name
 
 
+@SETTINGS
+@given(
+    st.lists(couples_with_supplied_entitlements(), min_size=1, max_size=6),
+    st.sampled_from(YEARS),
+)
+@example(drawn=[SUPPLIED_COUPLE, {**SUPPLIED_COUPLE, "country": "SCOTLAND"}], year=2026)
+def test_a_supplied_entitlement_counts_as_an_award_unless_hours_explain_it(drawn, year):
+    true = [with_input(unit, [True, True]) for unit in drawn]
+    changed = [with_input(unit, unit["inputs"]) for unit in drawn]
+    sim, offsets = simulate(drawn + true + changed, year)
+    same = sim.calculate("partners_care_for_same_severely_disabled_person", year)
+    claimant_or_partner = sim.calculate("is_claimant_or_partner", year)
+    gov = sim.tax_benefit_system.parameters(year).gov
+    k = len(drawn)
+    assert claimant_or_partner.all()
+    for i, unit in enumerate(drawn):
+        assert same[k + i] == same[i], unit
+        assert same[i] or not same[2 * k + i], unit
+        # The minimum hours of the benefit that applies: Carer Support
+        # Payment's in Scotland from 2025, Carer's Allowance's otherwise.
+        if unit["country"] == "SCOTLAND" and year >= 2025:
+            min_hours = gov.social_security_scotland.carer_support_payment.min_hours
+        else:
+            min_hours = gov.dwp.carers_allowance.min_hours
+        awards = 0
+        for member, value in zip(unit["members"], unit["inputs"]):
+            explained = (
+                member["care_hours"] >= min_hours
+                and value is not False
+                and member["would_claim_carers_allowance"]
+            )
+            reported = member["carers_allowance_reported"] > 0
+            awards += member["is_entitled_to_carer_benefit"] and (
+                reported or not explained
+            )
+        assert same[2 * k + i] == (awards < 2), unit
+
+
 def _couple_values(units, year, variables):
     values, _ = calculate(units, year, variables)
     return {name: [round(float(x), 2) for x in values[name]] for name in variables}
@@ -369,8 +479,8 @@ def test_award_passes_to_the_partner_who_cares_for_a_severely_disabled_person():
 def test_under_the_taper_both_inputs_false_can_give_back_a_reported_award():
     # The case that the third invariant leaves out. In 2031 the elder's
     # tapered award falls short of the younger's award on caring hours, so
-    # the couple restriction gives the younger the award. With both inputs
-    # false the younger has none, and the elder keeps the reported award.
+    # the model gives the younger the couple's award. With both inputs false
+    # the younger has none, and the elder keeps the reported award.
     names = ["carers_allowance_pre_couple_limit", "carers_allowance"]
     default = _couple_values([TAPERED_COUPLE], 2031, names)
     both_false = _couple_values(
