@@ -1,11 +1,12 @@
 """Income tax and National Insurance deducted from Council Tax Reduction income.
 
-Scotland's working-age scheme (the Council Tax Reduction (Scotland) Regulations
-2021, SSI 2021/249) takes income tax and primary Class 1 contributions off
-earnings only (regs 49(6)(b), 50(3)(a) and 51(2)); its unearned income rules
-(regs 57 to 65) deduct no tax. Without Universal Credit, reg 51(9) applies the
-notional tax and contributions of SSI 2012/303 reg 38 to self-employed profit.
-The pensioner schemes disregard tax only on income taken into account and on
+In Scotland's working-age scheme (the Council Tax Reduction (Scotland)
+Regulations 2021, SSI 2021/249), the Scottish Ministers let the council take
+income tax and primary Class 1 contributions off earnings only (regs 49(6)(b),
+50(3)(a) and 51(2)), and give no tax deduction against unearned income (regs 57
+to 65). Without Universal Credit, in reg 51(9) they apply the notional tax and
+contributions of SSI 2012/303 reg 38 to self-employed profit. In the pensioner
+schemes, the council disregards tax only on income taken into account and on
 earnings: SSI 2012/319 regs 31(12), 33(2)(a) and 37 in Scotland, SI 2012/2885
 Sch 1 paras 17(13), 19(2)(a) and 30 in England, and WSI 2013/3029 Sch 1 paras
 11(13), 13(2)(a) and 24 in Wales.
