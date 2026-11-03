@@ -235,8 +235,8 @@ The upstream seven-term reconciliation must run on that licensed source
 before release, with its missing-value report and the second-home/buy-to-let
 combination checked before imputation.
 
-Population and LVT effects with the compatible data release remain unmeasured
-until that release exists and is rebuilt and recalibrated. Existing land
-target definitions and weights are unchanged, but calculated land, losses and
-fitted geographic weights can change. Production rebuilding, recalibration
+Population and LVT effects with the compatible data release stay unmeasured
+until that release exists and its rebuild and recalibration finish. Existing
+land target definitions and weights stay the same, but calculated land, losses
+and fitted geographic weights can change. Production rebuilding, recalibration
 and impact measurement are separate release work.
