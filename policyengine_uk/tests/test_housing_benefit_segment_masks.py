@@ -912,3 +912,165 @@ def test_a_failed_disregard_still_limits_childcare(
         )
     assert_close(released.calculate(LIMIT, YEAR_WITH_SEGMENTS), [released_limit])
     assert_close(released.calculate(AWARD, YEAR_WITH_SEGMENTS), [released_award])
+
+
+class couples_only(Reform):
+    """Give the WTC disregard only to couples, keeping the model's
+    formula."""
+
+    def apply(self):
+        class masked(Variable):
+            defined_for = "is_couple"
+
+        masked.__name__ = WTC_DISREGARD
+        self.update_variable(masked)
+
+
+class without_wtc_disregard(Reform):
+    def apply(self):
+        self.neutralize_variable(WTC_DISREGARD)
+
+
+def lone_parent_in_temporary_accommodation(year):
+    """A lone parent aged 60 with a child aged 8, continuing a Housing
+    Benefit award in London council accommodation that counts as specified
+    or temporary accommodation. The parent works 16 hours a week for
+    £11,000, draws a £10,000 private pension and pays £12,000 for
+    qualifying childcare, and reports £2,000 of WTC and £4,000 of CTC, so
+    the model calculates both credits."""
+    return {
+        "people": {
+            "parent": {
+                "age": {year: 60},
+                "employment_income": {year: 11_000},
+                "weekly_hours": {year: 16},
+                "private_pension_income": {year: 10_000},
+                "childcare_expenses": {year: 12_000},
+                "housing_benefit_reported": {year: 1},
+                "working_tax_credit_reported": {year: 2_000},
+                "child_tax_credit_reported": {year: 4_000},
+            },
+            "child": {"age": {year: 8}},
+        },
+        "benunits": {
+            "family": {
+                "members": ["parent", "child"],
+                "in_specified_or_temporary_accommodation": {year: True},
+                "claims_universal_credit": {year: False},
+            }
+        },
+        "households": {
+            "home": {
+                "members": ["parent", "child"],
+                "region": {year: "LONDON"},
+                "rent": {year: 10_400},
+                "tenure_type": {year: "RENT_FROM_COUNCIL"},
+            }
+        },
+    }
+
+
+LONE_PARENT_OUTPUTS = (
+    WTC_DISREGARD,
+    EARNINGS,
+    CHILDCARE,
+    INCOME,
+    "housing_benefit_benefit_cap_reduction",
+    "housing_benefit",
+    "household_net_income",
+)
+
+
+@pytest.mark.parametrize(
+    "year,wtc,ctc,earnings_disregard,segment_disregards,income,award,model_award",
+    [
+        # 2026-27, with tax credits kept. The model calculates WTC of
+        # £6,530.35 and CTC of £3,646.49 from the reported awards, and
+        # attributes £883.14 of the £1,686 income tax to the £11,000 of
+        # wages (11,000 / 21,000 of it), leaving net earnings of £10,116.86.
+        # Income before deductions comes to 11,000 + 10,000 - 1,686 +
+        # 10,176.84 = 29,490.84. The lone parent disregard
+        # (means_test/income_disregard/lone_parent.yaml) gives £25 a week,
+        # £1,300; the accommodation disregard
+        # (specified_or_temporary_accommodation/lone_parent/older.yaml)
+        # £77.73 a week, £4,041.96, from 5 October; the WTC childcare
+        # element cap (working_tax_credit/elements/childcare_1.yaml) £175 a
+        # week, £9,100; and the worker disregard (income_disregard/
+        # worker.yaml) £17.10 a week, £889.20. Net earnings fall short of
+        # 1,300 + 9,100 + 889.20 = 11,289.20 before 5 October and of
+        # 15,331.16 after, so the model disregards £889.20 of WTC in both
+        # segments, and the mask takes it away. The applicable amount
+        # (allowances/lone_parent/older.yaml) comes to £95.55 a week,
+        # £4,968.60, and withdrawal_rate.yaml tapers 65%.
+        # Before 5 October: 29,490.84 - 1,300 - 9,100 = 19,090.84, and an
+        # award of 10,400 - 0.65 * (19,090.84 - 4,968.60) = 1,220.54.
+        # After: 29,490.84 - 5,341.96 - 9,100 = 15,048.88, and 3,847.82.
+        # Combined, (182 * 1,220.54 + 183 * 3,847.82) / 365 = 2,537.78.
+        # Annual income: 29,490.84 - 3,326.52 - 9,100 = 17,064.32. The
+        # model's own award adds 0.65 * 889.20 = 577.98 in each segment.
+        (
+            2026,
+            6_530.35,
+            3_646.49,
+            1_300 + 2_026.52,
+            [1_300, 1_300 + 4_041.96],
+            17_064.32,
+            2_537.78,
+            3_115.76,
+        ),
+        # 2024, one segment and no accommodation disregard. Income comes to
+        # 29,393.55 - 1,300 - 9,100 = 18,993.55 with WTC of £6,079.55 and
+        # CTC of £4,000, and the award to 10,400 - 0.65 * (18,993.55 -
+        # 4,706) = 1,113.09, where the £90.50 allowance gives £4,706.
+        (2024, 6_079.55, 4_000, 1_300, [1_300], 18_993.55, 1_113.09, 1_691.07),
+    ],
+)
+def test_a_couples_only_wtc_disregard_reaches_a_lone_parents_award(
+    year, wtc, ctc, earnings_disregard, segment_disregards, income, award, model_award
+):
+    """A reform gives the WTC disregard only to couples and keeps the
+    model's formula. The lone parent then gets no WTC disregard in the
+    annual output or in either accommodation segment, so the final award
+    and household net income equal those of a reform that neutralizes the
+    disregard. The model's own award, with the disregard, exceeds it by
+    0.65 * 889.20 = 577.98."""
+    base = tax_credits_kept() if year == YEAR_WITH_SEGMENTS else system
+    situation = lone_parent_in_temporary_accommodation(year)
+    masked, neutralized, model = (
+        Simulation(tax_benefit_system=tax_benefit_system, situation=situation)
+        for tax_benefit_system in (
+            couples_only(base),
+            without_wtc_disregard(base),
+            base,
+        )
+    )
+    assert_close(masked.calculate("working_tax_credit", year), [wtc])
+    assert_close(masked.calculate("child_tax_credit", year), [ctc])
+    assert_close(masked.calculate("housing_benefit_net_earnings", year), [10_116.86])
+    before, *after = segments(masked, year)
+    assert len(after) == len(segment_disregards) - 1
+    for segment, disregard in zip([before, *after], segment_disregards):
+        assert_close(segment["earnings_disregard"], [disregard])
+        assert_close(segment["reserve"], [0])
+        assert_close(segment["childcare"], [9_100])
+    expected = {
+        WTC_DISREGARD: 0,
+        EARNINGS: earnings_disregard,
+        CHILDCARE: 9_100,
+        INCOME: income,
+        "housing_benefit_benefit_cap_reduction": 0,
+        "housing_benefit": award,
+    }
+    for name, value in expected.items():
+        assert_close(masked.calculate(name, year), [value], name)
+    for name in LONE_PARENT_OUTPUTS:
+        assert_close(
+            masked.calculate(name, year), neutralized.calculate(name, year), name
+        )
+    assert_close(model.calculate(WTC_DISREGARD, year), [889.20])
+    assert_close(model.calculate("housing_benefit", year), [model_award])
+    assert_close(
+        model.calculate("household_net_income", year)
+        - masked.calculate("household_net_income", year),
+        [model_award - award],
+    )
