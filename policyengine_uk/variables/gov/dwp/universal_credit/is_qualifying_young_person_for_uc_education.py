@@ -46,6 +46,7 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/6",
     )
 
     def formula(person, period, parameters):
