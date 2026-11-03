@@ -651,13 +651,13 @@
     legacy_means_test_deducted_income_tax: [8_432, 0]
     council_tax_reduction_applicable_income: [22_159.60, 0]
 
-# Council tax reduction counts rent from letting part of the home for its own
-# applicant and partner (council_tax_reduction_home_letting_income), under its
-# own pension-age test (council_tax_reduction_pensioner). Where the household
-# head applies alone, the head is the applicant, so the rent boarders and
-# lodgers pay the head counts in council tax reduction, though the benefit
-# unit's own legacy measure, which follows its claimant and partner, holds
-# none of it.
+# Councils count rent from letting part of the home for the council tax
+# reduction applicant and partner (council_tax_reduction_home_letting_income),
+# under the scheme's own pension-age test (council_tax_reduction_pensioner).
+# Where the household head applies alone, the head is the applicant, so the
+# rent boarders and lodgers pay the head counts in council tax reduction,
+# though the benefit unit's own legacy measure, which follows its claimant and
+# partner, holds none of it.
 
 - name: A household head applying alone counts a lodger couple's rent in council tax reduction
   # England (Maidstone), 2026-27. The household head (70) has a private
@@ -665,9 +665,9 @@
   # 16, its claimant and partner) and their baby, so she applies alone. An
   # unrelated lodger couple (40 and 40), in their own benefit unit, each pay
   # her 3,640 a year (70 a week): 7,280 in all, within the 7,500 rent-a-room
-  # limit, so no tax. She falls under the pension-age scheme, which
-  # disregards 20 of "the amount paid by that person" (SI 2012/2885 Sch 5
-  # para 10): (70 - 20) x 2 x 52 = 5,200. Income 12,000 + 5,200 = 17,200.
+  # limit, so no tax. She falls under the pension-age scheme, so the council
+  # disregards 20 a week of "the amount paid by that person" (SI 2012/2885
+  # Sch 5 para 10): (70 - 20) x 2 x 52 = 5,200. Income 12,000 + 5,200 = 17,200.
   # CTR 2,000 - 20% x (17,200 - 12,376) = 2,000 - 964.80 = 1,035.20. The
   # couple's legacy measure holds none of the rent, which they do not
   # receive.

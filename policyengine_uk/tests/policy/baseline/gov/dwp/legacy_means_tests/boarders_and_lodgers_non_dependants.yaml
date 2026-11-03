@@ -388,8 +388,9 @@
 # unit (para 9(2)(d)), and the model leaves out their partner too, so nobody
 # in it is responsible for their child or qualifying young person, who
 # supplies no bedroom under para 10. A non-paying parent belongs to the unit,
-# so their child stays a non-dependant. Housing Benefit and council tax
-# reduction keep their own definitions (is_non_dependant_of_household_head).
+# so their child stays a non-dependant. The Housing Benefit and council tax
+# reduction formulas keep their own definitions
+# (is_non_dependant_of_household_head).
 
 - name: A commercial lodger's qualifying young person gives the householder no Universal Credit bedroom
   # London (Inner South East London), 2026-27. The household head (40)
@@ -402,11 +403,11 @@
   # head's non-dependant for Universal Credit. The head gets one bedroom
   # (para 10(1)(a)), and the one-bedroom rate of 15,546 a year caps the
   # rent: housing element 15,546, with no housing cost contribution. The
-  # maximum amount adds the standard allowance, 424.90 x 12 = 5,098.80:
-  # 20,644.80. Earned income: 15,000 less income tax of
+  # formula adds the standard allowance, 424.90 x 12 = 5,098.80, for a
+  # maximum amount of 20,644.80. Earned income: 15,000 less income tax of
   # (15,000 - 12,570) x 20% = 486 and National Insurance of 8% above the
-  # primary threshold of 241.73 a week, 194.40, comes to 14,319.60, and the
-  # 55% taper takes 7,875.78. Universal Credit: 20,644.80 - 7,875.78 =
+  # primary threshold of 241.73 a week, 194.40, comes to 14,319.60, of which
+  # DWP takes 55%, 7,875.78. Universal Credit: 20,644.80 - 7,875.78 =
   # 12,769.02. With the son as a non-dependant aged 16 or over, the head
   # would get two bedrooms, whose rate of 18,600 exceeds the rent, a housing
   # element of 18,000 and Universal Credit of 15,223.02.
@@ -462,8 +463,8 @@
   # who pays nothing and earns 15,600 over 20 hours a week. The formula
   # applies para 9(2)(g) only to a child or qualifying young person. The
   # son, at 30, is neither, so he stays the head's non-dependant for
-  # Universal Credit too. Housing Benefit keeps his deduction of
-  # 64.35 x 52 = 3,346.20 and pays 10,400 - 3,346.20 = 7,053.80.
+  # Universal Credit too. The council keeps his Housing Benefit deduction
+  # of 64.35 x 52 = 3,346.20 and pays 10,400 - 3,346.20 = 7,053.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -663,3 +664,71 @@
         LHA_allowed_bedrooms: 1
         uc_housing_costs_element: 7_800
         universal_credit: 5_023.02
+
+# Council tax reduction for people over the qualifying age for State Pension
+# Credit in Scotland: SSI 2012/319 reg 3. In reg 3(1) the Scottish Ministers
+# define a non-dependant as "any person, except someone to whom paragraph (2)
+# applies, who normally resides with the applicant", and in reg 3(2)(e) they
+# except "any person who is liable to make payments on a commercial basis to
+# the applicant or any partner of the applicant in respect of the person's
+# occupation of the dwelling". The model treats the payer's partner as liable
+# too (pays_rent_to_householder); whether the partner is liable turns on the
+# agreement, which the data do not record.
+
+- name: Scottish pension-age council tax reduction leaves out a lodger and partner but not their son or child
+  # Edinburgh, 2026-27. The household head (70) has a State Pension of
+  # 10,000 and owns the home. An unrelated lodger (50) pays the head 5,200 a
+  # year; the lodger's partner (50) pays nothing; their son (30), who is
+  # neither claimant nor partner, pays nothing and earns 5,200 over 20 hours
+  # a week; their child (10) pays nothing. The head falls under the
+  # pension-age scheme. The lodger falls within reg 3(2)(e), and the model
+  # treats the partner as liable as well, so neither is a non-dependant. The
+  # son and the child belong to no family of the head's (reg 3(2)(a)) and
+  # owe the head nothing, so both count as non-dependants under reg 3(1);
+  # the model flags the son, at 18 or over, for a deduction, and the child,
+  # under 18, for none.
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        state_pension: 10_000
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      partner:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 5_200
+        weekly_hours: 20
+      child:
+        age: 10
+        is_household_head: false
+        is_claimant_or_partner: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        claims_all_entitled_benefits: true
+      lodger_unit:
+        members: [lodger, partner, son, child]
+    households:
+      household:
+        members: [householder, lodger, partner, son, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    council_tax_reduction_pensioner: [true, false]
+    pays_rent_to_householder: [false, true, true, false, false]
+    is_non_dependant_of_household_head: [false, false, false, true, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, true, false]
