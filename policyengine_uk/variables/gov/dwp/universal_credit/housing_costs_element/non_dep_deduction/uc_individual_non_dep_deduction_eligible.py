@@ -9,7 +9,9 @@ class uc_individual_non_dep_deduction_eligible(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9"
 
     def formula(person, period, parameters):
-        not_rent_liable = ~person.benunit("benunit_is_rent_liable", period)
+        not_rent_liable = ~person.benunit(
+            "benunit_is_liable_for_household_rent", period
+        )
         p = parameters(
             period
         ).gov.dwp.universal_credit.elements.housing.non_dep_deduction
@@ -17,6 +19,8 @@ class uc_individual_non_dep_deduction_eligible(Variable):
         age_eligible = age >= p.age_threshold
         exempt = person("uc_non_dep_deduction_exempt", period)
         # A boarder or lodger is liable to pay on a commercial basis for their
-        # occupation, so is not a non-dependant (Sch 4 para 9(2)(d)).
+        # occupation, so is not a non-dependant (Sch 4 para 9(2)(d)). The
+        # model treats their partner as liable too (pays_rent_to_householder);
+        # anyone else in their family who pays nothing stays a non-dependant.
         commercial = person("pays_rent_to_householder", period)
         return ~exempt & age_eligible & not_rent_liable & ~commercial

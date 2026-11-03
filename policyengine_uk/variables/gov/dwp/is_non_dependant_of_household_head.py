@@ -12,7 +12,9 @@ class is_non_dependant_of_household_head(Variable):
         "sharer of the rent, a boarder and a lodger are liable on a "
         "commercial basis for their occupation, so none is a non-dependant "
         "of anyone, and the household head's household is not a boarder's or "
-        "lodger's. Universal Credit counts a non-dependant in one claim only "
+        "lodger's. In a boarder's or lodger's family, only the payer and the "
+        "payer's partner are liable (pays_rent_to_householder); an adult son "
+        "or daughter who pays nothing is a non-dependant. Universal Credit counts a non-dependant in one claim only "
         "(uc_non_dependants_counted); Housing Benefit and Council Tax "
         "Reduction apportion a non-dependant of several joint occupiers "
         "between them. Foster children and carers engaged through a charity "
@@ -29,5 +31,6 @@ class is_non_dependant_of_household_head(Variable):
         # UC Regs 2013 Sch 4 para 9(2)(d)-(f); HB Regs 2006 reg 3(2)(d)-(e)
         # and 3(4); HB (SPC) Regs 2006 reg 3.
         head_family = person.benunit("benunit_contains_household_head", period)
-        liable_for_rent = person.benunit("benunit_is_rent_liable", period)
-        return ~head_family & ~liable_for_rent
+        liable_for_rent = person.benunit("benunit_is_liable_for_household_rent", period)
+        pays_householder = person("pays_rent_to_householder", period)
+        return ~head_family & ~liable_for_rent & ~pays_householder

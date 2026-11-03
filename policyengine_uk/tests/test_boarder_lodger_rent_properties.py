@@ -3,7 +3,9 @@
 A household head may receive rent from boarders and lodgers who live in the
 household in their own benefit units (rent_paid_as_boarder and
 rent_paid_as_lodger, recorded on the payer), and from a sub-tenant outside it
-(sublet_income).
+(sublet_income). A paying benefit unit may also hold a partner or an adult
+who pays nothing; the generator supplies each person's role
+(is_claimant_or_partner).
 
 Invariants, for any generated household:
 
@@ -25,11 +27,33 @@ Invariants, for any generated household:
    board and lodging than when paid for lodging only.
 6. Universal Credit unearned income and household market income do not depend
    on the rent paid between members of the household.
-7. Where a programme does not count this rent, it does not deduct the tax on
-   it either: UC earned income, and council tax reduction income under the
-   Scottish working-age scheme and the Welsh universal credit route, do not
-   change when the rent changes.
-8. Tax: legacy_means_test_income_tax is between nil and income tax.
+7. Rent a programme does not count: UC earned income does not change with the
+   rent. On the council tax reduction routes that do not count it (the
+   Universal Credit route, and the Scottish working-age scheme), income does
+   not change with the rent where the applicant and partner have no
+   earnings; with earnings it falls by the extra tax earnings cause on the
+   rent and by nothing else, so by no more than the top rate on the change in
+   taxable rent-a-room income.
+8. Tax: legacy_means_test_income_tax is between nil and income tax;
+   rent_a_room_income_tax_after_reductions is between nil and
+   rent_a_room_income_tax; the tax on income from capital left after
+   reductions inside legacy_means_test_income_tax never goes negative; and
+   for a person whose only counted income is rent-a-room income,
+   rent_a_room_income_tax_after_reductions equals
+   legacy_means_test_income_tax.
+
+Person-level liability:
+
+9. pays_rent_to_householder holds exactly for a person outside the household
+   head's benefit unit who pays, or who is a claimant or partner in a benefit
+   unit where a claimant or partner pays.
+10. Moving a non-paying adult who is not a claimant or partner out of the
+    payer's benefit unit into one of their own leaves the household head's
+    Housing Benefit and council tax reduction non-dependant deductions
+    unchanged.
+11. Adding such an adult never lowers the household head's Housing Benefit
+    non-dependant deductions, and never raises the head's Housing Benefit
+    unless it raises the head's bedroom count under the size criteria.
 """
 
 import numpy as np
@@ -37,6 +61,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.legacy_means_test_tax import legacy_means_test_tax_split
 
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -48,8 +73,33 @@ YEARS = [2025, 2026]
 WEEKS = 52
 DISREGARD = 20
 BASIC_AMOUNT = 7_500
+TOP_RATE = 0.48
+KINDS = ("rent_paid_as_boarder", "rent_paid_as_lodger")
 AWARDS = ["income_support", "housing_benefit", "pension_credit", "council_tax_benefit"]
 rent = st.one_of(st.just(0.0), st.floats(100, 20_000))
+positive_rent = st.floats(100, 20_000)
+
+
+@st.composite
+def member(draw, claimant_or_partner, pays=None):
+    kind = draw(st.sampled_from(KINDS))
+    amount = draw(rent) if pays is None else (draw(positive_rent) if pays else 0.0)
+    return {
+        "age": draw(st.integers(19, 60)),
+        "is_claimant_or_partner": claimant_or_partner,
+        "employment_income": draw(st.one_of(st.just(0.0), st.floats(0, 25_000))),
+        kind: amount,
+    }
+
+
+@st.composite
+def payer_units(draw):
+    """A benefit unit outside the head's: one or two claimants or partners,
+    and possibly an adult who is neither, each paying or not."""
+    unit = [draw(member(True)) for _ in range(draw(st.integers(1, 2)))]
+    if draw(st.booleans()):
+        unit.append(draw(member(False)))
+    return unit
 
 
 @st.composite
@@ -60,22 +110,14 @@ def households(draw):
         dict(age=draw(age), employment_income=draw(st.floats(0, 25_000)))
         for _ in range(draw(st.integers(1, 2)))
     ]
-    payers = []
-    for _ in range(draw(st.integers(0, 2))):
-        kind = draw(st.sampled_from(["rent_paid_as_boarder", "rent_paid_as_lodger"]))
-        payers.append(
-            [
-                {"age": draw(st.integers(19, 60)), kind: draw(rent)}
-                for _ in range(draw(st.integers(1, 2)))
-            ]
-        )
     return dict(
         head_unit=head_unit,
-        payers=payers,
+        payers=[draw(payer_units()) for _ in range(draw(st.integers(0, 2)))],
         sublet=draw(st.one_of(st.just(0.0), st.floats(0, 8_000))),
         partner_sublet=draw(st.one_of(st.just(0.0), st.floats(100, 8_000))),
         tenure=draw(st.sampled_from(["RENT_PRIVATELY", "OWNED_OUTRIGHT"])),
         region=draw(st.sampled_from(["NORTH_WEST", "LONDON", "WALES", "SCOTLAND"])),
+        claims_housing_benefit=draw(st.booleans()),
     )
 
 
@@ -88,16 +130,26 @@ def situation(h, year, scale=1.0, as_kind=None):
             "age": {year: attrs["age"]},
             "employment_income": {year: attrs["employment_income"]},
             "is_household_head": {year: i == 0},
+            "is_claimant_or_partner": {year: True},
             "sublet_income": {year: h["sublet"] if i == 0 else h["partner_sublet"]},
         }
+        if h.get("claims_housing_benefit") and i == 0:
+            people[name]["housing_benefit_reported"] = {year: 1.0}
         names.append(name)
     benunits["head_unit"] = {"members": list(names)}
+    if h.get("claims_housing_benefit"):
+        benunits["head_unit"]["would_claim_uc"] = {year: False}
     for j, unit in enumerate(h["payers"]):
         members = []
         for k, attrs in enumerate(unit):
             name = f"payer_{j}_{k}"
-            person = {"age": {year: attrs["age"]}, "is_household_head": {year: False}}
-            for kind in ("rent_paid_as_boarder", "rent_paid_as_lodger"):
+            person = {
+                "age": {year: attrs["age"]},
+                "is_household_head": {year: False},
+                "is_claimant_or_partner": {year: attrs["is_claimant_or_partner"]},
+                "employment_income": {year: attrs.get("employment_income", 0.0)},
+            }
+            for kind in KINDS:
                 if kind in attrs:
                     target = as_kind or kind
                     person[target] = {year: attrs[kind] * scale}
@@ -129,14 +181,36 @@ def per_week(annual):
     return annual / WEEKS
 
 
+def paid(attrs, kind=None):
+    if kind:
+        return attrs.get(kind, 0.0)
+    return sum(attrs.get(k, 0.0) for k in KINDS)
+
+
 def payments(h, kind=None):
-    return [
-        [
-            a.get(kind, 0.0) if kind else sum(v for k, v in a.items() if k != "age")
-            for a in unit
+    return [[paid(a, kind) for a in unit] for unit in h["payers"]]
+
+
+def expected_pays_rent_to_householder(h):
+    """The person-level liability rule, from the inputs, in person order."""
+    expected = [False] * len(h["head_unit"])
+    for unit in h["payers"]:
+        partner_pays = any(a["is_claimant_or_partner"] and paid(a) > 0 for a in unit)
+        expected += [
+            paid(a) > 0 or (a["is_claimant_or_partner"] and partner_pays) for a in unit
         ]
-        for unit in h["payers"]
-    ]
+    return np.array(expected)
+
+
+def head_taxable_rent_a_room(h, scale=1.0):
+    """Taxable rent-a-room income of the head's benefit unit, from the inputs."""
+    head = sum(sum(unit) for unit in payments(h)) * scale + h["sublet"]
+    receipts = [head]
+    if len(h["head_unit"]) > 1:
+        receipts.append(h["partner_sublet"])
+    shared = sum(r > 0 for r in receipts) > 1
+    limit = BASIC_AMOUNT / 2 if shared else BASIC_AMOUNT
+    return sum(max(0, r - limit) for r in receipts)
 
 
 @PROPERTY_SETTINGS
@@ -144,8 +218,8 @@ def payments(h, kind=None):
 def test_rent_is_received_by_the_head_and_conserved(h, year):
     v = calculate(h, year, ["rent_from_boarders_and_lodgers"])
     received = v["rent_from_boarders_and_lodgers"]
-    paid = sum(sum(unit) for unit in payments(h))
-    np.testing.assert_allclose(received.sum(), paid, rtol=1e-6, atol=0.01)
+    total = sum(sum(unit) for unit in payments(h))
+    np.testing.assert_allclose(received.sum(), total, rtol=1e-6, atol=0.01)
     assert np.all(received[1:] == 0)
 
 
@@ -248,21 +322,86 @@ def test_rent_within_the_household_changes_no_uc_income_or_market_income(h, year
 
 @PROPERTY_SETTINGS
 @given(households(), st.sampled_from(YEARS))
-def test_legacy_means_test_income_tax_bounds(h, year):
-    v = calculate(h, year, ["legacy_means_test_income_tax", "income_tax"])
+def test_tax_bounds(h, year):
+    sim = Simulation(situation=situation(h, year))
+    v = {
+        name: np.asarray(sim.calculate(name, year), dtype=float)
+        for name in [
+            "legacy_means_test_income_tax",
+            "income_tax",
+            "rent_a_room_income_tax",
+            "rent_a_room_income_tax_after_reductions",
+        ]
+    }
     assert np.all(v["legacy_means_test_income_tax"] >= 0)
     assert np.all(v["legacy_means_test_income_tax"] <= v["income_tax"] + 0.01)
+    after = v["rent_a_room_income_tax_after_reductions"]
+    assert np.all(after >= -0.01)
+    assert np.all(after <= v["rent_a_room_income_tax"] + 0.01)
+    split = legacy_means_test_tax_split(sim.populations["person"], str(year))
+    assert np.all(split["capital_after_reductions"] >= -0.01)
+
+
+@st.composite
+def rent_a_room_only(draw):
+    """A household head whose only counted income is rent-a-room income, with
+    income from capital, finance costs and a Step 6 reduction."""
+    return dict(
+        rent=draw(st.floats(0, 60_000)),
+        savings=draw(st.one_of(st.just(0.0), st.floats(0, 30_000))),
+        dividends=draw(st.one_of(st.just(0.0), st.floats(0, 30_000))),
+        property=draw(st.one_of(st.just(0.0), st.floats(0, 40_000))),
+        finance_costs=draw(st.one_of(st.just(0.0), st.floats(0, 30_000))),
+        other_tax_credits=draw(st.one_of(st.just(0.0), st.floats(0, 5_000))),
+        region=draw(st.sampled_from(["LONDON", "SCOTLAND"])),
+    )
+
+
+@PROPERTY_SETTINGS
+@given(rent_a_room_only(), st.sampled_from(YEARS))
+def test_rent_a_room_tax_after_reductions_matches_the_counted_tax(h, year):
+    situation = {
+        "people": {
+            "head": {
+                "age": {year: 45},
+                "is_household_head": {year: True},
+                "savings_interest_income": {year: h["savings"]},
+                "dividend_income": {year: h["dividends"]},
+                "property_income": {year: h["property"]},
+                "property_finance_costs": {year: h["finance_costs"]},
+                "other_tax_credits": {year: h["other_tax_credits"]},
+            },
+            "lodger": {
+                "age": {year: 30},
+                "is_household_head": {year: False},
+                "rent_paid_as_lodger": {year: h["rent"]},
+            },
+        },
+        "benunits": {
+            "head_unit": {"members": ["head"]},
+            "lodger": {"members": ["lodger"]},
+        },
+        "households": {
+            "household": {"members": ["head", "lodger"], "region": {year: h["region"]}}
+        },
+    }
+    sim = Simulation(situation=situation)
+    counted = sim.calculate("legacy_means_test_income_tax", year)[0]
+    rent_a_room = sim.calculate("rent_a_room_income_tax_after_reductions", year)[0]
+    np.testing.assert_allclose(rent_a_room, counted, rtol=1e-5, atol=0.01)
 
 
 @PROPERTY_SETTINGS
 @given(households(), st.sampled_from(YEARS), st.floats(0.3, 0.9))
-def test_programmes_that_exclude_the_rent_ignore_its_tax(h, year, scale):
+def test_programmes_that_exclude_the_rent_deduct_only_the_tax_earnings_cause(
+    h, year, scale
+):
     # Both runs keep every payment positive, so non-dependant status is fixed.
     variables = [
         "uc_earned_income",
         "council_tax_reduction_applicable_income",
-        "universal_credit",
-        "is_SP_age",
+        "council_tax_reduction_universal_credit_award",
+        "council_tax_reduction_pensioner",
     ]
     full = calculate(h, year, variables)
     part = calculate(h, year, variables, scale=scale)
@@ -270,14 +409,102 @@ def test_programmes_that_exclude_the_rent_ignore_its_tax(h, year, scale):
         full["uc_earned_income"], part["uc_earned_income"], atol=0.01
     )
     head_unit = 0
-    working_age = not full["is_SP_age"][: len(h["head_unit"])].any()
-    on_uc = full["universal_credit"][head_unit] > 0
-    excluded = (h["region"] == "SCOTLAND" and (working_age or on_uc)) or (
-        h["region"] == "WALES" and on_uc
+    working_age = not full["council_tax_reduction_pensioner"][head_unit]
+    uc_route = working_age and bool(
+        full["council_tax_reduction_universal_credit_award"][head_unit]
     )
-    if excluded and (part["universal_credit"][head_unit] > 0) == on_uc:
-        np.testing.assert_allclose(
-            full["council_tax_reduction_applicable_income"][head_unit],
-            part["council_tax_reduction_applicable_income"][head_unit],
-            atol=0.01,
-        )
+    same_route = (
+        full["council_tax_reduction_universal_credit_award"][head_unit]
+        == part["council_tax_reduction_universal_credit_award"][head_unit]
+    )
+    excluded = uc_route or (h["region"] == "SCOTLAND" and working_age)
+    if not (excluded and same_route):
+        return
+    fall = (
+        part["council_tax_reduction_applicable_income"][head_unit]
+        - full["council_tax_reduction_applicable_income"][head_unit]
+    )
+    earnings = sum(attrs["employment_income"] for attrs in h["head_unit"])
+    if earnings == 0:
+        np.testing.assert_allclose(fall, 0, atol=0.01)
+    else:
+        more_taxable = head_taxable_rent_a_room(h) - head_taxable_rent_a_room(h, scale)
+        assert -0.01 <= fall <= TOP_RATE * more_taxable + 0.01
+
+
+# Person-level liability.
+
+
+@PROPERTY_SETTINGS
+@given(households(), st.sampled_from(YEARS))
+def test_pays_rent_to_householder_is_person_level(h, year):
+    v = calculate(h, year, ["pays_rent_to_householder"])
+    np.testing.assert_array_equal(
+        v["pays_rent_to_householder"].astype(bool),
+        expected_pays_rent_to_householder(h),
+    )
+
+
+@st.composite
+def households_with_a_non_paying_adult(draw):
+    """A household whose first paying unit has a payer who is a claimant, and
+    an adult who is neither claimant nor partner and pays nothing."""
+    h = draw(households())
+    payer = draw(member(True, pays=True))
+    adult = draw(member(False, pays=False))
+    adult["employment_income"] = draw(st.floats(0, 40_000))
+    h["payers"] = [[payer], *h["payers"]]
+    h["tenure"] = "RENT_PRIVATELY"
+    return h, adult
+
+
+def with_adult(h, adult, own_unit):
+    h = dict(h, payers=[list(unit) for unit in h["payers"]])
+    if own_unit:
+        h["payers"].append([dict(adult, is_claimant_or_partner=True)])
+    else:
+        h["payers"][0].append(adult)
+    return h
+
+
+@PROPERTY_SETTINGS
+@given(households_with_a_non_paying_adult(), st.sampled_from(YEARS))
+def test_a_non_paying_adult_counts_the_same_in_or_out_of_the_payers_unit(case, year):
+    h, adult = case
+    variables = [
+        "housing_benefit_non_dep_deductions",
+        "council_tax_reduction_non_dep_deductions",
+    ]
+    inside = calculate(with_adult(h, adult, own_unit=False), year, variables)
+    outside = calculate(with_adult(h, adult, own_unit=True), year, variables)
+    for v in variables:
+        np.testing.assert_allclose(inside[v][0], outside[v][0], atol=0.01, err_msg=v)
+
+
+@PROPERTY_SETTINGS
+@given(households_with_a_non_paying_adult(), st.sampled_from(YEARS))
+def test_adding_a_non_paying_adult_never_raises_housing_benefit(case, year):
+    # A non-dependant also occupies a bedroom under the size criteria (HB
+    # Regs 2006 reg 13D(12)), which can lift the maximum rent, for example
+    # off the shared accommodation rate. So the property holds where the
+    # household head's bedroom count does not change, and the non-dependant
+    # deductions never fall.
+    h, adult = case
+    h = dict(h, claims_housing_benefit=True)
+    variables = [
+        "housing_benefit",
+        "housing_benefit_LHA_allowed_bedrooms",
+        "housing_benefit_non_dep_deductions",
+    ]
+    without = calculate(h, year, variables)
+    with_them = calculate(with_adult(h, adult, own_unit=False), year, variables)
+    assert (
+        with_them["housing_benefit_non_dep_deductions"][0]
+        >= without["housing_benefit_non_dep_deductions"][0] - 0.01
+    )
+    same_rooms = (
+        with_them["housing_benefit_LHA_allowed_bedrooms"][0]
+        == without["housing_benefit_LHA_allowed_bedrooms"][0]
+    )
+    if same_rooms:
+        assert with_them["housing_benefit"][0] <= without["housing_benefit"][0] + 0.01
