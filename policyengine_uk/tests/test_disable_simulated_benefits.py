@@ -818,3 +818,67 @@ def test_no_person_is_moved_off_their_legacy_benefits(reformed, year):
     # reported ESA in household income while incorrectly ending their status.
     closed = by_person(reformed, "person_legacy_benefits_closed", year)
     assert closed == dict.fromkeys(closed, False)
+
+
+# A parent aged 45 and a 17-year-old on a non-advanced course in each family;
+# the 17-year-old reports £3,000 of one existing benefit (SI 2014/1230 reg.
+# 2(1)) in the dataset year.
+YOUNG_PERSON_REPORTS = {
+    "income_support_reported": "income_support",
+    "jsa_income_reported": "jsa_income",
+    "esa_income_reported": "esa_income",
+    "housing_benefit_reported": "housing_benefit",
+    "child_tax_credit_reported": "child_tax_credit",
+    "working_tax_credit_reported": "working_tax_credit",
+}
+
+
+def young_person_situation():
+    people, benunits, households = {}, {}, {}
+    for report in YOUNG_PERSON_REPORTS:
+        parent, young = f"{report}_parent", f"{report}_young"
+        people[parent] = dict(adult(45, True), is_parent=every_year(True))
+        people[young] = {
+            "age": every_year(17),
+            "is_claimant_or_partner": every_year(False),
+            "current_education": every_year("POST_SECONDARY"),
+            report: {DATASET_YEAR: 3_000},
+        }
+        benunits[report] = {"members": [parent, young]}
+        households[report] = {"members": [parent, young]}
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.mark.parametrize("year", YEARS)
+def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_person(
+    year,
+):
+    # The reform pays each benefit at its dataset-year report after the
+    # model's closure dates (income-based JSA from 2026, tax credits from
+    # 2025), so the young person stays entitled to it and reg. 28 excludes
+    # them from the UC qualifying young person test in every year. Income
+    # Support is the claimant's family's award, so the model pays none on a
+    # dependant's own report, with the reform or without it; the predicate
+    # reads that report in the years the model pays Income Support to anyone.
+    reformed = Simulation(situation=young_person_situation(), scenario=REFORM)
+    unreformed = Simulation(situation=young_person_situation())
+    predicate = "is_qualifying_young_person_for_universal_credit"
+    paid = [
+        float(reformed.calculate(benefit, year)[i])
+        for i, benefit in enumerate(YOUNG_PERSON_REPORTS.values())
+    ]
+    assert paid == [0, 3_000, 3_000, 3_000, 3_000, 3_000]
+    assert reformed.calculate(predicate, year)[1::2].tolist() == [False] * 6
+    # Without the reform, the model stops paying tax credits from 2025 and
+    # Income Support and income-based JSA from 2026, and those reports
+    # exclude nobody.
+    tax_credits_closed = year >= 2025
+    legacy_closed = year >= 2026
+    assert unreformed.calculate(predicate, year)[1::2].tolist() == [
+        legacy_closed,
+        legacy_closed,
+        False,
+        False,
+        tax_credits_closed,
+        tax_credits_closed,
+    ]

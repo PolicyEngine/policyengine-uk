@@ -5,16 +5,26 @@ reg. 2(1)) as a UC qualifying young person (reg. 28). The predicate reads the
 person's own reports of income-based JSA, income-related ESA, Income Support,
 Housing Benefit, Child Tax Credit and Working Tax Credit and, for a claimant
 or partner, the couple's joint tax credit award (Tax Credits Act 2002
-s.3(3)). It reads a report only in a year the model pays that benefit, and
-only if no reform neutralises it; these tests run without a reform, and
-test_uc_qualifying_young_person_neutralised_benefits.py covers reforms.
-These tests check that:
+s.3(3)). It reads a report only while the model pays that benefit on it,
+and only if no reform neutralises it; these tests run without a reform, and
+test_uc_qualifying_young_person_neutralised_benefits.py covers reforms. The
+model stops paying a benefit when its year gate closes, and ends a person's
+legacy awards when its annual migration proxy closes them: their own Income
+Support, income-based JSA and income-related ESA when
+person_legacy_benefits_closed holds, and the family's Housing Benefit and
+tax credits when legacy_benefits_closed holds and the family doesn't meet
+the Pension Credit age conditions. The oracle reads those three closure
+variables from the model. These tests check that:
 
-- any positive own report of an existing benefit the model pays that year
-  makes the predicate false;
+- any positive own report of an existing benefit the model pays on it that
+  year makes the predicate false;
 - with every such report at zero, the predicate equals the UC Regs 2013
   reg. 5 test less the person's reported UC, ESA and JSA awards;
-- a claimant's or partner's reports never change a dependant's predicate;
+- a claimant's or partner's reports change a dependant's predicate only by
+  closing the family's legacy awards;
+- a person whose legacy awards have closed is never excluded through their
+  own income-related ESA report, nor through a Housing Benefit report once
+  the family's awards close outside the Pension Credit age conditions;
 - a parent's Universal Credit never rises when their young person's own
   report turns positive;
 - the predicate equals the reg. 5 test less reg. 28's exclusions, exactly.
@@ -174,9 +184,8 @@ def qualifying_families(draw):
     """Families where reg. 28 alone decides most members' status.
 
     Each slot is drawn from qualifying, which meets reg. 5, or from the
-    general strategies. Over 10,000 derandomised draws for 2025, the
-    claimant met reg. 5 in 59% of draws, the partner or dependant in 62%,
-    and the dependants in 65% and 69%. A partner is otherwise an older adult whose
+    general strategies. Each slot meets reg. 5 in about three draws in
+    five. A partner is otherwise an older adult whose
     own reports reg. 28 must not pass to the claimant, except for the
     couple's tax credit award.
     """
@@ -196,7 +205,36 @@ def qualifying_families(draw):
     return [claimant, second] + dependants
 
 
+# Someone who meets reg. 5 unless reg. 28 excludes them and reports each
+# existing benefit one time in three, so a report that closes their legacy
+# awards often sits beside an income-related ESA or Housing Benefit report.
+reporting_qualifying = member(
+    st.integers(16, 18),
+    st.just(False),
+    NON_ADVANCED,
+    own_right=(False,),
+    reg_5_5_reports=False,
+)
+
+
+@st.composite
+def closure_families(draw):
+    """A claimant and a second member who meet reg. 5 one time in two, and
+    two dependants who always do, each reporting any existing benefit."""
+    couple = draw(st.booleans())
+    claimant = draw(st.one_of(reporting_qualifying, adult))
+    claimant = dict(claimant, is_claimant_or_partner=True, is_parent=True)
+    second = draw(st.one_of(reporting_qualifying, adult if couple else young_member))
+    second = dict(second, is_claimant_or_partner=couple, is_parent=couple)
+    dependants = [
+        dict(draw(reporting_qualifying), is_claimant_or_partner=False, is_parent=False)
+        for _ in range(2)
+    ]
+    return [claimant, second] + dependants
+
+
 units_strategy = st.lists(families(), min_size=UNITS, max_size=UNITS)
+closure_units_strategy = st.lists(closure_families(), min_size=UNITS, max_size=UNITS)
 qualifying_units_strategy = st.lists(
     qualifying_families(), min_size=UNITS, max_size=UNITS
 )
@@ -277,24 +315,52 @@ def reg_5_test(sim, year):
     )
 
 
-def reg_28_exclusions(units, year):
-    """Who reg. 28 excludes: own reports of benefits the model pays that year,
-    and, for a claimant or partner, the couple's tax credit award."""
+def open_awards(sim, year):
+    """For each report, whether the model's legacy closure leaves the award on
+    it open, person by person."""
+    own_open = ~sim.calculate("person_legacy_benefits_closed", year)
+    family_closed = sim.calculate("legacy_benefits_closed", year, map_to="person")
+    pension_age = sim.calculate(
+        "meets_pension_credit_age_conditions", year, map_to="person"
+    )
+    return {
+        "income_support_reported": own_open,
+        "jsa_income_reported": own_open,
+        "esa_income_reported": own_open,
+        "housing_benefit_reported": ~(family_closed & ~pension_age),
+        "child_tax_credit_reported": ~family_closed,
+        "working_tax_credit_reported": ~family_closed,
+    }
+
+
+def reg_28_exclusions(units, year, sim):
+    """Who reg. 28 excludes: own reports of benefits the model pays on them
+    that year, and, for a claimant or partner, the couple's tax credit
+    award."""
     paying = PAYING[year]
-    own = np.array([any(p[n] > 0 for n in paying) for p in flatten(units)], dtype=bool)
-    couple_tax_credits = np.array(
+    award_open = open_awards(sim, year)
+    people = flatten(units)
+    own = np.array(
         [
-            p["is_claimant_or_partner"]
-            and any(
-                q["is_claimant_or_partner"] and q[n] > 0
-                for q in members
-                for n in paying.intersection(TAX_CREDITS)
-            )
-            for members in units
-            for p in members
+            any(p[n] > 0 and award_open[n][i] for n in paying)
+            for i, p in enumerate(people)
         ],
         dtype=bool,
     )
+    couple_tax_credits = np.zeros(len(people), dtype=bool)
+    start = 0
+    for members in units:
+        indices = range(start, start + len(members))
+        award = any(
+            people[j]["is_claimant_or_partner"]
+            and people[j][n] > 0
+            and award_open[n][j]
+            for j in indices
+            for n in paying.intersection(TAX_CREDITS)
+        )
+        for j in indices:
+            couple_tax_credits[j] = people[j]["is_claimant_or_partner"] and award
+        start += len(members)
     return own | couple_tax_credits
 
 
@@ -302,7 +368,7 @@ def reg_28_exclusions(units, year):
 @given(units=units_strategy, year=st.sampled_from(YEARS))
 def test_any_own_existing_benefit_report_excludes_the_person(units, year):
     sim = simulate(units, year)
-    assert not np.any(predicate(sim, year) & reg_28_exclusions(units, year))
+    assert not np.any(predicate(sim, year) & reg_28_exclusions(units, year, sim))
 
 
 @SETTINGS
@@ -324,8 +390,12 @@ def test_zero_existing_benefit_reports_leave_the_reg_5_test(units, year):
 
 @SETTINGS
 @given(units=units_strategy, year=st.sampled_from(YEARS))
-def test_a_claimants_reports_never_change_a_dependants_predicate(units, year):
-    reported = predicate(simulate(units, year), year)
+def test_a_claimants_reports_change_a_dependant_only_by_closing_the_family(units, year):
+    sim = simulate(units, year)
+    reported = predicate(sim, year)
+    family_closed = sim.calculate(
+        "legacy_benefits_closed", year, map_to="person"
+    ).copy()
     cleared = predicate(
         simulate(
             with_zero(units, EXISTING_BENEFITS, lambda p: p["is_claimant_or_partner"]),
@@ -334,7 +404,44 @@ def test_a_claimants_reports_never_change_a_dependants_predicate(units, year):
         year,
     )
     dependant = np.array([not p["is_claimant_or_partner"] for p in flatten(units)])
-    assert reported[dependant].tolist() == cleared[dependant].tolist()
+    # Where the couple's reports leave the family's legacy awards open, they
+    # never change a dependant's predicate.
+    kept = dependant & ~family_closed
+    assert reported[kept].tolist() == cleared[kept].tolist()
+    # Where they close them, they can only lift a dependant's exclusion.
+    closed = dependant & family_closed
+    assert not np.any(~reported[closed] & cleared[closed])
+
+
+@SETTINGS
+@given(units=closure_units_strategy, year=st.sampled_from((2025, 2026)))
+def test_a_closed_legacy_award_never_excludes(units, year):
+    # The model ends a person's own income-related ESA once their legacy
+    # awards close (person_legacy_benefits_closed, read by
+    # esa_income_report_closed), and the family's Housing Benefit once the
+    # claimant's and partner's close outside the Pension Credit age
+    # conditions (housing_benefit_eligible). Clearing those reports leaves
+    # every predicate as it was. Neither report closes a legacy award, so
+    # clearing it leaves the closures as they were. Tax credits close from
+    # 2025 and Income Support and income-based JSA from 2026.
+    sim = simulate(units, year)
+    reported = predicate(sim, year)
+    award_open = open_awards(sim, year)
+    closed = {
+        name: ~award_open[name]
+        for name in ("esa_income_reported", "housing_benefit_reported")
+    }
+    cleared_units, index = [], 0
+    for members in units:
+        cleared_members = []
+        for p in members:
+            cleared_members.append(
+                dict(p, **{name: 0.0 for name in closed if closed[name][index]})
+            )
+            index += 1
+        cleared_units.append(cleared_members)
+    cleared = predicate(simulate(cleared_units, year), year)
+    assert reported.tolist() == cleared.tolist()
 
 
 @SETTINGS
@@ -381,5 +488,5 @@ def test_a_young_persons_report_never_raises_the_parents_award(
 @given(units=qualifying_units_strategy, year=st.sampled_from(YEARS))
 def test_the_predicate_is_reg_5_less_reg_28(units, year):
     sim = simulate(units, year)
-    expected = reg_5_test(sim, year) & ~reg_28_exclusions(units, year)
+    expected = reg_5_test(sim, year) & ~reg_28_exclusions(units, year, sim)
     assert predicate(sim, year).tolist() == expected.tolist()

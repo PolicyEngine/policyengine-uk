@@ -283,8 +283,9 @@ def own_benefits(m, year=YEAR):
     # UC reg. 5(5) (UC, contributory ESA, contribution-based JSA) and SI
     # 2014/1230 reg. 28 (income-related ESA, and income-based JSA while it
     # pays, as in 2025): a personal report identifies an award in the
-    # person's own right. Reg. 28 turns on entitlement, so an income-based
-    # JSA report counts only in a year the model pays it.
+    # person's own right. The Secretary of State ties reg. 28's exclusion to
+    # entitlement, so the oracle counts an income-based JSA report only in a
+    # year the model pays it.
     dwp = baseline_system.parameters(f"{year}-01-01").gov.dwp
     reports = [
         report

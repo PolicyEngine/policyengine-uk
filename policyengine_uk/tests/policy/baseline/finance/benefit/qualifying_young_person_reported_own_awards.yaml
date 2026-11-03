@@ -3,9 +3,11 @@
 # and JSA without their income-related and income-based forms (UC Regs reg.
 # 2). DWP doesn't count a person entitled to income-related ESA, income-based
 # JSA or Income Support as a UC qualifying young person (SI 2014/1230 reg.
-# 28). The UC predicate reads a report only in a year the model pays that
-# benefit (income-based JSA and Income Support until 31 March 2026), and only
-# if no reform neutralises it. The Secretary of State excludes own awards
+# 28). The UC predicate reads a report only while the model pays that
+# benefit on it (income-based JSA and Income Support until 31 March 2026, and
+# income-related ESA, income-based JSA and Income Support only until the
+# person's legacy awards close, person_legacy_benefits_closed), and only if
+# no reform neutralises it. The Secretary of State excludes own awards
 # from the Pension Credit routes, including income support (SPC reg. 4A(5)):
 # is_on_income_support reads it, from the calculated award for a claimant or
 # partner and from their own report for anyone else. The reports identify the

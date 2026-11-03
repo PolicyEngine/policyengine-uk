@@ -50,9 +50,8 @@ class is_qualifying_young_person_under_universal_credit_regulation_5(Variable):
         )
         # The Secretary of State excludes a person receiving Universal Credit,
         # contributory ESA or contribution-based JSA (reg. 5(5)), on both
-        # routes. The formula reads raw
-        # person-level reports, so it calculates no family benefit that
-        # depends on qualifying young person status.
+        # routes. The formula reads raw person-level reports, so it calculates
+        # no family benefit that depends on qualifying young person status.
         receives_reg_5_5_benefit = (
             person("receives_benefits_in_own_right", period)
             | (person("universal_credit_reported", period) > 0)

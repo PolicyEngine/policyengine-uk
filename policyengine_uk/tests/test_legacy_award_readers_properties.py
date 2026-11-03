@@ -687,9 +687,9 @@ def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
 @pytest.mark.parametrize("report", ["esa_income_reported", "jsa_income_reported"])
 def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report):
     # A natural route-(a) case: no route or own-right Boolean is supplied.
-    # SI 2014/1230 reg. 28 excludes the member's own income-related ESA or
-    # income-based JSA (paying in 2025) from the UC test, and SPC reg. 4A(5)
-    # from the Pension Credit test.
+    # The Secretary of State excludes the member's own income-related ESA or
+    # income-based JSA (paying in 2025) from the UC test (SI 2014/1230 reg.
+    # 28) and from the Pension Credit test (SPC reg. 4A(5)).
     family = (
         [
             {
