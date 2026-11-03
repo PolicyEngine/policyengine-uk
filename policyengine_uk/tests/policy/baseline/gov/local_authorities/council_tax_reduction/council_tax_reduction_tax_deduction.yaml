@@ -1,20 +1,23 @@
 # Income tax and National Insurance deducted from Council Tax Reduction income.
-# - Scotland, working age (SSI 2021/249): reg 50(3)(a) reads "Earnings do not
-#   include— (a) any amount deducted from them by way of income tax or
-#   primary Class 1 contributions under the 1992 Act". The Scottish Ministers
-#   set the same rule with Universal Credit (regs 49(6)(b) and 51(2) step 3)
-#   and gave no tax deduction for unearned income (regs 57 to 65). Without
-#   Universal Credit, reg 51(9) applies SSI 2012/303 regs 37 and 38, which
-#   price the tax and contributions on self-employed profit notionally: the
-#   basic rate on chargeable income less only the personal allowance, and
-#   Class 4 at the main rate between the lower and upper limits.
-# - Pension age: SSI 2012/319 reg 31(12), "In the case of any income taken
-#   into account for the purpose of calculating a person's income, any amount
-#   payable by way of tax must be disregarded"; SI 2012/2885 Sch 1 para 17(13)
-#   and WSI 2013/3029 Sch 1 para 11(13) read the same. Reg 33(2)(a), para
-#   19(2)(a) and para 13(2)(a) deduct the income tax and Class 1 deducted from
-#   earnings, and reg 37, para 30 and para 24 price self-employed profit
-#   notionally, as at working age.
+# - Scotland, working age (SSI 2021/249): in reg 50(3)(a) the Scottish
+#   Ministers provide that "Earnings do not include— (a) any amount deducted
+#   from them by way of income tax or primary Class 1 contributions under the
+#   1992 Act". They set the same rule with Universal Credit (regs 49(6)(b) and
+#   51(2) step 3) and gave no tax deduction for unearned income (regs 57 to
+#   65). Without Universal Credit, they apply SSI 2012/303 regs 37 and 38
+#   through reg 51(9), so the council prices the tax and contributions on
+#   self-employed profit notionally: the basic rate on chargeable income less
+#   only the personal allowance, and Class 4 at the main rate between the
+#   lower and upper limits.
+# - Pension age: in SSI 2012/319 reg 31(12) the Scottish Ministers provide
+#   that "In the case of any income taken into account for the purpose of
+#   calculating a person's income, any amount payable by way of tax must be
+#   disregarded"; the Secretary of State and the Welsh Ministers use the same
+#   words in SI 2012/2885 Sch 1 para 17(13) and WSI 2013/3029 Sch 1 para
+#   11(13). Under reg 33(2)(a), para 19(2)(a) and para 13(2)(a), the council
+#   deducts the income tax and Class 1 taken from earnings, and under reg 37,
+#   para 30 and para 24 it prices self-employed profit notionally, as at
+#   working age.
 # No provision says how to split one income tax liability. The model follows
 # the choice settled for Pension Credit on PolicyEngine/policyengine-uk#2019
 # (option (a)): the tax on earnings is the extra tax the earnings cause, with
@@ -791,3 +794,82 @@
     council_tax_reduction_applicable_income: 34_855.05
     # 15,000 - 20% x (34,855.05 - 7,807.80): the reduction rises by 52.68.
     council_tax_reduction: 9_590.55
+
+- name: Scotland's working-age scheme passes a step of the High Income Child Benefit Charge through at pay of 64,999.50
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 64_999.50
+      child_1:
+        age: 4
+      child_2:
+        age: 7
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: false
+        would_claim_child_benefit: true
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 10_000
+  output:
+    # Child Benefit (27.05 + 17.90) x 52 = 2,337.40, 2,337 in whole pounds.
+    # Adjusted net income exceeds 60,000 by 4,999.50, 24 whole steps of 200,
+    # so the charge takes 24% of 2,337 = 560.88, 560 in whole pounds.
+    CB_HITC: [560, 0, 0]
+    # Tax on the pay: 64,999.50 - 12,570 = 52,429.50 taxable; 753.73 +
+    # 2,597.80 + 2,968.56 + 21,337.50 x 42% = 8,961.75, so 15,281.84, and the
+    # charge of 560 makes 15,841.84. Without the pay the parent has no income
+    # and no charge, so the pay adds all 15,841.84. Class 1: (50,269.96 -
+    # 12,569.96) x 8% = 3,016 and (64,999.50 - 50,269.96) x 2% = 294.59, so
+    # 3,310.59. 15,841.84 + 3,310.59 = 19,152.43.
+    council_tax_reduction_tax_deduction: 19_152.43
+    # 64,999.50 + Child Benefit 2,337.40 - 19,152.43.
+    council_tax_reduction_applicable_income: 48_184.47
+    # 10,000 - 20% x (48,184.47 - the lone parent's personal allowance 95.55
+    # x 52 = 4,968.60).
+    council_tax_reduction: 1_356.83
+
+- name: Scotland's working-age scheme passes a step of the High Income Child Benefit Charge through at pay of 65,000.50
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 65_000.50
+      child_1:
+        age: 4
+      child_2:
+        age: 7
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: false
+        would_claim_child_benefit: true
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 10_000
+  output:
+    # Adjusted net income exceeds 60,000 by 5,000.50, 25 whole steps of 200,
+    # so the charge takes 25% of 2,337 = 584.25, 584 in whole pounds.
+    CB_HITC: [584, 0, 0]
+    # 21,338.50 x 42% = 8,962.17, so 15,282.26 on the pay, and the charge of
+    # 584 makes 15,866.26. Class 1: 3,016 + (65,000.50 - 50,269.96) x 2% =
+    # 294.61, so 3,310.61. 15,866.26 + 3,310.61 = 19,176.87: a pound of pay
+    # raises the deduction by 24.44, 24 of it from the charge.
+    council_tax_reduction_tax_deduction: 19_176.87
+    # 65,000.50 + 2,337.40 - 19,176.87.
+    council_tax_reduction_applicable_income: 48_161.03
+    # 10,000 - 20% x (48,161.03 - 4,968.60): the reduction rises from
+    # 1,356.83 to 1,361.51.
+    council_tax_reduction: 1_361.51

@@ -10,13 +10,13 @@
 # Neither counts the Scottish Carer Supplement, paid with CSP from 15 March
 # 2026: reg 57(1) does not list it and reg 27(1)(j)(xxib) excepts it. In law
 # the supplement's tax does not reach Council Tax Reduction either: at working
-# age SSI 2021/249 deducts tax only from earnings, and at pension age SSI
-# 2012/319 reg 31(12) disregards the tax payable on income taken into
-# account, which the supplement is not. The model deducts only the tax each
-# scheme allows (council_tax_reduction_tax_deduction). At working age that is
-# the tax earnings add, and at pension age the tax on the counted income with
-# the supplement above it, so without earnings the supplement does not reach
-# the model's Council Tax Reduction income.
+# age the council deducts tax only from earnings (SSI 2021/249), and at
+# pension age it disregards the tax payable on income taken into account (SSI
+# 2012/319 reg 31(12)), which the supplement is not. The model deducts only
+# the tax each scheme allows (council_tax_reduction_tax_deduction). At working
+# age that is the tax earnings add, and at pension age the tax on the counted
+# income with the supplement above it, so without earnings the supplement
+# does not reach the model's Council Tax Reduction income.
 # Neither instrument disregards CSP above the CA amount.
 #
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
@@ -277,10 +277,11 @@
     # first 3,967 at the Scottish starter rate of 19% and 2,566.80 at 20%.
     # The supplement adds 608.40 x 20% = 121.68 of that tax.
     income_tax: 3_967 * 0.19 + 2_566.80 * 0.20
-    # SSI 2012/319 reg 31(12) disregards only the tax on income taken into
-    # account. The supplement is not, so its tax, as the highest part of
-    # income, is not deducted: 14,000 + 4,495.40 - 12,570 = 5,925.40 taxable,
-    # 3,967 x 19% = 753.73 and 1,958.40 x 20% = 391.68, so 1,145.41.
+    # Under SSI 2012/319 reg 31(12), the council disregards only the tax on
+    # income taken into account. It does not take the supplement into
+    # account, so the formula deducts none of the tax on the supplement, as
+    # the highest part of income: 14,000 + 4,495.40 - 12,570 = 5,925.40
+    # taxable, 3,967 x 19% = 753.73 and 1,958.40 x 20% = 391.68, so 1,145.41.
     council_tax_reduction_tax_deduction: 3_967 * 0.19 + 1_958.40 * 0.20
     # 14,000 + 4,495.40 - 1,145.41: neither the supplement nor its tax counts.
     council_tax_reduction_applicable_income: 14_000 + 86.45 * 52 - 1_145.41
