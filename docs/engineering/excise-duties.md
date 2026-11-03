@@ -6,6 +6,11 @@ and duty on LPG and natural road fuel gas from supplied household inputs.
 diesel duty. These totals combine the different annual bases described below.
 The incidence assumption is full pass-through to consumers.
 
+The model also includes seven gambling duty families from supplied attributed
+household bases. [Household gambling duties](gambling-duties.md) documents the
+rates, casino incidence proxy, period conventions and outstanding population
+data, machine-premises and VAT work.
+
 ## Coverage and periods
 
 Alcohol, tobacco and car duty calculations cover 2024/25 to 2026/27. The alcohol

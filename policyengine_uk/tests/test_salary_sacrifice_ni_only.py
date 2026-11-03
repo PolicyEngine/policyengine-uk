@@ -128,7 +128,7 @@ def test_actual_class_1_curves_charge_the_excess_once(pair, year):
     np.testing.assert_allclose(values(unlimited, "ni_class_1_income", year), wages)
     p = capped.tax_benefit_system.parameters(year).gov.hmrc.national_insurance.class_1
 
-    # Independent piecewise annual curves, not the approximate reporting helper.
+    # Independent piecewise annual curves, not the reporting measures.
     def employee(earnings):
         pt, uel = (
             p.thresholds.primary_threshold * 52,
@@ -213,21 +213,36 @@ def test_explicit_ordinary_return_input_remains_supported():
     assert values(sim, "employee_pension_contributions", 2026)[0] == 1_500
 
 
-def test_ni_reporting_readers_retain_their_existing_approximation(pair):
-    capped, _ = pair
+def test_ni_reporting_measures_equal_the_change_in_class_1_liability(pair):
+    capped, unlimited = pair
     for year in (2029, 2030):
-        # These reporting measures deliberately retain the known #2363
-        # approximation, including no pension-age gate. Actual NICs above
-        # are independently checked through national_insurance instead.
+        # Each reporting measure is the part of a Class 1 liability that the
+        # NIC-only excess causes: the liability with the cap less the
+        # liability without it. It is part of that liability, not an addition.
+        for measure, liability in (
+            ("salary_sacrifice_pension_ni_employee", "ni_class_1_employee"),
+            ("salary_sacrifice_pension_ni_employer", "ni_class_1_employer"),
+        ):
+            np.testing.assert_allclose(
+                values(capped, measure, year),
+                values(capped, liability, year) - values(unlimited, liability, year),
+                atol=0.03,
+                err_msg=measure,
+            )
+            assert np.all(values(unlimited, measure, year) == 0), measure
         p = capped.tax_benefit_system.parameters(
             year
         ).gov.hmrc.national_insurance.class_1
-        assert values(capped, "salary_sacrifice_pension_ni_employee", year)[
-            0
-        ] == pytest.approx(28_000 * p.rates.employee.additional, abs=0.02)
+        # The 80-year-old with £160,000 cash wages and a £30,000 sacrifice has
+        # a £28,000 excess over the £2,000 cap. Primary contributions end at
+        # pensionable age (SSCBA 1992 s.6(3)), so the employee measure is £0.
+        # Secondary contributions continue, and all of the excess is above the
+        # secondary threshold: £28,000 at 15% is £4,200.
+        assert values(capped, "salary_sacrifice_pension_ni_employee", year)[0] == 0
         assert values(capped, "salary_sacrifice_pension_ni_employer", year)[
             0
         ] == pytest.approx(28_000 * p.rates.employer, abs=0.02)
+        assert 28_000 * p.rates.employer == pytest.approx(4_200)
         assert np.all(values(capped, "salary_sacrifice_returned_to_income", year) == 0)
 
 

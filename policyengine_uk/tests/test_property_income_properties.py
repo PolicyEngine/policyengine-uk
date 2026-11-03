@@ -13,10 +13,11 @@ simulation.
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import GBP, Person, Reform, Variable, add
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -102,6 +103,9 @@ def set_inputs(sim, drawn, uses_allowance=None):
     sim.set_input("property_rental_income", YEAR, receipts)
     sim.set_input("property_finance_costs", YEAR, costs)
     sim.set_input("property_finance_costs_brought_forward", YEAR, brought_forward)
+    if uses_allowance is None:
+        # An automatic draw must not inherit the preceding forced test route.
+        sim.delete_arrays("uses_property_allowance", YEAR)
     sim.reset_calculations()
     if uses_allowance is not None:
         sim.set_input("uses_property_allowance", YEAR, np.full(PEOPLE, uses_allowance))
@@ -335,6 +339,8 @@ def set_couple_inputs(sim, drawn, uses_allowance=None):
     sim.set_input("property_income", YEAR, profit)
     sim.set_input("property_rental_income", YEAR, receipts)
     sim.set_input("property_finance_costs", YEAR, costs)
+    if uses_allowance is None:
+        sim.delete_arrays("uses_property_allowance", YEAR)
     sim.reset_calculations()
     if uses_allowance is not None:
         sim.set_input("uses_property_allowance", YEAR, uses_allowance)
@@ -346,12 +352,11 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
     set_couple_inputs(couple_sim, drawn)
     routes = couple_sim.calculate("uses_property_allowance", YEAR)
     income_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
-    profit = couple_sim.calculate("property_income", YEAR).astype(float)
-    choosing = (
-        (couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0)
-        & (couple_sim.calculate("property_finance_costs_relievable", YEAR) > 0)
-        & (profit > 0)
-    )
+    # Everyone the allowance would help. Those with finance costs to relieve
+    # choose by comparing tax; the rest take the allowance without comparing,
+    # which lowers their own taxable property income and so their tax: these
+    # couples are 40, so no winter fuel payment charge can reverse that.
+    choosing = couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0
     position = np.arange(2 * COUPLES) % 2
     for k in range(2):
         switching = choosing & (position == k)
@@ -361,3 +366,371 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
         switched_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
         margin = tolerance(income_tax, switched_tax)
         assert (switched_tax[switching] >= (income_tax - margin)[switching]).all()
+
+
+# Pensioner households, while the winter fuel payment charge has effect: a
+# route can move Pension Credit, and with it the exemption from the charge
+# (ITEPA 2003 s.681I(4)), even without finance costs at stake; and a couple's
+# Pension Credit decides whether the partner is entitled to a payment, which
+# moves the shared payment, and so the charge, of anyone else in the
+# household. Each landlord with finance costs to relieve must still choose
+# the route that gives them the lower income tax including the charge, with
+# every other route held fixed. Landlords without finance costs take the
+# allowance without comparing (uses_property_allowance); review r7's lone
+# pensioner below shows that can cost more, an intended limit pinned by its
+# own test.
+PENSIONER_YEAR = 2025
+PENSIONER_HOUSEHOLDS = 6
+PENSIONER_REGIONS = ["LONDON", "LONDON", "SCOTLAND", "WALES", "LONDON", "SCOTLAND"]
+CHILDREN = 5
+# A "partner" aged 10 is a sixth child, and a lodger aged 40 is not entitled
+# to a payment, so the households also cover a lone pensioner.
+pensioner_landlord = st.tuples(
+    st.one_of(
+        st.floats(min_value=0, max_value=60_000),
+        st.sampled_from([11_500.0, 32_000.0, 34_500.0, 35_207.0, 42_772.55]),
+    ),  # private pension
+    st.sampled_from([0.0, 0.0, 30_000.0]),  # dividends
+    st.one_of(amount, st.sampled_from([3_300.0])),  # profit
+    st.floats(min_value=0, max_value=950),  # expenses
+    st.sampled_from([0.0, 0.0, 675.0, 1_200.0, 1_500.0]),  # finance costs
+)
+pensioner_household = st.tuples(
+    st.sampled_from([66, 70, 80, 85]),  # claimant's age
+    st.sampled_from([10, 66, 70, 85]),  # partner's age
+    st.sampled_from([40, 66, 70, 85]),  # lodger's age
+    pensioner_landlord,  # claimant
+    pensioner_landlord,  # partner
+    pensioner_landlord,  # lodger
+    st.booleans(),  # the lodger claims Pension Credit
+)
+pensioner_households = st.lists(
+    pensioner_household,
+    min_size=PENSIONER_HOUSEHOLDS,
+    max_size=PENSIONER_HOUSEHOLDS,
+)
+NO_INCOME = (0.0, 0.0, 0.0, 0.0, 0.0)
+# Review r7's cases (2026-10-16). A pensioner with six children and no
+# finance costs: the allowance lowers tax before the charge by £160, which
+# ends Pension Credit of £80 and so the exemption from the £200 charge.
+LONE_PENSIONER = (
+    70,
+    10,
+    40,
+    (35_207.0, 0.0, 3_300.0, 200.0, 0.0),
+    NO_INCOME,
+    NO_INCOME,
+    False,
+)
+# A couple's Pension Credit, through the claimant's election, takes the
+# partner out of entitlement and raises the lodger's shared payment and
+# charge from £150 to £200; the lodger's own election must hold that fixed.
+SHARED_PAYMENT = (
+    70,
+    85,
+    85,
+    (42_772.55, 0.0, 3_300.0, 200.0, 1_200.0),
+    NO_INCOME,
+    (40_000.0, 0.0, 3_300.0, 200.0, 675.0),
+    False,
+)
+PENSIONER_SETTINGS = settings(
+    max_examples=6,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+ROLES = ["claimant", "partner", "lodger"]
+
+
+@pytest.fixture(scope="module")
+def pensioner_sim():
+    def person(age):
+        return {
+            "age": {PENSIONER_YEAR: age},
+            "private_pension_income": {PENSIONER_YEAR: 0},
+            "dividend_income": {PENSIONER_YEAR: 0},
+            "property_income": {PENSIONER_YEAR: 0},
+            "property_rental_income": {PENSIONER_YEAR: 0},
+            "property_finance_costs": {PENSIONER_YEAR: 0},
+        }
+
+    people, benunits, households = {}, {}, {}
+    for h in range(PENSIONER_HOUSEHOLDS):
+        names = [f"{role}_{h}" for role in ROLES]
+        children = [f"child_{h}_{c}" for c in range(CHILDREN)]
+        for name in names:
+            people[name] = person(70)
+        for name in children:
+            people[name] = person(10)
+        people[names[0]]["is_benunit_head"] = {PENSIONER_YEAR: True}
+        people[names[1]]["is_benunit_head"] = {PENSIONER_YEAR: False}
+        benunits[f"couple_{h}"] = {
+            "members": names[:2] + children,
+            "would_claim_pc": {PENSIONER_YEAR: True},
+            "would_claim_uc": {PENSIONER_YEAR: False},
+        }
+        benunits[f"lodger_{h}"] = {
+            "members": names[2:],
+            "would_claim_pc": {PENSIONER_YEAR: True},
+            "would_claim_uc": {PENSIONER_YEAR: False},
+        }
+        households[f"household_{h}"] = {
+            "members": names + children,
+            "region": {PENSIONER_YEAR: PENSIONER_REGIONS[h]},
+        }
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+
+
+def set_pensioner_inputs(sim, drawn, uses_allowance=None):
+    ages, incomes, claims_pc = [], [], []
+    for claimant_age, partner_age, lodger_age, *landlords, claims in drawn:
+        household_ages = [claimant_age, partner_age, lodger_age]
+        ages += household_ages + [10] * CHILDREN
+        incomes += [
+            landlord if age >= 18 else NO_INCOME
+            for age, landlord in zip(household_ages, landlords)
+        ] + [NO_INCOME] * CHILDREN
+        claims_pc += [True, claims]
+    pension, dividends, profit, expenses, costs = map(np.array, zip(*incomes))
+    sim.set_input("age", PENSIONER_YEAR, np.array(ages, dtype=float))
+    sim.set_input("private_pension_income", PENSIONER_YEAR, pension)
+    sim.set_input("dividend_income", PENSIONER_YEAR, dividends)
+    sim.set_input("property_income", PENSIONER_YEAR, profit)
+    sim.set_input("property_rental_income", PENSIONER_YEAR, profit + expenses)
+    sim.set_input("property_finance_costs", PENSIONER_YEAR, costs)
+    sim.set_input("would_claim_pc", PENSIONER_YEAR, np.array(claims_pc))
+    if uses_allowance is None:
+        sim.delete_arrays("uses_property_allowance", PENSIONER_YEAR)
+    sim.reset_calculations()
+    if uses_allowance is not None:
+        sim.set_input("uses_property_allowance", PENSIONER_YEAR, uses_allowance)
+
+
+@PENSIONER_SETTINGS
+@example([LONE_PENSIONER, SHARED_PAYMENT] * (PENSIONER_HOUSEHOLDS // 2))
+@given(pensioner_households)
+def test_no_pensioner_lowers_their_tax_and_charge_by_switching_alone(
+    pensioner_sim, drawn
+):
+    sim = pensioner_sim
+    set_pensioner_inputs(sim, drawn)
+    routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
+    income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    profit = sim.calculate("property_income", PENSIONER_YEAR) - sim.calculate(
+        "deductible_property_finance_costs", PENSIONER_YEAR
+    )
+    choosing = (
+        (sim.calculate("property_allowance_deduction_if_used", PENSIONER_YEAR) > 0)
+        & (sim.calculate("property_finance_costs_relievable", PENSIONER_YEAR) > 0)
+        & (profit > 0)
+    )
+    position = np.arange(len(routes)) % (len(ROLES) + CHILDREN)
+    for k in range(len(ROLES)):
+        # One landlord per household switches; households do not interact.
+        switching = choosing & (position == k)
+        if not switching.any():
+            continue
+        set_pensioner_inputs(sim, drawn, routes ^ switching)
+        switched_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+        margin = tolerance(income_tax, switched_tax)
+        assert (switched_tax[switching] >= (income_tax - margin)[switching]).all(), (
+            ROLES[k],
+            np.flatnonzero(switching),
+            income_tax[switching],
+            switched_tax[switching],
+        )
+
+
+def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_costs_more(
+    pensioner_sim,
+):
+    """Intended violation: review r7's lone pensioner (no finance costs).
+
+    The allowance lowers tax before the charge by £160 but ends £80 of Pension
+    Credit and with it the exemption from the £200 charge, so expenses would
+    give the lower income tax (£5,187.40 against £5,227.40). The model does
+    not compare routes for landlords without finance costs, so it takes the
+    allowance.
+    """
+    sim = pensioner_sim
+    drawn = [LONE_PENSIONER] * PENSIONER_HOUSEHOLDS
+    set_pensioner_inputs(sim, drawn)
+    members = len(ROLES) + CHILDREN
+    claimants = np.arange(sim.calculate("age", PENSIONER_YEAR).size) % members == 0
+    # The figures are England's and Wales's rates; Scotland's differ.
+    english_or_welsh = np.repeat(
+        [region != "SCOTLAND" for region in PENSIONER_REGIONS], members
+    )
+    pinned = claimants & english_or_welsh
+    routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
+    income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    assert routes[claimants].all()
+    assert income_tax[pinned] == pytest.approx(5_227.40, abs=0.01)
+    set_pensioner_inputs(sim, drawn, routes & ~claimants)
+    with_expenses = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
+    assert with_expenses[pinned] == pytest.approx(5_187.40, abs=0.01)
+
+
+# Reviews r1 and r2 of #2695. winter_fuel_payment_charge_ceiling bounds the
+# charge as the model works it out, and the election settles choices on tax
+# before the charge only where that ceiling cannot reverse them. Where an
+# input or a structural reform replaces income tax, the ceiling, the charge,
+# the payments it recovers or entitlement to them, or neutralises income tax
+# or the ceiling, every choice is still compared on income tax including the
+# charge. Each landlord below has £3,300 of receipts and £200 of expenses in
+# England, so total income £800 lower with the allowance, and lower tax
+# before the charge with expenses; the charge on the expenses route makes the
+# allowance cheaper.
+CHARGE_YEAR = 2026
+
+
+class winter_fuel_payment_charge(Variable):
+    """A reform's charge: half the payment, over £30,000 of total income."""
+
+    value_type = float
+    entity = Person
+    label = "Winter fuel payment charge, tapered"
+    definition_period = "year"
+    unit = GBP
+
+    def formula(person, period, parameters):
+        p = parameters(period).gov.hmrc.income_tax.charges.winter_fuel_payment
+        payment = add(
+            person,
+            period,
+            ["winter_fuel_payment", "pension_age_winter_heating_payment"],
+        )
+        on_relevant_benefit = add(person, period, p.relevant_benefits) > 0
+        over_threshold = person("total_income", period) > 30_000
+        return p.in_effect * 0.5 * payment * over_threshold * ~on_relevant_benefit
+
+
+class tapered_charge(Reform):
+    def apply(self):
+        self.update_variable(winter_fuel_payment_charge)
+
+
+class neutralised_ceiling(Reform):
+    def apply(self):
+        self.neutralize_variable("winter_fuel_payment_charge_ceiling")
+
+
+class neutralised_income_tax(Reform):
+    def apply(self):
+        self.neutralize_variable("income_tax")
+
+
+def landlord(age, **values):
+    person = dict(
+        age=age,
+        property_rental_income=3_300,
+        property_income=3_100,
+        property_finance_costs=1_200,
+    )
+    person.update(values)
+    return {
+        "people": {
+            "landlord": {name: {CHARGE_YEAR: value} for name, value in person.items()}
+        },
+        "households": {
+            "home": {"members": ["landlord"], "region": {CHARGE_YEAR: "NORTH_WEST"}}
+        },
+    }
+
+
+def taxes_on_route(situation, reform, uses_allowance):
+    situation["people"]["landlord"]["uses_property_allowance"] = {
+        CHARGE_YEAR: uses_allowance
+    }
+    sim = Simulation(situation=situation, reform=reform)
+    return [
+        float(sim.calculate(variable, CHARGE_YEAR)[0])
+        for variable in ("income_tax", "income_tax_before_winter_fuel_payment_charge")
+    ]
+
+
+CHARGE_BEYOND_THE_CEILING = {
+    # Review r1's case: a payment given to someone under pensionable age.
+    "payment_given_under_pensionable_age": (
+        60,
+        dict(employment_income=32_000, winter_fuel_payment=200),
+        None,
+    ),
+    "entitlement_given_under_pensionable_age": (
+        60,
+        dict(employment_income=32_000, winter_fuel_payment_eligible=True),
+        None,
+    ),
+    # Tax before the charge is £400 lower with expenses, beyond the £300
+    # higher Winter Fuel Payment, but the £500 payment given exceeds it.
+    "payment_given_above_the_largest_amount": (
+        70,
+        dict(
+            private_pension_income=32_000,
+            property_finance_costs=2_800,
+            winter_fuel_payment=500,
+        ),
+        None,
+    ),
+    "charge_tapered_by_a_reform": (
+        70,
+        dict(private_pension_income=27_000),
+        tapered_charge,
+    ),
+    # Total income £35,100 with expenses and £34,300 with the allowance, so
+    # the £200 charge falls only on the expenses route.
+    "ceiling_given_as_nothing": (
+        70,
+        dict(private_pension_income=32_000, winter_fuel_payment_charge_ceiling=0),
+        None,
+    ),
+    "ceiling_neutralised_by_a_reform": (
+        70,
+        dict(private_pension_income=32_000),
+        neutralised_ceiling,
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "age, values, reform",
+    CHARGE_BEYOND_THE_CEILING.values(),
+    ids=CHARGE_BEYOND_THE_CEILING,
+)
+def test_a_charge_beyond_the_ceiling_is_still_compared(age, values, reform):
+    chosen = Simulation(situation=landlord(age, **values), reform=reform)
+    route = bool(chosen.calculate("uses_property_allowance", CHARGE_YEAR)[0])
+    tax, before_charge = taxes_on_route(landlord(age, **values), reform, route)
+    other_tax, other_before_charge = taxes_on_route(
+        landlord(age, **values), reform, not route
+    )
+    assert tax < other_tax
+    # Tax before the charge alone would choose the other route.
+    assert before_charge > other_before_charge
+
+
+INCOME_TAX_THE_SAME_ON_BOTH_ROUTES = {
+    "income_tax_given_as_an_input": (dict(income_tax=6_000), None),
+    # Review r2: a neutralised variable keeps the parts it adds.
+    "income_tax_neutralised_by_a_reform": (dict(), neutralised_income_tax),
+}
+
+
+@pytest.mark.parametrize(
+    "values, reform",
+    INCOME_TAX_THE_SAME_ON_BOTH_ROUTES.values(),
+    ids=INCOME_TAX_THE_SAME_ON_BOTH_ROUTES,
+)
+def test_income_tax_the_same_on_both_routes_leaves_the_default(values, reform):
+    """Income tax is the same on both routes, so the choice is a tie and the
+    default, expenses for receipts above the allowance, stands, although tax
+    before the charge is lower with the allowance."""
+    values = dict(employment_income=40_000, property_finance_costs=100, **values)
+    sim = Simulation(situation=landlord(50, **values), reform=reform)
+    assert not sim.calculate("uses_property_allowance", CHARGE_YEAR)[0]
+    _, before_charge_using = taxes_on_route(landlord(50, **values), reform, True)
+    _, before_charge_not_using = taxes_on_route(landlord(50, **values), reform, False)
+    assert before_charge_using < before_charge_not_using

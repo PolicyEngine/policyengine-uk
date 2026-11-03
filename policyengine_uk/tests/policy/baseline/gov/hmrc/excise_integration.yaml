@@ -22,6 +22,7 @@
     ni_employer: 0
     non_primary_residence_wealth_tax: 0
     private_school_vat: 0
+    private_school_vat_change: 0
     student_loan_repayments: 0
     tv_licence: 0
     vat: 0

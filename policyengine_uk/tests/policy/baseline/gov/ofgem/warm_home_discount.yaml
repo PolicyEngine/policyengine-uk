@@ -1,0 +1,389 @@
+# Warm Home Discount (England and Wales). Each case sets every qualifying
+# benefit explicitly so that only the named one is received.
+
+- name: Pension Credit recipient in England, 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 150
+
+- name: Universal Credit recipient in Wales, 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: WALES
+  output:
+    warm_home_discount: 150
+
+- name: Housing Benefit recipient in England, 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 1000
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    warm_home_discount: 150
+
+- name: Income-related ESA recipient in England, 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 1000
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: SOUTH_WEST
+  output:
+    warm_home_discount: 150
+
+- name: Income-based JSA qualifies in 2025-26
+  period: 2025
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 1000
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 150
+
+- name: Income Support qualifies in 2025-26
+  period: 2025
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 1000
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 150
+
+- name: Income-based JSA no longer qualifies in 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 1000
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0
+
+- name: Income Support no longer qualifies in 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 1000
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0
+
+- name: No qualifying benefit, 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0
+
+- name: Pension Credit recipient in Scotland is outside the England and Wales scheme
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+  output:
+    warm_home_discount: 0
+
+- name: Pension Credit recipient in Northern Ireland, where the scheme doesn't operate
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: NORTHERN_IRELAND
+  output:
+    warm_home_discount: 0
+
+- name: Not calculated before 2025-26, when the high-cost-to-heat test applied
+  period: 2024
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 1000
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0
+
+# HBAI counts the Warm Home Discount as miscellaneous income (DWP, HBAI
+# background information and methodology report FYE 2025). Council Tax is
+# set to zero so HBAI income is the benefit plus the rebate.
+
+- name: Rebate counts in HBAI income for a Universal Credit recipient in England
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        council_tax: 0
+  output:
+    warm_home_discount: 150
+    hbai_household_net_income: 1150
+    hbai_household_net_income_ahc: 1150
+
+- name: No rebate in HBAI income for a Universal Credit recipient in Scotland
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+        council_tax: 0
+  output:
+    warm_home_discount: 0
+    hbai_household_net_income: 1000
+    hbai_household_net_income_ahc: 1000
+
+- name: No rebate in HBAI income for income-based JSA in 2026-27
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 0
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 1000
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+        council_tax: 0
+  output:
+    warm_home_discount: 0
+    hbai_household_net_income: 1000
+    hbai_household_net_income_ahc: 1000
+
+- name: Universal Credit recipient in England, 2030-31, the last scheme year
+  period: 2030
+  input:
+    people:
+      person:
+        age: 35
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 150
+
+- name: No rebate in 2031-32, after the scheme period ends on 31 March 2031
+  period: 2031
+  input:
+    people:
+      person:
+        age: 35
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit: 0
+        universal_credit: 1000
+        housing_benefit: 0
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    warm_home_discount: 0

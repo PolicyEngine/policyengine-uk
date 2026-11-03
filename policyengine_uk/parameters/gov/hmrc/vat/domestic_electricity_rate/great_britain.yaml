@@ -1,0 +1,26 @@
+description: VAT rate on supplies of domestic electricity in England, Wales and Scotland. It is the reduced rate except while the temporary zero rate applies.
+values:
+  1994-04-01: 0.08
+  1997-09-01: 0.05
+  2026-10-01:
+    value: 0
+    metadata:
+      reference:
+        - title: The Value Added Tax (Supplies of Domestic Electricity) Order 2026 (SI 2026/987), article 3
+          href: https://www.legislation.gov.uk/uksi/2026/987/contents/made
+        - title: HMRC Revenue and Customs Brief 10 (2026)
+          href: https://www.gov.uk/government/publications/revenue-and-customs-brief-10-2026-temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain/temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain
+  2027-04-01: 0.05
+metadata:
+  unit: /1
+  period: year
+  label: VAT rate on domestic electricity, Great Britain
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 7A, Group 1
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
+    - title: The Value Added Tax (Supplies of Domestic Electricity) Order 2026 (SI 2026/987)
+      href: https://www.legislation.gov.uk/uksi/2026/987/contents/made
+  # Liability follows the date the electricity is consumed (Revenue and
+  # Customs Brief 10 (2026)). Day-weighting the fiscal year assumes equal
+  # daily use: FY 2026-27 has 183 days at 5% and 182 at 0%.
+  fiscal_year_blend: true

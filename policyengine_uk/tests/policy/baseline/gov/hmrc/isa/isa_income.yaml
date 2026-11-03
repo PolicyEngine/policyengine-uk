@@ -1,0 +1,93 @@
+# ISA Regulations1998 reg22; additive current household-input convention.
+# SI2026/1018 regs1/15 and FinanceAct2026 s5 for the separate final charge.
+
+- name: Additive ISA income is market income without cancelling unrelated taxable interest
+  period: 2026
+  input:
+    age: 35
+    employment_income: 30_000
+    savings_interest_income: 2_000
+    individual_savings_account_interest_income: 500
+    individual_savings_account_dividend_income: 300
+  output:
+    taxable_savings_interest_income: 2_000
+    taxable_dividend_income: 0
+    capital_income: 2_800
+    market_income: 32_800
+    household_market_income: 32_800
+
+- name: An explicit exempt-interest aggregate remains authoritative even when it differs from ISA interest
+  period: 2026
+  input:
+    age: 35
+    employment_income: 30_000
+    savings_interest_income: 2_000
+    individual_savings_account_interest_income: 500
+    tax_free_savings_income: 700
+  output:
+    taxable_savings_interest_income: 2_000
+    capital_income: 2_700
+    market_income: 32_700
+
+- name: An explicit zero exempt-interest aggregate is not replaced by an ISA default
+  period: 2026
+  input:
+    age: 35
+    savings_interest_income: 2_000
+    individual_savings_account_interest_income: 500
+    tax_free_savings_income: 0
+  output:
+    taxable_savings_interest_income: 2_000
+    capital_income: 2_000
+
+- name: Noncash ISA cash-interest detail defaults the ISA total but has no charge before fiscal2027
+  period: 2026
+  input:
+    age: 35
+    non_cash_isa_cash_interest: 100
+  output:
+    individual_savings_account_interest_income: 100
+    taxable_savings_interest_income: 0
+    capital_income: 100
+    market_income: 100
+    isa_cash_interest_flat_rate_charge: 0
+
+- name: The2027 manager charge applies despite unused income-tax allowances
+  period: 2027
+  input:
+    age: 35
+    non_cash_isa_cash_interest: 100
+  output:
+    individual_savings_account_interest_income: 100
+    taxable_savings_interest_income: 0
+    income_tax: 0
+    capital_income: 100
+    market_income: 100
+    isa_cash_interest_flat_rate_charge: 22
+
+- name: Noncash cash interest is an of-which detail of an explicitly supplied ISA total
+  period: 2027
+  input:
+    age: 35
+    individual_savings_account_interest_income: 500
+    non_cash_isa_cash_interest: 100
+  output:
+    taxable_savings_interest_income: 0
+    capital_income: 500
+    market_income: 500
+    isa_cash_interest_flat_rate_charge: 22
+
+
+- name: Tax Credits and total taxable income exclude ISA returns without losing ordinary interest or dividends
+  period: 2025
+  input:
+    age: 35
+    employment_income: 30_000
+    savings_interest_income: 2_000
+    dividend_income: 1_000
+    individual_savings_account_interest_income: 500
+    individual_savings_account_dividend_income: 300
+  output:
+    total_income: 33_000
+    # Step1 ordinary investment income3000, less the300 disregard, plus wages.
+    tax_credits_current_year_income: 32_700

@@ -1,0 +1,115 @@
+# HBAI income and market income count a landlord's profit after mortgage
+# interest. The Family Resources Survey, which HBAI is built from, asks for
+# rent from property "AFTER paying for any of the things on this card"; show
+# card K6 lists mortgage payments and interest on a loan to buy the property
+# (FRS 2023-24 question instructions, PropRent, p. 302). property_income is
+# the profit before those costs: since 2020-21 they are not deducted for
+# income tax (ITTOIA 2005 s. 272A(4)) and are relieved by a tax reduction at
+# the basic rate instead (s. 274A). 2026-27: personal allowance £12,570,
+# basic rate 20% on the first £37,700 of taxable income, employee NI 8%
+# from £12,570 to £50,270.
+
+- name: A landlord's mortgage interest is deducted from market and HBAI income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    property_income: 10_000
+    property_finance_costs: 4_000
+  output:
+    property_income_after_finance_costs: 6_000
+    # 40,000 + 10,000 - 4,000.
+    market_income: 46_000
+    household_market_income: 46_000
+    # (50,000 - 12,570) x 20% = 7,486, less 20% x 4,000 = 800 (s. 274A).
+    income_tax: 6_686
+    # (40,000 - 12,570) x 8%.
+    national_insurance: 2_194.40
+    # 46,000 - 6,686 - 2,194.40.
+    hbai_household_net_income: 37_119.60
+
+- name: Finance costs above the profit leave the landlord with the income of a non-landlord
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      landlord:
+        age: 40
+        employment_income: 40_000
+        property_income: 3_000
+        property_finance_costs: 8_000
+      employee:
+        age: 40
+        employment_income: 40_000
+    benunits:
+      benunit_1:
+        members: [landlord]
+      benunit_2:
+        members: [employee]
+    households:
+      household_1:
+        members: [landlord]
+      household_2:
+        members: [employee]
+  output:
+    # max(3,000 - 8,000, 0).
+    property_income_after_finance_costs: [0, 0]
+    market_income: [40_000, 40_000]
+    # Landlord: (43,000 - 12,570) x 20% = 6,086, less 20% x min(8,000,
+    # 3,000) = 600. Employee: (40,000 - 12,570) x 20%.
+    income_tax: [5_486, 5_486]
+    # 40,000 - 5,486 - 2,194.40 for both.
+    hbai_household_net_income: [32_319.60, 32_319.60]
+
+- name: Interest on the home is a housing cost and interest on a let property is not
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 40_000
+        property_income: 10_000
+        property_finance_costs: 4_000
+    households:
+      household:
+        members: [person1]
+        mortgage_interest_repayment: 3_000
+  output:
+    # As the first case: 46,000 - 6,686 - 2,194.40.
+    hbai_household_net_income: 37_119.60
+    # Less the 3,000 of interest on the household's own mortgage only.
+    hbai_household_net_income_ahc: 34_119.60
+
+- name: Joint landlords each count their share of the profit after interest
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 30_000
+        property_income: 5_000
+        property_finance_costs: 2_000
+      person2:
+        age: 40
+        employment_income: 30_000
+        property_income: 5_000
+        property_finance_costs: 2_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # 30,000 + 5,000 - 2,000 each.
+    market_income: [33_000, 33_000]
+    household_market_income: 66_000
+    # Each: (35,000 - 12,570) x 20% = 4,486, less 20% x 2,000 = 400.
+    income_tax: [4_086, 4_086]
+    # Each: (30,000 - 12,570) x 8%.
+    national_insurance: [1_394.40, 1_394.40]
+    # 66,000 - 2 x 4,086 - 2 x 1,394.40.
+    hbai_household_net_income: 55_039.20

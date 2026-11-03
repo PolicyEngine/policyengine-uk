@@ -37,7 +37,7 @@ class housing_benefit_specified_or_temporary_accommodation_disregard(Variable):
         person = benunit.members
         # Para 18(1)(b): the claimant or partner is an employed earner or a
         # self-employed earner. Anyone with earnings is, including statutory
-        # sick or maternity pay from a continuing employment and a
+        # sick, maternity or paternity pay from a continuing employment and a
         # self-employment loss. The amount is capped at net earnings in
         # housing_benefit_applicable_income_disregard, so a family without
         # net earnings gets nothing either way.

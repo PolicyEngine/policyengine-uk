@@ -20,10 +20,12 @@ class housing_benefit_applicable_income_disregard(Variable):
         "(housing_benefit_on_passporting_benefit) has all earnings "
         "disregarded, at any age: the working-age Regulations then apply "
         "(SI 2006/213 reg 5(1)(b)). The "
-        "£20 disregards for disabled people, carers and some part-time "
-        "occupations are not modelled, nor is the working-age permitted work "
-        "disregard (Sch 4 para 10A), which replaces paras 3 to 10 but not "
-        "para 18."
+        "£20 standard disregard uses established qualifying routes or an "
+        "explicit full-amount pre-assessment, without reconstructing partial "
+        "carer/occupation earnings allocations. A pre-assessed permitted-work amount "
+        "(housing_benefit_permitted_work_disregard) replaces the ordinary "
+        "standard amount, retaining a higher lone-parent disregard. It does "
+        "not replace the separate accommodation or additional disregard."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,18 +38,19 @@ class housing_benefit_applicable_income_disregard(Variable):
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/12",
         "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
         "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/10A",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5A",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/10A",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/5A",
     )
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         net_earnings = benunit("housing_benefit_net_earnings", period)
-        # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
-        weekly_amount = select(
-            [benunit("is_lone_parent", period), benunit("is_couple", period)],
-            [p.lone_parent, p.couple],
-            default=p.single,
+        # Share the selected/replaced standard with the savings-credit route.
+        standard = benunit(
+            "housing_benefit_applied_standard_earnings_disregard", period
         )
-        standard = min_(weekly_amount * WEEKS_IN_YEAR, net_earnings)
         # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
         # specified or temporary accommodation. It applies alongside paras 3
         # to 10A, none of which excludes it, and takes the earnings they

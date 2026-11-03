@@ -1,0 +1,14 @@
+description: The Childcare Offer for Wales counts these income sources as income from work for its minimum earnings test.
+metadata:
+  unit: list
+  period: year
+  label: Childcare Offer for Wales minimum earnings sources
+  reference:
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraphs 62, 64 and 67
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  # Para 67: dividends, other investment income and director loans do not
+  # count as income from work.
+  2019-08-01:
+    - employment_income
+    - self_employment_income

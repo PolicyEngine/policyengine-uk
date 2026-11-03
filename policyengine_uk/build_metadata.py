@@ -10,7 +10,6 @@ import re
 import subprocess
 import tomllib
 
-from policyengine_core import get_runtime_metadata as get_core_runtime_metadata
 
 PACKAGE_NAME = "policyengine-uk"
 PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -40,6 +39,8 @@ GIT_REPOSITORY_ENV_VARS = frozenset(
 GIT_SHA_PATTERN = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 # A git call that runs longer than this is treated as having no answer.
 GIT_TIMEOUT_SECONDS = 10
+# hatch_build.py writes this file to the wheel's .dist-info/extra_metadata/.
+BUILD_INFO_NAME = "build_info.json"
 DATA_BUILD_SURFACE = (
     "data",
     "parameters",
@@ -78,22 +79,29 @@ def _get_package_version() -> str:
 def _get_git_sha(package_root: Path = PACKAGE_ROOT) -> str | None:
     """Return the policyengine-uk commit that ``package_root`` was loaded from.
 
-    The commit comes from one of two places:
+    The commit comes from the first of these that has one:
 
     1. ``HEAD`` of policyengine-uk's own git checkout, when the package is
        imported from one (an editable or development install, including a
        git worktree).
     2. The ``vcs_info.commit_id`` that the installer recorded in PEP 610
        ``direct_url.json`` when it installed this copy from git.
+    3. The commit that ``hatch_build.py`` recorded in the wheel's
+       ``extra_metadata/build_info.json`` when it built the wheel from a
+       clean policyengine-uk checkout, as the release workflow does.
 
-    Anything else returns None, including wheel and sdist installs. A git
+    Anything else returns None, including sdist installs. A git
     repository that merely contains the install, such as a
     policyengine-uk-data checkout whose ``.venv`` holds policyengine-uk, is
     never consulted: its HEAD is that repository's commit, not this
     package's. The lookup never raises, because policyengine.py reads this
     metadata while loading the model.
     """
-    for get_sha in (_get_checkout_git_sha, _get_direct_url_git_sha):
+    for get_sha in (
+        _get_checkout_git_sha,
+        _get_direct_url_git_sha,
+        _get_build_info_git_sha,
+    ):
         try:
             sha = get_sha(package_root)
         except Exception:
@@ -128,22 +136,45 @@ def _get_checkout_git_sha(package_root: Path) -> str | None:
     return _as_git_sha(lines[2])
 
 
-def _get_direct_url_git_sha(package_root: Path) -> str | None:
-    # The installer writes direct_url.json into the dist-info directory next
-    # to the package it installed; another copy elsewhere on sys.path does
-    # not describe this one.
+def _get_installed_distribution(
+    package_root: Path,
+) -> metadata.Distribution | None:
+    # The installer writes the dist-info directory next to the package it
+    # installed; another copy elsewhere on sys.path does not describe this
+    # one.
     distributions = list(
         metadata.distributions(name=PACKAGE_NAME, path=[str(package_root.parent)])
     )
-    if len(distributions) != 1:
+    return distributions[0] if len(distributions) == 1 else None
+
+
+def _get_direct_url_git_sha(package_root: Path) -> str | None:
+    distribution = _get_installed_distribution(package_root)
+    if distribution is None:
         return None
     direct_url = json.loads(
-        _read_dist_info_file(distributions[0], "direct_url.json") or "{}"
+        _read_dist_info_file(distribution, "direct_url.json") or "{}"
     )
     vcs_info = direct_url.get("vcs_info") if isinstance(direct_url, dict) else None
     if not isinstance(vcs_info, dict) or vcs_info.get("vcs") != "git":
         return None
     return _as_git_sha(vcs_info.get("commit_id"))
+
+
+def _get_build_info_git_sha(package_root: Path) -> str | None:
+    # hatch_build.py records the commit in the dist-info of the wheel it
+    # built. The recorded version must be that distribution's.
+    distribution = _get_installed_distribution(package_root)
+    if distribution is None:
+        return None
+    build_info = json.loads(
+        _read_dist_info_file(distribution, f"extra_metadata/{BUILD_INFO_NAME}") or "{}"
+    )
+    if not isinstance(build_info, dict):
+        return None
+    if build_info.get("version") != distribution.version:
+        return None
+    return _as_git_sha(build_info.get("git_sha"))
 
 
 def _read_dist_info_file(distribution: metadata.Distribution, name: str) -> str | None:
@@ -201,6 +232,14 @@ def get_data_build_fingerprint() -> str:
         digest.update(file_path.read_bytes())
         digest.update(b"\0")
     return f"sha256:{digest.hexdigest()}"
+
+
+def get_core_runtime_metadata() -> dict[str, object]:
+    # Imported here, not at module level: hatch_build.py loads this module
+    # while building the wheel, where policyengine-core is not installed.
+    from policyengine_core import get_runtime_metadata
+
+    return get_runtime_metadata()
 
 
 def get_runtime_metadata() -> dict[str, object]:
