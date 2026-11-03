@@ -68,12 +68,15 @@ class income_support_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
-        tax = add_for_members(
-            benunit,
-            period,
-            ["legacy_means_test_deducted_income_tax", "national_insurance"],
-            members,
-        )
+        # The deduction can be negative for one person, where another
+        # member's earnings move a Step 7 charge off them; the test deducts the
+        # counted members' sum, floored at nil, so it never adds tax to income.
+        tax = max_(
+            0,
+            add_for_members(
+                benunit, period, ["legacy_means_test_deducted_income_tax"], members
+            ),
+        ) + add_for_members(benunit, period, ["national_insurance"], members)
         income += add_for_members(benunit, period, ["social_security_income"], members)
         # IS Regs 1987 Sch 9 para 16(h): £10 a week of widowed parent's
         # allowance is disregarded; social_security_income counts it in full.

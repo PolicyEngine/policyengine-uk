@@ -22,7 +22,7 @@ Invariants, for any generated population of families:
    legitimate way for income from capital to change the tax on counted
    income.
    Intended exception: earnings carry the extra tax they cause, including on
-   savings, dividends and rent (d1424, applied to all four tests). With
+   savings, dividends and rent, in all four tests. With
    earnings, income from capital can move that tax: earnings under the
    personal allowance can leave rent or dividends taxable. Where someone has
    earnings, each means-test income changes by exactly minus the change in
@@ -47,12 +47,8 @@ Invariants, for any generated population of families:
    legacy_means_test_income_tax, except where the nil floor on the tax on
    uncounted income binds. Within the basic rate band it is never below
    legacy_means_test_income_tax: earnings never lower the tax on income from
-   capital there.
-6. Differential: for every generated family without self-employment income,
-   Income Support, Housing Benefit and the council tax reduction line deduct,
-   for each person they count, the same income tax as Pension Credit's tax
-   line: the pre-charge income tax less
-   legacy_means_test_uncounted_income_tax_without_earnings.
+   capital there. Each test floors the sum of the deduction over the members
+   it counts at nil.
 5. Tariff: the council tax reduction tariff income that replaces the actual
    income from capital is never negative, never more than the yield at the
    16,000 capital limit (40 steps of 250 at 4.35 a month, 2,088 a year), nil
@@ -60,6 +56,16 @@ Invariants, for any generated population of families:
    pension age, whose local schemes set their own), and never falls when
    savings rise while the family stays on the same route (pensioner, UC
    award, passport, guarantee credit, savings credit only).
+6. Differential: for every generated family without self-employment income,
+   Income Support, Housing Benefit and the council tax reduction line deduct,
+   for each person they count, the same income tax as Pension Credit's tax
+   line: the pre-charge income tax less
+   legacy_means_test_uncounted_income_tax_without_earnings.
+7. Applicant: where the household head does not apply alone for council tax
+   reduction, council_tax_reduction_home_letting_income equals
+   legacy_benefits_home_letting_income; where the head applies alone, her
+   council tax reduction income moves with her own rent from letting part of
+   the home and not with anyone else's.
 """
 
 import numpy as np
@@ -133,6 +139,36 @@ def families(draw):
 
 
 populations = st.lists(families(), min_size=1, max_size=4)
+
+
+@st.composite
+def taxed_adults(draw, age):
+    """Adults whose pensions use up the personal allowance and whose income
+    from capital reaches about 20,000, so that it bears tax without
+    earnings."""
+    return dict(
+        age=age,
+        employment_income=0.0,
+        state_pension=draw(st.floats(0, 10_000)) if age >= 67 else 0.0,
+        private_pension_income=draw(st.floats(12_570, 20_000)),
+        property_income=draw(st.floats(0, 20_000)),
+        savings_interest_income=draw(st.floats(2_000, 20_000)),
+        dividend_income=draw(st.floats(0, 20_000)),
+        sublet_income=0.0,
+    )
+
+
+@st.composite
+def taxed_families(draw):
+    family = draw(families())
+    members = [
+        (role, draw(taxed_adults(attrs["age"])) if role == "adult" else attrs)
+        for role, attrs in family["members"]
+    ]
+    return dict(family, members=members)
+
+
+taxed_populations = st.lists(taxed_families(), min_size=1, max_size=4)
 
 
 def situation(
@@ -364,27 +400,23 @@ def test_legacy_means_test_income_tax_bounds(units, year):
 
 
 @PROPERTY_SETTINGS
-@given(populations, st.sampled_from(YEARS))
+@given(taxed_populations, st.sampled_from(YEARS))
 def test_deducted_tax_without_earnings_is_the_step_4_split(units, year):
-    no_earnings = [
-        dict(
-            unit,
-            members=[
-                (role, dict(attrs, employment_income=0.0) if role == "adult" else attrs)
-                for role, attrs in unit["members"]
-            ],
-        )
-        for unit in units
-    ]
+    """Nobody has earnings, and every adult's interest exceeds the personal
+    savings allowance on top of a pension that uses up the personal
+    allowance, so the tax on uncounted income is positive and the deduction
+    must leave all of it out."""
     v = calculate(
-        no_earnings,
+        units,
         year,
         [
             "legacy_means_test_income_tax",
             "legacy_means_test_deducted_income_tax",
+            "legacy_means_test_uncounted_income_tax_without_earnings",
             "income_tax_before_winter_fuel_payment_charge",
         ],
     )
+    assert (v["legacy_means_test_uncounted_income_tax_without_earnings"] > 0).any()
     # Equal unless the nil floor on the tax on uncounted income binds, where
     # the Step 4 split exceeds the pre-charge tax and the deduction is the
     # pre-charge tax.
@@ -536,4 +568,140 @@ def test_council_tax_reduction_tariff_income_is_bounded_and_monotone(
     assert np.all(
         more["council_tax_reduction_tariff_income"][same_route]
         >= tariff[same_route] - 0.01
+    )
+
+
+@PROPERTY_SETTINGS
+@given(populations, st.sampled_from(YEARS))
+def test_council_tax_reduction_letting_income_matches_the_legacy_measure(units, year):
+    """7. Applicant. Where the household head does not apply alone, the
+    council tax reduction applicant and partner are the benefit unit's
+    claimant and partner, so council_tax_reduction_home_letting_income equals
+    legacy_benefits_home_letting_income. (The two use different pension-age
+    tests, but the working-age and pension-age disregards have been equal
+    since April 2008.)"""
+    v = calculate(
+        units,
+        year,
+        [
+            "council_tax_reduction_head_applies_alone",
+            "council_tax_reduction_home_letting_income",
+            "legacy_benefits_home_letting_income",
+        ],
+    )
+    family = v["council_tax_reduction_head_applies_alone"] == 0
+    np.testing.assert_allclose(
+        v["council_tax_reduction_home_letting_income"][family],
+        v["legacy_benefits_home_letting_income"][family],
+        atol=0.01,
+    )
+
+
+# A household head who applies alone: a liable head sharing a benefit unit
+# with a young couple flagged as parents and their baby, so the couple are the
+# benefit unit's claimant and partner.
+head_alone_household = st.fixed_dictionaries(
+    dict(
+        head_age=st.integers(40, 95),
+        parent_ages=st.tuples(st.integers(16, 17), st.integers(16, 17)),
+        head_pension=st.floats(0, 20_000),
+        head_wages=st.one_of(st.just(0.0), st.floats(0, 20_000)),
+        head_rent=st.one_of(st.just(0.0), st.floats(0, 10_000)),
+        parent_rent=st.one_of(st.just(0.0), st.floats(0, 10_000)),
+        region=st.sampled_from(REGIONS),
+    )
+)
+
+
+def head_alone_situation(households, year, head_extra=0.0, parent_extra=0.0):
+    people, benunits, homes = {}, {}, {}
+    for i, h in enumerate(households):
+        head, mother, father, baby = (f"{r}{i}" for r in "hmfb")
+        people[head] = {
+            "age": {year: h["head_age"]},
+            "is_household_head": {year: True},
+            "private_pension_income": {year: h["head_pension"]},
+            "employment_income": {year: h["head_wages"]},
+            "sublet_income": {year: h["head_rent"] + head_extra},
+        }
+        people[mother] = {
+            "age": {year: h["parent_ages"][0]},
+            "is_parent": {year: True},
+            "is_household_head": {year: False},
+            "sublet_income": {year: h["parent_rent"] + parent_extra},
+        }
+        people[father] = {
+            "age": {year: h["parent_ages"][1]},
+            "is_parent": {year: True},
+            "is_household_head": {year: False},
+        }
+        people[baby] = {"age": {year: 0}, "is_household_head": {year: False}}
+        members = [head, mother, father, baby]
+        benunits[f"b{i}"] = {
+            "members": members,
+            "would_claim_uc": {year: False},
+            "universal_credit": {year: 0.0},
+            "tax_credits": {year: 0.0},
+        }
+        homes[f"h{i}"] = {
+            "members": members,
+            "region": {year: h["region"]},
+            "council_tax": {year: 1_500.0},
+            "savings": {year: 0.0},
+        }
+    return {"people": people, "benunits": benunits, "households": homes}
+
+
+HEAD_ALONE_VARIABLES = [
+    "council_tax_reduction_head_applies_alone",
+    "council_tax_reduction_pensioner",
+    "council_tax_reduction_home_letting_income",
+    "legacy_benefits_home_letting_income",
+    "council_tax_reduction_applicable_income",
+]
+
+
+def head_alone_values(households, year, **kwargs):
+    sim = Simulation(situation=head_alone_situation(households, year, **kwargs))
+    return {
+        v: np.asarray(sim.calculate(v, year), dtype=float) for v in HEAD_ALONE_VARIABLES
+    }
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(head_alone_household, min_size=1, max_size=4),
+    st.sampled_from(YEARS),
+    st.floats(1, 5_000),
+)
+def test_a_head_applying_alone_counts_only_her_own_letting_income(
+    households, year, extra
+):
+    """7. Applicant. Where the household head applies alone, she is the
+    council tax reduction applicant (SI 2012/2885 reg 2(1), Sch 1 para 11):
+    her income moves with her own rent from letting part of the home, by the
+    change in council_tax_reduction_home_letting_income wherever the scheme
+    counts it, and not with the benefit unit's claimant's or partner's."""
+    base = head_alone_values(households, year)
+    assert np.all(base["council_tax_reduction_head_applies_alone"] == 1)
+    more_own = head_alone_values(households, year, head_extra=extra)
+    more_others = head_alone_values(households, year, parent_extra=extra)
+    # Scotland's scheme for people under pension age lists no such income
+    # (SSI 2021/249 reg 57(1)).
+    region = np.array([h["region"] for h in households])
+    counts = ~((region == "SCOTLAND") & (base["council_tax_reduction_pensioner"] == 0))
+    income = "council_tax_reduction_applicable_income"
+    letting = "council_tax_reduction_home_letting_income"
+    np.testing.assert_allclose(
+        more_own[income] - base[income],
+        np.where(counts, more_own[letting] - base[letting], 0),
+        atol=0.02,
+    )
+    assert np.all(more_own[letting] >= base[letting] - 0.01)
+    np.testing.assert_allclose(more_others[income], base[income], atol=0.01)
+    np.testing.assert_allclose(more_others[letting], base[letting], atol=0.01)
+    # The couple's own legacy measure does count it.
+    assert np.all(
+        more_others["legacy_benefits_home_letting_income"]
+        >= base["legacy_benefits_home_letting_income"] - 0.01
     )

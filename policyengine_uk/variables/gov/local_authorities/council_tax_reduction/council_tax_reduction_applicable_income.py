@@ -351,12 +351,15 @@ class council_tax_reduction_applicable_income(Variable):
         pension_contributions = add_for_members(
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
-        tax = add_for_members(
-            benunit,
-            period,
-            ["legacy_means_test_deducted_income_tax", "national_insurance"],
-            members,
-        )
+        # The deduction can be negative for one person, where another
+        # member's earnings move a Step 7 charge off them; the test deducts the
+        # counted members' sum, floored at nil, so it never adds tax to income.
+        tax = max_(
+            0,
+            add_for_members(
+                benunit, period, ["legacy_means_test_deducted_income_tax"], members
+            ),
+        ) + add_for_members(benunit, period, ["national_insurance"], members)
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
         # earnings disregards, capped at net earnings. Zero for working-age

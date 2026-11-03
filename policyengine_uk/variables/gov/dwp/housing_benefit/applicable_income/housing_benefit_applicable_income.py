@@ -107,8 +107,15 @@ def hb_income_before_deductions(benunit, period, parameters):
     # Tax only on the income taken into account (HB Regs 2006 Sch 5 para 1;
     # HB (SPC) Regs 2006 reg 33(12)), before the winter fuel payment charge,
     # with earnings carrying the extra tax they cause.
-    TAX_COMPONENTS = ["legacy_means_test_deducted_income_tax", "national_insurance"]
-    tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
+    # The deduction can be negative for one person, where another
+    # member's earnings move a Step 7 charge off them; the test deducts the
+    # counted members' sum, floored at nil, so it never adds tax to income.
+    tax = max_(
+        0,
+        add_for_members(
+            benunit, period, ["legacy_means_test_deducted_income_tax"], members
+        ),
+    ) + add_for_members(benunit, period, ["national_insurance"], members)
     increased_income_reduced_by_tax_and_pensions = (
         increased_income - tax - pension_contributions
     )
