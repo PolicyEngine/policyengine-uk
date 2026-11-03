@@ -19,33 +19,31 @@ class council_tax_reduction_carer_premium(Variable):
         "an award of Universal Credit which includes the carer element. "
         "carer_premium tests limbs (a) and (b) "
         "(is_entitled_to_carer_benefit). For limb (c), the Scottish Ministers "
-        "defined an award of Universal Credit to include one with a value of "
-        "zero from 1 April 2022 (reg 4, as amended by SSI 2022/52 reg 3), and "
-        "from 1 April 2025 as an award made under Part 1 of the Welfare Reform "
-        "Act 2012 (SSI 2025/24 reg 8), under which an income that tapers the "
-        "award to nil leaves no award (s.5(1)(b); UC Regs 2013 reg 17). The "
-        "model reads the earlier definition as reaching a carer whose "
-        "earnings take the award to nil, and so counts that nil award from "
-        "2022-23 to 2024-25. The sources leave that reading open. UC Claims "
-        "and Payments Regs 2013 reg 32A(1)(a) covers a claim on which DWP "
-        "makes no award because income fails the financial condition in "
-        "s.5(1)(b). The Scottish Government's policy note "
-        "to SSI 2025/24 records a 2022 intention to treat such a claimant as "
-        "having an award, but calls reg 10A an expansion that gives the "
-        "intention effect. Ipswich BC v TD [2024] UKUT 117 (AAC) holds that "
-        "a nil award carries no Universal Credit entitlement, without "
-        "construing the Scottish definition. While the earlier definition "
-        "holds (uc_award_includes_zero_value_award), this variable reads limb "
-        "(c) from the award's conditions: the family claims Universal Credit, "
-        "meets its basic conditions and does not take Tax-Free Childcare "
-        "instead, and the award includes the carer element for this "
-        "claimant. Afterwards it reads the positive award "
-        "(receives_uc_carer_element). From 1 April "
+        "defined an award of Universal Credit from 1 April 2022 to include "
+        '"a universal credit award with a value of zero" (reg 4, as SSI '
+        '2022/52 reg 3 amended it), and from 1 April 2025 as "an award of '
+        'universal credit made under Part 1 of the 2012 Act" (SSI 2025/24 '
+        "reg 8). An income that tapers the amount payable below one penny "
+        "fails a financial condition of entitlement (Welfare Reform Act 2012 "
+        "s.5(1)(b); UC Regs 2013 reg 17), so DWP makes no award or the award "
+        "ends (UC Claims and Payments Regs 2013 reg 32A(1)), and there is no "
+        "award to have a value of zero. The Scottish Government's policy "
+        "note to SSI 2025/24 confines the earlier words to an award a "
+        "sanction reduces to zero, and the Scottish Ministers inserted reg "
+        "10A to bring part of the earnings case in from 1 April 2025. So in "
+        "every year from 2022-23 the model reads limb (c) from the award "
+        "itself (receives_uc_carer_element): an award of at least one penny "
+        "that includes the carer element in respect of this claimant. For "
+        "an award that earnings end, its last assessment period and any "
+        "reclaim months from 2022-23 to 2024-25 remain arguable; the model "
+        "cannot tell that award from a first claim, on which DWP makes no "
+        "award. From 1 April "
         "2025 the Scottish Ministers also count two nil awards as awards (reg "
         "10A): one a sanction reduces to nil, and one whose claimant the "
         "Secretary of State treats as reclaiming after earnings end it (UC "
         "Claims and Payments Regs 2013 reg 32A). The model has neither "
-        "sanctions nor reclaims, so it pays no premium for those. A person "
+        "sanctions nor reclaims, so it pays no premium for those, nor for "
+        "a sanctioned nil award from 2022-23 to 2024-25. A person "
         "with both an allowance and a carer element qualifies once: councils "
         "include the premium for each applicant or partner who qualifies "
         "(paras 5(2) and (3)), not for each award. Partners caring for the "
@@ -66,12 +64,16 @@ class council_tax_reduction_carer_premium(Variable):
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/5",
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/6",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/1",
-        "https://www.legislation.gov.uk/ssi/2021/249/regulation/4/2024-04-30",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/4/2022-04-01",
+        "https://www.legislation.gov.uk/ssi/2022/52/regulation/3/made",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/4/2025-04-01",
         "https://www.legislation.gov.uk/ssi/2025/24/regulation/8/made",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/10A",
         "https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/14/2021-04-01",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/29",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/5",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/17",
+        "https://www.legislation.gov.uk/uksi/2013/380/regulation/32A",
     )
 
     def formula(benunit, period, parameters):
@@ -87,20 +89,9 @@ class council_tax_reduction_carer_premium(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         # SSI 2021/249 Sch 1 para 6(1)(c): an award of Universal Credit which
-        # includes the carer element. Until 31 March 2025 the model counts a
-        # nil award as one "with a value of zero" (reg 4), a reading the
-        # sources leave open, so the award's conditions decide.
+        # includes the carer element. An earnings nil case has no award in
+        # any year (Welfare Reform Act 2012 s.5(1)(b); reg 4 and reg 10A).
         carer_element_award = person("receives_uc_carer_element", period)
-        if scotland.uc_award_includes_zero_value_award:
-            family = person.benunit
-            on_claim = (
-                family("claims_universal_credit", period)
-                & family("is_uc_eligible", period)
-                & ~family("forgoes_universal_credit_for_tax_free_childcare", period)
-            )
-            carer_element_award = carer_element_award | (
-                on_claim & person("uc_carer_element_included_for_claimant", period)
-            )
         # Para 6(1)(a) and (b), as in carer_premium, or (c).
         caring = person("is_entitled_to_carer_benefit", period) | carer_element_award
         qualifying_carers = benunit.sum(claimant_or_partner & caring)
