@@ -168,10 +168,7 @@ def as_members(rows, **inputs):
     # Each young person sits in the benefit unit of a 70-year-old claimant,
     # so they are not the claimant or partner.
     claimant = member(70, is_claimant_or_partner=True, **{SIXTEEN: False})
-    return [
-        [[claimant, member(**{SIXTEEN: False, **row, **inputs})]]
-        for row in rows
-    ]
+    return [[[claimant, member(**{SIXTEEN: False, **row, **inputs})]] for row in rows]
 
 
 def test_income_support_ends_three_statuses_and_not_universal_credit():
