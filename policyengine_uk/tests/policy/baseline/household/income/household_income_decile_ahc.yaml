@@ -1,0 +1,40 @@
+- name: Case 1, person-weighted AHC ranks differ from BHC ranks
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+      person2:
+        age: 40
+      person3:
+        age: 40
+      person4:
+        age: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+      benunit3:
+        members: [person3, person4]
+    households:
+      household1:
+        members: [person1]
+        household_weight: 2
+        equiv_hbai_household_net_income_ahc: 3000
+        equiv_hbai_household_net_income: 1000
+      household2:
+        members: [person2]
+        household_weight: 1
+        equiv_hbai_household_net_income_ahc: 1000
+        equiv_hbai_household_net_income: 2000
+      household3:
+        members: [person3, person4]
+        household_weight: 1
+        equiv_hbai_household_net_income_ahc: 2000
+        equiv_hbai_household_net_income: 3000
+  output:
+    household_count_people: [1, 1, 2]
+    household_income_decile_ahc: [10, 2, 6]
+    household_income_decile: [4, 6, 10]
+    equiv_hbai_household_net_income_ahc: [3000, 1000, 2000]

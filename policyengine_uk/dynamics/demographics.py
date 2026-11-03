@@ -14,15 +14,16 @@ import numpy as np
 import pandas as pd
 
 
-def benunit_age_18_composition(sim) -> pd.DataFrame:
-    """Per-person view of their benefit unit, split at age 18.
+def benunit_age_18_composition(sim, year=None) -> pd.DataFrame:
+    """Per-person view of their benefit unit, split at age 18, in year (the
+    simulation's default period if None).
 
     Returns a DataFrame aligned with the person entity, with columns:
     - count_under_18: benefit-unit members under 18;
     - youngest_under_18_age: age of the youngest such member (inf if none);
     - count_aged_18_or_over: benefit-unit members aged 18 or over.
     """
-    age = np.asarray(sim.calculate("age"), dtype=float)
+    age = np.asarray(sim.calculate("age", year), dtype=float)
     # Position of each person's benefit unit, from the simulation's own entity
     # structure (works for datasets and hand-built situations alike).
     benunit_id = np.asarray(sim.populations["benunit"].members_entity_id)

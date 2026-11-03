@@ -1,0 +1,1581 @@
+"""Comparison and rendering of two measurements, on synthetic results."""
+
+import copy
+import json
+import math
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+from policyengine_uk.utils.aggregate_impact import COMMENT_MARKER, TOOL_SCHEMA
+from policyengine_uk.utils.aggregate_impact.compare import (
+    REQUIRED_CHECKS,
+    _match,
+    classify_check,
+    compare,
+    decile_impacts,
+)
+from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
+    _rebuilt,
+)
+from policyengine_uk.utils.aggregate_impact.measure import (
+    Recorder,
+    definitions_digest,
+    runtime_identity,
+    tool_digest,
+    weighted_gini,
+)
+from policyengine_uk.utils.aggregate_impact.partition import (
+    default_partition_path,
+    group_label,
+    load_partition,
+)
+from policyengine_uk.utils.aggregate_impact.reforms import load_reforms
+from policyengine_uk.utils.aggregate_impact.render import fmt_change, fmt_level, render
+from policyengine_uk.utils.aggregate_impact.spec import Threshold, load_spec
+
+SPEC = load_spec()
+YEARS = SPEC.years
+SHA = "5" * 64
+
+KINDS = {
+    "receipts": "gbp",
+    "caseloads": "count",
+    "poverty": "rate",
+    "inequality": "index",
+}
+finite = st.floats(-1e12, 1e12, allow_nan=False, allow_infinity=False)
+
+
+def check(check_id, status="pass", failing=()):
+    return {
+        "id": check_id,
+        "label": check_id,
+        "section": "s",
+        "severity": "fail",
+        "status": status,
+        "details": ["d"] if status != "pass" else [],
+        "failing": {
+            scope: "d" for scope in (failing or ([""] if status == "fail" else []))
+        },
+    }
+
+
+def result(values, checks=(), sha=SHA, status="ok", partition_sha="p", required=True):
+    """A measurement with one metric per (section, name) and the given checks."""
+    all_checks = [check(c) for c in REQUIRED_CHECKS] if required else []
+    for entry in checks:
+        all_checks.append(check(*entry) if isinstance(entry, tuple) else entry)
+    return {
+        "schema": TOOL_SCHEMA,
+        "status": status,
+        "label": "x",
+        "years": YEARS,
+        "provenance": {
+            "dataset": {"verified_sha256": sha, "path": "d.h5"},
+            "git_sha": "abc",
+        },
+        "runtime": {
+            "distributions": ["numpy==2.0"],
+            "python": "3.13",
+            "machine": "arm64",
+        },
+        "partition": {"sha256": partition_sha, "source": "s"},
+        "metrics": [
+            {
+                "id": f"{section}.{name}",
+                "label": name,
+                "section": section,
+                "group": None,
+                "kind": KINDS[section],
+                "unit": None,
+                "values": {str(y): v for y, v in zip(YEARS, series)},
+            }
+            for (section, name), series in values.items()
+        ],
+        "checks": all_checks,
+        "guard": {"status": "skipped", "reason": "test"},
+        "reforms": [],
+        "timings": {"total": 1},
+    }
+
+
+metric_values = st.dictionaries(
+    st.tuples(st.sampled_from(sorted(KINDS)), st.sampled_from(["a", "b", "c"])),
+    st.lists(finite, min_size=len(YEARS), max_size=len(YEARS)),
+    min_size=1,
+    max_size=6,
+)
+
+
+@pytest.mark.parametrize(
+    "base, head, blocking, expected",
+    [
+        ("pass", "pass", False, "pass"),
+        ("fail", "pass", False, "fixed"),
+        ("warn", "pass", False, "fixed"),
+        (None, "pass", False, "pass"),
+        ("pass", "fail", False, "regression"),
+        (None, "fail", False, "regression"),
+        ("skipped", "fail", False, "regression"),
+        ("fail", "fail", False, "pre_existing"),
+        ("fail", "fail", True, "regression"),
+        ("warn", "fail", False, "regression"),
+        ("pass", "warn", False, "new_warning"),
+        ("warn", "warn", False, "warning"),
+        ("pass", "skipped", False, "skipped"),
+        ("pass", None, False, "removed"),
+    ],
+)
+def test_check_classification(base, head, blocking, expected):
+    assert classify_check(base, head, blocking) == expected
+
+
+@settings(max_examples=200, deadline=None)
+@given(
+    base=st.sets(st.sampled_from(["2025", "2026", "2027", ""])),
+    head=st.sets(st.sampled_from(["2025", "2026", "2027", ""]), min_size=1),
+)
+def test_a_failure_is_pre_existing_only_if_the_base_fails_everywhere_the_head_does(
+    base, head
+):
+    verdict = classify_check("fail" if base else "pass", "fail", False, base, head)
+    assert verdict == ("pre_existing" if base and head <= base else "regression")
+
+
+@settings(max_examples=60, deadline=None)
+@given(values=metric_values)
+def test_identical_sides_change_nothing(values):
+    side = result(values, checks=[("identity:x", "pass"), ("sign:y", "fail")])
+    summary = compare(side, copy.deepcopy(side), SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    assert summary["flags"] == []
+    assert all(not row["changed"] for row in summary["rows"])
+    assert {c["classification"] for c in summary["checks"]} == {"pass", "pre_existing"}
+
+
+@settings(max_examples=60, deadline=None)
+@given(base=metric_values, data=st.data())
+def test_changes_are_antisymmetric(base, data):
+    head = {k: [v + data.draw(finite) for v in series] for k, series in base.items()}
+    forward = {r["id"]: r for r in compare(result(base), result(head), SPEC)["rows"]}
+    backward = {r["id"]: r for r in compare(result(head), result(base), SPEC)["rows"]}
+    for metric_id, row in forward.items():
+        for year, cell in row["values"].items():
+            assert cell["delta"] == pytest.approx(
+                -backward[metric_id]["values"][year]["delta"], abs=1e-3
+            )
+
+
+@settings(max_examples=200, deadline=None)
+@given(base=finite, head=finite, absolute=st.floats(0, 1e9), relative=st.floats(0, 0.5))
+def test_a_move_is_flagged_exactly_when_it_exceeds_the_larger_bound(
+    base, head, absolute, relative
+):
+    threshold = Threshold(absolute, relative)
+    assert threshold.exceeded(base, head) == (
+        abs(head - base) > max(absolute, relative * abs(base))
+    )
+
+
+# The data axis: one model, two datasets (uk-data pull requests).
+
+
+@pytest.fixture(scope="module")
+def shipped_model_measurement():
+    """Real model identities with synthetic, data-free measurement values."""
+    partition = load_partition(default_partition_path())
+    spec = load_spec()
+    measured = result({})
+    measured["partition"] = partition.as_dict()
+    measured["runtime"] = runtime_identity()
+    # This synthetic measurement assumes released dependencies, regardless
+    # of which editable dependencies a developer uses to run these tests.
+    measured["runtime"]["local_installs"] = []
+    tool_sha = tool_digest()
+    definitions_sha = definitions_digest(spec, load_reforms())
+    measured["provenance"].update(
+        tool_sha256=tool_sha,
+        definitions_sha256=definitions_sha,
+        metrics_version=f"{TOOL_SCHEMA}+{tool_sha[:16]}+{definitions_sha[:16]}",
+        model_loaded_before_fingerprint=False,
+    )
+    rec = Recorder()
+    for head in partition.heads:
+        section = "receipts" if head.kind == "tax" else "spending"
+        for year in spec.years:
+            rec.metric(
+                f"{section}.{head.id}",
+                head.label,
+                section,
+                "gbp",
+                year,
+                1.0,
+                group=group_label(head.report_group),
+            )
+    measured["metrics"] = list(rec.metrics.values())
+    return measured
+
+
+def test_shipped_model_data_axis_self_comparison(shipped_model_measurement):
+    side = shipped_model_measurement
+    assert any(
+        h["variable"] == "war_widows_pension"
+        for h in side["partition"]["spending_heads"]
+    )
+    summary = compare(side, copy.deepcopy(side), SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert any(r["id"] == "spending.war_widows_pension" for r in summary["rows"])
+    assert all(not row["changed"] for row in summary["rows"])
+
+
+def test_shipped_model_allows_distinct_data_only_on_the_data_axis(
+    shipped_model_measurement,
+):
+    base, head = (
+        copy.deepcopy(shipped_model_measurement),
+        copy.deepcopy(shipped_model_measurement),
+    )
+    head["provenance"]["dataset"]["verified_sha256"] = "2" * 64
+    # The caller's checkout is provenance, separate from the imported model.
+    head["provenance"]["git_sha"] = "different-caller-checkout"
+    model_summary = compare(base, head, SPEC)
+    assert model_summary["status"] == "fail"
+    assert any("same verified dataset" in f for f in model_summary["failures"])
+    data_summary = compare(base, head, SPEC, axis="data")
+    assert data_summary["status"] == "pass", data_summary["failures"]
+
+
+@pytest.mark.parametrize(
+    "path, value, message",
+    [
+        (("runtime", "policyengine_uk"), "9.9.9", "one policyengine-uk version"),
+        (
+            ("runtime", "policyengine_uk_fingerprint"),
+            "e" * 64,
+            "one policyengine-uk fingerprint",
+        ),
+        (("runtime", "distributions"), ["different-dependency==0.0"], "one runtime"),
+        (("runtime", "python"), "different-python", "one runtime"),
+        (("runtime", "machine"), "different-machine", "one runtime"),
+        (("partition", "sha256"), "different-partition", "fiscal partition"),
+        (
+            ("provenance", "metrics_version"),
+            "different-definitions",
+            "metric definitions",
+        ),
+        (("provenance", "dataset", "verified_sha256"), None, "record the bytes"),
+    ],
+    ids=[
+        "version",
+        "fingerprint",
+        "dependencies",
+        "python",
+        "machine",
+        "partition",
+        "metrics",
+        "dataset",
+    ],
+)
+def test_shipped_model_data_axis_rejects_identity_differences(
+    shipped_model_measurement, path, value, message
+):
+    base, head = (
+        copy.deepcopy(shipped_model_measurement),
+        copy.deepcopy(shipped_model_measurement),
+    )
+    head["provenance"]["dataset"]["verified_sha256"] = "2" * 64
+    field = head
+    for key in path[:-1]:
+        field = field[key]
+    if value is None:
+        field.pop(path[-1])
+    else:
+        field[path[-1]] = value
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
+
+
+def _on(data_sha, **provenance):
+    measured = result({("receipts", "a"): [1.0] * len(YEARS)}, sha=data_sha)
+    measured["provenance"].update(
+        {"metrics_version": "m", "model_loaded_before_fingerprint": False, **provenance}
+    )
+    measured["runtime"].update(
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=["policyengine-uk-data"],
+    )
+    return measured
+
+
+def test_the_data_axis_allows_two_datasets_but_the_model_axis_does_not():
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC)["status"] == "fail"
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "pass", summary["failures"]
+    assert summary["axis"] == "data"
+
+
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (
+            lambda r: r["runtime"].update(policyengine_uk_fingerprint="e" * 64),
+            "one policyengine-uk fingerprint",
+        ),
+        (
+            lambda r: r["runtime"].update(policyengine_uk="9.9.9"),
+            "one policyengine-uk version",
+        ),
+        (lambda r: r["runtime"].update(distributions=["numpy==9.0"]), "one runtime"),
+        (lambda r: r["partition"].update(sha256="other"), "fiscal partition"),
+        (
+            lambda r: r["provenance"].update(metrics_version="other"),
+            "metric definitions",
+        ),
+        (
+            lambda r: r["provenance"]["dataset"].pop("verified_sha256"),
+            "record the bytes",
+        ),
+    ],
+)
+def test_a_data_comparison_fails_unless_only_the_data_differs(change, message):
+    base, head = _on("1" * 64), _on("2" * 64)
+    change(head)
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any(message in f for f in summary["failures"]), summary["failures"]
+
+
+def test_the_data_axis_does_not_match_households_across_datasets():
+    base, head = _on("1" * 64), _on("2" * 64)
+    households = {"2025": {"household_id": np.arange(3)}}
+    summary = compare(
+        base,
+        head,
+        SPEC,
+        base_households=households,
+        head_households=households,
+        axis="data",
+    )
+    assert summary["deciles"] == {}
+    assert "not matched" in summary["decile_notes"][0]
+    text = render(summary, SPEC)
+    assert "## Aggregate impact of the data change: pass" in text
+    assert "Base dataset" in text and "not matched" in text
+
+
+@settings(max_examples=50, deadline=None)
+@given(values=metric_values)
+def test_a_data_comparison_with_itself_moves_nothing(values):
+    side = result(values)
+    side["provenance"].update(
+        metrics_version="m", model_loaded_before_fingerprint=False
+    )
+    side["runtime"].update(
+        policyengine_uk="2.122.2",
+        policyengine_uk_fingerprint="f" * 64,
+        local_installs=[],
+    )
+    summary = compare(side, side, SPEC, axis="data")
+    assert summary["status"] == "pass"
+    assert not any(row["changed"] for row in summary["rows"])
+    assert summary["flags"] == []
+    assert "Both sides measured the same dataset bytes." in summary["warnings"]
+
+
+def test_an_unknown_axis_is_refused():
+    with pytest.raises(ValueError, match="axis"):
+        compare(_on("1" * 64), _on("1" * 64), SPEC, axis="sideways")
+
+
+def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch):
+    """With --dataset-file and no --pin, the measured bytes are the identity."""
+    import policyengine_uk
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+    from policyengine_uk.utils.aggregate_impact import measure as measure_module
+    from policyengine_uk.utils.aggregate_impact.dataset import sha256_file
+
+    built = tmp_path / "enhanced_frs_2024_25.h5"
+    built.write_bytes(b"not really an h5 file")
+
+    class StubSimulation:
+        def __init__(self, dataset=None, reform=None):
+            self.dataset = dataset
+
+    def stub_measure(
+        sim,
+        factory,
+        partition,
+        spec,
+        label,
+        reforms,
+        run_guard,
+        provenance,
+        fingerprint_at_start=None,
+    ):
+        return {
+            "schema": "x",
+            "status": "ok",
+            "provenance": provenance,
+            "metrics": [],
+            "timings": {"total": 0},
+        }, None
+
+    monkeypatch.setattr(policyengine_uk, "Microsimulation", StubSimulation)
+    monkeypatch.setattr(measure_module, "measure", stub_measure)
+    out = tmp_path / "out"
+    code = cli.main(
+        [
+            "measure",
+            "--label",
+            "head",
+            "--dataset-file",
+            str(built),
+            "--dataset-label",
+            "uk-data #595 head build",
+            "--no-reforms",
+            "--no-guard",
+            "--out",
+            str(out),
+        ]
+    )
+    assert code == 0
+    dataset = json.loads((out / "result.json").read_text())["provenance"]["dataset"]
+    assert dataset == {
+        "path": "enhanced_frs_2024_25.h5",
+        "data_package": "unpinned build",
+        "data_version": "uk-data #595 head build",
+        "verified_sha256": sha256_file(built),
+    }
+
+
+def test_flags_follow_the_spec_thresholds():
+    base = {("receipts", "a"): [100e9] * len(YEARS)}
+    small = {("receipts", "a"): [100e9 + 50e6] * len(YEARS)}
+    large = {("receipts", "a"): [100e9 + 200e6] * len(YEARS)}
+    assert compare(result(base), result(small), SPEC)["flags"] == []
+    assert len(compare(result(base), result(large), SPEC)["flags"]) == len(YEARS)
+
+
+CRASHED = {
+    "schema": TOOL_SCHEMA,
+    "status": "crashed",
+    "error": "Traceback\nValueError: boom",
+}
+ONE = {("receipts", "a"): [1.0] * len(YEARS)}
+
+
+def test_a_crashed_or_missing_head_fails():
+    summary = compare(result(ONE), CRASHED, SPEC)
+    assert summary["status"] == "fail" and "boom" in summary["failures"][0]
+    assert compare(result(ONE), None, SPEC)["status"] == "fail"
+
+
+def test_a_crashed_or_missing_base_fails_unless_it_is_not_required():
+    for base in (CRASHED, None):
+        assert compare(base, result(ONE), SPEC)["status"] == "fail"
+        relaxed = compare(base, result(ONE), SPEC, require_base=False)
+        assert relaxed["status"] == "pass" and relaxed["warnings"]
+
+
+def test_without_a_base_the_heads_own_failing_checks_block():
+    head = result(ONE, checks=[("identity:x", "fail")])
+    summary = compare(None, head, SPEC, require_base=False)
+    assert summary["status"] == "fail"
+    assert any("identity:x" in f for f in summary["failures"])
+
+
+def test_different_datasets_fail():
+    summary = compare(result(ONE), result(ONE, sha="6" * 64), SPEC)
+    assert summary["status"] == "fail"
+
+
+def test_non_finite_head_figures_block_even_when_the_base_shares_them():
+    checks = [check("finite:x", "fail")]
+    summary = compare(result(ONE, checks), result(ONE, checks), SPEC)
+    assert summary["status"] == "fail"
+
+
+def test_a_non_finite_head_figure_fails_even_if_no_check_caught_it():
+    """Reform costings are measured after most checks; compare looks itself."""
+    bad = {("receipts", "a"): [1.0] * (len(YEARS) - 1) + [float("nan")]}
+    summary = compare(result(ONE), result(bad), SPEC)
+    assert summary["status"] == "fail"
+    assert any("not finite" in f for f in summary["failures"])
+
+
+def test_a_newly_failing_year_is_a_regression_not_pre_existing():
+    base = result(ONE, checks=[check("identity:x", "fail", ["2025"])])
+    same = result(ONE, checks=[check("identity:x", "fail", ["2025"])])
+    worse = result(ONE, checks=[check("identity:x", "fail", ["2025", "2026"])])
+    assert compare(base, same, SPEC)["status"] == "pass"
+    summary = compare(base, worse, SPEC)
+    assert summary["status"] == "fail"
+    assert any("identity:x" in f for f in summary["failures"])
+
+
+def test_a_check_that_vanishes_fails_unless_the_partition_changed():
+    base = result(ONE, checks=[("sign:vat", "pass")])
+    summary = compare(base, result(ONE), SPEC)
+    assert summary["status"] == "fail"
+    assert any("sign:vat" in f for f in summary["failures"])
+    edited = compare(base, result(ONE, partition_sha="q"), SPEC)
+    assert edited["status"] == "pass"
+    assert any("sign:vat" in w for w in edited["warnings"])
+
+
+def test_a_head_without_the_required_checks_fails():
+    summary = compare(result(ONE), result(ONE, required=False), SPEC)
+    assert summary["status"] == "fail"
+    assert any("finite:metrics" in f for f in summary["failures"])
+
+
+def test_a_check_that_no_longer_applies_is_noted_not_failed():
+    base = result(ONE, checks=[("counted_once:x", "pass")])
+    head = result(ONE, checks=[check("counted_once:x", "skipped")])
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass"
+    assert any("counted_once:x" in w for w in summary["warnings"])
+
+
+def test_a_figure_on_one_side_only_is_a_change():
+    two = {**ONE, ("receipts", "b"): [2.0] * len(YEARS)}
+    removed = compare(result(two), result(ONE), SPEC)
+    row = next(r for r in removed["rows"] if r["id"] == "receipts.b")
+    assert row["changed"] and row["only_in"] == "base"
+    text = render(removed, SPEC)
+    assert "removed: base levels" in text
+    assert "No change in any year:** receipts" not in text
+    added = compare(result(ONE), result(two), SPEC)
+    assert "new: head levels" in render(added, SPEC)
+
+
+def test_strict_mode_fails_pre_existing_failures():
+    side = result(ONE, checks=[("sign:vat", "fail")])
+    assert compare(side, copy.deepcopy(side), SPEC)["status"] == "pass"
+    assert compare(side, copy.deepcopy(side), SPEC, strict=True)["status"] == "fail"
+
+
+def test_a_partition_edit_is_noted():
+    summary = compare(result(ONE), result(ONE, partition_sha="q"), SPEC)
+    assert any("partition" in w for w in summary["warnings"])
+
+
+def test_households_match_only_one_to_one():
+    assert _match(np.array([1, 2]), np.array([1, 2, 3])) is None
+    assert _match(np.array([1, 2]), np.array([1, 1])) is None
+    assert _match(np.array([1, 1]), np.array([1, 1])) is None
+    assert np.array_equal(_match(np.array([1, 2, 3]), np.array([3, 1, 2])), [1, 2, 0])
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    ids=st.lists(st.integers(0, 10_000), min_size=1, max_size=60, unique=True),
+    data=st.data(),
+)
+def test_matching_recovers_any_permutation(ids, data):
+    base = np.array(ids)
+    head = np.array(data.draw(st.permutations(ids)))
+    matched = _match(base, head)
+    assert matched is not None and np.array_equal(head[matched], base)
+
+
+def households(n, rng, decile=None, income=None, weight=None):
+    return {
+        str(y): {
+            "household_id": np.arange(n),
+            "household_weight": weight
+            if weight is not None
+            else rng.uniform(1, 1000, n),
+            "household_count_people": rng.integers(1, 6, n).astype(float),
+            "decile": decile if decile is not None else rng.integers(1, 11, n),
+            "income": income if income is not None else rng.uniform(1e3, 1e5, n),
+        }
+        for y in YEARS
+    }
+
+
+@settings(max_examples=30, deadline=None)
+@given(seed=st.integers(0, 2**32 - 1), n=st.integers(20, 400))
+def test_decile_impacts_match_a_direct_grouped_calculation(seed, n):
+    rng = np.random.default_rng(seed)
+    base = households(n, rng)
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + rng.normal(0, 500, n)
+    impacts, _ = decile_impacts(base, head, YEARS)
+    year = str(YEARS[0])
+    b, h = base[year], head[year]
+    frame = pd.DataFrame(
+        {
+            "d": b["decile"],
+            "w": b["household_weight"],
+            "base": b["income"],
+            "change": h["income"] - b["income"],
+        }
+    )
+    for row in impacts[year][:-1]:
+        group = frame[frame.d == row["decile"]]
+        if group.empty:
+            continue
+        changed = int(((group.change.abs() > 0.005) & (group.w > 0)).sum())
+        if 0 < changed < 10:
+            assert row["suppressed"] and row["mean_change"] is None
+            continue
+        mean_change = (group.w * group.change).sum() / group.w.sum()
+        relative = (group.w * group.change).sum() / (group.w * group.base).sum()
+        # Published to what the comment shows: £1 and 0.1%.
+        assert row["mean_change"] == round(mean_change)
+        assert row["relative_change"] == round(relative, 3)
+        assert "households" not in row and "base_mean" not in row
+
+
+@settings(max_examples=30, deadline=None)
+@given(
+    seed=st.integers(0, 2**32 - 1),
+    shift_pence=st.one_of(st.integers(-1_000_000, -1), st.integers(1, 1_000_000)),
+)
+def test_a_uniform_change_shows_in_every_decile(seed, shift_pence):
+    rng = np.random.default_rng(seed)
+    # Whole pennies on whole-pound incomes keep this visibility property
+    # clear of the half-penny change boundary and floating £1 crossings.
+    shift = shift_pence / 100
+    base = households(
+        200,
+        rng,
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=rng.integers(1_000, 100_000, 200).astype(float),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+        columns["household_id"] = columns["household_id"][::-1].copy()
+        for key in ("household_weight", "household_count_people", "decile", "income"):
+            columns[key] = columns[key][::-1].copy()
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not any("differ" in n for n in notes)
+    for row in impacts[str(YEARS[0])]:
+        assert row["mean_change"] == pytest.approx(shift, abs=0.5 + 1e-6)
+        assert row["share_gaining"] == (1.0 if shift > 1 else 0.0)
+        assert row["share_losing"] == (1.0 if shift < -1 else 0.0)
+
+
+@settings(max_examples=50, deadline=None)
+@given(seed=st.integers(0, 2**32 - 1), n=st.integers(2, 300))
+def test_gini_matches_microdf(seed, n):
+    from microdf import MicroSeries
+
+    rng = np.random.default_rng(seed)
+    income = rng.lognormal(10, 1, n)
+    weights = rng.uniform(0.5, 50, n)
+    assert weighted_gini(income, weights) == pytest.approx(
+        float(MicroSeries(income, weights=weights).gini()), abs=1e-6
+    )
+
+
+def test_gini_bounds():
+    assert weighted_gini(np.ones(10), np.ones(10)) == pytest.approx(0)
+    assert weighted_gini(np.r_[np.zeros(99), 1.0], np.ones(100)) == pytest.approx(0.99)
+
+
+@pytest.mark.parametrize(
+    "value, kind, text",
+    [
+        (1.234e9, "gbp", "+£1.23bn"),
+        (-5.5e6, "gbp", "-£5.5m"),
+        (0, "gbp", "0"),
+        (12_300, "count", "+12.3k"),
+        (0.0012, "rate", "+0.12pp"),
+        (None, "gbp", "n/a"),
+    ],
+)
+def test_change_formatting(value, kind, text):
+    assert fmt_change(value, kind) == text
+
+
+def test_level_formatting():
+    assert fmt_level(320.5e9, "gbp") == "£320.50bn"
+    assert fmt_level(0.2335, "rate") == "23.4%"
+    assert fmt_level(float("nan"), "gbp") == "n/a"
+
+
+@settings(max_examples=20, deadline=None)
+@given(values=metric_values, limit=st.integers(2000, 20000))
+def test_the_comment_carries_the_marker_and_fits_its_limit(values, limit):
+    head = {k: [v + 1e9 for v in series] for k, series in values.items()}
+    summary = compare(result(values), result(head), SPEC)
+    spec = SPEC.__class__(**{**SPEC.__dict__, "max_comment_characters": limit})
+    text = render(summary, spec)
+    assert text.startswith(COMMENT_MARKER)
+    assert len(text) <= limit + 1
+    assert render(summary, spec) == text
+
+
+def test_a_skipped_head_passes_with_a_note():
+    skipped = {"schema": TOOL_SCHEMA, "status": "skipped", "reason": "no data access"}
+    summary = compare(None, skipped, SPEC)
+    assert summary["status"] == "skipped" and summary["failures"] == []
+    text = render(summary, SPEC)
+    assert text.startswith(COMMENT_MARKER) and "no data access" in text
+
+
+def test_the_guard_section_lists_failures_and_mediated_responses():
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    guard = {
+        "status": "ran",
+        "year": 2026,
+        "components": [
+            {
+                "variable": "incapacity_benefit",
+                "status": "fail",
+                "problems": [
+                    {
+                        "message": "household_benefits: pension_credit rises in 2 households"
+                    }
+                ],
+                "mediated": [
+                    {
+                        "total": "household_benefits",
+                        "head": "universal_credit",
+                        "kind": "contains",
+                        "households": 72,
+                        "via": ["carers_allowance"],
+                    }
+                ],
+            },
+            {"variable": "vat", "status": "pass", "mediated": []},
+        ],
+        "double_counts": [],
+    }
+    text = _guard({"head": {"guard": guard}})
+    assert "held at its baseline value" in text
+    assert "1 failed; 0 were skipped" in text
+    assert "pension_credit rises in 2 households" in text
+    assert (
+        "`universal_credit` responds only through other heads in 72 households "
+        "(other heads that moved there: `carers_allowance`" in text
+    )
+
+
+def test_a_figure_from_too_few_records_is_suppressed_end_to_end():
+    """Sol re-review 2, finding 1: a total and caseload from one recipient
+    reveal the award and the weight, so neither is published."""
+    from policyengine_uk.utils.aggregate_impact.api import to_report
+    from policyengine_uk.utils.aggregate_impact.measure import (
+        Recorder,
+        _finite_metrics_check,
+    )
+    from policyengine_uk.utils.aggregate_impact.render import _levels_table
+
+    rec = Recorder()
+    rec.metric("spending.ben", "Ben", "spending", "gbp", 2025, 246.9, records=1)
+    rec.metric("spending.ben", "Ben", "spending", "gbp", 2026, 9e9, records=500)
+    rec.metric("spending.none", "None", "spending", "gbp", 2025, 0.0, records=0)
+    ben = rec.metrics["spending.ben"]
+    assert ben["values"] == {"2025": None, "2026": 9e9}
+    assert ben["suppressed"] == ["2025"]
+    # Zero records reveal nothing: an inert head stays at zero.
+    assert rec.metrics["spending.none"]["values"] == {"2025": 0.0}
+    _finite_metrics_check(rec)
+    assert rec.checks["finite:metrics"]["status"] == "pass"
+
+    base = result({("receipts", "ben"): [1.0] * len(YEARS)})
+    head = result({("receipts", "ben"): [1.0] * len(YEARS)})
+    metric = next(m for m in head["metrics"] if m["id"] == "receipts.ben")
+    metric["values"][str(YEARS[0])] = None
+    metric["suppressed"] = [str(YEARS[0])]
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    row = next(r for r in summary["rows"] if r["id"] == "receipts.ben")
+    assert row["changed"] and row["values"][str(YEARS[0])]["head_suppressed"]
+    assert summary["flags"] == []
+    assert "suppressed" in _levels_table([row], YEARS)
+    assert "suppressed" in render(summary, SPEC)
+    report = to_report({**head, "partition": {"sha256": "p"}})
+    first = next(
+        m
+        for m in report["metrics"]
+        if m["metric_id"] == "receipts.ben" and m["year"] == YEARS[0]
+    )
+    assert first["value"] is None and first["suppressed"] is True
+
+
+def test_published_guard_output_keeps_no_small_counts_or_shares():
+    """Sol re-review 2, finding 3."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+
+    guard = {
+        "status": "ran",
+        "components": [
+            {
+                "variable": "x",
+                "units": 3,
+                "problems": [
+                    {
+                        "households": 1,
+                        "share": 0.125,
+                        "message": "in fewer than 10 households",
+                    },
+                    {"households": 40, "share": 0.5, "message": "in 40 households"},
+                ],
+                "mediated": [{"households": 2, "head": "uc", "via": []}],
+            }
+        ],
+    }
+    guard["components"][0]["responses"] = {"gov_spending": {"uc": -0.55}}
+    guard["components"][0]["coefficients"] = {"gov_spending": 1.0}
+    out = publishable_guard(guard)
+    row = out["components"][0]
+    assert row["units"] is None
+    assert (
+        row["problems"][0]["households"] is None and "share" not in row["problems"][0]
+    )
+    # Sol re-review 3, finding 6: with only 3 perturbed units, no share and no
+    # response survives, even for a problem in 40 households.
+    assert row["problems"][1] == {"households": 40, "message": "in 40 households"}
+    assert row["responses"] == {} and row["coefficients"] == {}
+    assert row["mediated"][0]["households"] is None
+    # The input is not changed.
+    assert guard["components"][0]["units"] == 3
+    # With enough perturbed units, a large problem keeps its share.
+    guard["components"][0]["units"] = 300
+    kept = publishable_guard(guard)["components"][0]
+    assert kept["problems"][1]["share"] == 0.5
+    assert kept["responses"] == {"gov_spending": {"uc": -0.55}}
+
+
+# Sol re-review 3 of #2335: decile rows and protected totals' changes.
+
+
+@pytest.mark.parametrize("changed", [1, 9, 10])
+def test_a_decile_row_from_fewer_than_10_changed_households_publishes_no_change(
+    changed,
+):
+    rng = np.random.default_rng(0)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"].copy()
+        columns["income"][:changed] += 250.0  # all in decile 1
+    impacts, _ = decile_impacts(base, head, YEARS)
+    rows = {row["decile"]: row for row in impacts[str(YEARS[0])]}
+    assert rows[1]["suppressed"] == (changed < 10)
+    assert rows["all"]["suppressed"] == (changed < 10)
+    if changed < 10:
+        assert all(rows[1][k] is None for k in ("mean_change", "share_gaining"))
+    # Deciles where nothing changed publish a zero change.
+    assert rows[2]["mean_change"] == 0 and not rows[2]["suppressed"]
+
+
+def test_a_zero_weight_household_does_not_count_as_changed():
+    rng = np.random.default_rng(1)
+    weight = rng.uniform(1, 1000, 100)
+    weight[:10] = 0.0  # decile 1 carries no weight
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10), weight=weight)
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"].copy()
+        columns["income"][:12] += 250.0  # 10 zero-weight in decile 1, 2 weighted in 2
+    impacts, _ = decile_impacts(base, head, YEARS)
+    rows = {row["decile"]: row for row in impacts[str(YEARS[0])]}
+    # Twelve households change, but only two carry weight: a small cell.
+    assert rows[2]["suppressed"] and rows["all"]["suppressed"]
+    assert not rows[1]["suppressed"]
+
+
+@settings(max_examples=50, deadline=None)
+@given(seed=st.integers(0, 2**32 - 1))
+def test_published_decile_rows_carry_no_weights_and_display_precision_only(seed):
+    """The "all" row's mean change over its relative change, times the
+    household count, gave the exact base income total back."""
+    rng = np.random.default_rng(seed)
+    base = households(300, rng)
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + rng.normal(0, 500, 300)
+    impacts, _ = decile_impacts(base, head, YEARS)
+    for row in impacts[str(YEARS[0])]:
+        assert "households" not in row and "base_mean" not in row
+        if not row["suppressed"]:
+            assert row["mean_change"] == round(row["mean_change"])
+            assert row["relative_change"] == round(row["relative_change"], 3)
+            assert row["share_gaining"] == round(row["share_gaining"], 3)
+
+
+def _side(common, rare, records):
+    rec, _, _ = _rebuilt(common, rare, records=records)
+    return {m["id"]: m for m in rec.metrics.values()}
+
+
+def _cell(rows, metric_id):
+    return next(r for r in rows if r["id"] == metric_id)["values"]["2026"]
+
+
+def _changes(base, head):
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+
+    rows, flags = compare_metrics(base, head, SPEC, [2026])
+    return rows, flags
+
+
+def test_a_total_without_its_suppressed_head_changes_by_the_published_heads():
+    """Sol re-review 5 of #2335: totals leave suppressed heads out, so their
+    exact change is the published heads' change, and is flagged normally."""
+    rows, flags = _changes(_side(7.3e10, 246.9, 1), _side(7.4e10, 300.0, 1))
+    total = _cell(rows, "model.gov_spending")
+    assert total["base"] == 7.3e10 and total["head"] == 7.4e10
+    assert total["delta"] == pytest.approx(1e9)
+    assert total["excludes"] == ["spending.rare"]
+    assert any(f["id"] == "model.gov_spending" for f in flags)
+    # The suppressed head itself never shows a change.
+    assert _cell(rows, "spending.rare")["delta"] is None
+    # A total with no suppressed head is unchanged and marked nothing.
+    assert _cell(rows, "model.gov_tax")["excludes"] == []
+
+
+def test_a_suppression_transition_aligns_both_sides_from_published_values():
+    """Sol re-review 4, finding 1: 10 recipients on the base and 9 on the head.
+    The base publishes the head, so it is taken out of the base's total too,
+    and the change is the common benefit's change alone."""
+    rows, _ = _changes(_side(7.3e10, 246.9, 10), _side(7.4e10, 246.9, 9))
+    total = _cell(rows, "model.gov_spending")
+    assert total["delta"] == pytest.approx(1e9)
+    assert total["excludes"] == ["spending.rare"]
+    balance = _cell(rows, "balance.balance")
+    assert balance["delta"] == pytest.approx(-1e9)
+    assert _cell(rows, "spending.rare")["delta"] is None
+
+
+@settings(max_examples=200, deadline=None)
+@given(
+    rare=st.floats(1.0, 4.9e8),
+    moved=st.floats(-1e8, 1e8),
+    common_change=st.floats(-1e10, 1e10),
+    base_records=st.sampled_from([1, 9, 10, 500]),
+    head_records=st.sampled_from([1, 9, 10, 500]),
+)
+def test_no_published_change_depends_on_a_suppressed_head(
+    rare, moved, common_change, base_records, head_records
+):
+    """For all inputs: whatever a suppressed head does, on either side, every
+    published total and change equals what the published heads give."""
+    base = _side(7.3e10, rare, base_records)
+    head = _side(7.3e10 + common_change, rare + moved, head_records)
+    rows, _ = _changes(base, head)
+    cells = {r["id"]: r["values"]["2026"] for r in rows}
+    rare_hidden = base_records < 10 or head_records < 10
+    if rare_hidden:
+        assert cells["spending.rare"]["delta"] is None
+        # Totals change by the common head's change, nothing more.
+        for total in (
+            "model.gov_spending",
+            "model.household_benefits",
+            "balance.spending",
+        ):
+            assert cells[total]["delta"] == pytest.approx(
+                common_change, rel=0, abs=0.01
+            )
+    # A side that suppresses the head publishes totals that don't depend on it.
+    for side, records, value in (
+        (base, base_records, rare),
+        (head, head_records, rare + moved),
+    ):
+        if records < 10:
+            assert side["model.gov_spending"]["values"]["2026"] == pytest.approx(
+                side["spending.common"]["values"]["2026"], rel=0, abs=0.01
+            )
+
+
+def test_a_suppressed_figure_and_a_marked_total_render_as_such():
+    from policyengine_uk.utils.aggregate_impact.render import _change_cell, _deciles
+
+    rows, _ = _changes(_side(7.3e10, 246.9, 1), _side(7.4e10, 300.0, 1))
+    total = next(r for r in rows if r["id"] == "model.gov_spending")
+    assert _change_cell(total, 2026) == "+£1.00bn †"
+    rare = next(r for r in rows if r["id"] == "spending.rare")
+    assert _change_cell(rare, 2026) == "suppressed"
+    row = {
+        "decile": 1,
+        "suppressed": True,
+        "mean_change": None,
+        "relative_change": None,
+        "share_gaining": None,
+        "share_losing": None,
+    }
+    text = _deciles({"deciles": {"2026": [row, dict(row, decile="all")]}}, [2026])
+    assert "fewer than 10 households change" in text and "n/a" not in text
+
+
+def test_the_data_axis_ignores_the_data_package_itself():
+    """The data package is what a data comparison compares."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.58.1"]
+    head["runtime"]["distributions"] = ["numpy==2.0", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["distributions"] = ["numpy==2.1", "policyengine-uk-data==1.59.0"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ("runtime", "policyengine_uk"),
+        ("runtime", "policyengine_uk_fingerprint"),
+        ("runtime", "distributions"),
+        ("partition", "sha256"),
+        ("provenance", "metrics_version"),
+    ],
+)
+def test_a_data_comparison_fails_when_an_identity_field_is_missing(path):
+    """Sol review of #2425, P1: blank or missing identities used to pass."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side in (base, head):
+        side[path[0]].pop(path[1])
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("does not record it" in f for f in summary["failures"])
+
+
+def test_the_caller_commit_is_not_part_of_the_model_identity():
+    """The same installed model measured from two checkouts is one model."""
+    summary = compare(
+        _on("1" * 64, git_sha="aaa"), _on("2" * 64, git_sha="bbb"), SPEC, axis="data"
+    )
+    assert summary["status"] == "pass", summary["failures"]
+
+
+def test_data_axis_provenance_names_both_datasets():
+    summary = compare(_on("1" * 64), _on("2" * 64), SPEC, axis="data")
+    text = render(summary, SPEC)
+    assert "Base dataset" in text and "Head dataset" in text
+    assert "verified on both sides" not in text
+
+
+def test_the_model_fingerprint_covers_the_model_and_nothing_else(tmp_path, monkeypatch):
+    import importlib.util
+    from types import SimpleNamespace
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    package = tmp_path / "policyengine_uk"
+    (package / "variables").mkdir(parents=True)
+    (package / "tests").mkdir()
+    (package / "__pycache__").mkdir()
+    (package / "__init__.py").write_text("")
+    (package / "variables" / "x.py").write_text("a = 1")
+    (package / "tests" / "t.yaml").write_text("x")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"x")
+    monkeypatch.setattr(
+        importlib.util,
+        "find_spec",
+        lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
+    )
+    first = measure.model_fingerprint()
+    assert first == measure.model_fingerprint()
+    (package / "tests" / "t.yaml").write_text("changed")
+    (package / "__pycache__" / "c.pyc").write_bytes(b"changed")
+    assert measure.model_fingerprint() == first
+    (package / "variables" / "x.py").write_text("a = 2")
+    assert measure.model_fingerprint() != first
+
+
+def test_the_w4_format_lists_the_heads_a_total_leaves_out():
+    side = _side(7.3e10, 246.9, 1)
+    result = {
+        "schema": "x",
+        "status": "ok",
+        "years": [2026],
+        "metrics": list(side.values()),
+        "checks": [],
+        "provenance": {},
+        "partition": {},
+    }
+    from policyengine_uk.utils.aggregate_impact.api import to_report
+
+    rows = {(r["metric_id"], r["year"]): r for r in to_report(result)["metrics"]}
+    assert rows[("model.gov_spending", 2026)]["excludes"] == ["spending.rare"]
+    assert rows[("model.gov_tax", 2026)]["excludes"] == []
+    # With their signs, for W4: a spending head enters the balances negative.
+    assert rows[("model.gov_spending", 2026)]["exclude_signs"] == {"spending.rare": 1}
+    assert rows[("balance.balance", 2026)]["exclude_signs"] == {"spending.rare": -1}
+    assert rows[("model.gov_tax", 2026)]["exclude_signs"] == {}
+    for row in rows.values():
+        assert sorted(row["exclude_signs"]) == row["excludes"]
+    assert rows[("spending.rare", 2026)]["suppressed"]
+
+
+def test_decile_changes_that_round_to_zero_are_not_called_no_change():
+    """Sol re-review 4, finding 6."""
+    from policyengine_uk.utils.aggregate_impact.render import _deciles
+
+    rng = np.random.default_rng(3)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + 0.25
+    impacts, _ = decile_impacts(base, head, YEARS)
+    assert all(
+        r["mean_change"] == 0 and r["any_change"] for r in impacts[str(YEARS[0])]
+    )
+    text = _deciles({"deciles": {str(YEARS[0]): impacts[str(YEARS[0])]}}, [YEARS[0]])
+    assert "rounds to £0" in text and "No household" not in text
+    unchanged, _ = decile_impacts(base, copy.deepcopy(base), YEARS)
+    text = _deciles({"deciles": {str(YEARS[0]): unchanged[str(YEARS[0])]}}, [YEARS[0]])
+    assert "No household's net income changes" in text
+
+
+def test_a_mean_or_clipped_total_with_different_exclusions_is_withheld():
+    """Sol re-review 6 of #2335, P2 5: subtracting a national head from a
+    per-household mean or a total reset at zero gives a wrong change. Sol
+    re-review 7, P3 5: the withheld change was then called "no change"."""
+    from policyengine_uk.utils.aggregate_impact.compare import compare_metrics
+    from policyengine_uk.utils.aggregate_impact.render import (
+        _change_cell,
+        _changes_table,
+    )
+
+    def side(value, excludes):
+        record = {
+            "id": "deciles.mean_income.1",
+            "label": "d1",
+            "section": "deciles",
+            "kind": "gbp_household",
+            "values": {"2026": value},
+        }
+        if excludes:
+            record["excludes"] = {"2026": excludes}
+        rare = {
+            "id": "spending.rare",
+            "label": "R",
+            "section": "spending",
+            "kind": "gbp",
+            "values": {"2026": None if excludes else 1_000.0},
+            **({"suppressed": ["2026"]} if excludes else {}),
+        }
+        return {"deciles.mean_income.1": record, "spending.rare": rare}
+
+    rows, _ = compare_metrics(
+        side(1_100.0, None), side(1_000.0, {"spending.rare": 1}), SPEC, [2026]
+    )
+    cell = _cell(rows, "deciles.mean_income.1")
+    assert cell["delta"] is None and cell["withheld"]
+    row = next(r for r in rows if r["id"] == "deciles.mean_income.1")
+    assert row["changed"]
+    assert _change_cell(row, 2026) == "withheld †"
+    assert "d1" in _changes_table(rows, [2026])
+    # Equal on both sides, with equal exclusions: a real "no change".
+    rows, _ = compare_metrics(
+        side(1_000.0, {"spending.rare": 1}),
+        side(1_000.0, {"spending.rare": 1}),
+        SPEC,
+        [2026],
+    )
+    cell = _cell(rows, "deciles.mean_income.1")
+    assert cell["delta"] == 0 and not cell["withheld"]
+    assert not next(r for r in rows if r["id"] == "deciles.mean_income.1")["changed"]
+
+
+def test_a_figure_suppressed_on_both_sides_is_not_called_unchanged():
+    rows, _ = _changes(_side(7.3e10, 246.9, 1), _side(7.3e10, 246.9, 1))
+    rare = next(r for r in rows if r["id"] == "spending.rare")
+    assert rare["values"]["2026"]["withheld"] and rare["changed"]
+    # The total holds only the common head, which didn't change.
+    total = next(r for r in rows if r["id"] == "model.gov_spending")
+    assert total["values"]["2026"]["delta"] == 0 and not total["changed"]
+
+
+def test_decile_rows_are_withheld_when_the_sides_exclude_different_heads():
+    """Sol re-review 6 of #2335, P2 6."""
+    rng = np.random.default_rng(5)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    for year, columns in base.items():
+        columns["excludes"] = np.array(["spending.rare"], dtype=str)
+        head[year]["excludes"] = np.array([], dtype=str)
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert impacts == {}
+    assert any("suppressed on one side only" in n for n in notes)
+
+
+def test_the_data_axis_refuses_a_locally_installed_dependency():
+    """Sol review of #2425 at 7ca4ff2b, P2: an editable policyengine-core
+    reports a released version whatever its files hold."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    head["runtime"]["local_installs"] = ["policyengine-core", "policyengine-uk-data"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("policyengine-core" in f for f in summary["failures"])
+    # The model and the data package are identified otherwise.
+    head["runtime"]["local_installs"] = ["policyengine-uk", "policyengine-uk-data"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "pass"
+    del head["runtime"]["local_installs"]
+    assert compare(base, head, SPEC, axis="data")["status"] == "fail"
+
+
+def test_local_installs_are_read_from_pep_610_metadata(monkeypatch):
+    import json as json_
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    class Dist:
+        def __init__(self, name, direct_url):
+            self.metadata = {"Name": name}
+            self._direct = direct_url
+
+        def read_text(self, filename):
+            return None if self._direct is None else json_.dumps(self._direct)
+
+    dists = [
+        Dist("numpy", None),
+        Dist(
+            "policyengine_core",
+            {"url": "file:///src/core", "dir_info": {"editable": True}},
+        ),
+        Dist("pandas", {"url": "file:///wheels/pandas.whl", "archive_info": {}}),
+        Dist(
+            "requests",
+            {"url": "https://files.example/requests.whl", "archive_info": {}},
+        ),
+        Dist(
+            "policyengine_uk_data",
+            {"url": "https://github.com/x/y", "vcs_info": {"vcs": "git"}},
+        ),
+    ]
+    monkeypatch.setattr(measure.metadata, "distributions", lambda: dists)
+    # Sol re-review 5 of #2425: any install not from an index counts, archive
+    # URLs and VCS checkouts included; only numpy came from an index.
+    assert measure._local_installs() == [
+        "pandas",
+        "policyengine-core",
+        "policyengine-uk-data",
+        "requests",
+    ]
+
+
+def test_a_model_that_changes_during_a_measurement_has_no_fingerprint(monkeypatch):
+    """Sol review of #2425 at 7ca4ff2b, P2: a branch switched in a shared
+    checkout mid-run would stamp the base with the head's files."""
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    monkeypatch.setattr(measure, "model_fingerprint", lambda: "after")
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "before")
+    assert runtime["policyengine_uk_fingerprint"] is None
+    assert rec.checks["model:unchanged"]["status"] == "fail"
+    rec = measure.Recorder()
+    runtime = measure.stable_runtime(rec, "after")
+    assert runtime["policyengine_uk_fingerprint"] == "after"
+    assert rec.checks["model:unchanged"]["status"] == "pass"
+
+
+def test_an_unpinned_dataset_is_described_by_its_label():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    for side, label in (
+        (base, "the base's build"),
+        (head, "this pull request's build"),
+    ):
+        side["provenance"]["dataset"].update(
+            data_package="unpinned build", data_version=label
+        )
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "(the base's build, sha256" in text
+    assert "(this pull request's build, sha256" in text
+    assert "unpinned build the" not in text
+
+
+def test_a_side_whose_model_changed_mid_run_fails_either_axis():
+    """Sol re-review 5 of #2425, P3 2: model:unchanged blocks on both axes,
+    and the data axis says why."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["checks"].append(
+        {
+            "id": "model:unchanged",
+            "label": "x",
+            "section": "data",
+            "severity": "fail",
+            "status": "fail",
+            "failing": {"": "the model's files changed while it was measured"},
+        }
+    )
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("changed while the base was measured" in f for f in summary["failures"])
+
+
+def test_the_intro_says_when_one_version_has_different_files():
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["runtime"]["policyengine_uk_fingerprint"] = "e" * 64
+    text = render(compare(base, head, SPEC, axis="data"), SPEC)
+    assert "on both sides, but with different model files" in text
+    assert "both measured with policyengine-uk" not in text
+
+
+def test_the_command_fingerprints_the_model_before_building_the_simulation():
+    """Sol re-review 5 of #2425, P3 1."""
+    import inspect
+
+    from policyengine_uk.utils.aggregate_impact import __main__ as cli
+
+    source = inspect.getsource(cli.cmd_measure)
+    first = source.index("fingerprint_at_start = model_fingerprint()")
+    # Before the partition is loaded or the model imported.
+    assert first < source.index("default_partition_path()")
+    assert first < source.index("from policyengine_uk import Microsimulation")
+    assert "fingerprint_at_start=fingerprint_at_start" in source
+    # Whether the package had built the model already is known first.
+    assert source.index("loaded_first = model_loaded()") < first
+    assert '"model_loaded_before_fingerprint": loaded_first' in source
+
+
+def test_the_data_axis_refuses_a_side_measured_from_inside_the_package():
+    """Sol re-review 7 of #2425, P3 6: python -m policyengine_uk.utils.
+    aggregate_impact builds the model before the command fingerprints it."""
+    base, head = _on("1" * 64), _on("2" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("from inside policyengine_uk" in f for f in summary["failures"])
+    del head["provenance"]["model_loaded_before_fingerprint"]
+    summary = compare(base, head, SPEC, axis="data")
+    assert summary["status"] == "fail"
+    assert any("before loading it" in f for f in summary["failures"])
+    # On the model axis it is a warning: each side has its own checkout.
+    base, head = _on("1" * 64), _on("1" * 64)
+    head["provenance"]["model_loaded_before_fingerprint"] = True
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass", summary["failures"]
+    assert any("from inside policyengine_uk" in w for w in summary["warnings"])
+
+
+def test_only_the_package_entry_has_built_the_model_before_the_command(tmp_path):
+    """A copy of the tool, run as its own package as CI runs it, hasn't
+    imported the model when it fingerprints it; this test process, which
+    imported policyengine_uk, has."""
+    import shutil
+    import subprocess
+    import sys
+
+    from policyengine_uk.utils.aggregate_impact import measure
+
+    assert measure.model_loaded()
+    tool = tmp_path / "pe_uk_aggregate_impact"
+    shutil.copytree(Path(measure.__file__).parent, tool)
+    out = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pe_uk_aggregate_impact.measure as m; print(m.model_loaded())",
+        ],
+        env={"PYTHONPATH": str(tmp_path), "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert out.stdout.strip() == "False"
+
+
+def test_a_base_whose_model_changed_fails_the_model_axis_too():
+    """Sol re-review 6 of #2425, P3 7: base fail and head pass was 'fixed'."""
+    base, head = _on("1" * 64), _on("1" * 64)
+    for side, status in ((base, "fail"), (head, "pass")):
+        side["checks"].append(
+            {
+                "id": "model:unchanged",
+                "label": "x",
+                "section": "data",
+                "severity": "fail",
+                "status": status,
+                "failing": {"": "changed"} if status == "fail" else {},
+            }
+        )
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "fail"
+    assert any("base fails model:unchanged" in f for f in summary["failures"])
+
+
+def test_a_year_ranked_on_a_suppressed_figure_is_withheld_with_a_reason():
+    rng = np.random.default_rng(7)
+    base = households(100, rng, decile=np.repeat(np.arange(1, 11), 10))
+    head = copy.deepcopy(base)
+    impacts, notes = decile_impacts(base, head, YEARS, withheld=[YEARS[0]])
+    assert str(YEARS[0]) not in impacts and str(YEARS[1]) in impacts
+    assert any("ranked on an income holding" in n for n in notes)
+
+
+def test_a_comparison_withheld_in_every_year_says_why():
+    """Sol re-review 8 of #2335, P3 1: with every year withheld, measure keeps
+    no household detail, and the comment said it was missing."""
+    from policyengine_uk.utils.aggregate_impact.render import render
+
+    base = result({("receipts", "a"): [1.0] * len(YEARS)})
+    head = copy.deepcopy(base)
+    head["metrics"].append(
+        {
+            "id": "deciles.mean_income.1",
+            "label": "d1",
+            "section": "deciles",
+            "group": None,
+            "kind": "gbp_household",
+            "unit": None,
+            "values": {str(y): None for y in YEARS},
+            "suppressed": [str(y) for y in YEARS],
+        }
+    )
+    summary = compare(base, head, SPEC)
+    assert summary["deciles"] == {}
+    assert len(summary["decile_notes"]) == len(YEARS)
+    assert all("ranked on an income holding" in n for n in summary["decile_notes"])
+    text = render(summary, SPEC)
+    assert "need household detail" not in text and "ranked on an income" in text
+    # Without any withheld year, missing detail is still called missing.
+    summary = compare(base, copy.deepcopy(base), SPEC)
+    assert summary["decile_notes"] == []
+    assert "need household detail" in render(summary, SPEC)
+
+
+def test_withheld_decile_years_are_explained_not_called_missing():
+    """Sol re-review 7 of #2335, P3 5: with every year withheld, the comment
+    dropped the notes and said household detail was missing."""
+    from policyengine_uk.utils.aggregate_impact.render import _deciles
+
+    note = "2026-27: a figure from fewer than 10 records is suppressed"
+    text = _deciles({"deciles": {}, "decile_notes": [note]}, [2026])
+    assert note in text and "need household detail" not in text
+    text = _deciles({"deciles": {}, "decile_notes": []}, [2026])
+    assert "need household detail" in text
+
+
+@pytest.mark.parametrize(
+    "shift, any_change",
+    [
+        (0.0, False),
+        (np.nextafter(0.005, 0.0), False),
+        (0.005, False),
+        (np.nextafter(0.005, np.inf), True),
+        (np.nextafter(-0.005, 0.0), False),
+        (-0.005, False),
+        (np.nextafter(-0.005, -np.inf), True),
+    ],
+)
+def test_uniform_change_respects_half_penny_reporting_boundary(shift, any_change):
+    """Issue #2500: half a penny is unchanged; strictly more is a change."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"] == any_change
+        assert row["mean_change"] == 0
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == 0
+        assert row["share_losing"] == 0
+
+
+@pytest.mark.parametrize(
+    "shift, share_gaining, share_losing",
+    [
+        (-1.01, 0.0, 1.0),
+        (-1.0, 0.0, 0.0),
+        (1.0, 0.0, 0.0),
+        (1.01, 1.0, 0.0),
+    ],
+)
+def test_uniform_change_respects_one_pound_gain_loss_boundary(
+    shift, share_gaining, share_losing
+):
+    """Published gain/loss shares count changes strictly greater than £1."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"]
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == share_gaining
+        assert row["share_losing"] == share_losing
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [("python",), ("machine",), ("python", "machine")],
+    ids=["python", "machine", "both-fields"],
+)
+@pytest.mark.parametrize(
+    "sides",
+    [("base",), ("head",), ("base", "head")],
+    ids=["base", "head", "both-sides"],
+)
+def test_issue_2499_data_axis_requires_runtime_identity_on_each_side(fields, sides):
+    measurements = {"base": _on("1" * 64), "head": _on("2" * 64)}
+    complete = compare(measurements["base"], measurements["head"], SPEC, axis="data")
+    assert complete["status"] == "pass", complete["failures"]
+    for side in sides:
+        for field in fields:
+            del measurements[side]["runtime"][field]
+
+    summary = compare(measurements["base"], measurements["head"], SPEC, axis="data")
+
+    assert summary["status"] == "fail"
+    for field in fields:
+        assert any(field in failure.lower() for failure in summary["failures"])
+
+
+@pytest.mark.parametrize("field", ["python", "machine"])
+@pytest.mark.parametrize("value", [None, ""], ids=["null", "empty"])
+def test_issue_2499_data_axis_rejects_empty_runtime_identity(field, value):
+    base, head = _on("1" * 64), _on("2" * 64)
+    base["runtime"][field] = head["runtime"][field] = value
+
+    summary = compare(base, head, SPEC, axis="data")
+
+    assert summary["status"] == "fail"
+    assert any(field in failure.lower() for failure in summary["failures"])
+
+
+def test_issue_2499_complete_runtime_identity_allows_different_datasets():
+    summary = compare(_on("1" * 64), _on("2" * 64), SPEC, axis="data")
+
+    assert summary["status"] == "pass", summary["failures"]
+
+
+def test_issue_2499_model_axis_preserves_missing_runtime_identity_behavior():
+    base, head = _on("1" * 64), _on("1" * 64)
+    for result in (base, head):
+        del result["runtime"]["python"]
+        del result["runtime"]["machine"]
+
+    summary = compare(base, head, SPEC, axis="model")
+
+    assert summary["status"] == "pass", summary["failures"]

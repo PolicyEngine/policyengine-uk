@@ -1,0 +1,18 @@
+description: The Department for Education limits the extended childcare entitlement to young children who have reached this age.
+metadata:
+  unit: year
+  period: year
+  label: Extended childcare entitlement young child minimum age
+  reference:
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2016, regulation 3(1)(a)
+      href: https://www.legislation.gov.uk/uksi/2016/1257/regulation/3/made
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022, regulation 13(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/13
+    - title: The Childcare (Free of Charge for Working Parents) (England) (Amendment and Transitional Provision) Regulations 2023, regulation 2(5)
+      href: https://www.legislation.gov.uk/uksi/2023/1330/regulation/2/made
+values:
+  2015-01-01: 3
+  # SI 2023/1330 reg 2(5)(a): "two" from 1 April 2024 to 31 August 2024.
+  2024-04-01: 2
+  # SI 2023/1330 reg 2(5)(b): "nine months" from 1 September 2024.
+  2024-09-01: 0.75

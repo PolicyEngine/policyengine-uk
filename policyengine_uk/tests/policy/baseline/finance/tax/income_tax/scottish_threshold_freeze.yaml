@@ -1,0 +1,69 @@
+# Announced higher/advanced/top freeze: Scottish Budget 2026-27, Income Tax Policy.
+# https://www.gov.scot/publications/scottish-budget-2026-2027/pages/4/
+# 2026 taxable limits: [0,3967,16956,31092,62430,125140]; rates19/20/21/42/45/48%.
+# The first two positive limits retain the existing model CPI projection.
+# Higher/advanced/top stay at31092/62430/125140 through2028-29;
+# 2029-30 onward resumes the existing CPI projection from2028, without catch-up.
+# Neither future rate continuity nor post-freeze CPI is a multi-year enacted rule.
+# Oracles independently sum band widths x rates, with PA12570 below100k and0at150k.
+# Current CPI index levels2026..2030 (OBR October 2026): {2026: 1.66019, 2027: 1.71697, 2028: 1.75303, 2029: 1.78984, 2030: 1.82582}
+
+- name: Scottish 2027 higher advanced and top thresholds stay frozen
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45, 45]
+    region: [SCOTLAND, SCOTLAND, SCOTLAND]
+    employment_income: [45000, 80000, 150000]
+  output:
+    earned_taxable_income: [32430, 67430, 150000]
+    earned_income_tax: [6874.89, 21724.89, 59627.19]
+    income_tax: [6874.89, 21724.89, 59627.19]
+
+- name: Scottish 2028 higher advanced and top thresholds stay frozen
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45, 45]
+    region: [SCOTLAND, SCOTLAND, SCOTLAND]
+    employment_income: [45000, 80000, 150000]
+  output:
+    earned_taxable_income: [32430, 67430, 150000]
+    earned_income_tax: [6870.35, 21720.35, 59622.65]
+    income_tax: [6870.35, 21720.35, 59622.65]
+
+- name: Scottish 2029 higher advanced and top thresholds project from the frozen base
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45, 45]
+    region: [SCOTLAND, SCOTLAND, SCOTLAND]
+    employment_income: [45000, 80000, 150000]
+  output:
+    earned_taxable_income: [32430, 67430, 150000]
+    earned_income_tax: [6728.61, 21539.28, 59362.75]
+    income_tax: [6728.61, 21539.28, 59362.75]
+
+- name: Scottish 2030 higher advanced and top thresholds project from the frozen base
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45, 45]
+    region: [SCOTLAND, SCOTLAND, SCOTLAND]
+    employment_income: [45000, 80000, 150000]
+  output:
+    earned_taxable_income: [32430, 67430, 150000]
+    earned_income_tax: [6590.06, 21362.3, 59108.71]
+    income_tax: [6590.06, 21362.3, 59108.71]
+
+- name: Scottish threshold freeze leaves the rest of UK unchanged
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    age: [45, 45, 45]
+    region: [LONDON, LONDON, LONDON]
+    employment_income: [45000, 80000, 150000]
+  output:
+    earned_taxable_income: [32430, 67430, 150000]
+    earned_income_tax: [6486, 19432, 53703]
+    income_tax: [6486, 19432, 53703]

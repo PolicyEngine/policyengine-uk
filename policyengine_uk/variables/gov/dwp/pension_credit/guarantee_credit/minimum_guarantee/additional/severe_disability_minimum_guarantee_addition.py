@@ -3,6 +3,34 @@ from policyengine_uk.model_api import *
 
 class severe_disability_minimum_guarantee_addition(Variable):
     label = "Severe disability-related increase"
+    documentation = (
+        "The additional amount for a severely disabled claimant (State Pension "
+        "Credit Regulations 2002 reg 6(4)-(5) and Sch I paras 1-3). A single "
+        "claimant qualifies if they receive a qualifying disability benefit, "
+        "no other resident aged 18 or over counts, and no carer benefit is "
+        "paid for caring for them (para 1(1)(a)). A couple qualify if both "
+        "partners receive a qualifying benefit, no other resident counts, and "
+        "a carer benefit is paid for at most one of them (para 1(1)(b)); or, "
+        "failing that, if one partner receives a qualifying benefit, the other "
+        "is certified blind or severely sight impaired, no other resident "
+        "counts, and no carer benefit is paid for the first (para 1(1)(c)). "
+        "The amount is two rates for a couple under (b) with no carer benefit "
+        "paid for either partner, and one rate otherwise (reg 6(5)). The "
+        "pension-age Housing Benefit severe disability premium (HB(SPC) Regs "
+        "2006 Sch 3 paras 6 and 12(1)) has nearly the same conditions and the "
+        "same amounts, but counts an 18- or 19-year-old young person of "
+        "another family as a non-dependant, and needs the claimant, not "
+        "either partner, to qualify where the other partner is blind. Not "
+        "modelled: the hospital-patient deeming (para 1(2)(b)-(bd)) "
+        "and backdating (para 1(2)(a), (c)); sight regained within 28 weeks "
+        "(para 1(3)); polygamous marriages; and the para 2 and 3 exceptions "
+        "listed on is_counted_resident_for_severe_disability_addition. Whom "
+        "a carer benefit is paid for caring for is attributed by "
+        "is_cared_for_by_carer_benefit_recipient, which the legacy severe "
+        "disability premium shares. Blindness "
+        "(is_blind) is not in the survey data, so in microsimulation the "
+        "blind-partner route never applies and a blind resident is counted."
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = float
@@ -10,49 +38,42 @@ class severe_disability_minimum_guarantee_addition(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/1",
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/2",
+        "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/3",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6",
     )
 
     def formula(benunit, period, parameters):
-        # Count qualifying claimants/partners; children and qualifying young
-        # people are ignored under Sch I para 2(2)(f).
-        # Sch I para 1(1): a single claimant qualifies if no carer benefit is
-        # paid for them (a). A couple qualifies if both partners receive a
-        # qualifying benefit and a carer benefit is paid for at most one of
-        # them (b), or if one does, the other is blind and no carer benefit is
-        # paid for the first (c). Reg 6(5): the double amount applies under (b)
-        # when no carer benefit is paid for either partner, otherwise the
-        # single amount.
-        # Retained simplifications: the household-level non-dependant
-        # residence test is not modelled; the person cared for is not
-        # identified, so each carer benefit paid in the benefit unit is taken
-        # to be for a different claimant or partner, never for its recipient
-        # (so a qualifying claimant's own carer benefit does not bar them);
-        # a UC carer element paid to someone outside the benefit unit is not
-        # seen; underlying entitlement alone does not count.
         severe_disability = parameters(
             period
         ).gov.dwp.pension_credit.guarantee_credit.severe_disability
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        qualifies = add(person, period, severe_disability.relevant_benefits) > 0
-        qualifier = claimant_or_partner & qualifies
-        qualifying = benunit.sum(qualifier)
+        qualifies = person(
+            "receives_severe_disability_addition_qualifying_benefit", period
+        )
+        qualifying = benunit.sum(claimant_or_partner & qualifies)
         other_partner_blind = benunit.any(
             claimant_or_partner & ~qualifies & person("is_blind", period)
         )
-        receives_carer_benefit = person("receives_carer_benefit", period)
-        carers = benunit.sum(receives_carer_benefit)
-        # Heads (a) and (c): carer benefits paid to anyone but the qualifying
-        # claimant or partner.
-        carers_for_qualifier = benunit.sum(receives_carer_benefit & ~qualifier)
-        amounts = where(
-            benunit("is_couple", period),
-            where(
-                qualifying >= 2,
-                max_(2 - carers, 0),
-                (qualifying == 1) & other_partner_blind & (carers_for_qualifier == 0),
-            ),
-            (qualifying >= 1) & (carers_for_qualifier == 0),
+        # How many qualifying claimants and partners someone receives a carer
+        # benefit for caring for (the attribution is shared with the legacy
+        # severe disability premium).
+        cared_for = benunit.sum(
+            claimant_or_partner
+            & qualifies
+            & person("is_cared_for_by_carer_benefit_recipient", period)
         )
-        return amounts * severe_disability.addition * WEEKS_IN_YEAR
+        # Para 1(1)(b) with reg 6(5): two rates, less one for each partner a
+        # carer benefit is paid for (none if paid for both). Para 1(1)(c): one
+        # rate. Para 1(1)(a): one rate.
+        couple_rates = where(
+            qualifying >= 2,
+            max_(2 - cared_for, 0),
+            (qualifying == 1) & other_partner_blind & (cared_for == 0),
+        )
+        single_rates = (qualifying >= 1) & (cared_for == 0)
+        rates = where(benunit("is_couple", period), couple_rates, single_rates)
+        resides_alone = benunit(
+            "meets_severe_disability_addition_residence_condition", period
+        )
+        return rates * resides_alone * severe_disability.addition * WEEKS_IN_YEAR

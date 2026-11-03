@@ -1,21 +1,14 @@
-description: Published triple lock uprating rates (outturn or DWP-announced). Used in preference to the max-of(earnings, CPI, minimum) formula because the formula relies on calendar-year OBR averages, while the actual uprating uses May-July AWE growth.
+description: Published State Pension upratings that the rule cannot reproduce from the statutory inputs, used in place of the rule in those years.
 values:
-  2022-01-01: 0.031
-  2023-01-01: 0.101
-  2024-01-01: 0.085
-  2025-01-01: 0.041
-  2026-01-01: 0.048
+  # April 2011: the basic State Pension rose by September 2010 RPI (4.6%),
+  # above CPI (3.1%) and earnings (1.3%), a one-off guarantee during the
+  # switch from RPI to CPI.
+  2011-01-01: 0.046
+  # No other year departs from the rule.
+  2012-01-01: null
 metadata:
   unit: /1
   label: Triple lock outturn rate
   reference:
-    - title: DWP benefit and pension rates 2022 to 2023
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2022-to-2023
-    - title: DWP benefit and pension rates 2023 to 2024
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024
-    - title: DWP benefit and pension rates 2024 to 2025
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025
-    - title: DWP benefit and pension rates 2025 to 2026
-      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026
-    - title: DWP benefit and pension rates 2026 to 2027
-      href: https://www.gov.uk/government/news/over-12-million-pensioners-to-receive-575-state-pension-boost
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2011 (SI 2011/821), paragraph 7.4
+      href: https://www.legislation.gov.uk/uksi/2011/821/contents/made

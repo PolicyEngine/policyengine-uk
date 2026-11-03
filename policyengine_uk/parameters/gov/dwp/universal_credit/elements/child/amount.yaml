@@ -1,7 +1,9 @@
 description: The following child element is provided under the Universal Credit.
 values:
+  # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
   2018-04-09: 231.67
-  2020-04-06: 235.85
+  2020-04-06: 235.83
   2021-04-12: 237.08
   2022-04-06: 244.58
   2023-04-01: 269.58
@@ -16,3 +18,13 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 24 (child element), amounts in reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+    - title: Benefit and pension rates 2020 to 2021 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made

@@ -7,28 +7,28 @@ class ni_class_4(Variable):
     label = "NI Class 4 contributions"
     definition_period = YEAR
     unit = GBP
-    defined_for = "ni_liable"
+    defined_for = "ni_class_4_liable"
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/15"
 
     def formula(person, period, parameters):
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
-        # Schedule 2 para 2: Class 4 is charged on the full trading profits;
-        # Class 1 contributions are not a deduction.
-        profits = person("self_employment_income", period)
+        # Schedule 2: Class 4 is charged on the Chapter 2 trade profits less
+        # the para 3 loss reliefs; Class 1 contributions are not a deduction.
+        profits = person("ni_class_4_profits", period)
         add_rate_income = max_(
-            profits - class_4.thresholds.upper_profits_limit,
+            profits - class_4.contribution_scale.components[2].threshold,
             0,
         )
         main_rate_income = (
             max_(
-                profits - class_4.thresholds.lower_profits_limit,
+                profits - class_4.contribution_scale.components[1].threshold,
                 0,
             )
             - add_rate_income
         )
         pre_maximum_amount = (
-            main_rate_income * class_4.rates.main
-            + add_rate_income * class_4.rates.additional
+            main_rate_income * class_4.contribution_scale.components[1].rate
+            + add_rate_income * class_4.contribution_scale.components[2].rate
         )
         maximum_amount = person("ni_class_4_maximum", period)
         # Regulation 100(1): the annual maximum applies only where primary

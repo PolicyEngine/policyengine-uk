@@ -17,8 +17,11 @@ class received_allowances_dividend_income(Variable):
         received_allowances_savings_income = person(
             "received_allowances_savings_income", period
         )
+        # Includes any trade loss relief beyond non-savings and savings
+        # income (ITA 2007 s.25(2)).
         remaining_allowance = (
             all_allowances
+            + person("trade_loss_relief_against_savings_and_dividends", period)
             - received_allowances_earned_income
             - received_allowances_savings_income
         )

@@ -1,0 +1,14 @@
+description: Minimum age for computed Carer's Allowance entitlement.
+# Existing model coverage anchor, not the statutory commencement date.
+# The age condition predates the model's supported 2015 fiscal year.
+values:
+  2015-01-01: 16
+metadata:
+  unit: year
+  period: year
+  label: Carer's Allowance minimum age
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992, section 70(3)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/70
+    - title: Social Security Contributions and Benefits (Northern Ireland) Act 1992, section 70(3)
+      href: https://www.legislation.gov.uk/ukpga/1992/7/section/70

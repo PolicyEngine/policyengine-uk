@@ -19,7 +19,9 @@ Invariants, for any generated population of families:
 3. Dataset mode (claims_all_entitled_benefits False, as in the FRS): Housing
    Benefit is paid only to reported claimants, and for families with a
    working-age adult eligibility equals the continuing-award rule (reported,
-   not claiming Universal Credit, renting, capital within the limit).
+   not claiming Universal Credit, renting, capital within the limit), or,
+   for a mixed-age couple keeping the SI 2019/37 art. 4 saving, the new-claim
+   rule (renting, capital within the limit; reg 6A(5)).
 4. Metamorphic: flipping would_claim_uc never changes a wholly pension-age
    family's Housing Benefit.
 5. Metamorphic: a wholly pension-age family's Housing Benefit is
@@ -208,13 +210,26 @@ def test_dataset_take_up_stays_anchored_to_reported_claims(units):
         if values["housing_benefit"][i] > 0:
             assert unit["hb_reported"] > 0, unit
         if not wholly_pension_age(unit):
+            renting_within_capital = values["renting"][i] and values["capital_ok"][i]
             continuing_award = (
                 unit["hb_reported"] > 0
                 and not unit["would_claim_uc"]
-                and values["renting"][i]
-                and values["capital_ok"][i]
+                and renting_within_capital
             )
-            assert bool(values["housing_benefit_eligible"][i]) == continuing_award
+            # SI 2019/37 art. 4 saving, computed from the drawn unit rather
+            # than the model: a mixed-age couple whose pension-age claimant
+            # reports Housing Benefit (no UC or legacy benefits are drawn)
+            # and was born by 1954 (over the qualifying age on 14 May 2019).
+            claimant_age = unit["members"][0][1]
+            saved_mixed_age_couple = (
+                unit["shape"] == "mixed_age"
+                and unit["hb_reported"] > 0
+                and YEAR - claimant_age <= 1954
+                and renting_within_capital
+            )
+            assert bool(values["housing_benefit_eligible"][i]) == (
+                continuing_award or saved_mixed_age_couple
+            ), unit
 
 
 @PROPERTY_SETTINGS

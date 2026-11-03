@@ -170,7 +170,7 @@ def calculate(population):
         people[name] = {"age": {YEAR: 70}}
         benunits[f"b{i}"] = {
             "members": [name],
-            "BRMA_LHA_rate": {YEAR: unit["lha_rate"]},
+            "housing_benefit_LHA_rate": {YEAR: unit["lha_rate"]},
             "housing_benefit_applicable_amount": {YEAR: unit["applicable_amount"]},
             "housing_benefit_applicable_income": {YEAR: unit["income"]},
             "housing_benefit_non_dep_deductions": {YEAR: unit["non_dep_deductions"]},
@@ -188,7 +188,7 @@ def calculate(population):
         for variable in [
             "housing_benefit_entitlement",
             "benunit_rent",
-            "BRMA_LHA_rate",
+            "housing_benefit_LHA_rate",
             "LHA_cap",
             "LHA_eligible",
             "housing_benefit_applicable_amount",
@@ -231,7 +231,9 @@ def test_bounds_closed_form_and_differential(population):
     # LHA tenants are exactly the private renters here.
     assert np.array_equal(lha, tenures == "RENT_PRIVATELY")
     assert np.allclose(
-        values["LHA_cap"], np.minimum(rent, values["BRMA_LHA_rate"]), atol=TOLERANCE
+        values["LHA_cap"],
+        np.minimum(rent, values["housing_benefit_LHA_rate"]),
+        atol=TOLERANCE,
     )
 
     # 1. Bounds.
@@ -315,9 +317,9 @@ def pension_age_households(draw):
 
 # The single pensioner from the issue (State Pension 16,000, above the
 # minimum guarantee; rent 30,000 against an LHA of 9,467.64), alone and with
-# a working-age non-dependant, and a pension-age couple in the same flat.
-# Each has rent above the LHA and income above the applicable amount, where
-# the two orders differ.
+# a working-age non-dependant, and a pension-age couple in the same flat,
+# also 22 years apart. Each has rent above the LHA and income above the
+# applicable amount, where the two orders differ.
 END_TO_END_EXAMPLE = [
     dict(
         ages=[70],
@@ -331,7 +333,7 @@ END_TO_END_EXAMPLE = [
     for non_dependant_earnings in [None, 20_000.0]
 ] + [
     dict(
-        ages=[70, 68],
+        ages=ages,
         state_pension=12_000.0,
         private_pension=0.0,
         tenure="RENT_PRIVATELY",
@@ -339,6 +341,7 @@ END_TO_END_EXAMPLE = [
         lha_rate=9_467.64,
         non_dependant_earnings=None,
     )
+    for ages in [[70, 68], [90, 68]]
 ]
 
 
@@ -351,13 +354,16 @@ def end_to_end(population):
             name = f"p{i}_{j}"
             people[name] = {
                 "age": {YEAR: age},
+                # The drawn pensioners are the claimant and partner, however
+                # far apart their ages.
+                "is_claimant_or_partner": {YEAR: True},
                 "state_pension_reported": {YEAR: unit["state_pension"]},
                 "private_pension_income": {YEAR: unit["private_pension"]},
             }
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
-            "BRMA_LHA_rate": {YEAR: unit["lha_rate"]},
+            "housing_benefit_LHA_rate": {YEAR: unit["lha_rate"]},
         }
         household_members = list(names)
         if unit["non_dependant_earnings"] is not None:
@@ -366,6 +372,8 @@ def end_to_end(population):
             name = f"n{i}"
             people[name] = {
                 "age": {YEAR: 30},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: unit["non_dependant_earnings"]},
             }
             benunits[f"n{i}"] = {"members": [name]}
@@ -384,7 +392,7 @@ def end_to_end(population):
             "housing_benefit",
             "housing_benefit_eligible",
             "benunit_rent",
-            "BRMA_LHA_rate",
+            "housing_benefit_LHA_rate",
             "LHA_cap",
             "LHA_eligible",
             "housing_benefit_applicable_amount",
@@ -424,5 +432,5 @@ def test_end_to_end_pension_age_housing_benefit(population):
     eligible = values["housing_benefit_eligible"].astype(bool)
     assert np.allclose(hb[eligible], expected[eligible], atol=TOLERANCE), population
     assert np.all(hb[~eligible] == 0)
-    lha_limit = np.minimum(rent, values["BRMA_LHA_rate"])
+    lha_limit = np.minimum(rent, values["housing_benefit_LHA_rate"])
     assert np.all(hb[lha] <= lha_limit[lha] + TOLERANCE), population

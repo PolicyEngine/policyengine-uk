@@ -1,0 +1,90 @@
+# Tax credits count property income after the costs of dwelling-related
+# loans by statute: The Tax Credits (Definition and Calculation of Income)
+# Regulations 2002 reg. 11(2A) disregards the ITTOIA 2005 s. 272A
+# restriction, and reg. 11(1) counts "annual taxable profits", so costs above
+# the profit leave nil rather than a loss. The legacy means tests treat rent
+# from a let property as capital (HB Regs 2006 reg 46(4) and Sch 5 para 17;
+# HB (SPC) Regs 2006 Sch 5 para 22), so it counts in neither case, and they
+# deduct only the tax on the income they count: the finance-cost reduction
+# comes off the tax on the rent (legacy_means_test_income_tax).
+
+- name: Finance costs are deducted from property income for tax credits
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    property_income_after_finance_costs: 6_000
+    # 6,000 less the 300 disregard on non-earned income.
+    tax_credits_applicable_income: 5_700
+
+- name: Finance costs above the profit leave nil
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+    property_finance_costs: 8_000
+  output:
+    property_income_after_finance_costs: 0
+
+- name: Without finance costs property income is unchanged
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+  output:
+    property_income_after_finance_costs: 3_000
+
+- name: A property loss is unchanged
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: -500
+    property_finance_costs: 1_000
+  output:
+    property_income_after_finance_costs: -500
+
+- name: Housing Benefit, no finance costs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 16_000
+    state_pension: 12_000
+    property_income: 6_000
+    tenure_type: RENT_FROM_COUNCIL
+    rent: 12_000
+  output:
+    # (16,000 + 12,000 + 6,000 - 12,570) x 20%.
+    income_tax: 4_286
+    # The rent does not count, nor the tax it would bear without the
+    # earnings: (12,000 + 6,000 - 12,570) x 20% = 1,086. The earnings carry
+    # the rest, 4,286 - 1,086 = 3,200: the 3,086 on the earnings and pension
+    # and the 114 they add on the rent by using the personal allowance. So
+    # 16,000 + 12,000 - 3,200, less the 5 a week earnings disregard.
+    legacy_means_test_uncounted_income_tax_without_earnings: 1_086
+    legacy_means_test_deducted_income_tax: 3_200
+    housing_benefit_applicable_income: 24_540
+
+- name: Housing Benefit, finance costs equal to the profit do not lower it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 16_000
+    state_pension: 12_000
+    property_income: 6_000
+    property_finance_costs: 6_000
+    tenure_type: RENT_FROM_COUNCIL
+    rent: 12_000
+  output:
+    # 4,286 less the 20% x 6,000 reduction.
+    income_tax: 3_086
+    property_income_after_finance_costs: 0
+    # 16,000 + 12,000 - 3,086 - 260: the rent does not count. Without the
+    # earnings the 1,200 reduction clears the 1,086 of tax on the rent, so no
+    # tax is left on uncounted income and the whole 3,086 is deducted.
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 3_086
+    housing_benefit_applicable_income: 24_654

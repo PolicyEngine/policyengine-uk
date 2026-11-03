@@ -1,0 +1,20 @@
+# The dataset that credentialed test jobs and the aggregate-impact report run
+# on. It is pinned by Hugging Face commit, not by tag, and every run checks the
+# file's SHA-256 against `sha256`, so the selection cannot move underneath a
+# test. Change it only to another certified pair, together with the reform
+# regression fixtures in microsimulation/reforms_config.yaml, which record the
+# same dataset.
+data_package: policyengine-uk-data
+data_version: 1.58.1
+repo_id: policyengine/policyengine-uk-data-private
+path: enhanced_frs_2024_25.h5
+# Commit the 1.58.1 tag pointed to on 2026-10-15.
+revision: 2526edbbb687a3b54dbb11272e5389e4b62d2ac2
+hf_tag: 1.58.1
+sha256: 056e80fd8e9151d78f432a25cde863340baee81304c6216a37fb575ce8563784
+size_bytes: 128409762
+certification:
+  certified_by: policyengine.py bundle uk-6.4.3
+  certified_for_model_version: 2.130.1
+  built_with_model_version: 2.122.2
+  release_manifest_revision: 89be6b73fc1e6eeba6dae2f9400676d8510bcd51

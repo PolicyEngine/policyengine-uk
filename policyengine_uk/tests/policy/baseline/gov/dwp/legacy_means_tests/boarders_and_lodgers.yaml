@@ -288,8 +288,9 @@
   # (3,000 - 1,000 personal savings allowance) x 20% = 400, with no starting
   # rate for savings because non-savings income exceeds the allowances by more
   # than £5,000; total 5,666. The married couple's allowance reduction
-  # (11,000 x 10% = 1,100, set as an input) leaves income tax of 4,566. The
-  # tests count the pension and the rent but treat interest as capital: the
+  # (11,000 x 10% = 1,100, set as an input) leaves income tax of 4,566
+  # before the winter fuel payment charge, which the means tests never deduct.
+  # The tests count the pension and the rent but treat interest as capital: the
   # capital tax of 400 keeps its share of the reduction,
   # 1,100 x 400 / 5,666 = 77.66, so 322.34 is not deducted, and the tax
   # deducted is 4,566 - 322.34 = 4,243.66.
@@ -319,7 +320,7 @@
     rent_a_room_income_tax: [580, 0]
     savings_income_tax: [400, 0]
     capped_mcad: [1_100, 0]
-    income_tax: [4_566, 0]
+    income_tax_before_winter_fuel_payment_charge: [4_566, 0]
     legacy_means_test_income_tax: [4_243.66, 0]
 
 - name: UC does not deduct the tax on rent it does not count

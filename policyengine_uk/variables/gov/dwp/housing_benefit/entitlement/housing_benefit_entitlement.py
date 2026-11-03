@@ -1,4 +1,15 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income import (
+    hb_income_before_deductions,
+    housing_benefit_applicable_income,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_disregard import (
+    hb_segment_deductions,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
+    hb_accommodation_segments,
+    hb_uses_annual_override,
+)
 
 
 class housing_benefit_entitlement(Variable):
@@ -9,7 +20,14 @@ class housing_benefit_entitlement(Variable):
         "income over the applicable amount. Where the Local Housing Allowance "
         "applies, the eligible rent is the maximum rent (LHA), which is the "
         "lower of the LHA rate and the rent, so the cap applies before the "
-        "taper."
+        "taper. When accommodation earnings disregards change within the "
+        "fiscal year, calculate income floors, childcare/earnings limits, "
+        "the income threshold, taper and zero-award floor separately in "
+        "each segment, then combine completed awards. Annual earnings, rent, "
+        "ages and household status remain constant. Other parameters keep "
+        "the model's annual convention. Supplied annual income/deductions "
+        "and replacement formulas retain their normal override semantics. "
+        "Annual income intermediates are not period-specific assessments."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -34,16 +52,26 @@ class housing_benefit_entitlement(Variable):
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/14D",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/48",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/49",
+        "https://www.legislation.gov.uk/uksi/2026/753/regulation/1",
+        "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
+        "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
     )
 
     def formula(benunit, period, parameters):
         # Where a maximum rent (LHA) is determined, it is the eligible rent
         # (SI 2006/213 and SI 2006/214 reg 12D(2)(a); NI SR 2006/405 and
         # SR 2006/406 reg 13C(2)(a)). LHA_cap is the LHA rate or, where the
-        # rent is lower, the rent (the cap rent: reg 13D(5); NI reg 14D(5)).
-        rent = benunit("benunit_rent", period)
+        # rent is lower, the rent (the cap rent: reg 13D(5); NI reg 14D(5)),
+        # or the rent less meals after a rent officer's board and attendance
+        # finding (reg 13C(5)(e), 13(7)). Otherwise charges for meals are not
+        # eligible (reg 12B(2)(b) and Sch 1 paras 1(a)(i) and 2).
+        rent_less_meals = max_(
+            0,
+            benunit("benunit_rent", period)
+            - benunit("housing_benefit_meals_deduction", period),
+        )
         lha_eligible = benunit("LHA_eligible", period)
-        eligible_rent = where(lha_eligible, benunit("LHA_cap", period), rent)
+        eligible_rent = where(lha_eligible, benunit("LHA_cap", period), rent_less_meals)
         # The appropriate maximum Housing Benefit is the eligible rent less
         # non-dependant deductions (SI 2006/213 reg 70, SI 2006/214 reg 50;
         # NI regs 68 and 48).
@@ -58,5 +86,33 @@ class housing_benefit_entitlement(Variable):
         withdrawal_rate = parameters(
             period
         ).gov.dwp.housing_benefit.means_test.withdrawal_rate
-        taper = max_(0, income - applicable_amount) * withdrawal_rate
-        return max_(0, maximum_housing_benefit - taper)
+        segments = list(hb_accommodation_segments(benunit, period, parameters))
+        if len(segments) == 1 or hb_uses_annual_override(
+            benunit,
+            period,
+            "housing_benefit_applicable_income",
+            housing_benefit_applicable_income.formula,
+        ):
+            taper = max_(0, income - applicable_amount) * withdrawal_rate
+            return max_(0, maximum_housing_benefit - taper)
+        income_before_deductions = hb_income_before_deductions(
+            benunit, period, parameters
+        )
+        retain_annual_income = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        ) | benunit("housing_benefit_on_passporting_benefit", period)
+        annual_award = benunit.empty_array()
+        for accommodation, share in segments:
+            disregard, childcare = hb_segment_deductions(
+                benunit, period, parameters, accommodation
+            )
+            segment_income = where(
+                retain_annual_income,
+                income,
+                max_(0, income_before_deductions - disregard - childcare),
+            )
+            taper = max_(0, segment_income - applicable_amount) * withdrawal_rate
+            annual_award = annual_award + share * max_(
+                0, maximum_housing_benefit - taper
+            )
+        return annual_award

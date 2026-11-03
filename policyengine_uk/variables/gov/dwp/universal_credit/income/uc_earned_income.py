@@ -4,35 +4,33 @@ from policyengine_uk.model_api import *
 class uc_earned_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "Universal Credit earned income (after disregards and tax)"
+    label = "Universal Credit earned income (after deductions and work allowance)"
+    documentation = (
+        "The claimant's earned income, or joint claimants' combined earned "
+        "income, less the work allowance. Earnings of a child, a qualifying "
+        "young person or anyone else in the benefit unit who is not a "
+        "claimant do not count."
+    )
     definition_period = YEAR
     unit = GBP
-
-    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/22"
+    reference = [
+        dict(
+            title="Universal Credit Regulations 2013 reg. 22(1)(b)",
+            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/22",
+        ),
+        dict(
+            title="Welfare Reform Act 2012 s. 8(3) and (4)",
+            href="https://www.legislation.gov.uk/ukpga/2012/5/section/8",
+        ),
+    ]
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (UC Regs 2013 reg 22); dropping dependants'
-        # own income is a follow-up. Anyone else in the benefit unit does not count.
-        person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_qualifying_young_person_for_universal_credit", period
-        )
-        personal_gross_earned_income = add_for_members(
-            benunit, period, ["uc_mif_capped_earned_income"], members
-        )
-        disregards = add_for_members(
-            benunit,
-            period,
-            ["uc_work_allowance", "tax", "pension_contributions"],
-            members,
-        )
-        # UC does not count rent from boarders, lodgers or sub-tenants (reg
-        # 66(1)), so the tax on it is not tax in respect of any employment
-        # (reg 55(5)(b)) and is not deducted. The rest of `tax` is wider than
-        # reg 55(5)(b) allows; that is #1942.
-        disregards -= add_for_members(
-            benunit, period, ["rent_a_room_income_tax_after_reductions"], members
-        )
-        return max_(0, personal_gross_earned_income - disregards)
+        # Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case
+        # of joint claimants, their combined earned income)". Each claimant's
+        # earned income is net of their own deductions (reg. 55(5), reg.
+        # 57(2)), summed over the claimants
+        # (uc_earned_income_before_work_allowance); the work allowance then
+        # comes off the combined earned income before the taper.
+        earned_income = benunit("uc_earned_income_before_work_allowance", period)
+        work_allowance = benunit("uc_work_allowance", period)
+        return max_(0, earned_income - work_allowance)

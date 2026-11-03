@@ -1,0 +1,244 @@
+# The income tax Income Support, Housing Benefit, Pension Credit and council
+# tax reduction deduct (legacy_means_test_deducted_income_tax): the income tax
+# before the winter fuel payment charge, less the tax that rent, interest and
+# dividends, and any Step 7 charge, would bear if nobody had employed earnings
+# or self-employment income. The tests treat income derived from capital as
+# capital (IS Regs 1987 reg 48(4) and Sch 9 para 22; HB Regs 2006 reg 46(4)
+# and Sch 5 para 17) and disregard tax only on income they take into account
+# (IS Sch 9 para 1; HB Sch 5 para 1); earnings are net of the income tax
+# deducted from them (IS reg 36(3)(a); HB reg 36(3)(a)). Earnings carry the
+# extra tax they cause.
+#
+# 2026-27 figures: personal allowance £12,570; basic rate 20% to £37,700 of
+# taxable income, higher rate 40%; starting rate for savings 0% on £5,000,
+# less taxable non-savings income; personal savings allowance £1,000 for a
+# basic-rate and £500 for a higher-rate taxpayer; employee NI 8% from £12,570
+# to £50,270. Each person is 40 and lives in England unless stated.
+
+- name: Pay of 30,000 and interest of 60,000, the tests deduct the tax the pay adds on the interest
+  # With the pay: non-savings taxable income 30,000 - 12,570 = 17,430, tax
+  # 3,486. Taxable income 77,430 exceeds 37,700, so the savings allowance is
+  # 500 and the starting rate is lost (17,430 > 5,000). Interest: 500 at nil
+  # in the band, 37,700 - 17,430 - 500 = 19,770 at 20% = 3,954, and 60,000 -
+  # 20,270 = 39,730 at 40% = 15,892. Income tax 3,486 + 19,846 = 23,332.
+  # Without the pay: taxable interest 60,000 - 12,570 = 47,430; 5,000 at the
+  # starting rate and 500 savings allowance at nil, 37,700 - 5,500 = 32,200 at
+  # 20% = 6,440, 47,430 - 37,700 = 9,730 at 40% = 3,892: 10,332, none of it on
+  # counted income. Tax deducted: 23,332 - 10,332 = 13,000, against the Step 4
+  # tax on the pay of 3,486.
+  # NI: (30,000 - 12,570) x 8% = 1,394.40.
+  # Income Support: 30,000 - 13,000 - 1,394.40 - 260 (the £5 single
+  # disregard, IS Sch 8) = 15,345.60. Housing Benefit, with its £5 disregard
+  # supplied as an input: the same. The council tax reduction general rule,
+  # with no working-age earnings disregard in the model's English default:
+  # 30,000 - 13,000 - 1,394.40 = 15,605.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 30_000
+        savings_interest_income: 60_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    income_tax_before_winter_fuel_payment_charge: 23_332
+    legacy_means_test_income_tax: 3_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 10_332
+    legacy_means_test_deducted_income_tax: 13_000
+    national_insurance: 1_394.40
+    income_support_applicable_income: 15_345.60
+    housing_benefit_applicable_income: 15_345.60
+    council_tax_reduction_applicable_income: 15_605.60
+
+- name: Pay and rent with mortgage interest, the tests deduct the rent's tax the pay causes, net of the finance-cost reduction
+  # Pay 20,000 and a property profit of 10,000 with 4,000 of mortgage
+  # interest. Non-savings taxable income 30,000 - 12,570 = 17,430; the pay
+  # takes 7,430 of it (tax 1,486) and the rent 10,000 (tax 2,000). The
+  # residential finance-cost reduction is 20% x 4,000 = 800 (ITTOIA 2005
+  # s.274A), so income tax is 3,486 - 800 = 2,686, and the Step 4 tax on
+  # counted income is 1,486. Without the pay the rent of 10,000 is within the
+  # personal allowance and bears no tax, so the whole 2,686 is tax the pay
+  # causes and is deducted: the 1,200 of tax on rent that the reduction leaves.
+  # NI: (20,000 - 12,570) x 8% = 594.40.
+  # Income Support: 20,000 - 2,686 - 594.40 - 260 = 16,459.60. Housing
+  # Benefit, with its £5 disregard as an input: the same. Council tax
+  # reduction general rule: 20,000 - 2,686 - 594.40 = 16,719.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 20_000
+        property_income: 10_000
+        property_finance_costs: 4_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    property_income_tax: 2_000
+    property_finance_cost_relief: 800
+    income_tax_before_winter_fuel_payment_charge: 2_686
+    legacy_means_test_income_tax: 1_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 2_686
+    income_support_applicable_income: 16_459.60
+    housing_benefit_applicable_income: 16_459.60
+    council_tax_reduction_applicable_income: 16_719.60
+
+- name: The High Income Child Benefit Charge the pay brings in is deducted
+  # A parent aged 35 with one child, pay 40,000 and interest 30,000. Child
+  # Benefit 27.05 x 52 = 1,406.60 (1,406 in whole pounds). Adjusted net income
+  # 70,000 is half-way through the 60,000 to 80,000 taper: charge 50% x 1,406
+  # = 703 (ITEPA 2003 s.681C). Pay: (40,000 - 12,570) x 20% = 5,486. Interest,
+  # higher-rate (savings allowance 500): 500 at nil, 37,700 - 27,430 - 500 =
+  # 9,770 at 20% = 1,954, 30,000 - 10,270 = 19,730 at 40% = 7,892; 9,846.
+  # Income tax before the winter fuel payment charge: 5,486 + 9,846 + 703 =
+  # 16,035. Without the pay: adjusted net income 30,000, no charge; interest
+  # 17,430 taxable, 5,000 at the starting rate and 1,000 savings allowance at
+  # nil, 11,430 at 20% = 2,286. Tax deducted: 16,035 - 2,286 = 13,749, which
+  # includes the whole 703 charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 40_000
+        savings_interest_income: 30_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [703, 0]
+    income_tax_before_winter_fuel_payment_charge: [16_035, 0]
+    legacy_means_test_income_tax: [5_486, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [2_286, 0]
+    legacy_means_test_deducted_income_tax: [13_749, 0]
+
+- name: Only the part of the High Income Child Benefit Charge that the pay adds is deducted
+  # A parent aged 35 with one child, pay 10,000 and interest 65,000. With the
+  # pay: adjusted net income 75,000, charge 75% x 1,406 = 1,054.50, 1,054 in
+  # whole pounds. The pay is within the personal allowance and leaves 2,570 of
+  # it; taxable interest 62,430, higher-rate: 5,000 starting rate and 500
+  # savings allowance at nil, 32,200 at 20% = 6,440, 24,730 at 40% = 9,892;
+  # 16,332. Income tax 16,332 + 1,054 = 17,386. Without the pay: adjusted net
+  # income 65,000, charge 25% x 1,406 = 351.50, 351; taxable interest 52,430:
+  # 6,440 + 14,730 x 40% = 12,332; 12,683 in all. Tax deducted: 17,386 -
+  # 12,683 = 4,703: the 4,000 the pay adds on the interest and 703 of the
+  # charge. The 351 the parent would pay without the pay is not deducted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 10_000
+        savings_interest_income: 65_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [1_054, 0]
+    income_tax_before_winter_fuel_payment_charge: [17_386, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [12_683, 0]
+    legacy_means_test_deducted_income_tax: [4_703, 0]
+
+- name: Only the part of the annual allowance charge that the pay adds is deducted
+  # Pay 45,000, interest 2,000 and employer contributions of 70,000 to a
+  # money-purchase scheme: a chargeable amount of 70,000 - 60,000 = 10,000
+  # (Finance Act 2004 s.227). Pay: (45,000 - 12,570) x 20% = 6,486; interest
+  # (basic-rate, savings allowance 1,000): 1,000 x 20% = 200. The charge is
+  # the chargeable amount as the top slice of reduced net income 47,000 -
+  # 12,570 = 34,430: 3,270 at 20% = 654 and 6,730 at 40% = 2,692; 3,346.
+  # Income tax 6,486 + 200 + 3,346 = 10,032. Without the pay: the interest is
+  # within the personal allowance, reduced net income is nil, and the charge
+  # is 10,000 x 20% = 2,000. Tax deducted: 10,032 - 2,000 = 8,032: the 6,686
+  # on the pay and interest and the 1,346 of the charge the pay adds.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 45_000
+        savings_interest_income: 2_000
+        employer_pension_contributions: 70_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    pension_annual_allowance_chargeable_amount: 10_000
+    personal_pension_contributions_tax: 3_346
+    income_tax_before_winter_fuel_payment_charge: 10_032
+    legacy_means_test_income_tax: 6_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 2_000
+    legacy_means_test_deducted_income_tax: 8_032
+
+- name: When one partner's pay moves the High Income Child Benefit Charge off the other, the couple's deduction nets it
+  # A couple with one child. Partner a has interest of 70,000 and partner b
+  # pay of 80,000. Child Benefit 1,406 in whole pounds. The charge falls on
+  # the partner with the higher adjusted net income (ITEPA 2003 s.681B): b,
+  # at 80,000, the whole 1,406. a's interest: 57,430 taxable, 5,000 at the
+  # starting rate and 500 savings allowance at nil, 32,200 at 20% = 6,440,
+  # 19,730 at 40% = 7,892; 14,332. b's pay: 37,700 at 20% = 7,540 and 29,730
+  # at 40% = 11,892; 19,432, plus the charge, 20,838.
+  # Without the pay, a has the higher income (70,000) and pays 50% x 1,406 =
+  # 703 of charge: 15,035 in all, none on counted income. So a's deduction is
+  # 14,332 - 15,035 = -703, and b's is 20,838. Together they deduct 20,135:
+  # the 19,432 on the pay and the 703 of charge the pay adds. The deduction is
+  # not floored per person, so the couple's total is the extra tax the pay
+  # causes.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+        savings_interest_income: 70_000
+      b:
+        age: 40
+        employment_income: 80_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [a, b, child]
+    households:
+      household:
+        members: [a, b, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [0, 1_406, 0]
+    income_tax_before_winter_fuel_payment_charge: [14_332, 20_838, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [15_035, 0, 0]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]

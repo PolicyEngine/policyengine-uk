@@ -2,6 +2,8 @@ from policyengine_uk.model_api import *
 
 
 GOV_TAX_VARIABLES = [
+    "lifetime_isa_withdrawal_charge",
+    "isa_cash_interest_flat_rate_charge",
     "expected_sdlt",
     "expected_ltt",
     "expected_lbtt",
@@ -13,6 +15,7 @@ GOV_TAX_VARIABLES = [
     "fuel_duty",
     "alcohol_duty",
     "tobacco_duty",
+    "gambling_duty",
     "vehicle_excise_duty",
     "tv_licence",
     "wealth_tax",

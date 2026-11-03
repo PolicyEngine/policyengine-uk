@@ -9,8 +9,8 @@ metadata:
   label: Deductions from self-employment income
   period: year
   reference:
-    - title: "Income Tax Act 2007, s. 64"
-      href:  https://www.legislation.gov.uk/ukpga/2007/3/section/64
+    - title: "Income Tax Act 2007, s. 83"
+      href:  https://www.legislation.gov.uk/ukpga/2007/3/section/83
     - title: "Capital Allowances Act 2001, s. 1"
       href:  https://www.legislation.gov.uk/ukpga/2001/2/section/1
     - title: "Income Tax (Trading and Other Income) Act 2005, s. 783A"

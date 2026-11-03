@@ -1,0 +1,8 @@
+- name: Case 1, all three rental tenures and both owner tenures agree at each entity level.
+  period: 2026
+  input:
+    tenure_type: [RENT_FROM_COUNCIL, RENT_FROM_HA, RENT_PRIVATELY, OWNED_OUTRIGHT, OWNED_WITH_MORTGAGE]
+    benunit_tenure_type: [RENT_FROM_COUNCIL, RENT_FROM_HA, RENT_PRIVATELY, OWNED_OUTRIGHT, OWNED_WITH_MORTGAGE]
+  output:
+    is_renting: [true, true, true, false, false]
+    benunit_is_renting: [true, true, true, false, false]

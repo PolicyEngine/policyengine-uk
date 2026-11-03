@@ -65,6 +65,38 @@ addition. This is a deliberate simplification: SDA was closed to new
 claims in 2001 and the remaining caseload is small and old enough that
 nearly all recipients qualify for the highest age-related addition.
 
+## Universal Credit income treatment
+
+Universal Credit counts a claimant's or assessed partner's Incapacity Benefit
+(`incapacity_benefit`) and modeled SDA award (`sda`) as unearned income, reducing
+the award pound for pound up to the maximum UC award. A positive `sda_reported`
+input therefore counts the modeled maximum SDA amount, not the reported cash
+amount. Other benefit units' income and same-unit nonclaimants' income remain
+outside the existing assessed-claimant aggregation.
+
+[GB transitional regulation 25(1)](https://www.legislation.gov.uk/uksi/2014/1230/regulation/25)
+adds both benefits from 16 June 2014. The model preserves the original 2013
+income list and adds them at that date, including in the later list containing
+Carer Support Payment. Annual calculations from 2015 read the 30 April value.
+The first, part-year 2014 annual treatment remains unresolved
+([#1807](https://github.com/PolicyEngine/policyengine-uk/issues/1807)); the dated
+entry does not provide assessment-period calculations or proration. The
+[NI transitional counterpart](https://www.legislation.gov.uk/nisr/2016/226/regulation/26)
+supports current commenced NI claims, not an assertion of NI commencement in
+2014.
+
+Carer's Allowance enters UC income after the existing overlapping-benefit
+adjustment. Within the allowance's positive residual, an extra pound of annual
+IB replaces a pound of Carer's Allowance, leaving their combined UC income
+unchanged. Once the allowance is zero, further IB increases UC income. This
+annual netting does not represent benefit spells at different weekly rates.
+
+The focused household tests retain live UC eligibility, disability/carer
+elements and final awards. Legacy receipt and disability-assessment inputs are
+assumptions, not a re-derivation of IB/SDA entitlement. The care-hours interface
+does not identify the person cared for or check their qualifying benefit. No
+private-data impact or Axiom parity has been measured.
+
 ## References
 
 - DLA primary statute: [Social Security Contributions and Benefits Act 1992 s. 71](https://www.legislation.gov.uk/ukpga/1992/4/section/71).

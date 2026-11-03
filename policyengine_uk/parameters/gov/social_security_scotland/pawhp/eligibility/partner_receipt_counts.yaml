@@ -1,0 +1,22 @@
+description: Whether a member of a couple counts as entitled to a relevant benefit for the Pension Age Winter Heating Payment when the other member is.
+values:
+  2024-01-01:
+    value: true
+    reference:
+      - title: The Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351), reg. 7(2) (as made)
+        href: https://www.legislation.gov.uk/ssi/2024/351/regulation/7/made
+  # SSI 2025/282 came into force on 11 October 2025 and applies to the
+  # qualifying week in September 2025.
+  2025-01-01:
+    value: true
+    reference:
+      - title: The Winter Heating Assistance (Pension Age) (Scotland) Amendment Regulations 2025 (SSI 2025/282), reg. 9 (new reg. 10(8))
+        href: https://www.legislation.gov.uk/ssi/2025/282/regulation/9/made
+  2026-04-01:
+    value: true
+    reference:
+      - title: The Social Security (Up-rating) (Miscellaneous Amendments) (Scotland) Regulations 2026 (SSI 2026/170), reg. 15 (new reg. 2A)
+        href: https://www.legislation.gov.uk/ssi/2026/170/regulation/15/made
+metadata:
+  unit: bool
+  label: PAWHP partner's relevant benefit counts

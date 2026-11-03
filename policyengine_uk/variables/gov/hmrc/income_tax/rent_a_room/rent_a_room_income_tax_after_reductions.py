@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.legacy_means_test_tax import legacy_means_test_tax_split
 
 
 class rent_a_room_income_tax_after_reductions(Variable):
@@ -7,35 +8,24 @@ class rent_a_room_income_tax_after_reductions(Variable):
     label = "income tax on rent-a-room income after tax reductions"
     documentation = (
         "The tax on taxable rent-a-room income less its share of the Step 6 "
-        "tax reductions, shared in proportion to the Step 4 tax on each kind "
-        "of income as legacy_means_test_income_tax does. It is the part of "
-        "income tax paid on this rent, which programmes that do not count the "
-        "rent must not deduct from the income they do count."
+        "tax reductions (income_tax_reductions). The formula shares the "
+        "reductions as legacy_means_test_income_tax does: the residential "
+        "finance-cost reduction comes off the property income tax on income "
+        "from capital first, and the formula shares the rest in proportion "
+        "to the Step 4 tax left on each kind of income. For a person whose "
+        "only counted income is taxable rent-a-room income, the two give the "
+        "same figure. rent_a_room_income_tax_without_earnings reads it to "
+        "find the tax on rent that a council tax reduction scheme does not "
+        "count."
     )
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/23"
+    reference = [
+        "https://www.legislation.gov.uk/ukpga/2007/3/section/23",
+        "https://www.legislation.gov.uk/ukpga/2007/3/section/27",
+    ]
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.hmrc.income_tax
-        rent_a_room_tax = person("rent_a_room_income_tax", period)
-        before_reductions = add(
-            person,
-            period,
-            [
-                "earned_income_tax",
-                "savings_income_tax",
-                "dividend_income_tax",
-                "property_income_tax",
-            ],
-        )
-        reductions = min_(
-            add(person, period, p.income_tax_subtractions), before_reductions
-        )
-        share = np.divide(
-            rent_a_room_tax,
-            before_reductions,
-            out=np.zeros_like(rent_a_room_tax, dtype=float),
-            where=before_reductions > 0,
-        )
-        return rent_a_room_tax - reductions * share
+        return legacy_means_test_tax_split(person, period)[
+            "rent_a_room_after_reductions"
+        ]

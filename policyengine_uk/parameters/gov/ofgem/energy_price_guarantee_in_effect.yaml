@@ -1,0 +1,25 @@
+description: Whether the Energy Price Guarantee applies to modelled household energy costs.
+values:
+  0001-01-01: false
+  2022-10-01:
+    value: true
+    metadata:
+      reference:
+        - title: Energy Price Guarantee up to 30 June 2023
+          href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023
+  2024-04-01:
+    value: false
+    metadata:
+      reference:
+        - title: New energy price cap level for April to June 2024 starts today
+          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-april-june-2024-starts-today
+metadata:
+  unit: bool
+  period: month
+  label: Energy Price Guarantee in effect
+  preserve_calendar_dates: true
+  reference:
+    - title: Energy Price Guarantee up to 30 June 2023
+      href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023
+    - title: New energy price cap level for April to June 2024 starts today
+      href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-april-june-2024-starts-today

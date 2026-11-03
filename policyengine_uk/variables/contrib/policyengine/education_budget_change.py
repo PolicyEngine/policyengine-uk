@@ -37,9 +37,12 @@ class education_budget_change(Variable):
         else:
             households_per_decile = {i: 28e5 for i in range(1, 11)}
 
+        # A decile with no weighted households in the data, as in a small
+        # sample, has nobody to receive its share.
         average_per_decile = {
             i: budget_increase_per_decile[i] / households_per_decile[i]
             for i in range(1, 11)
+            if households_per_decile.get(i, 0) > 0
         }
 
         return decile.map(average_per_decile).replace({np.nan: 0})

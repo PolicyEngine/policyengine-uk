@@ -1,17 +1,35 @@
-description: Average price of diesel per litre.
+description: Average pump price of diesel (ULSD) per litre, including fuel duty and VAT. Calendar-year average of DESNZ monthly typical retail prices; the same basis Microcosm UK uses to price household diesel spending.
 values:
-  2012-04-01: 1.4052
-  2014-09-15: 1.3339
-  2017-05-01: 1.2225
-  2020-05-14: 1.1186
-  2022-01-01: 1.4559
-  2024-01-01: 1.52
+  2010-01-01: 1.19258627
+  2011-01-01: 1.38716127
+  2012-01-01: 1.41828260
+  2013-01-01: 1.40405189
+  2014-01-01: 1.33457999
+  2015-01-01: 1.14898456
+  2016-01-01: 1.10128630
+  2017-01-01: 1.20149237
+  2018-01-01: 1.29982166
+  2019-01-01: 1.31475463
+  2020-01-01: 1.19135223
+  2021-01-01: 1.34937007
+  2022-01-01: 1.77658132
+  2023-01-01: 1.58188711
+  2024-01-01: 1.48328885
+  2025-01-01: 1.42548575
+  # Provisional: mean of the January to September 2026 monthly prices
+  # (DESNZ table 4.1.1, published 29 September 2026). Replace with the
+  # calendar-year average from table 4.1.2 when DESNZ publishes it, and
+  # re-derive the diesel_spending_litre_proxy growth series.
+  2026-01-01: 1.70563033
 metadata:
   unit: currency-GBP
   label: Price of diesel per litre
   economy: false
+  # Held flat in cash terms after the last DESNZ year. Litres and fuel duty
+  # do not depend on this projection: the spending litre proxy is derived
+  # from these prices, so later price changes cancel out of spending / price.
   reference:
-    - title: RAC
-      href: https://www.rac.co.uk/drive/advice/fuel-watch/
-    - title: RAC Foundation historical averages
-      href: https://www.racfoundation.org/data/uk-pump-prices-over-time
+    - title: DESNZ, Quarterly Energy Prices table 4.1.2, annual typical retail prices of petroleum products (ULSD)
+      href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics
+    - title: DESNZ, Quarterly Energy Prices table 4.1.1, monthly typical retail prices (ULSD), January to September 2026
+      href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics
