@@ -610,3 +610,43 @@
   output:
     rent_a_room_income_tax_without_earnings: [0, 0]
     council_tax_reduction_applicable_income: [0, 0]
+
+- name: CTR on the Universal Credit route leaves out the tax uncounted rent bears without earnings
+  # 2026-27, England, working age, with a Universal Credit award (set as an
+  # input). Pay 30,000 and a lodger paying 30,000: taxable rent-a-room income
+  # 30,000 - 7,500 = 22,500. With the pay, taxable income 52,500 - 12,570 =
+  # 39,930: 37,700 x 20% + 2,230 x 40% = 7,540 + 892 = 8,432, of which the
+  # pay alone bears (30,000 - 12,570) x 20% = 3,486 and the rent 4,946.
+  # Without the pay, the rent bears (22,500 - 12,570) x 20% = 1,986, which
+  # the route leaves out of the deducted tax; the other 2,960 is the extra
+  # tax earnings cause on the rent, and stays deducted. NI 17,430 x 8% =
+  # 1,394.40. Income: 30,000 - (8,432 - 1,986) - 1,394.40 = 22,159.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 30_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    income_tax_before_winter_fuel_payment_charge: [8_432, 0]
+    rent_a_room_income_tax: [4_946, 0]
+    rent_a_room_income_tax_without_earnings: [1_986, 0]
+    legacy_means_test_deducted_income_tax: [8_432, 0]
+    council_tax_reduction_applicable_income: [22_159.60, 0]
