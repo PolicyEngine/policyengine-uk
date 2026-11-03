@@ -216,7 +216,7 @@ This first API supports explicit local `.h5` paths. It does not accept a raw
 `Simulation` as the preparation, a situation, a DataFrame, an in-memory dataset,
 a remote URL or the environment's default dataset. An explicit incompatible
 request raises `ValueError` before ordinary source loading; identity is checked
-again after scenario modifiers. Materialise a remote source through its normal
+again immediately before baseline reuse. Materialise a remote source through its normal
 loader first if a verified local file is available. A prepared token requires a
 scenario or reform. Omitting `prepared_baseline` retains existing fresh
 construction for every supported source.
