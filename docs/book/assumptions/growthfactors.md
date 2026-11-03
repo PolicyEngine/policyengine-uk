@@ -151,7 +151,7 @@ A Northern Ireland household's rates bill equals its home's capital value times 
 
 ## Water and sewerage
 
-We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat. These country routes run to the end of the dataset projection in 2032. From 2033 policyengine-core grows every household's charges by the Ofwat index the variable declares, in Scotland and Northern Ireland too, and that index grows to 2074, the last year any growth series covers, so charges hold from 2075.
+We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat. These country routes run to the end of the dataset projection in 2032. From 2033 policyengine-core grows every household's charges by the Ofwat index the variable declares, in Scotland and Northern Ireland too. That index grows to 2074, the last year any growth series covers, so charges hold from 2075.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------------|------|------|------|------|------|------|------|------|
@@ -194,7 +194,7 @@ We project `rent` by tenure. Each household that rents privately follows the ONS
 
 Every other household follows social rent growth. To 2025 we use the Regulator of Social Housing's stock-average general needs rent growth in England. The OBR publishes no social rent forecast, so from 2026 we apply the England social rent cap: CPI inflation in the previous September plus 1 percentage point.
 
-Both series run to the end of the dataset projection in 2032, which takes each series' 2031 rate. From 2033 each household's `rent` holds at its 2032 value, because the variable declares no uprating index.
+Both series run to the end of the dataset projection in 2032, and we apply each series' 2031 rate again in 2032. From 2033 each household's `rent` holds at its 2032 value, because the variable declares no uprating index.
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-----------------|------|------|------|------|------|------|------|------|------|------|
@@ -213,7 +213,7 @@ We apply this to: `owned_company_income_share`, `self_employment_gross_receipts`
 
 ## Gambling duty bases
 
-Each gambling duty has its own series: the growth in the duty's base per person, where the base is the duty's receipts divided by the rate the model charges. We take receipts from HMRC's outturn for 2025-26 and the OBR's October 2026 EFO (receipts Table 4.10) from 2026-27, and divide the base's growth by population growth: (1 + base growth) / (1 + population growth) − 1. Growing the base rather than receipts lets the model apply its own rate changes once. See the [gambling duties guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/gambling-duties.md#projection).
+We grow each gambling duty's base per person with its own series, and get each year's base by dividing the duty's receipts by the rate the model charges that year. We take receipts from HMRC's outturn for 2025-26 and from the OBR's October 2026 EFO (receipts Table 4.10) from 2026-27, and divide the base's growth by population growth: (1 + base growth) / (1 + population growth) − 1. Growing the base rather than receipts lets the model apply its own rate changes once. See the [gambling duties guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/gambling-duties.md#projection).
 
 | Fiscal year | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-------------|------|------|------|------|------|------|------|
