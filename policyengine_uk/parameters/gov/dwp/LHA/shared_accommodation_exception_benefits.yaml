@@ -1,10 +1,10 @@
-description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate.
+description: Disability benefits whose recipients under 35 are excepted from the Universal Credit shared accommodation rate. The law also lists the Scottish devolved equivalents (child disability payment, adult disability payment, Scottish adult disability living allowance), which the model has no variables for.
 values:
   2013-04-29:
     - attendance_allowance
+    - armed_forces_independence_payment
     - dla_sc_middle_plus
     - pip_dl
-    - armed_forces_independence_payment
 metadata:
   unit: list
   label: Universal Credit shared accommodation rate disability exceptions
