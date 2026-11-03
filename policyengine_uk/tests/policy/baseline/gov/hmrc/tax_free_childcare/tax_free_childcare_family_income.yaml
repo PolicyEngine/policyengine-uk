@@ -895,3 +895,143 @@
     adjusted_net_income:
     - 123000
     - 0
+
+# Reg12(1) signals do not assert prior qualifying work or account windows.
+# Both final awards already return zero without the qualified status; the
+# work classification must agree with the minimum-income classification.
+- name: Reg12 consistency - unqualified SMP signal cannot establish either limb
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 32
+        statutory_maternity_pay: 3000
+        tax_free_childcare_qualifying_temporary_absence: false
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      newborn:
+        age: 0
+        childcare_expenses: 0
+    benunits:
+      family:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - applicant
+        - older_child
+        - newborn
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - false
+    - false
+    - false
+    tax_free_childcare_work_condition:
+    - false
+    - false
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    - false
+    adjusted_net_income:
+    - 3000
+    - 0
+    - 0
+- name: Reg12 consistency - partner shared-parental signal needs qualified status
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      working_partner:
+        age: 32
+        employment_income: 30000
+      leave_partner:
+        age: 32
+        tax_free_childcare_on_shared_parental_leave: true
+        tax_free_childcare_qualifying_temporary_absence: false
+      older_child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      newborn:
+        age: 0
+        childcare_expenses: 0
+    benunits:
+      family:
+        members:
+        - working_partner
+        - leave_partner
+        - older_child
+        - newborn
+        would_claim_uc: false
+    households:
+      home:
+        members:
+        - working_partner
+        - leave_partner
+        - older_child
+        - newborn
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 0
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 0
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - true
+    - false
+    - false
+    tax_free_childcare_treated_as_in_work:
+    - true
+    - false
+    - false
+    - false
+    tax_free_childcare_work_condition:
+    - false
+    - false
+    - false
+    - false
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    - false
+    - false
+    adjusted_net_income:
+    - 30000
+    - 0
+    - 0
+    - 0
