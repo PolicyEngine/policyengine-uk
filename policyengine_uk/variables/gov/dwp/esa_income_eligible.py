@@ -95,14 +95,14 @@ def pension_credit_without_income_related_esa(benunit, period):
     the couple has it, even where the award would make Pension Credit pay
     through the higher earnings disregard. With Pension Credit in payment the
     award would stop, and with it the disregard of SPC Regs 2002 Sch VI para
-    4(1)(a)(vii). Para 4(2) keeps £20 only where £20 of earnings was
-    disregarded in the award, and ESA Regs 2008 Sch 7 para 5 disregards a
-    claimant's permitted-work earnings up to the limit in whole, so such a
-    family would lose its Pension Credit and get the award back.
+    4(1)(a)(vii). DWP keeps disregarding £20 only where it disregarded £20 of
+    earnings in the award (para 4(2)), and it disregards all of a claimant's
+    permitted-work earnings up to the limit (ESA Regs 2008 Sch 7 para 5), so
+    such a family would lose its Pension Credit and get the award back.
     pension_credit_earnings_disregard does not apply para 4(2), and the model
     holds no record of how an award started, so a couple whose award
-    disregarded £20 of a partner's part-time earnings (Sch 7 para 7(4)) gets
-    the award and no Pension Credit too.
+    disregarded £20 of earnings (ESA Regs 2008 Sch 7 paras 6 and 7) gets the
+    award and no Pension Credit too.
 
     In a year with tax credits, a calculation in this branch opens the
     passport branch (pension_credit_with_passported_tax_credits), and one in

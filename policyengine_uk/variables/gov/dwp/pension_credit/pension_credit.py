@@ -24,8 +24,8 @@ class pension_credit(Variable):
         "income-related ESA in their own right leaves the couple's Pension "
         "Credit unchanged: in "
         "para 6(1)(d) Parliament named only the other member of the "
-        "claimant's couple. Under gov.contrib.freeze_pension_credit, a reform "
-        "pays the baseline's award."
+        "claimant's couple. Under gov.contrib.freeze_pension_credit, the "
+        "formula returns the baseline's award."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/contents",

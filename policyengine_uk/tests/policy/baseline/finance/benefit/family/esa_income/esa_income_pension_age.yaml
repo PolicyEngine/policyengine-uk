@@ -9,9 +9,10 @@
 # with no income-related ESA in the family, B(0), and refuses the couple's
 # claim where B(0) exceeds nil. B(e) is the Pension Credit the family would
 # get with the award e. Where B(0) is nil, the model pays the couple's award
-# and no Pension Credit, whatever B(e) (cases 18 and 25). A mixed-age couple has no entitlement to State Pension
-# Credit from 15 May 2019 (State Pension Credit Act 2002 s.4(1A)) unless it
-# keeps the SI 2019/37 art 4 saving.
+# and no Pension Credit, whatever B(e) (cases 18, 25 and 26). A mixed-age
+# couple has no entitlement to State Pension Credit from 15 May 2019 (State
+# Pension Credit Act 2002 s.4(1A)) unless it keeps the SI 2019/37 art 4
+# saving.
 # Nobody here claims Universal Credit (would_claim_uc false), since a couple
 # that claims it loses its income-related ESA anyway. No case has capital, so
 # no tariff income: the model pays an award that passes at the amount
@@ -632,21 +633,26 @@
     # The model pays no Pension Credit beside it. Parliament allows the award
     # only while he "is not entitled to state pension credit" (WRA 2007 Sch 1
     # para 6(1)(c)), so with Pension Credit in payment his ESA would stop, and
-    # with it the £20 that SPC Regs 2002 Sch VI para 4(1)(a)(vii) disregards
-    # for a claimant "in receipt of ... employment and support allowance".
-    # Para 4(2) keeps the £20 after the award ends only where "£20 was
-    # disregarded in respect of earnings taken into account in that award". He
-    # works 15 hours a week, under the 16-hour limit, and his £115.50 does not
-    # exceed the 2016-17 permitted work limit of £115.50: 16 hours at the
-    # £7.20 national living wage, £115.20, which ESA Regs 2008 reg 45(9A)
-    # rounds up to the next 50p (esa_exempt_work_higher_earnings_limit, from
+    # with it the £20 that DWP disregards for a claimant "in receipt of ...
+    # employment and support allowance" (SPC Regs 2002 Sch VI para
+    # 4(1)(a)(vii)). DWP keeps disregarding the £20 after the award ends only
+    # where (para 4(2)) "£20 was disregarded in respect of earnings taken into
+    # account in that award". He works 15 hours a week, under the 16-hour
+    # limit, and his £115.50 does not exceed the 2016-17 permitted work limit
+    # of £115.50: 16 hours at the £7.20 national living wage, £115.20, which
+    # esa_exempt_work_higher_earnings_limit rounds up to the next 50p, citing
+    # ESA Regs 2008 reg 45(9A) (from
     # gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours and
-    # gov.hmrc.minimum_wage.non_apprentice). So
-    # ESA Regs 2008 Sch 7 para 5 disregards "any earnings derived from that
-    # work which do not exceed the limits": all of them, not £20. Para 4(2)(a)
-    # fails, his Pension Credit would fall back to B(0), nil, and his ESA
-    # would come back. ESA with no Pension Credit holds; Pension Credit with
-    # no ESA does not.
+    # gov.hmrc.minimum_wage.non_apprentice). So DWP disregards "any earnings
+    # derived from that work which do not exceed the limits" (ESA Regs 2008
+    # Sch 7 para 5): all of them, not £20. He fails para 4(2)(a), his Pension
+    # Credit would fall back to B(0), nil, and his ESA would come back. ESA
+    # with no Pension Credit holds; Pension Credit with no ESA does not.
+    # On another reading, para 4(2)(a) holds wherever the award disregarded at
+    # least £20 of earnings, and he would then keep £525.20 of Pension Credit
+    # with no ESA. The model takes "£20 was disregarded" to mean the £20
+    # disregard of Sch 7 paras 6 and 7(1), as para 5 disregards "any earnings
+    # ... which do not exceed the limits", not £20.
     esa_income_eligible: true
     esa_income: 5_491.20
     claimant_or_partner_esa_income: 5_491.20
@@ -911,22 +917,98 @@
     # 1_040 = 11_986, so 12_352.60 - 11_986 = 366.60, or 52 x 7.05. Neither
     # member has reached pensionable age, so no savings credit is due (SPCA
     # 2002 s.3(1)).
-    # Here the law may differ from the model. ESA Regs 2008 Sch 7 para 7(4)
-    # disregards £20 of earnings "in a case where the claimant's partner is in
-    # part-time employment and paragraph 6 does not apply". If DWP disregarded
-    # £20 of the woman's earnings in the man's award, SPC Regs 2002 Sch VI
-    # para 4(2) keeps the £20 where "£20 was disregarded in respect of
-    # earnings taken into account in that award" and "the person whose
-    # earnings qualified for the disegard continues in employment after the
-    # termination of that award". Once the couple claimed, it could then keep
-    # 366.60 of Pension Credit with no ESA. The model holds no record of how
-    # an award started, and pension_credit_earnings_disregard does not apply
-    # para 4(2), so the model pays this couple the award and no Pension
-    # Credit, as in case 18.
+    # Here the law may differ from the model. DWP disregards £20 of earnings
+    # "in a case where the claimant's partner is in part-time employment and
+    # paragraph 6 does not apply" (ESA Regs 2008 Sch 7 para 7(4)). If DWP
+    # disregarded £20 of the woman's earnings in the man's award, DWP keeps
+    # disregarding the £20 (SPC Regs 2002 Sch VI para 4(2)) where "£20 was
+    # disregarded in respect of earnings taken into account in that award"
+    # and "the person whose earnings qualified for the disegard continues in
+    # employment after the termination of that award". Once the couple
+    # claimed, it could then keep 366.60 of Pension Credit with no ESA. The
+    # model holds no record of how an award started, and
+    # pension_credit_earnings_disregard does not apply para 4(2), so the model
+    # pays this couple the award and no Pension Credit, as in case 18.
+    # The same holds where DWP disregarded £20 of the partner's earnings
+    # because the claimant's permitted-work earnings fell short of the limit
+    # (Sch 7 para 6, case 26), or £20 of the claimant's own earnings (Sch 7
+    # para 7(1) and (2)).
     meets_pension_credit_age_conditions: true
     esa_income_eligible: true
     esa_income: 5_491.20
     claimant_or_partner_esa_income: 5_491.20
     pension_credit_earnings_disregard: 1_040
     pension_credit_entitlement: 366.60
+    pension_credit: 0
+
+- name: Case 26, a couple whose award may count £20 of the partner's earnings under the permitted-work shortfall keeps income-related ESA and gets no Pension Credit where Pension Credit pays only with the award.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 63
+        date_of_birth: 19530301
+        gender: MALE
+        is_claimant_or_partner: true
+        esa_income_reported: 5_491.20
+        esa_includes_support_component: true
+        # £90 a week for 15 hours, under the 16 hours and the £115.50 limit of
+        # permitted work (ESA Regs 2008 reg 45(4)).
+        employment_income: 4_680
+        hours_worked: 780
+        # £130 a week.
+        private_pension_income: 6_760
+      person2:
+        age: 60
+        date_of_birth: 19560301
+        gender: FEMALE
+        is_claimant_or_partner: true
+        # £30 a week for 5 hours, under the 24 hours of para 6(1)(f) (ESA Regs
+        # 2008 reg 42(1)).
+        employment_income: 1_560
+        hours_worked: 260
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # In 2016-17 the couple minimum guarantee is £237.55 a week,
+    # 52 x 237.55 = 12_352.60, and the couple's standard earnings disregard is
+    # £10 a week (Sch VI para 5), £20 with the award (para 4(1)(a)(vii)).
+    # Income: 90 + 130 + 30 = 250 a week, 52 x 250 = 13_000. Neither member
+    # owes primary Class 1 contributions on £90 or £30 a week in 2016-17. His
+    # £11,440 of earnings and pension exceeds the £11,000 personal allowance
+    # by £440, and the model transfers £1,100 of her unused allowance to him
+    # (marriage_allowance, 10% of £11,000), so neither member owes income tax
+    # and the earnings count in full.
+    # B(0): 13_000 - 520 = 12_480, over 12_352.60, so nil. B(e): 13_000 -
+    # 1_040 = 11_960, so 12_352.60 - 11_960 = 392.60, or 52 x 7.55. Neither
+    # member has reached pensionable age, so no savings credit is due (SPCA
+    # 2002 s.3(1)).
+    # Here the law may differ from the model. His £90 falls £25.50 short of
+    # the £115.50 limit, so DWP disregards the woman's earnings "to the extent
+    # that the claimant's earnings are less than ... 16 x National Minimum
+    # Wage, but only up to a maximum of £20" (ESA Regs 2008 Sch 7 para 6):
+    # £20 of her £30. DWP keeps disregarding the £20 (SPC Regs 2002 Sch VI
+    # para 4(2)) where "£20 was disregarded in respect of earnings taken into
+    # account in that award" and "the person whose earnings qualified for the
+    # disegard continues in employment after the termination of that award".
+    # Once the couple claimed, it could then keep 392.60 of Pension Credit
+    # with no ESA while she stays in work. The model holds no record of how
+    # an award started, and pension_credit_earnings_disregard does not apply
+    # para 4(2), so the model pays this couple the award and no Pension
+    # Credit, as in cases 18 and 25.
+    meets_pension_credit_age_conditions: true
+    esa_income_eligible: true
+    esa_income: 5_491.20
+    claimant_or_partner_esa_income: 5_491.20
+    esa_exempt_work_higher_earnings_limit: [115.50, 115.50]
+    pension_credit_employment_income_tax: 0
+    pension_credit_earnings_disregard: 1_040
+    pension_credit_income: 11_960
+    pension_credit_entitlement: 392.60
     pension_credit: 0
