@@ -16,6 +16,7 @@ class carer_support_payment_pre_couple_limit(Variable):
         "https://www.legislation.gov.uk/asp/2018/9/part/4",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/3",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/4",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/5",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/14",
         "https://www.legislation.gov.uk/ssi/2023/302/schedule/2/paragraph/4",
@@ -29,7 +30,12 @@ class carer_support_payment_pre_couple_limit(Variable):
         csp = parameters(period).gov.social_security_scotland.carer_support_payment
         meets_age_condition = person("age", period) >= csp.min_age
         weekly_care_hours = person("care_hours", period)
-        meets_hours = weekly_care_hours >= csp.min_hours
+        # Reg 5(1): only care of a person to whom a qualifying disability
+        # benefit is normally payable counts, which the input takes to hold
+        # by default.
+        meets_hours = (weekly_care_hours >= csp.min_hours) & person(
+            "cares_for_severely_disabled_person", period
+        )
         receives_ca = person("carers_allowance_reported", period) > 0
         would_claim = person("would_claim_carers_allowance", period)
         earnings = person("carers_allowance_earnings", period)

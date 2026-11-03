@@ -45,7 +45,11 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     csp_replaces_ca = period.start.year >= 2025
     receives_ca = person("carers_allowance_reported", period) > 0
     meets_age_condition = person("age", period) >= ca.min_age
-    meets_work_condition = person("care_hours", period) >= ca.min_hours
+    # SSCBA 1992 s. 70(1): the hours count only for caring for a severely
+    # disabled person (s. 70(2)), which the input takes to hold by default.
+    meets_work_condition = (person("care_hours", period) >= ca.min_hours) & person(
+        "cares_for_severely_disabled_person", period
+    )
     would_claim = person("would_claim_carers_allowance", period)
     eligible = (
         ~(in_scotland & csp_replaces_ca)
