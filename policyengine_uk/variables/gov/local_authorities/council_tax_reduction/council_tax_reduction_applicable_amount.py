@@ -16,7 +16,10 @@ class council_tax_reduction_applicable_amount(Variable):
         "For a pensioner we also add an amount for each child or young "
         "person in the family (council_tax_reduction_pensioner_child_amounts) "
         "and the family premium "
-        "(council_tax_reduction_pensioner_family_premium)."
+        "(council_tax_reduction_pensioner_family_premium). A pensioner's "
+        "council_tax_reduction_premiums include the disabled child and "
+        "enhanced disability premiums for each qualifying child or young "
+        "person (council_tax_reduction_pensioner_child_disability_premiums)."
     )
     definition_period = YEAR
     unit = GBP
@@ -99,8 +102,11 @@ class council_tax_reduction_applicable_amount(Variable):
             + couple * couple_personal_allowance
             + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
-        # We currently include the severe disability and carer premiums for
-        # pensioners, and choose the schedule by the same pensioner test.
+        # For a pensioner, council_tax_reduction_premiums holds the severe
+        # disability and carer premiums and the disabled child and enhanced
+        # disability premiums for the family's children and young persons
+        # (SI 2012/2885 Sch 1 para 6(1)(d)). It chooses the schedule by the
+        # same pensioner test.
         premiums = benunit("council_tax_reduction_premiums", period)
         # A pensioner's amounts for the children and young persons in the
         # family and the family premium (SI 2012/2885 Sch 1 para 6(1)(b)-(c);

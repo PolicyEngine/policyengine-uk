@@ -10,10 +10,11 @@ WORKING_AGE_PREMIUMS = [
 # The pension-age schedules (HB(SPC) Regs 2006 Sch 3 Part 3; CTR (Prescribed
 # Requirements) (England) Regs 2012 Sch 2 Part 3; the Scottish and Welsh
 # pension-age CTR schedules) have only the severe disability, enhanced
-# disability (children only), disabled child and carer premiums. The two
-# child premiums are modelled for Housing Benefit only, by
-# housing_benefit_child_disability_premiums in the applicable amount;
-# Council Tax Reduction does not model them.
+# disability (children only), disabled child and carer premiums. This list
+# holds the two adult premiums. The model computes the two child premiums
+# separately: housing_benefit_child_disability_premiums for Housing Benefit,
+# and council_tax_reduction_pensioner_child_disability_premiums for Council
+# Tax Reduction, which council_tax_reduction_premiums adds for a pensioner.
 PENSION_AGE_PREMIUMS = [
     "pension_age_severe_disability_premium",
     "carer_premium",

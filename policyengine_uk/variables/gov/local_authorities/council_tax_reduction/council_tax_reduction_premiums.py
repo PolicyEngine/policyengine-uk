@@ -7,12 +7,15 @@ class council_tax_reduction_premiums(Variable):
     label = "Council Tax Reduction disability and carer premiums"
     documentation = (
         "The disability and carer premiums in the Council Tax Reduction "
-        "applicable amount, which are the applicant's. A pensioner "
-        "(council_tax_reduction_pensioner) has the pension-age schedule (the "
-        "severe disability and carer premiums), anyone else the working-age "
-        "schedule. Where the applicant is the benefit unit's claimant, these "
-        "are the benefit unit's premiums (pension_age_benefits_premiums or "
-        "working_age_benefits_premiums). Where the household head applies "
+        "applicable amount. A pensioner (council_tax_reduction_pensioner) has "
+        "the pension-age schedule (the severe disability and carer premiums, "
+        "and the disabled child and enhanced disability premiums for each "
+        "qualifying child or young person in the family), anyone else the "
+        "working-age schedule. Where the applicant is the benefit unit's "
+        "claimant, these are the benefit unit's premiums: for a pensioner, "
+        "pension_age_benefits_premiums plus "
+        "council_tax_reduction_pensioner_child_disability_premiums; otherwise "
+        "working_age_benefits_premiums. Where the household head applies "
         "alone (council_tax_reduction_head_applies_alone), they are the "
         "premiums of a single claimant on the head's own circumstances, under "
         "the same conditions: the disability premium on her own disability and "
@@ -53,7 +56,14 @@ class council_tax_reduction_premiums(Variable):
         # (council_tax_reduction_enhanced_disability_premium).
         benefit_unit_premiums = where(
             pensioner,
-            benunit("pension_age_benefits_premiums", period),
+            # A pensioner's premiums include the disabled child and enhanced
+            # disability premiums for the family's children and young persons
+            # (SI 2012/2885 Sch 1 para 6(1)(d); WSI 2013/3029 Sch 1 para
+            # 1(1)(d); SSI 2012/319 reg 20(d)).
+            benunit("pension_age_benefits_premiums", period)
+            + benunit(
+                "council_tax_reduction_pensioner_child_disability_premiums", period
+            ),
             benunit("working_age_benefits_premiums", period)
             + (
                 benunit("council_tax_reduction_severe_disability_premium", period)
