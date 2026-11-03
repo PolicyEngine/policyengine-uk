@@ -7,8 +7,11 @@ class lha_renter_meets_foster_parent_condition(Variable):
     label = "Universal Credit renter meets the foster parent condition"
     documentation = (
         "Whether the renter or a joint renter is a foster parent or an "
-        "adopter with whom a child has been placed for adoption. A foster "
-        "parent has a child under 18 looked after by a local authority "
+        "adopter with whom a child has been placed for adoption. An adopter "
+        "(UC Regs 2013 reg 89(3)(a)) is not a foster parent or close "
+        "relative of the child (see "
+        "adopter_is_foster_parent_or_close_relative). A foster parent has "
+        "a child under 18 looked after by a local authority "
         "placed with them (a member of the benefit unit flagged "
         "is_looked_after_by_local_authority), or is an approved foster "
         "parent whose last placement ended, or who was approved, within 12 "
@@ -21,20 +24,23 @@ class lha_renter_meets_foster_parent_condition(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/12",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/29",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/89",
     )
 
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         # UC Regs 2013 reg 2, "foster parent": a person with whom a child
-        # (under 18) is placed under the care planning regulations; reg 89(3)
-        # and Sch 4 para 12(4)(b): an adopter with whom a child is placed for
-        # adoption.
+        # (under 18) is placed under the care planning regulations. Sch 4
+        # para 12(4)(b): an adopter with whom a child is placed for adoption,
+        # where "adopter" (reg 2, reg 89(3)(a)) excludes a foster parent or
+        # close relative of the child.
         age_limit = parameters(
             period
         ).household.demographic.looked_after_child_age_limit
         placed_for_adoption = (
             person("is_placed_for_adoption", period)
+            & ~person("adopter_is_foster_parent_or_close_relative", period)
             & (person("age", period) < age_limit)
             & ~claimant_or_partner
         )

@@ -15,9 +15,10 @@ class is_placed_for_adoption(Variable):
         "flag that child as looked after instead. Universal Credit treats the "
         "adopter as responsible for the child (UC Regs 2013 reg 4A(1)(c)), "
         "and the adopter satisfies the foster parent condition for an "
-        "additional bedroom (Sch 4 para 12(4)(b)). That condition's "
-        "definition of adopter (reg 89(3)(a)) excludes a foster parent or "
-        "close relative of the child, which the model does not check. "
+        "additional bedroom (Sch 4 para 12(4)(b)) and the shared "
+        "accommodation rate exception (para 29(9A)), unless the adopter is "
+        "a foster parent or close relative of the child (reg 89(3)(a); see "
+        "adopter_is_foster_parent_or_close_relative). "
         "Pension Credit also treats the adopter as responsible (SPC Regs 2002 "
         "Sch IIA para 4(3)(c)). Under Housing Benefit, Income Support, "
         "income-based Jobseeker's Allowance, income-related Employment and "
@@ -30,9 +31,9 @@ class is_placed_for_adoption(Variable):
         "4(2)(d)). Child Tax Credit excludes them only while the local "
         "authority pays for their keep (CTC Regs 2002 reg 3, rule 4 case B), "
         "which is not modelled. Scottish working-age council tax reduction "
-        "excludes only foster placements (SSI 2021/249 reg 7(8)), so the "
-        "child should count there; the model's shared legacy household test "
-        "leaves them out."
+        "excludes only foster placements (SSI 2021/249 reg 7(8)), so from 1 "
+        "April 2022 the child counts in the adopter's family there (see "
+        "is_child_or_young_person_for_council_tax_reduction)."
     )
     definition_period = YEAR
     default_value = False
@@ -45,4 +46,5 @@ class is_placed_for_adoption(Variable):
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA",
         "https://www.legislation.gov.uk/uksi/2002/2007/regulation/3",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/7",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/89",
     )

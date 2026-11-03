@@ -13,8 +13,8 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "is_housing_benefit_qualifying_parent_or_carer): two if both. "
         "Occupiers outside the family count for a family liable for the "
         "rent: non-dependants, boarders and lodgers and their children, "
-        "but not a sharer of the rent or a child placed with them as a "
-        "foster child or for adoption. A child placed with the "
+        "including a child placed with one of them as a foster child or for "
+        "adoption, but not a sharer of the rent. A child placed with the "
         "claimant or partner counts as one for whom they are a qualifying "
         "parent or carer. Before 1 April 2017 only the claimant and partner "
         "counted for overnight care. The definitions require a bedroom in "
@@ -39,8 +39,9 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         # size criteria (13D(12); see housing_benefit_LHA_allowed_bedrooms):
         # for a claim by a family liable for the rent, everyone in the
         # families not liable for it (non-dependants, boarders and lodgers
-        # and their children), except, following DWP, a child placed with
-        # one of them as a foster child or for adoption. A joint tenant outside
+        # and their children), including a child placed with one of them as
+        # a foster child or for adoption, since reg 21(3) takes out only a
+        # child placed with the claimant or partner. A joint tenant outside
         # the claimant's household is not counted: A21/2013 para 25 bases
         # private-sector joint tenants' size criteria on each tenant's own
         # household. A boarder's or lodger's own claim counts only their own
@@ -48,8 +49,7 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         liable_family = person.benunit.any(
             person("is_liable_for_household_rent", period)
         )
-        placed = person("is_child_or_young_person_placed_with_family", period)
-        other = overnight_care & ~liable_family & ~placed
+        other = overnight_care & ~liable_family
         is_liable_claim = benunit.any(person("is_liable_for_household_rent", period))
         others = where(is_liable_claim, benunit.max(person.household.sum(other)), 0)
         # Reg 13D(3A)(a)(i)-(iv): the claimant, partner, other members of the

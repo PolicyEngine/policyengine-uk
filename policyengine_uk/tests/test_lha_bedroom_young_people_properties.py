@@ -24,27 +24,30 @@ Invariants, for any generated population of households:
      13D(3A)(b)) bedroom if it did not already have it;
    - if they join a non-dependant's family, the claim that counts the
      household's non-dependants (uc_non_dependants_counted) gains one
-     Universal Credit bedroom unless no one is responsible for them, and
-     every family liable for the rent gains one Housing Benefit bedroom
-     unless they are placed with the non-dependant's family;
-   - if they join a boarder's or lodger's family, every family liable for
-     the rent gains one Housing Benefit bedroom unless they are placed with
-     it;
+     Universal Credit bedroom unless no one is responsible for them;
+   - if they join a non-dependant's, boarder's or lodger's family, every
+     family liable for the rent gains one Housing Benefit bedroom, even if
+     they are placed with that family: reg 21(3) takes out only a child or
+     young person placed with the claimant or partner, so they occupy the
+     claimant's dwelling (reg 13D(12));
    - no other family's bedrooms change.
 3. Children: adding a child under 16 who is neither fostered nor placed for
    adoption to any family never lowers any family's bedrooms under either
    scheme and raises each by at most one.
 4. Placed children: adding a child under 16 placed with a family as a
-   foster child gives that family one more bedroom under each scheme if it
-   did not already meet the foster parent condition (UC) or have a
-   qualifying parent or carer (HB), and none otherwise. No other family's
-   bedrooms change under either scheme: a child placed with another family
-   is not in the counting claim's extended benefit unit (UC para 9(2)(g))
-   and, following DWP, not an occupier (HB; LHA Guidance Manual para
-   2.033). A child placed for adoption gives the adopter's family the same
-   room under both schemes and, under Universal Credit, counts as a child
-   (reg 4A(1)(c)): that family and the claim counting a non-dependant
-   adopter's household each gain 0 or 1 more.
+   foster child or for adoption gives that family one more bedroom under
+   each scheme if it did not already meet the foster parent condition (UC)
+   or have a qualifying parent or carer (HB), and none otherwise. If the
+   family is a non-dependant's, boarder's or lodger's, each family liable
+   for the rent gains 0 or 1 Housing Benefit bedrooms: the child occupies
+   its dwelling (reg 21(3) names only a placement with the claimant or
+   partner; reg 13D(12)) and shares a room with the other children if it
+   can. A foster child changes no other family's Universal Credit bedrooms:
+   no one is responsible for them (reg 4(6)(a); para 9(2)(g)). A child
+   placed for adoption counts as a child under Universal Credit (reg
+   4A(1)(c)): the adopter's family and the claim counting a non-dependant
+   adopter's household each gain 0 or 1 more. No joint tenant's bedrooms
+   change, and no other family's.
 5. Reference: every family's bedrooms, and its additional bedrooms, equal a
    count of the size criteria made by the test itself. The added person's
    status comes from the test's own predicates on the inputs (UC reg 5
@@ -64,19 +67,19 @@ Invariants, for any generated population of households:
      aged 16 or over in a non-dependant's family, except one no one is
      responsible for; for a family liable for the rent (HB), one for the
      couple or single adult of each non-dependant's, boarder's or lodger's
-     family and one for each other member aged 16 or over, except one placed
-     with that family;
+     family and one for each other member aged 16 or over, including one
+     placed with that family;
    - the fewest rooms that hold the counted children under 16 two to a
      room, where only children of the same sex or two children under 10 may
      share, found by brute force. UC counts the family's own children other
      than foster children and, for the counting claim, the non-dependants'
      children other than foster children. HB counts the family's children
-     and, for a family liable for the rent, the children of each
-     non-dependant's, boarder's or lodger's family, other than foster
-     children and children placed for adoption;
-   - one additional bedroom if anyone so counted, or a foster child of the
-     family, has overnight care, and one if the family fosters, has a child
-     placed for adoption, or has an approved foster parent between
+     other than foster children and children placed for adoption and, for
+     a family liable for the rent, every child of each non-dependant's,
+     boarder's or lodger's family, placed or not;
+   - one additional bedroom if anyone so counted, or a child placed with
+     the family, has overnight care, and one if the family fosters, has a
+     child placed for adoption, or has an approved foster parent between
      placements.
 6. In-unit non-dependants: every member of a benefit unit aged 16 or over
    who is neither the claimant nor partner nor a Universal Credit
@@ -86,6 +89,14 @@ Invariants, for any generated population of households:
    without them, and making them qualifying young persons the renter is
    responsible for (para 10(1)(b)) leaves every family's Universal Credit
    bedrooms unchanged.
+7. Close-relative adopters: marking every child's adopter as a foster
+   parent or close relative of the child (UC reg 89(3)(a)) takes away the
+   foster parent condition exactly where an adoption placement was the
+   family's only route to it (para 12(4)(b)); it lowers that family's
+   Universal Credit bedrooms by one and changes nothing else: Universal
+   Credit responsibility (reg 4A(1)(c)), the Housing Benefit placement test
+   (reg 21(3)), the qualifying parent or carer and every family's Housing
+   Benefit bedrooms stay the same.
 """
 
 import numpy as np
@@ -434,7 +445,7 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     same_household = np.array([h == target[0] for h, _ in keys])
     if fam["role"] == "non_dependant" and not added["unclaimed"]:
         expected_uc[same_household & counted] += 1
-    if fam["role"] in OCCUPIER_ROLES and not added["placed"]:
+    if fam["role"] in OCCUPIER_ROLES:
         expected_hb[same_household & liable] += 1
     assert np.array_equal(uc_after - uc_before, expected_uc)
     assert np.array_equal(hb_after - hb_before, expected_hb)
@@ -468,7 +479,14 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
     new_carer = int(not fosters(fam))
     expected = np.zeros(len(keys))
     expected[t] = new_carer
-    assert np.array_equal(hb_after - hb_before, expected)
+    same_household = np.array([h == target[0] for h, _ in keys])
+    # Under Housing Benefit the child occupies the dwelling of each family
+    # liable for the rent if placed with a non-dependant, boarder or lodger.
+    hb_child_room = np.zeros(len(keys), dtype=bool)
+    if fam["role"] in OCCUPIER_ROLES:
+        hb_child_room = same_household & liable
+    hb_extra = hb_after - hb_before - expected
+    assert np.all((hb_extra == 0) | ((hb_extra == 1) & hb_child_room))
     uc_change = uc_after - uc_before
     if added_child[2] == "foster":
         assert np.array_equal(uc_change, expected)
@@ -479,7 +497,6 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
         child_room = np.zeros(len(keys), dtype=bool)
         child_room[t] = True
         if fam["role"] == "non_dependant":
-            same_household = np.array([h == target[0] for h, _ in keys])
             child_room |= same_household & counted
         extra = uc_change - expected
         assert np.all((extra == 0) | ((extra == 1) & child_room))
@@ -525,9 +542,7 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
                 continue
             joins = target == (h, g)
             if counted[b] and other["role"] == "non_dependant":
-                uc_rooms += len(other["adults"]) + int(
-                    joins and not added["unclaimed"]
-                )
+                uc_rooms += len(other["adults"]) + int(joins and not added["unclaimed"])
                 uc_children += [c for c in other["children"] if c[2] != "foster"]
                 uc_overnight |= any(o for _, o in other["adults"]) or any(
                     c[3] for c in other["children"] if c[2] != "foster"
@@ -536,12 +551,14 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
             if liable[b] and other["role"] in OCCUPIER_ROLES:
                 # HB reg 13D(3)(a), (b): the occupier family's couple or
                 # single adult has one bedroom, and the added person one.
-                hb_rooms += 1 + int(joins and not added["placed"])
-                hb_children += [c for c in other["children"] if c[2] == "own"]
+                # Reg 21(3) takes out only a child placed with the claimant
+                # or partner, so every child of the family counts.
+                hb_rooms += 1 + int(joins)
+                hb_children += other["children"]
                 hb_overnight |= any(o for _, o in other["adults"]) or any(
-                    c[3] for c in other["children"] if c[2] == "own"
+                    c[3] for c in other["children"]
                 )
-                hb_overnight |= joins and added["overnight"] and not added["placed"]
+                hb_overnight |= joins and added["overnight"]
         expected_uc_additional = int(uc_overnight) + int(uc_foster)
         expected_hb_additional = int(hb_overnight) + int(hb_carer)
         assert uc_additional[b] == expected_uc_additional
@@ -624,3 +641,61 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
     sim_as_dependants, uc_as_dependants, _ = bedrooms(as_dependants)
     assert not in_unit_non_dependants(sim_as_dependants).any()
     assert np.array_equal(uc, uc_as_dependants)
+
+
+def as_close_relative_adopters(situation):
+    return {
+        **situation,
+        "people": {
+            name: {**attributes, "adopter_is_foster_parent_or_close_relative": True}
+            for name, attributes in situation["people"].items()
+        },
+    }
+
+
+@PROPERTY_SETTINGS
+@given(scenario())
+def test_a_close_relative_adopter_loses_only_the_foster_room(case):
+    population, target, person = case
+    situation, keys = build(population, (target, person))
+    added = flags(person)
+    outputs = []
+    for variant in (situation, as_close_relative_adopters(situation)):
+        sim, uc, hb = bedrooms(variant)
+        outputs.append(
+            dict(
+                uc=uc,
+                hb=hb,
+                foster=np.asarray(
+                    sim.calculate("lha_renter_meets_foster_parent_condition", YEAR)
+                ),
+                **{
+                    name: np.asarray(sim.calculate(name, YEAR))
+                    for name in (
+                        "is_child_or_qualifying_young_person_for_universal_credit",
+                        "is_child_or_young_person_placed_with_family",
+                        "is_housing_benefit_qualifying_parent_or_carer",
+                        "housing_benefit_LHA_additional_bedrooms",
+                    )
+                },
+            )
+        )
+    before, after = outputs
+    # 7. The foster parent condition without the adoption route: a foster
+    # child, an approved foster parent between placements, or the added
+    # person placed as a foster child.
+    expected_foster = np.array(
+        [
+            population[h][f]["between_placements"]
+            or any(c[2] == "foster" for c in population[h][f]["children"])
+            or ((h, f) == target and added["fostered"])
+            for h, f in keys
+        ]
+    )
+    assert np.array_equal(after["foster"], expected_foster)
+    lost = before["foster"] & ~after["foster"]
+    assert np.array_equal(before["uc"] - after["uc"], lost.astype(float))
+    assert np.array_equal(before["hb"], after["hb"])
+    for name in before:
+        if name not in ("uc", "hb", "foster"):
+            assert np.array_equal(before[name], after[name])

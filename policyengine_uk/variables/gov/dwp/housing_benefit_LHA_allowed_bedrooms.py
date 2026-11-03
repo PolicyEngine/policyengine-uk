@@ -23,8 +23,9 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "boarder's or lodger's own claim counts only their own family. A "
         "child or young person placed with the claimant or partner as a "
         "foster child or for adoption does not occupy the claimant's "
-        "dwelling; the model treats a child placed with anyone in the "
-        "household the same way. "
+        "dwelling, so the claimant's own claim leaves them out; a child "
+        "placed with a non-dependant, boarder or lodger occupies the "
+        "claimant's dwelling and counts in the claimant's size criteria. "
         "Couples and children who cannot share a bedroom are not modelled."
     )
     definition_period = YEAR
@@ -51,16 +52,17 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         is_liable_claim = benunit.any(person("is_liable_for_household_rent", period))
         # HB Regs 2006 reg 21(3): a child or young person placed with the
         # claimant or partner as a foster child or for adoption does not
-        # occupy the claimant's dwelling. Reg 21(3) names only placements
-        # with the claimant or partner; the model follows DWP in treating a
-        # child placed with anyone in the household as no occupier (LHA
-        # Guidance Manual para 2.033; HB circular A21/2013 para 22), as
-        # Universal Credit does (UC Sch 4 para 9(2)(g)).
+        # occupy the claimant's dwelling. Every limb names a placement "with
+        # the claimant or his partner", so a child placed with a
+        # non-dependant, boarder or lodger is one of the persons who occupy
+        # the claimant's dwelling as their home (13D(12)) and counts in the
+        # claimant's size criteria, while the carer's own claim leaves them
+        # out.
         placed = person("is_child_or_young_person_placed_with_family", period)
 
         def occupiers_total(values):
             own = benunit.sum(values & ~placed)
-            others = benunit.max(person.household.sum(values & other & ~placed))
+            others = benunit.max(person.household.sum(values & other))
             return own + where(is_liable_claim, others, 0)
 
         # 13D(3)(zb), (a): one bedroom for each couple or single claimant. A
