@@ -151,7 +151,7 @@ A Northern Ireland household's rates bill equals its home's capital value times 
 
 ## Water and sewerage
 
-We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat.
+We project `water_and_sewerage_charges` by country. Households in England and Wales follow the average household bill from Ofwat. Households in Scotland follow Scottish Water's charges, which Scottish Water sets within limits from the Water Industry Commission for Scotland. Both series end at 2029-30 and keep that rate in later years. Northern Ireland has no domestic water charges, so any a dataset gives its households stay flat. These country routes run to the end of the dataset projection in 2032. From 2033 policyengine-core grows every household's charges by the Ofwat index the variable declares, in Scotland and Northern Ireland too, and that index stops growing after 2039, so charges hold from 2040.
 
 | Fiscal year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 |
 |-------------------|------|------|------|------|------|------|------|------|
@@ -193,6 +193,8 @@ We apply this to: `private_pension_income`
 We project `rent` by tenure. Each household that rents privately follows the ONS Price Index of Private Rents for its region to 2025 and then the OBR's UK private rents forecast (October 2026 EFO, economy Table 1.7). With no published regional forecast, every region takes the UK rate from 2026, and a household with no recorded region takes the UK rate in every year.
 
 Every other household follows social rent growth. To 2025 we use the Regulator of Social Housing's stock-average general needs rent growth in England. The OBR publishes no social rent forecast, so from 2026 we apply the England social rent cap: CPI inflation in the previous September plus 1 percentage point.
+
+Both series run to the end of the dataset projection in 2032, which takes each series' 2031 rate. From 2033 each household's `rent` holds at its 2032 value, because the variable declares no uprating index.
 
 | Year | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 |
 |-----------------|------|------|------|------|------|------|------|------|------|------|
