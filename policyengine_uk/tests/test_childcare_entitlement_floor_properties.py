@@ -786,3 +786,38 @@ def test_raising_the_income_limit_never_lowers_support_or_income(h):
     )
     assert d_income >= -0.05, h
     assert abs(d_income - (after - before)) <= 0.05, h
+
+
+@pytest.mark.parametrize("high, funded", [(100_000, True), (100_001, False)])
+def test_income_limit_admits_exactly_the_couples_within_it(high, funded):
+    """A working couple's 3-year-old gets working parent hours exactly when
+    both parents' adjusted net income is at most £100,000 (SI 2022/1134 regs
+    14(3)(c)(i) and 15(3)(b)(i))."""
+    year = 2026
+    people = {
+        "parent1": {
+            "age": {year: 35},
+            "employment_income": {year: high},
+            "is_parent": {year: True},
+        },
+        "parent2": {
+            "age": {year: 35},
+            "employment_income": {year: 20_000},
+            "is_parent": {year: True},
+        },
+        "child0": {"age": {year: 3}},
+    }
+    members = list(people)
+    situation = {
+        "people": people,
+        "benunits": {
+            "bu": {
+                "members": members,
+                "maximum_extended_childcare_hours_usage": {year: 30},
+            }
+        },
+        "households": {"hh": {"members": members, "country": {year: "ENGLAND"}}},
+    }
+    sim = new_simulation(situation=situation)
+    extended = float(sim.calculate("extended_childcare_entitlement", year).sum())
+    assert (extended > 0) == funded, (high, extended)
