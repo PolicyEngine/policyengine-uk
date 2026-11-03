@@ -19,10 +19,13 @@ class is_qualifying_young_person_for_child_benefit(Variable):
         "August (1 September for a 16th birthday on 31 August) falls in the "
         "same fiscal year as Universal Credit's 1 September, so a year that "
         "starts before one starts before the other. Interruptions (reg. 6) "
-        "are not modelled. The own-right benefits input covers Universal "
-        "Credit, Employment and Support Allowance and Jobseeker's Allowance "
-        "but not the Income Support, incapacity benefit and tax credits that "
-        "reg. 8 also lists."
+        "are not modelled. Reg. 8 reads the own-right benefits input, which "
+        "covers Universal Credit, Employment and Support Allowance and "
+        "Jobseeker's Allowance, and the person's own reported Universal "
+        "Credit, Employment and Support Allowance of either kind and "
+        "income-based Jobseeker's Allowance, the awards reg. 8(2)(b), (e) "
+        "and (f) list. It does not read the Income Support, incapacity "
+        "benefit and tax credits that reg. 8 also lists."
     )
     definition_period = YEAR
     reference = [
@@ -56,6 +59,15 @@ class is_qualifying_young_person_for_child_benefit(Variable):
         )
         # Reg. 7: until the terminal date after leaving.
         before_terminal_date = person("is_before_child_benefit_terminal_date", period)
+        # Reg. 8(2)(b), (e) and (f): income-based JSA, ESA and Universal
+        # Credit. Reports are inputs, so reading them makes no cycle.
+        receives_own_benefits = (
+            person("receives_benefits_in_own_right", period)
+            | (person("universal_credit_reported", period) > 0)
+            | (person("esa_income_reported", period) > 0)
+            | (person("esa_contrib_reported", period) > 0)
+            | (person("jsa_income_reported", period) > 0)
+        )
         return (
             person(
                 "meets_qualifying_young_person_age_condition_for_child_benefit",
@@ -67,5 +79,5 @@ class is_qualifying_young_person_for_child_benefit(Variable):
                 | in_extension_period
                 | before_terminal_date
             )
-            & ~person("receives_benefits_in_own_right", period)
+            & ~receives_own_benefits
         )
