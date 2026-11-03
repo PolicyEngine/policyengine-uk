@@ -141,9 +141,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -181,9 +182,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -213,9 +215,10 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -378,7 +381,7 @@
     claimant_or_partner_esa_income: 0
     is_on_income_related_esa: [false, false]
 
-- name: Case 12, the couple's Pension Credit does not bar a member outside the couple who claims income-related ESA in their own right.
+- name: Case 12, a member outside the couple who claims income-related ESA in their own right keeps the award beside the couple's Pension Credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -391,9 +394,10 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -422,17 +426,18 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # The model applies this member's appointee saving to the couple's
+        # whole claim (esa_income_payable_share), as it does the claimant's
+        # below.
         esa_income_appointee_saving: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -464,18 +469,19 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # The model applies this member's appointee saving to the couple's
+        # whole claim (esa_income_payable_share), as it does the claimant's
+        # below.
         esa_income_appointee_saving: true
         esa_includes_support_component: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # DWP keeps this award, saved for an appointee, in payment after the
-        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
-        # it for the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award in payment after the 1 July 2026 abolition
+        # under the claimant's appointee saving (SI 2025/1148 art. 3A(2)),
+        # so the model pays it for the whole of 2026-27
+        # (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -508,7 +514,7 @@
 # threshold (£155 a week), so he owes no income tax or primary Class 1
 # contributions.
 
-- name: Case 15, where Pension Credit pays with or without the award, the man gets the Pension Credit due on his income without the award and no income-related ESA.
+- name: Case 15, where DWP would pay Pension Credit with or without the award, the man gets the Pension Credit due on his income without the award and no income-related ESA.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -541,7 +547,7 @@
     pension_credit: 3_671.20
     pension_credit_earnings_disregard: 260
 
-- name: Case 16, where Pension Credit pays nothing with or without the award, the man keeps income-related ESA.
+- name: Case 16, where DWP would pay no Pension Credit with or without the award, the man keeps income-related ESA.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -601,7 +607,7 @@
     pension_credit: 0
     esa_income: 4_919.20
 
-- name: Case 18, where Pension Credit pays only with the award, the man keeps income-related ESA and gets no Pension Credit.
+- name: Case 18, where DWP would pay Pension Credit only with the award, the man keeps income-related ESA and gets no Pension Credit.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -645,14 +651,15 @@
     # gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours and
     # gov.hmrc.minimum_wage.non_apprentice). So DWP disregards "any earnings
     # derived from that work which do not exceed the limits" (ESA Regs 2008
-    # Sch 7 para 5): all of them, not £20. He fails para 4(2)(a), his Pension
-    # Credit would fall back to B(0), nil, and his ESA would come back. ESA
-    # with no Pension Credit holds; Pension Credit with no ESA does not.
-    # On another reading, para 4(2)(a) holds wherever the award disregarded at
-    # least £20 of earnings, and he would then keep £525.20 of Pension Credit
-    # with no ESA. The model takes "£20 was disregarded" to mean the £20
-    # disregard of Sch 7 paras 6 and 7(1), as under para 5 DWP disregards "any
-    # earnings ... which do not exceed the limits", not £20.
+    # Sch 7 para 5): all of them, not £20. The expected values take "£20 was
+    # disregarded" to mean the £20 disregard of Sch 7 paras 6 and 7(1), as
+    # under para 5 DWP disregards "any earnings ... which do not exceed the
+    # limits", not a fixed £20. On that reading he fails para 4(2)(a), his
+    # Pension Credit would fall back to B(0), nil, and his ESA would come back,
+    # so ESA with no Pension Credit holds and Pension Credit with no ESA does
+    # not. On another reading, para 4(2)(a) holds wherever DWP disregarded at
+    # least £20 of earnings in the award, and he would then keep £525.20 of
+    # Pension Credit with no ESA while he stays in employment (para 4(2)(b)).
     esa_income_eligible: true
     esa_income: 5_491.20
     claimant_or_partner_esa_income: 5_491.20
@@ -661,7 +668,7 @@
     pension_credit_entitlement: 525.20
     pension_credit: 0
 
-- name: Case 19, where working tax credit makes Pension Credit pay only without the award, a couple aged 66 and 58 get Pension Credit and no income-related ESA.
+- name: Case 19, a couple aged 66 and 58 to whom DWP would pay Pension Credit only without the award, since HMRC then applies working tax credit's income test, get Pension Credit and no income-related ESA.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -698,9 +705,9 @@
     # B(e): with the award HMRC pays working tax credit without its income
     # test (TCA 2002 s.7(2)), so working tax credit comes to 3_970, and
     # 10_000 + 3_970 - 1_040 = 12_930, over 12_352.60: nil. DWP counts no
-    # working tax credit in the savings credit (SPC Regs 2002 reg 9(a)):
-    # 10_000 - 1_040 = 8_960, 172.31 a week, under the £212.97 couple
-    # threshold: nil.
+    # working tax credit in the savings credit's qualifying income (SPC Regs
+    # 2002 reg 9(a); savings_credit_income): 10_000 - 1_040 = 8_960, 172.31 a
+    # week, under the £212.97 couple threshold: nil.
     # B(0): Pension Credit on 3_970 would be nil too, so it gives no
     # passport. The income test applies: 41% of income over £6,420 comes off,
     # 3_970 - 0.41 x (10_000 - 6_420) = 2_502.20. Then 10_000 + 2_502.20 -
@@ -712,7 +719,7 @@
     working_tax_credit: 2_502.20
     pension_credit: 370.40
 
-- name: Case 20, in 2018 a couple aged 66 and 58 whose income Pension Credit refuses keep support-group ESA and both benefit cap exceptions.
+- name: Case 20, in 2018 a couple aged 66 and 58 to whom DWP would pay no Pension Credit on their income keep support-group ESA and both benefit cap exceptions.
   period: 2018
   absolute_error_margin: 0.01
   input:
@@ -875,7 +882,7 @@
     esa_income_eligible: true
     esa_income: 5_000
 
-- name: Case 25, a couple whose award may count the partner's part-time earnings keeps income-related ESA and gets no Pension Credit where Pension Credit pays only with the award.
+- name: Case 25, a couple in whose award DWP may disregard £20 of the partner's part-time earnings keeps income-related ESA and gets no Pension Credit where the couple gets Pension Credit only with the award.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -894,8 +901,8 @@
         date_of_birth: 19560301
         gender: FEMALE
         is_claimant_or_partner: true
-        # £115.50 a week for 15 hours, under the 24 hours of para 6(1)(f)
-        # (ESA Regs 2008 reg 42(1)).
+        # £115.50 a week for 15 hours, under the 24 hours of WRA 2007 Sch 1
+        # para 6(1)(f) (ESA Regs 2008 reg 42(1)).
         employment_income: 6_006
         hours_worked: 780
     benunits:
@@ -942,7 +949,7 @@
     pension_credit_entitlement: 366.60
     pension_credit: 0
 
-- name: Case 26, a couple whose award may count £20 of the partner's earnings under the permitted-work shortfall keeps income-related ESA and gets no Pension Credit where Pension Credit pays only with the award.
+- name: Case 26, a couple in whose award DWP may disregard £20 of the partner's earnings under the permitted-work shortfall keeps income-related ESA and gets no Pension Credit where the couple gets Pension Credit only with the award.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -965,8 +972,8 @@
         date_of_birth: 19560301
         gender: FEMALE
         is_claimant_or_partner: true
-        # £30 a week for 5 hours, under the 24 hours of para 6(1)(f) (ESA Regs
-        # 2008 reg 42(1)).
+        # £30 a week for 5 hours, under the 24 hours of WRA 2007 Sch 1 para
+        # 6(1)(f) (ESA Regs 2008 reg 42(1)).
         employment_income: 1_560
         hours_worked: 260
     benunits:
@@ -983,26 +990,29 @@
     # Income: 90 + 130 + 30 = 250 a week, 52 x 250 = 13_000. Neither member
     # owes primary Class 1 contributions on £90 or £30 a week in 2016-17. His
     # £11,440 of earnings and pension exceeds the £11,000 personal allowance
-    # by £440, and the model transfers £1,100 of her unused allowance to him
-    # (marriage_allowance, 10% of £11,000), so neither member owes income tax
-    # and the earnings count in full.
+    # by £440. The model takes the couple to be married (is_married) and to
+    # claim the marriage allowance (would_claim_marriage_allowance), so it
+    # transfers £1,100 of her unused allowance to him (marriage_allowance, 10%
+    # of £11,000) and neither member owes income tax or contributions on the
+    # earnings. Without the transfer he would owe £88 and B(e) would come to
+    # 480.60.
     # B(0): 13_000 - 520 = 12_480, over 12_352.60, so nil. B(e): 13_000 -
     # 1_040 = 11_960, so 12_352.60 - 11_960 = 392.60, or 52 x 7.55. Neither
     # member has reached pensionable age, so no savings credit is due (SPCA
     # 2002 s.3(1)).
-    # Here the law may differ from the model. His £90 falls £25.50 short of
-    # the £115.50 limit, so DWP disregards the woman's earnings "to the extent
-    # that the claimant's earnings are less than ... 16 x National Minimum
-    # Wage, but only up to a maximum of £20" (ESA Regs 2008 Sch 7 para 6):
-    # £20 of her £30. DWP keeps disregarding the £20 (SPC Regs 2002 Sch VI
-    # para 4(2)) where "£20 was disregarded in respect of earnings taken into
-    # account in that award" and "the person whose earnings qualified for the
-    # disegard continues in employment after the termination of that award".
-    # Once the couple claimed, it could then keep 392.60 of Pension Credit
-    # with no ESA while she stays in work. The model holds no record of how
-    # an award started, and pension_credit_earnings_disregard does not apply
-    # para 4(2), so the model pays this couple the award and no Pension
-    # Credit, as in cases 18 and 25.
+    # Here the law may differ from the model. His £90 falls more than £20
+    # short of 16 x £7.20 = £115.20, so DWP disregards the woman's earnings
+    # "to the extent that the claimant's earnings are less than ... 16 x
+    # National Minimum Wage, but only up to a maximum of £20" (ESA Regs 2008
+    # Sch 7 para 6): £20 of her £30. DWP keeps disregarding the £20 (SPC Regs
+    # 2002 Sch VI para 4(2)) where "£20 was disregarded in respect of earnings
+    # taken into account in that award" and "the person whose earnings
+    # qualified for the disegard continues in employment after the termination
+    # of that award". Once the couple claimed, it could then keep £392.60 of
+    # Pension Credit with no ESA while she stays in work. The model holds no
+    # record of how an award started, and pension_credit_earnings_disregard
+    # does not apply para 4(2), so the model pays this couple the award and
+    # no Pension Credit, as in cases 18 and 25.
     meets_pension_credit_age_conditions: true
     esa_income_eligible: true
     esa_income: 5_491.20

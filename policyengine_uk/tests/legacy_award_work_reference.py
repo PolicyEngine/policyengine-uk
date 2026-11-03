@@ -35,16 +35,16 @@ reported awards.
 - ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
   nor the other member of the couple may be entitled to it. A caller that
   knows passes whether the couple is entitled (on_pension_credit): it would
-  claim, and the Pension Credit it would get with no income-related ESA in
-  the family pays. Otherwise no member reports Pension Credit or Housing
-  Benefit, so no mixed-age couple keeps the SI 2019/37 art 4 saving and the
+  claim, and it would get Pension Credit with no income-related ESA in the
+  family. Otherwise no member reports Pension Credit or Housing Benefit, so
+  no mixed-age couple keeps the SI 2019/37 art 4 saving and the
   exclusion of mixed-age couples is in force (SPCA 2002 s.4(1A)). Only a
   couple every member of which has reached the qualifying age can then be
   entitled, and from 2019-20 that is pensionable age for everyone (SPCA 2002
   s.1(6)), so each of them has reached pensionable age and has no claim
-  under s.1(3)(c), whether or not Pension Credit pays. A member outside the
-  couple keeps their own claim even when the couple has an entitlement to
-  Pension Credit.
+  under s.1(3)(c), whether or not DWP pays the couple Pension Credit. A
+  member outside the couple keeps their own claim even when the couple has
+  an entitlement to Pension Credit.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
   couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim
@@ -234,10 +234,11 @@ def esa_abolition_claim(couple, parameters):
     any award reported in a year with less than all of it payable. Where a
     member who reports the award has an appointee saving
     (esa_income_appointee_saving), DWP keeps the whole claim payable (art.
-    3A(2)); where only a member who reports nothing has one, DWP keeps
-    nothing in payment. would_claim_uc_at_legacy_closure
-    keeps its default, true. The conditions are those of the other
-    working-age closures: no Pension Credit report, and not all pension age.
+    3A(2)); like esa_income_payable_share, this function ignores a saving
+    held only by a member who reports nothing.
+    would_claim_uc_at_legacy_closure keeps its default, true. The conditions
+    are those of the other working-age closures: no Pension Credit report,
+    and not all pension age.
     """
     payable = parameters.gov.dwp.ESA.income.awards_payable.great_britain
     reporters = [m for m in couple if m.get("esa_income_reported", 0) > 0]

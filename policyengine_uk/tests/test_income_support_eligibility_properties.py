@@ -528,8 +528,9 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     on_pension_credit = sim.calculate(
         "meets_pension_credit_age_conditions", YEAR
     ) & sim.calculate("would_claim_pc", YEAR)
-    # Entitlement for the ESA screen: Pension Credit pays. Without earnings
-    # or tax credits, it pays the same with the couple's award as without.
+    # Entitlement for the ESA screen: the couple would get Pension Credit.
+    # Without earnings or tax credits, DWP would pay the same Pension Credit
+    # with the couple's award as without.
     entitled = on_pension_credit & (sim.calculate("pension_credit", YEAR) > 0)
     pensionable_age = sim.calculate("is_SP_age", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)

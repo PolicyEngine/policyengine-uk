@@ -75,11 +75,13 @@ def pension_credit_without_income_related_esa(benunit, period):
     Parliament bars the couple's income-related ESA while the claimant, or
     the other member of the couple, has an entitlement to State Pension
     Credit (Welfare Reform Act 2007 Sch 1 para 6(1)(c) and (d)), and the
-    model's Pension Credit reads that award. Its higher earnings disregard
-    counts the couple's award (claimant_or_partner_esa_income; SPC Regs 2002
-    Sch VI para 4(1)(a)(vii)). It counts working tax credit as income, and
-    the tax credit income test reads the award (TCA 2002 s.7(2)), as does
-    Income Support's gate, which that test reads. Its route test
+    model's Pension Credit reads that award in five ways. pension_credit
+    itself pays nothing while the couple has the award
+    (claimant_or_partner_esa_income). pension_credit_earnings_disregard reads
+    the couple's award for the higher earnings disregard (SPC Regs 2002 Sch
+    VI para 4(1)(a)(vii)). pension_credit_income counts working tax credit,
+    and the tax credit income test reads the award (TCA 2002 s.7(2)), as
+    does Income Support's gate, which that test reads. The route test
     (left_pension_route_at_legacy_closure) reads Universal Credit
     entitlement, whose work capability test reads esa_income
     (has_own_esa_award). A formula that read Pension Credit in the
@@ -88,21 +90,27 @@ def pension_credit_without_income_related_esa(benunit, period):
     This function calculates Pension Credit in a branch that sets
     esa_income, the couple's award and esa_income_eligible to nil, so the
     screen never runs there. The branch reads pension_credit, so it counts
-    the claim (would_claim_pc) and an entered award. Where that Pension
-    Credit pays, the screen refuses the couple's award, and the
-    simulation's own Pension Credit then equals the branch's. Where it pays
-    nothing, the model pays the award, and pension_credit pays nothing while
-    the couple has it, even where the award would make Pension Credit pay
-    through the higher earnings disregard. With Pension Credit in payment the
-    award would stop, and with it the disregard of SPC Regs 2002 Sch VI para
-    4(1)(a)(vii). DWP keeps disregarding £20 only where it disregarded £20 of
-    earnings in the award (para 4(2)), and it disregards all of a claimant's
-    permitted-work earnings up to the limit (ESA Regs 2008 Sch 7 para 5), so
-    such a family would lose its Pension Credit and get the award back.
-    pension_credit_earnings_disregard does not apply para 4(2), and the model
-    holds no record of how an award started, so a couple whose award
-    disregarded £20 of earnings (ESA Regs 2008 Sch 7 paras 6 and 7) gets the
-    award and no Pension Credit too.
+    the claim (would_claim_pc) and an entered award. Where the branch's
+    Pension Credit exceeds nil, the screen refuses the couple's award, and
+    the simulation's own Pension Credit then equals the branch's. Where it
+    comes to nil, the model pays the award, and pension_credit pays nothing
+    while the couple has it, even where the family would get Pension Credit
+    with the award through the higher earnings disregard. With Pension
+    Credit in payment the award would stop, and with it the disregard of SPC
+    Regs 2002 Sch VI para 4(1)(a)(vii). DWP keeps disregarding £20 only
+    where it disregarded £20 of earnings in the award (para 4(2)), and it
+    disregards all of a claimant's permitted-work earnings up to the limit
+    (ESA Regs 2008 Sch 7 para 5). For a family whose only earnings are
+    those, the model's result agrees with the reading of para 4(2)(a) under
+    which "£20 was disregarded" means the £20 disregard of Sch 7 paras 6 and
+    7(1): the family would lose its Pension Credit and get the award back.
+    On the reading under which any disregard of at least £20 meets para
+    4(2)(a), DWP could keep that family on Pension Credit with no award.
+    pension_credit_earnings_disregard does not apply para 4(2), and the
+    model holds no record of how an award started, so the model also pays
+    the award and no Pension Credit to a couple in whose award DWP
+    disregarded £20 of earnings (ESA Regs 2008 Sch 7 paras 6 and 7), though
+    DWP could keep that couple on Pension Credit with no award (para 4(2)).
 
     In a year with tax credits, a calculation in this branch opens the
     passport branch (pension_credit_with_passported_tax_credits), and one in

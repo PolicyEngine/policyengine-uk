@@ -41,9 +41,9 @@ a mixed-age couple that keeps the SI 2019/37 art 4 saving
 (has_mixed_age_couple_pension_credit_saving, drawn) can get Pension Credit.
 The Secretary of State appointed 1 July 2026 for the abolition of
 income-related ESA to reach every remaining award (SI 2025/1148 art. 3A(1)),
-and DWP keeps an award saved for an appointee in payment (art. 3A(2)), so
-every adult drawn in 2026 has the saving (esa_income_appointee_saving) and
-each award stays payable for the whole year;
+and under the claimant's appointee saving DWP keeps the award in payment
+(art. 3A(2)), so every adult drawn in 2026 has the saving
+(esa_income_appointee_saving) and each award stays payable for the whole year;
 test_esa_income_abolition_properties.py tests unsaved awards. Adults have
 earnings, pensions and household savings, so some families pass Pension
 Credit's means test and others fail it, and in 2016 and 2018 some report
@@ -421,8 +421,9 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
         if mask.any():
             event(label)
 
-    # Sch 1 para 6(1)(c) and (d): where Pension Credit pays without the award,
-    # the couple's award is nil and the family gets that Pension Credit.
+    # Sch 1 para 6(1)(c) and (d): where the family would get Pension Credit
+    # without the award, the couple's award is nil and the family gets that
+    # Pension Credit.
     assert (couple_esa[claims][barred] == 0).all(), units
     assert np.allclose(
         pension_credit[claims][barred], without_award[barred], atol=0.01
@@ -486,8 +487,8 @@ def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
         start += len(members)
 
 
-# An appointee saving for income-related ESA (SI 2025/1148 art. 3A(2)), which
-# keeps the award payable after the abolition of 1 July 2026.
+# The appointee saving for income-related ESA, under which DWP keeps the award
+# in payment after the abolition of 1 July 2026 (SI 2025/1148 art. 3A(2)).
 SAVED = {"esa_income_appointee_saving": True}
 
 
@@ -553,10 +554,10 @@ def test_no_branch_opens_without_a_couple_that_could_be_on_pension_credit(
     the award, a couple aged 70 and 60 without the saving (case 4's kind), a
     pensioner without a report, a member outside the couple reporting beside
     a pensioner, and a pensioner reporting the award, who has reached
-    pensionable age and so has no claim whatever Pension Credit pays. Each
-    reporter has the appointee saving (SI 2025/1148 art. 3A(2)), so the
-    abolition of income-related ESA on 1 July 2026 leaves each award payable
-    for the whole year."""
+    pensionable age and so has no claim whatever the couple's Pension
+    Credit. Each reporter has the appointee saving (SI 2025/1148 art. 3A(2)),
+    so DWP keeps each award in payment after the abolition of income-related
+    ESA on 1 July 2026, and each award stays payable for the whole year."""
     log = BranchLog(monkeypatch)
     year = 2026
     adult = {"is_claimant_or_partner": True}
@@ -789,9 +790,9 @@ def test_a_parameter_reform_keeps_the_age_and_take_up_conditions(monkeypatch):
     age conditions, so the model reads its Pension Credit and refuses the
     younger member's award. With only a working-age claimant, no couple meets
     them, and the model opens no branch, under the reform or without it. Each
-    reporter has the appointee saving (SI 2025/1148 art. 3A(2)), so the
-    abolition of income-related ESA on 1 July 2026 leaves each award payable
-    for the whole year."""
+    reporter has the appointee saving (SI 2025/1148 art. 3A(2)), so DWP keeps
+    each award in payment after the abolition of income-related ESA on 1 July
+    2026, and each award stays payable for the whole year."""
     log = BranchLog(monkeypatch)
     year = 2026
     reform = {
@@ -1225,8 +1226,9 @@ def test_the_screen_reads_no_pension_credit_condition_without_a_couple_claim(
     beside a pensioner, whose own claim passes. The screen then reads neither
     the Pension Credit age conditions nor the claim. A claimant aged 45 out of
     work passes, and the screen reads both. Each reporter has the appointee
-    saving (SI 2025/1148 art. 3A(2)), so the abolition of income-related ESA
-    on 1 July 2026 leaves each report open for the whole year."""
+    saving (SI 2025/1148 art. 3A(2)), so DWP keeps each award in payment
+    after the abolition of income-related ESA on 1 July 2026, and each report
+    stays open for the whole year."""
     reads = ScreenReads(monkeypatch)
     year = 2026
     no_couple_claim = [

@@ -81,9 +81,10 @@ def reference_report_awards(benunit, period, award):
     screen = reference.esa_screen if is_esa else reference.jsa_screen
     if is_esa:
         # Sch 1 para 6(1)(c) and (d): the couple would claim State Pension
-        # Credit and it pays. No one here has earnings, and in 2025 no one has
-        # tax credits, so Pension Credit pays the same with the couple's award
-        # as without. An outside member keeps their own claim whatever it pays.
+        # Credit and DWP would pay it. No one here has earnings, and in 2025 no
+        # one has tax credits, so DWP would pay the same Pension Credit with
+        # the couple's award as without. An outside member keeps their own
+        # claim whatever the couple's Pension Credit.
         on_pension_credit = (
             benunit("meets_pension_credit_age_conditions", period)
             & benunit("would_claim_pc", period)
