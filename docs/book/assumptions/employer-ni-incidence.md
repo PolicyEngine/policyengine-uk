@@ -42,9 +42,9 @@ wage response. The example below demonstrates an override with `set_input` after
 construction and before calculation. Dataset and other input routes should be
 checked for which earnings holder they populate.
 
-The [wage formula](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_fixed_employer_cost_change.py),
-[earnings components](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/input/employment_income.py)
-and [constructor remapping](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/simulation.py)
+The [wage formula](https://github.com/PolicyEngine/policyengine-uk/blob/6dd7c31f88c32535e95b9636bb313c6da2a2340b/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_fixed_employer_cost_change.py),
+[earnings components](https://github.com/PolicyEngine/policyengine-uk/blob/6dd7c31f88c32535e95b9636bb313c6da2a2340b/policyengine_uk/variables/input/employment_income.py)
+and [constructor remapping](https://github.com/PolicyEngine/policyengine-uk/blob/6dd7c31f88c32535e95b9636bb313c6da2a2340b/policyengine_uk/simulation.py#L435)
 provide the implementation details.
 
 ## Consumer and capital channels
@@ -75,8 +75,8 @@ employer-NI incidence channels. This does not disable unrelated labor-supply or
 other behavioral responses.
 
 The response amounts enter `household_tax`; those same variables are not added to
-`gov_tax`. See the [consumer](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_consumer_incidence.py)
-and [capital](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_capital_incidence.py)
+`gov_tax`. See the [consumer](https://github.com/PolicyEngine/policyengine-uk/blob/6dd7c31f88c32535e95b9636bb313c6da2a2340b/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_consumer_incidence.py)
+and [capital](https://github.com/PolicyEngine/policyengine-uk/blob/6dd7c31f88c32535e95b9636bb313c6da2a2340b/policyengine_uk/variables/contrib/policyengine/employer_ni/employer_ni_response_capital_incidence.py)
 allocation formulas.
 
 ## Secondary Class 1 and Class 1A
