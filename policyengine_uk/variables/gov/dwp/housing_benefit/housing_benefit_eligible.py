@@ -107,9 +107,9 @@ class housing_benefit_eligible(Variable):
         # 6(3)) nor when the deadline passes without one (reg 46(2); NI reg
         # 47(2)). The route reads the supplied status, not an award, so it
         # adds no read of Universal Credit or Housing Benefit amounts.
-        # Universal Credit excludes this rent from its housing costs element
-        # (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B), so only Housing
-        # Benefit pays it.
+        # The Secretary of State excludes this rent from Universal Credit's
+        # rent payments (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B), so
+        # only Housing Benefit pays it.
         accommodation = benunit("in_specified_or_temporary_accommodation", period)
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
