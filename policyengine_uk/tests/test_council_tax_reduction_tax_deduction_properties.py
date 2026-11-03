@@ -72,7 +72,9 @@ def maybe(high):
 def simulate(households, reform=None):
     """One simulation of households. Each household is a dict with country,
     benunits (a list of lists of person input dicts; the first benunit is
-    the Council Tax Reduction applicant's) and, optionally, uc."""
+    the Council Tax Reduction applicant's) and, optionally, uc and
+    child_benefit (whether the applicant's benefit unit claims Child
+    Benefit)."""
     situation = {"people": {}, "benunits": {}, "households": {}}
     for h, household in enumerate(households):
         names = []
@@ -86,6 +88,10 @@ def simulate(households, reform=None):
                 "members": members,
                 "would_claim_uc": {YEAR: household.get("uc", False)},
             }
+            if b == 0 and "child_benefit" in household:
+                situation["benunits"][f"b{h}_{b}"]["would_claim_child_benefit"] = {
+                    YEAR: household["child_benefit"]
+                }
             names += members
         country = household["country"]
         situation["households"][f"h{h}"] = {
@@ -252,6 +258,53 @@ def test_pensioner_deduction_ignores_uncounted_income_without_earnings(
 
 
 @st.composite
+def pensioner_parent_household(draw):
+    """A pensioner family with one or two children and no employed earnings,
+    each adult drawing a private pension of up to 120,000, so that the
+    applicant's adjusted net income often exceeds the 60,000 at which the High
+    Income Child Benefit Charge starts."""
+    h = draw(household(pensioner=True, earnings=False))
+    adults = h["benunits"][0]
+    for a in adults:
+        a["private_pension_income"] = draw(money(120_000))
+    children = [dict(age=draw(st.integers(0, 15)))]
+    if draw(st.booleans()):
+        children.append(dict(age=draw(st.integers(0, 15))))
+    return {**h, "benunits": [adults + children]}
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(pensioner_parent_household(), min_size=1, max_size=4))
+def test_pensioner_deduction_ignores_a_child_benefit_claim(households):
+    """Invariant 2, for Child Benefit. In every pensioner scheme, with no
+    employed earnings, the deduction does not change with a claim for Child
+    Benefit. The pensioner schemes do not count Child Benefit, and the High
+    Income Child Benefit Charge recovers it, so the charge is not tax payable
+    on income taken into account. The test compares two simulations of the
+    same families, one claiming Child Benefit and one not."""
+    claiming = [{**h, "child_benefit": True} for h in households]
+    not_claiming = [{**h, "child_benefit": False} for h in households]
+    with_claim = simulate(claiming)
+    without_claim = simulate(not_claiming)
+    schemes(with_claim, households)
+    charge = applicant_total(with_claim, "CB_HITC")
+    for charged in charge > 0:
+        event("High Income Child Benefit Charge" if charged else "no charge")
+    assert np.all(benunit_values(with_claim, "child_benefit") > 0)
+    assert np.all(benunit_values(without_claim, "child_benefit") == 0)
+    assert np.allclose(
+        benunit_values(with_claim, DEDUCTION),
+        benunit_values(without_claim, DEDUCTION),
+        atol=0.01,
+    ), (
+        households,
+        charge,
+        benunit_values(with_claim, DEDUCTION),
+        benunit_values(without_claim, DEDUCTION),
+    )
+
+
+@st.composite
 def any_household(draw):
     return draw(household())
 
@@ -325,12 +378,17 @@ def test_scottish_working_age_deducts_nothing_without_earnings(households):
 def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, partner):
     """Invariant 5. At working age in Scotland without Universal Credit,
     raising either member's employment income never raises Council Tax
-    Reduction, except where the rise crosses a cliff in the income tax
-    system: losing Marriage Allowance, or the personal savings allowance
-    falling as the person enters a higher band. Those cliffs raise the tax
-    the earnings add by more than the rise in pay, as the ruling intends; for
-    example a Scottish couple whose pay rises from 43,661 to 43,662 loses
-    Marriage Allowance and its Council Tax Reduction rises by 52.78."""
+    Reduction once the income tax system's cliffs are held still. Two cliffs
+    raise the tax the earnings add by more than the rise in pay, and option
+    (a) passes both through to the deduction: losing Marriage Allowance, and
+    the personal savings allowance falling as the person enters a higher
+    band. A Scottish couple, one partner with no income and council tax of
+    15,000, whose pay rises from 43,661 to 43,662 loses Marriage Allowance:
+    the deduction rises by 264.89 and the reduction by 52.78 (the YAML cases
+    pin both). The test therefore builds a third simulation of the raised
+    families with marriage_allowance and savings_allowance held at their
+    values before the rise, and asserts there, for every family, that the
+    reduction does not rise."""
     raised = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
@@ -341,22 +399,26 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     households = [{**h, "uc": False} for h in households]
     before = simulate(households)
     after = simulate(raised)
+    held = simulate(raised)
+    cliffs = ["marriage_allowance", "savings_allowance"]
+    for variable in cliffs:
+        held.set_input(variable, YEAR, np.asarray(before.calculate(variable, YEAR)))
     schemes(before, households)
     reduction_before = np.asarray(before.calculate("council_tax_reduction", YEAR))
-    reduction_after = np.asarray(after.calculate("council_tax_reduction", YEAR))
+    reduction_held = np.asarray(held.calculate("council_tax_reduction", YEAR))
     cliff = np.zeros(len(households), dtype=bool)
-    for variable in ["marriage_allowance", "savings_allowance"]:
+    for variable in cliffs:
         cliff |= ~np.isclose(
             applicant_total(before, variable), applicant_total(after, variable)
         )
     for crossed in cliff:
         event("crosses a tax cliff" if crossed else "no tax cliff")
-    assert np.all((reduction_after <= reduction_before + 0.01) | cliff), (
+    assert np.all(reduction_held <= reduction_before + 0.01), (
         households,
         rise,
         partner,
         reduction_before,
-        reduction_after,
+        reduction_held,
     )
 
 
