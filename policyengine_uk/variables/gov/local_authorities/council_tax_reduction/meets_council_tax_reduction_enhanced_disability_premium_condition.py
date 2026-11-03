@@ -36,11 +36,11 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "scheme as based on the Default Scheme Regulations, with war pensions "
         "and Armed Forces Compensation Scheme payments disregarded in full "
         "and, from 2020, updated for the amendments to the Prescribed "
-        "Requirements Regulations, and its budget reports say it mirrors the "
-        "original Default Scheme Regulations; the council has also changed "
-        "provisions those descriptions leave out. No scheme text states the "
-        "qualifying awards, so the model assumes the Housing Benefit "
-        "condition there. "
+        "Requirements Regulations, and its budget reports since 2022 say it "
+        "mirrors the original Default Scheme Regulations; the council has also "
+        "changed provisions those descriptions leave out. No scheme text "
+        "states the qualifying awards, so the model assumes the Housing "
+        "Benefit condition there. "
         "Oxford City Council sets "
         "its working-age award from income bands, so the premium does not "
         "reach it."
@@ -58,6 +58,8 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf",
         "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026",
         "https://committees.westminster.gov.uk/mgAi.aspx?ID=22982",
+        "https://www.westminster.gov.uk/sites/default/files/media/documents/business-and-financial-planning-2026-27-to-2028-29.pdf",
+        "https://committees.westminster.gov.uk/ieDecisionDetails.aspx?ID=1181",
     )
 
     def formula(person, period, parameters):
