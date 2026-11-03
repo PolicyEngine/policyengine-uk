@@ -1,11 +1,11 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
-    HOLDINGS_SOURCE,
-)
 from policyengine_uk.utils.capital_valuation import (
     counted_share,
     exact_amount,
     round_to_penny,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
 )
 
 
