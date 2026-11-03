@@ -347,3 +347,32 @@
     is_qualifying_young_person_for_pension_credit: [false, false]
     is_qualifying_young_person_for_universal_credit: [false, false]
     child_minimum_guarantee_addition: 0
+
+- name: Case 15, a pensioner gets no Pension Credit child addition for a 19-year-old at school before the date who reports their own Income Support.
+  # SPC reg. 4A(5) lists income support; UC reg. 5(5) does not. The model
+  # pays Income Support until 2026-04-01 (gov.dwp.income_support.active), so
+  # the case runs in 2025-26. The student is not a claimant or partner, so
+  # is_on_income_support reads their own report. Without it, the first-child
+  # addition would be £78.10 a week (2025-04-01) x 52 = £4,061.20.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        income_support_reported: 5_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    is_on_income_support: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    child_minimum_guarantee_addition: 0

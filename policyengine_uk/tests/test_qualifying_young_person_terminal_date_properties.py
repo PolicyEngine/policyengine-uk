@@ -18,9 +18,9 @@ Invariants:
    for people not on Income Support: Universal Credit and Pension Credit
    agree, and both equal the regulation's conditions. Income Support is the
    one exception: SPC reg. 4A(5) lists it and UC reg. 5(5) does not, so a
-   young person on their own Income Support keeps the Universal Credit status
-   and loses the Pension Credit one, on either route and on either side of
-   the 1 September following the 19th birthday.
+   young person on their own Income Support who otherwise qualifies keeps
+   the Universal Credit status and loses the Pension Credit one, on either
+   route.
 4. With the 19th-birthday fact on, both statuses are the earlier definition
    without a terminal date, so nothing changes below 19 or for a 19-year-old
    before the date; switching the fact on never removes the status; and it
