@@ -325,3 +325,44 @@
     income_support: [0]
     housing_benefit_pension_age_regulations_apply: [false]
     housing_benefit_applicable_income: [0]
+
+- name: Pension Credit floors the counted tax after taking off the actual tax on self-employed profit
+  # The floor cases' household, with a aged 70 and a self-employed profit of
+  # 2,000. The model presumes b, 26 years younger, to be a's child, so
+  # Pension Credit counts a alone. b's pay moves the 703 Child Benefit charge
+  # off a, so a's deduction is the 800 of tax the profit adds less 703: 97.
+  # The profit's actual tax (pension_credit_self_employment_income_tax) is
+  # 940: the 800, and the 140 it adds to the charge when b has no pay (843,
+  # 60% of 1,406 rounded down, against 703). The formula replaces that tax
+  # with notional tax, nil on 2,000, and deducts no other tax for a:
+  # max(0, 97 - 940) = 0. Income is the profit less the £20 weekly lone
+  # parent disregard: 2,000 - 1,040 = 960.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 70
+        savings_interest_income: 70_000
+        self_employment_income: 2_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [97, 20_838, 0]
+    pension_credit_self_employment_income_tax: [940]
+    pension_credit_income: [960]

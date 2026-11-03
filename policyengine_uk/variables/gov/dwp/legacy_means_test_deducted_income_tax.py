@@ -29,9 +29,14 @@ class legacy_means_test_deducted_income_tax(Variable):
         "sums it over the members it counts and floors that sum at nil, so "
         "where the earner is a member the test does not count (for example "
         "one the model presumes to be the claimant's child), the counted "
-        "member's negative value adds nothing to income. Pension "
-        "Credit replaces the tax on self-employed profit with notional tax "
-        "(pension_credit_income); the other tests deduct this tax as it is."
+        "member's negative value adds nothing to income. The floor binds "
+        "only where the sum turns negative. Where the counted member also "
+        "pays tax on counted income, the charge that the uncounted member's "
+        "earnings move off them still lowers the deduction, and the test's "
+        "income rises by up to that charge. Pension Credit takes the tax on "
+        "self-employed profit out of the sum before the floor and adds "
+        "notional tax in its place (pension_credit_income); the other tests "
+        "deduct this tax as it is."
     )
     definition_period = YEAR
     unit = GBP

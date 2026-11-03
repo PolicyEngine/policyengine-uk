@@ -58,32 +58,31 @@ class pension_credit_income(Variable):
         # Regulations 1996 reg. 14, in place of those actually payable on the
         # profit (reg. 17(11)).
         # The deduction can be negative for one person, where another
-        # member's earnings move a Step 7 charge off them; the test deducts the
-        # counted members' sum, floored at nil, so it never adds tax to income.
+        # member's earnings move a Step 7 charge off them. The test takes the
+        # counted members' sum less the tax actually payable on self-employed
+        # profit, which the notional tax replaces, and floors that at nil, so
+        # it never adds tax to income.
         income_tax = max_(
             0,
             benunit.sum(
                 person("legacy_means_test_deducted_income_tax", period)
                 * is_claimant_or_partner
-            ),
-        )
-        tax = (
-            income_tax
-            + benunit.sum(
-                (
-                    add(
-                        person,
-                        period,
-                        [
-                            "national_insurance",
-                            "pension_credit_self_employment_deductions",
-                        ],
-                    )
-                    - add(person, period, ["ni_class_2", "ni_class_4"])
-                )
-                * is_claimant_or_partner
             )
-            - benunit("pension_credit_self_employment_income_tax", period)
+            - benunit("pension_credit_self_employment_income_tax", period),
+        )
+        tax = income_tax + benunit.sum(
+            (
+                add(
+                    person,
+                    period,
+                    [
+                        "national_insurance",
+                        "pension_credit_self_employment_deductions",
+                    ],
+                )
+                - add(person, period, ["ni_class_2", "ni_class_4"])
+            )
+            * is_claimant_or_partner
         )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
