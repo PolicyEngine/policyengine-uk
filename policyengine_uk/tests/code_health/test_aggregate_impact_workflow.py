@@ -22,7 +22,8 @@ measures nothing. The comparison still runs, reports the run as skipped and
 passes. (It used to fail every Dependabot pull request: the measure step
 stopped before it set up the tool the comparison runs.)
 
-Data protection. Only aggregates may leave the job. The certified dataset
+Data protection. Only aggregate results and nonfinancial phase checkpoints
+may leave the job. The certified dataset
 is licensed survey microdata. The measurement keeps household-level detail
 for the decile comparison under ``private/``; these tests fail if the
 workflow could publish it, or could put the dataset where other workflows
@@ -59,7 +60,8 @@ if not WORKFLOW.exists():
         "the .github folder is not part of an installed package",
         allow_module_level=True,
     )
-ALLOWED_UPLOAD_PATHS = {"report"}
+# No private household detail, dataset or blanket measured-directory upload.
+ALLOWED_UPLOAD_PATHS = {"report", "measured/*/timing.jsonl"}
 
 
 def steps():
@@ -72,7 +74,7 @@ def test_only_the_aggregate_report_is_uploaded():
     assert uploads, "the report should be uploaded"
     for step in uploads:
         paths = {p.strip() for p in str(step["with"]["path"]).splitlines() if p.strip()}
-        assert paths <= ALLOWED_UPLOAD_PATHS, paths
+        assert paths == ALLOWED_UPLOAD_PATHS, paths
 
 
 def test_the_dataset_is_never_cached():
