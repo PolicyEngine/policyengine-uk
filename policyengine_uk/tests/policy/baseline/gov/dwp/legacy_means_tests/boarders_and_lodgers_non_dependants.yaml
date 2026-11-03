@@ -556,3 +556,54 @@
     is_qualifying_young_person_for_universal_credit: [false, false, true]
     is_non_dependant_of_household_head: [false, true, true]
     is_non_dependant_of_household_head_for_universal_credit: [false, true, true]
+
+- name: A non-dependant's looked-after child gives the host no Universal Credit bedroom
+  # The household of the case above, with the daughter's child (17) a child
+  # a local authority looks after, such as a foster child in her care.
+  # The model makes no one responsible for such a child
+  # (is_child_or_qualifying_young_person_for_universal_credit), so the
+  # formula leaves the child out under para 9(2)(g). The host gets two
+  # bedrooms, a cap of 1,550 x 12 = 18,600 and a housing element of 18,600 -
+  # 1,158.60 = 17,441.40. Universal Credit: 5,098.80 + 17,441.40 - 7,875.78
+  # = 14,664.42.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      host:
+        age: 58
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      daughter:
+        age: 38
+        is_household_head: false
+        is_claimant_or_partner: true
+      foster_child:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        is_looked_after_by_local_authority: true
+    benunits:
+      host_unit:
+        members: [host]
+        would_claim_uc: true
+      daughter_unit:
+        members: [daughter, foster_child]
+    households:
+      household:
+        members: [host, daughter, foster_child]
+        rent: 24_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    benunits:
+      host_unit:
+        LHA_allowed_bedrooms: 2
+        uc_non_dep_deductions: 1_158.60
+        uc_housing_costs_element: 17_441.40
+        universal_credit: 14_664.42
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, false]
+    is_non_dependant_of_household_head: [false, true, true]
+    is_non_dependant_of_household_head_for_universal_credit: [false, true, false]
