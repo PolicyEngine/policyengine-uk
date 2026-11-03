@@ -1,24 +1,34 @@
 from policyengine_uk.model_api import *
 
 
+class SOC2020MajorGroup(Enum):
+    NONE = "No occupation recorded"
+    MANAGERS_DIRECTORS_AND_SENIOR_OFFICIALS = "Managers, directors and senior officials"
+    PROFESSIONAL = "Professional occupations"
+    ASSOCIATE_PROFESSIONAL = "Associate professional occupations"
+    ADMINISTRATIVE_AND_SECRETARIAL = "Administrative and secretarial occupations"
+    SKILLED_TRADES = "Skilled trades occupations"
+    CARING_LEISURE_AND_OTHER_SERVICE = "Caring, leisure and other service occupations"
+    SALES_AND_CUSTOMER_SERVICE = "Sales and customer service occupations"
+    PROCESS_PLANT_AND_MACHINE_OPERATIVES = "Process, plant and machine operatives"
+    ELEMENTARY = "Elementary occupations"
+
+
 class soc2020_major_group(Variable):
-    value_type = int
+    value_type = Enum
+    possible_values = SOC2020MajorGroup
+    default_value = SOC2020MajorGroup.NONE
     entity = Person
     label = "Standard Occupational Classification (2020) major group of the main or last job"
     documentation = (
         "SOC 2020 major group of the person's main job, or of their last job "
-        "if they are not in work (0 if none or unknown). Sourced from the FRS "
-        "`SOC2020` field, which codes the major group in thousands; the FRS "
-        "asks the employment questions of everyone who has ever worked, so "
-        "use employment_status to select current occupations. 1 = Managers, "
-        "directors and senior officials; 2 = Professional occupations; "
-        "3 = Associate professional occupations; 4 = Administrative and "
-        "secretarial occupations; 5 = Skilled trades occupations; 6 = Caring, "
-        "leisure and other service occupations; 7 = Sales and customer service "
-        "occupations; 8 = Process, plant and machine operatives; "
-        "9 = Elementary occupations."
+        "if they are not in work; NONE if there is none or it is unknown. "
+        "Sourced from the FRS `SOC2020` field, which codes major groups 1 to "
+        "9 as 1000 to 9000; the FRS asks the employment questions of everyone "
+        "who has ever worked, so use employment_status to select current "
+        "occupations. After NONE, the members follow the SOC 2020 codes in "
+        "order, 1 to 9."
     )
-    default_value = 0
     definition_period = YEAR
     reference = [
         dict(
