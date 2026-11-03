@@ -9,8 +9,8 @@ reg 20(d) and Sch 1 paras 8, 9 and 13). A child or young person meets the
 disabled child condition with DLA or PIP (either component) or blindness, and
 the enhanced condition with the highest DLA care rate or the enhanced PIP
 daily living rate. The armed forces independence payment (AFIP) meets a
-condition where the nation's scheme names it for that person in that year
-(AFIP_ROUTES).
+condition where the nation's ministers name it for that person in that year
+(afip_routes).
 
 The test generates families in England, Wales and Scotland with children and
 young persons on the listed awards, and checks these invariants:
@@ -22,8 +22,8 @@ young persons on the listed awards, and checks these invariants:
    weekly amounts in AMOUNTS.
 3. On the model's inputs, every child or young person who meets the enhanced
    condition also meets the disabled child condition, except through AFIP:
-   a child under 16 on AFIP alone meets only the enhanced condition in
-   England from 2023 and in Wales before 2024.
+   AFIP alone meets only the enhanced condition for a child under 16 in
+   England from 2023, and for any child or young person in Wales before 2024.
 4. The applicable amount never falls when a child or young person gains a
    qualifying benefit.
 5. For pension-age families with no AFIP, in every year from 2015 to 2026,
@@ -33,7 +33,7 @@ young persons on the listed awards, and checks these invariants:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.periods import period as make_period
 
@@ -151,7 +151,7 @@ def child_inputs(child, year):
 def situation(families, year, head_alone=()):
     """One benefit unit and household for each family, and for each family
     in head_alone a pensioner household head who applies alone, with that
-    family's adults as the claimant couple in her benefit unit."""
+    family's adults as the claimant couple in the head's benefit unit."""
     data = {"people": {}, "benunits": {}, "households": {}}
     for index, spec in enumerate(families):
         alone = index in head_alone
@@ -201,7 +201,16 @@ def child_premiums(child, country, year):
     if child["kind"] == "not_counted":
         return 0.0
     enhanced_amount, disabled_amount = AMOUNTS[year]
-    disabled = any(AWARDS[award][1] for award in child["awards"])
+    disabled = any(
+        AWARDS[award][1]
+        # dla_m pays the lower mobility rate only from age 5.
+        and not (
+            award == "dla_mobility_lower"
+            and child["kind"] == "child"
+            and child["age"] < 5
+        )
+        for award in child["awards"]
+    )
     enhanced = any(AWARDS[award][2] for award in child["awards"])
     if "afip" in child["awards"]:
         afip_enhanced, afip_disabled = afip_routes(
@@ -253,6 +262,23 @@ def test_nil_for_working_age_families_and_a_head_who_applies_alone(
 @given(
     st.lists(pensioner_family, min_size=1, max_size=6),
     st.sampled_from(YEARS),
+)
+# Children aged 3, 4 and 5 on the lower DLA mobility rate alone: dla_m
+# pays that rate only from age 5 (gov.dwp.dla.mobility.lower_min_age).
+@example(
+    [
+        {
+            "country": "ENGLAND",
+            "age": 72,
+            "partner_age": None,
+            "claims_pc": False,
+            "children": [
+                {"kind": "child", "age": age, "awards": ["dla_mobility_lower"]}
+            ],
+        }
+        for age in (3, 4, 5)
+    ],
+    2026,
 )
 def test_family_total_is_the_sum_of_each_childs_premiums(families, year):
     result = calculate(
@@ -307,6 +333,18 @@ def test_shared_enhanced_condition_implies_disabled_child_condition(children, ye
         unique_by=lambda award: tuple(AWARDS[award][0]),
     ),
 )
+# Each AFIP route for a child and a young person, which the six drawn
+# examples may not reach.
+@example("ENGLAND", 2022, "child", ["afip"])
+@example("ENGLAND", 2022, "young_person", ["afip"])
+@example("ENGLAND", 2023, "child", ["afip"])
+@example("ENGLAND", 2023, "young_person", ["afip"])
+@example("WALES", 2023, "child", ["afip"])
+@example("WALES", 2023, "young_person", ["afip"])
+@example("WALES", 2024, "child", ["afip"])
+@example("WALES", 2024, "young_person", ["afip"])
+@example("SCOTLAND", 2026, "child", ["afip"])
+@example("SCOTLAND", 2026, "young_person", ["afip"])
 def test_enhanced_without_disabled_child_premium_only_through_afip(
     country, year, kind, awards
 ):
