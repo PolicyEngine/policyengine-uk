@@ -67,14 +67,15 @@
 # for a working-age adult with no income and Pension Credit for a pensioner
 # with none. Each means-tested and disability amount comes from the Social
 # Security (Additional Payments) Acts 2022 and 2023. Under the 2022 Act the
-# Secretary of State and HMRC pay £326 and £324 for qualifying days from 25
-# May 2022 to 31 October 2022 (section 1(1), (2) and (4)), £650 in all, which
-# the model pays in model year 2022 (6 April 2022 to 5 April 2023). Under the
-# 2023 Act they pay £301, £300 and £299 (section 1(1) and (2)), £900 in all,
-# which the model pays in model year 2023. Under section 5(1) of each Act the
-# Secretary of State pays £150 to each individual with a listed disability
-# benefit. Neither Act covers the £300 pensioner payment: pensioners/amount.yaml
-# takes it from the May 2022 package announcement and DWP's 2023-24 guidance.
+# Secretary of State and HMRC pay £326 for 25 May 2022 and £324 for a second
+# qualifying day no later than 31 October 2022 (section 1(1), (2) and (4)),
+# £650 in all, which the model pays in model year 2022 (6 April 2022 to 5 April
+# 2023). Under the 2023 Act they pay £301, £300 and £299 (section 1(1) and
+# (2)), £900 in all, which the model pays in model year 2023. Under section
+# 5(1) of each Act the Secretary of State pays £150 to each individual with a
+# listed disability benefit. Neither Act covers the £300 pensioner payment:
+# pensioners/amount.yaml takes it from the May 2022 package announcement and
+# DWP's 2023-24 guidance.
 
 - name: 2021 a household qualifying for every strand gets no Cost of Living Payment
   # Model year 2021 runs from 6 April 2021 to 5 April 2022, before the 2022
@@ -308,6 +309,33 @@
   output:
     cost_of_living_means_tested_payment: 0
     cost_of_living_support_payment: 0
+
+- name: 2022 a benefit unit on £26 of Working Tax Credit alone gets the means-tested payment
+  # A yearly award of £26 meets section 2(2)'s "at least £26" for 2022-23, and
+  # the unit has no listed benefit, so HMRC pays £326 + £324 = £650
+  # (section 1(2)).
+  period: 2022
+  input:
+    people:
+      worker:
+        age: 30
+    benunits:
+      worker_unit:
+        members: [worker]
+        universal_credit: 0
+        pension_credit: 0
+        jsa_income: 0
+        esa_income: 0
+        income_support: 0
+        child_tax_credit: 0
+        working_tax_credit: 26
+    households:
+      household:
+        members: [worker]
+        winter_fuel_allowance: 0
+  output:
+    cost_of_living_means_tested_payment: 650
+    cost_of_living_support_payment: 650
 
 - name: 2023 a benefit unit on a small Child Tax Credit award alone gets the means-tested payment
   # Parliament set no minimum award in section 3(1) of the 2023 Act: any

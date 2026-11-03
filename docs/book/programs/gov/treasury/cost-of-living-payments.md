@@ -163,7 +163,7 @@ credit over the year rather than in the month ending with each qualifying
 day, and compares each tax credit's yearly award with the £26 minimum. It
 has no variables for the other disability benefits that Parliament listed
 in section 5(2) (constant attendance allowance, Adult Disability Payment, Child Disability
-Payment and the war pension mobility supplement), so it pays no disability
+Payment and the mobility supplement), so it pays no disability
 payment to someone who gets only those.
 
 ## References

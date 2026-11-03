@@ -611,7 +611,7 @@ programs:
       a Winter Fuel Payment. It tests receipt over the year, not in the month
       ending with each qualifying day, and has no variables for constant
       attendance allowance, Adult Disability Payment, Child Disability
-      Payment or the war pension mobility supplement.
+      Payment or the mobility supplement.
 
   - id: energy_bills_rebate
     name: Energy Bills Rebate
