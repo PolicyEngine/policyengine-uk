@@ -1,0 +1,95 @@
+# policyengine_uk/utils/import_energy_prices.py writes this file from
+# DESNZ Energy Trends. Rerun the importer on new tables; do not edit by hand.
+description: Shares of a year's domestic energy consumption in each calendar quarter, which weight quarterly price levels into annual ones.
+electricity:
+  description: Mean share of each calendar quarter in a year's UK domestic electricity consumption, 2015 to 2025.
+  q1:
+    description: Share of a year's domestic electricity consumption that households use in January to March.
+    metadata:
+      unit: /1
+      label: Domestic electricity consumption share, quarter 1
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK electricity, ET 5.2 (Quarter sheet, Domestic (excluding electric vehicles)), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    values:
+      2015-01-01: 0.2929
+  q2:
+    description: Share of a year's domestic electricity consumption that households use in April to June.
+    metadata:
+      unit: /1
+      label: Domestic electricity consumption share, quarter 2
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK electricity, ET 5.2 (Quarter sheet, Domestic (excluding electric vehicles)), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    values:
+      2015-01-01: 0.2242
+  q3:
+    description: Share of a year's domestic electricity consumption that households use in July to September.
+    metadata:
+      unit: /1
+      label: Domestic electricity consumption share, quarter 3
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK electricity, ET 5.2 (Quarter sheet, Domestic (excluding electric vehicles)), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    values:
+      2015-01-01: 0.2051
+  q4:
+    description: Share of a year's domestic electricity consumption that households use in October to December.
+    metadata:
+      unit: /1
+      label: Domestic electricity consumption share, quarter 4
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK electricity, ET 5.2 (Quarter sheet, Domestic (excluding electric vehicles)), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    values:
+      2015-01-01: 0.2778
+gas:
+  description: Mean share of each calendar quarter in a year's UK domestic gas consumption, 2015 to 2025.
+  q1:
+    description: Share of a year's domestic gas consumption that households use in January to March.
+    metadata:
+      unit: /1
+      label: Domestic gas consumption share, quarter 1
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK gas, ET 4.1 (Quarter (GWh) sheet, Domestic), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/gas-section-4-energy-trends
+    values:
+      2015-01-01: 0.4250
+  q2:
+    description: Share of a year's domestic gas consumption that households use in April to June.
+    metadata:
+      unit: /1
+      label: Domestic gas consumption share, quarter 2
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK gas, ET 4.1 (Quarter (GWh) sheet, Domestic), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/gas-section-4-energy-trends
+    values:
+      2015-01-01: 0.1642
+  q3:
+    description: Share of a year's domestic gas consumption that households use in July to September.
+    metadata:
+      unit: /1
+      label: Domestic gas consumption share, quarter 3
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK gas, ET 4.1 (Quarter (GWh) sheet, Domestic), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/gas-section-4-energy-trends
+    values:
+      2015-01-01: 0.0799
+  q4:
+    description: Share of a year's domestic gas consumption that households use in October to December.
+    metadata:
+      unit: /1
+      label: Domestic gas consumption share, quarter 4
+      period: year
+      reference:
+        - title: DESNZ, Energy Trends UK gas, ET 4.1 (Quarter (GWh) sheet, Domestic), mean of 2015 to 2025
+          href: https://www.gov.uk/government/statistics/gas-section-4-energy-trends
+    values:
+      2015-01-01: 0.3309

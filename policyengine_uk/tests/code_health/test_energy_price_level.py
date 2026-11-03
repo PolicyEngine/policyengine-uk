@@ -2,8 +2,8 @@
 
 Unlabelled files retain flat energy spending: their data year does not
 establish their price year. An explicit energy_price_basis instead opts into
-the conditional annual CPI projector (#2526). A YAML entry would grow the
-unlabelled files and could grow a declared observation twice.
+the conditional energy price index projector (#2526). A YAML entry would grow
+the unlabelled files and could grow a declared observation twice.
 
 This guard covers the unconditional YAML map. Core still uses the variables'
 class-level uprating for direct situation inputs; that separate behavior is

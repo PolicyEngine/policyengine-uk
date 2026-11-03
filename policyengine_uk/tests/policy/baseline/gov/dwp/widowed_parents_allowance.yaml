@@ -41,10 +41,11 @@
         members: [person1]
         country: ENGLAND
   output:
-    household_benefits: 156.65 * 52
+    # Plus the £100 Household Energy Payment: band D (the default) in England.
+    household_benefits: 156.65 * 52 + 100
     hbai_benefits: 156.65 * 52
-    gov_spending: 156.65 * 52
-    pre_budget_change_household_benefits: 156.65 * 52
+    gov_spending: 156.65 * 52 + 100
+    pre_budget_change_household_benefits: 156.65 * 52 + 100
     # 8,145.80 is below the personal allowance.
     income_tax: 0
 

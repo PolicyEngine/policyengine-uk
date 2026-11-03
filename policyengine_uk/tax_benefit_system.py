@@ -27,6 +27,9 @@ from policyengine_uk.data.capital_gains_projection import (
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
 )
+from policyengine_uk.parameters.gov.dwp.state_pension.create_rate_projection import (
+    project_state_pension_rates,
+)
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
@@ -53,6 +56,9 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_upratin
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
+)
+from policyengine_uk.parameters.gov.economic_assumptions.create_energy_price_indices import (
+    add_energy_price_indices,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
     add_statutory_uprating_inputs,
@@ -115,7 +121,7 @@ COUNTRY_DIR = Path(__file__).parent
 DEFAULT_DATASET_ENV_VAR = "POLICYENGINE_UK_DEFAULT_DATASET"
 
 # Cache for fully-processed parameter tree, so convert_to_fiscal_year_parameters
-# (22,538 param.update() calls) only runs once per process.
+# (about 66,000 param.update() calls) only runs once per process.
 _processed_parameters_cache = None
 # The parameters as loaded from the YAML files, before processing: each
 # parameter's statutory values at their legal dates. Reforms are written
@@ -138,6 +144,8 @@ GENERATION_STEPS = (
     add_triple_lock,
     add_september_cpi_uprating,
     create_economic_assumption_indices,
+    add_energy_price_indices,
+    project_state_pension_rates,
     project_savings_credit_threshold,
     project_pension_age_allowances,
     add_threshold_indexation,
@@ -196,6 +204,9 @@ def process_parameter_tree(
     - triple lock calculations for state pensions
     - earnings and September CPI uprating
     - economic assumption indices
+    - household energy price indices
+    - State Pension weekly rates, projected each April from the year before
+      and rounded to the nearest 5p, as each Up-rating Order rounds them
     - Pension Credit threshold and protected Housing Benefit forecast indices
     - income tax and NICs threshold indexation after the freeze
     - Universal Credit standard allowance uprating (UC Act 2025 s. 1)

@@ -20,6 +20,7 @@ from policyengine_uk.data.isa_income import (
 )
 
 import hashlib
+from types import MappingProxyType
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -165,9 +166,28 @@ def growth_rate(
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# Simulation grows the household totals in STORED_HOUSEHOLD_TOTALS itself.
 # A finite CGT scenario can shorten the whole dataset horizon; it never
 # extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
+
+# Household totals that sum person inputs (`adds`) but that a dataset can
+# store itself (#2740), each with the parts it stands for. For a year with no
+# stored total, Core runs the sum, which falls to zero in data that store
+# only the total, and Core does not let a variable declare both `adds` and
+# `uprating`. So in a simulation built from data, Simulation grows the latest
+# earlier stored total by the index its parts declare, as Core grows the
+# parts, while the total still means what the data stored: a sum of exactly
+# these parts, each a plain input. Core sums the parts where a reform changes
+# that sum or a part, where the data hold no total for that year or an
+# earlier one, or where they hold the parts for a later year than the total.
+STORED_HOUSEHOLD_TOTALS = MappingProxyType(
+    {
+        "cash_isa": frozenset({"cash_isa_balance"}),
+        "stocks_and_shares_isa": frozenset({"stocks_and_shares_isa_balance"}),
+        "household_lifetime_isa_balance": frozenset({"lifetime_isa_balance"}),
+    }
+)
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
 # Preserve that behavior in the newly materialized years without changing
@@ -194,6 +214,25 @@ BEREAVEMENT_SPLIT_INPUTS = frozenset(
 YEAR_SPECIFIC_INPUTS = frozenset({"unused_pension_annual_allowance"})
 
 
+def stored_total_uprating(tax_benefit_system, name: str) -> str | None:
+    """The index that grows a stored household total: its parts' ``uprating``.
+
+    Growing the total like its parts keeps a stored total equal to the sum it
+    replaces. ``None`` holds the total flat, as Core holds parts with no
+    ``uprating``. Parts that declare different indices raise ``ValueError``.
+    """
+    indices = {
+        tax_benefit_system.variables[part].uprating
+        for part in tax_benefit_system.variables[name].adds
+    }
+    if len(indices) != 1:
+        raise ValueError(
+            f"The parts of {name} declare different uprating indices: "
+            f"{sorted(map(str, indices))}."
+        )
+    return indices.pop()
+
+
 def _unmapped_uprating_indices(uprating):
     from policyengine_uk.system import system
 
@@ -212,7 +251,13 @@ COUNCIL_TAX_GROWTH = "gov.economic_assumptions.yoy_growth.obr.council_tax"
 SOCIAL_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.obr.social_rent"
 PRIVATE_RENT_GROWTH = "gov.economic_assumptions.yoy_growth.ons.private_rental_prices"
 RESIDENTIAL_PROPERTY_INDEX = "gov.economic_assumptions.indices.obr.house_prices"
-ENERGY_PRICE_INDEX = "gov.economic_assumptions.indices.obr.consumer_price_index"
+ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
+# The annual energy price index that projects each declared input.
+ENERGY_PRICE_SERIES = {
+    "electricity_consumption": "electricity",
+    "gas_consumption": "gas",
+    "domestic_energy_consumption": "electricity_gas_and_solid_fuels",
+}
 RESIDENTIAL_PROPERTY_INPUTS = (
     "main_residence_value",
     "other_residential_property_value",
@@ -230,7 +275,7 @@ def uprating_input_paths() -> list:
     ``apply_single_year_uprating`` and the functions it calls read these, and
     no other parameters: the growth rates in ``uprating_indices.yaml``, the
     council tax and rent series, the cumulative residential property index,
-    the conditional energy CPI index, the indices of the input variables that
+    the annual energy price indices, the indices of the input variables that
     file leaves out (after ``LEGACY_PROJECTION_END_YEAR``) and the capital
     gains projection's metadata (``CGT_INDEX_PATH``). A path may name a node
     (the regional private rent series), which covers its parameters.
@@ -247,7 +292,8 @@ def uprating_input_paths() -> list:
             PRIVATE_RENT_GROWTH,
             CGT_INDEX_PATH,
             RESIDENTIAL_PROPERTY_INDEX,
-            ENERGY_PRICE_INDEX,
+            f"{ENERGY_PRICES}.calendar_year",
+            f"{ENERGY_PRICES}.fiscal_year",
         }
         | set(_unmapped_uprating_indices(uprating).values())
     )
@@ -514,7 +560,15 @@ def uprate_energy(
     observed_year: UKSingleYearDataset,
     parameters: ParameterNode,
 ) -> UKSingleYearDataset:
-    """Project declared energy prices with the existing annual CPI assumption."""
+    """Project declared energy spending with the energy price indices.
+
+    Each input moves by its fuel's index (``ENERGY_PRICE_SERIES``) from the
+    period its prices describe (the calendar or fiscal year index, by the
+    declared basis) to the projected fiscal year. The indices hold VAT at the
+    rate the inputs assume, so the spending carries no VAT change, and the
+    VAT formulas apply the rate in force. An undeclared basis holds the
+    amounts flat.
+    """
     basis = observed_year.energy_price_basis
     variables = [
         name
@@ -522,44 +576,74 @@ def uprate_energy(
         if name in observed_year.household.columns
         and name in current_year.household.columns
     ]
-    ratio = 1
-    projected = False
-    if basis is not None and variables:
-        index = parameters.get_child(ENERGY_PRICE_INDEX)
-        source_instant = f"{basis['period_value']:04d}-01-01"
-        target_instant = f"{int(current_year.time_period):04d}-01-01"
-        supported_instants = [
-            value.instant_str
-            for value in getattr(index, "values_list", [])
-            if value.value is not None
-        ]
-        if not supported_instants:
-            raise ValueError(
-                f"Energy index {ENERGY_PRICE_INDEX!r} has no non-null history "
-                f"for declared basis {source_instant} and target {target_instant}."
-            )
-        first_supported = min(supported_instants)
-        if source_instant < first_supported or target_instant < first_supported:
-            raise ValueError(
-                f"Energy index {ENERGY_PRICE_INDEX!r} first supports "
-                f"{first_supported}; declared basis {source_instant} and target "
-                f"{target_instant} must be on or after that instant."
-            )
-        source_index = _uprating_index_value(index, source_instant)
-        target_index = _uprating_index_value(index, target_instant)
-        projected = source_index not in (None, 0) and target_index is not None
-        if projected:
-            ratio = target_index / source_index
-    for variable in variables:
+    if basis is None or not variables:
+        for variable in variables:
+            current_year.household[variable] = observed_year.household[
+                variable
+            ].to_numpy()
+        current_year.energy_price_basis = basis
+        return current_year
+    source_instant = f"{basis['period_value']:04d}-01-01"
+    target_instant = f"{int(current_year.time_period):04d}-01-01"
+    # Check every ratio before changing any amount.
+    ratios = {
+        variable: _energy_price_ratio(
+            parameters,
+            f"{ENERGY_PRICES}.{basis['period_type']}.{ENERGY_PRICE_SERIES[variable]}",
+            source_instant,
+            f"{ENERGY_PRICES}.fiscal_year.{ENERGY_PRICE_SERIES[variable]}",
+            target_instant,
+        )
+        for variable in variables
+    }
+    for variable, ratio in ratios.items():
         current_year.household[variable] = (
             observed_year.household[variable].to_numpy() * ratio
         )
-    current_year.energy_price_basis = (
-        {"period_type": "fiscal_year", "period_value": int(current_year.time_period)}
-        if projected
-        else basis
-    )
+    current_year.energy_price_basis = {
+        "period_type": "fiscal_year",
+        "period_value": int(current_year.time_period),
+    }
     return current_year
+
+
+def _energy_price_ratio(
+    parameters: ParameterNode,
+    source_path: str,
+    source_instant: str,
+    target_path: str,
+    target_instant: str,
+) -> float:
+    """Target index level over source level.
+
+    Each instant must be on or after its index's first stated value; after the
+    last, the last value holds, as in Core's variable uprating.
+    """
+    levels = []
+    for path, instant in ((source_path, source_instant), (target_path, target_instant)):
+        index = parameters.get_child(path)
+        stated = [
+            entry.instant_str
+            for entry in getattr(index, "values_list", [])
+            if entry.value is not None
+        ]
+        if not stated:
+            raise ValueError(
+                f"Energy price index {path!r} has no values; the projection "
+                f"needs {instant}."
+            )
+        if instant < min(stated):
+            raise ValueError(
+                f"Energy price index {path!r} starts at {min(stated)}; the "
+                f"projection needs {instant}."
+            )
+        levels.append(_uprating_index_value(index, instant))
+    source, target = levels
+    if not source > 0:
+        raise ValueError(
+            f"Energy price index {source_path!r} is {source} at {source_instant}."
+        )
+    return target / source
 
 
 def uprate_residential_property(
