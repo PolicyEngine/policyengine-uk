@@ -156,7 +156,10 @@ def assert_scheme_selection(units, year):
     sim = simulate(units, year)
     people = [p for unit in units for p in unit["members"]]
     claimant_or_partner = np.array([p["is_claimant_or_partner"] for p in people])
-    looked_after = np.array([p["is_looked_after_by_local_authority"] for p in people])
+    # Only a person under 18 can be looked after (is_looked_after_child).
+    looked_after = np.array(
+        [p["is_looked_after_by_local_authority"] and p["age"] < 18 for p in people]
+    )
     under_16 = np.array([p["age"] < 16 for p in people])
     flag = sim.calculate("is_child_or_young_person_for_council_tax_reduction", year)
     legacy = sim.calculate("is_child_or_young_person_for_legacy_benefits", year)
