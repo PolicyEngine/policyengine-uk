@@ -395,3 +395,120 @@
     # who is not a child (reg 13D(3)(b)).
     housing_benefit_LHA_allowed_bedrooms: 2
     housing_benefit_LHA_category: C
+
+# A non-dependant in the renter's benefit unit has a bedroom (para 10(1)(c))
+# and bears a housing cost contribution (para 13). The claim that bears the
+# contribution has the bedroom, and coding the same adult in a benefit unit
+# of their own changes no claim.
+#
+# 2026-27 amounts in the parameter files: UC standard allowance for a single
+# claimant aged 25 or over £424.90 a month, £5,098.80 a year; housing cost
+# contribution £96.55 a month, £1,158.60 a year, for a non-dependant aged 21
+# or over (paras 14(1), 16(2)(a)); Household Energy Payment £100 (council
+# tax bands A to D in England; the default band is D); TV Licence £180.
+
+- name: An adult son in the renter's benefit unit has a bedroom and bears a housing cost contribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 45
+        is_household_head: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [mother, son]
+    households:
+      home:
+        members: [mother, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    # The renter and the son, a non-dependant who is not a child: 2 bedrooms,
+    # category C (£208.85 a week, £10,860.20 a year, above the rent).
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # 96.55 x 12 = 1,158.60.
+    uc_non_dep_deductions: 1_158.60
+    # 10,400 - 1,158.60 = 9,241.40.
+    uc_housing_costs_element: 9_241.40
+    # 5,098.80 + 9,241.40 = 14,340.20, with no income to taper.
+    universal_credit: 14_340.20
+    # 14,340.20 + 100 (Household Energy Payment) - 180 (TV Licence).
+    household_net_income: 14_260.20
+
+- name: The same adult son in a benefit unit of his own, not claiming, leaves his mother's claim unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 45
+        is_household_head: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [mother]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+    households:
+      home:
+        members: [mother, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_non_dependant_of_household_head: [false, true]
+    # The renter and the son, now another family's non-dependant: 2
+    # bedrooms, category C, as when he is in her benefit unit.
+    LHA_allowed_bedrooms: [2, 1]
+    LHA_category: [C, A]
+    uc_non_dep_deductions: [1_158.60, 0]
+    uc_housing_costs_element: [9_241.40, 0]
+    universal_credit: [14_340.20, 0]
+    household_net_income: 14_260.20
+
+- name: A claiming joint tenant has the bedroom of the non-claiming head's adult son whose contribution it bears
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        # Over State Pension age, so not eligible for Universal Credit.
+        age: 80
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 30
+        is_claimant_or_partner: false
+      sharer:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      head_family:
+        members: [head, son]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, son, sharer]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_eligible: [false, true]
+    uc_non_dependants_counted: [false, true]
+    # The head's family makes no Universal Credit claim, so the sharer's
+    # claim counts the son (para 9(2)(f)): the sharer bears his contribution
+    # (96.55 x 12 = 1,158.60) and has his bedroom (renter 1 + son 1 = 2).
+    uc_non_dep_deductions: [0, 1_158.60]
+    LHA_allowed_bedrooms: [2, 2]
