@@ -356,9 +356,16 @@ def test_reuses_isolate_mutable_state(tmp_path, kind):
         sibling.baseline.baseline, "employment_income_before_lsr", 2026
     )
     if kind == "inputs_arrays":
+        assert not np.shares_memory(
+            base.calculate("employment_income_before_lsr", 2026),
+            sibling.baseline.calculate("employment_income_before_lsr", 2026),
+        )
         base.set_input("employment_income_before_lsr", 2026, [50_000, 0, 18_000, 0])
         base.drop_computed_arrays()
-        base.calculate("income_tax", 2026)[:] = -123
+        assert not np.shares_memory(
+            base.calculate("income_tax", 2026),
+            sibling.baseline.calculate("income_tax", 2026),
+        )
     elif kind == "parameters_variables":
         base.apply_reform(zero_tax_reform())
         base.tax_benefit_system.parameters.get_child(VAT).update(

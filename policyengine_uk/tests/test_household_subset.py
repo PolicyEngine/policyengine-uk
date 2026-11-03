@@ -360,6 +360,8 @@ REVIEWED_ANCESTOR_WALKS = {
     "simulation.py": {"set_input"},
     "utils/aggregate_impact/guard.py": {"_visible_branches"},
     "utils/labour_supply_responses.py": {"response_source"},
+    # Rejects any non-None parent_branch; never reads an ancestor's values.
+    "utils/prepared_baseline.py": {"_require_canonical"},
     "utils/supplied_inputs.py": {"_visible_branch_names"},
 }
 
