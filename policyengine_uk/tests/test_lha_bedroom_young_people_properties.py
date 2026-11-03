@@ -344,7 +344,9 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     expected_hb[t] += 1
     role = population[target[0]][target[1]]["role"]
     same_household = np.array([h == target[0] for h, _ in keys])
-    passed_on = role != "non_dependant" and marked and not own_claims(sim)[t]
+    passed_on = (
+        role != "non_dependant" and marked and not own_claims(sim)[t] and not counted[t]
+    )
     if (role == "non_dependant" and gains) or passed_on:
         expected_uc[same_household & counted] += 1
     if role in ("non_dependant", "boarder", "lodger"):
@@ -428,7 +430,8 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
     names = list(situation["people"])
     # 4. A marked member has a bedroom of their own: without them, their
     # family has one fewer, and so does the claim counting the household's
-    # non-dependants if they are in a non-dependant's family. Only the added
+    # non-dependants if they are in a non-dependant's family, or in a family
+    # that neither makes its own claim nor is that claim. Only the added
     # person can be marked: the generated adults are claimants or partners
     # and the generated children are under 16.
     if marked[names.index(f"h{target[0]}_f{target[1]}_added")]:
@@ -437,8 +440,9 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
         expected = np.zeros(len(keys))
         expected[keys.index(target)] = 1
         role = population[target[0]][target[1]]["role"]
-        if role == "non_dependant" or not own_claims(sim)[keys.index(target)]:
-            counted, _ = claim_roles(sim)
+        counted, _ = claim_roles(sim)
+        t = keys.index(target)
+        if role == "non_dependant" or not (own_claims(sim)[t] or counted[t]):
             same_household = np.array([h == target[0] for h, _ in keys])
             expected[same_household & counted] += 1
         assert np.array_equal(uc - uc_without, expected)

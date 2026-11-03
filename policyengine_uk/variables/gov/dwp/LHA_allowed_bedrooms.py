@@ -110,13 +110,17 @@ class LHA_allowed_bedrooms(Variable):
         # claim counts in the claim that counts the household's other
         # non-dependants (para 9(2)(f)), as in uc_non_dep_deductions, so that
         # claim has their bedroom as well as their housing cost contribution.
+        # Where that claim is their own family's, family_rooms already holds
+        # the bedroom.
         own_claim = (
             benunit("benunit_is_rent_liable", period)
             & benunit("is_uc_eligible", period)
             & benunit("claims_universal_credit", period)
         )
-        passed_on = family_non_dependant & ~other_family & ~benunit.project(own_claim)
         counted = benunit("uc_non_dependants_counted", period)
+        passed_on = (
+            family_non_dependant & ~other_family & ~benunit.project(own_claim | counted)
+        )
         non_dependants = counted * benunit.max(
             person.household.sum(non_dependant | passed_on)
         )
