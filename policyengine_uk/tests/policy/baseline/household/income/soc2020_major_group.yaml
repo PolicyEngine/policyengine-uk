@@ -1,0 +1,28 @@
+# soc2020_major_group is a person input with no formula: a dataset supplies the
+# SOC 2020 major group of each person's main or last job, and NONE means none
+# or unknown.
+
+- name: A supplied major group is read back unchanged
+  period: 2026
+  input:
+    age: 40
+    employment_status: FT_EMPLOYED
+    soc2020_major_group: PROFESSIONAL
+  output:
+    soc2020_major_group: PROFESSIONAL
+
+- name: A retired person keeps the major group of their last job
+  period: 2026
+  input:
+    age: 70
+    employment_status: RETIRED
+    soc2020_major_group: ELEMENTARY
+  output:
+    soc2020_major_group: ELEMENTARY
+
+- name: A person without a supplied major group reads NONE
+  period: 2026
+  input:
+    age: 40
+  output:
+    soc2020_major_group: NONE
