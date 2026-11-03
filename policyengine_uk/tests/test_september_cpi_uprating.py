@@ -16,6 +16,9 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     read_uprating_years,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     FIRST_UPRATING_YEAR,
     september_cpi_uprating_rate,
@@ -29,8 +32,8 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 INDEX = "gov.benefit_uprating_cpi"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 OBR = "gov.economic_assumptions.yoy_growth.obr"
-# create_economic_assumption_indices builds the indices to 2039.
-LAST_INDEX_YEAR = 2039
+# create_economic_assumption_indices ends the indices where the growth series end.
+LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
 
 # The index is stored to 5 decimal places, which leaves a few hundredths of
 # a penny of noise on a weekly rate.
