@@ -154,11 +154,11 @@ supplied nonnegative override still replaces the whole total. Combining the
 financial report and property directly in the assessment avoids an intermediate
 rounded aggregate that could reduce counted property for large values.
 Housing Benefit's savings-credit-only route inherits that corrected total.
-A dataset that stores a financial-only survey total in
-`pension_credit_reported_capital`, rather than in `benunit_reported_capital`,
-turns it into a complete override: the formula then counts none of the
-household's land or property for that unit. The data release must move such a
-total to `benunit_reported_capital` for the property to be counted.
+If a dataset stores a financial-only survey total in
+`pension_credit_reported_capital` rather than in `benunit_reported_capital`,
+the formula treats that total as a complete override and counts none of the
+household's land or property for that unit. The data producer must move such a
+total to `benunit_reported_capital` before the formula can count the property.
 Ordinary Housing Benefit, Income Support, income-based JSA and income-related
 ESA do not replace their source pools with a financial-only report, so their
 existing routing is retained. `share_like_capital` retains the component-aware financial fallback,
@@ -237,6 +237,6 @@ combination checked before imputation.
 
 Population and LVT effects with the compatible data release stay unmeasured
 until that release exists and its rebuild and recalibration finish. Existing
-land target definitions and weights stay the same, but calculated land, losses
-and fitted geographic weights can change. Production rebuilding, recalibration
+land target definitions and target weights stay the same, but calculated land,
+losses and fitted geographic weights can change. Production rebuilding, recalibration
 and impact measurement are separate release work.

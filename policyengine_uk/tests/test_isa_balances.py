@@ -61,8 +61,8 @@ def test_stored_household_totals_without_person_balances_project_with_savings():
     assert shares == pytest.approx(2_000.0 * growth)
     # Savings and the cash ISA reach the capital pool at their value. The
     # stocks-and-shares ISA reaches it through share_like_capital, which
-    # uc_assessable_capital values less the sale-expense rate until the data
-    # separate ISAs from shares.
+    # uc_assessable_capital values less the sale-expense rate whether
+    # share_like_capital holds shares or, as here, only the ISA.
     rate = simulation.tax_benefit_system.parameters(
         "2027-04-06"
     ).gov.dwp.universal_credit.means_test.capital.sale_expenses.rate

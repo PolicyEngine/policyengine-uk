@@ -514,11 +514,12 @@ def test_legacy_stored_total_overrides_formula_until_removed_by_data_release():
 # wealth, land and Universal Credit capital; row 9 pins wealth and land only.
 # Unlike main at 2da212ab, the Housing Benefit, JSA, ESA and Income Support
 # formulas here take sale expenses off other residential and non-residential
-# property and off corporate_wealth, and the Universal Credit formula takes
-# them off corporate_wealth. That changes the legacy capital of both rows, and
-# row 9's Universal Credit capital, independently of the new inputs. Rows 8
-# and 9 stop before Pension Credit capital, which the formula sets to nil while
-# no member has reached the qualifying age.
+# property and off share_like_capital, which holds row 9's corporate_wealth,
+# and the Universal Credit formula takes them off share_like_capital. These
+# formulas therefore change the Housing Benefit, JSA, ESA and Income Support
+# capital of both rows, and row 9's Universal Credit capital, independently
+# of the new inputs. Rows 8 and 9 stop before Pension Credit capital, which
+# the formula sets to nil while no member has reached the qualifying age.
 WEALTH_AND_LAND = ("property_wealth", "total_wealth", "household_land_value")
 CAPITAL = (
     "uc_assessable_capital",

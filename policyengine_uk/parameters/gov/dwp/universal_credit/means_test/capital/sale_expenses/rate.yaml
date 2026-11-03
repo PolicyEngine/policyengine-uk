@@ -1,11 +1,12 @@
 description: >
-  Share of the current market or surrender value deducted from Universal
-  Credit capital where there would be expenses attributable to sale. It is a
-  flat 10% whatever the actual costs, taken from the gross value before
-  deducting any encumbrance secured on the asset. It applies to the countable
-  property in property_sources (other residential, non-residential, overseas
-  and unclassified other property, assumed to have costs of sale) and to the
-  financial sources listed in sale_expenses.sources.
+  Share of the current market or surrender value that the Universal Credit
+  formulas deduct from capital where there would be expenses attributable to
+  sale. The formulas deduct a flat 10% whatever the actual costs, from the
+  gross value and before any encumbrance secured on the asset. They apply it
+  to the countable property in property_sources (other residential,
+  non-residential, overseas and unclassified other property, which they treat
+  as having costs of sale) and to the financial sources in
+  sale_expenses.sources.
 values:
   2013-04-29: 0.1
 metadata:
