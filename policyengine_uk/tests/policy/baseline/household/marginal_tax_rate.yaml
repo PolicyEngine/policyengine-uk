@@ -1,0 +1,59 @@
+# marginal_tax_rate adds gov.simulation.marginal_tax_rate_delta (£1,000) of
+# employment income, or 0.1% of it where that is larger, and divides the rise in
+# household net income by the rise in employment income as stored. Above £1m a
+# reading is good to a few float32 roundings of the household's income (issue
+# #1979), hence the 3e-4 margin.
+#
+# One adult with only earnings. Above the additional rate threshold a marginal
+# pound pays 45% income tax and 2% NI.
+
+- name: Additional rate at £100m of earnings, which the £1,000 step read as 46.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 100_000_000
+  output:
+    marginal_tax_rate: 0.47
+
+- name: Additional rate at £561m of earnings, which the £1,000 step read as 45.6%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 561_000_000
+  output:
+    marginal_tax_rate: 0.47
+
+- name: Additional rate at £1bn of earnings, which the £1,000 step read as 45.6%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 1_000_000_000
+  output:
+    marginal_tax_rate: 0.47
+
+- name: Below £1m of earnings the step is still £1,000, at the basic rate.
+  # 20% income tax and 8% NI.
+  period: 2026
+  absolute_error_margin: 0.00002
+  input:
+    employment_income: 30_000
+  output:
+    marginal_tax_rate: 0.28
+
+- name: Below £1m, the £1,000 step crosses the higher rate threshold.
+  # 270 below the 50,270 threshold and upper earnings limit at 20% + 8%, and
+  # 730 above at 40% + 2%.
+  period: 2026
+  absolute_error_margin: 0.00002
+  input:
+    employment_income: 50_000
+  output:
+    marginal_tax_rate: 0.3822
+
+- name: Below £1m of earnings the step is still £1,000, at the additional rate.
+  period: 2026
+  absolute_error_margin: 0.00002
+  input:
+    employment_income: 200_000
+  output:
+    marginal_tax_rate: 0.47

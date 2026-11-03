@@ -1,0 +1,17 @@
+description: The England Council Tax Reduction default scheme deducts this share of pension contributions when it calculates an applicant's net earnings and a self-employed earner's net profit, for pensioners and for applicants who are not pensioners and have no award of Universal Credit. The default scheme applies where a billing authority has made no scheme of its own.
+values:
+  2013-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: England Council Tax Reduction default scheme pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. para. 42(2)(b) and (c) and (5)(c) (employed earners who are pensioners)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/42
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. para. 52(3)(b) and (c) and (6)(c) (employed earners who are not pensioners)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/52
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. para. 61(1)(b)(ii) and (c)(ii), (3)(c) and (9)(b) (self-employed earners)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/61
+    - title: Local Government Finance Act 1992 Sch. 1A para. 4 (the default scheme applies where a billing authority has made no scheme)
+      href: https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/4

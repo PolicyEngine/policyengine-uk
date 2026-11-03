@@ -12,8 +12,11 @@ class taxed_income(Variable):
         href="https://www.legislation.gov.uk/ukpga/2007/3/section/23",
     )
 
+    # Property income is taxed income too: non_savings_taxable_income adds it
+    # to earned_taxable_income, which leaves it out because
+    # property_income_tax taxes it separately.
     adds = [
-        "earned_taxable_income",
+        "non_savings_taxable_income",
         "taxed_savings_income",
         "taxed_dividend_income",
     ]

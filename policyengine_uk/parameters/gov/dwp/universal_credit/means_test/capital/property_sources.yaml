@@ -1,0 +1,25 @@
+description: >
+  Household property amounts valued for Universal Credit in the assessment year
+  after sale expenses and property-specific secured debt, floored separately
+  at zero. The main home is excluded under Schedule 10 paragraph 1. The broad
+  other-property inputs are assumed to have sale expenses and no Schedule 10
+  disregard; reliable asset-level disregard and debt flags are unavailable,
+  so debt defaults to zero unless supplied explicitly. These approximations
+  do not imply all second homes are legally countable. Each net amount is
+  allocated across ALL claimant/partner adults in the household in proportion
+  to their number in each benefit unit, including units with financial reports,
+  complete overrides and no UC receipt. A complete override consumes its share.
+  This is an assumption about unobserved ownership, not a statutory rule.
+metadata:
+  label: Universal Credit countable property sources
+  period: year
+  unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 49(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/49/1
+    - title: The Universal Credit Regulations 2013 Schedule 10
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10
+values:
+  2013-04-29:
+    - uc_other_residential_property_capital
+    - uc_non_residential_property_capital

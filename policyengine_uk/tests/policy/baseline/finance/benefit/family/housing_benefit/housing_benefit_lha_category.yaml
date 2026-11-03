@@ -1,0 +1,198 @@
+# Housing Benefit's own LHA category (HB Regs 2006 reg 13D(2)), beside
+# Universal Credit's (UC Regs 2013 Sch 4 paras 27-29, LHA_category).
+#
+# HB reg 13D(2)(a)(i): shared accommodation where "the claimant is a young
+# individual who has no non-dependant residing with him and to whom paragraph
+# 14 of Schedule 3 (severe disability premium) does not apply". Reg 2(1):
+# "young individual" means a single claimant under 35 (with exceptions);
+# "single claimant" means a claimant who neither has a partner nor is a lone
+# parent. Sch 3 para 14(2)(a): a single claimant is severely disabled if (i)
+# in receipt of attendance allowance, DLA care at the highest or middle rate,
+# the PIP daily living component or armed forces independence payment
+# (among others), (ii) no non-dependant aged 18 or over resides with them,
+# and (iii) no one receives carer's allowance for caring for them (not
+# observed). Para 14(2)(b): for a couple, both must qualify; para 14(4): a
+# non-dependant who receives a qualifying benefit is disregarded.
+# UC Sch 4 para 29(5)(b): attendance allowance, which UC reg 2 defines to
+# include armed forces independence payment.
+
+- name: A renter under 35 receiving armed forces independence payment is excepted from both schemes' shared rate
+  period: 2025
+  input:
+    age: 30
+    armed_forces_independence_payment: 6_000
+  output:
+    # UC Sch 4 para 29(5)(b) with reg 2: one bedroom, B.
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+    # HB: a young individual to whom Sch 3 para 14 applies, so not 13D(2)(a)(i).
+    is_housing_benefit_young_individual: true
+    housing_benefit_severe_disability_premium_applies: true
+    housing_benefit_LHA_category: B
+
+- name: A single claimant under 35 with no qualifying benefit gets the HB shared rate
+  period: 2025
+  input:
+    age: 30
+  output:
+    is_housing_benefit_young_individual: true
+    housing_benefit_severe_disability_premium_applies: false
+    housing_benefit_LHA_category: A
+
+- name: A single claimant aged 35 is not a young individual
+  period: 2025
+  input:
+    age: 35
+  output:
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
+
+- name: Sch 3 para 14(2)(b) - a couple meets the severe disability premium condition only if both qualify
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        attendance_allowance: 4_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_severe_disability_premium_applies: false
+    # A couple is never a young individual: one bedroom, B.
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
+
+- name: Sch 3 para 14(2)(b) - both members of a couple qualifying meets the condition
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        attendance_allowance: 4_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        pip_dl: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_severe_disability_premium_applies: true
+
+- name: Sch 3 para 14(2)(a)(ii) - an adult non-dependant in the family defeats the severe disability premium
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        attendance_allowance: 4_000
+      adult:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, adult]
+    households:
+      household:
+        members: [claimant, adult]
+  output:
+    housing_benefit_severe_disability_premium_applies: false
+
+- name: Sch 3 para 14(4)(a) - a non-dependant receiving a qualifying benefit is disregarded
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        attendance_allowance: 4_000
+      adult:
+        age: 25
+        is_claimant_or_partner: false
+        pip_dl: 3_000
+    benunits:
+      benunit:
+        members: [claimant, adult]
+    households:
+      household:
+        members: [claimant, adult]
+  output:
+    housing_benefit_severe_disability_premium_applies: true
+
+- name: An adult in another family who is the household head's non-dependant defeats the severe disability premium
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        attendance_allowance: 4_000
+        # The claimant's family is liable for the rent.
+        is_household_head: true
+      non_dependant:
+        age: 40
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      non_dependant_unit:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+  output:
+    # HB reg 3: the other adult normally resides with the claimant and is not
+    # liable to pay for their occupation, so is a non-dependant; aged 18 or
+    # over with no qualifying benefit, they defeat Sch 3 para 14(2)(a)(ii).
+    is_non_dependant_of_household_head: [false, true]
+    housing_benefit_severe_disability_premium_applies: [false, false]
+
+- name: An HB young person who is not a UC qualifying young person blocks both shared rates
+  # The 19-year-old started non-advanced education at 17 and is past UC's
+  # terminal date, so is a Child Benefit (HB reg 19) young person but not a
+  # UC qualifying young person (UC reg 5). For UC the parent is responsible
+  # for no child or qualifying young person, but the 19-year-old is a
+  # non-dependant (Sch 4 para 9), so the parent is not a specified renter
+  # (para 28(4)). For HB the parent is a lone parent, not a single claimant,
+  # so not a young individual (reg 2(1)). Each scheme gives the parent a
+  # bedroom and the 19-year-old, "a non-dependant who is not a child" (UC
+  # Sch 4 para 10(1)) or "a person who is not a child" (HB reg 13D(3)(b)),
+  # another: two bedrooms, C. The model's bedroom count does not yet give
+  # benefit-unit members over 16 their own room (PE-UK #2010), so the test
+  # supplies it.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_parent: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [parent, student]
+        LHA_allowed_bedrooms: 2
+    households:
+      household:
+        members: [parent, student]
+  output:
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_responsible_for_child_or_young_person_for_legacy_benefits: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    is_housing_benefit_young_individual: false
+    LHA_category: C
+    housing_benefit_LHA_category: C

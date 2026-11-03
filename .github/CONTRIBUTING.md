@@ -14,6 +14,12 @@ uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 
 The package supports Python 3.11–3.14. Default branch: `main`.
 
+## Dependencies
+
+CI's test suite installs exactly what `uv.lock` pins (`uv sync --frozen`). If you change dependencies in `pyproject.toml`, run `uv lock` and commit `uv.lock` with the change; otherwise CI tests the dependencies in the old lock, not the ones you asked for.
+
+Every Monday, `.github/workflows/weekly-uv-lock.yaml` runs `uv lock --upgrade` on `main` and opens a pull request with the result, or refreshes the one already open. That is how CI moves to new dependency releases. Merge it when its CI passes. If a new release breaks a test, push the fix to that pull request's branch; the workflow then stops refreshing it. To take one release sooner, run `uv lock --upgrade-package <name>` in your own pull request.
+
 ## Writing variables and reforms
 
 Four types of files usually change together:
@@ -45,6 +51,14 @@ coverage metadata and drives the `/uk/metadata` API. Every entry includes `id`,
 and add `verified_end_year` when verified coverage has a defined end. Change the
 verified year fields only after confirming that parameters and tests cover the
 stated years.
+
+## Axiom parity
+
+Every policy change here must also be correct in [rulespec-uk](https://github.com/TheAxiomFoundation/rulespec-uk). That covers a new programme, a parameter or threshold update, an eligibility rule and a bug fix. The shared guide, [Mirror policy changes in Axiom](https://github.com/PolicyEngine/.github/blob/main/CONTRIBUTING.md#mirror-policy-changes-in-axiom), defines the `axiom:` line your PR description needs and what a `queued` issue must contain. UK specifics:
+
+- National modules live under `uk/`, and council schemes such as council tax reduction live under `uk-<council>/`. Search `main` there before opening a new issue.
+- An `encoded-correct` claim names the module and a companion case in its `.test.yaml` that exercises the same situation as your YAML test.
+- Use `queued` only when the signed encoder is blocked; record the blocker in the issue. Each billed encoder run requires separate approval. Label `queued` issues `pe-parity`. Reuse your YAML test's externally sourced expected values (legislation.gov.uk, gov.uk guidance, official calculators) as the companion tests; don't copy values computed by policyengine-uk.
 
 ## Repo-specific anti-patterns
 

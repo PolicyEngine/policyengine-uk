@@ -1,0 +1,228 @@
+# SI 2006/213 Sch 5 para 4 and Sch 6 para 5 (NI: SR 2006/405 Sch 6 para 4 and
+# Sch 7 para 5): where a claimant is on income support, an income-based
+# jobseeker's allowance or an income-related employment and support allowance,
+# the whole of the claimant's income and capital is disregarded, so Housing
+# Benefit is the maximum: the eligible rent, less any non-dependant deductions
+# (reg 70). Expected values are hand-computed from the regulations: council
+# tenancies (no LHA cap), no non-dependants. Working-age awards use 2025-26
+# (or housing_benefit_entitlement for 2026-27), before working-age awards were
+# abolished from 1 July 2026 (SI 2025/1148 art. 7).
+
+- name: Lone parent on Income Support has income and capital disregarded and gets maximum Housing Benefit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 3_000
+        housing_benefit_reported: 1
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        income_support: 5_000
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        savings: 12_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    # Sch 6 para 5: the £12,000 is disregarded, so there is no tariff income
+    # (it would otherwise be £1 a week for each £250 over £6,000: £24 x 52).
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    # Sch 5 para 4: earnings, Income Support and Child Benefit all disregarded.
+    housing_benefit_applicable_income: 0
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 6_240
+    housing_benefit: 6_240
+
+- name: Single claimant on income-based JSA has income and capital disregarded
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 1_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        jsa_income: 3_500
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 12_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 5_200
+    housing_benefit: 5_200
+
+- name: Contribution-based JSA is not a passport, so income and capital are taken into account
+  # The same claimant as above, with contribution-based JSA in place of
+  # income-based JSA. The disregard and applicable amount are set so the
+  # taper can be computed by hand: applicable income = 3,500 + 1,000 +
+  # tariff income 1,248 (ceil((12,000 - 6,000) / 250) = 24, x £1 x 52) - 260
+  # = 5,488; entitlement = 5,200 - 0.65 x (5,488 - 4,000) = 4,232.80.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 1_000
+        jsa_contrib: 3_500
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        jsa_income: 0
+        housing_benefit_applicable_income_disregard: 260
+        housing_benefit_applicable_amount: 4_000
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 12_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_assessable_capital: 12_000
+    housing_benefit_tariff_income: 1_248
+    housing_benefit_applicable_income: 5_488
+    housing_benefit_entitlement: 4_232.80
+
+- name: Income-based JSA claimant above the Housing Benefit capital limit stays eligible because the whole capital is disregarded
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        jsa_income: 3_500
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 20_000
+  output:
+    housing_benefit_assessable_capital: 0
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+
+- name: Couple where the partner is on income-based JSA is passported, earnings included
+  # Sch 5 para 5 (a joint-claim couple) and the benefit-unit reading of
+  # para 4: the model holds the award for the benefit unit. The claimant's
+  # £12,000 of earnings would otherwise take the couple's income above their
+  # applicable amount.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 32
+        employment_income: 12_000
+        housing_benefit_reported: 1
+      partner:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+        jsa_income: 4_000
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 6_240
+
+- name: Mixed-age couple whose younger member is on income-related ESA is passported
+  # SI 2006/213 reg 5(1)(b) applies the working-age regulations to a claimant
+  # over State Pension Credit age whose partner is on income-related ESA (and
+  # SI 2006/214 reg 5(2) disapplies the pension-age ones), so Sch 5 para 4 and
+  # Sch 6 para 5 disregard the State Pension and the savings. Guarantee Credit
+  # is set to nil to show the result does not come from the Pension Credit
+  # passport. Members over State Pension age keep the award all year. The
+  # private pension would otherwise take the couple's income above their
+  # applicable amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension_reported: 12_000
+        private_pension_income: 15_000
+        housing_benefit_reported: 1
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        guarantee_credit: 0
+        esa_income: 6_000
+    households:
+      household:
+        members: [older, younger]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        savings: 10_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 6_240
+    housing_benefit: 6_240
+
+- name: Mixed-age couple with contributory ESA only is not passported
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension_reported: 12_000
+        private_pension_income: 15_000
+        housing_benefit_reported: 1
+      younger:
+        age: 60
+        esa_contrib: 6_000
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        guarantee_credit: 0
+        esa_income: 0
+    households:
+      household:
+        members: [older, younger]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        savings: 10_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_assessable_capital: 10_000

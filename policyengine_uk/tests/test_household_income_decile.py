@@ -32,20 +32,41 @@ def test_household_income_decile_caps_at_ten():
     assert result.max() == 10
 
 
-def test_household_income_decile_keeps_negative_incomes_outside_deciles():
-    household = FakeHousehold(
+def zero_and_positive_incomes(zeros, total=20):
+    return FakeHousehold(
         {
-            "equiv_hbai_household_net_income": np.array([-5, 0, 10], dtype=float),
-            "household_count_people": np.ones(3),
-            "household_weight": np.ones(3),
+            "equiv_hbai_household_net_income": np.concatenate(
+                [np.zeros(zeros), np.arange(1, total - zeros + 1, dtype=float)]
+            )
+            * 1_000,
+            "household_count_people": np.ones(total),
+            "household_weight": np.ones(total),
         }
     )
 
-    result = household_income_decile.formula(household, 2025, None)
 
-    assert result[0] == -1
-    assert np.all(result[1:] >= 1)
-    assert np.all(result[1:] <= 10)
+def test_household_income_decile_ranks_incomes_reset_to_zero_in_the_bottom_decile():
+    # HBAI resets a negative income to zero before ranking, so
+    # equiv_hbai_household_net_income is never negative and a household whose
+    # income was reset sits in the bottom decile, not outside the deciles.
+    # Equal incomes share the rank at the top of their group: one or two of
+    # twenty equally weighted households at zero (at most a tenth of people)
+    # are all in decile 1.
+    for zeros in [1, 2]:
+        result = household_income_decile.formula(
+            zero_and_positive_incomes(zeros), 2025, None
+        )
+        assert np.all(result[:zeros] == 1)
+        assert np.all((result >= 1) & (result <= 10))
+
+
+def test_household_income_decile_tied_zeros_above_a_tenth_share_a_higher_decile():
+    # Documented limit: when more than a tenth of people are tied at zero they
+    # share the decile of the top of their group (three of twenty: decile 2),
+    # and decile 1 is empty. On the enhanced FRS under 1% of people are at zero.
+    result = household_income_decile.formula(zero_and_positive_incomes(3), 2025, None)
+    assert np.all(result[:3] == 2)
+    assert 1 not in result
 
 
 def test_pre_budget_change_income_decile_domain_is_negative_or_one_to_ten():

@@ -1,0 +1,31 @@
+description: >
+  Benefits whose receipt makes a person severely disabled for Carer's
+  Allowance, so that a carer benefit may be paid for caring for them:
+  attendance allowance, the care component of disability living allowance at
+  the highest or middle rate, the daily living component of personal
+  independence payment and armed forces independence payment. The Scottish
+  equivalents are not separate model variables, and the constant attendance
+  allowances prescribed by regulation 3 of the Invalid Care Allowance
+  Regulations are not modelled.
+metadata:
+  label: Carer's Allowance qualifying disability benefits
+  period: year
+  unit: list
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s. 70(2)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/70
+    - title: The Personal Independence Payment (Supplementary Provisions and Consequential Amendments) Regulations 2013 Sch. para. 5
+      href: https://www.legislation.gov.uk/uksi/2013/388/schedule/paragraph/5
+    - title: "The Armed Forces and Reserve Forces (Compensation Scheme) (Consequential Provisions: Primary Legislation) Order 2013 art. 3(2)"
+      href: https://www.legislation.gov.uk/uksi/2013/796/article/3
+    - title: The Social Security (Invalid Care Allowance) Regulations 1976 reg. 3
+      href: https://www.legislation.gov.uk/uksi/1976/409/regulation/3
+values:
+  1992-07-01:
+    - attendance_allowance
+    - dla_sc_middle_plus
+  2013-04-08:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+    - armed_forces_independence_payment

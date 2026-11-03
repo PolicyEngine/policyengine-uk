@@ -1,0 +1,155 @@
+# SI 2019/37 art. 4(3)(b)(ii), inserted by SI 2024/604 art. 2,
+# preserves the Housing Benefit reclaim route for a protected mixed-age
+# couple that claims Universal Credit before the final deadline but is not
+# entitled. Entitlement is assessed before benefit-cap reductions.
+
+- name: Protected mixed-age couple claiming nil Universal Credit keeps its Housing Benefit reclaim route
+  # Preserve the review's 139.83 reproducer with its then-modelled 2025
+  # weekly couple allowance. Main subsequently corrected that rate to 366;
+  # the unmodified current-policy case below has the same route outcome.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.allowances.couple.aged: 357.98
+    people:
+      older:
+        age: 72
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 4_000
+        employment_income: 37_500
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 9_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: true
+    is_uc_eligible: true
+    universal_credit_pre_benefit_cap: 0
+    is_uc_entitled: false
+    universal_credit: 0
+    left_pension_route_at_legacy_closure: false
+    housing_benefit_eligible: true
+    housing_benefit: 139.83
+
+- name: Protected mixed-age couple declining Universal Credit keeps the same Housing Benefit reclaim route
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.allowances.couple.aged: 357.98
+    people:
+      older:
+        age: 72
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 4_000
+        employment_income: 37_500
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [older, younger]
+        rent: 9_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    is_uc_entitled: false
+    universal_credit: 0
+    left_pension_route_at_legacy_closure: false
+    housing_benefit_eligible: true
+    housing_benefit: 139.83
+
+- name: Current pension-age allowance preserves Housing Benefit for a nil Universal Credit claimant
+  # Current 2025-26 pension-age couple allowance: 366 a week. The family
+  # otherwise matches the review's nil-entitlement reproducer above.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 4_000
+        employment_income: 37_500
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 9_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: true
+    is_uc_eligible: true
+    universal_credit_pre_benefit_cap: 0
+    is_uc_entitled: false
+    universal_credit: 0
+    left_pension_route_at_legacy_closure: false
+    housing_benefit_eligible: true
+    housing_benefit: 410.90
+
+- name: Benefit cap reducing Universal Credit to nil does not preserve the pension-age route
+  # Isolate the distinction between a nil means-tested entitlement and a
+  # positive entitlement whose payment is then reduced to zero by the cap.
+  period: 2025
+  input:
+    people:
+      older:
+        age: 72
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 4_000
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        uc_maximum_amount: 1_200
+        uc_income_reduction: 0
+        uc_benefit_cap_reduction: 1_200
+    households:
+      household:
+        members: [older, younger]
+        rent: 9_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    claims_universal_credit: true
+    universal_credit_pre_benefit_cap: 1_200
+    is_uc_entitled: true
+    universal_credit: 0
+    left_pension_route_at_legacy_closure: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    is_pension_credit_eligible: false

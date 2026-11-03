@@ -7,13 +7,26 @@ metadata:
   reference:
   - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/paragraph/9/2019-02-01
     title: The State Pension Credit Regulations 2002
+  - title: Benefit and pension rates 2018 to 2019 (DWP, gov.uk)
+    href: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2018-to-2019
+  - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+    href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+    href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+    href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+  - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+    href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
   unit: currency-GBP
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2022-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
+  # 2018-19 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
   2019-02-01: 53.34
   2020-04-01: 54.32
   2021-04-01: 54.6
   2022-04-01: 56.35
+  2023-04-01: 61.88
+  2024-04-01: 66.29
+  2025-04-01: 67.42
   2026-04-01: 69.98

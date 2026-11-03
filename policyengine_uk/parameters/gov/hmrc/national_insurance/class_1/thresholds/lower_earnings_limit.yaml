@@ -8,6 +8,8 @@ metadata:
   unit: currency-GBP
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   label: NI lower earnings limit
+# The LEL is not frozen: Budget 2025 para 4.118 raised it by September 2025 CPI
+# for 2026-27. Values from 2027-28 are a CPI projection; none is announced.
 values:
   2015-04-06: 112
   2016-04-06: 112
@@ -23,9 +25,17 @@ values:
         title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments
           and National Insurance Funds Payments) Regulations 2022(6)
     value: 123
+  2025-04-06:
+    value: 125
+    metadata:
+      reference:
+        - title: SI 2025/288 reg 5(2)(b), amending SI 2001/1004 reg 10(a)
+          href: https://www.legislation.gov.uk/uksi/2025/288/regulation/5/made
   2026-04-06:
     value: 129
     metadata:
       reference:
-        - title: "GOV.UK | Rates and allowances: National Insurance contributions"
-          href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+        - title: SI 2026/231 reg 5(2)(b), amending SI 2001/1004 reg 10(a)
+          href: https://www.legislation.gov.uk/uksi/2026/231/regulation/5/made
+        - title: Budget 2025 (HC 1492) para 4.118
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=114

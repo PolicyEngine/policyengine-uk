@@ -37,3 +37,46 @@
     country: ENGLAND
   output:
     universal_childcare_entitlement_eligible: True
+
+# DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
+# C.6): a child in a state-funded or council-funded reception class is not
+# entitled to free hours outside the school place. A child starting reception
+# in September is eligible for the summer term.
+- name: Child aged 4 starting reception in September is eligible for the summer term
+  period: 2026
+  input:
+    age: 4
+    date_of_birth: 20220831
+    country: ENGLAND
+  output:
+    early_years_term_share_before_school: 0.3333
+    universal_childcare_entitlement_eligible: true
+  absolute_error_margin: 0.0001
+
+- name: Child at school all year is not eligible
+  period: 2026
+  input:
+    age: 4
+    early_years_term_share_before_school: 0
+    country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: false
+
+# Childcare Act 2016 s.1(6)(a): the universal hours count towards the working
+# parent's 30 hours, so eligibility for that entitlement does not remove them.
+- name: Child aged 3 in a family eligible for the working parent entitlement stays eligible
+  period: 2026
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: true

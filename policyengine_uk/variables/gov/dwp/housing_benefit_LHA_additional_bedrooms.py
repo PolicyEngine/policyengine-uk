@@ -11,10 +11,12 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "meets_lha_overnight_care_condition), and one if the claimant or "
         "partner is a qualifying parent or carer (see "
         "is_housing_benefit_qualifying_parent_or_carer): two if both. "
-        "Occupiers outside the family count for the household head's family: "
-        "non-dependants, boarders and lodgers and their children, but not a "
-        "sharer of the rent or a child placed with them as a foster child or "
-        "for adoption. Before 1 April 2017 only the claimant and partner "
+        "Occupiers outside the family count for a family liable for the "
+        "rent: non-dependants, boarders and lodgers and their children, "
+        "but not a sharer of the rent or a child placed with them as a "
+        "foster child or for adoption. A child placed with the "
+        "claimant or partner counts as one for whom they are a qualifying "
+        "parent or carer. Before 1 April 2017 only the claimant and partner "
         "counted for overnight care. The definitions require a bedroom in "
         "the dwelling for "
         "the carer or the foster child; the model does not observe the "
@@ -31,21 +33,25 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         overnight_care = person("meets_lha_overnight_care_condition", period)
-        # HB Regs 2006 reg 13D(3A)(a)(iii): "a person ... who occupies the
-        # claimant's dwelling as their home". (iii) does not use the defined
-        # term "occupiers", but the model applies 13D(12)'s exclusion of a
-        # joint tenant outside the claimant's household and, following DWP,
-        # of a child placed with another family as a foster child or for
-        # adoption (see housing_benefit_LHA_allowed_bedrooms). A3/2017 frames
-        # the 2017 extension as a room for carers of a disabled child or
-        # non-dependant, and A21/2013 para 25 bases private-sector joint
-        # tenants' size criteria on each tenant's own household.
-        head_family = person.benunit.any(person("is_household_head", period))
-        sharer = person.benunit("liable_for_share_of_household_rent", period)
+        # HB Regs 2006 reg 13D(3A)(a)(iii): "a person (other than the
+        # claimant or the claimant's partner) who occupies the claimant's
+        # dwelling as their home". The model counts the occupiers of the
+        # size criteria (13D(12); see housing_benefit_LHA_allowed_bedrooms):
+        # for a claim by a family liable for the rent, everyone in the
+        # families not liable for it (non-dependants, boarders and lodgers
+        # and their children), except, following DWP, a child placed with
+        # one of them as a foster child or for adoption. A joint tenant outside
+        # the claimant's household is not counted: A21/2013 para 25 bases
+        # private-sector joint tenants' size criteria on each tenant's own
+        # household. A boarder's or lodger's own claim counts only their own
+        # family.
+        liable_family = person.benunit.any(
+            person("is_liable_for_household_rent", period)
+        )
         placed = person("is_child_or_young_person_placed_with_family", period)
-        other = overnight_care & ~head_family & ~sharer & ~placed
-        is_head_family = benunit.any(person("is_household_head", period))
-        others = is_head_family * benunit.max(person.household.sum(other))
+        other = overnight_care & ~liable_family & ~placed
+        is_liable_claim = benunit.any(person("is_liable_for_household_rent", period))
+        others = where(is_liable_claim, benunit.max(person.household.sum(other)), 0)
         # Reg 13D(3A)(a)(i)-(iv): the claimant, partner, other members of the
         # family, and a child or young person for whom the claimant or
         # partner is a qualifying parent or carer. Before 1 April 2017 (SI

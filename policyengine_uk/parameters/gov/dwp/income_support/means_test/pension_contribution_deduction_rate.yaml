@@ -1,0 +1,13 @@
+description: Income Support deducts this share of pension contributions when it calculates a claimant's net earnings and a self-employed earner's net profit.
+values:
+  1988-04-11: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Income Support net earnings pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Income Support (General) Regulations 1987, regulation 36(3)(b) (employed earners)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/36
+    - title: The Income Support (General) Regulations 1987, regulation 38(1)(b)(ii), (3)(c) and (9)(b) (self-employed earners)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/38

@@ -1,0 +1,19 @@
+description: >
+  Share of the amount withdrawn from a Lifetime ISA that is charged when the
+  withdrawal is not exempt, that is, when it is made before the charge-free age
+  and not towards a first home or with a terminal illness.
+values:
+  2017-04-06: 0.25
+  2020-03-06: 0.2
+  2021-04-06: 0.25
+metadata:
+  label: Lifetime ISA withdrawal charge
+  period: year
+  unit: /1
+  reference:
+    - title: The Individual Savings Account Regulations 1998, Schedule paragraph 5
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/5
+    - title: The Individual Savings Account Regulations 1998, Schedule paragraph 5A (20% from 6 March 2020 to 5 April 2021)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/5A
+    - title: The Individual Savings Account (Amendment No. 3) (Coronavirus) Regulations 2020
+      href: https://www.legislation.gov.uk/uksi/2020/506/made

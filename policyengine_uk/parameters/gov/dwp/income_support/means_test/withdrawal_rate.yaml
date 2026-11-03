@@ -1,0 +1,11 @@
+description: Share of assessable income deducted from the Income Support applicable amount.
+values:
+  # Model anchor matching the existing means-test parameters, not legal commencement.
+  2015-04-01: 1
+metadata:
+  period: year
+  unit: /1
+  label: Income Support withdrawal rate
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992, section 124(4) (6 April 2024)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/124/2024-04-06#section-124-4

@@ -1,0 +1,9 @@
+description: Minimum age for the ordinary Working Tax Credit 30-hour route without children or a qualifying disability.
+values:
+  # Joint-claim variations inserted by SI 2012/848 from 6 April 2012.
+  2012-04-06: 25
+metadata:
+  unit: year
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002, regulation 4
+    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/4/2024-04-06

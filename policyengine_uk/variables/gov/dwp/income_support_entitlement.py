@@ -12,4 +12,5 @@ class income_support_entitlement(Variable):
         amount = benunit("income_support_applicable_amount", period)
         income = benunit("income_support_applicable_income", period)
         eligible = benunit("income_support_eligible", period)
-        return max_(0, amount - income) * eligible
+        rate = parameters(period).gov.dwp.income_support.means_test.withdrawal_rate
+        return max_(0, amount - rate * income) * eligible

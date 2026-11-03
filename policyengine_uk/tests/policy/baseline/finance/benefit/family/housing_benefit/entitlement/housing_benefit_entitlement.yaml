@@ -20,7 +20,11 @@
     LHA_cap: 1_000
     housing_benefit_non_dep_deductions: 0
   output:
-    housing_benefit_entitlement: 1_000
+    # The eligible rent is the LHA cap of 1,000 (SI 2006/213 reg 12D(2)(a)),
+    # and the taper of 0.65 * (11,000 - 1,000) = 6,500 is deducted from it
+    # (reg 71): max(0, 1,000 - 6,500) = 0. Capping after the taper gave
+    # min(8,000 - 6,500, 1,000) = 1,000.
+    housing_benefit_entitlement: 0
 
 - name: Capped at 0
   period: 2025

@@ -1,7 +1,6 @@
-description: When this is true, households in England or Wales with pensioners earning under the maximum taxable income are eligible for the Winter Fuel Payment.
+description: Deprecated; use gov.hmrc.income_tax.charges.winter_fuel_payment for the winter fuel payment charge. When this is true and a relevant benefit is required (require_benefits), a person who is not on one is still paid if a member of their household who has reached pensionable age has total income at or under maximum_taxable_income. No regulations have set such a test. It stood in for the winter fuel payment charge for 2025 before the model computed the charge, and is kept, off, so that reforms which set it still load. It has no effect while require_benefits is false, as it is from 2025.
 values:
   2000-01-01: false
-  2025-01-01: true
 metadata:
   unit: bool
-  label: WFA maximum taxable income eligibility
+  label: Winter Fuel Payment household income test (deprecated)

@@ -59,9 +59,24 @@ def adjust_budget(baseline_parameter, parameter, budget_variable):
         def apply(self):
             simulation = self.simulation
 
+            # Read every year's allocation before writing any. Each write is
+            # an input that carries over to later years without their own
+            # input, so reading a later year after writing an earlier one
+            # would stack the earlier year's change on top of its own.
+            spending_by_year = {
+                time_period: simulation.calculate(budget_variable, time_period)
+                for time_period in change_by_year
+            }
+
             for time_period, budget_change in change_by_year.items():
-                spending = simulation.calculate(budget_variable, time_period)
-                relative_increase = budget_change / (spending.sum() / 1e9)
+                spending = spending_by_year[time_period]
+                total_spending = spending.sum() / 1e9
+                if total_spending == 0:
+                    # Nothing is allocated in this year, so there is no
+                    # allocation to scale. Dividing by zero would write NaN
+                    # (rejected by set_input) or infinite spending.
+                    continue
+                relative_increase = budget_change / total_spending
 
                 simulation.set_input(
                     budget_variable,

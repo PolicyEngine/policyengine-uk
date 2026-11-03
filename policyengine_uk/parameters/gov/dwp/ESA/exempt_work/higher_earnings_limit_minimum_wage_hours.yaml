@@ -1,0 +1,25 @@
+description: >-
+  Hours a week at the National Minimum Wage that set the weekly earnings limit
+  of Employment and Support Allowance permitted work from 11 April 2011.
+  Regulation 45(4) makes work done for less than the exempt work hours limit
+  exempt work where the claimant's earnings in any week do not exceed this many
+  times the National Minimum Wage, which regulation 2(1) defines as the rate in
+  regulation 11 of the National Minimum Wage Regulations 1999, now the national
+  living wage. Regulation 45(9A) rounds the result up to the next 50p.
+values:
+  2011-04-11:
+    value: 16
+    reference:
+      - title: Social Security (Miscellaneous Amendments) Regulations 2011 (SI 2011/674) reg. 16(5)(a)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2011-04-11
+metadata:
+  unit: hour
+  period: week
+  label: ESA exempt work higher earnings limit hours
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 45(4) and (9A)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45
+    - title: Employment and Support Allowance Regulations 2008 reg. 2(1) ("National Minimum Wage")
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/2
+    - title: Decision Makers' Guide ch. 41, para. 41190 and Appendix 5
+      href: https://assets.publishing.service.gov.uk/media/689db34d1fedc616bb13399c/dmg-ch-41.pdf

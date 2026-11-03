@@ -1,0 +1,26 @@
+description: Published boardings divided by resident NTS trips in 2024-25. Scottish and
+  Northern Irish translations use the English other-local-bus trip rate as a proxy, matching
+  Microcosm. London uses all England residents because visitors also use London buses.
+metadata:
+  unit: /1
+  period: year
+  label: bus boardings per trip
+  reference:
+  - title: DfT bus statistics, BUS01 and BUS05i, 2024-25
+    href: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+  - title: DfT National Travel Survey, NTS0705a, 2024
+    href: https://www.gov.uk/government/statistical-data-sets/nts07-car-ownership-and-access
+  - title: Scottish Transport Statistics 2025, tables 2.2a and 2.8
+    href: https://www.transport.gov.scot/publication/scottish-transport-statistics-2025/chapter-2-bus-and-coach-travel/
+  - title: Northern Ireland Public Transport Statistics 2024-25, figures 3, 4 and 6
+    href: https://www.infrastructure-ni.gov.uk/publications/public-transport-statistics-northern-ireland-2024-25
+  - title: Microcosm 954, published-fact extraction and pricing derivation
+    href: https://github.com/PolicyEngine/microcosm/pull/954
+LONDON:
+  '2024-01-01': 2.369144880275
+ENGLAND_OUTSIDE_LONDON:
+  '2024-01-01': 1.12466920264
+SCOTLAND:
+  '2024-01-01': 2.145240985363
+NORTHERN_IRELAND:
+  '2024-01-01': 1.252853758464

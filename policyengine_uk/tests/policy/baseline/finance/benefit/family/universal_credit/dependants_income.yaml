@@ -1,0 +1,217 @@
+# A dependant's income is not the claimant's. Besides the income deducted
+# from the award (reg. 22(1): income/uc_earned_income.yaml and
+# income/uc_unearned_income.yaml), three other Universal Credit rules read
+# members' income or work: the benefit cap's earnings exception (reg.
+# 82(1)(a): "the claimant's earned income or, if the claimant is a member of a
+# couple, the couple's combined earned income"), the benefit cap total (WRA
+# 2012 s. 96(1): "the welfare benefits to which a single person or couple is
+# entitled") and the childcare work condition (reg. 32(1): "the claimant is in
+# paid work" and, in a couple, "the other member").
+
+- name: A qualifying young person's earnings do not exempt the family from the benefit cap
+  # Reg. 80A(2)(d)(ii): £22,020 a year outside Greater London for a claimant
+  # responsible for a child or qualifying young person. Before this was
+  # fixed the young person's £12,000 met the earnings exception.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        employment_income: 12_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_earnings: false
+    uc_benefit_cap: 22_020
+
+- name: The claimant's own earnings still meet the benefit cap earnings exception
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        employment_income: 12_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: Joint claimants' combined earnings meet the benefit cap earnings exception
+  # Neither partner's £6,000 reaches the threshold alone; together they do.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+        employment_income: 6_000
+      parent_2:
+        age: 38
+        is_parent: true
+        employment_income: 6_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, child]
+    households:
+      household:
+        members: [parent_1, parent_2, child]
+        region: NORTH_EAST
+  output:
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: A dependent 18-year-old's job makes no difference to the childcare work condition
+  # The working lone parent meets it whether or not the young person works.
+  # Before this was fixed an 18-year-old without a job blocked it, so their
+  # taking one switched the childcare costs element on.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        employment_income: 15_000
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    is_uc_claimant: [true, false, false]
+    uc_childcare_work_condition: true
+
+- name: A dependent 18-year-old's job does not meet the childcare work condition for a parent out of work
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        employment_income: 5_000
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    uc_childcare_work_condition: false
+
+- name: An adult child flagged as a third claimant by the data neither meets nor blocks the childcare work condition
+  # Both members of the couple work, so reg. 32(1) is met whether or not
+  # their adult child does.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        is_claimant_or_partner: true
+        age: 50
+        employment_income: 15_000
+      parent_2:
+        is_claimant_or_partner: true
+        age: 48
+        employment_income: 15_000
+      adult_child:
+        age: 25
+        is_claimant_or_partner: true
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, adult_child, child]
+  output:
+    is_uc_assessed_claimant: [true, true, false, false]
+    uc_childcare_work_condition: true
+
+- name: A dependant's contributory benefit is not part of the benefit cap total
+  # The cap is £22,020 (reg. 80A(2)(d)(ii)). The parent's award before the
+  # cap is set to £30,000 and Child Benefit to nil, so the excess is 7,980.
+  # The young person's £5,000 is theirs, not the claimant's (WRA 2012 s.
+  # 96(1); reg. 80(1)): before this was fixed the excess was 12,980.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        jsa_contrib: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 0
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    uc_benefit_cap: 22_020
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap_reduction: 30_000 - 22_020
+    benefit_cap_reduction: 30_000 - 22_020
+
+- name: The claimant's own contributory benefit is part of the benefit cap total
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        jsa_contrib: 2_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 0
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    uc_benefit_cap: 22_020
+    benefit_cap_welfare_benefits: 30_000 + 2_000
+    uc_benefit_cap_reduction: 30_000 + 2_000 - 22_020
+    benefit_cap_reduction: 30_000 + 2_000 - 22_020

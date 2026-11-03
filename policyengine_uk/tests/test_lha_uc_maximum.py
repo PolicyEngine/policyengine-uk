@@ -100,16 +100,16 @@ def test_housing_benefit_keeps_the_weekly_maximum():
 def test_the_monthly_maximum_does_not_apply_before_it_existed():
     """The monthly series starts in April 2020.
 
-    Parameters are backdated to 2015 on load, so without an explicit gate the
-    2020 maximum would apply to earlier years, where it is far above the
-    figures actually in force. Before the series starts, Universal Credit
-    falls back to the weekly Housing Benefit rate.
+    Parameters are backdated to 2015 on load, so the 2020 maximum must not
+    reach earlier years, where it is far above the figures actually in force.
+    Before April 2020, Universal Credit uses the published monthly rate.
     """
     simulation = _simulation(50_000, "E", year=2019)
     housing = simulation.calculate("uc_housing_costs_element", 2019)[0]
-    weekly_rate = simulation.calculate("BRMA_LHA_rate", 2019)[0]
 
-    assert float(housing) == pytest.approx(float(weekly_rate), abs=0.01)
+    # DWP, Universal Credit LHA rates 2014 to 2019 (England, April 2019):
+    # central London four bedrooms, GBP 1,917.12 a month.
+    assert float(housing) == pytest.approx(1_917.12 * 12, abs=0.01)
     assert float(housing) < 2_579.98 * 12
 
 

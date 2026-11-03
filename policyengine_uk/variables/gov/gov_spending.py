@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 
 GOV_SPENDING_VARIABLES = [
+    "lifetime_isa_bonus",
     "child_benefit",
     "council_tax_benefit",
     "esa_income",
@@ -17,6 +18,8 @@ GOV_SPENDING_VARIABLES = [
     "attendance_allowance",
     "afcs",
     "bsp",
+    "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "iidb",
@@ -27,11 +30,13 @@ GOV_SPENDING_VARIABLES = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "basic_income",
     "epg_subsidy",
     "cost_of_living_support_payment",
     "energy_bills_rebate",
+    "household_energy_payment",
     "winter_fuel_allowance",
     "pawhp",
     "other_public_spending_budget_change",
@@ -39,6 +44,7 @@ GOV_SPENDING_VARIABLES = [
     "extended_childcare_entitlement",
     "universal_childcare_entitlement",
     "targeted_childcare_entitlement",
+    "wales_childcare_offer",
     "care_to_learn",
     "childcare_grant",
     "parents_learning_allowance",
@@ -49,7 +55,11 @@ GOV_SPENDING_VARIABLES = [
     "dfe_education_spending",
     "dft_subsidy_spending",
     "nhs_spending",
+    "healthy_start_vouchers",
+    "two_child_limit_payment",
+    "scottish_child_payment",
     "carer_support_payment",
+    "scottish_carer_supplement",
     "disability_basic_income",
 ]
 

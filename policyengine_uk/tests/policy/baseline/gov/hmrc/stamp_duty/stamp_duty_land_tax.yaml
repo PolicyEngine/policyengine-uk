@@ -20,13 +20,13 @@
     main_residential_property_purchased_is_first_home: true
   output:
     stamp_duty_land_tax: 7_250
-- name: £500k first-time buyer (just over limit)
+- name: £500,020 first-time buyer (over the £500k limit)
   period: 2022
   input:
-    main_residential_property_purchased: 500_000.01
+    main_residential_property_purchased: 500_020
     main_residential_property_purchased_is_first_home: true
   output:
-    stamp_duty_land_tax: 15_000
+    stamp_duty_land_tax: 15_001
 - name: £500k non-first-time buyer
   period: 2022
   input:

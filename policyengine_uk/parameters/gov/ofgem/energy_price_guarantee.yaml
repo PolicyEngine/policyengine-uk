@@ -1,30 +1,26 @@
-description: The capped default tariff energy price level for Ofgem's central household (2,900kWh per annum in electricity consumption, 12,000kWh per annum for gas). The Energy Price Cap subsidy reduces household bills to this level.
+description: The annualised Energy Price Guarantee level for a typical Great Britain household paying by direct debit.
 values:
-  2018-10-01: 1_186
-  2019-04-01: 1_305
-  2019-10-01: 1_227
-  2020-04-01: 1_209
-  2020-10-01: 1_121
-  2021-04-01: 1_223
-  2021-10-01: 1_370
-  2022-04-01: 2_100
-  2022-10-01: 2_500
-  2023-01-01: 2_500
-  2023-04-01:
+  2022-10-01:
     value: 2_500
     metadata:
       reference:
-      - title: Costing Document - Spring Budget 2023 (page 27)
-        href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1142824/Costing_Document_-_Spring_Budget_2023.pdf#page=27
-  2023-07-01: 3_000
-  2023-10-01: 3_000
+        - title: Energy Price Guarantee up to 30 June 2023
+          href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023
+  2023-07-01:
+    value: 3_000
+    metadata:
+      reference:
+        - title: Spring Budget 2023 policy costings, page 27
+          href: https://assets.publishing.service.gov.uk/media/6411603be90e076ccf66d781/Costing_Document_-_Spring_Budget_2023.pdf#page=27
+        - title: Energy Price Guarantee from 1 July 2023
+          href: https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022
 metadata:
   unit: currency-GBP
   period: year
   label: Energy price guarantee
+  preserve_calendar_dates: true
   reference:
-    - title: Energy data and research | Ofgem
-      href: https://www.ofgem.gov.uk/energy-data-and-research/data-portal/all-available-charts?keyword=price%20cap&sort=relevance
-    - title: Cornwall Insight price cap forecasts
-      href: https://www.cornwall-insight.com/cornwall-insight-release-final-predictions-for-octobers-price-cap/
-  
+    - title: Energy Price Guarantee up to 30 June 2023
+      href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023
+    - title: Spring Budget 2023 policy costings, page 27
+      href: https://assets.publishing.service.gov.uk/media/6411603be90e076ccf66d781/Costing_Document_-_Spring_Budget_2023.pdf#page=27

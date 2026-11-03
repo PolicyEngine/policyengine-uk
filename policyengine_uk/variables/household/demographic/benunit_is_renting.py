@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.tenure import is_renting_tenure
 
 
 class benunit_is_renting(Variable):
@@ -8,11 +9,4 @@ class benunit_is_renting(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        tenure = benunit("benunit_tenure_type", period)
-        tenures = tenure.possible_values
-        RENT_TENURES = [
-            tenures.RENT_PRIVATELY,
-            tenures.RENT_FROM_COUNCIL,
-            tenures.RENT_FROM_HA,
-        ]
-        return sum([tenure == tenure_type for tenure_type in RENT_TENURES]) > 0
+        return is_renting_tenure(benunit("benunit_tenure_type", period))

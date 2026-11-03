@@ -17,7 +17,7 @@ class sdlt_on_residential_property_transactions(Variable):
         price = household("main_residential_property_purchased", period)
         residential_purchase_qualifies_as_first_buy = household(
             "main_residential_property_purchased_is_first_home", period
-        ) & (price < price_limit)
+        ) & (price <= price_limit)
         main_residential_purchase_tax = where(
             residential_purchase_qualifies_as_first_buy,
             stamp_duty.residential.purchase.main.first.rate.calc(price),

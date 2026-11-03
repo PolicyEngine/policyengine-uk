@@ -5,7 +5,7 @@ class self_employment_income(Variable):
     value_type = float
     entity = Person
     label = "self-employment income"
-    documentation = "Income from self-employment profits, including gig work. This should be net of self-employment expenses."
+    documentation = "Income from self-employment profits, including gig work. This should be net of self-employment expenses and is never negative: enter a trading loss in trading_loss."
     definition_period = YEAR
     unit = GBP
     reference = "Income Tax (Trading and Other Income) Act 2005 s. 1(1)(a)"

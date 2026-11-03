@@ -10,9 +10,11 @@ def create_economic_assumption_indices(
 ) -> ParameterNode:
     econ_assumptions: ParameterNode = parameters.gov.economic_assumptions
     yoy_growth: ParameterNode = econ_assumptions.yoy_growth
+    # Index levels dated 1 January, one per calendar year, so a bare-year
+    # reform key names the calendar year (policyengine_uk.utils.dated_reforms).
     indices = ParameterNode(
         name="gov.economic_assumptions.indices",
-        data={},
+        data={"metadata": {"calendar_year_series": True}},
     )
     econ_assumptions.add_child(
         "indices",
@@ -40,10 +42,11 @@ def create_economic_assumption_indices(
 
             for year in range(start_year + 1, 2040):
                 yoy_growth = descendant(year)
-                indices_value = round(
-                    values[year - 1] * (1 + yoy_growth),
-                    5,
-                )
+                indices_value = values[year - 1] * (1 + yoy_growth)
+                # Rounding an earnings index down can put the projected
+                # guarantee below its statutory annual earnings floor.
+                if full_name != "gov.economic_assumptions.yoy_growth.earnings_uprating":
+                    indices_value = round(indices_value, 5)
                 values[year] = indices_value
 
             mirror_parameter = Parameter(

@@ -11,7 +11,8 @@ def modify_simulation(sim: Simulation):
     end_year = 2029
 
     for year in range(start_year, end_year + 1):
-        current_pip = sim.calculate("pip", year)
+        # Copy: calculate returns the simulation's cached array.
+        current_pip = np.array(sim.calculate("pip", year))
         percent_along_phase_in = (year - start_year) / (end_year - start_year)
         current_pip[pip_seed < 0.25 * percent_along_phase_in] = 0
         sim.set_input("pip", year, current_pip)

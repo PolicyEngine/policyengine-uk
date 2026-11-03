@@ -46,3 +46,49 @@
     adjusted_net_income: 100_0000
   output:
     extended_childcare_entitlement_meets_income_requirements: false
+
+# SI 2022/1134 reg 18(1): expected income over the three-month relevant period
+# must be "equal to or greater than" 16 hours x minimum wage x 13 weeks. With a
+# £10 minimum wage that is £2,080 a quarter; £8,320 a year is exactly £2,080 a
+# quarter.
+- name: Income exactly at the reg 18 minimum meets the requirement
+  period: 2025
+  input:
+    age: 35
+    minimum_wage: 10
+    employment_income: 8_320
+    adjusted_net_income: 8_320
+  output:
+    extended_childcare_entitlement_meets_income_requirements: true
+
+- name: Income £4 a year below the reg 18 minimum does not meet the requirement
+  period: 2025
+  input:
+    age: 35
+    minimum_wage: 10
+    employment_income: 8_316
+    adjusted_net_income: 8_316
+  output:
+    extended_childcare_entitlement_meets_income_requirements: false
+
+# Regs 14(3)(c)(i) and 15(3)(b)(i): the person must not expect adjusted net
+# income to "exceed £100,000", so exactly £100,000 qualifies.
+- name: Adjusted net income of exactly £100,000 meets the requirement
+  period: 2025
+  input:
+    age: 35
+    minimum_wage: 10
+    employment_income: 100_000
+    adjusted_net_income: 100_000
+  output:
+    extended_childcare_entitlement_meets_income_requirements: true
+
+- name: Adjusted net income of £100,001 does not meet the requirement
+  period: 2025
+  input:
+    age: 35
+    minimum_wage: 10
+    employment_income: 100_001
+    adjusted_net_income: 100_001
+  output:
+    extended_childcare_entitlement_meets_income_requirements: false

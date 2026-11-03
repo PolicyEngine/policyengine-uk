@@ -1,0 +1,630 @@
+# Carer premium for the legacy means-tested benefits.
+# IS Regs 1987 Sch 2 para 14ZA(1): "the condition is that the claimant or his
+# partner is, or both of them are, entitled to a carer's allowance ... or
+# carer support payment". Para 15(7): "£48.15 in respect of each person who
+# satisfied the condition specified in paragraph 14ZA" (from 6 April 2026;
+# £46.40 from 7 April 2025). The same condition and per-person amount are in
+# JSA Regs 1996 Sch 1 para 17 and Part IV (8), ESA Regs 2008 Sch 4 paras 8 and
+# 11(3), HB Regs 2006 Sch 3 para 17 and Part 4 (8), HB (SPC) Regs 2006 Sch 3
+# paras 9 and 12(4), and the English and Welsh council tax reduction rules.
+# The model uses the rate in force on 30 April of the simulation year, so
+# 2025 uses £46.40 and 2026 uses £48.15; the premium is weekly x 52.
+# A person satisfies the condition when is_entitled_to_carer_benefit holds:
+# Carer's Allowance or Carer Support Payment entitlement on caring hours or a
+# reported award, if they would claim, including an allowance the overlapping
+# benefits rules reduce to nil. Caring hours without a claim do not count.
+# Two people caring for the same severely disabled person cannot both be
+# entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment
+# (SSI 2023/302 reg 5(3)), so they satisfy the condition once. Unless supplied,
+# partners are treated as caring for the same person unless both are entitled
+# with an award: a reported Carer's Allowance or Carer Support Payment award
+# (carers_allowance_reported carries both), or an entitlement that caring
+# hours do not explain (fewer than 35 a week, or no claim), which was supplied
+# directly. Most cases below with two premiums therefore give both partners a
+# reported award.
+
+- name: Carer premium for a single claimant entitled to Carer's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant]
+  output:
+    carer_premium: 48.15 * 52
+
+- name: Carer premium once when only the partner cares
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_claimant_or_partner: [true, true]
+    carer_premium: 48.15 * 52
+
+- name: Carer premium twice when the claimant and partner both have Carer's Allowance awards (para 15(7))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: Carer premium twice for two caring partners at the April 2025 rate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    carer_premium: 2 * 46.40 * 52
+
+- name: No carer premium for a qualifying young person who cares
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        is_in_non_advanced_education: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [parent, young_person]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    is_carer_for_benefits: [false, true]
+    num_carers: 1
+    carer_premium: 0
+
+- name: No carer premium for a child under 16 who cares
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+      child:
+        age: 14
+        care_hours: 40
+    benunits:
+      family:
+        members: [parent, child]
+  output:
+    is_claimant_or_partner: [true, false]
+    carer_premium: 0
+
+- name: Lone parent carer with a caring young person gets one premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        receives_carer_benefit: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [parent, young_person]
+  output:
+    num_carers: 2
+    carer_premium: 48.15 * 52
+
+- name: Two caring partners and a caring young person get two premiums (was #420)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_parent: true
+        carers_allowance_reported: 4_000
+      partner:
+        age: 44
+        is_parent: true
+        carers_allowance_reported: 4_000
+      young_person:
+        age: 17
+        is_in_non_advanced_education: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    num_carers: 3
+    carer_premium: 2 * 48.15 * 52
+
+- name: Two caring partners' premiums enter the working-age applicable amounts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+        disability_premium: 0
+        enhanced_disability_premium: 0
+        severe_disability_premium: 0
+  output:
+    benefits_premiums: 2 * 48.15 * 52
+    # Council tax reduction applicable amount: the model's couple allowance
+    # (HB Regs 2006 Sch 3 para 1(3)(b), £150.15) plus two premiums.
+    council_tax_reduction_applicable_amount: (150.15 + 2 * 48.15) * 52
+
+- name: Pension-age couple who both receive Carer's Allowance get two premiums in Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        carers_allowance_reported: 4_000
+      partner:
+        age: 73
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+        disability_premium: 0
+        enhanced_disability_premium: 0
+        severe_disability_premium: 0
+  output:
+    carer_premium: 2 * 48.15 * 52
+    # HB (SPC) Regs 2006 Sch 3 para 1(2)(b): £383.35 for a couple with a
+    # member who reached pensionable age before 1 April 2021; para 9 and
+    # para 12(4): £48.15 for each of them.
+    housing_benefit_applicable_amount: (383.35 + 2 * 48.15) * 52
+
+- name: One premium when both partners care for the same severely disabled person (SSCBA s.70(7ZA))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: true
+  output:
+    carer_premium: 48.15 * 52
+
+- name: Two premiums when the partners are supplied as caring for different people
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: false
+  output:
+    carer_premium: 2 * 48.15 * 52
+
+- name: A 17-year-old partner supplied as the partner counts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    carer_premium: 48.15 * 52
+
+- name: Partners who both care by hours alone are treated as caring for the same person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_carer_for_benefits: [true, true]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+- name: Partners supplied beyond two each count, unless they care for the same person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a1:
+        age: 50
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      a2:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      a3:
+        age: 40
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b1:
+        age: 50
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b2:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b3:
+        age: 40
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+    benunits:
+      family_a:
+        members: [a1, a2, a3]
+      family_b:
+        members: [b1, b2, b3]
+        partners_care_for_same_severely_disabled_person: true
+    households:
+      household_a:
+        members: [a1, a2, a3]
+      household_b:
+        members: [b1, b2, b3]
+  output:
+    # 3 x 48.15 x 52 and 48.15 x 52.
+    carer_premium: [7_511.40, 2_503.80]
+
+- name: A reported award the person would not claim does not count towards two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_carer_for_benefits: [true, false]
+    is_entitled_to_carer_benefit: [true, false]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+- name: Caring hours without a claim do not count towards two premiums, even when the partners care for different people
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: false
+  output:
+    # The partner is a carer for the Universal Credit carer element (UC Regs
+    # 2013 reg 30), which needs no claim, but para 14ZA needs entitlement.
+    is_carer_for_benefits: [true, true]
+    is_entitled_to_carer_benefit: [true, false]
+    carer_premium: 48.15 * 52
+
+- name: A partner whose Carer's Allowance an overlapping benefit reduces to nil still counts towards two premiums
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+        # Above the allowance (86.45 x 52 = 4,495.40), so nothing is paid.
+        incapacity_benefit_reported: 5_000
+    benunits:
+      family:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    carers_allowance: [4_495.40, 0]
+    receives_carer_benefit: [true, false]
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: Two partners supplied as entitled and caring for different people get two premiums; an entitled adult who is not a partner adds none
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+      adult_child:
+        age: 20
+        is_claimant_or_partner: false
+        is_entitled_to_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner, adult_child]
+        partners_care_for_same_severely_disabled_person: false
+  output:
+    carer_premium: 2 * 48.15 * 52
+
+- name: Carer's Allowance supplied directly for both partners counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+      partner:
+        age: 38
+        carers_allowance: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: Carer Support Payment supplied directly for both partners in Scotland counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carer_support_payment: 4_000
+      partner:
+        age: 38
+        carer_support_payment: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: A carer benefit supplied for partners who care the hours but would not claim counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+      partner:
+        age: 38
+        carers_allowance: 4_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # Without a claim the hours give no allowance, so the amounts were
+    # supplied: two awards.
+    carers_allowance_pre_overlap: [0, 0]
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: Carer's Allowance entitlement supplied for a pension-age couple whose State Pension overlaps it to nil counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        # 86.45 x 52; the State Pension above it leaves nothing to pay.
+        carers_allowance_pre_overlap: 4_495.40
+        state_pension_reported: 12_000
+      partner:
+        age: 73
+        carers_allowance_pre_overlap: 4_495.40
+        state_pension_reported: 12_000
+    benunits:
+      family:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [true, true]
+    # Neither has caring hours, so both entitlements were supplied: two awards.
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+    # HB (SPC) Regs 2006 Sch 3 para 1(2)(b) £383.35 plus £48.15 for each.
+    housing_benefit_applicable_amount: (383.35 + 2 * 48.15) * 52
+
+- name: Carer benefit entitlement supplied for both partners, without hours or payment, counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_entitled_to_carer_benefit: true
+      partner:
+        age: 38
+        is_entitled_to_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: A carer benefit paid to someone who cares the qualifying hours is not read as a supplied award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+        care_hours: 35
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # The hours could explain the claimant's allowance, so only the partner's
+    # reported award counts, and the default treats them as caring for the
+    # same person.
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+- name: A reported award its holder would not claim does not lift the same-person cap, even with caring hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a1:
+        age: 50
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      a2:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+      a3:
+        age: 40
+        is_claimant_or_partner: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [a1, a2, a3]
+  output:
+    is_carer_for_benefits: [true, true, true]
+    is_entitled_to_carer_benefit: [true, false, true]
+    # Only a1 is entitled with a reported award, so the default treats the
+    # entitled carers a1 and a3 as caring for the same person.
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+# The property tests' generator keeps a partner within 15 years of an adult
+# under 20, because the model presumes someone under 20 who is at least 16
+# years younger than the eldest adult to be that adult's child.
+- name: An 18-year-old 15 years younger than the other adult is a partner; 16 years younger is presumed a child
+  period: 2026
+  input:
+    people:
+      a18:
+        age: 18
+      a33:
+        age: 33
+      b18:
+        age: 18
+      b34:
+        age: 34
+    benunits:
+      couple_a:
+        members: [a18, a33]
+      couple_b:
+        members: [b18, b34]
+    households:
+      household_a:
+        members: [a18, a33]
+      household_b:
+        members: [b18, b34]
+  output:
+    is_claimant_or_partner: [true, true, false, true]

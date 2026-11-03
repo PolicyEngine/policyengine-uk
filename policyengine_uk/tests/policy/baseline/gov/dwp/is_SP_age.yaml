@@ -1,0 +1,164 @@
+# State Pension age status for whole ages, which single-household simulations
+# place in the middle of the year of age (months_since_last_birthday = 6), so a
+# 66-year-old on 6 October 2026 was born on 6 April 1960 and one on 6 October
+# 2027 on 6 April 1961. Pensions Act 1995 Sch 4 para 1 as amended by the
+# Pensions Act 2014 s.26: 66 for people born before 6 April 1960, then 66 and
+# 1 to 11 months, then 67 for people born on or after 6 March 1961.
+
+- name: A 66-year-old is over State Pension age in 2025-26
+  period: 2025
+  input:
+    age: 66
+  output:
+    months_since_last_birthday: 6
+    state_pension_age: 66
+    is_SP_age: true
+
+- name: A 65-year-old is under State Pension age in 2025-26
+  period: 2025
+  input:
+    age: 65
+  output:
+    is_SP_age: false
+
+- name: A 66-year-old born on 6 April 1960 is over State Pension age of 66 and 1 month in 2026-27
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+  output:
+    state_pension_age: 66.0833
+    months_since_state_pension_age: 5
+    is_SP_age: true
+
+- name: A 66-year-old born on 6 April 1961 is under State Pension age of 67 in 2027-28
+  period: 2027
+  input:
+    age: 66
+  output:
+    state_pension_age: 67
+    months_since_state_pension_age: -6
+    is_SP_age: false
+    is_WA_adult: true
+
+- name: A 67-year-old is over State Pension age in 2027-28
+  period: 2027
+  input:
+    age: 67
+  output:
+    is_SP_age: true
+
+- name: A 66-year-old is under State Pension age from 2028-29
+  period: 2028
+  input:
+    age: 66
+  output:
+    state_pension_age: 67
+    is_SP_age: false
+
+- name: A 67-year-old is over State Pension age in 2028-29
+  period: 2028
+  input:
+    age: 67
+  output:
+    state_pension_age: 67
+    is_SP_age: true
+
+- name: A fractional age is the exact age on 6 October (66 years and 3 months, born 6 July 1960)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66.25
+  output:
+    months_since_last_birthday: 3
+    state_pension_age: 66.3333
+    is_SP_age: false
+
+- name: A 66-year-old born in May 1960 is over State Pension age in 2026-27
+  period: 2026
+  input:
+    age: 66
+    months_since_last_birthday: 5
+  output:
+    is_SP_age: true
+
+- name: A 66-year-old born in August 1960 is under State Pension age in 2026-27
+  period: 2026
+  input:
+    age: 66
+    months_since_last_birthday: 2
+  output:
+    is_SP_age: false
+
+- name: Mixed-age couple in 2027-28 claims Universal Credit, not Pension Credit
+  period: 2027
+  input:
+    people:
+      older:
+        age: 67
+      younger:
+        age: 66
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    is_SP_age: [true, false]
+    is_WA_adult: [false, true]
+    is_uc_eligible: true
+    is_pension_credit_eligible: false
+
+- name: A single 66-year-old below State Pension age in 2027-28 cannot get Pension Credit or State Pension
+  period: 2027
+  input:
+    people:
+      person:
+        age: 66
+        state_pension_reported: 12_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    is_pension_credit_eligible: false
+    is_uc_eligible: true
+    state_pension_type: NONE
+    new_state_pension: 0
+    additional_state_pension: 0
+    state_pension: 0
+
+- name: The same 66-year-old over State Pension age in 2025-26 gets State Pension
+  period: 2025
+  input:
+    people:
+      person:
+        age: 66
+        state_pension_reported: 12_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    is_uc_eligible: false
+    state_pension_type: NEW
+    state_pension: 12_000
+
+- name: Class 1 employee NI applies to a 66-year-old below State Pension age in 2027-28
+  period: 2027
+  input:
+    age: 66
+  output:
+    ni_liable: true
+
+- name: Class 1 employee NI does not apply to a 66-year-old over State Pension age in 2025-26
+  period: 2025
+  input:
+    age: 66
+  output:
+    ni_liable: false

@@ -18,4 +18,4 @@ class capital_gains_badr(Variable):
     unit = GBP
     quantity_type = FLOW
     reference = "Taxation of Chargeable Gains Act 1992 Part 5 Ch. 3, s. 169N"
-    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
+    uprating = "gov.economic_assumptions.indices.capital_gains"

@@ -1,0 +1,11 @@
+description: >
+  Age from which withdrawals from a Lifetime ISA carry no withdrawal charge.
+values:
+  2017-04-06: 60
+metadata:
+  label: Lifetime ISA charge-free age
+  period: year
+  unit: year
+  reference:
+    - title: The Individual Savings Account Regulations 1998, Schedule paragraph 4(1)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/4

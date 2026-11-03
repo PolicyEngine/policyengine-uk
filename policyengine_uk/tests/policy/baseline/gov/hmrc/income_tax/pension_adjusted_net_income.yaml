@@ -1,0 +1,142 @@
+# MOCK cases: gross relieved contributions reduce ANI without becoming a
+# second deduction from the rate-band base (ITA 2007 s.58).
+
+- name: RAS contributions restore the full Personal Allowance
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 45
+        employment_income: 150_000
+        personal_pension_contributions: 60_000
+    households:
+      household:
+        members: [taxpayer]
+        region: LONDON
+  output:
+    net_income: 150_000
+    adjusted_net_income: 90_000
+    personal_allowance: 12_570
+    allowances: 72_570
+    received_allowances_earned_income: 72_570
+    earned_taxable_income: 77_430
+    pension_annual_allowance: 60_000
+    personal_pension_contributions_tax: 0
+    income_tax: 23_432
+
+- name: Pension and Gift Aid adjustments both restore the allowance without double deduction
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 30_000
+    gift_aid: 16_000
+  output:
+    net_income: 150_000
+    gift_aid_grossed_up: 20_000
+    adjusted_net_income: 100_000
+    personal_allowance: 12_570
+    earned_taxable_income: 107_430
+    # £57,700 at 20% and £49,730 at 40%.
+    income_tax: 31_432
+
+- name: Supplied ANI restores pension relief to the taxable base
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 70_000
+    personal_pension_contributions: 10_000
+    adjusted_net_income: 60_000
+  output:
+    net_income: 70_000
+    personal_allowance: 12_570
+    earned_taxable_income: 47_430
+    income_tax: 11_432
+
+- name: Personal and employee contributions represented gross both reduce ANI once
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 130_000
+    personal_pension_contributions: 20_000
+    employee_pension_contributions: 10_000
+  output:
+    net_income: 130_000
+    pension_contributions_relief: 30_000
+    adjusted_net_income: 100_000
+    personal_allowance: 12_570
+    allowances: 42_570
+    earned_taxable_income: 87_430
+    income_tax: 27_432
+
+- name: Pension relief applies once when property income fills the higher-rate band
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 110_000
+    taxable_property_income: 10_000
+    personal_pension_contributions: 20_000
+  output:
+    net_income: 120_000
+    adjusted_net_income: 100_000
+    personal_allowance: 12_570
+    received_allowances_earned_income: 32_570
+    non_savings_income_after_allowances: 87_430
+    taxable_property_income_after_allowances: 10_000
+    property_income_tax: 4_000
+    income_tax: 27_432
+
+- name: Allocation to earned savings and dividend income uses the unchanged taxable base
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 10_000
+    savings_interest_income: 15_000
+    dividend_income: 110_000
+    personal_pension_contributions: 10_000
+  output:
+    net_income: 135_000
+    adjusted_net_income: 125_000
+    personal_allowance: 70
+    allowances: 10_070
+    received_allowances_earned_income: 10_000
+    received_allowances_savings_income: 70
+    received_allowances_dividend_income: 0
+
+- name: Restored Personal Allowance and RAS extension each enter CGT bands once
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 110_000
+    personal_pension_contributions: 60_000
+    capital_gains: 30_000
+  output:
+    adjusted_net_income: 50_000
+    personal_allowance: 12_570
+    # Taxable income £97,430; extended basic-rate limit £97,700 leaves
+    # £270 at 18%, with £26,730 at 24%, after the £3,000 AEA.
+    capital_gains_tax: 6_463.80
+
+- name: ANI pension deduction does not feed back into annual allowance taper or charge
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 340_000
+    personal_pension_contributions: 10_000
+    employer_pension_contributions: 30_000
+  output:
+    net_income: 340_000
+    adjusted_net_income: 330_000
+    # Statutory adjusted income is £370,000 including employer contributions;
+    # threshold income is £330,000. The taper reaches the £10,000 floor.
+    pension_annual_allowance: 10_000
+    # £40,000 contributions less £10,000 AA, charged at 45%.
+    personal_pension_contributions_tax: 13_500

@@ -1,0 +1,14 @@
+description: Weekly amount of a widowed parent's allowance disregarded from income for Pension Credit.
+values:
+  2003-10-06: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Pension Credit widowed parent's allowance disregard
+  reference:
+    - title: State Pension Credit Regulations 2002 Sch. IV para. 7
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/7
+    - title: State Pension Credit Regulations 2002 reg. 17(7)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17
+    - title: State Pension Credit Regulations 2002 reg. 1(1) (in force 6 October 2003)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/1

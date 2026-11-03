@@ -4,11 +4,19 @@
 PolicyEngine UK models the UK tax and benefit system as of 2025, incorporating major reforms from 2020-2025. This page documents the key policy changes by year, working backwards from 2025, showing how each reform is implemented in the codebase.
 ```
 
+## Announced policy to 2030-31
+
+### Budget 2025 threshold freezes
+
+Budget 2025 keeps the income tax personal allowance and basic rate limit, and the equivalent National Insurance thresholds, at their current levels until April 2031. Finance Act 2021 s.5, as amended by Finance Act 2023 s.5 and Finance Act 2026 s.10, fixes the [personal allowance](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/income_tax/allowances/personal_allowance/amount.yaml) at £12,570 and the [basic rate limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/income_tax/rates/uk.yaml) at £37,700 for 2022-23 to 2030-31. The model holds the [primary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/primary_threshold.yaml) and [lower profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/lower_profits_limit.yaml) at £12,570, the [upper earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/upper_earnings_limit.yaml) and [upper profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/upper_profits_limit.yaml) at £50,270, and the [secondary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml) at £5,000 a year through 2030-31. For Class 1, regulations set only the 2026-27 amounts; the later years are announced policy. The Class 4 limits are standing figures in SSCBA 1992 s.15(3). The [lower earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/lower_earnings_limit.yaml) is not frozen: it rose with CPI to £129 a week in 2026-27.
+
+From 2031-32 the model indexes these thresholds by September CPI, in [`create_threshold_indexation.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The personal allowance and basic rate limit follow Income Tax Act 2007 ss.57 and 21 year by year: each rises by the CPI increase to the previous September, with the allowance's increase rounded up to a multiple of £10 and the limit rounded up to a multiple of £100. The government says the National Insurance thresholds will also be uprated by September CPI after 2030-31 (Explanatory Memorandum to SI 2026/231, para 5.1), and it has kept them aligned with income tax through the freeze (HMRC's Budget 2025 policy paper on the threshold freeze; Explanatory Memorandum to SI 2026/231, paras 5.14 and 5.15). The model assumes the alignment continues, round-ups included: the primary threshold and lower profits limit equal the personal allowance, and the upper earnings and profits limits equal the higher rate threshold (the personal allowance plus the basic rate limit). It also assumes the secondary threshold rises by September CPI, unrounded; the Autumn Budget 2024 policy paper says only that it will be increased in line with CPI. None of these National Insurance rules after 2030-31 is law.
+
 ## 2025 reforms
 
 ### Autumn Budget 2024
 
-The government increased the [employer National Insurance rate from 13.8% to 15%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml#L13-L17) and reduced the [employer secondary threshold from £9,100 to £5,000 annually](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml#L26-L30), both taking effect in fiscal year 2025-26.
+The government increased the [employer National Insurance rate from 13.8% to 15%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml) and reduced the [employer secondary threshold from £9,100 to £5,000 annually](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml), both taking effect in fiscal year 2025-26.
 
 ### Universal Credit rebalancing
 
@@ -22,7 +30,7 @@ Annual benefit uprating applied 4.1% increases to state pensions and 1.7% to wor
 
 ### Autumn Statement 2023
 
-The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L22-L27) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml#L16-L21) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L14-L19) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
+The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L51-L56) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
 
 ### Capital gains tax changes (Autumn Budget 2024)
 
@@ -34,7 +42,7 @@ The government increased the [child benefit high income tax charge threshold fro
 
 ### Autumn Statement 2023 (Employee NI cut)
 
-An initial National Insurance cut reduced the [employee main rate from 12% to 10%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L16-L21) in fiscal year 2024-25.
+An initial National Insurance cut reduced the [employee main rate from 12% to 10%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml) in fiscal year 2024-25.
 
 ## 2023 reforms
 
@@ -46,11 +54,11 @@ The government reduced the [additional rate income tax threshold from £150,000 
 
 ### Spring Statement 2022
 
-The government announced an increase in the [National Insurance primary threshold from £9,880 to £12,570](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/primary_threshold.yaml#L17-L22), aligning it with the personal allowance in fiscal year 2022-23.
+The government announced an increase in the [National Insurance primary threshold from £9,880 to £12,570](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/primary_threshold.yaml), aligning it with the personal allowance in fiscal year 2022-23.
 
 ### Autumn Budget 2021 (Health and Social Care Levy)
 
-The government temporarily increased [National Insurance rates by 1.25 percentage points](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L4-L10) in fiscal year 2022-23, later reversed the same fiscal year.
+The Health and Social Care Levy Act 2021 raised the [employee main rate from 12% to 13.25%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml) and the [employer rate from 13.8% to 15.05%](https://github.com/PolicyEngine/policyengine-uk/blob/e1601dbe4feb15e71d0d59b7a57f9d860741c068/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml) for fiscal year 2022-23. The Health and Social Care Levy (Repeal) Act 2022 restored 12% and 13.8% for earnings paid from 6 November 2022. The model reads each fiscal year's rates at 30 April, so 2022-23 carries the levy rates for the whole year ([#1807](https://github.com/PolicyEngine/policyengine-uk/issues/1807)).
 
 ### Mini-Budget 2022 (September)
 
@@ -62,7 +70,7 @@ The government announced cost of living payments: [£650 for means-tested benefi
 
 ### Energy Price Guarantee
 
-Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml#L12-L18) in fiscal year 2022-23.
+Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml) in fiscal year 2022-23.
 
 ## 2021 reforms
 
@@ -114,3 +122,9 @@ Notable exclusions:
 - **Some devolved tax policies**: Beyond property transaction taxes, other devolved policies may have limited coverage
 
 All parameter values include references to primary legislation and can be found in the [PolicyEngine UK parameters directory](https://github.com/PolicyEngine/policyengine-uk/tree/master/policyengine_uk/parameters).
+
+## Parameter cache ownership
+
+The UK tax-benefit system initializes Core state and installs parameter trees through Core's public operations. The existing `reset_parameter_caches()` method clears dated views on the system, the root and descendant parameter nodes without replacing the live tree or its leaves. Parameter processing retains its statutory timelines, baseline, structural reform nodes and rollback behavior; this change does not alter policy values or reform timing.
+
+The selected operations are available at the existing Core minimum version, 3.32.27, and in the locked 3.33.2 release, so this parameter-only migration does not change the dependency or lockfile. It implements part of [issue #2175](https://github.com/PolicyEngine/policyengine-uk/issues/2175). Supplied-input tracking, model-value provenance and clone, deletion and rebuild compatibility remain separate work. Those compatibility paths are retained, including the distinction between an amount supplied by a user and one stored by the model.
