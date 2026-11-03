@@ -9,14 +9,15 @@ description: >
   from 1 April 2013 by adopting the Default Scheme, whose Sch 3 para 12 sets
   this list; kept the scheme apart from uprating for 2014-15, 2015-16 and
   2016-17; and revised other provisions from April 2016 and April 2017. Its
-  scheme texts for 2023 to 2026-27 keep the same para 12. The 2023 text's
-  footnotes cite only the December 2015 council revisions, and the only later
-  change it lists (an Energy Bills Rebate disregard from 1 April 2022) leaves
-  para 12 alone; the council's decision registers for 2017 to 2026 list no
-  Council Tax Reduction decision (though they omit some Council resolutions);
-  and its 2023-24 budget report says the scheme "remains unchanged". So the
-  model also applies the list from 2018-19 to 2022-23, for which it cites no
-  scheme text. The model reads the list as at 30 April of each year.
+  scheme texts for 2023 to 2026-27 keep the same para 12. The 2023 text cites
+  no council revision after December 2015, and its Energy Bills Rebate
+  disregard from 1 April 2022, which S.I. 2022/127 requires of every scheme
+  from 2022-23, leaves para 12 alone; the council's decision registers for
+  2017 to 2026 list no Council Tax Reduction decision (though they omit some
+  Council resolutions); and its 2023-24 budget report says the scheme
+  "remains unchanged". So the model also applies the list from 2018-19 to
+  2022-23, for which it cites no scheme text. The model reads the list as at
+  30 April of each year.
 metadata:
   label: Kingston upon Thames Council Tax Reduction enhanced disability premium qualifying benefits
   period: year
@@ -38,6 +39,8 @@ metadata:
       href: https://moderngov.kingston.gov.uk/mgConvert2PDF.aspx?ID=99625
     - title: Council Tax Reduction Scheme 2023, Sch. 3 para. 12(1)(b), (c)
       href: https://www.kingston.gov.uk/sites/default/files/downloads/CTRS_2023_Final.pdf
+    - title: The Council Tax (Demand Notices and Reduction Schemes) (England) (Amendment) Regulations 2022, reg. 3 (energy rebate disregard in every scheme)
+      href: https://www.legislation.gov.uk/uksi/2022/127/regulation/3/made
     - title: Council Tax Reduction Scheme 2024-2025, Sch. 3 para. 12(1)(b), (c)
       href: https://www.kingston.gov.uk/sites/default/files/downloads/Council_Tax_Reduction_Scheme_2024_2025.pdf
     - title: Council Tax Reduction Scheme 2025 - 2026, Sch. 3 para. 12(1)(b), (c)
