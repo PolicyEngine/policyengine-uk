@@ -56,7 +56,7 @@ class council_tax_reduction_non_dep_gross_income(Variable):
                 "property_income",
                 "savings_interest_income",
                 "dividend_income",
-                "taxable_miscellaneous_income",
+                "miscellaneous_income_before_trading_allowance",
                 "maternity_allowance",
                 "iidb",
                 "sda",

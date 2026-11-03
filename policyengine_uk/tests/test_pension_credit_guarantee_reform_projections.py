@@ -639,19 +639,36 @@ def test_zero_phase_in_modifier_preserves_a_reformed_own_threshold():
         )
 
 
+PENSION_TAX_ALLOWANCE = "gov.hmrc.income_tax.reliefs.pension_tax_allowance.in_effect"
+
+
 @pytest.mark.parametrize(
-    "weekly_guarantee,expected_threshold,expected_allowance,expected_step",
-    [(None, 223.407952, 274.662918, 0.87), (300, 267.965646, 319.220612, 1.38)],
+    "weekly_guarantee,pension_tax_allowance,expected_threshold,expected_allowance,expected_step",
+    [
+        # From 2027-28 the Budget 2026 Pension Tax Allowance takes the
+        # claimant out of Income Tax at the boundary, and Pension Credit
+        # counts income net of tax, so on this £5 grid guarantee credit runs
+        # out between £13,280 and £13,285 of private pension rather than
+        # between £13,460 and £13,465. The step is the gain in household net
+        # income across that £5.
+        (None, True, 223.407952, 274.662918, 1.98),
+        (None, False, 223.407952, 274.662918, 0.87),
+        (300, True, 267.965646, 319.220612, 1.38),
+    ],
 )
 def test_guarantee_credit_boundary_matches_main(
-    weekly_guarantee, expected_threshold, expected_allowance, expected_step
+    weekly_guarantee,
+    pension_tax_allowance,
+    expected_threshold,
+    expected_allowance,
+    expected_step,
 ):
-    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law,
-    re-based on the October 2026 EFO. Current law: a 2028-29 standard minimum
-    guarantee of 238 x 1.039 x 1.033 = 255.4423 (May-July 2026 and 2027
-    earnings) less a maximum Savings Credit of 17.96 x 1.035 x 1.034 =
-    19.2207 (September 2026 and 2027 CPI) over 0.6 gives the threshold; the
-    Housing Benefit allowance is the sum of the two."""
+    """Frozen origin/main (6030cbc0b) cliff-probe values, including current law
+    without the Pension Tax Allowance, re-based on the October 2026 EFO.
+    Current law: a 2028-29 standard minimum guarantee of 238 x 1.039 x 1.033 =
+    255.4423 (May-July 2026 and 2027 earnings) less a maximum Savings Credit of
+    17.96 x 1.035 x 1.034 = 19.2207 (September 2026 and 2027 CPI) over 0.6
+    gives the threshold; the Housing Benefit allowance is the sum of the two."""
     year = 2028
     situation = {
         "people": {"claimant": {"age": {year: 85}}},
@@ -679,10 +696,12 @@ def test_guarantee_credit_boundary_matches_main(
             ]
         ],
     }
-    changes = {f"{GUARANTEE}.SINGLE": {"2026-01-01.2100-12-31": weekly_guarantee}}
-    simulation = Simulation(
-        situation=situation, reform=changes if weekly_guarantee is not None else None
-    )
+    changes = {}
+    if weekly_guarantee is not None:
+        changes[f"{GUARANTEE}.SINGLE"] = {"2026-01-01.2100-12-31": weekly_guarantee}
+    if not pension_tax_allowance:
+        changes[PENSION_TAX_ALLOWANCE] = {"2026-01-01.2100-12-31": False}
+    simulation = Simulation(situation=situation, reform=changes or None)
     parameters = simulation.tax_benefit_system.parameters
     assert parameters.gov.dwp.pension_credit.savings_credit.threshold.SINGLE(
         "2028-04-30"

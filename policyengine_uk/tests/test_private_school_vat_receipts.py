@@ -353,10 +353,14 @@ NI_ELECTRICITY = "gov.hmrc.vat.domestic_electricity_rate.northern_ireland"
 
 def electricity_rate(region, year):
     # SI 2026/987 zero-rates domestic electricity in Great Britain from
-    # 1 October 2026 to 31 March 2027: 183 of model year 2026's 365 days are
-    # at 5%. Northern Ireland and every other year stay at 5%.
-    if region != "NORTHERN_IRELAND" and year == 2026:
-        return 0.05 * 183 / 365
+    # 1 October 2026, and Budget 2026 extends that to 1 July 2027 and to
+    # Northern Ireland from 1 April 2027. Model year 2026 has 178 of 365 days
+    # at 5% in Great Britain and 360 in Northern Ireland; model year 2027 has
+    # 280 of 366 in both. Every other year stays at 5%.
+    if year == 2026:
+        return 0.05 * (360 if region == "NORTHERN_IRELAND" else 178) / 365
+    if year == 2027:
+        return 0.05 * 280 / 366
     return 0.05
 
 

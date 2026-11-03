@@ -1,0 +1,98 @@
+# Class 1A contributions on benefits in kind (SSCBA 1992 s. 10). The Class
+# 1A percentage is the secondary Class 1 percentage for the year (s. 10(5)):
+# 13.8% to 2024-25 and 15% from 2025-26, except 14.53% for 2022-23 (Health
+# and Social Care Levy (Repeal) Act 2022 Schedule paragraph 1(2)). Each case
+# has a petrol car with a list price of £40,000 emitting 120 g/km, whose
+# appropriate percentage is 29% to 2024-25 and 30% from 2025-26 (HMRC 480
+# Appendix 2), so its benefit is £11,600, then £12,000.
+
+- name: Class 1A at 13.8% in 2021-22
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # £11,600 x 13.8% = £1,600.80.
+    ni_class_1a: 1_600.8
+
+- name: Class 1A at the 2022-23 rate of 14.53%, not the secondary percentage at 30 April
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # £11,600 x 14.53% = £1,685.48.
+    ni_class_1a: 1_685.48
+
+- name: Class 1A back at 13.8% in 2023-24
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    ni_class_1a: 1_600.8
+
+- name: Class 1A at 15% from 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # £12,000 x 15% = £1,800.
+    ni_class_1a: 1_800
+
+- name: Class 1A on the car and car fuel benefits together
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+    company_car_private_fuel_provided: true
+  output:
+    # Car £12,000 plus fuel £29,200 x 30% = £8,760: £20,760 x 15% = £3,114.
+    benefits_in_kind: 20_760
+    ni_class_1a: 3_114
+
+- name: Class 1A reaches employer NI alongside secondary Class 1
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # Secondary Class 1: (£40,000 - £5,000) x 15% = £5,250, on pay only.
+    ni_class_1_employer: 5_250
+    ni_class_1a: 1_800
+    ni_employer: 7_050
+
+- name: Class 1A is due for an earner under 21, whose pay is zero-rated for secondary Class 1
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 20
+    employment_income: 30_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    ni_class_1_employer: 0
+    ni_class_1a: 1_800
+    ni_employer: 1_800
+
+- name: Total National Insurance includes Class 1A
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # Employee Class 1: (£40,000 - £12,570) x 8% = £2,194.40, on pay only.
+    ni_class_1_employee: 2_194.4
+    total_national_insurance: 2_194.4 + 7_050

@@ -1,7 +1,11 @@
-# Temporary GB zero rate on domestic electricity, 1 October 2026 to
-# 31 March 2027 (SI 2026/987). £1,050 of bills carries £50 of VAT at 5%.
-# FY 2026-27 has 183 days at 5% and 182 at 0%: 50 * 183 / 365 = 25.07.
-- name: GB electricity in FY 2026-27 is zero-rated for 182 of 365 days
+# Temporary zero rate on domestic electricity: Great Britain from 1 October
+# 2026 (SI 2026/987), extended by Budget 2026 to 1 July 2027 and expected to
+# apply in Northern Ireland from 1 April 2027 (paragraph 6.210). £1,050 of
+# bills carries £50 of VAT at 5%.
+# FY 2026-27: GB 178 days at 5% and 187 at 0%: 50 * 178 / 365 = 24.38;
+# NI 360 days at 5% and 5 at 0%: 50 * 360 / 365 = 49.32.
+# FY 2027-28: every nation 86 days at 0% and 280 at 5%: 50 * 280 / 366 = 38.25.
+- name: GB electricity in FY 2026-27 is zero-rated for 187 of 365 days
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -9,9 +13,9 @@
     electricity_consumption: 1_050
     gas_consumption: 0
   output:
-    domestic_energy_vat: 25.07
+    domestic_energy_vat: 24.38
 
-- name: Northern Ireland electricity stays at 5%
+- name: Northern Ireland electricity is zero-rated from 1 April 2027
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -19,7 +23,7 @@
     electricity_consumption: 1_050
     gas_consumption: 0
   output:
-    domestic_energy_vat: 50
+    domestic_energy_vat: 49.32
 
 - name: Gas is not affected by the electricity zero rate
   period: 2026
@@ -31,8 +35,28 @@
   output:
     domestic_energy_vat: 50
 
-- name: GB electricity is back at 5% in FY 2027-28
+- name: GB electricity in FY 2027-28 is zero-rated to 30 June 2027
   period: 2027
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    electricity_consumption: 1_050
+    gas_consumption: 0
+  output:
+    domestic_energy_vat: 38.25
+
+- name: Northern Ireland electricity in FY 2027-28 is zero-rated to 30 June 2027
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    electricity_consumption: 1_050
+    gas_consumption: 0
+  output:
+    domestic_energy_vat: 38.25
+
+- name: Electricity is back at 5% in FY 2028-29
+  period: 2028
   absolute_error_margin: 0.01
   input:
     region: LONDON

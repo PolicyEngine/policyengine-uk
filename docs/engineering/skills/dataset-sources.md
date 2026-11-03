@@ -69,8 +69,9 @@ and `additive`/`legacy_gross` for normalized legacy data. Representation and
 projection origin are separate: legacy projection grows the original gross
 amount before subtracting the effective exemption. It must not grow the
 already-normalized ordinary amount instead. New additive dataset projections
-grow ISA interest alongside ordinary interest by the dataset's GDP-per-capita
-rule; outside the stored horizon new inputs use their variable's own index.
+grow ISA interest alongside ordinary interest by the dataset's savings income
+projection rule (see "Savings income projection" below); outside the stored
+horizon new inputs use their variable's own index.
 Legacy-origin fallback retains the old gross-index calculation and unindexed
 ISA carry-over, while explicit inputs and applicable ISA detail formulas take
 priority. Legacy files containing only an aggregate exemption still have that
@@ -99,6 +100,29 @@ metadata before Core's value loader discards it. External writers which
 discard H5 attributes must explicitly preserve this declaration before their
 output can be reloaded safely. Test routing and migration on synthetic frames
 and small H5 fixtures, without downloading private datasets.
+
+## Savings income projection
+
+A dataset's savings income is fitted to targets that its builder moved to the
+dataset year and later along some growth path, so dataset projection must grow
+it along the same path. The dataset declares the path as a plain string in the
+H5 root attribute `policyengine_uk.savings_income_projection`
+(`data/savings_income_projection.py`):
+
+- `gdp_per_head`: GDP per capita in every year. Datasets without the attribute
+  get this rule, which is how savings income was projected before.
+- `obr_savings_income_2022_2025`: the OBR's savings income per person from
+  2022 to 2025 and GDP per capita in other years.
+
+`growth_rate` in `data/economic_assumptions.py` applies the rule to
+`savings_interest_income`, `non_cash_isa_cash_interest`,
+`other_investment_income`, gross interest under the legacy contract and ISA
+interest under the additive contract. `UKSingleYearDataset` takes
+`savings_income_projection` and refuses a value that contradicts its file.
+Multi-year datasets hold one rule for every year and refuse mixed rules.
+Copies, filtered households, simulation exports and input frames
+(`frame.attrs["policyengine_uk.savings_income_projection"]`) keep the rule. A
+rule's name fixes its years, so a later window needs a new rule.
 
 ## Apprenticeship status and tenure
 
@@ -132,10 +156,20 @@ Producers can export per-person `cash_isa_balance` and
 `stocks_and_shares_isa_balance`. The household `cash_isa` and
 `stocks_and_shares_isa` sum them, but a stored household column takes
 precedence, so existing datasets that store only the household totals keep
-them, projected with `savings` and `corporate_wealth` through
-`uprating_indices.yaml`. A producer that exports the person balances should
-either stop exporting the household totals or keep them equal to the sums;
-the model does not reconcile the two.
+them in every year. `uprating_indices.yaml` projects them with `savings` and
+`corporate_wealth` through the years the dataset projection covers. In each
+year a data source holds no total for, the simulation grows the latest
+earlier stored total by the index its person balances declare
+(`STORED_HOUSEHOLD_TOTALS` in `data/economic_assumptions.py`, which also covers
+`household_lifetime_isa_balance`, with the person balance each total sums).
+Person balances that the data hold for a later year than the total replace it
+with their sum, and so does any reform that changes what a total sums or
+stops one of its person balances reading its inputs. A situation differs: a
+household total given in one applies only to its own year. An input frame is
+data, so a situation reloaded from its input frame grows such a total in
+later years. A producer that exports the person balances should either stop
+exporting the household totals or keep them equal to the sums; the model does
+not reconcile the two.
 
 `cash_isa_subscriptions` and `stocks_and_shares_isa_subscriptions` are
 annual person flows, summed over all of a person's accounts of each type, that
@@ -171,8 +205,10 @@ Do not infer its price year from the dataset year, filename, URL or file format.
 Legacy builds can hold FY2026-27 energy prices in a dataset labelled 2024.
 
 An explicit declaration opts only `domestic_energy_consumption`,
-`electricity_consumption` and `gas_consumption` into the existing generic annual
-OBR consumer-price-index assumption as an interim price proxy. Other generic
+`electricity_consumption` and `gas_consumption` into the household energy
+price indices, `gov.economic_assumptions.energy_prices`: ONS CPI electricity
+and gas prices to the latest outturn, then the OBR's utilities forecast,
+holding VAT at the rate the inputs assume. Other generic
 uprating exclusions do not join this declaration or its reset group. For an
 input whose producer receipt declares calendar-2024 prices, a caller can label
 a local UK single-year H5 before constructing a simulation:
@@ -193,22 +229,23 @@ financial year. Both keys are required. The year must be an integer from 1
 through 9999; malformed or conflicting caller/file declarations raise a clear
 error. A caller's `None` leaves an existing file declaration intact.
 
-The model retains the period kind as provenance but uses the January 1 index
-level of the starting year for both calendar and fiscal price periods.
-Projection multiplies the supplied amount by `I[target year] / I[price year]`.
-This shared start-year convention approximates calendar/fiscal alignment;
-generic CPI does not establish constant-consumption energy-price outturns or
-an energy-specific forecast. Open [issue #2526](https://github.com/PolicyEngine/policyengine-uk/issues/2526)
-tracks energy-specific index alignment and a sourced future assumption. The
-original observation remains unchanged; a projected child's declaration records
-its effective fiscal-year price basis so later extension does not apply the
-original ratio twice.
+The period kind selects the index: a `calendar_year` basis reads the January to
+December level of its year, a `fiscal_year` basis the April to March level
+starting in its year. The target is always the fiscal year level, since model
+year Y is fiscal year Y–(Y+1). Projection multiplies the supplied amount by
+`I[target year] / I[price year]`, holding consumption fixed. The economic
+assumptions
+[README](../../../policyengine_uk/parameters/gov/economic_assumptions/README.md#household-energy-prices)
+describes the indices, their sources and the VAT adjustment.
+The original observation remains unchanged; a projected child's declaration
+records its effective fiscal-year price basis so later extension does not apply
+the original ratio twice.
 
 When a declaration projects stored energy inputs, both January 1 dates must
-fall on or after the selected index's earliest non-null value. An earlier
-basis or target, including January 1 before a midyear start, raises a clear
-error rather than using Core's backward first-value fallback. An index with
-no usable history also raises an error for that projection. Unlabelled
+fall on or after the selected index's first stated value (1 January 2015). An
+earlier basis or target raises a clear error rather than using Core's backward
+first-value fallback. An index with no values also raises an error for that
+projection. Unlabelled
 observations and declarations with no relevant stored inputs retain their
 existing behaviour without requiring index history.
 

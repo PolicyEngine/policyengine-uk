@@ -1,0 +1,12 @@
+description: Highest CO2 emissions figure, rounded down to a whole number, at which a company car's appropriate percentage is the rate for 1 to 50 g/km, set by its electric range to 2027-28 and a single rate from 2028-29.
+values:
+  2020-04-06: 50
+metadata:
+  unit: g/km
+  period: year
+  label: Company car CO2 limit for the 1 to 50 g/km band
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(1)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139
+    - title: Finance (No. 2) Act 2017 s. 2(2)
+      href: https://www.legislation.gov.uk/ukpga/2017/32/section/2/enacted
