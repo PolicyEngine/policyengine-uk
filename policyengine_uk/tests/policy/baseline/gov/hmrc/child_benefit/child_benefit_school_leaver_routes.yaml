@@ -5,7 +5,8 @@
 # reg. 7(3) (no Child Benefit by virtue of reg. 7 in a week of remunerative
 # work). Reg. 2(2): a qualifying young person until the last applicable
 # condition ceases to be met. Reg. 8: not while receiving a benefit in their
-# own right.
+# own right, on any route; Cases 19 to 26 cover Income Support (reg.
+# 8(2)(a)).
 #
 # Child Benefit in 2026-27: £27.05 a week for the eldest child and £17.90 for
 # each other child (gov/hmrc/child_benefit/amount). Housing Benefit and the
@@ -440,3 +441,310 @@
     is_child_or_young_person_for_legacy_benefits: [false, false]
     child_benefit_entitlement: 0
     is_lone_parent: false
+
+# Cases 19 to 26: Income Support in the young person's own right (reg.
+# 8(2)(a)). receives_income_support_in_own_right reads the person's own
+# reported Income Support while DWP pays Income Support
+# (gov.dwp.income_support.active) and no reform neutralises income_support.
+# A year's period reads that parameter's value on 30 April, so it is true
+# for 2025-26 and false from 2026-27 (DWP made the last payments on 31 March
+# 2026).
+#
+# 2018-19 rates: Child Benefit £20.70 a week for the eldest child and £13.70
+# for each other child; PIP daily living standard rate £57.30; Carer's
+# Allowance £64.60; Income Support personal allowance for a lone parent aged
+# 18 or over £73.10; colour TV licence £150.50. The 2018 cases set the
+# cost-of-living payment, which DWP first paid in 2022, to zero. In Cases 19
+# to 22, 24 and 25 a parent aged 40 on PIP daily living lives with a young
+# person who has left education and cares for them 35 hours a week. No
+# family claims tax credits or Universal Credit, so Child Benefit is the only
+# award the young person's status changes.
+
+- name: Case 19, a 16-year-old school leaver who receives Income Support in their own right is not a qualifying young person (reg. 4, reg. 8(2)(a)).
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        date_of_birth: 20020115
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+        cost_of_living_support_payment: 0
+  output:
+    # Born 15 January 2002: the reg. 4 period runs to 31 August 2018.
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_on_income_support: [false, true]
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    child_benefit: 0
+    # PIP 57.30 x 52 = 2,979.60; Carer's Allowance 64.60 x 52 = 3,359.20;
+    # less TV licence 150.50: 6,188.30. The model calculates Income Support
+    # only for the claimant's family, so the 16-year-old's own 3,000 is in no
+    # income here.
+    household_net_income: 6_188.30
+
+- name: Case 20, the same family without the 16-year-old's Income Support gets Child Benefit for them.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        date_of_birth: 20020115
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+        cost_of_living_support_payment: 0
+  output:
+    receives_income_support_in_own_right: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # 20.70 x 52.
+    child_benefit: 1_076.40
+    # Case 19's 6,188.30 + 1,076.40 = 7,264.70.
+    household_net_income: 7_264.70
+
+- name: Case 21, a 17-year-old in an extension period who receives Income Support in their own right is not a qualifying young person (reg. 5, reg. 8(2)(a)).
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 17
+        date_of_birth: 20010115
+        current_education: NOT_IN_EDUCATION
+        is_in_child_benefit_extension_period: true
+        care_hours: 35
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+        cost_of_living_support_payment: 0
+  output:
+    # Born 15 January 2001: the reg. 4 period ended on 31 August 2017.
+    is_before_first_september_following_16th_birthday: [false, false]
+    meets_qualifying_young_person_extension_period_condition_for_child_benefit: [false, true]
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit: 0
+    # As Case 19: 2,979.60 + 3,359.20 - 150.50 = 6,188.30.
+    household_net_income: 6_188.30
+
+- name: Case 22, an 18-year-old before the terminal date who receives Income Support in their own right is not a qualifying young person (reg. 7, reg. 8(2)(a)).
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 18
+        date_of_birth: 20000115
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        care_hours: 35
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+        cost_of_living_support_payment: 0
+  output:
+    is_before_first_september_following_16th_birthday: [false, false]
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit: 0
+    # As Case 19: 2,979.60 + 3,359.20 - 150.50 = 6,188.30.
+    household_net_income: 6_188.30
+
+- name: Case 23, a 17-year-old at school who receives Income Support in their own right is not a qualifying young person (reg. 3, reg. 8(2)(a)).
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      student:
+        age: 17
+        date_of_birth: 20010115
+        current_education: UPPER_SECONDARY
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        cost_of_living_support_payment: 0
+  output:
+    # Full-time non-advanced education begun before 19 (reg. 3).
+    meets_qualifying_young_person_education_or_training_condition_for_child_benefit: [false, true]
+    meets_qualifying_young_person_entry_condition_for_child_benefit: [false, true]
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit: 0
+    # PIP 57.30 x 52 = 2,979.60, less TV licence 150.50: 2,829.10.
+    household_net_income: 2_829.10
+
+- name: Case 24, under a reform that neutralises income_support, Case 19's report does not end the status.
+  period: 2018
+  absolute_error_margin: 0.01
+  reforms:
+    - policyengine_uk.tests.income_support_reforms.neutralise_income_support
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        date_of_birth: 20020115
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+        cost_of_living_support_payment: 0
+  output:
+    is_on_income_support: [false, false]
+    receives_income_support_in_own_right: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # 20.70 x 52.
+    child_benefit: 1_076.40
+    # As Case 20: 6,188.30 + 1,076.40 = 7,264.70.
+    household_net_income: 7_264.70
+
+- name: Case 25, in 2026-27, after DWP stopped paying Income Support, a report of it does not end the status.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        pip_dl_category: STANDARD
+      carer:
+        age: 16
+        date_of_birth: 20100115
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, carer]
+  output:
+    # Born 15 January 2010: the reg. 4 period runs to 31 August 2026.
+    is_before_first_september_following_16th_birthday: [false, true]
+    receives_income_support_in_own_right: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # 27.05 x 52.
+    child_benefit: 1_406.60
+    # PIP 76.70 x 52 = 3,988.40; Carer's Allowance 86.45 x 52 = 4,495.40;
+    # Child Benefit 1,406.60; Household Energy Payment 100; less TV licence
+    # 180: 9,810.40.
+    household_net_income: 9_810.40
+
+- name: Case 26, a 16-year-old school leaver whose lone parent claims Income Support for the family, and who has none of their own, stays a qualifying young person.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 3_000
+      child:
+        age: 4
+        is_claimant_or_partner: false
+      school_leaver:
+        age: 16
+        date_of_birth: 20020115
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, child, school_leaver]
+        would_claim_uc: false
+        # The family takes up no free childcare, so the 4-year-old's
+        # universal hours add nothing to household income.
+        would_claim_universal_childcare: false
+    households:
+      household:
+        members: [parent, child, school_leaver]
+        cost_of_living_support_payment: 0
+  output:
+    is_on_income_support: [true, false, false]
+    receives_income_support_in_own_right: [true, false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false, true]
+    is_child_or_young_person_for_legacy_benefits: [false, true, true]
+    # A lone parent of a child under 5 with no income: the personal
+    # allowance, 73.10 x 52 = 3,801.20.
+    income_support: 3_801.20
+    # (20.70 + 13.70) x 52 = 1,788.80.
+    child_benefit: 1_788.80
+    # 3,801.20 + 1,788.80, less TV licence 150.50: 5,439.50.
+    household_net_income: 5_439.50
