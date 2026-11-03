@@ -62,6 +62,13 @@ non-dependant in a claim if it already counts them in another claim by someone
 liable for the rent, and the model assigns non-dependants to the household
 head's eligible claim first. test_student_head_moves_non_dependant_to_joint_tenant
 pins it; the invariants above hold for families with households of their own.
+
+test_reg_60_protection_follows_the_closure_dates checks one more invariant,
+in model years 2020 to 2028, on single people aged 25 to 59 with no child, no
+listed disability benefit and no foster role: uc_is_excepted_from_education_condition
+holds exactly when, that year, they report a legacy benefit whose active
+parameter reads false and their family claims at closure. It reads the
+closure dates from the parameters.
 """
 
 import json
@@ -756,3 +763,145 @@ def test_student_head_moves_non_dependant_to_joint_tenant():
     )
     universal_credit = simulation.calculate("universal_credit", year)
     assert np.isclose(universal_credit[1] - universal_credit[4], 12 * 96.55, atol=0.01)
+
+
+# SI 2014/1230 reg. 60(1) in the model: the legacy benefits whose closure the
+# model dates with an `active` parameter under gov.dwp, keyed by the report
+# that stands for each.
+CLOSING_REPORTS = {
+    "child_tax_credit_reported": "tax_credits.active",
+    "working_tax_credit_reported": "tax_credits.active",
+    "income_support_reported": "income_support.active",
+    "jsa_income_reported": "JSA.income.active",
+}
+CLOSURE_YEARS = list(range(2020, 2029))
+CLOSURE_SETTINGS = settings(
+    max_examples=40,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+
+
+@st.composite
+def single_people_at_closure(draw):
+    """A model year from 2020 to 2028 and single people aged 25 to 59 with no
+    child, no listed disability benefit and no foster role, each in a
+    household of their own. Each draws the four reports, both claim flags,
+    a region and whether they take a full-time degree."""
+    year = draw(st.sampled_from(CLOSURE_YEARS))
+    people = draw(
+        st.lists(
+            st.fixed_dictionaries(
+                dict(
+                    age=st.integers(25, 59),
+                    is_in_full_time_education=st.booleans(),
+                    region=st.sampled_from(REGIONS),
+                    would_claim_uc=st.booleans(),
+                    would_claim_uc_at_legacy_closure=st.booleans(),
+                    **{
+                        report: st.sampled_from([0, 0, 1, 3_000])
+                        for report in CLOSING_REPORTS
+                    },
+                )
+            ),
+            min_size=1,
+            max_size=24,
+        )
+    )
+    return dict(year=year, people=people)
+
+
+def closure_grid(year):
+    """Each report alone, and none, with each closure claim flag, on a
+    full-time degree or not: 20 people, every fourth in Northern Ireland."""
+    people = []
+    for report in [None, *CLOSING_REPORTS]:
+        for at_closure in (False, True):
+            for full_time in (False, True):
+                people.append(
+                    dict(
+                        age=25 + len(people),
+                        is_in_full_time_education=full_time,
+                        region=REGIONS[len(people) % len(REGIONS)],
+                        would_claim_uc=not at_closure,
+                        would_claim_uc_at_legacy_closure=at_closure,
+                        **{
+                            name: 1_000 if name == report else 0
+                            for name in CLOSING_REPORTS
+                        },
+                    )
+                )
+    return dict(year=year, people=people)
+
+
+def closure_situation(case):
+    year = case["year"]
+    people, benunits, households = {}, {}, {}
+    for i, drawn in enumerate(case["people"]):
+        name = f"p{i}"
+        people[name] = {
+            "age": {year: drawn["age"]},
+            "current_education": {year: "TERTIARY"},
+            "is_in_full_time_education": {year: drawn["is_in_full_time_education"]},
+            **{report: {year: drawn[report]} for report in CLOSING_REPORTS},
+        }
+        benunits[f"b{i}"] = {
+            "members": [name],
+            "would_claim_uc": {year: drawn["would_claim_uc"]},
+            "would_claim_uc_at_legacy_closure": {
+                year: drawn["would_claim_uc_at_legacy_closure"]
+            },
+        }
+        households[f"h{i}"] = {"members": [name], "region": {year: drawn["region"]}}
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@CLOSURE_SETTINGS
+# 2024: every legacy benefit open; 2025: tax credits closed; 2026: all closed.
+@example(closure_grid(2024))
+@example(closure_grid(2025))
+@example(closure_grid(2026))
+@given(single_people_at_closure())
+def test_reg_60_protection_follows_the_closure_dates(case):
+    """For single people aged 25 to 59 with no child, no listed disability
+    benefit and no foster role, uc_is_excepted_from_education_condition holds
+    exactly when, in that model year, they report a legacy benefit whose
+    active parameter reads false and their family claims at closure
+    (would_claim_uc_at_legacy_closure). No reg. 14(1) limb reaches them, so
+    the reg. 60(1) protection decides the exception, and the model takes the
+    closure from the active parameters. The model then finds a full-time
+    degree student among them eligible for Universal Credit exactly when the
+    exception holds, and anyone else eligible either way."""
+    year = case["year"]
+    simulation = Simulation(situation=closure_situation(case))
+    # The formulas read parameters at the start of the model year, and the
+    # model moves each value to the fiscal year it starts in.
+    dwp = simulation.tax_benefit_system.parameters(f"{year}-01-01").gov.dwp
+
+    def closed(path):
+        node = dwp
+        for key in path.split("."):
+            node = getattr(node, key)
+        return not bool(node)
+
+    expected = np.array(
+        [
+            drawn["would_claim_uc_at_legacy_closure"]
+            and any(
+                drawn[report] > 0 and closed(path)
+                for report, path in CLOSING_REPORTS.items()
+            )
+            for drawn in case["people"]
+        ]
+    )
+    context = json.dumps(case)
+    np.testing.assert_array_equal(
+        simulation.calculate("uc_is_excepted_from_education_condition", year),
+        expected,
+        context,
+    )
+    full_time = np.array([p["is_in_full_time_education"] for p in case["people"]])
+    np.testing.assert_array_equal(
+        simulation.calculate("is_uc_eligible", year), ~full_time | expected, context
+    )
