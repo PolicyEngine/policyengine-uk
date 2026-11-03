@@ -284,6 +284,15 @@ def own_benefits(m):
     return any(m.get(report, 0) > 0 for report in OWN_RIGHT_REPORTS)
 
 
+def child_benefit_own_benefits(m):
+    # Child Benefit (General) Regulations 2006 reg 8(2)(b), (e), (f).
+    return any(
+        m.get(report, 0) > 0
+        for report in OWN_RIGHT_REPORTS
+        if report != "jsa_contrib_reported"
+    )
+
+
 def reference_specified_benefit(members, benunit_inputs, scheme):
     """UC Regs 2013 reg 83(1) or HB Regs 2006 reg 75F(1), read directly, with
     roles known by construction."""
@@ -296,13 +305,19 @@ def reference_specified_benefit(members, benunit_inputs, scheme):
     young_roles = ("young_person", "sixteen")
     # The UC predicate supplements its qualifying-young-person test with a
     # separate age-16 approximation, which reads only the explicit own-right
-    # flag. Reported awards remove older UC young persons, but do not change
-    # that approximation or the Housing Benefit test.
+    # flag, so reported awards remove only older UC young persons. The Child
+    # Benefit test, which Housing Benefit follows, removes anyone who reports
+    # their own Universal Credit, ESA or income-based JSA (Child Benefit
+    # (General) Regulations 2006 reg 8(2)(b), (e), (f)).
     young_persons = [
         m
         for m in members
         if m["_role"] in young_roles
-        and (scheme != "uc" or m["age"] == 16 or not own_benefits(m))
+        and (
+            (m["age"] == 16 or not own_benefits(m))
+            if scheme == "uc"
+            else not child_benefit_own_benefits(m)
+        )
     ]
     children = [m for m in members if m["_role"] == "child"]
     # No capital, so the couple's income-related award is their reports,
@@ -411,15 +426,14 @@ def reference_cap(members, scheme):
     # 16-year-old for the year (UC reg 5(1)(a); for HB, Child Benefit reg 4
     # and its school-leaver terminal dates, which annual ages cannot place); it does
     # not yet apply reg 5(5) to one receiving benefits in their own right.
-    # Older UC young persons cease to count when they report their own award;
-    # Housing Benefit continues to read the existing Child Benefit test.
+    # Older young persons cease to count when they report their own award:
+    # for UC any award (reg 5(5)), for Housing Benefit the awards the Child
+    # Benefit test reads (Child Benefit (General) Regulations 2006 reg 8).
     claimants = sum(m["_role"] == "claimant" for m in members)
+    reports = own_benefits if scheme == "uc" else child_benefit_own_benefits
     dependants = any(
         m["_role"] in ("child", "sixteen", "sixteen_own_right")
-        or (
-            m["_role"] == "young_person"
-            and (scheme != "uc" or m["age"] == 16 or not own_benefits(m))
-        )
+        or (m["_role"] == "young_person" and (m["age"] == 16 or not reports(m)))
         for m in members
     )
     return SINGLE_CAP if claimants == 1 and not dependants else FAMILY_CAP

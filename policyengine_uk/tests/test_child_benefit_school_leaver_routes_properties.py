@@ -30,6 +30,12 @@ Invariants:
    work. They stay a qualifying young person, and a legacy young person.
 5. Child Benefit entitlement is the eldest payable member at the eldest
    rate and each other at the additional rate, for 52 weeks.
+6. Reg. 8(2)(a): in a year when DWP pays Income Support, a person who
+   reports Income Support of their own is never a qualifying young person,
+   on any route, whoever else in the family claims it.
+7. Without a report, setting receives_income_support_in_own_right false as
+   an input leaves the status unchanged; with it set false, a report
+   changes nothing, so the status is the one without the report.
 """
 
 from datetime import date, timedelta
@@ -325,3 +331,103 @@ def test_child_benefit_entitlement_counts_payable_members(units, year):
             else rates.amount.eldest + (number - 1) * rates.amount.additional
         )
         np.testing.assert_allclose(actual, weekly * 52, rtol=1e-6)
+
+
+# --- Invariants 6 and 7: Income Support in the young person's own right ---
+
+INCOME_SUPPORT = "receives_income_support_in_own_right"
+OWN_REPORTS = (
+    "universal_credit_reported",
+    "esa_income_reported",
+    "esa_contrib_reported",
+    "jsa_income_reported",
+    "jsa_contrib_reported",
+)
+
+
+def family_member(age, **inputs):
+    defaults = {
+        "income_support_reported": 0,
+        "care_hours": 0,
+        ROUTE: False,
+        **{report: 0 for report in OWN_REPORTS},
+    }
+    return person(age, **{**defaults, **inputs})
+
+
+young_or_child = st.builds(
+    family_member,
+    st.integers(0, 21),
+    current_education=st.sampled_from(EDUCATIONS),
+    is_in_approved_training=st.booleans(),
+    is_apprentice=st.booleans(),
+    receives_benefits_in_own_right=st.sampled_from([False, False, False, True]),
+    weekly_hours=st.sampled_from([0, 23, 24, 40]),
+    care_hours=st.sampled_from([0, 35]),
+    income_support_reported=st.sampled_from([0, 0, 1, 3_000]),
+    **{ROUTE: st.booleans(), EXTENSION: st.booleans(), TERMINAL: st.booleans()},
+    **{report: st.sampled_from([0, 0, 0, 2_000]) for report in OWN_REPORTS},
+)
+# A parent who can claim Income Support for the family: a carer, or a lone
+# parent of a child under 5 when the draw gives them one.
+parent = st.builds(
+    family_member,
+    st.integers(25, 60),
+    is_claimant_or_partner=st.just(True),
+    care_hours=st.sampled_from([0, 35]),
+    income_support_reported=st.sampled_from([0, 3_000]),
+)
+
+
+@st.composite
+def families(draw):
+    if draw(st.booleans()):
+        parents = draw(st.lists(parent, min_size=1, max_size=2))
+        return parents + draw(st.lists(young_or_child, min_size=1, max_size=4))
+    # A young person who claims for their own benefit unit.
+    young = draw(young_or_child.filter(lambda p: p["age"] >= 16))
+    others = draw(st.lists(young_or_child, max_size=2))
+    return [dict(young, is_claimant_or_partner=True)] + others
+
+
+def case_19_family():
+    # child_benefit_school_leaver_routes.yaml Case 19: a 16-year-old school
+    # leaver, in the reg. 4 period, who cares for a parent and reports their
+    # own Income Support.
+    return [
+        family_member(40, is_claimant_or_partner=True),
+        family_member(
+            16, care_hours=35, income_support_reported=3_000, **{ROUTE: True}
+        ),
+    ]
+
+
+@SETTINGS
+@given(
+    st.lists(families(), min_size=1, max_size=6), st.sampled_from([2016, 2019, 2024])
+)
+def test_own_income_support_ends_the_status_on_every_route(units, year):
+    # Every draw also holds Case 19's family, so there is a status to lose.
+    units = units + [case_19_family()]
+    reported = np.array(
+        [p["income_support_reported"] > 0 for unit in units for p in unit]
+    )
+    sim = simulate(units, year)
+    # The family's Income Support reads this test through the legacy young
+    # person; calculating it first shows the test does not read it back.
+    sim.calculate("income_support", year)
+    status = sim.calculate(QYP, year)
+    # Invariant 6, in 2016, 2019 and 2024, when DWP paid Income Support.
+    assert not status[reported].any()
+    released = simulate(
+        [[dict(p, **{INCOME_SUPPORT: False}) for p in unit] for unit in units], year
+    ).calculate(QYP, year)
+    unreported = simulate(
+        [[dict(p, income_support_reported=0) for p in unit] for unit in units], year
+    ).calculate(QYP, year)
+    # Invariant 7.
+    np.testing.assert_array_equal(released[~reported], status[~reported])
+    np.testing.assert_array_equal(released, unreported)
+    # Case 19's 16-year-old has the status without the report, and loses it
+    # to the report alone.
+    assert released[-1] and not status[-1]

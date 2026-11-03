@@ -21,11 +21,13 @@ class is_qualifying_young_person_for_child_benefit(Variable):
         "starts before one starts before the other. Interruptions (reg. 6) "
         "are not modelled. Reg. 8 reads the own-right benefits input, which "
         "covers Universal Credit, Employment and Support Allowance and "
-        "Jobseeker's Allowance, and the person's own reported Universal "
+        "Jobseeker's Allowance, the person's own reported Universal "
         "Credit, Employment and Support Allowance of either kind and "
         "income-based Jobseeker's Allowance, the awards reg. 8(2)(b), (e) "
-        "and (f) list. It does not read the Income Support, incapacity "
-        "benefit and tax credits that reg. 8 also lists."
+        "and (f) list, and receives_income_support_in_own_right (reg. "
+        "8(2)(a)). It does not read the incapacity benefit and tax credits "
+        "that reg. 8 also lists. A positive report for the year ends the "
+        "status for the whole year."
     )
     definition_period = YEAR
     reference = [
@@ -80,4 +82,8 @@ class is_qualifying_young_person_for_child_benefit(Variable):
                 | before_terminal_date
             )
             & ~receives_own_benefits
+            # Reg. 8(2)(a). The reported award, not is_on_income_support:
+            # the family's Income Support reads this test, so the calculated
+            # award would make a cycle.
+            & ~person("receives_income_support_in_own_right", period)
         )
