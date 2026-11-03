@@ -285,7 +285,7 @@ def couple_claim_saved(unit):
 
 
 def claim_saved(member, unit):
-    """Whether a saving keeps the claim this member belongs to."""
+    """Whether the claim this member belongs to stays payable under a saving."""
     if member["role"] in COUPLE:
         return couple_claim_saved(unit)
     return member["esa_income_reported"] > 0 and member["saved"]

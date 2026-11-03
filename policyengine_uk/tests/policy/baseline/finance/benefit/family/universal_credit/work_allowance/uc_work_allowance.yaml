@@ -30,9 +30,9 @@
   output:
     uc_work_allowance: 5_124 # 427 * 12
 
-# UC Regs 2013 Sch 1 paras 3(h) and (i) leave rent for specified or temporary
-# accommodation out of rent payments, so the award has no housing costs element
-# and the higher work allowance applies (reg 22(2)(a)).
+# The Secretary of State excludes rent for specified or temporary accommodation
+# from rent payments (UC Regs 2013 Sch 1 paras 3(h) and (i)), so the award has
+# no housing costs element and the higher work allowance applies (reg 22(2)(a)).
 - name: A claimant with earnings and limited capability in temporary accommodation gets the higher work allowance, 2026-27
   period: 2026
   absolute_error_margin: 0.01

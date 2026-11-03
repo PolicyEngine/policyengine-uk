@@ -14,8 +14,8 @@ rent, capped at the LHA rate for LHA tenants, less non-dependant deductions
 The model pays Housing Benefit alongside Universal Credit for specified or
 temporary accommodation (UC (Transitional Provisions) Regs 2014 reg 5(2)(a))
 through in_specified_or_temporary_accommodation. Each claimant benefit unit
-here supplies housing_benefit_eligible instead, so the passport is tested
-without the Universal Credit housing costs element changing.
+here supplies housing_benefit_eligible instead, so the test checks the
+passport without the Universal Credit housing costs element changing.
 
 Invariants, for any generated population of renting families (some with a
 non-dependant in the household), each on Universal Credit (a supplied amount

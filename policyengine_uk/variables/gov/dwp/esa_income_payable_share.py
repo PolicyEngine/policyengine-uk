@@ -17,16 +17,16 @@ class esa_income_payable_share(Variable):
         "household's appointed date (gov.dwp.ESA.income.awards_payable): 1 "
         "up to 2025-26; in 2026-27, 86 "
         "of 365 days in Great Britain and 178 of 365 in Northern Ireland; and "
-        "0 from 2027-28. Art. 3A(1)(b) leaves an award already due to end at "
-        "the end of a two-week run-on period (art. 1(2)) to that schedule: "
-        "with a migration notice deadline of 22 June 2026 and no claim, SI "
-        "2014/1230 reg 46(1)(a) ends the award on 5 July, after the general "
-        "date. The annual model does not track deadlines or claim dates and "
+        "0 from 2027-28. Under art. 3A(1)(b), an award already due to end at "
+        "the end of a two-week run-on period (art. 1(2)) ends on that "
+        "schedule: with a migration notice deadline of 22 June 2026 and no "
+        "claim, the award ends on 5 July (SI 2014/1230 reg 46(1)(a)), after "
+        "the general date. The annual model does not track deadlines or claim dates and "
         "pays unsaved awards to the general date. A claim saved for an "
         "appointee has a share of 1 in "
-        "every year: a saving for either member who reports a couple's award "
-        "keeps the whole claim (esa_income_appointee_saving), and a saving for "
-        "a member who reports nothing keeps nothing. esa_income pays each claim for "
+        "every year: the model keeps the whole claim for a saving for either "
+        "member who reports a couple's award (esa_income_appointee_saving), "
+        "and ignores a saving for a member who reports nothing. esa_income pays each claim for "
         "this share of the year, and esa_income_report_closed ends its reports "
         "in a year where it is 0. A contributory allowance continues as new "
         "style ESA (esa_contrib)."
@@ -51,7 +51,8 @@ class esa_income_payable_share(Variable):
             payable.northern_ireland,
             payable.great_britain,
         )
-        # Art. 3A(2) saves an award for an appointee in every year. The
+        # Under art. 3A(2), an award saved for an appointee stays payable in
+        # every year. The
         # claimant and partner share an award, so the model applies a
         # reporting member's saving to the whole claim; another member's
         # award is their own.
