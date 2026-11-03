@@ -367,8 +367,8 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
 
     The charge comparison fixes ordinary tax inputs. It makes no unrestricted
     claim about the charge, ANI, personal allowances or ordinary income tax.
-    The fixed populations with a supplied ANI are tested once, in
-    ``test_nics_cap_preserves_aa_inputs_and_charge_with_supplied_ani``.
+    ``test_nics_cap_preserves_aa_inputs_and_charge_with_supplied_ani`` tests
+    the fixed populations with a supplied ANI.
     """
     # Keep every default DC record, including the fixed witnesses, separate
     # from supplied DB inputs, which otherwise zero the DC input array.
@@ -403,8 +403,8 @@ def test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax(
 def test_nics_cap_preserves_aa_inputs_and_charge_with_supplied_ani(year):
     """Supplied ANI fixes threshold income whatever the NICs cap.
 
-    These populations do not depend on any drawn value, so they are tested
-    once for each year rather than with every generated population.
+    These populations depend on no drawn value, so this test runs them once
+    for each year.
     """
     # ANI is a partial-input override, so each person in these separate
     # simulations must supply it. Loss relief is already reflected in ANI;
