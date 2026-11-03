@@ -1,5 +1,6 @@
-description: One-off Pensioner Cost-of-Living Payment paid as a top-up to the Winter Fuel Payment to households containing someone of State Pension age. £300 in both winter 2022-23 and winter 2023-24, withdrawn from winter 2024-25.
+description: One-off Pensioner Cost-of-Living Payment, a £300 top-up to the Winter Fuel Payment for households with someone of State Pension age in winter 2022-23 and winter 2023-24. The amount reads zero before 2022 and from 2024.
 values:
+  0001-01-01: 0
   2022-01-01: 300
   2023-01-01: 300
   2024-01-01: 0

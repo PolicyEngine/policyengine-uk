@@ -596,10 +596,22 @@ programs:
     agency: Treasury
     status: complete
     coverage: UK
+    variable: cost_of_living_support_payment
     parameter_prefix: gov.treasury.cost_of_living_support
     verified_start_year: 2022
     verified_end_year: 2023
-    notes: Temporary program, ended 2023
+    notes: >-
+      Temporary program, ended 2023. The model pays the means-tested payment
+      to each benefit unit on Universal Credit, Pension Credit, income-based
+      JSA, income-related ESA or Income Support, or on Child Tax Credit or
+      Working Tax Credit and none of those (an award of at least £26 for the
+      year in 2022-23), the disability payment to each person on PIP, DLA,
+      Attendance Allowance or Armed Forces Independence Payment, and the
+      pensioner payment to each household with a Winter Fuel Payment. It
+      tests receipt over the year, not in the month ending with each
+      qualifying day, and has no variables for constant attendance allowance,
+      Adult Disability Payment, Child Disability Payment or the war pension
+      mobility supplement.
 
   - id: energy_bills_rebate
     name: Energy Bills Rebate

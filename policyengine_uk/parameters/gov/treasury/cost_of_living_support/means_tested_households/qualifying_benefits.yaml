@@ -1,10 +1,13 @@
-description: Benefits which confer eligibility to the household payment to means-tested
-  benefits.
+description: Means-tested benefits that qualify a benefit unit for the means-tested Cost of Living Payment. The list follows section 1(3) of the Social Security (Additional Payments) Act 2022 and of the Social Security (Additional Payments) Act 2023, which name Universal Credit, Pension Credit, income-based Jobseeker's Allowance, income-related Employment and Support Allowance and Income Support. Neither Act lists Housing Benefit.
 metadata:
   economy: false
   label: Qualifying benefits for support for means-tested households
   propagate_metadata_to_children: true
   reference:
+  - href: https://www.legislation.gov.uk/ukpga/2022/38/section/1
+    title: Social Security (Additional Payments) Act 2022, section 1(3)
+  - href: https://www.legislation.gov.uk/ukpga/2023/7/section/1
+    title: Social Security (Additional Payments) Act 2023, section 1(3)
   - href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
     title: Cost-of-living support announcement | GOV.UK
   unit: variable
@@ -12,7 +15,6 @@ values:
   2022-01-01:
   - universal_credit
   - pension_credit
-  - housing_benefit
   - jsa_income
-  - income_support
   - esa_income
+  - income_support

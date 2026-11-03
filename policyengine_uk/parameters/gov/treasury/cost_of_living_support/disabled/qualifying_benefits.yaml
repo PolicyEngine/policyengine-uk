@@ -1,10 +1,13 @@
-description: Benefits which confer eligibility to the household payment to disability
-  benefits.
+description: Disability benefits that qualify a person for the Disability Cost of Living Payment. The list follows section 5(2) of the Social Security (Additional Payments) Act 2022 and of the Social Security (Additional Payments) Act 2023. The model has no variables for the other benefits that section lists (constant attendance allowance, Adult Disability Payment, Child Disability Payment and the war pension mobility supplement), so it pays nobody who gets only those.
 metadata:
   economy: false
   label: Qualifying benefits for support for disabled households
   propagate_metadata_to_children: true
   reference:
+  - href: https://www.legislation.gov.uk/ukpga/2022/38/section/5
+    title: Social Security (Additional Payments) Act 2022, section 5(2)
+  - href: https://www.legislation.gov.uk/ukpga/2023/7/section/5
+    title: Social Security (Additional Payments) Act 2023, section 5(2)
   - href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
     title: Cost-of-living support announcement | GOV.UK
   unit: variable

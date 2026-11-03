@@ -111,32 +111,60 @@ so a household whose survey record has no band qualifies.
 
 ## Cost-of-Living Payments (2022-23 and 2023-24)
 
-Two successive packages, both modelled through the variable
-`cost_of_living_support_payment` at `gov/treasury/cost_of_living_support/`.
-The variable returns the **sum** of three independent strands depending
-on which qualifying benefits the household receives:
+The model pays two successive packages through the household variable
+`cost_of_living_support_payment`, with parameters at
+`gov/treasury/cost_of_living_support/`. The variable returns the **sum** of
+three strands: the means-tested payment to each benefit unit, the disability
+payment to each person and the pensioner payment to the household.
 
 | Strand | 2022-23 | 2023-24 | Qualifying benefits |
 |--------|---------|---------|---------------------|
-| Means-tested CoL Payment | £650 (two instalments) | £900 (three instalments) | Universal Credit, Pension Credit, Housing Benefit, income-based JSA / ESA, Income Support |
+| Means-tested CoL Payment | £650 (two instalments) | £900 (three instalments) | Universal Credit, Pension Credit, income-based JSA, income-related ESA or Income Support; or Child Tax Credit or Working Tax Credit and none of those (an award of at least £26 for the year in 2022-23) |
 | Pensioner CoL Payment    | £300 | £300 | Winter Fuel Payment recipients |
-| Disability CoL Payment   | £150 | £150 | DLA, PIP, Attendance Allowance, AFCS, IIDB, SDA, child / war disability pension |
+| Disability CoL Payment   | £150 | £150 | DLA, PIP, Attendance Allowance or Armed Forces Independence Payment |
 
-From 2024-01-01 the parameter values are explicitly reset to zero so the
-one-off doesn't extrapolate forward.
+From 2024-01-01 the amounts read zero, so the one-off payments don't
+extrapolate forward. The amounts also read zero before 2022, so the model's
+backdating of each parameter's earliest value to 2015 doesn't pay them in
+2015-16 to 2021-22.
 
 ### How PolicyEngine computes the payment
 
-For each strand `s ∈ {means_tested_households, pensioners, disabled}`:
+Under the Social Security (Additional Payments) Acts 2022 and 2023, the
+Secretary of State and HMRC pay the means-tested payment to each "person",
+meaning an individual or a couple (section 1(6) of the 2022 Act, section 1(9)
+of the 2023 Act), and the Secretary of State pays the disability payment to
+each individual (section 5(1)). Three variables follow them:
 
-```
-on_s = (sum of household's reported amounts in s.qualifying_benefits) > 0
-strand_s = s.amount(period) * on_s
-```
+- `cost_of_living_means_tested_payment` (benefit unit) pays
+  `means_tested_households.amount` to a benefit unit with any of
+  `means_tested_households.qualifying_benefits` (section 1(1) and (3)), or
+  with none of them and a yearly award of either credit in
+  `means_tested_households.qualifying_tax_credits` that reaches
+  `means_tested_households.minimum_tax_credit_award` (section 1(2)).
+  Parliament set that minimum at £26 for 2022-23 (section 2(2) of the 2022
+  Act) and set none for 2023-24 (section 3(1) of the 2023 Act). A unit with
+  both a benefit and a tax credit gets one payment.
+- `cost_of_living_disability_payment` (person) pays `disabled.amount` to a
+  person with any of `disabled.qualifying_benefits`.
+- `cost_of_living_support_payment` (household) adds both over the
+  household's benefit units and members, and adds `pensioners.amount` once
+  if the household has any of `pensioners.qualifying_benefits` (the Winter
+  Fuel Payment).
 
-Total `cost_of_living_support_payment = means_test_bonus + pensioner_bonus + disabled_bonus`,
-i.e. the strands stack — a pensioner on Pension Credit who also receives PIP
-will collect all three payments. This matches the actual policy.
+So a household with a pensioner couple on Pension Credit and an adult son on
+Universal Credit gets two means-tested payments, and a couple both on PIP
+gets two disability payments. The strands stack: a pensioner on Pension
+Credit and Attendance Allowance with a Winter Fuel Payment collects all
+three.
+
+The model holds yearly amounts, so it tests receipt of each benefit and tax
+credit over the year rather than in the month ending with each qualifying
+day, and compares each tax credit's yearly award with the £26 minimum. It
+has no variables for the other disability benefits that section 5(2) lists
+(constant attendance allowance, Adult Disability Payment, Child Disability
+Payment and the war pension mobility supplement), so it pays no disability
+payment to someone who gets only those.
 
 ## References
 
@@ -145,3 +173,5 @@ will collect all three payments. This matches the actual policy.
 - HMT, [Energy Bills Support Scheme](https://www.gov.uk/government/publications/the-energy-bills-support-scheme-explainer) and [Council Tax Energy Rebate](https://www.gov.uk/government/publications/the-council-tax-rebate-2022-23-billing-authority-guidance).
 - DWP, [HBAI quality and methodology information report, FYE 2023](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023) (treatment of the cost-of-living support schemes in HBAI income).
 - House of Commons Library briefing [CBP-9501 — Cost of Living Payments and the energy crisis](https://commonslibrary.parliament.uk/research-briefings/cbp-9501/).
+- [Social Security (Additional Payments) Act 2022](https://www.legislation.gov.uk/ukpga/2022/38), sections 1 to 5 (the 2022-23 means-tested and disability payments).
+- [Social Security (Additional Payments) Act 2023](https://www.legislation.gov.uk/ukpga/2023/7), sections 1 to 5 (the 2023-24 means-tested and disability payments).
