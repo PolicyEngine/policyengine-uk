@@ -1,0 +1,480 @@
+# Applicant and partner income conditions: Childcare Payments Act2014ss3/10;
+# SI2015/448regs3/15. Each person is tested against ANI<=GBP100000.
+# All parents work for the whole year; no is_parent flag is needed to identify
+# an ordinary applicant/couple. The flagged high-income case is a control.
+# GBP8000 is the gross qualifying provider bill, giving GBP1600 at20%,
+# with all four eligible declaration periods and the default full routing.
+# HMRC TFC35300: https://www.gov.uk/hmrc-internal-manuals/tax-free-childcare-technical-manual/tfc35300
+# The mixed-home case has two separate ordinary benefit units, not an extra
+# adult forced into somebody else's claimant family. No reported UC is forced.
+- name: Unflagged applicant over the income limit gets no top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 120000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id001
+        - applicant
+        - child
+    households:
+      home:
+        members: *id001
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id002
+    - 0
+    - 0
+    tax_free_childcare: *id002
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 120000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    is_parent:
+    - false
+    - false
+- name: Flagged applicant over the income limit still gets no top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 120000
+        is_parent: true
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id003
+        - applicant
+        - child
+    households:
+      home:
+        members: *id003
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id004
+    - 0
+    - 0
+    tax_free_childcare: *id004
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 120000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    is_parent:
+    - true
+    - false
+- name: Unflagged working applicant below the income limit gets the top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 50000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id005
+        - applicant
+        - child
+    households:
+      home:
+        members: *id005
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id006
+    - 0
+    - 1600
+    tax_free_childcare: *id006
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 50000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    is_parent:
+    - false
+    - false
+- name: An applicant at exactly 100000 adjusted net income gets the top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 100000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id007
+        - applicant
+        - child
+    households:
+      home:
+        members: *id007
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id008
+    - 0
+    - 1600
+    tax_free_childcare: *id008
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 100000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    is_parent:
+    - false
+    - false
+- name: An applicant one pound above 100000 adjusted net income gets no top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 100001
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id009
+        - applicant
+        - child
+    households:
+      home:
+        members: *id009
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id010
+    - 0
+    - 0
+    tax_free_childcare: *id010
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 100001
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    is_parent:
+    - false
+    - false
+- name: A high-income claimant excludes the otherwise eligible couple
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 120000
+      partner:
+        age: 38
+        employment_income: 50000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id011
+        - applicant
+        - partner
+        - child
+    households:
+      home:
+        members: *id011
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id012
+    - 0
+    - 0
+    - 0
+    tax_free_childcare: *id012
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - true
+    - false
+    adjusted_net_income:
+    - 120000
+    - 50000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - true
+    - false
+    is_parent:
+    - false
+    - false
+    - false
+- name: A high-income partner excludes the otherwise eligible couple
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 50000
+      partner:
+        age: 38
+        employment_income: 120000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id013
+        - applicant
+        - partner
+        - child
+    households:
+      home:
+        members: *id013
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id014
+    - 0
+    - 0
+    - 0
+    tax_free_childcare: *id014
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - true
+    - false
+    adjusted_net_income:
+    - 50000
+    - 120000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    - false
+    is_parent:
+    - false
+    - false
+    - false
+- name: Two applicants each below the income limit are tested individually
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 60000
+      partner:
+        age: 38
+        employment_income: 60000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id015
+        - applicant
+        - partner
+        - child
+    households:
+      home:
+        members: *id015
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id016
+    - 0
+    - 0
+    - 1600
+    tax_free_childcare: *id016
+    tax_free_childcare_eligible_without_universal_credit: true
+    tax_free_childcare_eligible: true
+    is_claimant_or_partner:
+    - true
+    - true
+    - false
+    adjusted_net_income:
+    - 60000
+    - 60000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - true
+    - false
+    is_parent:
+    - false
+    - false
+    - false
+- name: An applicant below the minimum earnings requirement gets no top-up
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 40
+        employment_income: 1000
+      child:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      family:
+        members: &id017
+        - applicant
+        - child
+    households:
+      home:
+        members: *id017
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit: &id018
+    - 0
+    - 0
+    tax_free_childcare: *id018
+    tax_free_childcare_eligible_without_universal_credit: false
+    tax_free_childcare_eligible: false
+    is_claimant_or_partner:
+    - true
+    - false
+    adjusted_net_income:
+    - 1000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - false
+    - false
+    is_parent:
+    - false
+    - false
+- name: Separate families sharing a home keep independent applicant income tests
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant_low:
+        age: 40
+        employment_income: 50000
+      child_low:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+      applicant_high:
+        age: 40
+        employment_income: 120000
+      child_high:
+        age: 3
+        childcare_expenses: 8000
+        tax_free_childcare_uses_qualifying_provider: true
+    benunits:
+      low:
+        members:
+        - applicant_low
+        - child_low
+      high:
+        members:
+        - applicant_high
+        - child_high
+    households:
+      home:
+        members:
+        - applicant_low
+        - child_low
+        - applicant_high
+        - child_high
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    tax_free_childcare_without_universal_credit:
+    - 0
+    - 1600
+    - 0
+    - 0
+    tax_free_childcare:
+    - 0
+    - 1600
+    - 0
+    - 0
+    tax_free_childcare_eligible_without_universal_credit:
+    - true
+    - false
+    tax_free_childcare_eligible:
+    - true
+    - false
+    is_claimant_or_partner:
+    - true
+    - false
+    - true
+    - false
+    adjusted_net_income:
+    - 50000
+    - 0
+    - 120000
+    - 0
+    tax_free_childcare_meets_income_requirements:
+    - true
+    - false
+    - false
+    - false
+    is_parent:
+    - false
+    - false
+    - false
+    - false
