@@ -20,7 +20,8 @@ class uc_is_excepted_from_education_condition(Variable):
         "parent; (f) the member of a mixed-age couple who has reached the "
         "qualifying age for State Pension Credit; and reg. 60(1), a member of "
         "a family that claims Universal Credit when DWP moves it off its "
-        "legacy benefits (claims_uc_at_legacy_closure) and who doesn't count "
+        "legacy benefits (claims_uc_at_legacy_closure), which the model takes "
+        "as the qualifying claim under reg. 48, and who doesn't count "
         "as a qualifying young person for the condition "
         "(is_qualifying_young_person_for_uc_education, which applies reg. 28 "
         "of the 2014 Regulations). The model needs no rule of its own for limb "
@@ -49,15 +50,23 @@ class uc_is_excepted_from_education_condition(Variable):
         "placed, and for a friend or family carer, who is responsible for the "
         "child and so meets (c) under the law. In Northern Ireland the "
         "decision maker applies the same exceptions under reg. 14(1) of the "
-        "Universal Credit Regulations (Northern Ireland) 2016."
+        "Universal Credit Regulations (Northern Ireland) 2016, and the same "
+        "protection under reg. 61 of the Universal Credit (Transitional "
+        "Provisions) Regulations (Northern Ireland) 2016, with regs. 29 and 49 "
+        "of those Regulations in place of regs. 28 and 48; the model doesn't "
+        "apply reg. 61(2) either."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/48",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/49",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/61",
     )
 
     def formula(person, period, parameters):

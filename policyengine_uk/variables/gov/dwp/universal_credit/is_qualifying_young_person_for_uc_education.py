@@ -33,7 +33,10 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "definition under reg. 28 takes the ordinary route under the Universal "
         "Credit Regulations 2013 reg. 12(2). The model's other rules read "
         "is_qualifying_young_person_for_universal_credit, which leaves reg. 28 "
-        "out."
+        "out. In Northern Ireland the decision maker applies the same rule "
+        "under reg. 29 of the Universal Credit (Transitional Provisions) "
+        "Regulations (Northern Ireland) 2016, with reg. 6 of the Universal "
+        "Credit Regulations (Northern Ireland) 2016 in place of reg. 5."
     )
     definition_period = YEAR
     reference = (
@@ -41,6 +44,7 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
     )
 
     def formula(person, period, parameters):

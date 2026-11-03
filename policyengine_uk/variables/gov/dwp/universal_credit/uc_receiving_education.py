@@ -28,9 +28,10 @@ class uc_receiving_education(Variable):
         "abandon it or the establishment dismisses them; the model applies the "
         "input to the whole year. In Northern Ireland the decision maker "
         "applies the same test under reg. 12 of the Universal Credit "
-        "Regulations (Northern Ireland) 2016, and treats a qualifying young "
-        "person in a training scheme as receiving education too (NI reg. "
-        "12(1))."
+        "Regulations (Northern Ireland) 2016, with reg. 29 of the Universal "
+        "Credit (Transitional Provisions) Regulations (Northern Ireland) 2016 "
+        "in place of reg. 28, and treats a qualifying young person in a "
+        "training scheme as receiving education too (NI reg. 12(1))."
     )
     definition_period = YEAR
     reference = (
@@ -40,6 +41,7 @@ class uc_receiving_education(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/68",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
     )
 
     def formula(person, period, parameters):
