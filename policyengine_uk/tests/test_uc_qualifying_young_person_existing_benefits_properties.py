@@ -84,13 +84,15 @@ def member(
     educations=EDUCATIONS,
     own_right=(False, True),
     reg_5_5_reports=True,
+    one_existing_benefit=False,
 ):
     """A person who usually reports no UC, ESA or JSA award under reg. 5(5).
 
     Reg. 5(5) excludes anyone with such a report, so drawing them rarely
     leaves people for reg. 28 to exclude; with reg_5_5_reports false, the
     person reports none. Each existing benefit report is positive one time in
-    three.
+    three; with one_existing_benefit true, the person reports at most one,
+    and none one time in three.
     """
     reg_5_5_report = (
         draw(st.sampled_from((None,) * 4 + REG_5_5_REPORTS))
@@ -108,8 +110,15 @@ def member(
             name: draw(amount) if name == reg_5_5_report else 0.0
             for name in REG_5_5_REPORTS
         },
-        **{name: draw(sometimes()) for name in EXISTING_BENEFITS},
+        **existing_benefit_reports(draw, one_existing_benefit),
     }
+
+
+def existing_benefit_reports(draw, one_existing_benefit):
+    if not one_existing_benefit:
+        return {name: draw(sometimes()) for name in EXISTING_BENEFITS}
+    report = draw(st.sampled_from((None,) * 3 + EXISTING_BENEFITS))
+    return {name: draw(amount) if name == report else 0.0 for name in EXISTING_BENEFITS}
 
 
 young_member = member(st.integers(15, 20), st.booleans())
@@ -119,13 +128,15 @@ adult = member(st.one_of(st.integers(16, 19), st.integers(20, 70)), st.just(Fals
 # non-advanced course, not flagged as receiving benefits in their own right
 # and reporting no UC, ESA or JSA award under reg. 5(5). A 19-year-old needs
 # the entry and terminal-date inputs (reg. 5(1)(b) and (2)), which these
-# draws don't set.
+# draws don't set. They report at most one existing benefit, so reg. 28
+# often leaves them in the test.
 qualifying = member(
     st.integers(16, 18),
     st.just(False),
     NON_ADVANCED,
     own_right=(False,),
     reg_5_5_reports=False,
+    one_existing_benefit=True,
 )
 INPUTS = (
     (
@@ -164,8 +175,8 @@ def qualifying_families(draw):
 
     Each slot is drawn from qualifying, which meets reg. 5, or from the
     general strategies. Over 10,000 derandomised draws for 2025, the
-    claimant met reg. 5 in 61% of draws, the partner or dependant in 61%,
-    and each dependant in 65%. A partner is otherwise an older adult whose
+    claimant met reg. 5 in 59% of draws, the partner or dependant in 62%,
+    and the dependants in 65% and 69%. A partner is otherwise an older adult whose
     own reports reg. 28 must not pass to the claimant, except for the
     couple's tax credit award.
     """
