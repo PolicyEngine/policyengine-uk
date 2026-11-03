@@ -420,10 +420,9 @@
 # keeps for the 16th-birthday period. 2018-19 rates: child element £2,780 and
 # family element £545 a year (child_element.yaml, family_element.yaml); PIP
 # daily living standard rate £57.30 a week; Carer's Allowance £64.60 a week;
-# Child Benefit eldest rate £20.70 a week; colour TV licence £150.50. The
-# disability cost-of-living payment parameter starts at £150 on 1 January
-# 2022, and the model applies that first value to earlier years, so the
-# household receives £150 for the parent's PIP.
+# Child Benefit eldest rate £20.70 a week; colour TV licence £150.50. Cases
+# 18 and 19 set the cost-of-living payment, which DWP first paid in 2022, to
+# zero.
 
 - name: Case 18, a 16-year-old school leaver who receives Income Support in their own right is not a qualifying young person (reg. 4(2), reg. 5(4)(c)).
   period: 2018
@@ -450,6 +449,8 @@
     households:
       household:
         members: [parent, carer]
+        # DWP first paid cost-of-living payments in 2022.
+        cost_of_living_support_payment: 0
   output:
     # Born 15 January 2002: the reg. 4 period runs to 31 August 2018.
     is_before_first_september_following_16th_birthday: [false, true]
@@ -459,10 +460,14 @@
     is_qualifying_young_person_for_child_tax_credit: [false, false]
     # No child or qualifying young person, so no CTC.
     child_tax_credit: 0
+    # Child Benefit reg. 8(2)(a) ends their Child Benefit status too.
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit: 0
     # PIP 57.30 x 52 = 2,979.60; Carer's Allowance 64.60 x 52 = 3,359.20;
-    # Child Benefit 20.70 x 52 = 1,076.40; cost-of-living payment 150; less
-    # TV licence 150.50: 7,414.70.
-    household_net_income: 7_414.70
+    # less TV licence 150.50: 6,188.30. The model calculates Income Support
+    # only for the claimant's family, so the 16-year-old's own 3,000 is in no
+    # income here.
+    household_net_income: 6_188.30
 
 - name: Case 19, the same family without Income Support for the 16-year-old gets CTC until 31 August 2018 (reg. 4(1)).
   period: 2018
@@ -488,14 +493,18 @@
     households:
       household:
         members: [parent, carer]
+        # DWP first paid cost-of-living payments in 2022.
+        cost_of_living_support_payment: 0
   output:
     is_before_first_september_following_16th_birthday: [false, true]
     is_on_income_support: [false, false]
     is_qualifying_young_person_for_child_tax_credit: [false, true]
     # No income: child element 2,780 + family element 545 = 3,325.
     child_tax_credit: 3_325
-    # Case 18's 7,414.70 + 3,325 = 10,739.70.
-    household_net_income: 10_739.70
+    # 20.70 x 52.
+    child_benefit: 1_076.40
+    # Case 18's 6,188.30 + Child Benefit 1,076.40 + 3,325 = 10,589.70.
+    household_net_income: 10_589.70
 
 - name: Case 20, a 17-year-old at school who receives Income Support in their own right is not a qualifying young person (reg. 5(3)(a), 5(4)(c)).
   period: 2018
