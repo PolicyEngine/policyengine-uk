@@ -34,12 +34,13 @@ class household_uc_pool_company_holdings(Variable):
         "any part of a disregarded holding. A financial report below its "
         "holder's known holding still consumes the holding at its counted "
         "value (household_uc_reported_financial_capital), so no report leaves "
-        "a holding in the residual pool. A holding "
-        "is shares, held within the household's share_like_capital. Each "
-        "person's holding is first clipped to [0, max(0, share_like_capital)], "
+        "a holding in the residual pool. A holding is shares, which have "
+        "expenses of sale, held within the household's "
+        "share_like_capital_with_sale_expenses. Each person's holding is first "
+        "clipped to [0, max(0, share_like_capital_with_sale_expenses)], "
         "with positive infinity mapped to the upper bound and negative infinity "
         "to zero before any multiplication. All household holdings then share "
-        "one nonnegative share_like_capital budget "
+        "one nonnegative share_like_capital_with_sale_expenses budget "
         "through household_uc_company_holding_pool_scale: when their total "
         "exceeds it, scale each person's holding proportionally before "
         "either the override floor or this deduction. This is a defensive "
@@ -47,7 +48,8 @@ class household_uc_pool_company_holdings(Variable):
         "shared budget prevents holdings from removing ordinary savings or "
         "property. It does not change regulation 77 substitution in the "
         "owner's own assessment. The holdings leave the pool at the value at "
-        "which the pool counts share_like_capital: 90% where regulation 49(1)(a) "
+        "which the pool counts the shares that hold them "
+        "(share_like_capital_with_sale_expenses): 90% where regulation 49(1)(a) "
         "deducts 10% for the expenses of selling shares."
     )
     definition_period = YEAR
@@ -73,7 +75,7 @@ class household_uc_pool_company_holdings(Variable):
             * person.household("household_uc_company_holding_pool_scale", period)
             * ~off_reported_capital
         )
-        # The holdings sit in share_like_capital, which the pool counts at the
+        # The holdings sit in HOLDINGS_SOURCE, which the pool counts at the
         # reg. 49(1) value, so they leave it at that value.
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         return round_to_penny(

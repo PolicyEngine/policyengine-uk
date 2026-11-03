@@ -7,7 +7,9 @@ Regs 2013 reg. 49(1); HB Regs 2006 reg. 47; HB (SPC) Regs 2006 reg. 45; IS
 Regs 1987 reg. 49; JSA Regs 1996 reg. 111; ESA Regs 2008 reg. 113; SPC Regs
 2002 reg. 19). A bank or building society account is valued at its balance
 (ADM H1675); land and property always have costs of sale (H1606) and shares
-are valued less 10% (H1665).
+are valued less 10% (H1665). The households here hold share-like wealth only
+as unitemised corporate_wealth, which all takes the 10%; itemised holdings
+(unit trusts and ISAs without it) are tested in test_capital_share_components.
 
 Invariants, for any generated population of single-adult households:
 
@@ -78,13 +80,14 @@ PROGRAMMES = {
 }
 PENSION_AGE_ONLY = {"pension_credit_assessable_capital"}
 # The assets whose sale incurs expenses, fixed here from the law rather than
-# read from the parameters: real property always (ADM H1606), shares (H1665);
-# never a bank or building society balance (H1675).
+# read from the parameters: real property always (ADM H1606), shares (H1665),
+# and unitemised corporate wealth with them; never a bank or building society
+# balance (H1675).
 SALE_EXPENSE_ASSETS = {
     "owned_land",
     "other_residential_property_value",
     "non_residential_property_value",
-    "share_like_capital",
+    "share_like_capital_with_sale_expenses",
 }
 LEGAL_RATE = 0.1
 ASSETS = [
@@ -97,12 +100,16 @@ ASSETS = [
 ]
 # Ordinary savings and a cash ISA are both deposit balances, counted in full.
 CASH_ASSETS = ("savings", "cash_isa")
-# The capital sources count shares as share_like_capital, which is the
-# corporate_wealth these households are given.
-INPUT_OF = {"share_like_capital": "corporate_wealth"}
+# The capital sources count shares in share_like_capital's two parts. These
+# households hold share-like wealth only as unitemised corporate_wealth, so
+# all of it is in the part with expenses of sale and none is without.
+INPUT_OF = {"share_like_capital_with_sale_expenses": "corporate_wealth"}
+NIL_SOURCES = {"share_like_capital_without_sale_expenses"}
 
 
 def asset(unit, source):
+    if source in NIL_SOURCES:
+        return 0.0
     return unit["assets"][INPUT_OF.get(source, source)]
 
 
