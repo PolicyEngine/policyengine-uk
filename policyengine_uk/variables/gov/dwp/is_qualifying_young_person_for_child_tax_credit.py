@@ -95,5 +95,4 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
             # and Income Support, which reg. 4(2) keeps for the reg. 4 period.
             & ~person("receives_benefits_in_own_right", period)
             & ~person("is_on_income_support", period)
-            & ~person("receives_income_support_in_own_right", period)
         )

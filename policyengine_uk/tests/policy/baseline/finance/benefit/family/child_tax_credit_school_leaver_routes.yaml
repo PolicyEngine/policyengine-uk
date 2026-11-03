@@ -459,10 +459,12 @@
     is_qualifying_young_person_for_child_tax_credit: [false, false]
     # No child or qualifying young person, so no CTC.
     child_tax_credit: 0
+    # Child Benefit reg. 8(2)(a) ends their Child Benefit status too.
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit: 0
     # PIP 57.30 x 52 = 2,979.60; Carer's Allowance 64.60 x 52 = 3,359.20;
-    # Child Benefit 20.70 x 52 = 1,076.40; cost-of-living payment 150; less
-    # TV licence 150.50: 7,414.70.
-    household_net_income: 7_414.70
+    # cost-of-living payment 150; less TV licence 150.50: 6,338.30.
+    household_net_income: 6_338.30
 
 - name: Case 19, the same family without Income Support for the 16-year-old gets CTC until 31 August 2018 (reg. 4(1)).
   period: 2018
@@ -494,7 +496,8 @@
     is_qualifying_young_person_for_child_tax_credit: [false, true]
     # No income: child element 2,780 + family element 545 = 3,325.
     child_tax_credit: 3_325
-    # Case 18's 7,414.70 + 3,325 = 10,739.70.
+    # Case 18's 6,338.30 + Child Benefit 20.70 x 52 = 1,076.40 + 3,325 =
+    # 10,739.70.
     household_net_income: 10_739.70
 
 - name: Case 20, a 17-year-old at school who receives Income Support in their own right is not a qualifying young person (reg. 5(3)(a), 5(4)(c)).

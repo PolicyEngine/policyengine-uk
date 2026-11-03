@@ -43,7 +43,9 @@ class is_qualifying_young_person_for_pension_credit(Variable):
         # own awards without calculating family benefits, which depend on QYP
         # status and could recurse. Unlike UC reg. 5(5), it lists income
         # support, whose family follows the Child Benefit test and not this
-        # one, so is_on_income_support can read the calculated award.
+        # one, so is_on_income_support can read the calculated award: a
+        # claimant or partner receives Income Support only while the model
+        # pays their benefit unit an award.
         receives_own_benefits = (
             person("receives_benefits_in_own_right", period)
             | (person("universal_credit_reported", period) > 0)
@@ -63,5 +65,4 @@ class is_qualifying_young_person_for_pension_credit(Variable):
                 | in_education_or_training
             )
             & ~receives_own_benefits
-            & ~person("receives_income_support_in_own_right", period)
         )

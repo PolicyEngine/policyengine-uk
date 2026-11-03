@@ -81,5 +81,8 @@ class is_qualifying_young_person_for_child_benefit(Variable):
                 | before_terminal_date
             )
             & ~receives_own_benefits
+            # Reg. 8(2)(a). The reported award, not is_on_income_support:
+            # the family's Income Support reads this test, so the calculated
+            # award would make a cycle.
             & ~person("receives_income_support_in_own_right", period)
         )

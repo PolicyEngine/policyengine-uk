@@ -5,10 +5,19 @@
 # names Universal Credit, Employment and Support Allowance and Jobseeker's
 # Allowance only.
 #
+# Pension Credit and Child Tax Credit read is_on_income_support: the award the
+# model calculates for a claimant or partner, and the person's own report for
+# any other member. Child Benefit reads receives_income_support_in_own_right,
+# the person's own report, because the family's Income Support reads the
+# Child Benefit test.
+#
 # Income Support stopped paying on 31 March 2026
 # (gov/dwp/income_support/active.yaml), so reported receipt counts to 2025-26.
 # 2025-26 amounts: Child Benefit eldest child £26.05 a week; Pension Credit
-# first-child addition £78.10 a week. CTC child element £3,455 in 2024-25.
+# first-child addition £78.10 a week. CTC child element £3,455 in 2024-25; the
+# element needs an existing claim that a Universal Credit claim has not ended
+# (is_CTC_eligible), so the CTC cases give the parent a reported award and the
+# family no Universal Credit claim.
 
 - name: Case 1, a 17-year-old at school with no Income Support is every programme's qualifying young person.
   period: 2025
@@ -66,6 +75,7 @@
   input:
     people:
       parent:
+        child_tax_credit_reported: 1
         age: 40
         is_parent: true
         is_claimant_or_partner: true
@@ -77,7 +87,9 @@
     benunits:
       benunit:
         members: [parent, student]
+        would_claim_uc: false
   output:
+    is_on_income_support: [false, true]
     is_qualifying_young_person_for_child_tax_credit: [false, false]
     CTC_child_element: 0
 
@@ -87,6 +99,7 @@
   input:
     people:
       parent:
+        child_tax_credit_reported: 1
         age: 40
         is_parent: true
         is_claimant_or_partner: true
@@ -97,6 +110,7 @@
     benunits:
       benunit:
         members: [parent, student]
+        would_claim_uc: false
   output:
     is_qualifying_young_person_for_child_tax_credit: [false, true]
     CTC_child_element: 3_455
@@ -143,7 +157,7 @@
     is_qualifying_young_person_for_pension_credit: [false, true]
     is_qualifying_young_person_for_child_benefit: [false, true]
 
-- name: Case 7, the input can be set directly.
+- name: Case 7, the Child Benefit input can be set directly; it does not decide Pension Credit or Child Tax Credit.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -160,6 +174,61 @@
       benunit:
         members: [grandparent, student]
   output:
-    is_qualifying_young_person_for_pension_credit: [false, false]
+    # No Income Support reported or calculated.
+    is_on_income_support: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
     is_qualifying_young_person_for_child_benefit: [false, false]
     is_qualifying_young_person_for_universal_credit: [false, true]
+
+# Case 8, 2019-20 amounts: standard minimum guarantee £167.25 a week; severe
+# disability addition £65.85 a week; PIP daily living standard rate £58.70 a
+# week; Income Support personal allowance for a single person aged 18 to 24
+# £57.90 a week; winter fuel payment £200; colour TV licence £154.50. The
+# cost-of-living payment parameters start on 1 January 2022 (means-tested
+# £650, pensioner £300, disability £150), and the model applies those first
+# values to earlier years, so the household receives £1,100.
+
+- name: Case 8, a student-carer on Income Support of their own is not the pensioner's qualifying young person, so the pensioner gets no severe disability addition.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        pip_dl_category: STANDARD
+        state_pension: 5_000
+      student:
+        # An orphan in full-time non-advanced education with an existing
+        # Income Support claim (IS Regs 1987 reg. 13(2)(c)), caring for the
+        # pensioner 35 hours a week without Carer's Allowance.
+        age: 18
+        current_education: UPPER_SECONDARY
+        care_hours: 35
+        would_claim_carers_allowance: false
+        income_support_reported: 3_000
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        would_claim_uc: false
+      student_unit:
+        members: [student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, student]
+  output:
+    # The student claims Income Support for their own benefit unit: no
+    # income, so the award is the personal allowance, 57.90 x 52 = 3,010.80.
+    income_support: [0, 3_010.80]
+    is_on_income_support: [false, true]
+    # Reg. 4A(5): not a qualifying young person, so not disregarded under
+    # Schedule I para. 2(2)(f), and the pensioner does not live alone.
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    severe_disability_minimum_guarantee_addition: [0, 0]
+    # 167.25 x 52 = 8,697, less the State Pension 5,000.
+    pension_credit: [3_697, 0]
+    # State Pension 5,000 + PIP 58.70 x 52 = 3,052.40 + Pension Credit 3,697
+    # + Income Support 3,010.80 + cost-of-living payments 1,100 + winter fuel
+    # payment 200, less TV licence 154.50: 15,905.70.
+    household_net_income: 15_905.70
