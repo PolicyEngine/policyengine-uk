@@ -20,6 +20,12 @@ class marriage_allowance(Variable):
     value_type = float
     entity = Person
     label = "Marriage Allowance"
+    documentation = (
+        "The amount of personal allowance transferred to this person. It does "
+        "not reduce their taxable income: marriage_allowance_tax_reduction "
+        "gives them a tax reduction of the appropriate percentage of it at "
+        "Step 6 (ITA 2007 s. 55B(1))."
+    )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
     unit = GBP
