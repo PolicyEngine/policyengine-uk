@@ -1249,12 +1249,12 @@ def test_an_outside_adults_own_claim_is_screened_on_their_own_work():
                 claimant_report,
             )
             assert idle_other.calculate(variable, YEAR)[1], (variable, claimant_report)
-    # The working claimant's report fails the screen: the benefit unit's
-    # award is nil, and the claimant is on neither award.
+    # The working claimant fails; the idle outside adult's own £3,000
+    # remains in the aggregate, and the claimant is on neither award.
     idle_other = _claimant_and_outside_adult(
         3_000, claimant_works=True, other_works=False
     )
-    assert idle_other.calculate("esa_income", YEAR)[0] == 0
+    assert idle_other.calculate("esa_income", YEAR)[0] == 3_000
     assert not idle_other.calculate("is_on_income_related_esa", YEAR)[0]
 
 

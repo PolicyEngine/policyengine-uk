@@ -49,9 +49,11 @@ class uc_individual_earned_income_before_mif(Variable):
         # The deductions are the person's own and come off only their own
         # earnings, so one partner's tax, NI or pension contributions never
         # reduce the other partner's earned income.
-        # Miscellaneous income as income tax counts it, so a loss does not
-        # reduce pay (and matches uc_income_tax_on_earnings). Whether it is
-        # earnings at all is issue #1961.
+        # Miscellaneous income with a net loss counted as nil, so a loss does
+        # not reduce pay, and before the trading allowance, an income tax
+        # relief the UC earnings rules do not give (as a trade counts its
+        # profit before it). uc_income_tax_on_earnings deducts the tax on it.
+        # Whether it is earnings at all is issue #1961.
         #
         # Reg. 55(4) treats statutory sick, maternity and paternity pay as
         # employed earnings, and reg. 55(5) takes the deductions off "the
@@ -64,7 +66,7 @@ class uc_individual_earned_income_before_mif(Variable):
         # payments rose.
         earnings_components = [
             "employment_income",
-            "taxable_miscellaneous_income",
+            "miscellaneous_income_before_trading_allowance",
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "statutory_paternity_pay",

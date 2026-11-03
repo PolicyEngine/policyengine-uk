@@ -1,6 +1,6 @@
 """Annualise transaction duties over the UK fiscal year."""
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from datetime import datetime
 from types import SimpleNamespace
 
@@ -8,19 +8,21 @@ from policyengine_core.parameters import Parameter, ParameterNode
 
 
 def fiscal_year_segments(
-    node: ParameterNode, year: int
+    node: ParameterNode | Mapping[str, Parameter], year: int
 ) -> Iterator[tuple[SimpleNamespace, float]]:
     """Yield (rates, share of year) for a flat preserved rate schedule.
 
     Consumption is uniform from 6 April to 5 April. Apply nonlinear rules,
     such as cigarette minimum duty, within each segment before averaging.
     Value-level ``effective_time`` metadata supports 6pm Budget-day changes;
-    dates supplied by ordinary reforms take effect at midnight.
+    dates supplied by ordinary reforms take effect at midnight. Pass a
+    mapping of names to leaves to segment leaves from several nodes jointly.
     """
     start, end = datetime(year, 4, 6), datetime(year + 1, 4, 6)
     changes = {start, end}
     schedules = {}
-    for name, parameter in node.children.items():
+    leaves = node.children if isinstance(node, ParameterNode) else node
+    for name, parameter in leaves.items():
         if not isinstance(parameter, Parameter):
             raise TypeError("Excise rate schedules must contain only parameter leaves")
         schedule = []

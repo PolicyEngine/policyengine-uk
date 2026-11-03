@@ -1,0 +1,437 @@
+# The Income Support earnings disregard applies to earnings only
+# (PolicyEngine/policyengine-uk#2621).
+#
+# Schedule 8 to the Income Support (General) Regulations 1987 lists "sums to be
+# disregarded in the calculation of earnings": £20 a week for a lone parent
+# (para 5), £10 for a couple, shared between them (para 6(a)), and £5 otherwise
+# (para 9). Regulations 36(2) and 38(2) take them from net earnings and net
+# profit. Statutory sick, maternity and paternity pay are not earnings (reg
+# 35(2)(b)); they, pensions, benefits and maintenance are income other than
+# earnings (reg 40), so none gets a Schedule 8 disregard. The disregard is therefore
+# capped at the claimant's and partner's net earnings: gross earnings less
+# income tax, primary Class 1 contributions and half of pension contributions
+# (reg 36(3)); net profit less tax and Class 2 and 4 contributions (regs 38(3), 39).
+# https://www.legislation.gov.uk/uksi/1987/1967/schedule/8
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/35
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/36
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/38
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/40
+#
+# 2025-26 amounts (DWP benefit and pension rates 2025 to 2026): the disregards
+# are £20 x 52 = £1,040 (lone parent), £10 x 52 = £520 (couple) and
+# £5 x 52 = £260 (single); the lone-parent personal allowance is
+# £92.05 x 52 = £4,786.60. The personal allowance, the primary threshold and
+# the Class 4 lower profits limit are each £12,570; the basic rate is 20% and
+# the main Class 1 and Class 4 rates are 8% and 6%.
+# https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+# https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2025-to-2026
+# https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+#
+# Each "Before the fix" figure is what the model gave when it took the
+# disregard off all income.
+
+- name: Statutory maternity pay alone gets no earnings disregard.
+  # The case in #2621: a lone parent with a child aged 1, £3,000 of SMP and
+  # no earnings. Net earnings are nil, so the disregard is nil and all £3,000
+  # counts: £4,786.60 - £3,000 = £1,786.60 of Income Support. £3,000 is below
+  # the personal allowance and the primary threshold, so no tax or NI is due.
+  # Before the fix: £3,000 - £1,040 = £1,960.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        statutory_maternity_pay: 3_000
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    income_tax: [0, 0]
+    national_insurance: [0, 0]
+    income_support_net_earnings: 0
+    income_support_earnings_disregard: 0
+    income_support_applicable_income: 3_000
+    income_support: 1_786.60
+
+- name: A private pension alone gets no earnings disregard.
+  # An occupational pension is not earnings (reg 35(2)(d)). £3,000 - nil =
+  # £3,000; £4,786.60 - £3,000 = £1,786.60. Before the fix: £1,960.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        private_pension_income: 3_000
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    income_tax: [0, 0]
+    income_support_net_earnings: 0
+    income_support_earnings_disregard: 0
+    income_support_applicable_income: 3_000
+    income_support: 1_786.60
+
+- name: Earnings below the disregard are disregarded in full and no more.
+  # £400 of earnings, no tax or NI: net earnings £400, so the disregard is
+  # min(£1,040, £400) = £400 and applicable income £400 - £400 = nil.
+  # Unchanged by the fix (the floor at nil hid it).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 400
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    income_support_net_earnings: 400
+    income_support_earnings_disregard: 400
+    income_support_applicable_income: 0
+    income_support: 4_786.60
+
+- name: The unused disregard does not pass to statutory pay.
+  # £400 of earnings and £2,000 of SMP. Wages plus SMP, £2,400, are below
+  # the personal allowance and the primary threshold. The disregard is
+  # min(£1,040, £400) = £400, so £400 + £2,000 - £400 = £2,000 counts and
+  # £4,786.60 - £2,000 = £2,786.60 is paid. Before the fix:
+  # £2,400 - £1,040 = £1,360.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 400
+        statutory_maternity_pay: 2_000
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    income_support_net_earnings: 400
+    income_support_earnings_disregard: 400
+    income_support_applicable_income: 2_000
+    income_support: 2_786.60
+
+- name: The disregard is capped at earnings net of half the pension contributions.
+  # Reg 36(3)(b): £1,200 of earnings less 0.5 x £600 of contributions leaves
+  # £900 of net earnings, so the disregard is £900, not £1,040. Income:
+  # £1,200 + £1,000 pension - £300 = £1,900; less £900 = £1,000. Award:
+  # £4,786.60 - £1,000 = £3,786.60. Before the fix: £1,900 - £1,040 = £860.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_200
+        private_pension_income: 1_000
+        pension_contributions: 600
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    income_tax: [0, 0]
+    income_support_net_earnings: 900
+    income_support_earnings_disregard: 900
+    income_support_applicable_income: 1_000
+    income_support: 3_786.60
+
+- name: A couple's disregard is capped at their earnings, not the partner's SMP.
+  # The claimant earns £300; the partner has £2,000 of SMP and no earnings.
+  # The couple disregard is min(£520, £300) = £300, so £300 + £2,000 - £300
+  # = £2,000 counts. Before the fix: £2,300 - £520 = £1,780.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 300
+        social_security_income: 0
+      partner:
+        age: 32
+        is_claimant_or_partner: true
+        statutory_maternity_pay: 2_000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    income_support_net_earnings: 300
+    income_support_earnings_disregard: 300
+    income_support_applicable_income: 2_000
+
+- name: A couple's disregard covers both partners' earnings, not a pension.
+  # Para 6(a): the partner's earnings take what the claimant's leave of the
+  # £10. Each earns £200: net earnings £400, disregard min(£520, £400) =
+  # £400. The partner's £1,000 pension counts in full: £400 + £1,000 - £400
+  # = £1,000. Before the fix: £1,400 - £520 = £880.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 200
+        social_security_income: 0
+      partner:
+        age: 32
+        is_claimant_or_partner: true
+        employment_income: 200
+        private_pension_income: 1_000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    income_support_net_earnings: 400
+    income_support_earnings_disregard: 400
+    income_support_applicable_income: 1_000
+
+- name: A couple share one £10 a week however much they both earn.
+  # Each earns £400: net earnings £800, disregard min(£520, £800) = £520, so
+  # £800 - £520 = £280 counts. Unchanged by the fix.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 400
+        social_security_income: 0
+      partner:
+        age: 32
+        is_claimant_or_partner: true
+        employment_income: 400
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    income_support_net_earnings: 800
+    income_support_earnings_disregard: 520
+    income_support_applicable_income: 280
+
+- name: A single claimant's disregard does not reach spousal maintenance.
+  # Para 9: £5 x 52 = £260, capped at £100 of earnings. Maintenance from a
+  # former spouse is income other than earnings (reg 40; Sch 9 para 15(3)(a)):
+  # £100 + £1,000 - £100 = £1,000. Before the fix: £1,100 - £260 = £840.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 100
+        spousal_maintenance_income: 1_000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    income_support_net_earnings: 100
+    income_support_earnings_disregard: 100
+    income_support_applicable_income: 1_000
+
+- name: Self-employment profit below the disregard is disregarded, a pension is not.
+  # Reg 38(2): £600 of profit, below the personal allowance and the Class 4
+  # lower profits limit, is £600 of net profit, so the disregard is £600.
+  # £600 + £2,000 pension - £600 = £2,000; £4,786.60 - £2,000 = £2,786.60.
+  # Before the fix: £2,600 - £1,040 = £1,560.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        self_employment_income: 600
+        private_pension_income: 2_000
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    national_insurance: [0, 0]
+    income_support_net_earnings: 600
+    income_support_earnings_disregard: 600
+    income_support_applicable_income: 2_000
+    income_support: 2_786.60
+
+- name: The annual model approximates earnings tax by their share of income.
+  # A single claimant in England with £13,000 of pension and £200 of
+  # earnings. Income tax: (£13,200 - £12,570) x 20% = £126. The earnings'
+  # share of it is £126 x 200 / 13,200 = £1.9091, and £200 is below the
+  # primary threshold, so net earnings are £200 - £1.9091 = £198.0909 and
+  # the disregard min(£260, £198.0909) = £198.0909. Income:
+  # £13,200 - £126 - £198.0909 = £12,875.9091. Before the fix:
+  # £13,074 - £260 = £12,814.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 200
+        private_pension_income: 13_000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    income_tax: 126
+    national_insurance: 0
+    income_support_net_earnings: 198.09
+    income_support_earnings_disregard: 198.09
+    income_support_applicable_income: 12_875.91
+
+- name: The annual model allocates Class 1 between earnings and statutory pay.
+  # This proportional split approximates payroll deductions. A lone parent
+  # in England has £500 of earnings and £13,000 of SMP. Class
+  # 1 is due on the £13,500 together: (£13,500 - £12,570) x 8% = £74.40, of
+  # which the wages' share is £74.40 x 500 / 13,500 = £2.7556. Income tax:
+  # (£13,500 - £12,570) x 20% = £186, of which the earnings' share is
+  # £186 x 500 / 13,500 = £6.8889. Net earnings: £500 - £6.8889 - £2.7556 =
+  # £490.3556, the disregard. Income: £13,500 - £186 - £74.40 - £490.3556 =
+  # £12,749.2444. Before the fix: £13,239.60 - £1,040 = £12,199.60.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        employment_income: 500
+        statutory_maternity_pay: 13_000
+        social_security_income: 0
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [claimant, child]
+        region: LONDON
+  output:
+    income_tax: [186, 0]
+    national_insurance: [74.40, 0]
+    income_support_net_earnings: 490.36
+    income_support_earnings_disregard: 490.36
+    income_support_applicable_income: 12_749.24

@@ -1,0 +1,41 @@
+# Household cash and stocks-and-shares ISA totals sum the members' balances,
+# as household_lifetime_isa_balance sums lifetime_isa_balance.
+
+- name: Household ISA totals sum the members' balances
+  period: 2026
+  input:
+    people:
+      first_adult:
+        age: 40
+        cash_isa_balance: 3_000
+        stocks_and_shares_isa_balance: 1_000
+      second_adult:
+        age: 38
+        cash_isa_balance: 2_000
+        stocks_and_shares_isa_balance: 500
+    benunits:
+      benunit:
+        members: [first_adult, second_adult]
+    households:
+      household:
+        members: [first_adult, second_adult]
+  output:
+    cash_isa: 5_000
+    stocks_and_shares_isa: 1_500
+
+- name: A household total given directly takes precedence over the members' balances
+  period: 2026
+  input:
+    people:
+      adult:
+        age: 40
+        cash_isa_balance: 3_000
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        cash_isa: 7_000
+  output:
+    cash_isa: 7_000

@@ -65,7 +65,9 @@ def build(units: list, year: int, region: str = "LONDON") -> Simulation:
     member over State Pension age is under the pension-age Housing Benefit
     regulations and is a Council Tax Reduction pensioner. That leaves the
     cohort rule as the only thing under test (a mixed-age couple on Universal
-    Credit would otherwise be in the working-age tables)."""
+    Credit would otherwise be in the working-age tables). Every member is the
+    claimant or partner, and says so: the age presumption would read a
+    partner 20 or more years younger as the claimant's child."""
     people, benunits = {}, {}
     mid_year = grid_months(date(year, 10, 6))
     for u, members in enumerate(units):
@@ -78,6 +80,7 @@ def build(units: list, year: int, region: str = "LONDON") -> Simulation:
                 "age": {year: age},
                 "months_since_last_birthday": {year: age_in_months - 12 * age},
                 "is_male": {year: male},
+                "is_claimant_or_partner": {year: True},
             }
             names.append(name)
         pension_age = at_pension_age(members, year)
@@ -448,15 +451,26 @@ def test_omitted_age_component_keeps_existing_higher_allowance(year):
     )
     for variable in COHORT_VARIABLES:
         assert bool(sim.calculate(variable, year)[0]) is True
-    higher = sim.tax_benefit_system.parameters(
+    single = sim.tax_benefit_system.parameters(
         str(year)
-    ).gov.dwp.housing_benefit.allowances.single.aged
-    # 2015 uses the existing model rate symbolically; historical rate repair is #2207.
-    for variable in [
-        "housing_benefit_applicable_amount",
-        "council_tax_reduction_applicable_amount",
-    ]:
-        assert sim.calculate(variable, year)[0] == pytest.approx(higher * 52, abs=0.01)
+    ).gov.dwp.housing_benefit.allowances.single
+    higher = single.aged
+    # With no age input the claimant is 40. Until 6 December 2018 Housing
+    # Benefit paid pension-age claimants under 65 the former under-65 rate
+    # (SI 2006/214 Sch 3 para 1(1)(a); ended by SI 2017/1187), so in 2015 the
+    # pre-cutoff route gives that rate. England's pensioner Council Tax
+    # Reduction has no such category in the model and keeps the higher rate.
+    age = sim.calculate("age", year)[0]
+    under_65 = single.aged_under_65
+    hb_rate = under_65.amount if age < under_65.age_limit_great_britain else higher
+    expected = {
+        "housing_benefit_applicable_amount": hb_rate,
+        "council_tax_reduction_applicable_amount": higher,
+    }
+    if year == 2015:
+        assert hb_rate == under_65.amount < higher
+    for variable, rate in expected.items():
+        assert sim.calculate(variable, year)[0] == pytest.approx(rate * 52, abs=0.01)
 
 
 @pytest.mark.parametrize("region", ["SCOTLAND", "WALES", "NORTHERN_IRELAND"])

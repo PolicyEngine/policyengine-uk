@@ -21,7 +21,7 @@ SITUATION = {
 RAW_VAT = 10_000 * 0.2 + 1_000 * 0.05
 # A situation's VAT excludes private school fees' official share of 2025-26
 # VAT receipts (gov.simulation.vat.private_school_share_of_receipts).
-KEEP = 1 - 0.008353
+KEEP = 1 - 0.008368
 
 
 def test_legacy_default_is_the_product_of_the_two_factors():

@@ -141,6 +141,12 @@ def situation(families, steps, vary):
             for j, inputs in enumerate(vary(i, step)):
                 name = f"p{i}_{k}_{j}"
                 person = {key: {YEAR: value} for key, value in inputs.items()}
+                # Adults are drawn independently (from 67 to 95, and from 40
+                # for invariant 2's partners), so a couple can be 20 or more
+                # years apart, where the age presumption reads the younger as
+                # the elder's child. Every person here is the claimant or the
+                # partner.
+                person["is_claimant_or_partner"] = {YEAR: True}
                 if j == fam["carer"]:
                     if fam["by_hours"]:
                         person["care_hours"] = {YEAR: 35}

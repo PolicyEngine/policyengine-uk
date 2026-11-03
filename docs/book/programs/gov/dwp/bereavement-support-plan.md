@@ -55,15 +55,19 @@ That means:
 - Since [#2382](https://github.com/PolicyEngine/policyengine-uk/pull/2382)
   (2.135.7), War Widow's Pension has its own variables,
   `war_widows_pension_reported` and `war_widows_pension`. `bsp_reported`
-  keeps CPI uprating only until the datasets move FRS code 9 out of it
-  and WPA into `widowed_parents_allowance_reported` (code 9 is done on
-  Microcosm's main branch in microcosm#1333; still open for the
-  Enhanced FRS in
-  [policyengine-uk-data#578](https://github.com/PolicyEngine/policyengine-uk-data/issues/578),
-  and [microcosm#1222](https://github.com/PolicyEngine/microcosm/issues/1222)
-  is still open);
-  [#2381](https://github.com/PolicyEngine/policyengine-uk/issues/2381)
-  tracks freezing it after that.
+  stays nominally flat for datasets that explicitly supply both
+  `war_widows_pension_reported` and `widowed_parents_allowance_reported`
+  in the same source year, including all-zero columns. Datasets with
+  either column missing retain CPI uprating, as do household situations.
+  Microcosm's merged
+  [#1383](https://github.com/PolicyEngine/microcosm/pull/1383) supplies both
+  columns and closes
+  [#1222](https://github.com/PolicyEngine/microcosm/issues/1222). Older
+  releases and the Enhanced FRS retain the compatibility path;
+  [policyengine-uk-data#578](https://github.com/PolicyEngine/policyengine-uk-data/issues/578)
+  tracks the Enhanced FRS code-9 move. See the
+  [dataset-source guide](https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/skills/dataset-sources.md#bereavement-benefit-split)
+  for projection, fallback and off-rate residual treatment.
 - Since [#2572](https://github.com/PolicyEngine/policyengine-uk/issues/2572),
   WPA also has its own variables, `widowed_parents_allowance_reported`
   (CPI-uprated) and `widowed_parents_allowance`. Unlike BSP, WPA is taxable
@@ -74,8 +78,9 @@ That means:
   cap and an overlapping benefit for Carer's Allowance and Carer Support
   Payment. It ends at State Pension age and while the recipient lives with a
   partner ([SSCBA 1992 s. 39A(4) and (5)][sscba-39a]), so it never reaches
-  Pension Credit. The datasets still put it in `bsp_reported` until they
-  split FRS code 6.
+  Pension Credit. Older datasets still put it in `bsp_reported`;
+  Microcosm #1383 separates amounts matching its positive WPA rate rule,
+  while retaining unclassified off-rate amounts in BSP.
 
 ## Proposed scope
 
@@ -180,10 +185,10 @@ November 2024
 ([DWP, July 2025](https://www.gov.uk/government/publications/bereavement-benefit-remedial-order-uptake-february-2023-to-november-2024)).
 Existing awards continue while the surviving parent is entitled to Child
 Benefit and under State Pension age, so some recipients remain. In
-the current data they sit inside `bsp_reported` (see above), so they
-are already counted in income. Once datasets fill
-`widowed_parents_allowance_reported`, they are told apart from BSP; the
-gap left is a rule-based amount for reforms.
+older datasets they sit inside `bsp_reported` (see above), so they are
+already counted in income. Datasets that fill
+`widowed_parents_allowance_reported` distinguish those reported amounts
+from BSP; the gap left is a rule-based amount for reforms.
 
 ### Phase 3: data-side bereavement inputs
 

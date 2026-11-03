@@ -11,6 +11,8 @@ profits limits (UEL, UPL) with the higher rate threshold, PA + BRL. After
 2030-31 it says all of them will be uprated by September CPI (Explanatory
 Memorandum to SI 2026/231 para 5.1). ``create_threshold_indexation`` writes
 those paths; the secondary threshold (ST) rises by September CPI, unrounded.
+The upper secondary thresholds for the under-21 group and for apprentices
+(UST, AUST) stay equal to the UEL, as they have been since introduced.
 
 Model year Y is the tax year starting 6 April Y. The model stores the PT and
 UEL as the annual amount over 52, to the penny (241.73 and 966.73), so 52
@@ -28,10 +30,10 @@ Invariants:
    0.5%, the steps give £12,570 and £37,700, the 2021-22 amounts in the
    Income Tax (Indexation) Order 2021 (SI 2021/111) arts 2 and 3(a).
 3. Freeze: the model's PA is £12,570 and BRL £37,700 in 2022-2030.
-4. Reference path: in 2031-2039 the model's PA and BRL equal the statute
-   applied year by year, in exact rationals, to the model's own September
-   CPI input; 2040 holds 2039, the last year of the economic assumptions.
-5. Alignment in every year 2021-2040: UPL = PA + BRL and 52 x UEL is within
+4. Reference path: from 2031 to the last year of the economic assumptions
+   the model's PA and BRL equal the statute applied year by year, in exact
+   rationals, to the model's own September CPI input; later years hold it.
+5. Alignment in every year from 2021: UPL = PA + BRL and 52 x UEL is within
    £0.26 of the UPL. From 2023: LPL = PA and 52 x PT is within £0.26 of the
    LPL. Intended exceptions, as the law stood: in 2021-22 the PT and LPL
    were £9,568 a year, below the PA; in 2022-23 the PT rose to the PA only
@@ -50,7 +52,7 @@ Invariants:
    thresholds together by the statute; with September CPI <= 0, or with no
    economic assumptions, they stay at their frozen levels; a reprocessed
    override of the PA or BRL keeps the NICs thresholds aligned with it.
-9. No double indexing: none of the seven parameters carries ``uprating``
+9. No double indexing: none of the nine parameters carries ``uprating``
    metadata, so core uprating does not extend them.
 10. The September CPI series: each April's rise is the previous September's
     CPI to 0.1 percentage points (halves up), and zero unless positive; its
@@ -72,6 +74,9 @@ from policyengine_core.parameters import ParameterNode
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.model_api import Scenario
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     september_cpi_uprating_rate,
 )
@@ -83,11 +88,14 @@ from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     weekly_equivalent,
 )
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.system import system as default_system
 
 PARAMETER_DIR = Path(policyengine_uk.__file__).parent / "parameters"
 FROZEN_YEARS = range(2022, 2031)
-INDEXED_YEARS = range(2031, 2040)
-ALIGNMENT_YEARS = range(2021, 2041)
+# The last year of the economic assumptions.
+HORIZON = growth_horizon(default_system.parameters.gov.economic_assumptions.yoy_growth)
+INDEXED_YEARS = range(2031, HORIZON + 1)
+ALIGNMENT_YEARS = range(2021, HORIZON + 2)
 # 52 weeks of an amount rounded to the nearest penny.
 WEEKLY_ROUNDING = 52 * 0.005
 # The model stores parameter values as Python floats; arrays are float32.
@@ -99,6 +107,8 @@ PATHS = {
     "primary_threshold": "national_insurance/class_1/employee_scale.yaml",
     "upper_earnings_limit": "national_insurance/class_1/employee_scale.yaml",
     "secondary_threshold": "national_insurance/class_1/employer_scale.yaml",
+    "upper_secondary_threshold": "national_insurance/class_1/thresholds/upper_secondary_threshold.yaml",
+    "apprentice_upper_secondary_threshold": "national_insurance/class_1/thresholds/apprentice_upper_secondary_threshold.yaml",
     "lower_profits_limit": "national_insurance/class_4/contribution_scale.yaml",
     "upper_profits_limit": "national_insurance/class_4/contribution_scale.yaml",
 }
@@ -110,7 +120,7 @@ def system():
 
 
 def threshold_parameters(root):
-    """The seven parameters under a ``gov`` node."""
+    """The nine parameters under a ``gov`` node."""
     hmrc = root.hmrc
     class_1 = hmrc.national_insurance.class_1
     class_4 = hmrc.national_insurance.class_4
@@ -123,6 +133,10 @@ def threshold_parameters(root):
         "primary_threshold": class_1.employee_scale.brackets[1].threshold,
         "upper_earnings_limit": class_1.employee_scale.brackets[2].threshold,
         "secondary_threshold": class_1.employer_scale.brackets[1].threshold,
+        "upper_secondary_threshold": class_1.thresholds.upper_secondary_threshold,
+        "apprentice_upper_secondary_threshold": (
+            class_1.thresholds.apprentice_upper_secondary_threshold
+        ),
         "lower_profits_limit": class_4.contribution_scale.brackets[1].threshold,
         "upper_profits_limit": class_4.contribution_scale.brackets[2].threshold,
     }
@@ -296,7 +310,7 @@ def test_income_tax_thresholds_follow_the_statute_from_2031_32(system):
 
 
 def test_thresholds_hold_after_the_last_year_of_economic_assumptions(system):
-    assert thresholds(system, 2040) == thresholds(system, 2039)
+    assert thresholds(system, HORIZON + 1) == thresholds(system, HORIZON)
 
 
 def test_indexed_amounts_are_statutory_multiples(system):
@@ -323,7 +337,7 @@ def test_upper_thresholds_align_with_the_higher_rate_threshold(system, year):
 
 # 2023-24 is the first aligned year: NICA 2022 s2 set the LPL to £12,570
 # from 6 April 2023 (#1968, fixed by #2058).
-@pytest.mark.parametrize("year", range(2023, 2041))
+@pytest.mark.parametrize("year", range(2023, HORIZON + 2))
 def test_lower_thresholds_align_with_the_personal_allowance(system, year):
     values = thresholds(system, year)
     assert values["lower_profits_limit"] == pytest.approx(
@@ -472,6 +486,13 @@ def synthetic_parameters(last_years, rates, horizon, bases):
                                 },
                             ]
                         },
+                        "thresholds": {
+                            name: series(bases[name], 2021, last_years[name])
+                            for name in (
+                                "upper_secondary_threshold",
+                                "apprentice_upper_secondary_threshold",
+                            )
+                        },
                     },
                     "class_4": {
                         "contribution_scale": {
@@ -521,6 +542,8 @@ FROZEN_AMOUNTS = {
     "primary_threshold": 241.73,
     "upper_earnings_limit": 966.73,
     "secondary_threshold": 96.153846,
+    "upper_secondary_threshold": 966.73,
+    "apprentice_upper_secondary_threshold": 966.73,
     "lower_profits_limit": 12_570,
     "upper_profits_limit": 50_270,
 }
@@ -529,6 +552,13 @@ NICS_ALIGNED = {
     "upper_profits_limit": lambda pa, brl: pa + brl,
     "primary_threshold": lambda pa, brl: float(weekly_equivalent(Decimal(repr(pa)))),
     "upper_earnings_limit": lambda pa, brl: float(
+        weekly_equivalent(Decimal(repr(pa + brl)))
+    ),
+    # The upper secondary thresholds stay equal to the UEL.
+    "upper_secondary_threshold": lambda pa, brl: float(
+        weekly_equivalent(Decimal(repr(pa + brl)))
+    ),
+    "apprentice_upper_secondary_threshold": lambda pa, brl: float(
         weekly_equivalent(Decimal(repr(pa + brl)))
     ),
 }
@@ -552,6 +582,12 @@ NICS_ALIGNED = {
             "basic_rate_limit": st.integers(300, 450).map(lambda n: 100 * n),
             "primary_threshold": st.integers(15_000, 30_000).map(lambda n: n / 100),
             "upper_earnings_limit": st.integers(80_000, 120_000).map(lambda n: n / 100),
+            "upper_secondary_threshold": st.integers(80_000, 120_000).map(
+                lambda n: n / 100
+            ),
+            "apprentice_upper_secondary_threshold": st.integers(80_000, 120_000).map(
+                lambda n: n / 100
+            ),
             "secondary_threshold": st.integers(5_000, 20_000).map(lambda n: n / 100),
             "lower_profits_limit": st.integers(5_000, 20_000),
             "upper_profits_limit": st.integers(40_000, 70_000),
@@ -627,7 +663,7 @@ def test_a_nics_threshold_stated_above_its_equivalent_realigns():
         assert synthetic_values(root, year)["lower_profits_limit"] == 12_570, year
 
 
-@pytest.mark.parametrize("year", [2030, *INDEXED_YEARS, 2040])
+@pytest.mark.parametrize("year", [2030, *INDEXED_YEARS, HORIZON + 1])
 def test_nested_baseline_reads_the_same_amounts(system, year):
     # parameters.baseline is cloned before fiscal-year conversion, so it is
     # read at 1 January; indexed values keyed to 1 January give it the same
@@ -833,7 +869,7 @@ def test_income_tax_and_nics_use_the_indexed_thresholds_in_2031(system):
 
 
 def test_canonical_threshold_registration_keeps_incoming_savings_writer():
-    """The merged indexation owns eight unique paths, including annual savings."""
+    """The merged indexation owns ten unique paths, including annual savings."""
     from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
         INDEXED_THRESHOLDS,
     )
@@ -845,6 +881,8 @@ def test_canonical_threshold_registration_keeps_incoming_savings_writer():
         "gov.hmrc.national_insurance.class_1.employee_scale[1].threshold",
         "gov.hmrc.national_insurance.class_1.employee_scale[2].threshold",
         "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold",
+        "gov.hmrc.national_insurance.class_1.thresholds.upper_secondary_threshold",
+        "gov.hmrc.national_insurance.class_1.thresholds.apprentice_upper_secondary_threshold",
         "gov.hmrc.national_insurance.class_4.contribution_scale[1].threshold",
         "gov.hmrc.national_insurance.class_4.contribution_scale[2].threshold",
     }

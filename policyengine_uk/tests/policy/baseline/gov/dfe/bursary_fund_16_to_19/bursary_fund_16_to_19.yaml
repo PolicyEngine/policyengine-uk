@@ -267,3 +267,65 @@
   output:
     bursary_fund_16_to_19_vulnerable_group_eligible: [false]
     bursary_fund_16_to_19: [0]
+
+# Signal regressions only: these do not certify a new lawful legacy claim
+# or an education institution's needs assessment/grant decision.
+- name: Issue2263 raw IR-ESA screened to nil is not own-right ESA receipt
+  period: 2025
+  input:
+    age: 17
+    current_education: POST_SECONDARY
+    pip_dl_category: STANDARD
+    esa_income_reported: 3_000
+    employment_income: 20_000
+    hours_worked: 2_080
+    would_claim_uc: false
+  output:
+    is_on_income_related_esa: false
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: false
+
+# A continuing preassessed award can supply the helper signal at 20; DfE
+# section 3.1 still excludes 19+ students from the defined vulnerable groups.
+- name: Issue2263 continuing own-right ESA gives a helper signal only
+  period: 2025
+  input:
+    age: 20
+    esa_income_reported: 3_000
+    would_claim_uc: false
+  output:
+    is_on_income_related_esa: true
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: true
+
+- name: Issue2263 assessed contributory ESA zero overrides its raw report proxy
+  period: 2025
+  input:
+    age: 20
+    esa_contrib_reported: 3_000
+    esa_contrib: 0
+  output:
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: false
+
+- name: Issue2263 positive contributory ESA retains the helper signal
+  period: 2025
+  input:
+    age: 20
+    esa_contrib: 3_000
+  output:
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: true
+
+- name: Issue2263 explicit own-right false overrides a reported UC signal
+  period: 2025
+  input:
+    age: 17
+    universal_credit_reported: 100
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: false
+  output:
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: false
+
+- name: Issue2263 explicit own-right true remains authoritative
+  period: 2025
+  input:
+    age: 17
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: true
+  output:
+    bursary_fund_16_to_19_receives_uc_or_esa_in_own_right: true

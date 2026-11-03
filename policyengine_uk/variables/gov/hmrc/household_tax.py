@@ -2,6 +2,7 @@ from policyengine_uk.model_api import *
 
 
 HOUSEHOLD_TAX_VARIABLES = [
+    "isa_cash_interest_flat_rate_charge",
     "expected_sdlt",
     "expected_ltt",
     "expected_lbtt",

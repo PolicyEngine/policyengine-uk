@@ -10,7 +10,8 @@
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     council_tax_reduction_individual_non_dep_deduction_eligible: true
-    total_income: 5_200 # £100 a week
+    hours_worked: 832 # 16 hours a week
+    employment_income: 5_200 # £100 a week, in both programmes' gross income
   output:
     household_benefits_individual_non_dep_deduction: 793
     council_tax_reduction_individual_non_dep_deduction: 793
@@ -19,7 +20,8 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 5_200 # 100 weekly
+    hours_worked: 832 # 16 hours a week
+    housing_benefit_non_dep_gross_income: 5_200 # 100 weekly
   output:
     household_benefits_individual_non_dep_deduction: 19.65 * 52
 
@@ -27,7 +29,8 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 30_056 # 578 weekly
+    hours_worked: 832 # 16 hours a week
+    housing_benefit_non_dep_gross_income: 30_056 # 578 weekly
   output:
     household_benefits_individual_non_dep_deduction: 126.65 * 52
 
@@ -35,7 +38,8 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 18_148 # 349 weekly
+    hours_worked: 832 # 16 hours a week
+    housing_benefit_non_dep_gross_income: 18_148 # 349 weekly
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
 
@@ -45,15 +49,15 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 9_517 # just over 183 weekly, the lower edge of the second band
+    hours_worked: 832 # 16 hours a week
+    housing_benefit_non_dep_gross_income: 9_517 # just over 183 weekly, the lower edge of the second band
   output:
     household_benefits_individual_non_dep_deduction: 45.15 * 52
 
-# Other investment income counts in total_income (ITA 2007 s. 23), but it is
-# left out of the non-dependant band until the reg 74(2) remunerative-work
-# test is modelled (#2007). Otherwise a non-worker whose only income is
-# investment income would be banded on it, where reg 74(1)(b) gives them the
-# minimum whatever their income.
+# Other investment income remains outside the gross-income base; extending
+# that base is deferred to #2007. With no other income, this non-worker has
+# no banding income, and the work gate leaves the scale's zero until #2007
+# models the exemptions with reg 74(1)(b)'s flat charge.
 - name: Other investment income does not band a non-worker
   period: 2025
   input:

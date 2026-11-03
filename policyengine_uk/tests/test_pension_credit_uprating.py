@@ -14,8 +14,8 @@ Invariants, for every earnings, CPI and phase-in path:
    earnings figure, and never fall.
 2. Each higher HB allowance equals the projected guarantee plus the
    projected Savings Credit maximum, after its published amounts.
-3. A positive phase-in rate times the guarantee less the threshold is the
-   maximum; a zero rate keeps the threshold in force before it.
+3. The threshold is the guarantee less maximum / phase-in, floored at zero;
+   a zero enacted phase-in rate keeps the threshold in force before it.
 4. Published amounts are unchanged by the projections.
 """
 
@@ -44,6 +44,7 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_upratin
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
+    growth_horizon,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
@@ -53,7 +54,10 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 
 EARNINGS_INDEX = "gov.economic_assumptions.indices.earnings_uprating"
 FIRST_PROJECTION_YEAR = 2027
-LAST_INDEX_YEAR = 2039
+LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
+# The last year the synthetic growth series reach: their lagged series run a
+# year past the final observation, as the real ones do.
+LAST_SYNTHETIC_YEAR = 2040
 LAST_PUBLISHED_YEAR = FIRST_PROJECTION_YEAR - 1
 PARAMETERS_DIR = COUNTRY_DIR / "parameters"
 SMG_NAME = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
@@ -105,8 +109,8 @@ def add_node(parent, key):
     return node
 
 
-def synthetic_parameters(path, phase_ins=()):
-    """Uprate and project the production Pension Credit and HB amounts.
+def synthetic_parameter_tree(path, phase_ins=()):
+    """Build a small enacted tree with generated earnings and CPI paths.
 
     No simulation is built. Earlier observations merely supply the indices'
     2010 base; every generated path begins with the May-July and September
@@ -115,6 +119,7 @@ def synthetic_parameters(path, phase_ins=()):
     """
     observations = {year: (0.02, 0.02) for year in range(2010, 2026)}
     observations.update({2026 + i: values for i, values in enumerate(path)})
+    final_observation = observations[max(observations)]
     parameters = ParameterNode(
         data={
             "gov": {
@@ -139,6 +144,11 @@ def synthetic_parameters(path, phase_ins=()):
                                 "values": {
                                     f"{year}-01-01": values[position]
                                     for year, values in observations.items()
+                                }
+                                | {
+                                    f"{LAST_SYNTHETIC_YEAR - 1}-01-01": final_observation[
+                                        position
+                                    ]
                                 }
                             }
                             for name, position in (
@@ -170,11 +180,25 @@ def synthetic_parameters(path, phase_ins=()):
             node.add_child(cohort, getattr(getattr(RAW_HB, kind), cohort).clone())
     parameters = add_september_cpi_uprating(add_earnings_uprating(parameters))
     parameters = create_economic_assumption_indices(parameters)
+    return parameters
+
+
+def project_synthetic_parameters(parameters, unreformed=None):
+    """Use the production generation-before-uprating order, without a model."""
+    project_savings_credit_threshold(parameters, unreformed)
+    project_pension_age_allowances(parameters, unreformed)
     propagate_parameter_metadata(parameters)
     uprate_parameters(parameters)
-    project_savings_credit_threshold(parameters)
-    project_pension_age_allowances(parameters)
     return parameters
+
+
+def synthetic_parameters(path, phase_ins=()):
+    return project_synthetic_parameters(synthetic_parameter_tree(path, phase_ins))
+
+
+def test_the_synthetic_years_reach_the_end_of_the_generated_indices():
+    indices = synthetic_parameters([(0.039, 0.035)], [0.6]).gov.economic_assumptions
+    assert growth_horizon(indices.indices) == LAST_SYNTHETIC_YEAR
 
 
 def earnings_linked_amounts(parameters):
@@ -250,7 +274,10 @@ def test_higher_hb_allowances_keep_each_part_on_its_own_index(path):
     parameters = synthetic_parameters(path)
     assert_published_amounts_kept(parameters)
     for allowance, guarantee, maximum in higher_allowances(parameters):
-        assert "uprating" not in allowance.metadata
+        kind = allowance.name.split(".")[-2]
+        assert allowance.metadata["uprating"] == (
+            f"{HB_NAME}.protected_pension_age_uprating.{kind}"
+        )
         for i, (earnings, cpi) in enumerate(path):
             year = FIRST_PROJECTION_YEAR + i
             at, before = f"{year}-04-30", f"{year - 1}-04-30"
@@ -270,8 +297,10 @@ def test_higher_hb_allowances_keep_each_part_on_its_own_index(path):
 @given(path=paths, phase_ins=phase_in_paths)
 @example(path=[(0.039, 0.035)], phase_ins=[0.0])
 @example(path=[(0.039, 0.035), (0.02, 0.03), (0.05, 0.01)], phase_ins=[0.0, 0.6, 0.0])
-def test_projected_threshold_keeps_the_maximum_at_every_phase_in_rate(path, phase_ins):
-    """Invariant 3: a zero rate never divides, and keeps the threshold."""
+def test_projected_threshold_respects_phase_in_and_its_nonnegative_floor(
+    path, phase_ins
+):
+    """Invariant 3: zero never divides and small positive rates cannot cut below zero."""
     parameters = synthetic_parameters(path, phase_ins)
     assert_published_amounts_kept(parameters)
     pc = parameters.gov.dwp.pension_credit
@@ -280,14 +309,14 @@ def test_projected_threshold_keeps_the_maximum_at_every_phase_in_rate(path, phas
         guarantee = getattr(pc.guarantee_credit.minimum_guarantee, relation)
         threshold = getattr(pc.savings_credit.threshold, relation)
         maximum = getattr(pc.savings_credit.maximum, relation)
-        for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
             at, before = f"{year}-04-30", f"{year - 1}-04-30"
             rate = phase_in(at)
             if rate == 0:
                 assert threshold(at) == threshold(before), (relation, year)
             else:
-                assert rate * (guarantee(at) - threshold(at)) == pytest.approx(
-                    maximum(at), abs=1e-9
+                assert threshold(at) == pytest.approx(
+                    max(0, guarantee(at) - maximum(at) / rate), abs=1e-9
                 ), (relation, year, rate)
 
 
@@ -400,8 +429,8 @@ def zero_phase_in_situation():
 def test_zero_phase_in_reform_builds_and_pays_no_savings_credit():
     """A zero Savings Credit phase-in rate for 2027-28 once divided by zero.
 
-    It now keeps the 2026-27 threshold for that year, pays no Savings Credit,
-    and leaves 2028-29 as current law has it.
+    It now keeps the preceding threshold, as on main, pays no Savings
+    Credit, and leaves 2028-29 as current law has it.
     """
     reform = {"gov.dwp.pension_credit.savings_credit.rate.phase_in": {"2027": 0}}
     baseline = Simulation(situation=zero_phase_in_situation())
@@ -426,9 +455,8 @@ def test_zero_phase_in_reform_builds_and_pays_no_savings_credit():
 def test_reforms_keep_their_own_allowance_and_move_the_derived_one():
     """A dated change to a higher allowance is kept, and prior law resumes.
 
-    A change to the guarantee moves the allowance derived from it in that
-    year, as it moves the Savings Credit threshold; the lower allowance has
-    its own earnings projection and does not follow.
+    A change to the guarantee moves the protected HB allowance and Savings
+    Credit threshold derived from it, as on main.
     """
     reform = {
         f"{HB_NAME}.single.aged": {"2028": 300},
@@ -442,17 +470,22 @@ def test_reforms_keep_their_own_allowance_and_move_the_derived_one():
     reformed = Simulation(situation=situation, reform=reform).tax_benefit_system
     allowances = reformed.parameters.gov.dwp.housing_benefit.allowances
     now = current.gov.dwp.housing_benefit.allowances
-    sc_max = reformed.parameters.gov.dwp.pension_credit.savings_credit.maximum
     for year in (2027, 2029, 2030):
         at = f"{year}-04-30"
         assert allowances.single.aged(at) == pytest.approx(now.single.aged(at))
     assert allowances.single.aged("2028-04-30") == 300
-    assert allowances.couple.aged("2029-04-30") == pytest.approx(
-        400 + sc_max.COUPLE("2029-04-30")
-    )
     for year in (2028, 2030):
         at = f"{year}-04-30"
         assert allowances.couple.aged(at) == pytest.approx(now.couple.aged(at))
+        threshold = reformed.parameters.gov.dwp.pension_credit.savings_credit.threshold
+        baseline_threshold = current.gov.dwp.pension_credit.savings_credit.threshold
+        assert threshold.COUPLE(at) == pytest.approx(baseline_threshold.COUPLE(at))
+    pc = reformed.parameters.gov.dwp.pension_credit
+    maximum = pc.savings_credit.maximum.COUPLE("2029-04-30")
+    assert allowances.couple.aged("2029-04-30") == pytest.approx(400 + maximum)
+    assert pc.savings_credit.threshold.COUPLE("2029-04-30") == pytest.approx(
+        400 - maximum / pc.savings_credit.rate.phase_in("2029-04-30")
+    )
     assert allowances.couple.aged_from_cutoff("2029-04-30") == pytest.approx(
         now.couple.aged_from_cutoff("2029-04-30")
     )

@@ -26,7 +26,7 @@
     # (30,000 - 12,570) x 20% + 14,000 x 20% - 1,600
     income_tax: 4_686
 
-- name: The same landlord in 2027-28 gets relief at the 22% property basic rate
+- name: The same landlord in 2027-28 gets relief at the 24% property basic rate
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -35,10 +35,10 @@
     property_income: 14_000
     property_finance_costs: 8_000
   output:
-    # 22% x 8,000
-    property_finance_cost_relief: 1_760
-    # (30,000 - 12,570) x 20% + 14,000 x 22% - 1,760
-    income_tax: 4_806
+    # 24% x 8,000
+    property_finance_cost_relief: 1_920
+    # (30,000 - 12,570) x 20% + 14,000 x 24% - 1,920
+    income_tax: 4_926
 
 - name: A Scottish taxpayer gets relief at the basic rate of 20% in 2025-26
   period: 2025
@@ -52,7 +52,7 @@
     pays_scottish_income_tax: true
     property_finance_cost_relief: 1_600
 
-- name: A Scottish taxpayer also gets the 22% property basic rate in 2027-28
+- name: A Scottish taxpayer also gets the 24% property basic rate in 2027-28
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -62,9 +62,9 @@
     region: SCOTLAND
   output:
     pays_scottish_income_tax: true
-    # s. 274AA(5) gives no Scottish rate: 22% x 8,000, although the property
+    # s. 274AA(5) gives no Scottish rate: 24% x 8,000, although the property
     # profits themselves are taxed at Scottish rates.
-    property_finance_cost_relief: 1_760
+    property_finance_cost_relief: 1_920
 
 - name: Relief is limited to the property profits and the rest carried forward
   period: 2025

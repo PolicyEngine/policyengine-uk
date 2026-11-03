@@ -32,6 +32,10 @@ class property_income_tax(Variable):
             title="Finance Act 2026, s. 7 (property income rates)",
             href="https://www.legislation.gov.uk/ukpga/2026/11/section/7/enacted",
         ),
+        dict(
+            title="Budget 2026, paragraph 6.246 (property rates of 24%, 44% and 49%)",
+            href="https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142",
+        ),
     ]
     unit = GBP
 
@@ -77,8 +81,10 @@ class property_income_tax(Variable):
         apply to Scotland).
 
         For rUK taxpayers, property income is taxed using property-specific
-        rates. From April 2027, these are 2pp higher than standard UK rates
-        (22%, 42%, 47% vs 20%, 40%, 45%).
+        rates. From April 2027, these are 4pp higher than standard UK rates
+        (24%, 44%, 49% vs 20%, 40%, 45%): 2pp from Budget 2025 and a further
+        2pp from Budget 2026 (paragraph 6.246), which applies them across
+        England, Wales and Northern Ireland.
 
         Property income is stacked on top of other earned income for
         determining which tax band it falls into.
