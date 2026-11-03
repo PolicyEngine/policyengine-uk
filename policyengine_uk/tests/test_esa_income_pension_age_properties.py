@@ -172,6 +172,10 @@ def examples(draw):
     # appointee saving (art. 3A(2)), which keeps the award payable all year.
     saved = year >= 2026
     units = draw(st.lists(families(tax_credits, saved), min_size=4, max_size=12))
+    # In 2016, add case 18's man, whom Pension Credit pays only with the
+    # award.
+    if year == 2016:
+        units = units + [ROWS[2]]
     return units, year
 
 
