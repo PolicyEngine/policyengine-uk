@@ -219,16 +219,14 @@
     universal_credit: 11_098.80
 
 # A hand-entered family that reports Universal Credit but not Housing Benefit
-# reports a benefit, so claims_all_entitled_benefits is false. The
-# accommodation status still makes it claim Housing Benefit
-# (would_claim_housing_benefit), since Universal Credit leaves the rent out.
-# Universal Credit: the standard allowance alone, 12 x £424.90 = £5,098.80.
-# Housing Benefit: Universal Credit passports the means test, so it pays the
-# whole £10,000 rent, and the Housing Benefit cap doesn't apply to a claimant
-# receiving Universal Credit (HB Regs 2006 reg 75F(1)(g)). Household net
-# income: £10,000 + £5,098.80 + £100 Household Energy Payment - £180 TV
-# licence - £1,500 council tax = £13,518.80.
-- name: A family in temporary accommodation that reports only Universal Credit takes Housing Benefit up for the rent
+# reports at least £1 across the seven means-tested benefits, so
+# claims_all_entitled_benefits is false and the family claims only what it
+# reports: would_claim_housing_benefit is false, and the accommodation status
+# doesn't change that. Universal Credit leaves the rent out, so it pays the
+# standard allowance alone, 12 x £424.90 = £5,098.80, and nothing helps with
+# the £10,000 rent. Household net income: £5,098.80 + £100 Household Energy
+# Payment - £180 TV licence - £1,500 council tax = £3,518.80.
+- name: A family in temporary accommodation that reports only Universal Credit claims no Housing Benefit and gets no help with the rent
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -250,7 +248,42 @@
         council_tax: 1_500
   output:
     claims_all_entitled_benefits: false
-    would_claim_housing_benefit: true
+    would_claim_housing_benefit: false
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 0
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+    household_net_income: 3_518.80
+
+# The same family with would_claim_housing_benefit set by the user. Universal
+# Credit passports the Housing Benefit means test, so Housing Benefit pays the
+# whole £10,000 rent, and the council applies no Housing Benefit cap to a
+# claimant receiving Universal Credit (HB Regs 2006 reg 75F(1)(g)). Universal
+# Credit: £5,098.80. Household net income: £10,000 + £5,098.80 + £100 - £180 -
+# £1,500 = £13,518.80, the same as the control outside that accommodation.
+- name: The same family gets Housing Benefit for the rent when the user sets would_claim_housing_benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        in_specified_or_temporary_accommodation: true
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+        council_tax: 1_500
+  output:
     claims_universal_credit: true
     housing_benefit_eligible: true
     housing_benefit: 10_000
@@ -261,7 +294,7 @@
 # The control without the status: Universal Credit pays the social rent,
 # £5,098.80 + £10,000 = £15,098.80, under London's £16,967 single cap.
 # Household net income: £15,098.80 + £100 - £180 - £1,500 = £13,518.80, the
-# same as with the status.
+# same as with the status and would_claim_housing_benefit set.
 - name: The same family outside that accommodation gets the rent through Universal Credit
   period: 2026
   absolute_error_margin: 0.01
