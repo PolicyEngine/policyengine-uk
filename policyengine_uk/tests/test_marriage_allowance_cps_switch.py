@@ -29,8 +29,8 @@ Invariants, for every household and parameter value drawn:
    everyone else meets the conditions, and no one has more than the statutory
    share of the personal allowance, rounded up to the next £10.
 4. The allowance never falls when the statutory rate rises.
-5. Switched on by its own parameters, the reform behaves as it did before
-   this change (regression values computed before the fix).
+5. Switched on by its own parameters, the reform gives the allowance to the
+   higher-rate earner too, worth the basic rate of the allowance.
 """
 
 import functools
@@ -168,19 +168,19 @@ def test_a_higher_statutory_rate_raises_only_the_statutory_allowance(route):
     assert outcome(simulation) == ([2_520, 0, 0, 0], [2_982, 11_432])
 
 
-# Invariant 5. Each expectation was computed on main before this change
-# (ecd531776); the reform's own parameters switched it on there too. The
-# expanded allowance reaches the higher-rate earner. The model takes the
-# allowance off taxable income, so it is worth 40% to them: 11,432 - 1,260 x
-# 40% = 10,928 at 10%, and 11,432 - 2,520 x 40% = 10,424 at 20%.
+# Invariant 5, by hand. The expanded allowance reaches the higher-rate earner.
+# Parliament gives the allowance as a tax reduction of the basic rate on the
+# amount (ITA 2007 s. 55B(1) and (3)), whatever the recipient's top rate:
+# 11,432 - 1,260 x 20% = 11,180 at 10%, and 11,432 - 2,520 x 20% = 10,928 at
+# 20%.
 OWN_SWITCHES = {
     "remove_income_condition": (
         change((REMOVE_INCOME_CONDITION, True)),
-        ([1_260, 0, 1_260, 0], [3_234, 10_928]),
+        ([1_260, 0, 1_260, 0], [3_234, 11_180]),
     ),
     "cps_rate": (
         change((CPS_RATE, 0.2)),
-        ([2_520, 0, 2_520, 0], [2_982, 10_424]),
+        ([2_520, 0, 2_520, 0], [2_982, 10_928]),
     ),
 }
 
@@ -199,7 +199,7 @@ def test_a_cps_rate_switches_the_reform_on_whatever_the_statutory_rate():
     reform = change((STATUTORY_RATE, 0.2), (CPS_RATE, 0.2))
     simulation = Simulation(situation=ISSUE_COUPLES, reform=reform)
     assert REFORM_VARIABLE in simulation.tax_benefit_system.variables
-    assert outcome(simulation) == ([2_520, 0, 2_520, 0], [2_982, 10_424])
+    assert outcome(simulation) == ([2_520, 0, 2_520, 0], [2_982, 10_928])
 
 
 CHILD_CONDITION_COUPLES = couples(
