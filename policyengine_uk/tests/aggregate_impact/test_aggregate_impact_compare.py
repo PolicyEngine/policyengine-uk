@@ -1607,8 +1607,8 @@ def test_a_failure_the_base_could_not_confirm_blocks_and_says_so():
     assert found["classification"] == "regression"
     assert found["base_unconfirmed"] == ["gov_tax:tax_h:contains"]
     assert any(
-        "could not confirm whether gov_tax contains tax_h on the base, so this "
-        "change may not have introduced it." in failure
+        "On the base, the check could not confirm whether tax_h contains tax_b "
+        "(gov_tax), so this change may not have introduced it." in failure
         for failure in summary["failures"]
     )
     assert (
@@ -1635,8 +1635,8 @@ def test_the_failure_names_a_containment_its_details_leave_out():
     summary = compare(result({}, [base]), result({}, [head]), SPEC)
 
     failure = next(f for f in summary["failures"] if "counted_once:tax_b" in f)
-    assert "tax_h contains tax_b" not in failure.split(". The check")[0]
-    assert "could not confirm whether gov_tax contains tax_h on the base" in failure
+    assert "tax_h contains tax_b" not in failure.split(". On the base")[0]
+    assert "could not confirm whether tax_h contains tax_b (gov_tax)" in failure
 
 
 def test_the_failure_names_every_containment_the_base_could_not_confirm():
@@ -1646,8 +1646,9 @@ def test_the_failure_names_every_containment_the_base_could_not_confirm():
     )
 
     assert any(
-        "could not confirm whether gov_tax contains tax_g or whether gov_tax "
-        "contains tax_h on the base, so this change may not have introduced them."
+        "On the base, the check could not confirm whether tax_g contains tax_b "
+        "(gov_tax) or whether tax_h contains tax_b (gov_tax), so this change may "
+        "not have introduced them."
         in failure
         for failure in summary["failures"]
     )

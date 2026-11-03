@@ -108,18 +108,19 @@ def _unconfirmed_on_base(base: Optional[Mapping], head: Optional[Mapping]) -> li
     return sorted(new) if new and new <= could_confirm else []
 
 
-def _unconfirmed_note(scopes: list) -> str:
+def _unconfirmed_note(check_id: str, scopes: list) -> str:
     """The failure text's note on the scopes of ``_unconfirmed_on_base``. It
     names each containment, as the text shows only the check's first three
     details."""
     if not scopes:
         return ""
+    component = check_id.split(":", 1)[-1]
     containments = " or ".join(
-        f"whether {total} contains {head}"
+        f"whether {head} contains {component} ({total})"
         for total, head, _ in (scope.rsplit(":", 2) for scope in scopes)
     )
     return (
-        f". The check could not confirm {containments} on the base, so this "
+        f". On the base, the check could not confirm {containments}, so this "
         f"change may not have introduced {'it' if len(scopes) == 1 else 'them'}."
     )
 
@@ -637,7 +638,7 @@ def compare(
         failures.append(
             f"{check['label']} ({check['id']}): "
             + "; ".join(check["head_details"][:3])
-            + _unconfirmed_note(check["base_unconfirmed"])
+            + _unconfirmed_note(check["id"], check["base_unconfirmed"])
         )
 
     rows, flags = compare_metrics(_metric_map(base), _metric_map(head), spec, years)

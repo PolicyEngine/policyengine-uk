@@ -219,3 +219,70 @@ def test_a_geographic_guard_must_name_two_known_heads(raw):
         ]
         with pytest.raises(PartitionError):
             parse_partition(mutated)
+
+
+def _small_partition(
+    total="gov_tax",
+    head_id="tax_h",
+    variable="tax_h",
+    double_count="tax_b",
+    guard_id="g",
+):
+    """One total with two tax heads, a declared double count and a guard."""
+    return {
+        "schema_version": 1,
+        "totals": {
+            total: {"kind": "tax", "module": "policyengine_uk", "list": "TAXES"}
+        },
+        "tax_heads": [
+            {"id": head_id, "label": "H", "variable": variable, "totals": [total]},
+            {"id": "tax_k", "label": "K", "variable": "tax_k", "totals": [total]},
+        ],
+        "model_double_counts": [
+            {"variable": double_count, "contained_in": variable, "totals": [total]}
+        ],
+        "overlap_guards": [
+            {
+                "id": guard_id,
+                "kind": "geographic_exclusivity",
+                "heads": [head_id, "tax_k"],
+            }
+        ],
+    }
+
+
+def test_the_small_partition_loads():
+    assert parse_partition(_small_partition()).components("gov_tax") == [
+        "tax_h",
+        "tax_k",
+        "tax_b",
+    ]
+
+
+@pytest.mark.parametrize(
+    "field, name",
+    [
+        ("total", "gov:tax"),
+        ("head_id", "tax:h"),
+        ("variable", "tax:h"),
+        ("double_count", "tax:b"),
+        ("guard_id", "g:1"),
+    ],
+)
+def test_a_name_with_a_colon_is_rejected(field, name):
+    """The report writes each of these names into a check id or a scope, and
+    splits those at their colons."""
+    with pytest.raises(PartitionError, match=f"{name!r} contains a colon"):
+        parse_partition(_small_partition(**{field: name}))
+
+
+@pytest.mark.parametrize(
+    "total, head",
+    [("gov:tax", "tax_h"), ("gov", "tax:tax_h")],
+    ids=["base", "head"],
+)
+def test_neither_side_of_a_colon_collision_loads(total, head):
+    """Both pairs would write the counted-once scope gov:tax:tax_h:contains."""
+    assert f"{total}:{head}" == "gov:tax:tax_h"
+    with pytest.raises(PartitionError, match="contains a colon"):
+        parse_partition(_small_partition(total=total, head_id=head, variable=head))
