@@ -683,8 +683,9 @@
   # a week; their child (10) pays nothing. The head falls under the
   # pension-age scheme. The lodger falls within reg 3(2)(e), and the model
   # treats the partner as liable as well, so neither is a non-dependant. The
-  # son and the child belong to no family of the head's (reg 3(2)(a)) and
-  # owe the head nothing, so both count as non-dependants under reg 3(1);
+  # son and the child sit in the lodger's benefit unit, not the head's (reg
+  # 3(2)(a)), and owe the head nothing, so both count as non-dependants under
+  # reg 3(1);
   # the model flags the son, at 18 or over, for a deduction, and the child,
   # under 18, for none.
   period: 2026
