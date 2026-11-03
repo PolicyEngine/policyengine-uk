@@ -22,7 +22,7 @@ event, so that `--hypothesis-show-statistics` counts the examples per scheme.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, event, given, settings
+from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -72,9 +72,9 @@ def maybe(high):
 def simulate(households, reform=None):
     """One simulation of households. Each household is a dict with country,
     benunits (a list of lists of person input dicts; the first benunit is
-    the Council Tax Reduction applicant's) and, optionally, uc and
+    the Council Tax Reduction applicant's) and, optionally, uc,
     child_benefit (whether the applicant's benefit unit claims Child
-    Benefit)."""
+    Benefit) and council_tax (2,000 where the household gives none)."""
     situation = {"people": {}, "benunits": {}, "households": {}}
     for h, household in enumerate(households):
         names = []
@@ -98,7 +98,7 @@ def simulate(households, reform=None):
             "members": names,
             "country": {YEAR: country},
             "region": {YEAR: REGIONS[country]},
-            "council_tax": {YEAR: 2_000.0},
+            "council_tax": {YEAR: household.get("council_tax", 2_000.0)},
             "savings": {YEAR: 0.0},
         }
     return Simulation(situation=situation, reform=reform)
@@ -367,31 +367,127 @@ def test_scottish_working_age_deducts_nothing_without_earnings(households):
     assert np.all(deduction == 0), (households, deduction)
 
 
+@st.composite
+def household_with_council_tax(draw, **kwargs):
+    """A household from household(), with council tax of up to 30,000."""
+    return {**draw(household(**kwargs)), "council_tax": draw(money(30_000))}
+
+
+# Three families that invariant 5 runs every time. A lone parent whose pay
+# rises from 10,000 to 10,001 takes adjusted net income from 64,999.50 to
+# 65,000.50 and the High Income Child Benefit Charge from 560 to 584: the
+# deduction rises from 4,560 to 4,584.40 and the reduction from 1,438.24 to
+# 1,442.92.
+CHARGE_STEP_FAMILY = dict(
+    country="SCOTLAND",
+    pensioner=False,
+    council_tax=2_000.0,
+    benunits=[
+        [
+            dict(
+                age=40,
+                employment_income=10_000.0,
+                savings_interest_income=40_000.0,
+                other_investment_income=14_999.50,
+            ),
+            dict(age=4),
+            dict(age=7),
+        ]
+    ],
+)
+# A lone parent whose pay rises from 10,000 to 10,000.71 takes adjusted net
+# income from 123,173.50 to 123,174.21 and the personal allowance from 984 to
+# 983: the deduction rises from 6,764.04 to 6,765.10 and the reduction from
+# 1,879.05 to 1,879.12.
+ALLOWANCE_STEP_FAMILY = dict(
+    country="SCOTLAND",
+    pensioner=False,
+    council_tax=2_000.0,
+    benunits=[
+        [
+            dict(
+                age=40,
+                employment_income=10_000.0,
+                miscellaneous_income=25_000.0,
+                savings_interest_income=40_000.0,
+                other_investment_income=40_000.0,
+                dividend_income=8_173.50,
+            ),
+            dict(age=4),
+            dict(age=7),
+        ]
+    ],
+)
+# A single person whose pay rises from 13,000 to 14,000: the deduction rises
+# from 116.10 to 386.10 and the reduction falls from 416.94 to 270.94. A
+# deduction of five times the tax on pay would rise from 442.90 to 1,472.90
+# and raise the reduction from 482.30 to 488.30.
+SINGLE_EARNER = dict(
+    country="SCOTLAND",
+    pensioner=False,
+    council_tax=2_000.0,
+    benunits=[[dict(age=40, employment_income=13_000.0)]],
+)
+# The event invariant 5 records for each kind of cliff or step a family's
+# rise in pay crosses.
+CROSSINGS = {
+    "marriage_allowance": "crosses the Marriage Allowance cliff",
+    "savings_allowance": "crosses the personal savings allowance cliff",
+    "CB_HITC": "crosses a step of the High Income Child Benefit Charge",
+    "personal_allowance": "crosses a step of the personal allowance",
+}
+
+
 @PROPERTY_SETTINGS
 @given(
     st.lists(
-        household(countries=("SCOTLAND",), pensioner=False), min_size=1, max_size=4
+        household_with_council_tax(countries=("SCOTLAND",), pensioner=False),
+        min_size=1,
+        max_size=4,
     ),
     money(20_000),
     st.booleans(),
 )
+@example(households=[CHARGE_STEP_FAMILY], rise=1.0, partner=False)
+@example(households=[ALLOWANCE_STEP_FAMILY], rise=0.71, partner=False)
+@example(households=[SINGLE_EARNER], rise=1_000.0, partner=False)
 def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, partner):
     """Invariant 5. At working age in Scotland without Universal Credit,
     raising either member's employment income never raises Council Tax
-    Reduction once the income tax system's cliffs are held still. Two cliffs
-    raise the tax the earnings add by more than the rise in pay, and option
-    (a) passes both through to the deduction: losing Marriage Allowance, and
-    the personal savings allowance falling as the person enters a higher
-    band. A Scottish couple, one partner with no income and council tax of
-    15,000, whose pay rises from 43,661 to 43,663 loses Marriage Allowance:
-    the deduction rises by 265.39 and the reduction by 52.68 (the YAML cases
-    pin both). The test therefore holds marriage_allowance and
-    savings_allowance at their values before the rise in two more
+    Reduction while the test holds the income tax system's cliffs and steps
+    still. Under option (a) the formula passes each of them through to the
+    deduction, and each can raise the tax the earnings add by more than the
+    rise in pay:
+
+    - Marriage Allowance, a cliff: the earner loses it on entering a higher
+      band. A Scottish couple, one partner with no income and council tax of
+      15,000, whose pay rises from 43,661 to 43,663 loses it: the deduction
+      rises by 265.39 and the reduction by 52.68 (the YAML cases pin both).
+    - The personal savings allowance, a cliff: it falls by 500 as the person
+      enters a higher band, so a pound of pay can add tax on 500 of savings.
+    - The High Income Child Benefit Charge, in steps: the model charges whole
+      percentage points of the Child Benefit (ITEPA 2003 s. 681C(3)), so a
+      pound of pay that crosses a step adds a point of the Child Benefit.
+    - The personal allowance, in steps: the model takes half of each pound of
+      adjusted net income above 100,000 off it and rounds the allowance up to
+      whole pounds (np.ceil), so 71 pence of pay can take a pound off it. The
+      taper alone makes each pound of pay add a pound and a half of taxable
+      income; where savings straddle the basic rate limit above the pay, the
+      tax on that and the Class 1 on the pay can exceed the pay.
+
+    The test holds all four at their values before the rise in two more
     simulations, one of the families before the rise and one of the raised
     families, and asserts, for every family, that the reduction in the second
     does not exceed the reduction in the first. Because
     income_tax_with_inputs_zeroed keeps stored inputs on its branches, the
-    branch without the pay then reads the same held values on both sides."""
+    branch without the pay then reads the same held values on both sides.
+    The test draws each household's council tax up to 30,000, so that
+    families keep a reduction across the whole range of pay, and runs three
+    families every time: a lone parent crossing a step of the charge
+    (CHARGE_STEP_FAMILY), a lone parent crossing a step of the personal
+    allowance (ALLOWANCE_STEP_FAMILY), and a single person on whom a
+    deduction of five times the tax on pay would raise the reduction
+    (SINGLE_EARNER)."""
     raised = []
     for h in households:
         adults = [dict(a) for a in h["benunits"][0]]
@@ -403,10 +499,15 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     before = simulate(households)
     after = simulate(raised)
     # income_tax_with_inputs_zeroed keeps stored inputs on its branches, so
-    # hold the cliffs on both sides.
+    # hold the cliffs and steps on both sides.
     held_before = simulate(households)
     held = simulate(raised)
-    cliffs = ["marriage_allowance", "savings_allowance"]
+    cliffs = [
+        "marriage_allowance",
+        "savings_allowance",
+        "CB_HITC",
+        "personal_allowance",
+    ]
     for variable in cliffs:
         values = np.asarray(before.calculate(variable, YEAR))
         held_before.set_input(variable, YEAR, values)
@@ -416,13 +517,16 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
         held_before.calculate("council_tax_reduction", YEAR)
     )
     reduction_held = np.asarray(held.calculate("council_tax_reduction", YEAR))
-    cliff = np.zeros(len(households), dtype=bool)
+    crossed = np.zeros(len(households), dtype=bool)
     for variable in cliffs:
-        cliff |= ~np.isclose(
+        moved = ~np.isclose(
             applicant_total(before, variable), applicant_total(after, variable)
         )
-    for crossed in cliff:
-        event("crosses a tax cliff" if crossed else "no tax cliff")
+        if moved.any():
+            event(CROSSINGS[variable])
+        crossed |= moved
+    if not crossed.all():
+        event("crosses no cliff or step")
     assert np.all(reduction_held <= reduction_held_before + 0.01), (
         households,
         rise,
