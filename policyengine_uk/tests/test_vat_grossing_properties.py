@@ -2,9 +2,10 @@
 
 `vat` is the statutory liability on recorded consumption divided by one
 grossing factor, times one minus private school fees' share of VAT receipts,
-plus VAT on energy bills, which is not grossed up. The factor is the survey
-coverage times the household share of receipts, unless a reform moves the
-deprecated combined parameter, in which case that value is used.
+plus VAT on energy bills, which the formula adds without grossing up. The
+factor is the survey coverage times the household share of receipts, unless a
+reform moves the deprecated combined parameter, in which case the formula uses
+that value.
 """
 
 from types import SimpleNamespace
