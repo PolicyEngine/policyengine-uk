@@ -1,3 +1,22 @@
+## [2.173.0] - 2026-11-03
+
+### Added
+
+- Add `soc2020_major_group` and `soc2020_sub_major_group`, person enum inputs for the SOC 2020 major group (9 groups) and sub-major group (26 groups) of the person's main job, or of their last job if they are not in work, with NONE for none or unknown, so that datasets can carry occupation. `SOC2020_MAJOR_GROUP_CODES` and `SOC2020_SUB_MAJOR_GROUP_CODES`, beside the enums, give each member's SOC code. The FRS codes the major group; the sub-major group has to be imputed within it from a survey that codes it.
+
+### Changed
+
+- `sic_industry_division`'s label and documentation now say the division is the main job's, or the last job's for a person not in work, since the FRS asks the employment questions of everyone who has ever worked.
+
+
+## [2.172.1] - 2026-11-03
+
+### Fixed
+
+- Housing Benefit reserves the Working Tax Credit income disregard before deducting childcare costs in historical tax-credit years, and settles it separately before and after the accommodation disregard starts under a reform that keeps tax credits.
+- Housing Benefit helpers apply reform conditions when they rebuild the earnings, Working Tax Credit and accommodation disregards, the childcare deduction, its limit and applicable income.
+
+
 ## [2.172.0] - 2026-11-03
 
 ### Added
