@@ -776,7 +776,7 @@
     universal_credit: 5_098.80
     household_net_income: 33_518.80
 
-- name: Great Britain 2026-27, the same London tenant without a Housing Benefit report takes Housing Benefit up for the rent
+- name: Great Britain 2026-27, the same London tenant without a Housing Benefit report claims only the benefits it reports and gets no help with the rent
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -799,14 +799,57 @@
         rent: 30_000
         council_tax: 1_500
   output:
-    # The family reports income-related ESA, so claims_all_entitled_benefits
-    # is false, but the accommodation status makes it claim Housing Benefit
-    # (would_claim_housing_benefit): Universal Credit leaves the rent out.
-    # The figures match the tenant who reports Housing Benefit: Universal
-    # Credit £5,098.80, Housing Benefit £30,000, and household net income
-    # £30,000 + £5,098.80 + £100 - £180 - £1,500 = £33,518.80.
+    # The family reports £5,000 of income-related ESA, at least £1 across the
+    # seven means-tested benefits, so claims_all_entitled_benefits is false
+    # and the family claims only what it reports: with no Housing Benefit
+    # report, would_claim_housing_benefit is false. The accommodation status
+    # doesn't change take-up. The claim on the appointed day ends the ESA
+    # award, and Universal Credit leaves the rent out (UC Regs 2013 Sch 1
+    # paras 3(h) and (i)), so it pays the standard allowance alone, 12 x
+    # £424.90 = £5,098.80, and nothing helps with the £30,000 rent.
+    # Household net income: £5,098.80 + £100 Household Energy Payment - £180
+    # TV licence - £1,500 council tax = £3,518.80.
     claims_all_entitled_benefits: false
-    would_claim_housing_benefit: true
+    would_claim_housing_benefit: false
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 0
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+    household_net_income: 3_518.80
+
+- name: Great Britain 2026-27, the same London tenant gets Housing Benefit for the rent when the user sets would_claim_housing_benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        esa_includes_support_component: false
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        in_specified_or_temporary_accommodation: true
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+        council_tax: 1_500
+  output:
+    # The user sets the claim, so Housing Benefit pays the rent. Universal
+    # Credit passports the Housing Benefit means test, so Housing Benefit
+    # pays the whole £30,000, and the council applies no Housing Benefit cap
+    # to a claimant receiving Universal Credit (HB Regs 2006 reg 75F(1)(g)).
+    # Universal Credit: the standard allowance alone, 12 x £424.90 =
+    # £5,098.80, below London's £16,967 single cap, where DWP counts Housing
+    # Benefit as nil (UC Regs 2013 reg 80(2A)). Household net income:
+    # £30,000 + £5,098.80 + £100 - £180 - £1,500 = £33,518.80.
     claims_universal_credit: true
     housing_benefit_eligible: true
     housing_benefit: 30_000
