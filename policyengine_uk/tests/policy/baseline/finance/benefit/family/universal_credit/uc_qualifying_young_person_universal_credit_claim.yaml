@@ -280,6 +280,49 @@
     is_qualifying_young_person_for_universal_credit: [false, false, false]
     universal_credit: 0
 
+- name: An 18-year-old partner's own Housing Benefit report excludes them while their mixed-age couple keeps the Pension Credit route.
+  # A claimant aged 75 who reports Pension Credit and an 18-year-old partner
+  # on a non-advanced course rent from the council at £6,000 a year and claim
+  # Universal Credit. The couple keeps the mixed-age Pension Credit saving
+  # (has_mixed_age_couple_pension_credit_saving), so it meets the Pension
+  # Credit age conditions. The model keeps such a family's Housing Benefit
+  # while it claims, unless it claims at a legacy closure and is entitled to
+  # Universal Credit (left_pension_route_at_legacy_closure), and nothing
+  # closes this family's legacy awards. So the model pays the full rent
+  # (6,000, no income) as Housing Benefit, the partner stays entitled to it,
+  # and their own report excludes them. The predicate can't read
+  # left_pension_route_at_legacy_closure, so it keeps any Housing Benefit
+  # report while the family meets those conditions.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        pension_credit_reported: 1_000
+      partner:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    meets_pension_credit_age_conditions: true
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 6_000
+    is_qualifying_young_person_for_universal_credit: [false, false]
+
 - name: A parent's claim for Universal Credit leaves their young person's own Housing Benefit report excluding them.
   # A parent aged 45 and a 17-year-old on a non-advanced course, owned
   # outright. The parent's claim ends the parent's own awards, not the young
