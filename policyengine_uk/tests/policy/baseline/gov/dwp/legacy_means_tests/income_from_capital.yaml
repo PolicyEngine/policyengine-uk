@@ -1888,12 +1888,12 @@
 # applicant (SI 2012/2885 reg 2(1)), so her own income counts (Sch 1 para 11),
 # including rent for letting part of her home (Sch 1 para 16(1)(v), less £20 a
 # week under Sch 5 para 10), and the benefit unit's claimant's and partner's
-# does not. In each case below the head, aged 70, reached State Pension age
-# after 1 April 2021, so her 2026-27 personal allowance is £238 a week:
-# 238 x 52 = 12,376. Maidstone runs England's pensioner scheme: maximum 100%
-# of the £2,000 council tax, withdrawn at 20% of income above the applicable
-# amount. Her £12,000 private pension falls within the £12,570 personal
-# allowance, and the model taxes none of the rent: income tax nil.
+# does not. In the first three cases below the head, aged 70, reached State
+# Pension age after 1 April 2021, so her 2026-27 personal allowance is £238 a
+# week: 238 x 52 = 12,376. Maidstone runs England's pensioner scheme:
+# maximum 100% of the £2,000 council tax, withdrawn at 20% of income above the
+# applicable amount. Her £12,000 private pension falls within the £12,570
+# personal allowance, and the model taxes none of the rent: income tax nil.
 
 - name: A household head applying alone counts her own rent from letting part of the home in council tax reduction
   # Rent 5,200 / 52 = 100 a week, less 20 = 80; 80 x 52 = 4,160.
@@ -2076,6 +2076,54 @@
     is_claimant_or_partner: [false, true, true]
     council_tax_reduction_head_applies_alone: [true]
     in_receipt_of_guarantee_credit: [true]
+    council_tax_reduction_assessable_capital: [14_000]
+    council_tax_reduction_tariff_income: [416]
+    council_tax_reduction_applicable_income: [13_330]
+    council_tax_reduction_applicable_amount: [13_312]
+    council_tax_reduction: 1_996.40
+
+- name: A household head applying alone keeps her tariff income when the couple she lives with gets savings credit only
+  # As the guarantee credit case, but the couple are 80 and 78 and the elder
+  # has a £20,000 private pension, so the model gives them savings credit of
+  # £928 a year and no guarantee credit. That award is theirs, so the head
+  # keeps her tariff income. The head, aged 90, reached State Pension age
+  # before 1 April 2021, so her allowance is 256 x 52 = 13,312. Tariff
+  # 8 x 52 = 416; tax (13,000 - 12,570) x 20% = 86; income 13,000 - 86 + 416
+  # = 13,330. CTR 2,000 - 20% x (13,330 - 13,312) = 1,996.40.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 90
+        is_household_head: true
+        private_pension_income: 13_000
+      older_partner:
+        age: 80
+        is_parent: true
+        is_household_head: false
+        private_pension_income: 20_000
+      younger_partner:
+        age: 78
+        is_parent: true
+        is_household_head: false
+    benunits:
+      family:
+        members: [head, older_partner, younger_partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, older_partner, younger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 14_000
+  output:
+    is_claimant_or_partner: [false, true, true]
+    council_tax_reduction_head_applies_alone: [true]
+    in_receipt_of_guarantee_credit: [false]
+    in_receipt_of_savings_credit_only: [true]
     council_tax_reduction_assessable_capital: [14_000]
     council_tax_reduction_tariff_income: [416]
     council_tax_reduction_applicable_income: [13_330]

@@ -418,8 +418,8 @@ pensioner_households = st.lists(
 NO_INCOME = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 # A pensioner with wages and six children and no finance costs. Pension
 # Credit counts no property profits (SPC Sch IV para 18), but without the
-# wages the pension and profits fall within the personal allowance, so all
-# the tax is the wages' and Pension Credit deducts it. The allowance lowers
+# wages the pension and profits fall within the personal allowance, so the
+# wages cause all the tax and Pension Credit deducts it. The allowance lowers
 # that tax by £160, which ends Pension Credit of £80 and so the exemption
 # from the £200 charge.
 LONE_PENSIONER = (

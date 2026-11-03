@@ -69,7 +69,7 @@ Invariants, for any generated population of families:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -139,13 +139,20 @@ def families(draw):
 
 
 populations = st.lists(families(), min_size=1, max_size=4)
+ZERO_INCOME = dict(
+    employment_income=0.0,
+    state_pension=0.0,
+    private_pension_income=0.0,
+    property_income=0.0,
+    savings_interest_income=0.0,
+    dividend_income=0.0,
+)
 
 
 @st.composite
 def taxed_adults(draw, age):
-    """Adults whose pensions use up the personal allowance and whose income
-    from capital reaches about 20,000, so that it bears tax without
-    earnings."""
+    """Adults with no earnings whose pensions use up the personal allowance
+    and whose interest, at least 7,000, bears tax without earnings."""
     return dict(
         age=age,
         employment_income=0.0,
@@ -296,9 +303,9 @@ def test_income_from_capital_changes_no_legacy_means_test(units, year):
                 atol=0.01,
                 err_msg=f"{v} at scale {scale}",
             )
-        # Intended exception (d1424): where earnings make it move, each
-        # means-test income moves by exactly minus that change, wherever
-        # neither run is floored and the test uses its own income rules.
+        # Intended exception: where earnings make it move, each means-test
+        # income moves by minus that change, wherever neither run hits a
+        # floor and the test uses its own income rules.
         pension_credit_route = (base["pension_credit"] > 0) | (
             scaled["pension_credit"] > 0
         )
@@ -324,11 +331,46 @@ def test_income_from_capital_changes_no_legacy_means_test(units, year):
 
 @PROPERTY_SETTINGS
 @given(populations, st.sampled_from(YEARS + [2007]))
+# A couple 23 years apart: the model presumes the younger, who has the rent,
+# to be the elder's child, so the measure counts none of it.
+@example(
+    [
+        dict(
+            shape="couple_working",
+            members=[
+                ("adult", dict(ZERO_INCOME, age=56, sublet_income=0.0)),
+                ("adult", dict(ZERO_INCOME, age=33, sublet_income=5_000.0)),
+            ],
+            region="NORTH_EAST",
+            tenure="RENT_PRIVATELY",
+            rent=6_000.0,
+            savings=0.0,
+            reported=False,
+            universal_credit=0.0,
+        )
+    ],
+    2026,
+)
 def test_home_letting_income_bounds(units, year):
     sim = Simulation(situation=situation(units, year))
     counted = np.asarray(sim.calculate("legacy_benefits_home_letting_income", year))
-    rent = np.asarray(sim.calculate("sublet_income", year, map_to="benunit"))
-    pension_age = np.asarray(sim.calculate("is_SP_age", year, map_to="benunit")) > 0
+    # The claimant's and partner's rent and ages, which the measure counts.
+    counted_member = np.asarray(
+        sim.calculate("is_claimant_or_partner", year), dtype=float
+    )
+    rent = sim.map_result(
+        np.asarray(sim.calculate("sublet_income", year)) * counted_member,
+        "person",
+        "benunit",
+    )
+    pension_age = (
+        sim.map_result(
+            np.asarray(sim.calculate("is_SP_age", year), dtype=float) * counted_member,
+            "person",
+            "benunit",
+        )
+        > 0
+    )
     disregard = 20 if year >= 2009 else np.where(pension_age, 20, 4)
     assert np.all(counted >= 0)
     assert np.all(counted <= rent + 0.01)
@@ -579,8 +621,8 @@ def test_council_tax_reduction_letting_income_matches_the_legacy_measure(units, 
     council tax reduction applicant and partner are the benefit unit's
     claimant and partner, so council_tax_reduction_home_letting_income equals
     legacy_benefits_home_letting_income. (The two use different pension-age
-    tests, but the working-age and pension-age disregards have been equal
-    since April 2008.)"""
+    tests, but the working-age and pension-age disregards have both stood at
+    £20 since April 2008.)"""
     v = calculate(
         units,
         year,
@@ -675,6 +717,22 @@ def head_alone_values(households, year, **kwargs):
     st.sampled_from(YEARS),
     st.floats(1, 5_000),
 )
+# A Scottish working-age head, whose scheme does not count the rent.
+@example(
+    [
+        dict(
+            head_age=50,
+            parent_ages=(16, 16),
+            head_pension=12_000.0,
+            head_wages=0.0,
+            head_rent=5_200.0,
+            parent_rent=0.0,
+            region="SCOTLAND",
+        )
+    ],
+    2026,
+    1_000.0,
+)
 def test_a_head_applying_alone_counts_only_her_own_letting_income(
     households, year, extra
 ):
@@ -687,7 +745,7 @@ def test_a_head_applying_alone_counts_only_her_own_letting_income(
     assert np.all(base["council_tax_reduction_head_applies_alone"] == 1)
     more_own = head_alone_values(households, year, head_extra=extra)
     more_others = head_alone_values(households, year, parent_extra=extra)
-    # Scotland's scheme for people under pension age lists no such income
+    # Scottish councils count no such income for people under pension age
     # (SSI 2021/249 reg 57(1)).
     region = np.array([h["region"] for h in households])
     counts = ~((region == "SCOTLAND") & (base["council_tax_reduction_pensioner"] == 0))
@@ -699,10 +757,22 @@ def test_a_head_applying_alone_counts_only_her_own_letting_income(
         atol=0.02,
     )
     assert np.all(more_own[letting] >= base[letting] - 0.01)
+    # Where her own rent with the extra exceeds the £20 weekly disregard, with
+    # a margin for float32 rounding, her letting income is positive.
+    above = np.array([(h["head_rent"] + extra) / 52 > 20.01 for h in households])
+    assert np.all(more_own[letting][above] > 0)
     np.testing.assert_allclose(more_others[income], base[income], atol=0.01)
     np.testing.assert_allclose(more_others[letting], base[letting], atol=0.01)
-    # The couple's own legacy measure does count it.
-    assert np.all(
+    # The couple's own legacy measure does count it, less the £20 weekly
+    # disregard.
+    parent_rent = np.array([h["parent_rent"] for h in households])
+    np.testing.assert_allclose(
         more_others["legacy_benefits_home_letting_income"]
-        >= base["legacy_benefits_home_letting_income"] - 0.01
+        - base["legacy_benefits_home_letting_income"],
+        (
+            np.maximum(0, (parent_rent + extra) / 52 - 20)
+            - np.maximum(0, parent_rent / 52 - 20)
+        )
+        * 52,
+        atol=0.02,
     )

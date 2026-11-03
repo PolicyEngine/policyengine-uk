@@ -289,12 +289,13 @@
     council_tax_reduction_applicable_income: [1_406.60]
 
 - name: Housing Benefit's means test floors the counted member's negative deduction at nil
-  # The same household with a child aged 5, so no test passports it: it
-  # receives no Income Support (income_support 0), and Housing Benefit takes
-  # income through its own means test. Housing Benefit counts none of a's
-  # interest (reg 46(4)) and excludes Child Benefit, so a's income is nil; the
-  # sum of the deduction over the members it counts, -703, floors at nil:
-  # income 0, not 703.
+  # The same household with a child aged 5. It reports no Income Support
+  # award, which income_support_eligible requires, so it gets none
+  # (income_support 0), and it claims no Universal Credit, so Housing Benefit
+  # takes income through its own means test. Housing Benefit counts none of
+  # a's interest (reg 46(4)) and excludes Child Benefit, so a's income is
+  # nil; the sum of the deduction over the members it counts, -703, floors at
+  # nil: income 0, not 703.
   period: 2026
   absolute_error_margin: 0.01
   input:
