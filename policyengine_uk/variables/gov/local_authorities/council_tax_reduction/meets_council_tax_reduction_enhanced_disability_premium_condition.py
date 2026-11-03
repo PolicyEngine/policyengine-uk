@@ -31,7 +31,12 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "same age limit). Welsh councils apply that condition under W.S.I. "
         "2013/3029 Sch 7 para 12. Westminster City Council publishes a "
         "2026-27 summary of its working-age scheme without the premium "
-        "conditions, so the model assumes the Housing Benefit condition there. "
+        "conditions. Its Council's annual resolutions describe the scheme only "
+        "as based on the Default Scheme Regulations, with war pensions and "
+        "Armed Forces Compensation Scheme payments disregarded in full and, "
+        "from 2020, updated for the amendments to the Prescribed Requirements "
+        "Regulations, so the model assumes the Housing Benefit condition "
+        "there. "
         "Oxford City Council sets "
         "its working-age award from income bands, so the premium does not "
         "reach it."
@@ -48,6 +53,7 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf",
         "https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf",
         "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026",
+        "https://committees.westminster.gov.uk/mgAi.aspx?ID=22982",
     )
 
     def formula(person, period, parameters):
