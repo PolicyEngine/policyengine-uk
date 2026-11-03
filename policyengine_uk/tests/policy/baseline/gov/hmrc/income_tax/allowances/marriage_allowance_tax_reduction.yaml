@@ -106,6 +106,9 @@
     marriage_allowance_tax_reduction: [252, 0]
     # 5,582.82 - 252 = 5,330.82.
     income_tax: [5_330.82, 0]
+    # Universal Credit deducts the tax on earnings after the Step 6
+    # reductions: 5,582.82 - 252 = 5,330.82.
+    uc_income_tax_on_earnings: [5_330.82, 0]
 
 - name: A Scottish starter-rate recipient gets 20% of the transferable amount
   period: 2025
@@ -197,6 +200,7 @@
     # (30,000 - 12,570) x 20% - 1,260 x 20% = 3,486 - 252 = 3,234, as when the
     # model took 1,260 off the 20% band.
     income_tax: [3_234, 0]
+    uc_income_tax_on_earnings: [3_234, 0]
 
 - name: The reduction stops at the recipient's Step 5 tax
   period: 2025
