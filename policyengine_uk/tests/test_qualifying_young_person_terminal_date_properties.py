@@ -14,8 +14,13 @@ Invariants:
 2. Universal Credit's own terminal-date variable follows that fact unless it
    is set, and setting it changes Universal Credit only.
 3. Over every combination of age, education, training, apprenticeship,
-   own-right benefits, entry age and the two date facts: Universal Credit
-   and Pension Credit agree, and both equal the regulation's conditions.
+   own-right Universal Credit, ESA or JSA, entry age and the two date facts,
+   for people not on Income Support: Universal Credit and Pension Credit
+   agree, and both equal the regulation's conditions. Income Support is the
+   one exception: SPC reg. 4A(5) lists it and UC reg. 5(5) does not, so a
+   young person on their own Income Support keeps the Universal Credit status
+   and loses the Pension Credit one, on either route and on either side of
+   the 1 September following the 19th birthday.
 4. With the 19th-birthday fact on, both statuses are the earlier definition
    without a terminal date, so nothing changes below 19 or for a 19-year-old
    before the date; switching the fact on never removes the status; and it
@@ -203,6 +208,9 @@ GRID = [
 
 def test_universal_credit_and_pension_credit_agree_on_every_combination():
     sim = simulate(GRID)
+    # The population invariant 3 covers: Income Support stops paying before
+    # 2026-27 (gov.dwp.income_support.active), so nobody here is on it.
+    assert not sim.calculate("is_on_income_support", YEAR).any()
     uc, pc = sim.calculate(UC, YEAR), sim.calculate(PC, YEAR)
     expected = np.array([qualifying_young_person(p) for p in GRID])
     # Invariant 3.
@@ -220,6 +228,75 @@ def test_universal_credit_and_pension_credit_agree_on_every_combination():
         p["age"] == 19 and studying(p) and not p[SIXTEEN]
         for p, c in zip(GRID[1::2], changed)
         if c
+    )
+
+
+def test_own_income_support_ends_pension_credit_status_only():
+    # Invariant 3's exception, in 2025-26, while Income Support pays. A
+    # pensioner aged 70 with one member aged 16 to 19, over education, entry
+    # age, both date facts and the member's own reported Income Support.
+    year = 2025
+    rows = list(
+        product(
+            range(16, 20),
+            ("NOT_IN_EDUCATION", "UPPER_SECONDARY"),
+            (17, 19),
+            (False, True),
+            (False, True),
+            (0, 5_000),
+        )
+    )
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for i, (age, education, entry_age, sixteen, nineteen, report) in enumerate(rows):
+        members = [f"pensioner{i}", f"young{i}"]
+        situation["people"][members[0]] = {
+            "age": {year: 70},
+            "is_parent": {year: True},
+            "is_benunit_head": {year: True},
+        }
+        situation["people"][members[1]] = {
+            "age": {year: age},
+            "is_benunit_head": {year: False},
+            "current_education": {year: education},
+            "age_started_or_accepted_current_education_or_training": {year: entry_age},
+            SIXTEEN: {year: sixteen},
+            NINETEEN: {year: nineteen},
+            "income_support_reported": {year: report},
+        }
+        situation["benunits"][f"b{i}"] = {"members": members}
+        situation["households"][f"h{i}"] = {"members": members}
+    with patch(
+        "policyengine_uk.simulation.CountryTaxBenefitSystem",
+        side_effect=_PROPERTY_SYSTEM.clone,
+    ):
+        sim = Simulation(situation=situation)
+    young = slice(1, None, 2)
+    own_income_support = np.array([row[-1] > 0 for row in rows])
+    np.testing.assert_array_equal(
+        sim.calculate("is_on_income_support", year)[young], own_income_support
+    )
+    expected = np.array(
+        [
+            qualifying_young_person(
+                person(
+                    age,
+                    current_education=education,
+                    age_started_or_accepted_current_education_or_training=entry_age,
+                    **{SIXTEEN: sixteen, NINETEEN: nineteen},
+                )
+            )
+            for age, education, entry_age, sixteen, nineteen, _ in rows
+        ]
+    )
+    np.testing.assert_array_equal(sim.calculate(UC, year)[young], expected)
+    np.testing.assert_array_equal(
+        sim.calculate(PC, year)[young], expected & ~own_income_support
+    )
+    # Not vacuous: own Income Support removes the Pension Credit status from
+    # a 19-year-old before the date.
+    assert any(
+        e and o and row[0] == 19 and row[4]
+        for e, o, row in zip(expected, own_income_support, rows)
     )
 
 

@@ -294,3 +294,56 @@
     is_before_first_september_following_19th_birthday: [true, false, true]
     is_qualifying_young_person_for_universal_credit: [false, false, true]
     is_qualifying_young_person_for_pension_credit: [false, false, true]
+
+- name: Case 13, a 19-year-old at school before the date who reports their own Universal Credit is no qualifying young person.
+  # UC reg. 5(5) and SPC reg. 4A(5) both list Universal Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        universal_credit_reported: 5_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    is_before_universal_credit_qualifying_young_person_terminal_date: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    uc_individual_child_element: [0, 0]
+    is_uc_work_allowance_eligible: false
+
+- name: Case 14, a pensioner gets no Pension Credit child addition for a 19-year-old at school before the date who reports their own income-related ESA.
+  # SPC reg. 4A(5) and UC reg. 5(5) both list employment and support allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        esa_income_reported: 5_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, student]
+  output:
+    is_before_first_september_following_19th_birthday: [false, true]
+    # The pensioner, aged 70, is neither under 19 nor before the date.
+    meets_qualifying_young_person_terminal_date_condition_for_pension_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    child_minimum_guarantee_addition: 0
