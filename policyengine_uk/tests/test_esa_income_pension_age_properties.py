@@ -173,10 +173,10 @@ def examples(draw):
     # (art. 3A(2)).
     saved = year >= 2026
     units = draw(st.lists(families(tax_credits, saved), min_size=4, max_size=12))
-    # In 2016, add case 18's man, whom Pension Credit pays only with the
-    # award.
+    # In 2016, add case 18's man and case 26's couple, who get Pension Credit
+    # only with the award.
     if year == 2016:
-        units = units + [ROWS[2]]
+        units = units + [ROWS[2], COUPLE_ROW]
     return units, year
 
 
@@ -309,6 +309,73 @@ ROWS = [
     ),
 ]
 
+# Case 26's couple: the man of case 18 earning £90 a week in 15 hours with a
+# £130 weekly pension, and a woman aged 60 earning £30 a week in 5 hours.
+COUPLE_ROW = (
+    [
+        dict(
+            MAN,
+            esa_income_reported=5_491.20,
+            employment_income=4_680,
+            hours_worked=780,
+            private_pension_income=6_760,
+        ),
+        {
+            "age": 60,
+            "months_since_last_birthday": 0,
+            "gender": "FEMALE",
+            "esa_income_reported": 0,
+            "esa_includes_support_component": False,
+            "hours_worked": 260,
+            "employment_income": 1_560,
+            "private_pension_income": 0,
+            "working_tax_credit_reported": 0,
+        },
+    ],
+    [],
+    False,
+    0,
+)
+
+# Two couples in 2018, a year with tax credits and before the exclusion of
+# mixed-age couples. Case 19's couple (ROWS[3]) gets Pension Credit with or
+# without the award that year. In case 20's couple, a man aged 66 has a £200
+# weekly pension and a man aged 58 reports support-group income-related ESA
+# and earns £124 a week in 15 hours, and the couple gets no Pension Credit
+# with or without the award.
+ROWS_2018 = [
+    ROWS[3],
+    (
+        [
+            {
+                "age": 66,
+                "months_since_last_birthday": 0,
+                "gender": "MALE",
+                "esa_income_reported": 0,
+                "esa_includes_support_component": False,
+                "hours_worked": 0,
+                "employment_income": 0,
+                "private_pension_income": 10_400,
+                "working_tax_credit_reported": 0,
+            },
+            {
+                "age": 58,
+                "months_since_last_birthday": 0,
+                "gender": "MALE",
+                "esa_income_reported": 2_537.60,
+                "esa_includes_support_component": True,
+                "hours_worked": 780,
+                "employment_income": 6_448,
+                "private_pension_income": 0,
+                "working_tax_credit_reported": 0,
+            },
+        ],
+        [],
+        False,
+        0,
+    ),
+]
+
 
 @settings(
     max_examples=4,
@@ -318,6 +385,7 @@ ROWS = [
 )
 @given(examples())
 @example((ROWS, 2016))
+@example((ROWS_2018, 2018))
 def test_couple_esa_follows_pension_credit_worked_out_without_it(drawn):
     units, year = drawn
     n = len(units)
@@ -687,6 +755,7 @@ OUTPUTS = [
 )
 @given(examples())
 @example((ROWS, 2016))
+@example((ROWS_2018, 2018))
 def test_reading_pension_credit_for_every_couple_matches_the_model(drawn):
     """Differential: a reform that calculates the model's Pension Credit by a
     formula of its own makes the screen read Pension Credit without the award
