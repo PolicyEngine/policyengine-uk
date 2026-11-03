@@ -390,8 +390,9 @@
     council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
     council_tax_reduction_applicable_amount: 25_092.60
     # Applicable income 21,714.00 falls short of 25,092.60, so the council
-    # gives the maximum reduction, the whole council tax
-    # (gov.local_authorities.wales.council_tax_reduction.maximum_support_rate),
+    # gives the maximum reduction, the whole council tax (WSI 2013/3029
+    # reg 22(e) and Sch 1 paras 2(1) and 4(2);
+    # gov.local_authorities.wales.council_tax_reduction.maximum_support_rate),
     # here 2,000.
     council_tax_reduction_applicable_income: 21_714.00
     council_tax_reduction: 2_000
@@ -571,8 +572,9 @@
     council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
     council_tax_reduction_applicable_amount: 25_183.60
     # Applicable income 21,753.67 falls short of 25,183.60, so the council
-    # gives the maximum reduction, the whole council tax
-    # (gov.local_authorities.scotland.council_tax_reduction.maximum_support_rate),
+    # gives the maximum reduction, the whole council tax (SSI 2012/319
+    # regs 14(5)(a)(ii) and (8)(a) and 47(1);
+    # gov.local_authorities.scotland.council_tax_reduction.maximum_support_rate),
     # here 2,000.
     council_tax_reduction_applicable_income: 21_753.67
     council_tax_reduction: 2_000
@@ -910,7 +912,7 @@
     is_child_or_young_person_for_council_tax_reduction: [false, true]
     council_tax_reduction_pensioner_child_disability_premiums: 0
 
-- name: Nil, a pensioner household head who applies alone has no child in her family, so her grandchild on the highest DLA care rate adds nothing.
+- name: Nil, a pensioner household head who applies alone has no child in their family, so their grandchild on the highest DLA care rate adds nothing.
   period: 2026
   absolute_error_margin: 0.01
   input:
