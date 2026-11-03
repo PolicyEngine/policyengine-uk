@@ -10,7 +10,10 @@ class self_employment_gross_receipts(Variable):
         "Optional: used only to apply the trading allowance, which is measured "
         "against gross receipts and replaces actual expenses. Must be at least "
         "self_employment_income; leave at zero when unknown. "
-        "self_employment_income remains the profit used everywhere else."
+        "self_employment_income remains the profit used everywhere else. "
+        "For a claimant (trading_allowance_claim_status) with a profit, the "
+        "receipts are that profit plus the allowance it deducts, whatever is "
+        "supplied here."
     )
     definition_period = YEAR
     unit = GBP

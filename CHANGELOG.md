@@ -1,3 +1,40 @@
+## [2.173.0] - 2026-11-03
+
+### Added
+
+- Add `soc2020_major_group` and `soc2020_sub_major_group`, person enum inputs for the SOC 2020 major group (9 groups) and sub-major group (26 groups) of the person's main job, or of their last job if they are not in work, with NONE for none or unknown, so that datasets can carry occupation. `SOC2020_MAJOR_GROUP_CODES` and `SOC2020_SUB_MAJOR_GROUP_CODES`, beside the enums, give each member's SOC code. The FRS codes the major group; the sub-major group has to be imputed within it from a survey that codes it.
+
+### Changed
+
+- `sic_industry_division`'s label and documentation now say the division is the main job's, or the last job's for a person not in work, since the FRS asks the employment questions of everyone who has ever worked.
+
+
+## [2.172.1] - 2026-11-03
+
+### Fixed
+
+- Housing Benefit reserves the Working Tax Credit income disregard before deducting childcare costs in historical tax-credit years, and settles it separately before and after the accommodation disregard starts under a reform that keeps tax credits.
+- Housing Benefit helpers apply reform conditions when they rebuild the earnings, Working Tax Credit and accommodation disregards, the childcare deduction, its limit and applicable income.
+
+
+## [2.172.0] - 2026-11-03
+
+### Added
+
+- Add `trading_allowance_claim_status`, a person input saying whether the input data's self-employment profit already deducts the trading allowance (claimant), deducts actual expenses above it (non-claimant), or is unknown (the default, which keeps the current treatment), so that changes to the allowance, such as the Budget 2026 raise to £3,000, reach the traders who already claim it. Add `gov.simulation.trading_allowance_claimant_expense_share`, which sets claimants' unknown expenses, by default so that a cut adds nothing to their taxable profit (a lower bound).
+
+### Changed
+
+- Raise the time limit of the Python test shards from 75 to 90 minutes: on 1 November shards took up to 75 minutes on slower runners and were cancelled with no test failing.
+
+
+## [2.171.1] - 2026-11-03
+
+### Fixed
+
+- Economic assumption indices now end where the growth series end (2074) instead of at 2039, so the State Pension, tax thresholds, benefit rates and every input grown by an index keep moving after 2039 rather than freezing at their 2039 level.
+
+
 ## [2.171.0] - 2026-11-02
 
 ### Added
