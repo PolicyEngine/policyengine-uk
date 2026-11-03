@@ -380,3 +380,286 @@
     uc_non_dep_receives_pension_credit: [false, true]
     uc_individual_non_dep_deduction_eligible: [false, false, false]
     uc_non_dep_deductions: [0, 0]
+
+# Universal Credit's extended benefit unit (UC Regs 2013 Sch 4 paras 8 to
+# 10). Under para 9(2)(g), DWP leaves out of the renter's non-dependants "a
+# child or qualifying young person for whom no-one in the renter's extended
+# benefit unit is responsible". DWP leaves a boarder or lodger out of that
+# unit (para 9(2)(d)), and the model leaves out their partner too, so nobody
+# in it is responsible for their child or qualifying young person, who
+# supplies no bedroom under para 10. A non-paying parent belongs to the unit,
+# so their child stays a non-dependant. Housing Benefit and council tax
+# reduction keep their own definitions (is_non_dependant_of_household_head).
+
+- name: A commercial lodger's qualifying young person gives the householder no Universal Credit bedroom
+  # London (Inner South East London), 2026-27. The household head (40)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (40) earns 20,000 and pays the head 5,200 a
+  # year on a commercial basis. The lodger's son (18), in the lodger's
+  # benefit unit, studies for A levels, so the model counts him as a
+  # qualifying young person. The lodger has main responsibility for him, and
+  # nobody in the head's extended benefit unit has any, so he is not the
+  # head's non-dependant for Universal Credit. The head gets one bedroom
+  # (para 10(1)(a)), and the one-bedroom rate of 15,546 a year caps the
+  # rent: housing element 15,546, with no housing cost contribution. The
+  # maximum amount adds the standard allowance, 424.90 x 12 = 5,098.80:
+  # 20,644.80. Earned income: 15,000 less income tax of
+  # (15,000 - 12,570) x 20% = 486 and National Insurance of 8% above the
+  # primary threshold of 241.73 a week, 194.40, comes to 14,319.60, and the
+  # 55% taper takes 7,875.78. Universal Credit: 20,644.80 - 7,875.78 =
+  # 12,769.02. With the son as a non-dependant aged 16 or over, the head
+  # would get two bedrooms, whose rate of 18,600 exceeds the rent, a housing
+  # element of 18,000 and Universal Credit of 15,223.02.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 18
+        is_household_head: false
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    # Housing Benefit and council tax reduction read their own flag.
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, false]
+    benunits:
+      householder_unit:
+        LHA_allowed_bedrooms: 1
+        uc_non_dep_deductions: 0
+        uc_housing_costs_element: 15_546
+        universal_credit: 12_769.02
+
+- name: A lodger's non-paying adult son stays the householder's non-dependant for Universal Credit and Housing Benefit
+  # The household of the first Housing Benefit case above: Scotland,
+  # 2026-27, a household head (60) with an eligible rent of 10,400, an
+  # unrelated lodger (50) paying 5,200 a year, and the lodger's son (30),
+  # who pays nothing and earns 15,600 over 20 hours a week. The formula
+  # applies para 9(2)(g) only to a child or qualifying young person. The
+  # son, at 30, is neither, so he stays the head's non-dependant for
+  # Universal Credit too. Housing Benefit keeps his deduction of
+  # 64.35 x 52 = 3,346.20 and pays 10,400 - 3,346.20 = 7,053.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, true]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    housing_benefit: [7_053.80, 0]
+
+- name: A non-paying daughter's qualifying young person stays the householder's non-dependant for Universal Credit
+  # London (Inner South East London), 2026-27. The household head (62)
+  # rents privately for 20,000 a year, earns 15,000 and claims Universal
+  # Credit. The head's daughter (36), who pays nothing, lives there with her
+  # son (17), who studies for A levels, in her own benefit unit. The
+  # daughter is the head's non-dependant, so she belongs to the head's
+  # extended benefit unit (para 9(1)(c)), and she has responsibility for
+  # her son, so he stays a non-dependant too. Each is a non-dependant who is
+  # not a child, so the head gets three bedrooms (para 10(1)(a) and (c)),
+  # whose rate of 23,400 exceeds the rent. The daughter, 21 or over and not
+  # exempt, brings a housing cost contribution of 96.55 x 12 = 1,158.60, so
+  # the housing element comes to 20,000 - 1,158.60 = 18,841.40. Universal
+  # Credit: 5,098.80 + 18,841.40 - 7,875.78 = 16,064.42, with the earned
+  # income of the first Universal Credit case in this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 62
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      daughter:
+        age: 36
+        is_household_head: false
+        is_claimant_or_partner: true
+      grandson:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      daughter_unit:
+        members: [daughter, grandson]
+    households:
+      household:
+        members: [householder, daughter, grandson]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, true, true]
+    benunits:
+      householder_unit:
+        LHA_allowed_bedrooms: 3
+        uc_non_dep_deductions: 1_158.60
+        uc_housing_costs_element: 18_841.40
+        universal_credit: 16_064.42
+
+- name: A lodger's non-paying adult son takes a householder under 35 off the Universal Credit shared accommodation rate
+  # London (Inner South East London), 2026-27. The household head (25)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (50) pays 5,200 a year; the lodger's son
+  # (30), in the lodger's benefit unit, pays nothing and earns 15,600 over
+  # 20 hours a week. The son is the head's non-dependant, so the model does
+  # not treat the head, single and under 35, as a specified renter: the
+  # head gets two bedrooms, whose rate of 18,600 exceeds the rent. The son
+  # brings a housing cost contribution of 96.55 x 12 = 1,158.60, so the
+  # housing element comes to 18,000 - 1,158.60 = 16,841.40. Universal
+  # Credit: 5,098.80 + 16,841.40 - 7,875.78 = 14,064.42, with the earned
+  # income of the first Universal Credit case in this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 25
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    is_uc_non_dependant_of_household_head: [false, false, true]
+    benunits:
+      householder_unit:
+        lha_renter_has_non_dependant: true
+        is_lha_shared_accommodation_rate_specified_renter: false
+        LHA_allowed_bedrooms: 2
+        uc_non_dep_deductions: 1_158.60
+        uc_housing_costs_element: 16_841.40
+        universal_credit: 14_064.42
+
+- name: A commercial lodger's child leaves a householder under 35 on the Universal Credit shared accommodation rate
+  # London (Inner South East London), 2026-27. The household head (25)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (40) pays 5,200 a year and lives there with
+  # a child (10) in the lodger's benefit unit. Nobody in the head's extended
+  # benefit unit has responsibility for the child, so the child is not the
+  # head's non-dependant for Universal Credit. The head, single and under
+  # 35, has no non-dependant, so the shared accommodation rate of 7,800 a
+  # year caps the rent. Universal Credit: 5,098.80 + 7,800 - 7,875.78 =
+  # 5,023.02, with the earned income of the first Universal Credit case in
+  # this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 25
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      child:
+        age: 10
+        is_household_head: false
+        is_claimant_or_partner: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, child]
+    households:
+      household:
+        members: [householder, lodger, child]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, false]
+    benunits:
+      householder_unit:
+        lha_renter_has_non_dependant: false
+        is_lha_shared_accommodation_rate_specified_renter: true
+        LHA_allowed_bedrooms: 1
+        uc_housing_costs_element: 7_800
+        universal_credit: 5_023.02
