@@ -22,7 +22,11 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "Newham counts the PIP daily living component at either rate and "
         "armed forces independence payment. Those three councils count an "
         "award only for a person under the qualifying age for State Pension "
-        "Credit. The model applies the Housing Benefit condition elsewhere "
+        "Credit. The model applies each council's own list from the first "
+        "scheme year whose text supports it "
+        "(qualifying_benefits_in_effect): 2013-14 in Kingston upon Thames and "
+        "Newham, and 2023-24 in Merton. Before then, and in every other "
+        "scheme, it applies the Housing Benefit condition "
         "(receives_enhanced_disability_premium_qualifying_benefit, under the "
         "same age limit). Welsh councils apply that condition under W.S.I. "
         "2013/3029 Sch 7 para 12. Westminster City Council publishes a "
@@ -37,8 +41,12 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/12/2021-04-01",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/12",
+        "https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202023-24_0.pdf",
         "https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf",
+        "https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744",
+        "https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/regulation/12/made",
         "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf",
+        "https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf",
         "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026",
     )
 
@@ -52,17 +60,21 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         def receives(benefits):
             return add(person, period, benefits) > 0
 
+        housing_benefit = (
+            person("receives_enhanced_disability_premium_qualifying_benefit", period)
+            & under_age
+        )
+
         def council_condition(council):
             p = council.council_tax_reduction.enhanced_disability_premium
-            return receives(p.qualifying_benefits) & under_age
+            own_list = receives(p.qualifying_benefits) & under_age
+            # Before the first scheme year whose text supports the council's
+            # own list, the model applies the Housing Benefit condition.
+            return where(p.qualifying_benefits_in_effect, own_list, housing_benefit)
 
         p = la.scotland.council_tax_reduction.working_age.enhanced_disability_premium
         scottish = receives(p.qualifying_benefits) & (
             under_age | (not p.age_limit_applies)
-        )
-        housing_benefit = (
-            person("receives_enhanced_disability_premium_qualifying_benefit", period)
-            & under_age
         )
         return select(
             [

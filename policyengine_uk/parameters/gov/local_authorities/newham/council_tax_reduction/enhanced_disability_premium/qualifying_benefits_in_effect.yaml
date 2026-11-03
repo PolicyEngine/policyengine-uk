@@ -1,0 +1,18 @@
+description: >
+  If this is true, the model applies the London Borough of Newham's own list
+  (qualifying_benefits) to the enhanced disability premium in its working-age
+  Council Tax Reduction scheme; otherwise it applies the Housing Benefit
+  condition there (receives_enhanced_disability_premium_qualifying_benefit),
+  under the same age limit. The council's scheme texts support its own list
+  from 2013-14, so the model applies the list in every year.
+metadata:
+  label: Newham Council Tax Reduction enhanced disability premium own list in effect
+  period: year
+  unit: bool
+  reference:
+    - title: Council, 24 January 2013, minutes (adopting the local scheme in Appendix 1 from 1 April 2013)
+      href: https://mgov.newham.gov.uk/documents/g9739/Printed%20minutes%2024th-Jan-2013%2018.00%20Council.pdf?T=1
+    - title: Council Tax Reduction Scheme 2013 (Appendix 1), Sch. 3 para. 12(1)(b), (c)
+      href: https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf
+values:
+  2013-04-01: true

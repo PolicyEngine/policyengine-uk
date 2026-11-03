@@ -5,16 +5,37 @@ description: >
   or a member of the applicant's family, toward the enhanced disability
   premium in its working-age Council Tax Reduction scheme. It omits armed
   forces independence payment, and counts each award only for a person under
-  the qualifying age for State Pension Credit. The model reads the list as at
-  30 April of each year and backdates it to 2015.
+  the qualifying age for State Pension Credit. The council made its scheme
+  from 1 April 2013 by adopting the Default Scheme, whose Sch 3 para 12 sets
+  this list, and kept the scheme apart from uprating for 2014-15, 2015-16 and
+  2016-17; its scheme texts for 2023 to 2026-27 keep the same para 12. The
+  model reads the list as at 30 April of each year.
 metadata:
   label: Kingston upon Thames Council Tax Reduction enhanced disability premium qualifying benefits
   period: year
   unit: list
   reference:
+    - title: Council, 11 December 2012, item 42 (a scheme from 1 April 2013 adopting the Default Scheme)
+      href: https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. 3 para. 12 (as made)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/regulation/12/made
+    - title: Council, 8 October 2013, item 42 (no changes for 2014/15 other than the Government's changes to the Default Scheme)
+      href: https://moderngov.kingston.gov.uk/ieListDocuments.aspx?CId=137&MId=7156&Ver=4
+    - title: Decision 2535, 17 December 2013 (2014/15 the same as 2013/14 apart from uprating)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=2535
+    - title: Decision 2707, 16 July 2014 (2015/16 and 2016/17 unchanged apart from uprating)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=2707
+    - title: Council, 15 December 2015, item 81c (revisions from 1 April 2016, none to Sch 3 para 12)
+      href: https://moderngov.kingston.gov.uk/mgAi.aspx?ID=29804
+    - title: Council Tax Reduction Scheme 2023, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/downloads/CTRS_2023_Final.pdf
+    - title: Council Tax Reduction Scheme 2024-2025, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/downloads/Council_Tax_Reduction_Scheme_2024_2025.pdf
+    - title: Council Tax Reduction Scheme 2025-26, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/2026-07/Council%20Tax%20Reduction%20Scheme%202025-26.pdf
     - title: Council Tax Reduction Scheme 2026 - 2027, Sch. 3 para. 12(1)(b), (c)
       href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf
 values:
-  2026-04-01:
+  2013-04-01:
     - has_highest_dla_sc_award
     - pip_dl
