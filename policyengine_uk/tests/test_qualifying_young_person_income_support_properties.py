@@ -7,9 +7,10 @@ Pension Credit (SPC Regs 2002 reg. 4A(5)), Child Benefit (Child Benefit
 reg. 5(4)(c)). Universal Credit's list (UC Regs 2013 reg. 5(5)) does not
 include Income Support.
 
-Pension Credit and Child Tax Credit read is_on_income_support: the award the
-model calculates for a claimant or partner, and the person's own report for
-any other member while Income Support is in payment and not neutralised.
+Pension Credit and Child Tax Credit read is_on_income_support: the benefit
+unit's calculated award, for whichever of the claimant and partner receives
+it, and the person's own report for any other member while Income Support is
+in payment and not neutralised.
 Child Benefit reads receives_income_support_in_own_right, the person's own
 report on the same terms, because the family's Income Support reads the
 Child Benefit test and the calculated award would make a cycle.
@@ -31,9 +32,9 @@ Invariants:
    Under a reform that replaces income_support's formula with one returning
    zero, no Pension Credit or Child Tax Credit status of a claimant or
    partner depends on it; another member's report and the Child Benefit
-   reader still exclude, as their documentation says, because only
-   neutralising Income Support, or setting the report to zero, removes a
-   report.
+   reader still exclude, as their documentation says, because only setting
+   gov.dwp.income_support.active to false, neutralising Income Support, or
+   setting the report to zero, removes a report.
 4. Universal Credit status never depends on reported Income Support, in the
    baseline or under either reform.
 5. Setting a young person's reported Income Support to zero never lowers
@@ -174,6 +175,15 @@ def as_members(rows, **inputs):
 def test_income_support_ends_three_statuses_and_not_universal_credit():
     untouched = simulate(as_members(GRID))
     reporting = simulate(as_members(GRID, income_support_reported=3_000))
+    neutralised = simulate(
+        as_members(GRID, income_support_reported=3_000), reform="neutralised"
+    )
+    for programme in EXCLUDING + ("universal_credit",):
+        np.testing.assert_array_equal(
+            status(neutralised, programme)[1::2],
+            status(untouched, programme)[1::2],
+            err_msg=programme,
+        )
     for programme in EXCLUDING:
         before = status(untouched, programme)[1::2]
         # Not vacuous: there is a status to lose.
@@ -342,9 +352,8 @@ def test_a_reform_paying_no_income_support_restores_the_severe_disability_additi
     # young person, disregarded under Schedule I para. 2(2)(f), so the
     # pensioner gets the severe disability addition 65.85 x 52 = 3,424.20 as
     # well: 7,121.20. Household net income: State Pension 5,000 + PIP 58.70 x
-    # 52 = 3,052.40 + Pension Credit 7,121.20 + the cost-of-living payments
-    # the model applies before 2022 (650 + 300 + 150) + winter fuel payment
-    # 200, less TV licence 154.50: 16,319.10.
+    # 52 = 3,052.40 + Pension Credit 7,121.20 + winter fuel payment 200, less
+    # TV licence 154.50: 15,219.10, before the cost-of-living payments.
     year = 2019
     for reform in ("zero formula", "neutralised"):
         sim = simulate(pensioner_and_student_carer(), year, reform)
@@ -358,10 +367,13 @@ def test_a_reform_paying_no_income_support_restores_the_severe_disability_additi
             sim.calculate("pension_credit", year), [7_121.20, 0], atol=0.01
         )
         np.testing.assert_allclose(
-            sim.calculate("household_net_income", year), [16_319.10], atol=0.01
+            sim.calculate("household_net_income", year)
+            - sim.calculate("cost_of_living_support_payment", year),
+            [15_219.10],
+            atol=0.01,
         )
-    # Child Benefit reads the report: only neutralising Income Support ends
-    # its exclusion.
+    # Child Benefit reads the report: of these two reforms, only neutralising
+    # Income Support ends its exclusion.
     zero = simulate(pensioner_and_student_carer(), year, "zero formula")
     assert zero.calculate(INCOME_SUPPORT, year)[1]
     assert not status(zero, "child_benefit", year)[1]
