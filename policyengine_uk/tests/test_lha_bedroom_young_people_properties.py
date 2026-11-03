@@ -504,6 +504,25 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
 
 @PROPERTY_SETTINGS
 @given(scenario())
+# A non-dependant's foster child who requires overnight care: the renter's
+# Housing Benefit overnight room (reg 13D(3A)(a)(iii); reg 21(3)).
+@example(
+    (
+        [
+            [
+                lone("head", 60),
+                dict(
+                    role="non_dependant",
+                    adults=[(32, False)],
+                    children=[(6, False, "foster", True)],
+                    between_placements=False,
+                ),
+            ]
+        ],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, is_looked_after_by_local_authority=False),
+    )
+)
 def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
     population, target, person = case
     situation, keys = build(population, (target, person))
