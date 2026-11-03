@@ -26,12 +26,18 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         "no one may be receiving a benefit in their own right. Full-time "
         "education at any level counts (reg. 5(5)), so an advanced student "
         "has not ceased it, nor has an apprentice still on a course; the "
-        "employment exclusion is part of the first condition only. The "
-        "own-right benefits are read from the inputs for Universal Credit, "
-        "Employment and Support Allowance, Jobseeker's Allowance and Income "
-        "Support; reg. 5(4)(c) lists Universal Credit, Income Support and "
-        "only the income-related and income-based allowances, which the "
-        "inputs do not separate. "
+        "employment exclusion is part of the first condition only. Reg. "
+        "5(4)(c) bars every route for a person who receives Income Support, "
+        "and the formula reads is_on_income_support for it: the award the "
+        "model calculates for a claimant or partner, and their own reported "
+        "award for any other member while Income Support is in payment and "
+        "no reform neutralises it. A reform that replaces Income Support's "
+        "formula with zero ends a claimant's or partner's receipt; for "
+        "another member it must neutralise income_support or set their "
+        "reported award to zero. The own-right benefits input covers "
+        "Universal Credit, Employment and Support Allowance and Jobseeker's "
+        "Allowance of either kind, where reg. 5(4)(c) lists only Universal "
+        "Credit and the income-related and income-based allowances. "
         "Interruptions (reg. 5(7)) are not modelled."
     )
     definition_period = YEAR
@@ -85,7 +91,9 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
                 period,
             )
             & (in_education_or_training | in_regulation_4_period | in_20_weeks)
-            # Reg. 5(4)(c).
+            # Reg. 5(4)(c): Universal Credit, ESA and JSA in their own right,
+            # and Income Support, which reg. 4(2) keeps for the reg. 4 period.
             & ~person("receives_benefits_in_own_right", period)
+            & ~person("is_on_income_support", period)
             & ~person("receives_income_support_in_own_right", period)
         )

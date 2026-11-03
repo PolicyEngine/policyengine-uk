@@ -151,10 +151,13 @@ def situation(units, year):
             people[name]["is_claimant_or_partner"] = {year: claimant_or_partner}
             people[name]["is_parent"] = {year: claimant_or_partner and bool(children)}
             names.append(name)
+        # Legacy claimants: a Universal Credit claim would end the couple's
+        # income-related ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "esa_income_assessable_capital": {year: capital},
             "jsa_income_assessable_capital": {year: capital},
+            "would_claim_uc": {year: False},
         }
         households[f"h{i}"] = {"members": names}
     return {"people": people, "benunits": benunits, "households": households}

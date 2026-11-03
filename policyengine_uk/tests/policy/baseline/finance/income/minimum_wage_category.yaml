@@ -3,6 +3,7 @@
   absolute_error_margin: 0
   input:
     is_apprentice: true
+    is_in_first_year_of_apprenticeship: true
   output:
     minimum_wage_category: APPRENTICE
 - name: Under 18

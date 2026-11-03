@@ -14,6 +14,7 @@ BENEFITS = [
     "afcs",
     "bsp",
     "war_widows_pension",
+    "widowed_parents_allowance",
     "child_benefit",
     "child_tax_credit",
     "council_tax_benefit",

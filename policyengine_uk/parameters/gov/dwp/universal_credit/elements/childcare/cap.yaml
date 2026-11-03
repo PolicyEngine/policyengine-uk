@@ -15,6 +15,7 @@ metadata:
   period: month
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi
+  propagate_metadata_to_children: true
   reference:
     - title: The Universal Credit Regulations 2013 reg. 31 (childcare costs element), amounts in reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36

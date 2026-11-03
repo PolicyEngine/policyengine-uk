@@ -8,10 +8,17 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk.utils.aggregate_impact.guard import counted_once, snapshot_inputs
+from policyengine_uk.utils.aggregate_impact.guard import (
+    _slack,
+    breaks_on_slope,
+    counted_once,
+    judge_total,
+    snapshot_inputs,
+    still_breaks,
+)
 from policyengine_uk.utils.aggregate_impact.partition import parse_partition
 
 YEAR = 2026
@@ -168,6 +175,40 @@ def test_undeclared_containment_fails_because_another_head_moves():
     assert rows["tax_a"]["status"] == "pass"
 
 
+@pytest.mark.parametrize("tax_level", [0, 490_000, 1e9])
+def test_undeclared_tax_containment_fails_at_any_baseline(tax_level):
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: tax_level + f("tax_b")
+    _, result = run(formulas, partition(["tax_a", "tax_b"]))
+    row = by_variable(result)["tax_b"]
+    assert row["responses"]["gov_tax"]["tax_a"] == pytest.approx(1)
+    assert row["status"] == "fail" and ("tax_a", "moves") in kinds(row)
+    assert row["mediated"] == []
+    assert result["reset_reproduces_baseline"]
+
+
+@pytest.mark.parametrize(
+    "tax_a",
+    [
+        lambda f: 1 / (6 - f("tax_b")),
+        lambda f: -1 / (6 - f("tax_b")),
+        lambda f: np.sqrt(5 - f("tax_b")),
+    ],
+    ids=["infinite", "negative infinite", "not a number"],
+)
+def test_a_non_finite_undeclared_tax_response_fails(tax_a):
+    """tax_b starts at 5, so tax_a is finite until the guard adds 1 to tax_b."""
+    formulas = model(contains=False)
+    formulas["tax_a"] = tax_a
+    with np.errstate(divide="ignore", invalid="ignore"):
+        _, result = run(formulas, partition(["tax_a", "tax_b"]), x=(1,), weights=(1,))
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "fail" and ("tax_a", "moves") in kinds(row)
+    assert row["mediated"] == []
+    assert by_variable(result)["tax_a"]["status"] == "pass"
+    assert result["reset_reproduces_baseline"]
+
+
 def test_means_tested_offset_passes_but_a_benefit_rising_with_income_fails():
     _, offset = run(model(interaction=-0.5), partition(["tax_a"], ["ben_c", "ben_d"]))
     row = by_variable(offset)["ben_c"]
@@ -230,6 +271,305 @@ def test_a_declared_read_may_respond_but_not_one_for_one():
     _, containing = run(model(contains=True), reading)
     row = by_variable(containing)["tax_b"]
     assert row["status"] == "fail" and ("tax_a", "contains") in kinds(row)
+
+
+@pytest.mark.parametrize("tax_level", [100_000, 300_000])
+@pytest.mark.parametrize("declared", [False, True])
+@pytest.mark.parametrize("contains", [False, True])
+def test_a_large_tax_head_is_containment_only_when_it_responds_one_for_one(
+    tax_level, declared, contains
+):
+    """A flat £300,000 reader is unchanged at both NI-style perturbations."""
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: tax_level + contains * f("tax_b")
+    reads = {"tax_a": ["tax_b"]} if declared else {}
+    _, result = run(formulas, partition(["tax_a", "tax_b"], reads=reads))
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == ("fail" if contains else "pass")
+    if contains:
+        assert ("tax_a", "contains" if declared else "moves") in kinds(row)
+    else:
+        assert "tax_a" not in row["responses"]["gov_tax"]
+    assert result["reset_reproduces_baseline"]
+
+
+def test_a_large_reader_with_a_mediated_slope_has_no_held_containment():
+    """Both held measurements are flat after the other head stops moving."""
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: 0.5 * f("tax_b")
+    formulas["tax_a"] = lambda f: 300_000 + 2 * f("tax_c")
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    _, result = run(
+        formulas,
+        partition(
+            ["tax_a", "tax_b", "tax_c"],
+            reads={"tax_a": ["tax_b", "tax_c"], "tax_c": ["tax_b"]},
+        ),
+    )
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "pass"
+    assert [(m["head"], m["kind"], m["via"]) for m in row["mediated"]] == [
+        ("tax_a", "contains", ["tax_c"])
+    ]
+    assert result["reset_reproduces_baseline"]
+
+
+def test_a_large_reader_contains_a_component_despite_an_extra_mediated_slope():
+    """The unrestricted slope is 1.125; holding tax_c reveals containment."""
+    formulas = model(contains=False)
+    formulas["tax_c"] = lambda f: 0.25 * f("tax_b")
+    formulas["tax_a"] = lambda f: 300_000 + f("tax_b") + 0.5 * f("tax_c")
+    formulas["gov_tax"] = lambda f: f("tax_a") + f("tax_b") + f("tax_c")
+    _, result = run(
+        formulas,
+        partition(
+            ["tax_a", "tax_b", "tax_c"],
+            reads={"tax_a": ["tax_b", "tax_c"], "tax_c": ["tax_b"]},
+        ),
+    )
+    row = by_variable(result)["tax_b"]
+    assert row["status"] == "fail"
+    assert ("tax_a", "contains") in kinds(row)
+    assert result["reset_reproduces_baseline"]
+
+
+@pytest.mark.parametrize("contains", [False, True])
+@settings(max_examples=60, deadline=None)
+@given(
+    tax_level=st.floats(0, 1e9),
+    perturbation=st.floats(1e-6, 1e6),
+)
+def test_containment_depends_on_the_response_and_perturbation_not_the_tax_level(
+    contains, tax_level, perturbation
+):
+    """Zero never contains; a one-for-one response always does, at any size."""
+    expected = np.array([perturbation])
+    first = expected if contains else np.zeros(1)
+    second = 2 * first
+    scales = np.array([tax_level])
+    where = np.array([True])
+    for second_changes in (None, {"tax_a": second}):
+        verdict = judge_total(
+            total="gov_tax",
+            is_tax=True,
+            component="tax_b",
+            own_variable="tax_b",
+            declared_double_count=False,
+            zero_baseline=False,
+            weights=np.ones(1),
+            expected=expected,
+            head_changes={"tax_b": expected, "tax_a": first},
+            head_scales={"tax_b": scales, "tax_a": scales},
+            model_change=None,
+            model_scale=None,
+            allowed_readers=["tax_a"],
+            second_changes=second_changes,
+        )
+        assert bool(verdict["problems"]) == contains
+        if contains:
+            assert verdict["problems"][0]["head"] == "tax_a"
+            assert verdict["problems"][0]["kind"] == "contains"
+    slack = _slack(scales)
+    for held_second in (None, second):
+        direct = still_breaks("contains", where, expected, slack, first, held_second)
+        assert bool(direct[0]) == contains
+    at_first = breaks_on_slope("contains", where, expected, slack, second - first)
+    assert bool(at_first[0]) == contains
+
+
+@pytest.mark.parametrize("response_factor", [0.0, -1.0, 1.0])
+@settings(max_examples=60, deadline=None)
+@given(tax_level=st.floats(0, 1e9), perturbation=st.floats(1e-6, 1e6))
+def test_undeclared_tax_movement_depends_on_the_response_not_the_level(
+    response_factor, tax_level, perturbation
+):
+    """All movement paths reject an observed unit response and accept zero."""
+    expected = np.array([perturbation])
+    response = response_factor * expected
+    scales = np.array([tax_level])
+    where = np.array([True])
+    verdict = judge_total(
+        total="gov_tax",
+        is_tax=True,
+        component="tax_b",
+        own_variable="tax_b",
+        declared_double_count=False,
+        zero_baseline=False,
+        weights=np.ones(1),
+        expected=expected,
+        head_changes={"tax_b": expected, "tax_a": response},
+        head_scales={"tax_b": scales, "tax_a": scales},
+        model_change=None,
+        model_scale=None,
+        allowed_readers=[],
+    )
+    moved = response_factor != 0
+    assert bool(verdict["problems"]) == moved
+    if moved:
+        assert verdict["problems"][0]["head"] == "tax_a"
+        assert verdict["problems"][0]["kind"] == "moves"
+    slack = _slack(scales)
+    direct = still_breaks("moves", where, expected, slack, response)
+    at_first = breaks_on_slope("moves", where, expected, slack, response)
+    assert bool(direct[0]) == moved
+    assert bool(at_first[0]) == moved
+
+
+def movement(expected, response, tax_level=0.0):
+    """Households where each movement path finds tax_a moving with tax_b.
+
+    Returns the masks of the initial screen, the first held check and the
+    held-slope check, each given ``response`` as tax_a's observed change.
+    """
+    expected = np.asarray(expected, dtype=float)
+    response = np.asarray(response, dtype=float)
+    scales = np.full_like(expected, tax_level)
+    where = np.ones_like(expected, dtype=bool)
+    # Opposite infinite responses sum to a NaN coefficient for the report.
+    with np.errstate(invalid="ignore"):
+        verdict = judge_total(
+            total="gov_tax",
+            is_tax=True,
+            component="tax_b",
+            own_variable="tax_b",
+            declared_double_count=False,
+            zero_baseline=False,
+            weights=np.ones_like(expected),
+            expected=expected,
+            head_changes={"tax_b": expected, "tax_a": response},
+            head_scales={"tax_b": scales, "tax_a": scales},
+            model_change=None,
+            model_scale=None,
+            allowed_readers=[],
+        )
+    initial = np.zeros_like(where)
+    for found in verdict["problems"]:
+        assert (found["head"], found["kind"]) == ("tax_a", "moves")
+        initial = initial | found["where"]
+    slack = _slack(scales)
+    return (
+        initial,
+        still_breaks("moves", where, expected, slack, response),
+        breaks_on_slope("moves", where, expected, slack, response),
+    )
+
+
+@pytest.mark.parametrize(
+    "added, response, direct, on_slope",
+    [
+        (0, 0, False, False),
+        (0, 1e-9, True, True),
+        (1, 0, False, False),
+        (1, 0.019, False, False),
+        (1, 0.021, True, False),
+        (1, 0.03, True, False),
+        (1, 0.039, True, False),
+        (1, 0.041, True, True),
+        (2, 0.03, False, False),
+        (2, 0.041, True, False),
+        (2, 0.081, True, True),
+    ],
+)
+def test_movement_allowances_are_2_and_4_percent_of_the_addition(
+    added, response, direct, on_slope
+):
+    """The initial and first held checks allow 2% of what was added; the held
+    slope, a two-point difference, allows 4%."""
+    for tax_level in (0, 1e9):
+        for sign in (-1, 1):
+            found = movement([added], [sign * response], tax_level)
+            assert [bool(mask[0]) for mask in found] == [direct, direct, on_slope]
+
+
+@settings(max_examples=60, deadline=None)
+@given(
+    perturbation=st.one_of(st.just(0.0), st.floats(1e-6, 1e6)),
+    tax_level=st.floats(0, 1e9),
+    sign=st.sampled_from([-1.0, 1.0]),
+)
+@example(perturbation=0.0, tax_level=0.0, sign=1.0)
+@example(perturbation=1.0, tax_level=1e9, sign=-1.0)
+def test_movement_starts_exactly_beyond_the_response_allowance(
+    perturbation, tax_level, sign
+):
+    """Issue #2606's allowance: a response r moves when |r| exceeds 0.02
+    |expected| + 2e-6 |r|, or twice that for the held slope. Solving for |r|
+    gives each boundary."""
+    for allowances, paths in ((1, (0, 1)), (2, (2,))):
+        boundary = 0.02 * allowances * perturbation / (1 - 2e-6 * allowances)
+        # Where nothing was added, any movement counts.
+        responses = [boundary * (1 - 1e-9), max(boundary * (1 + 1e-9), 1e-9)]
+        found = movement([perturbation] * 2, np.multiply(sign, responses), tax_level)
+        for path in paths:
+            assert found[path].tolist() == [False, True]
+
+
+@settings(max_examples=60, deadline=None)
+@given(
+    response=st.sampled_from([np.inf, -np.inf, np.nan]),
+    perturbation=st.floats(0, 1e6),
+    tax_level=st.floats(0, 1e9),
+)
+def test_a_non_finite_response_is_movement_on_every_path(
+    response, perturbation, tax_level
+):
+    found = movement([perturbation], [response], tax_level)
+    assert [bool(mask[0]) for mask in found] == [True, True, True]
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    households=st.lists(
+        st.tuples(
+            st.floats(0, 1e6),
+            st.one_of(
+                st.floats(-1e12, 1e12), st.sampled_from([np.inf, -np.inf, np.nan])
+            ),
+        ),
+        min_size=1,
+        max_size=8,
+    ),
+    tax_level=st.floats(0, 1e9),
+)
+def test_the_movement_paths_agree_and_the_held_slope_is_looser(households, tax_level):
+    """The initial screen and the first held check apply the same rule; the
+    held slope finds a subset of their households, never sparing a non-finite
+    response, and the sign of a response never matters."""
+    expected, response = (np.array(column) for column in zip(*households))
+    found = movement(expected, response, tax_level)
+    initial, held, slope = found
+    assert np.array_equal(initial, held)
+    assert not (slope & ~held).any()
+    assert slope[~np.isfinite(response)].all()
+    for mask, mirrored in zip(found, movement(expected, -response, tax_level)):
+        assert np.array_equal(mask, mirrored)
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    households=st.lists(
+        st.tuples(
+            st.booleans(),
+            st.floats(0, 1e6),
+            st.one_of(
+                st.floats(-1e12, 1e12), st.sampled_from([np.inf, -np.inf, np.nan])
+            ),
+        ),
+        min_size=1,
+        max_size=8,
+    ),
+)
+def test_the_held_checks_stay_within_the_households_they_are_given(households):
+    """A held check narrows the households it receives: it never adds one,
+    however far the response moves there."""
+    where, expected, response = (np.array(column) for column in zip(*households))
+    slack = _slack(np.zeros_like(expected))
+    everyone = np.ones_like(where)
+    for check in (still_breaks, breaks_on_slope):
+        assert np.array_equal(
+            check("moves", where, expected, slack, response),
+            where & check("moves", everyone, expected, slack, response),
+        )
 
 
 def test_supplied_inputs_are_restored_after_perturbation():

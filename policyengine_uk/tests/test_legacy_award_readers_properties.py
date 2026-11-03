@@ -27,6 +27,8 @@ the child's parent, or the person themselves:
   SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
 - The extended childcare parent and partner conditions: SI 2022/1134 regs
   11A(1)(e), 14(4)(b) and 15(4).
+- The higher Pension Credit earnings disregard for a claimant or partner on
+  employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -86,6 +88,7 @@ one simulation, in separate households and benefit units.
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
@@ -122,6 +125,7 @@ FAMILY_READERS = [
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
+    "pension_credit_earnings_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -298,10 +302,13 @@ def situation(units, year=YEAR, benunit_inputs=None):
             names.append(name)
         # claims_all_entitled_benefits sums reports across the whole
         # simulation, so fix the take-up mode per benefit unit: the variants
-        # must not share it.
+        # must not share it. The families are on legacy awards and do not
+        # claim Universal Credit, which would end the couple's income-related
+        # ESA (esa_income_report_closed).
         benunits[f"b{i}"] = {
             "members": names,
             "claims_all_entitled_benefits": {year: False},
+            "would_claim_uc": {year: False},
             **{k: {year: v} for k, v in (benunit_inputs or {}).items()},
         }
         households[f"h{i}"] = {
@@ -651,6 +658,7 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
                 values[starts[i] : starts[i] + n],
                 values[starts[k + i] : starts[k + i] + n],
             ), (variable, drawn[i])
+    return sim
 
 
 @SETTINGS
@@ -675,6 +683,44 @@ def test_other_members_awards_never_change_the_readers_at_pension_age(drawn):
 )
 def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
     _family_readers_never_change(drawn)
+
+
+@pytest.mark.parametrize("report", ["esa_income_reported", "jsa_income_reported"])
+def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report):
+    # A natural route-(a) case: no route or own-right Boolean is supplied.
+    # UC reg 5(5) and SPC reg 4A(5) still exclude the member's own award.
+    family = (
+        [
+            {
+                "age": 18,
+                "is_benunit_head": True,
+                "current_education": "NOT_IN_EDUCATION",
+                **NO_AWARDS,
+            }
+        ],
+        [],
+        {"country": "SCOTLAND", "savings": 0},
+    )
+    other = outside_adult(16, is_benunit_head=False, **{report: 5_000})
+    sim = _family_readers_never_change([(family, other)])
+    assert sim.calculate("is_before_first_september_following_16th_birthday", YEAR)[-1]
+    assert not sim.calculate("receives_benefits_in_own_right", YEAR).any()
+    for programme in ("universal_credit", "pension_credit"):
+        assert not sim.calculate(f"is_qualifying_young_person_for_{programme}", YEAR)[
+            -1
+        ]
+        assert not sim.calculate(
+            f"is_child_or_qualifying_young_person_for_{programme}", YEAR
+        )[-1]
+    for variable in (
+        "uc_child_element",
+        "is_uc_work_allowance_eligible",
+        "uc_work_allowance",
+    ):
+        assert not sim.calculate(variable, YEAR).any(), variable
+    for variable in ("uc_earned_income", "uc_unearned_income"):
+        values = sim.calculate(variable, YEAR)
+        assert np.isclose(values[0], values[1], atol=0.01), variable
 
 
 @SETTINGS
@@ -961,6 +1007,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
             benunits[f"nondep_unit_{tag}"] = {
                 "members": unit,
                 "universal_credit": {year: 0},
+                "would_claim_uc": {year: False},
             }
             households[f"h_{tag}"] = {
                 "members": names + unit,
@@ -1024,7 +1071,7 @@ def test_claimant_and_partner_awards_count_in_full_as_their_ctr_income():
     award adds exactly its amount.
     """
     ctr = "council_tax_reduction_applicable_income"
-    no_uc = {"universal_credit": 0}
+    no_uc = {"universal_credit": 0, "would_claim_uc": False}
     claimant_esa = {"claimant": {**CLAIMANT, "esa_income_reported": 5_000}}
     assert np.isclose(
         _difference(ctr, {"claimant": CLAIMANT}, claimant_esa, no_uc), 5_000
@@ -1103,7 +1150,7 @@ def _claimant_and_other(other_report):
     }
     return {
         "people": people,
-        "benunits": {"b": {"members": list(people)}},
+        "benunits": {"b": {"members": list(people), "would_claim_uc": {YEAR: False}}},
         "households": {"h": {"members": list(people)}},
     }
 
@@ -1159,12 +1206,14 @@ def test_late_zero_entry_overrides_the_claimants_reports():
 
 
 def _situation(people, year=YEAR):
+    # Not claiming Universal Credit, which would end the claimant's
+    # income-related ESA (esa_income_report_closed).
     names = list(people)
     return {
         "people": {
             n: {k: {year: v} for k, v in inputs.items()} for n, inputs in people.items()
         },
-        "benunits": {"b": {"members": names}},
+        "benunits": {"b": {"members": names, "would_claim_uc": {year: False}}},
         "households": {"h": {"members": names}},
     }
 
@@ -1244,12 +1293,12 @@ def test_an_outside_adults_own_claim_is_screened_on_their_own_work():
                 claimant_report,
             )
             assert idle_other.calculate(variable, YEAR)[1], (variable, claimant_report)
-    # The working claimant's report fails the screen: the benefit unit's
-    # award is nil, and the claimant is on neither award.
+    # The working claimant fails; the idle outside adult's own £3,000
+    # remains in the aggregate, and the claimant is on neither award.
     idle_other = _claimant_and_outside_adult(
         3_000, claimant_works=True, other_works=False
     )
-    assert idle_other.calculate("esa_income", YEAR)[0] == 0
+    assert idle_other.calculate("esa_income", YEAR)[0] == 3_000
     assert not idle_other.calculate("is_on_income_related_esa", YEAR)[0]
 
 
@@ -1290,6 +1339,7 @@ def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
                     "non_dependant_unit": {
                         "members": ["claimant", "other"],
                         "universal_credit": {year: 0},
+                        "would_claim_uc": {year: False},
                     },
                 },
                 "households": {

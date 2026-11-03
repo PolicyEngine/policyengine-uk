@@ -8,28 +8,23 @@ class esa_income_eligible(Variable):
         "Whether a reported income-related ESA award passes the capital and work tests"
     )
     documentation = (
-        "Bounded screen applied to reported income-related ESA awards: the "
-        "capital test (Welfare Reform Act 2007 Sch 1 para 6(1)(b); ESA Regs "
-        "2008 reg 110) and the remunerative work conditions. The claimant "
-        "must not be engaged in remunerative work (para 6(1)(e); "
-        "esa_income_claimant_remunerative_work), and must not be a member of "
-        "a couple the other member of which is (para 6(1)(f)): paid work of "
-        "24 hours a week or more (reg 42(1)), unless the partner is a carer "
-        "within IS Regs 1987 Sch 1B para 4 (reg 43(2)(c)), which the model "
-        "reads as is_carer_for_benefits. The claimant is a member who "
-        "reports the award, tested against the other member of the couple. "
-        "When the claimant or partner reports one, only they are candidates: "
-        "a member outside the family, such as a non-dependent adult, claims "
-        "in their own right, and is tested on their own work only when "
-        "neither the claimant nor the partner reports an award. This one "
-        "screen decides the benefit unit's award (esa_income) on every report "
-        "in it, so when the claimant or partner reports, another member's "
-        "report is paid or not with their claim. Whether that member is on "
-        "the award themselves (is_on_income_related_esa) is tested on their "
-        "own claim. Reports whose owner has closed legacy benefits are left "
-        "out before choosing candidates (person_legacy_benefits_closed). "
-        "This is not a full "
-        "entitlement model."
+        "Bounded work/capital screen for reported income-related ESA, not a full "
+        "entitlement model. When an original claimant or partner reports an open "
+        "award, only they are candidate claimants; otherwise other open reporters "
+        "are candidates. The claimant must not engage in remunerative work (Welfare "
+        "Reform Act 2007 Sch 1 para 6(1)(e); "
+        "esa_income_claimant_remunerative_work). The other member of the couple "
+        "must not engage in remunerative work (para 6(1)(f)): paid work of 24 hours "
+        "a week or more (ESA Regs 2008 reg 42(1)), subject to the existing carer "
+        "exception (reg 43(2)(c); IS Regs 1987 Sch 1B para 4), which the model "
+        "reads as is_carer_for_benefits. Assessable capital must remain within the "
+        "existing limit (para 6(1)(b); reg 110). The aggregate esa_income uses this "
+        "screen for its original couple's part; each outside reporter's claim is "
+        "paid separately on their own existing work/capital screen and tariff. The "
+        "benefit unit's capital is an explicit proxy for unobserved outside-claim "
+        "capital. Reports whose own award is closed are excluded before choosing "
+        "candidates; ESA also excludes the couple's reports on a UC claim. This "
+        "variable's candidate rules are unchanged by the separate aggregation."
     )
     definition_period = YEAR
     reference = (
@@ -45,7 +40,7 @@ class esa_income_eligible(Variable):
         person = benunit.members
         capital = benunit("esa_income_assessable_capital", period)
         reports_award = (person("esa_income_reported", period) > 0) & ~person(
-            "person_legacy_benefits_closed", period
+            "esa_income_report_closed", period
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         # The candidate claimants: the claimant or partner who reports the

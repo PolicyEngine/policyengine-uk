@@ -36,11 +36,15 @@ def household(year, claimant=None, partner=None, outside=None, child=False):
             name: {key: {str(year): value} for key, value in inputs.items()}
             for name, inputs in members.items()
         },
+        # The family does not claim Universal Credit of its own accord: that
+        # claim would end the couple's income-related ESA
+        # (esa_income_report_closed).
         "benunits": {
             "unit": {
                 "members": list(members),
                 "esa_income_assessable_capital": {str(year): 0},
                 "jsa_income_assessable_capital": {str(year): 0},
+                "would_claim_uc": {str(year): False},
             }
         },
         "households": {"household": {"members": list(members)}},

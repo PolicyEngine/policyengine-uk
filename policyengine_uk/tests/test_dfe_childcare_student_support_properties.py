@@ -249,6 +249,9 @@ def test_extended_childcare_eligibility_matches_regs_13_to_15(year, families):
         for adult in adults:
             inputs = {
                 "age": adult["age"],
+                # The drawn adults are the claimant and partner, as the
+                # oracle below reads them, however far apart their ages.
+                "is_claimant_or_partner": True,
                 "is_parent": bool(children),
                 "is_carer_for_benefits": adult["status"] == "carer",
                 "employment_income": adult["earnings"],
@@ -261,7 +264,11 @@ def test_extended_childcare_eligibility_matches_regs_13_to_15(year, families):
             people.append(inputs)
         for age, looked_after in children:
             people.append(
-                {"age": age, "is_looked_after_by_local_authority": looked_after}
+                {
+                    "age": age,
+                    "is_claimant_or_partner": False,
+                    "is_looked_after_by_local_authority": looked_after,
+                }
             )
         benunit = {"universal_credit": uc, "uc_carer_element": carer_element}
         built.append((people, benunit, {"country": "ENGLAND"}))

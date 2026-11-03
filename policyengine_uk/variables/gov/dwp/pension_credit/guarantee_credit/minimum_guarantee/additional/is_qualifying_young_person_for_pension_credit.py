@@ -12,7 +12,9 @@ class is_qualifying_young_person_for_pension_credit(Variable):
         "condition, before the 1 September following their 19th birthday "
         "(reg. 4A(1)(b), (2) and (3)), and who is not receiving Universal "
         "Credit, Employment and Support Allowance, Jobseeker's Allowance or "
-        "Income Support in their own right (reg. 4A(5))."
+        "Income Support in their own right (reg. 4A(5)). The own-right flag "
+        "or their own reported award shows the first three; "
+        "is_on_income_support shows Income Support."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A"
@@ -37,6 +39,20 @@ class is_qualifying_young_person_for_pension_credit(Variable):
                 period,
             )
         )
+        # Reg. 4A(5) applies to both routes. Raw person-level reports identify
+        # own awards without calculating family benefits, which depend on QYP
+        # status and could recurse. Unlike UC reg. 5(5), it lists income
+        # support, whose family follows the Child Benefit test and not this
+        # one, so is_on_income_support can read the calculated award.
+        receives_own_benefits = (
+            person("receives_benefits_in_own_right", period)
+            | (person("universal_credit_reported", period) > 0)
+            | (person("esa_income_reported", period) > 0)
+            | (person("esa_contrib_reported", period) > 0)
+            | (person("jsa_income_reported", period) > 0)
+            | (person("jsa_contrib_reported", period) > 0)
+            | person("is_on_income_support", period)
+        )
         return (
             person(
                 "meets_qualifying_young_person_age_condition_for_pension_credit",
@@ -46,7 +62,6 @@ class is_qualifying_young_person_for_pension_credit(Variable):
                 before_first_september_following_16th_birthday
                 | in_education_or_training
             )
-            # Reg. 4A(5).
-            & ~person("receives_benefits_in_own_right", period)
+            & ~receives_own_benefits
             & ~person("receives_income_support_in_own_right", period)
         )

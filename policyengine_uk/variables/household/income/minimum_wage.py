@@ -1,6 +1,4 @@
 from policyengine_uk.model_api import *
-import datetime
-import numpy as np
 
 
 class minimum_wage(Variable):
@@ -9,13 +7,13 @@ class minimum_wage(Variable):
     label = "Minimum wage"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2015/621/regulation/5"
 
     def formula(person, period, parameters):
         MW = parameters(period).gov.hmrc.minimum_wage
-        is_apprentice = person("is_apprentice", period)
         age = person("age", period)
         return where(
-            is_apprentice,
+            person("qualifies_for_apprentice_minimum_wage", period),
             MW.apprentice,
             MW.non_apprentice.calc(age),
         )

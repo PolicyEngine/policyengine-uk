@@ -64,7 +64,7 @@ PERSONAL_ALLOWANCE = "gov.hmrc.income_tax.allowances.personal_allowance.amount"
 BASIC_RATE = "gov.hmrc.income_tax.rates.uk[0].rate"
 REFORM = {PERSONAL_ALLOWANCE: {"2025.2099": 20_000}}
 CURRENT_LAW_ALLOWANCE = 12_570
-CURRENT_LAW_GROWTH_2027 = 0.024  # yoy_growth.obr.average_earnings for 2027
+CURRENT_LAW_GROWTH_2027 = 0.0299  # yoy_growth.obr.average_earnings for 2027
 MACRO_GROWTH_2027 = 0.2
 # Calendar-year growth series are keyed to 1 January.
 MACRO = Scenario(

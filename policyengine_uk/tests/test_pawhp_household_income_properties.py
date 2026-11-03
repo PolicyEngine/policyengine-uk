@@ -142,6 +142,9 @@ def situation(population):
             for a, adult in enumerate(unit["adults"]):
                 name = f"h{h}_u{u}_a{a}"
                 people[name] = {key: {year: value} for key, value in adult.items()}
+                # Each unit's adults are its claimant and partner, however far
+                # apart their ages (40 and 85 are drawn).
+                people[name]["is_claimant_or_partner"] = {year: True}
                 unit_members.append(name)
             benunits[f"h{h}_u{u}"] = {"members": unit_members}
             if unit["pension_credit"] is not None:

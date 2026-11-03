@@ -1,0 +1,10 @@
+description: Width of each step of CO2 emissions above the graduated threshold that raises a company car's appropriate percentage; the emissions figure is rounded down to a multiple of it.
+values:
+  2020-04-06: 5
+metadata:
+  unit: g/km
+  period: year
+  label: Company car graduated appropriate percentage step
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(3)(a) and (4)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139

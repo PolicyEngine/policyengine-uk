@@ -15,7 +15,12 @@ metadata:
     include_earnings false and this guarantee true from 2030.
     Each guaranteed year, the rise is the higher of the triple lock
     elements still included and the rise needed to reach the earnings path,
-    rounded up to 0.1 percentage points. Changes take effect through
+    rounded up to 0.1 percentage points. The guarantee holds for those
+    percentages: each weekly rate is then the year before's raised by the
+    year's percentage and rounded to the nearest 5p
+    (gov.dwp.state_pension.weekly_rate_rounding), as Social Security
+    Administration Act 1992 s.150A(4) allows even below the minimum, so the
+    rate can sit a few pence below the earnings path. Changes take effect through
     Scenario(parameter_changes=...), which rebuilds the uprating rates; a
     reform dictionary changes this parameter but not the rates.
   reference:

@@ -14,16 +14,17 @@ class winter_fuel_payment_eligible(Variable):
         "qualifying age for State Pension Credit) and live where the "
         "payment is made, they "
         "are not the partner of the person paid for a couple on a relevant "
-        "benefit, and they meet the model's means condition. The means "
-        "condition is a relevant benefit of their own (or their couple's) "
-        "where gov.dwp.winter_fuel_payment.eligibility.require_benefits is "
-        "set, as for the 2024 qualifying week (SI 2024/869 reg 2(2)(b)). "
-        "From 2025 the regulations pay everyone of pensionable age (SI "
-        "2025/969 reg 2) and the winter fuel payment charge recovers the "
-        "payment from people with total income over £35,000 who are not on a "
-        "relevant benefit (ITEPA 2003 s.681I); the model represents the "
-        "charge with the household income test in "
-        "gov.dwp.winter_fuel_payment.eligibility.taxable_income_test."
+        "benefit, and, for the 2024 qualifying week only, they are on a "
+        "relevant benefit of their own or their couple's (SI 2024/869 reg "
+        "2(2)(b)). Up to the 2023 week and from the 2025 week everyone who "
+        "meets the age and residence conditions is entitled (SI 2000/729 reg "
+        "2; SI 2025/969 reg 2; NISR 2025/142 reg 2). From 2025-26 the winter fuel payment charge "
+        "recovers the payment through income tax from a person whose own "
+        "total income exceeds £35,000 and who is not on a relevant benefit "
+        "(winter_fuel_payment_charge); entitlement, and so the shared "
+        "amounts, are unaffected by it. The deprecated household income test "
+        "in gov.dwp.winter_fuel_payment.eligibility.taxable_income_test "
+        "applies only in a reform that requires a relevant benefit."
     )
     definition_period = YEAR
     reference = (
@@ -32,6 +33,7 @@ class winter_fuel_payment_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2024/869/regulation/4",
         "https://www.legislation.gov.uk/uksi/2025/969/regulation/2",
         "https://www.legislation.gov.uk/uksi/2025/969/regulation/4",
+        "https://www.legislation.gov.uk/nisr/2025/142/regulation/2",
     )
 
     def formula(person, period, parameters):
@@ -54,8 +56,9 @@ class winter_fuel_payment_eligible(Variable):
             "is_on_winter_fuel_payment_relevant_benefit", period
         )
         income_test = p.taxable_income_test
-        # ITEPA 2003 s.681I(1)(b): the charge applies only where total income
-        # "exceeds £35,000", so a person with exactly £35,000 keeps the payment.
+        # The deprecated test admits total income equal to the limit, as the
+        # charge it stood in for reaches only total income that "exceeds
+        # £35,000" (ITEPA 2003 s.681I(1)(b)).
         meets_income_test = (
             person.household.any(
                 age_eligible

@@ -43,7 +43,9 @@ from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
 )
 from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
 from policyengine_uk.utils.scenario import Scenario
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 
 DATASET_YEAR = 2025
 # The dataset year and two later years.
@@ -243,7 +245,7 @@ def test_later_years_need_the_awards_set_explicitly(reformed, year):
         period(year),
         "esa_income",
         "esa_income_reported",
-        income_related_esa_award,
+        income_related_esa_award_on_reports,
     )
     assert by_value_alone[excluded] == 3_000
 

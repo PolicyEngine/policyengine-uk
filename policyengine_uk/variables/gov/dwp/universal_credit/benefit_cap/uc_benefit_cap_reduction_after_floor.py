@@ -33,7 +33,8 @@ class uc_benefit_cap_reduction_after_floor(Variable):
             benunit("universal_credit_pre_benefit_cap", period),
             benunit("uc_benefit_cap_reduction", period),
             benunit("uc_deduction_rate", period)
-            * benunit("uc_standard_allowance", period),
+            * benunit("uc_standard_allowance", period)
+            * benunit("uc_award_carries_deductions", period),
             benunit("uc_maximum_reduction", period),
             p.minimum_payable * MONTHS_IN_YEAR,
         )

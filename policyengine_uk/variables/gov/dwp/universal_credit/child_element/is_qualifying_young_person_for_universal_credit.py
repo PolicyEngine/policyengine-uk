@@ -36,6 +36,17 @@ class is_qualifying_young_person_for_universal_credit(Variable):
                 period,
             )
         )
+        # The exclusions apply to both routes (UC reg. 5(5); SPC reg. 4A(5)).
+        # Raw person-level reports identify own awards without calculating
+        # family benefits, which depend on QYP status and could recurse.
+        receives_own_benefits = (
+            person("receives_benefits_in_own_right", period)
+            | (person("universal_credit_reported", period) > 0)
+            | (person("esa_income_reported", period) > 0)
+            | (person("esa_contrib_reported", period) > 0)
+            | (person("jsa_income_reported", period) > 0)
+            | (person("jsa_contrib_reported", period) > 0)
+        )
         return (
             person(
                 "meets_qualifying_young_person_age_condition_for_universal_credit",
@@ -45,5 +56,5 @@ class is_qualifying_young_person_for_universal_credit(Variable):
                 before_first_september_following_16th_birthday
                 | in_education_or_training
             )
-            & ~person("receives_benefits_in_own_right", period)
+            & ~receives_own_benefits
         )

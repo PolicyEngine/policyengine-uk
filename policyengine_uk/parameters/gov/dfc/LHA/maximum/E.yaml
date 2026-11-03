@@ -1,0 +1,21 @@
+description: Maximum weekly Local Housing Allowance for category E dwellings (four bedrooms) in Northern Ireland, used for Housing Benefit. It works as gov.dwp.LHA.maximum.E does for Great Britain, but follows the Northern Ireland Housing Executive's determinations under Northern Ireland regulations. The values match the Great Britain maximum.
+values:
+  2020-03-30:
+    value: 593.75
+    metadata:
+      reference:
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations (Northern Ireland) 2020, reg. 4(1)(b)
+          href: https://www.legislation.gov.uk/nisr/2020/53/regulation/4/made
+  2024-01-31:
+    value: 704.22
+    metadata:
+      reference:
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024, reg. 2(2)(b)
+          href: https://www.legislation.gov.uk/nisr/2024/3/regulation/2/made
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Northern Ireland maximum LHA (category E)
+  reference:
+    - title: The Housing Benefit (Executive Determinations) Regulations (Northern Ireland) 2008, Schedule, paragraph 2(2)(b), paragraph 1(1)(e)
+      href: https://www.legislation.gov.uk/nisr/2008/100/schedule

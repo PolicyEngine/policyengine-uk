@@ -112,6 +112,9 @@ because the survey does not record arrangement dates. Supply
 `pension_contributions_via_salary_sacrifice_pre_2015` for the part attributable
 to earlier arrangements. Its exclusion is limited to full salary sacrifice
 before the NICs exemption cap: that cap does not limit the s. 228ZA add-back.
+Bonus sacrifice (`pension_contributions_via_bonus_sacrifice`) is a relevant
+flexible remuneration arrangement under the same subsection and is added back
+with salary sacrifice; the pre-2015 input is a share of their sum.
 Flexible remuneration not
 represented by these contribution inputs needs an explicit threshold-income
 override.
