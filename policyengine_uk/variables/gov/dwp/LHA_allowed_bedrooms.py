@@ -145,9 +145,9 @@ class LHA_allowed_bedrooms(Variable):
         # (reg 4(2)) and so a non-dependant too; para 9(2)(g) excludes a
         # child or qualifying young person no one is responsible for, such as
         # a non-dependant's foster child.
-        non_dependant = person(
-            "is_non_dependant_of_household_head", period
-        ) & ~no_one_responsible
+        non_dependant = (
+            person("is_non_dependant_of_household_head", period) & ~no_one_responsible
+        )
         counted = benunit("uc_non_dependants_counted", period)
         # Para 10(1)(c): a non-dependant from another family who is not a
         # child.
