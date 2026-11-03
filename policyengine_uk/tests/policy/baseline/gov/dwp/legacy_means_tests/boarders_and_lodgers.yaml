@@ -1,6 +1,8 @@
 # Rent from boarders and lodgers living in the household, in the legacy means
-# tests (legacy_benefits_home_letting_income, counted by Income Support,
-# Housing Benefit, Pension Credit and council tax reduction).
+# tests: Income Support, Housing Benefit and Pension Credit count
+# legacy_benefits_home_letting_income for the benefit unit's claimant and
+# partner, and council tax reduction counts
+# council_tax_reduction_home_letting_income for its applicant and partner.
 #
 # Board and lodging, per boarder: the first £20 a week is disregarded and half
 # the excess (IS Sch 9 para 20; HB Sch 5 para 42; HB (SPC) Sch 5 para 9; SPC Sch
@@ -650,3 +652,65 @@
     rent_a_room_income_tax_without_earnings: [1_986, 0]
     legacy_means_test_deducted_income_tax: [8_432, 0]
     council_tax_reduction_applicable_income: [22_159.60, 0]
+
+- name: A household head applying alone counts a lodger's rent in council tax reduction
+  # England, Maidstone, 2026-27. The household head (70) lives in a benefit
+  # unit whose claimant and partner are a couple aged 16 with a baby, so she
+  # applies for council tax reduction alone. An unrelated lodger (30), in a
+  # benefit unit of their own, pays her 5,200 a year (100 a week). She reached
+  # State Pension age after 1 April 2021, so Maidstone's pensioner scheme
+  # gives her a personal allowance of 238 x 52 = 12,376. The council counts
+  # the lodger's payment less 20 a week (Sch 5 para 10): (100 - 20) x 52 =
+  # 4,160. Her income is her 12,000 pension plus 4,160 = 16,160, and the
+  # council withdraws 20% of the excess over 12,376 from the 2,000 council
+  # tax: 2,000 - 756.80 = 1,243.20. The rent falls within rent-a-room relief
+  # and the pension within the personal allowance, so income tax is nil.
+  # The benefit unit's own measure, for its claimant and partner, counts
+  # none of the rent: the head is neither.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        private_pension_income: 12_000
+      mother:
+        age: 16
+        is_parent: true
+        is_household_head: false
+      father:
+        age: 16
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      family:
+        members: [head, mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, mother, father, baby, lodger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [true, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false, true]
+    rent_from_boarders_and_lodgers: [5_200, 0, 0, 0, 0]
+    income_tax: [0, 0, 0, 0, 0]
+    legacy_benefits_home_letting_income: [0, 0]
+    council_tax_reduction_home_letting_income: [4_160, 0]
+    council_tax_reduction_applicable_income: [16_160, 0]
+    council_tax_reduction: 1_243.20
