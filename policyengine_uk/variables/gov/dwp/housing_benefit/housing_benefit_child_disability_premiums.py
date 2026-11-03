@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit._child_disability_premiums import (
+    child_disability_premium_benefit_conditions,
+)
 
 
 class housing_benefit_child_disability_premiums(Variable):
@@ -36,16 +39,11 @@ class housing_benefit_child_disability_premiums(Variable):
         p = parameters(period).gov.dwp.housing_benefit.premiums
         person = benunit.members
         child = person("is_child_or_young_person_for_legacy_benefits", period)
-        dla_care = person("dla_sc", period) > 0
-        dla = dla_care | (person("dla_m", period) > 0)
-        pip_daily = person("pip_dl", period) > 0
-        pip = pip_daily | (person("pip_m", period) > 0)
+        disabled, enhanced = child_disability_premium_benefit_conditions(person, period)
+        # Housing Benefit counts AFIP for any child or young person in both
+        # premiums.
         afip = person("armed_forces_independence_payment", period) > 0
-        disabled = dla | pip | afip | person("is_blind", period)
-        enhanced = (
-            person("has_highest_dla_sc_award", period)
-            | person("has_enhanced_pip_dl_award", period)
-            | afip
-        )
+        disabled = disabled | afip
+        enhanced = enhanced | afip
         weekly = p.disabled_child * disabled + p.enhanced_disabled_child * enhanced
         return benunit.sum(child * weekly) * WEEKS_IN_YEAR
