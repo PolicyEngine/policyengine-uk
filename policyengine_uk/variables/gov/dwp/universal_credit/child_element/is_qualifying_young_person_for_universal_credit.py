@@ -14,31 +14,53 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "Income Support, Housing Benefit, Child Tax Credit or Working Tax "
         "Credit (SI 2014/1230 regs. 2(1) and 28; SR 2016/226 regs. 2(1) and "
         "29). The Secretary of State ties the exclusion to entitlement (reg. "
-        "28), so the formula reads a report only while the model pays that "
-        "benefit on it, and only if no reform neutralises it. The model pays "
-        "Income Support, income-based JSA and tax credits only while "
+        "28), so the formula reads a report only in a year the model pays that "
+        "benefit, only until the model's legacy closure, or for a claimant or "
+        "partner the family's Universal Credit claim, ends the award on it, and"
+        " only if no reform neutralises it. It doesn't apply the model's other "
+        "conditions of payment, so a report can exclude a person even where the"
+        " model pays nothing on that report. For example, the model pays Income"
+        " Support only on the claimant's and partner's reports, Housing Benefit"
+        " only to a family that rents, and income-based JSA and income-related "
+        "ESA only after their capital and work screens. The model pays Income "
+        "Support, income-based JSA and tax credits only while "
         "gov.dwp.income_support.active, gov.dwp.JSA.income.active and "
-        "gov.dwp.tax_credits.active hold, or while "
-        "gov.contrib.policyengine.disable_simulated_benefits pays them as "
-        "reported, and has no closure date for Housing Benefit or "
-        "income-related ESA. The model also ends a person's legacy awards "
-        "once its annual migration proxy closes them: it ends their Income "
-        "Support, income-based JSA and income-related ESA when "
-        "person_legacy_benefits_closed holds, and the family's Housing "
-        "Benefit and tax credits when legacy_benefits_closed holds and the "
-        "family doesn't meet the Pension Credit age conditions. The formula "
-        "follows both closures. It doesn't follow the closures that read "
-        "claims_universal_credit (esa_income_report_closed for a claimant or "
-        "partner, housing_benefit_eligible and is_CTC_eligible), because "
-        "claims_universal_credit reads this variable. The formula checks each "
-        "report against its own variable: income_support, jsa_income, "
-        "esa_income, housing_benefit, child_tax_credit or tax_credits for "
-        "Child Tax Credit, and working_tax_credit or tax_credits for Working "
-        "Tax Credit. A reform that changes or zeroes a benefit's formula "
-        "without neutralising its variable leaves the exclusion on that "
-        "benefit's reports in place. For a claimant or partner it also reads "
-        "the couple's joint tax credit award (Tax Credits Act 2002 s.3(3)), "
-        "each credit by its own check."
+        "gov.dwp.tax_credits.active hold, and has no closure date for Housing "
+        "Benefit or income-related ESA. The formula also reads those three "
+        "benefits' reports while "
+        "gov.contrib.policyengine.disable_simulated_benefits is on. The reform "
+        "that switch turns on pays them at their reported amounts in the "
+        "dataset year and the nine years after it, and the formula still reads "
+        "them in later years. That reform pays each report whether or not the "
+        "family claims Universal Credit, so while the switch is on the formula "
+        "leaves out the Universal Credit claim limbs below. The model also ends"
+        " a person's legacy awards once its annual migration proxy closes them:"
+        " it ends their Income Support, income-based JSA and income-related ESA"
+        " when person_legacy_benefits_closed holds, the family's tax credits "
+        "when legacy_benefits_closed holds, and its Housing Benefit when "
+        "legacy_benefits_closed holds and the family doesn't meet the Pension "
+        "Credit age conditions. The formula follows both closures. A claim for "
+        "Universal Credit ends the claimant's and partner's own awards (SI "
+        "2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and the model ends "
+        "the family's continuing Housing Benefit award "
+        "(housing_benefit_eligible) and its Child Tax Credit (is_CTC_eligible),"
+        " and the claimant's and partner's income-related ESA "
+        "(esa_income_report_closed), when the family claims "
+        "(claims_universal_credit). For a claimant or partner, the formula "
+        "follows those limbs too. The family's claim doesn't end a dependant's "
+        "own award, so for a dependant the formula doesn't. It can't read "
+        "housing_benefit_eligible: that variable's Pension Credit route reads "
+        "left_pension_route_at_legacy_closure, which reads this variable "
+        "through is_uc_entitled and the child element. So the formula keeps a "
+        "Housing Benefit report while the family meets the Pension Credit age "
+        "conditions. The formula checks each report against its own variable: "
+        "income_support, jsa_income, esa_income, housing_benefit, "
+        "child_tax_credit or tax_credits for Child Tax Credit, and "
+        "working_tax_credit or tax_credits for Working Tax Credit. A reform "
+        "that changes or zeroes a benefit's formula without neutralising its "
+        "variable leaves the exclusion on that benefit's reports in place. For "
+        "a claimant or partner it also reads the couple's joint tax credit "
+        "award (Tax Credits Act 2002 s.3(3)), each credit by its own check."
     )
     definition_period = YEAR
     reference = [
@@ -53,13 +75,17 @@ class is_qualifying_young_person_for_universal_credit(Variable):
     def formula(person, period, parameters):
         # The Secretary of State excludes a person entitled to an existing
         # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
-        # reports and the model's legacy closure proxy, so it calculates no
-        # family benefit that depends on QYP status.
+        # reports, the model's legacy closure proxy and the family's Universal
+        # Credit claim, so it calculates no family benefit that depends on QYP
+        # status.
         p = parameters(period).gov
         dwp = p.dwp
-        # The reform pays each benefit at its reported amount after the
-        # model's closure dates, and holds both legacy closures false.
-        paid_as_reported = p.contrib.policyengine.disable_simulated_benefits
+        # The reform pays each listed benefit at its dataset-year report in
+        # that year and the nine after it, closure dates included, and holds
+        # both legacy closures false in those years. The formula reads the
+        # switch, not those years, so in a later year it still reads a tax
+        # credit report that the model no longer pays.
+        paid_as_reported = bool(p.contrib.policyengine.disable_simulated_benefits)
         system = person.simulation.tax_benefit_system
 
         def paying(active, *names):
@@ -73,38 +99,58 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         # income-related ESA when their legacy awards close: the claimant's
         # and partner's together (legacy_benefits_closed, read through
         # income_support), and anyone else's on their own reports
-        # (jsa_income, esa_income). esa_income_report_closed also ends a
-        # claimant's or partner's income-related ESA when the family claims
-        # Universal Credit, but the formula can't read it: its
-        # claimant-or-partner limb reads claims_universal_credit, which reads
-        # this variable. person_legacy_benefits_closed and
+        # (jsa_income, esa_income). person_legacy_benefits_closed and
         # legacy_benefits_closed read reports, is_claimant_or_partner, the
         # Pension Credit age conditions and parameters, and no Universal
         # Credit variable.
         own_award_open = ~person("person_legacy_benefits_closed", period)
+        # A claim for Universal Credit ends the claimant's and partner's own
+        # awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and
+        # nobody else's. The model ends the claimant's and partner's
+        # income-related ESA when the family claims (esa_income_report_closed),
+        # and the formula follows it. claims_universal_credit reads
+        # would_claim_uc, would_claim_uc_at_legacy_closure and
+        # legacy_benefits_closed, not this variable. The reform behind
+        # disable_simulated_benefits pays each report as reported whether or
+        # not the family claims, and holds the legacy closures false in its
+        # years, so under it the formula keeps the person's own closure alone.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        esa_income_open = ~person("esa_income_report_closed", period) | (
+            own_award_open & paid_as_reported
+        )
+        claim_ends_own_award = (
+            claimant_or_partner
+            & person.benunit("claims_universal_credit", period)
+            & (not paid_as_reported)
+        )
         # The model pays Housing Benefit and tax credits to the family, on
         # every member's reports, and ends them when the claimant's and
         # partner's legacy awards close (housing_benefit_eligible,
-        # is_CTC_eligible, is_WTC_eligible). A family that meets the Pension
-        # Credit age conditions keeps Housing Benefit unless it leaves that
-        # route by claiming Universal Credit, which the formula can't read,
-        # so for such a family the formula keeps the Housing Benefit report.
+        # is_CTC_eligible, is_WTC_eligible). It also ends the family's
+        # continuing Housing Benefit award and its Child Tax Credit when the
+        # family claims Universal Credit, and the formula follows that limb
+        # for a claimant or partner, whose own award the claim ends. A family
+        # that meets the Pension Credit age conditions keeps Housing Benefit
+        # unless it claims Universal Credit at the closure and is entitled to
+        # it (left_pension_route_at_legacy_closure). That variable reads this
+        # one through is_uc_entitled and the child element, so the formula
+        # keeps the Housing Benefit report for such a family.
         family_closed = person.benunit("legacy_benefits_closed", period)
         family_award_open = ~family_closed
-        housing_benefit_open = ~(
-            family_closed
-            & ~person.benunit("meets_pension_credit_age_conditions", period)
-        )
+        housing_benefit_open = person.benunit(
+            "meets_pension_credit_age_conditions", period
+        ) | (~family_closed & ~claim_ends_own_award)
 
         income_support_paying = (
             paying(dwp.income_support.active, "income_support") & own_award_open
         )
         jsa_income_paying = paying(dwp.JSA.income.active, "jsa_income") & own_award_open
-        esa_income_paying = paying(True, "esa_income") & own_award_open
+        esa_income_paying = paying(True, "esa_income") & esa_income_open
         housing_benefit_paying = paying(True, "housing_benefit") & housing_benefit_open
         child_tax_credit_paying = (
             paying(dwp.tax_credits.active, "child_tax_credit", "tax_credits")
             & family_award_open
+            & ~claim_ends_own_award
         )
         working_tax_credit_paying = (
             paying(dwp.tax_credits.active, "working_tax_credit", "tax_credits")
@@ -116,7 +162,6 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         # Tax Credits Act 2002 s.3(3): the members of a couple claim jointly,
         # so the couple's award belongs to the claimant and the partner. A
         # dependant claims as a single person, so their award stays theirs.
-        claimant_or_partner = person("is_claimant_or_partner", period)
         couple_tax_credits_reported = person.benunit.sum(
             where(claimant_or_partner, tax_credits_reported, 0)
         )

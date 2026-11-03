@@ -1,0 +1,339 @@
+# A claim for Universal Credit ends the claimant's own tax credits, Income
+# Support and Housing Benefit, and either joint claimant's tax credits (SI
+# 2014/1230 reg. 8(2) and (2A)), and the claimant's and partner's
+# income-related ESA (SI 2013/983 art. 4). It ends nobody else's award. The
+# model ends the family's continuing Housing Benefit award
+# (housing_benefit_eligible) and its Child Tax Credit (is_CTC_eligible), and
+# the claimant's and partner's income-related ESA (esa_income_report_closed),
+# when the family claims (claims_universal_credit). Nobody is entitled to an
+# award the claim has ended, so for a claimant or partner the UC qualifying
+# young person test (SI 2014/1230 reg. 28) follows those three limbs. For a
+# dependant it doesn't: a parent's claim leaves the dependant's own award.
+#
+# would_claim_uc decides the claim here: no case closes the family's legacy
+# awards, so claims_uc_at_legacy_closure stays false. The reg. 5 variable
+# reads universal_credit_reported and receives_benefits_in_own_right for reg.
+# 5(5), not a calculated Universal Credit award, and these cases leave both
+# at their defaults, so a claimant who claims Universal Credit still meets
+# reg. 5.
+#
+# Rates (universal_credit/standard_allowance/amount.yaml, elements/child/):
+#   SINGLE_YOUNG £311.68 a month in 2024-25 and £338.58 in 2026-27;
+#   COUPLE_OLD £617.60 in 2024-25; the child amount for a child born after
+#   5 April 2017 £287.92 in 2024-25 (elements/child/amount.yaml).
+#   Child Tax Credit child element £3,455 a year in 2024-25
+#   (tax_credits/child_tax_credit/elements/child_element.yaml).
+
+- name: An 18-year-old claimant's own income-related ESA report leaves them a qualifying young person once they claim Universal Credit.
+  # The claimant claims Universal Credit, which ends their own income-related
+  # ESA (SI 2013/983 art. 4; esa_income_report_closed), so the model pays no
+  # income-related ESA on their report and they aren't entitled to it. UC: 12
+  # x 338.58 = 4,062.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_report_closed: [true]
+    esa_income: 0
+    is_qualifying_young_person_under_universal_credit_regulation_5: [true]
+    is_qualifying_young_person_for_universal_credit: [true]
+    universal_credit: 4_062.96
+
+- name: An 18-year-old claimant's own income-related ESA report excludes them while they don't claim Universal Credit.
+  # Nothing ends the award: the claimant doesn't claim Universal Credit and
+  # reports no closed benefit, so the model pays the £3,000 of income-related
+  # ESA on their report and they're entitled to it. They get no Universal
+  # Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_report_closed: [false]
+    esa_income: 3_000
+    is_qualifying_young_person_for_universal_credit: [false]
+    universal_credit: 0
+
+- name: An 18-year-old claimant's own Housing Benefit report leaves them a qualifying young person once they claim Universal Credit.
+  # The claimant rents from the council at £6,000 a year and claims Universal
+  # Credit, which ends their own Housing Benefit (SI 2014/1230 reg. 8(2A);
+  # housing_benefit_eligible), so the model pays no Housing Benefit on their
+  # report. UC: 12 x 338.58 + 6,000 housing element = 10,062.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    is_qualifying_young_person_for_universal_credit: [true]
+    universal_credit: 10_062.96
+
+- name: An 18-year-old claimant's own Housing Benefit report excludes them while they don't claim Universal Credit.
+  # The claimant rents from the council at £6,000 a year, has no income and
+  # doesn't claim Universal Credit, so the model continues their Housing
+  # Benefit award at the full rent (6,000) and they're entitled to it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    housing_benefit_eligible: true
+    housing_benefit: 6_000
+    is_qualifying_young_person_for_universal_credit: [false]
+    universal_credit: 0
+
+- name: An 18-year-old lone parent's own Child Tax Credit report leaves them a qualifying young person once they claim Universal Credit.
+  # The claimant claims Universal Credit, which ends their tax credits (SI
+  # 2014/1230 reg. 8(2); is_CTC_eligible), so the model pays no Child Tax
+  # Credit. UC: 12 x (311.68 + 287.92) = 7,195.20.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 1_000
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, child]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    is_qualifying_young_person_for_universal_credit: [true, false]
+    universal_credit: 7_195.20
+
+- name: An 18-year-old lone parent's own Child Tax Credit report excludes them while they don't claim Universal Credit.
+  # Tax credits pay in 2024 and the claimant doesn't claim Universal Credit,
+  # so the model pays Child Tax Credit for the child born after 5 April 2017:
+  # the child element of 3,455, with no family element and no income to taper
+  # it.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 1_000
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, child]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_CTC_eligible: true
+    child_tax_credit: 3_455
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 0
+
+- name: An 18-year-old claimant whose partner reports the couple's Child Tax Credit stays a qualifying young person once the couple claims Universal Credit.
+  # The members of a couple claim tax credits jointly (Tax Credits Act 2002
+  # s.3(3)), so the partner's report gives the claimant the couple's award.
+  # The couple's claim for Universal Credit ends a joint claimant's tax
+  # credits (SI 2014/1230 reg. 8(2); is_CTC_eligible), so nobody is entitled
+  # to the award. UC: 12 x (617.60 + 287.92) = 10,866.24.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+      partner:
+        age: 45
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 1_000
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_CTC_eligible: false
+    child_tax_credit: 0
+    is_qualifying_young_person_for_universal_credit: [true, false, false]
+    universal_credit: 10_866.24
+
+- name: An 18-year-old claimant whose partner reports the couple's Child Tax Credit isn't a qualifying young person while the couple doesn't claim Universal Credit.
+  # Tax credits pay in 2024 and the couple doesn't claim Universal Credit, so
+  # the model pays the couple's Child Tax Credit (child element 3,455) and the
+  # claimant shares the joint award.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+      partner:
+        age: 45
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 1_000
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_CTC_eligible: true
+    child_tax_credit: 3_455
+    is_qualifying_young_person_for_universal_credit: [false, false, false]
+    universal_credit: 0
+
+- name: A parent's claim for Universal Credit leaves their young person's own Housing Benefit report excluding them.
+  # A parent aged 45 and a 17-year-old on a non-advanced course, owned
+  # outright. The parent's claim ends the parent's own awards, not the young
+  # person's (SI 2014/1230 reg. 8(2A) names the claimant's award), so the
+  # young person's own report still excludes them. UC: 12 x 424.90 = 5,098.80
+  # (SINGLE_OLD, 2026-27).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_claimant_or_partner: true
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 5_098.80
+
+- name: A young person's own Housing Benefit report excludes them while their parent doesn't claim Universal Credit.
+  # The same household without a claim: the young person's own report excludes
+  # them as with the claim, and the parent gets no Universal Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_claimant_or_partner: true
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: false
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 0

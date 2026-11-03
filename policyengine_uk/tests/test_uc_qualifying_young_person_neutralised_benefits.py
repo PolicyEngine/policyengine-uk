@@ -101,7 +101,8 @@ def test_a_reform_lifts_a_couples_tax_credit_exclusion_credit_by_credit(
 ):
     """Two 18-year-olds on non-advanced courses form a couple, and the
     partner reports the couple's Child Tax Credit or Working Tax Credit
-    award (Tax Credits Act 2002 s.3(3)(a))."""
+    award (Tax Credits Act 2002 s.3(3)(a)). The couple doesn't claim
+    Universal Credit, so no claim ends its Child Tax Credit."""
     year = 2024
     people, benunits, households = {}, {}, {}
     credits = ("child_tax_credit_reported", "working_tax_credit_reported")
@@ -114,7 +115,10 @@ def test_a_reform_lifts_a_couples_tax_credit_exclusion_credit_by_credit(
                 "is_claimant_or_partner": {year: True},
             }
         people[partner][report] = {year: 1_000}
-        benunits[f"benunit_{index}"] = {"members": [claimant, partner]}
+        benunits[f"benunit_{index}"] = {
+            "members": [claimant, partner],
+            "would_claim_uc": {year: False},
+        }
         households[f"household_{index}"] = {"members": [claimant, partner]}
     sim = Simulation(
         situation={"people": people, "benunits": benunits, "households": households},

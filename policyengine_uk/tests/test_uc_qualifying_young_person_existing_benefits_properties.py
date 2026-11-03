@@ -5,29 +5,45 @@ reg. 2(1)) as a UC qualifying young person (reg. 28). The predicate reads the
 person's own reports of income-based JSA, income-related ESA, Income Support,
 Housing Benefit, Child Tax Credit and Working Tax Credit and, for a claimant
 or partner, the couple's joint tax credit award (Tax Credits Act 2002
-s.3(3)). It reads a report only while the model pays that benefit on it,
-and only if no reform neutralises it; these tests run without a reform, and
+s.3(3)). It reads a report only in a year the model pays that benefit and
+until the model's legacy closure, or for a claimant or partner the family's
+Universal Credit claim, ends the award on it, and only if no reform
+neutralises it; these tests run without a reform, and
 test_uc_qualifying_young_person_neutralised_benefits.py covers reforms. The
 model stops paying a benefit when its year gate closes, and ends a person's
 legacy awards when its annual migration proxy closes them: their own Income
 Support, income-based JSA and income-related ESA when
-person_legacy_benefits_closed holds, and the family's Housing Benefit and
-tax credits when legacy_benefits_closed holds and the family doesn't meet
-the Pension Credit age conditions. The oracle reads those three closure
-variables from the model. These tests check that:
+person_legacy_benefits_closed holds, the family's tax credits when
+legacy_benefits_closed holds, and its Housing Benefit when
+legacy_benefits_closed holds and the family doesn't meet the Pension Credit
+age conditions. A claim for Universal Credit ends the claimant's and
+partner's own awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4),
+and the model ends the family's continuing Housing Benefit award and its
+Child Tax Credit, and the claimant's and partner's income-related ESA, when
+the family claims (claims_universal_credit). The oracle reads those closure
+variables from the model, and each family draws would_claim_uc. These tests
+check that:
 
-- any positive own report of an existing benefit the model pays on it that
-  year makes the predicate false;
+- any positive own report of an existing benefit whose year gate, legacy
+  closure and, for a claimant or partner, claim limb leave it open makes the
+  predicate false;
 - with every such report at zero, the predicate equals the UC Regs 2013
   reg. 5 test less the person's reported UC, ESA and JSA awards;
-- a claimant's or partner's reports change a dependant's predicate only by
-  closing the family's legacy awards;
+- compared with the same family without the claimant's and partner's
+  reports, those reports change a dependant's predicate only where the
+  proxy closes the family's legacy awards on them, and then only to lift an
+  exclusion;
 - a person whose legacy awards have closed is never excluded through their
   own income-related ESA report, nor through a Housing Benefit report once
   the family's awards close outside the Pension Credit age conditions;
-- a parent's Universal Credit never rises when their young person's own
-  report turns positive;
-- the predicate equals the reg. 5 test less reg. 28's exclusions, exactly.
+- a parent's Universal Credit never rises when one existing benefit report
+  of their young person turns positive and the young person reports no
+  other;
+- the predicate equals the reg. 5 test less reg. 28's exclusions, exactly;
+- turning would_claim_uc on never changes the predicate of anyone who isn't
+  the claimant or partner;
+- turning would_claim_uc on never turns a claimant's or partner's predicate
+  from true to false.
 """
 
 from unittest.mock import patch
@@ -169,7 +185,12 @@ UNITS = 4
 def families(draw):
     """A claimant, then a partner or a dependant, then two dependants."""
     couple = draw(st.booleans())
-    claimant = dict(draw(adult), is_claimant_or_partner=True, is_parent=True)
+    claimant = dict(
+        draw(adult),
+        is_claimant_or_partner=True,
+        is_parent=True,
+        would_claim_uc=draw(st.booleans()),
+    )
     second = draw(adult if couple else young_member)
     second = dict(second, is_claimant_or_partner=couple, is_parent=couple)
     dependants = [
@@ -191,7 +212,12 @@ def qualifying_families(draw):
     """
     couple = draw(st.booleans())
     claimant = draw(st.one_of(qualifying, qualifying, adult))
-    claimant = dict(claimant, is_claimant_or_partner=True, is_parent=True)
+    claimant = dict(
+        claimant,
+        is_claimant_or_partner=True,
+        is_parent=True,
+        would_claim_uc=draw(st.booleans()),
+    )
     second = draw(st.one_of(qualifying, qualifying, adult if couple else young_member))
     second = dict(second, is_claimant_or_partner=couple, is_parent=couple)
     dependants = [
@@ -223,7 +249,12 @@ def closure_families(draw):
     two dependants who always do, each reporting any existing benefit."""
     couple = draw(st.booleans())
     claimant = draw(st.one_of(reporting_qualifying, adult))
-    claimant = dict(claimant, is_claimant_or_partner=True, is_parent=True)
+    claimant = dict(
+        claimant,
+        is_claimant_or_partner=True,
+        is_parent=True,
+        would_claim_uc=draw(st.booleans()),
+    )
     second = draw(st.one_of(reporting_qualifying, adult if couple else young_member))
     second = dict(second, is_claimant_or_partner=couple, is_parent=couple)
     dependants = [
@@ -249,7 +280,9 @@ def _release_simulations():
 
 
 def simulate(units, year):
-    """Set the inputs on one cached simulation per shape and year."""
+    """Set the inputs on one cached simulation per shape and year. Each
+    family claims Universal Credit (would_claim_uc) as its first member's
+    draw says, or by default."""
     shape = (tuple(len(members) for members in units), year)
     if shape not in _CACHE:
         situation = {"people": {}, "benunits": {}, "households": {}}
@@ -270,13 +303,25 @@ def simulate(units, year):
     people = flatten(units)
     for variable in INPUTS:
         sim.set_input(variable, year, [p[variable] for p in people])
-    sim.input_variables = list(INPUTS)
+    sim.set_input(
+        "would_claim_uc",
+        year,
+        [members[0].get("would_claim_uc", True) for members in units],
+    )
+    sim.input_variables = list(INPUTS) + ["would_claim_uc"]
     sim.reset_calculations()
     return sim
 
 
 def flatten(units):
     return [p for members in units for p in members]
+
+
+def claiming(units, claims):
+    """The same families, each with would_claim_uc set to claims."""
+    return [
+        [dict(members[0], would_claim_uc=claims)] + members[1:] for members in units
+    ]
 
 
 def with_zero(units, names, who):
@@ -315,20 +360,28 @@ def reg_5_test(sim, year):
     )
 
 
-def open_awards(sim, year):
-    """For each report, whether the model's legacy closure leaves the award on
-    it open, person by person."""
+def open_awards(sim, year, claim_limbs=True):
+    """For each report, whether the model's legacy closure and, with
+    claim_limbs, the family's Universal Credit claim leave the award on it
+    open, person by person. The claim ends the claimant's and partner's own
+    income-related ESA, Housing Benefit outside the Pension Credit age
+    conditions and Child Tax Credit, and nobody else's."""
     own_open = ~sim.calculate("person_legacy_benefits_closed", year)
     family_closed = sim.calculate("legacy_benefits_closed", year, map_to="person")
     pension_age = sim.calculate(
         "meets_pension_credit_age_conditions", year, map_to="person"
     )
+    claim_ends = np.zeros_like(own_open)
+    if claim_limbs:
+        claim_ends = sim.calculate(
+            "claims_universal_credit", year, map_to="person"
+        ) & sim.calculate("is_claimant_or_partner", year)
     return {
         "income_support_reported": own_open,
         "jsa_income_reported": own_open,
-        "esa_income_reported": own_open,
-        "housing_benefit_reported": ~(family_closed & ~pension_age),
-        "child_tax_credit_reported": ~family_closed,
+        "esa_income_reported": own_open & ~claim_ends,
+        "housing_benefit_reported": pension_age | (~family_closed & ~claim_ends),
+        "child_tax_credit_reported": ~family_closed & ~claim_ends,
         "working_tax_credit_reported": ~family_closed,
     }
 
@@ -421,12 +474,15 @@ def test_a_closed_legacy_award_never_excludes(units, year):
     # esa_income_report_closed), and the family's Housing Benefit once the
     # claimant's and partner's close outside the Pension Credit age
     # conditions (housing_benefit_eligible). Clearing those reports leaves
-    # every predicate as it was. Neither report closes a legacy award, so
-    # clearing it leaves the closures as they were. Tax credits close from
-    # 2025 and Income Support and income-based JSA from 2026.
+    # every predicate as it was. Neither report enters legacy_award_is_closed.
+    # They reach the closures only through a mixed-age couple's Pension
+    # Credit saving, which clearing both reports of a closed family can't
+    # create. Tax credits close from 2025 and Income Support and income-based
+    # JSA from 2026. The claim limbs stay out: the claim can end an award in
+    # a family whose legacy awards stay open.
     sim = simulate(units, year)
     reported = predicate(sim, year)
-    award_open = open_awards(sim, year)
+    award_open = open_awards(sim, year, claim_limbs=False)
     closed = {
         name: ~award_open[name]
         for name in ("esa_income_reported", "housing_benefit_reported")
@@ -490,3 +546,25 @@ def test_the_predicate_is_reg_5_less_reg_28(units, year):
     sim = simulate(units, year)
     expected = reg_5_test(sim, year) & ~reg_28_exclusions(units, year, sim)
     assert predicate(sim, year).tolist() == expected.tolist()
+
+
+@SETTINGS
+@given(units=units_strategy, year=st.sampled_from(YEARS))
+def test_a_claim_changes_no_dependants_predicate(units, year):
+    # A claim for Universal Credit ends the claimant's and partner's own
+    # awards, not a dependant's (SI 2014/1230 reg. 8(2) and (2A)).
+    without_claim = predicate(simulate(claiming(units, False), year), year)
+    with_claim = predicate(simulate(claiming(units, True), year), year)
+    dependant = np.array([not p["is_claimant_or_partner"] for p in flatten(units)])
+    assert with_claim[dependant].tolist() == without_claim[dependant].tolist()
+
+
+@SETTINGS
+@given(units=qualifying_units_strategy, year=st.sampled_from(YEARS))
+def test_a_claim_never_excludes_a_claimant_or_partner(units, year):
+    # A claim only ends awards, so it can only lift a claimant's or partner's
+    # exclusion.
+    without_claim = predicate(simulate(claiming(units, False), year), year)
+    with_claim = predicate(simulate(claiming(units, True), year), year)
+    member_of_couple = np.array([p["is_claimant_or_partner"] for p in flatten(units)])
+    assert not np.any(without_claim[member_of_couple] & ~with_claim[member_of_couple])

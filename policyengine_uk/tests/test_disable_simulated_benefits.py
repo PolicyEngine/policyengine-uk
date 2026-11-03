@@ -855,8 +855,9 @@ def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_pers
 ):
     # The reform pays each benefit at its dataset-year report after the
     # model's closure dates (income-based JSA from 2026, tax credits from
-    # 2025), so the young person stays entitled to it and reg. 28 excludes
-    # them from the UC qualifying young person test in every year. Income
+    # 2025), so the young person stays entitled to it, and the Secretary of
+    # State excludes them from the UC qualifying young person test (reg. 28),
+    # in each of the reform's years. Income
     # Support is the claimant's family's award, so the model pays none on a
     # dependant's own report, with the reform or without it; the predicate
     # reads that report in the years the model pays Income Support to anyone.
@@ -882,3 +883,63 @@ def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_pers
         tax_credits_closed,
         tax_credits_closed,
     ]
+
+
+# An 18-year-old claimant on a non-advanced course, a lone parent of a child
+# aged 1, renting from the council at £6,000 a year, who reports £3,000 of
+# their own award in the dataset year. The family claims Universal Credit
+# (would_claim_uc defaults to true).
+CLAIMANT_REPORTS = {
+    "esa_income_reported": "esa_income",
+    "housing_benefit_reported": "housing_benefit",
+    "child_tax_credit_reported": "child_tax_credit",
+}
+
+
+def claimant_situation():
+    people, benunits, households = {}, {}, {}
+    for report in CLAIMANT_REPORTS:
+        claimant, child = f"{report}_claimant", f"{report}_child"
+        people[claimant] = {
+            "age": every_year(18),
+            "is_claimant_or_partner": every_year(True),
+            "current_education": every_year("POST_SECONDARY"),
+            report: {DATASET_YEAR: 3_000},
+        }
+        people[child] = {
+            "age": every_year(1),
+            "is_claimant_or_partner": every_year(False),
+        }
+        benunits[report] = {"members": [claimant, child]}
+        households[report] = {
+            "members": [claimant, child],
+            "region": every_year("NORTH_EAST"),
+            "tenure_type": every_year("RENT_FROM_COUNCIL"),
+            "rent": every_year(6_000),
+        }
+    return {"people": people, "benunits": benunits, "households": households}
+
+
+@pytest.mark.parametrize("year", YEARS)
+@pytest.mark.parametrize("index, report", list(enumerate(CLAIMANT_REPORTS)))
+def test_a_claimant_on_a_benefit_the_reform_pays_beside_universal_credit_is_no_qualifying_young_person(
+    year, index, report
+):
+    # A claim for Universal Credit ends the claimant's own income-related
+    # ESA, Housing Benefit and Child Tax Credit (SI 2014/1230 reg. 8(2) and
+    # (2A); SI 2013/983 art. 4), and without the reform the model ends each
+    # award on the claim, so the predicate doesn't read the report. The
+    # reform pays each report as reported, claim or none, so the claimant
+    # stays entitled to it and the predicate excludes them.
+    reformed = Simulation(situation=claimant_situation(), scenario=REFORM)
+    unreformed = Simulation(situation=claimant_situation())
+    predicate = "is_qualifying_young_person_for_universal_credit"
+    benefit = CLAIMANT_REPORTS[report]
+    person = 2 * index
+    paid = reformed.calculate(benefit, year)
+    paid = paid[person] if benefit == "esa_income" else paid[index]
+    assert reformed.calculate("claims_universal_credit", year)[index]
+    assert float(paid) == 3_000
+    assert not reformed.calculate(predicate, year)[person]
+    assert unreformed.calculate("claims_universal_credit", year)[index]
+    assert unreformed.calculate(predicate, year)[person]

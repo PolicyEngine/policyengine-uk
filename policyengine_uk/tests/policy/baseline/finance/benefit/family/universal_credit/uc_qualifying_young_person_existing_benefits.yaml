@@ -4,14 +4,21 @@
 # ESA, Income Support, Housing Benefit, Child Tax Credit and Working Tax
 # Credit. The predicate reads the person's own reports and, for a claimant or
 # partner, the couple's joint tax credit award (Tax Credits Act 2002 s.3(3)).
-# It reads a report only while the model pays that benefit on it, and only if
-# no reform neutralises it. The model pays Income Support and income-based
+# It reads a report only in a year the model pays that benefit, only until
+# the model's legacy closure, or for a claimant or partner the family's
+# Universal Credit claim, ends the award on it, and only if no reform
+# neutralises it. The model pays Income Support and income-based
 # JSA until 31 March 2026 and tax credits until 5 April 2025, and has no
 # closure date for Housing Benefit or income-related ESA. It also ends a
 # person's legacy awards when its annual migration proxy closes them, and
 # the predicate follows that closure
 # (uc_qualifying_young_person_legacy_closure.yaml covers it). In these cases
-# no report closes the young person's legacy awards. The first six cases,
+# a young person's own report closes their legacy awards only where that
+# benefit's year gate has already closed, so the closure decides no case.
+# The claim limbs end only a claimant's or partner's own award
+# (uc_qualifying_young_person_universal_credit_claim.yaml covers them), so
+# the cases that test a claimant's own Child Tax Credit or Housing Benefit
+# report claim no Universal Credit (would_claim_uc). The first six cases,
 # and the four after the seventh, share one household: a parent aged 45 and
 # a 17-year-old on a non-advanced course, North East, owned outright, no
 # income.
@@ -178,6 +185,9 @@
     universal_credit: 5_098.80
 
 - name: An 18-year-old claimant on a non-advanced course who reports Housing Benefit is not a qualifying young person.
+  # The claimant doesn't claim Universal Credit, so no claim ends their own
+  # Housing Benefit (uc_qualifying_young_person_universal_credit_claim.yaml
+  # covers a claim). They get no Universal Credit.
   period: 2026
   input:
     people:
@@ -189,6 +199,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -198,7 +209,7 @@
     is_qualifying_young_person_for_universal_credit: [false]
     is_child_or_qualifying_young_person_for_universal_credit: [false]
     uc_child_element: 0
-    universal_credit: 4_062.96
+    universal_credit: 0
 
 - name: A young person's own Income Support report after Income Support stops paying leaves the child element.
   # Income Support stops paying on 1 April 2026 (gov.dwp.income_support.active), so nobody is entitled to it in 2026.
@@ -312,12 +323,15 @@
     universal_credit: 8_869.68
 
 - name: A young person's own Child Tax Credit or Working Tax Credit report excludes them.
+  # Each person forms their own benefit unit as its claimant, and none
+  # claims Universal Credit, so no claim ends their Child Tax Credit.
   period: 2024
   input:
     age: [17, 17, 17]
     current_education: [UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY]
     child_tax_credit_reported: [0.01, 0, 0]
     working_tax_credit_reported: [0, 0.01, 0]
+    would_claim_uc: [false, false, false]
   output:
     is_qualifying_young_person_for_universal_credit: [false, false, true]
 
@@ -366,6 +380,7 @@
     is_qualifying_young_person_for_universal_credit: [false, false]
 
 - name: A couple's Child Tax Credit award does not exclude a dependant who reports none.
+  # The couple doesn't claim Universal Credit, so no claim ends its award.
   period: 2024
   input:
     people:
@@ -385,6 +400,7 @@
     benunits:
       benunit:
         members: [claimant, partner, young_person]
+        would_claim_uc: false
   output:
     is_qualifying_young_person_for_universal_credit: [false, false, true]
 

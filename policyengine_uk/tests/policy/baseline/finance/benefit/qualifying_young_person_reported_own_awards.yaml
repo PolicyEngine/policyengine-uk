@@ -3,11 +3,14 @@
 # and JSA without their income-related and income-based forms (UC Regs reg.
 # 2). DWP doesn't count a person entitled to income-related ESA, income-based
 # JSA or Income Support as a UC qualifying young person (SI 2014/1230 reg.
-# 28). The UC predicate reads a report only while the model pays that
-# benefit on it (income-based JSA and Income Support until 31 March 2026, and
-# income-related ESA, income-based JSA and Income Support only until the
-# person's legacy awards close, person_legacy_benefits_closed), and only if
-# no reform neutralises it. The Secretary of State excludes own awards
+# 28). The UC predicate reads a report only in a year the model pays that
+# benefit (income-based JSA and Income Support until 31 March 2026), reads an
+# income-related ESA, income-based JSA or Income Support report only until
+# the person's legacy awards close (person_legacy_benefits_closed), and
+# reads none that a reform neutralises. A claim for Universal Credit also
+# ends a claimant's or partner's own income-related ESA
+# (esa_income_report_closed), so the cases that test a claimant's own
+# income-related ESA report claim no Universal Credit (would_claim_uc). The Secretary of State excludes own awards
 # from the Pension Credit routes, including income support (SPC reg. 4A(5)):
 # is_on_income_support reads it, from the calculated award for a claimant or
 # partner and from their own report for anyone else. The reports identify the
@@ -368,8 +371,11 @@
 
 - name: A reported award also excludes the education route.
   # Income-based JSA pays until 31 March 2026 (gov.dwp.JSA.income.active).
+  # Each person forms their own benefit unit as its claimant, and none claims
+  # Universal Credit, so no claim ends their income-related ESA.
   period: 2025
   input:
+    would_claim_uc: [false, false, false, false, false]
     age: [18, 18, 18, 18, 18]
     current_education: [UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY]
     universal_credit_reported: [5_000, 0, 0, 0, 0]
@@ -382,8 +388,10 @@
     is_qualifying_young_person_for_pension_credit: [false, false, false, false, false]
 
 - name: An explicit false own-right flag does not erase a reported own ESA award.
+  # The person claims no Universal Credit, so no claim ends their award.
   period: 2026
   input:
+    would_claim_uc: false
     age: 16
     current_education: NOT_IN_EDUCATION
     receives_benefits_in_own_right: false
@@ -583,8 +591,11 @@
     is_qualifying_young_person_for_pension_credit: [false, true]
 
 - name: A report of one penny of a listed award other than Income Support excludes the young person.
+  # Each person forms their own benefit unit as its claimant, and none claims
+  # Universal Credit, so no claim ends their income-related ESA.
   period: 2025
   input:
+    would_claim_uc: [false, false, false, false, false]
     age: [16, 16, 16, 16, 16]
     current_education: [NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION, NOT_IN_EDUCATION]
     universal_credit_reported: [0.01, 0, 0, 0, 0]

@@ -10,8 +10,9 @@ stay open (SI 2014/1230 reg. 28).
 In the baseline the family's legacy awards close only once a benefit has
 closed, and tax credits close first (gov.dwp.tax_credits.active turns false
 on 6 April 2025, Income Support on 1 April 2026), so the year gate already
-covers every closed tax credit report. These tests keep tax credits paying
-in 2026 by a parameter reform, so the family's closure decides.
+covers every closed tax credit report. These tests keep the tax credit
+scheme open in 2026 by a parameter reform (gov.dwp.tax_credits.active), so
+the family's closure decides.
 
 The household: a parent aged 45 and a 17-year-old on a non-advanced course,
 North East, owned outright, no income, in 2026. The parent claims Universal
@@ -97,3 +98,43 @@ def test_the_parents_closed_legacy_award_ends_the_young_persons_tax_credits(
         [False, True],
         9_321.36,
     )
+
+
+def test_the_familys_closure_ends_the_couples_joint_tax_credit_award():
+    # An 18-year-old claimant on a non-advanced course and a partner aged 45
+    # with a child aged 1. The partner reports the couple's Working Tax Credit
+    # (Tax Credits Act 2002 s.3(3)) and their own Income Support in 2026,
+    # after Income Support closed, which closes the family's legacy awards
+    # and ends the couple's tax credits. So the couple's award doesn't
+    # exclude the claimant. Universal Credit can't show this: the claimant's
+    # status doesn't enter the award, so the test reads the predicate.
+    members = ["claimant", "partner", "child"]
+    situation = {
+        "people": {
+            "claimant": {
+                "age": {YEAR: 18},
+                "current_education": {YEAR: "POST_SECONDARY"},
+                "is_claimant_or_partner": {YEAR: True},
+            },
+            "partner": {
+                "age": {YEAR: 45},
+                "is_claimant_or_partner": {YEAR: True},
+                "income_support_reported": {YEAR: 3_000},
+                "working_tax_credit_reported": {YEAR: 1_000},
+            },
+            "child": {"age": {YEAR: 1}, "is_claimant_or_partner": {YEAR: False}},
+        },
+        "benunits": {"benunit": {"members": members}},
+        "households": {
+            "household": {
+                "members": members,
+                "region": {YEAR: "NORTH_EAST"},
+                "tenure_type": {YEAR: "OWNED_OUTRIGHT"},
+            }
+        },
+    }
+    sim = Simulation(situation=situation, reform=TAX_CREDITS_PAYING)
+    assert sim.calculate("legacy_benefits_closed", YEAR).tolist() == [True]
+    assert sim.calculate(
+        "is_qualifying_young_person_for_universal_credit", YEAR
+    ).tolist() == [True, False, False]

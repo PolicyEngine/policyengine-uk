@@ -10,11 +10,14 @@
 # tax credit report from 2025, closes the dependant's legacy awards
 # (gov.dwp.income_support.active, gov.dwp.JSA.income.active and
 # gov.dwp.tax_credits.active turn false on 1 April 2026, 1 April 2026 and
-# 6 April 2025). The closure reports exclude nobody, as the benefit has closed.
+# 6 April 2025). The predicate excludes nobody on those reports, as each
+# benefit's year gate has closed.
 #
-# Every case but the last uses one household: a parent aged 45 and a 17-year-old on a
-# non-advanced course in the parent's benefit unit, North East, owned
-# outright, no income. The parent claims Universal Credit as a single
+# Cases 1 to 6 and the last use one household: a parent aged 45 and a
+# 17-year-old on a non-advanced course in the parent's benefit unit, North
+# East, owned outright, no income. Cases 7 and 8 use the same family renting
+# from the council at £6,000 a year and claiming no Universal Credit, so only
+# the closure can end its Housing Benefit. Case 9 has a parent aged 70. The parent claims Universal Credit as a single
 # claimant over 25 (universal_credit/standard_allowance/amount.yaml
 # SINGLE_OLD: £400.14 a month in 2025-26, £424.90 in 2026-27) and gets the
 # first child higher amount for a qualifying young person
@@ -159,9 +162,11 @@
     universal_credit: 8_869.68
 
 - name: A young person's own Income Support report with their own Child Tax Credit report in 2025 leaves the child element.
-  # Income Support still pays in 2025, but the young person's own Child Tax
-  # Credit report closes their legacy awards, which ends their Income Support
-  # too. UC: 12 x (400.14 + 339.00) = 8,869.68.
+  # The model pays Income Support in 2025, though never on a dependant's own
+  # report. The young person's own Child Tax Credit report closes their
+  # legacy awards (person_legacy_benefits_closed), and the predicate then
+  # drops their Income Support report too. UC: 12 x (400.14 + 339.00) =
+  # 8,869.68.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -224,11 +229,15 @@
     universal_credit: 8_869.68
 
 - name: A young person's own Housing Benefit report after the parent's legacy awards close leaves the child element.
-  # The parent's own Income Support report from 2026 closes the family's
-  # legacy awards (legacy_benefits_closed), and the family doesn't meet the
-  # Pension Credit age conditions, so the model pays no Housing Benefit on
-  # the young person's report (housing_benefit_eligible). UC: 12 x (424.90 +
-  # 351.88) = 9,321.36.
+  # The family rents from the council at £6,000 a year and claims no
+  # Universal Credit, so without the parent's report the model continues its
+  # Housing Benefit award at the full rent (6,000, no income). The parent's
+  # own Income Support report from 2026 closes the family's legacy awards
+  # (legacy_benefits_closed), and the family doesn't meet the Pension Credit
+  # age conditions, so the model ends that award (housing_benefit_eligible),
+  # the young person's report included, and the predicate drops the report.
+  # The young person meets reg. 5, so the family's UC child element comes to
+  # 12 x 351.88 = 4,222.56, though the family claims no Universal Credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -246,22 +255,29 @@
     benunits:
       benunit:
         members: [parent, young_person]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [parent, young_person]
         region: NORTH_EAST
-        tenure_type: OWNED_OUTRIGHT
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
   output:
     legacy_benefits_closed: true
+    claims_universal_credit: false
     housing_benefit_eligible: false
+    housing_benefit: 0
     is_qualifying_young_person_for_universal_credit: [false, true]
     uc_child_element: 4_222.56
-    universal_credit: 9_321.36
+    universal_credit: 0
 
 - name: A young person's own Housing Benefit report after the parent's tax credits close leaves the child element.
-  # The parent's own Child Tax Credit report from 2025 closes the family's
-  # legacy awards, which ends the family's Housing Benefit. UC: 12 x (400.14
-  # + 339.00) = 8,869.68.
+  # The same renting family in 2025, which claims no Universal Credit. The
+  # parent's own Child Tax Credit report from 2025, after tax credits closed,
+  # closes the family's legacy awards, so the model ends its Housing Benefit
+  # award (6,000 without the report) and the predicate drops the young
+  # person's report. UC child element: 12 x 339.00 = 4,068.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -279,26 +295,34 @@
     benunits:
       benunit:
         members: [parent, young_person]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [parent, young_person]
         region: NORTH_EAST
-        tenure_type: OWNED_OUTRIGHT
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
   output:
     legacy_benefits_closed: true
+    claims_universal_credit: false
     housing_benefit_eligible: false
+    housing_benefit: 0
     is_qualifying_young_person_for_universal_credit: [false, true]
     uc_child_element: 4_068
-    universal_credit: 8_869.68
+    universal_credit: 0
 
 - name: A young person's own Housing Benefit report still excludes them where the family meets the Pension Credit age conditions.
   # A parent aged 70 reports their own Working Tax Credit in 2025, after tax
   # credits closed, which closes the family's legacy awards. The family meets
-  # the Pension Credit age conditions, so the model keeps paying Housing
-  # Benefit unless the family leaves that route by claiming Universal Credit
-  # (left_pension_route_at_legacy_closure). The predicate can't read that
-  # claim, because claims_universal_credit reads the predicate, so it keeps
-  # the Housing Benefit report. UC: 12 x 400.14 = 4,801.68.
+  # the Pension Credit age conditions, so the model keeps its Housing Benefit
+  # unless it claims Universal Credit at the closure and is entitled to it
+  # (left_pension_route_at_legacy_closure). This family does, so the model
+  # pays it no Housing Benefit. The predicate can't read
+  # left_pension_route_at_legacy_closure, whose is_uc_entitled reads the
+  # predicate through the child element, so it keeps the Housing Benefit
+  # report. The young person is a dependant, so the family's claim doesn't
+  # end their own award either. UC: 12 x 400.14 = 4,801.68.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -327,3 +351,38 @@
     is_qualifying_young_person_for_universal_credit: [false, false]
     uc_child_element: 0
     universal_credit: 4_801.68
+
+- name: A young person's own Income Support report from 2026 doesn't lift their Housing Benefit exclusion.
+  # The young person's own Income Support report from 2026, after Income
+  # Support closed, closes their own legacy awards (person_legacy_benefits_closed),
+  # but not the family's: legacy_benefits_closed reads only the claimant's
+  # and partner's reports. The model ends Housing Benefit on the family's
+  # closure, so the young person's Housing Benefit report still excludes
+  # them. UC: 12 x 424.90 = 5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        income_support_reported: 3_000
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    person_legacy_benefits_closed: [false, true]
+    legacy_benefits_closed: false
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 5_098.80
