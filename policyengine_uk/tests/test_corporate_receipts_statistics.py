@@ -13,7 +13,11 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Microsimulation, Simulation, parameters
 from policyengine_uk.data import UKSingleYearDataset
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.system import system
 
 SDLT = parameters.gov.hmrc.stamp_duty.statistics
 BUSINESS_RATES = parameters.gov.hmrc.business_rates.statistics.revenue
@@ -207,8 +211,11 @@ def test_projection_tracks_obr_receipts(name):
         assert statistic(INSTANT(year)) == pytest.approx(expected, rel=2e-5)
 
 
-# The economic-assumption indices run to 2039, so the projections do too.
-LAST_INDEXED_YEAR = 2039
+# The economic-assumption indices end where the growth series end, so the
+# projections do too.
+LAST_INDEXED_YEAR = growth_horizon(
+    system.parameters.gov.economic_assumptions.yoy_growth
+)
 
 
 @settings(max_examples=200, deadline=None, derandomize=True)
@@ -244,7 +251,7 @@ def test_projection_is_flat_after_the_last_indexed_year(name):
     statistic = _statistic(name)
     last = statistic(INSTANT(LAST_INDEXED_YEAR))
     assert statistic(INSTANT(LAST_INDEXED_YEAR - 1)) < last
-    for year in range(LAST_INDEXED_YEAR + 1, 2050):
+    for year in range(LAST_INDEXED_YEAR + 1, LAST_INDEXED_YEAR + 10):
         assert statistic(INSTANT(year)) == last
 
 
