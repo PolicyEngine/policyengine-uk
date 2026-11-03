@@ -7,8 +7,10 @@ description: >
   payment, and counts each award only for a person under the qualifying age
   for State Pension Credit. The council's scheme rules for 2023-24, 2025-26 and
   2026-27 set this list, and the model applies it from 2023-24
-  (qualifying_benefits_in_effect). The model reads the list as at 30 April of
-  each year.
+  (qualifying_benefits_in_effect). The council's website offers its 2023 rules
+  as its 2024-25 scheme, and the 2023 and 2025 rules set the same list, so the
+  model keeps it in 2024-25. The model reads the list as at 30 April of each
+  year.
 metadata:
   label: Merton Council Tax Support enhanced disability premium qualifying benefits
   period: year
