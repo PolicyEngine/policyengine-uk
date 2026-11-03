@@ -189,3 +189,48 @@
   output:
     council_tax_reduction_attained_pension_age_before_cutoff: false
     council_tax_reduction_applicable_amount: 238 * 52
+
+# April 2027 projections of the one Scottish pension-age rate, the higher
+# Housing Benefit allowance: the standard minimum guarantee, uprated by
+# May-July 2026 earnings growth of 3.9%, plus the maximum Savings Credit,
+# uprated by September 2026 CPI of 3.5% (HB A3/2021).
+- name: In Scotland, a single person's April 2027 pension-age rate is the projected guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 72
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 13_825.2712  # (238 * 1.039 + 17.96 * 1.035) * 52
+
+- name: In Scotland, a couple's April 2027 pension-age rate is the projected guarantee plus the Savings Credit maximum
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 71
+        is_male: true
+      younger:
+        age: 69
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 20_707.453  # (363.25 * 1.039 + 20.10 * 1.035) * 52

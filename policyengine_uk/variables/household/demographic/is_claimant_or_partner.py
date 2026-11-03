@@ -22,21 +22,28 @@ class is_claimant_or_partner(Variable):
       parent (`is_parent`) if there is one, otherwise the eldest other adult
       who is not presumed to be the claimant's child. A member at least 16
       years younger than the claimant is presumed to be their child if they
-      are under 20 (a PolicyEngine presumption for households entered without
-      relationships).
+      are under 20, and a member at least 20 years younger is presumed their
+      child at any age (PolicyEngine presumptions for households entered
+      without relationships).
     - The under-20 limit is lifted when the claimant is flagged as a parent
       and no member under 20 and at least 16 years younger is there to explain
       the flag. So a lone parent flagged `is_parent` who is the claimant and
       lives only with an unflagged son or daughter at least 16 years younger
       is single, and the son or daughter is neither claimant nor partner.
     - When a child under 20 does explain the flag, the limit stays. A flagged
-      claimant with an unflagged adult 16 or more years younger and a younger
+      claimant with an unflagged adult 16 to 19 years younger and a younger
       child is read as a couple with that child, and a lone parent with both
-      an adult child and a younger child is read the same way.
-    - Without any parent flag, a member aged 20 or over is never presumed a
-      child. Survey benefit units carry no flags for childless couples, and
-      those include large age gaps, so the model cannot tell such a couple
-      from a parent and adult child.
+      an adult child 16 to 19 years younger and a younger child is read the
+      same way.
+    - Without any parent flag, a member aged 20 or over is presumed a child
+      only when at least 20 years younger. In the Family Resources Survey,
+      co-resident adults 20 or more years apart are mostly in separate benefit
+      units, while those 16 to 19 years apart are mostly couples. A couple 20
+      or more years apart entered without roles, whose elder is the claimant
+      (the head, or the eldest adult when no adult head is given), is
+      therefore assessed as a single claimant unless the younger is flagged as
+      a parent; supply `is_claimant_or_partner` for such a couple. Survey
+      datasets can supply it from the survey's own benefit units.
     - Flags follow the Family Resources Survey convention: in a benefit unit
       with children, both members of the couple are flagged as parents. When
       relationships are known, supply this variable for everyone (true for
@@ -89,12 +96,16 @@ class is_claimant_or_partner(Variable):
         parent_couple = other_parent & (
             person.get_rank(person.benunit, -age, condition=other_parent) < 2
         )
-        large_gap = claimant_age - age >= p.minimum_age_gap
+        gap = claimant_age - age
+        large_gap = gap >= p.minimum_age_gap
         young_child = (age < p.age_limit) & large_gap
         # A flagged claimant with no young child to explain the flag is the
-        # parent of a much younger member at any age.
+        # parent of a much younger member at any age. Without that, only the
+        # larger any-age gap overrides the age limit.
         flag_unexplained = claimant_is_parent & ~person.benunit.any(young_child)
-        presumed_child = ((age < p.age_limit) | flag_unexplained) & large_gap
+        presumed_child = (((age < p.age_limit) | flag_unexplained) & large_gap) | (
+            gap >= p.minimum_age_gap_at_any_age
+        )
         other_adult = adult & ~claimant & ~presumed_child
         pool = where(person.benunit.any(other_parent), other_parent, other_adult)
         partner = pool & (person.get_rank(person.benunit, -age, condition=pool) == 0)

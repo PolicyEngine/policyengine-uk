@@ -197,9 +197,17 @@ eligibility from `is_SP_age` or the individual threshold from `state_pension_age
 State Pension flat-rate parameters live in
 `gov/dwp/state_pension/basic_state_pension/amount.yaml` and
 `gov/dwp/state_pension/new_state_pension/amount.yaml`. Published rates run
-to 2026-27; later years are uprated by
+to 2026-27. Each later April, `create_rate_projection.py` raises the
+previous year's rate by that year's growth in
 `gov.economic_assumptions.indices.triple_lock`, built from the yearly rates
-in `gov.economic_assumptions.yoy_growth.triple_lock`.
+in `gov.economic_assumptions.yoy_growth.triple_lock`, and rounds the result
+to the nearest 5p (`gov.dwp.state_pension.weekly_rate_rounding`). The
+Up-rating Orders round the full rates the same way
+([Explanatory Memorandum to SI 2020/234](https://www.legislation.gov.uk/uksi/2020/234/pdfs/uksiem_20200234_en.pdf),
+paragraph 7.17), and the previous published rate, uprated and rounded to
+the nearest 5p, gives every published basic rate from April 2011 and every
+full new rate from April 2017
+(`policyengine_uk/tests/test_triple_lock_outturn.py`).
 
 The part of a reported State Pension above the full rate is uprated by
 `gov.economic_assumptions.indices.september_cpi_uprating` instead (see
@@ -250,15 +258,24 @@ growth in the matching OBR series (`yoy_growth.obr.consumer_price_index` or
 statutory-basis forecast minus the calendar-year growth stored in
 `yoy_growth.yaml`, so that in the baseline the input equals the OBR's figure:
 
-- September CPI: the OBR's September CPI forecast (receipts Table 3.19, the
-  CPI used to uprate tax thresholds), or Q3 CPI (economy Table 1.7) in years
-  that table does not cover;
+- September CPI: the OBR's September CPI forecast (receipts Table 4.19 in
+  the October 2026 EFO, the CPI used to uprate tax thresholds), or Q3 CPI
+  (economy Table 1.7) in years that table does not cover;
 - May-July earnings: Q2 average earnings growth (economy Table 1.6). The
   OBR does not forecast the ONS AWE series; its measure is wages and
   salaries per employee, and Q2 is the quarter nearest May to July.
 
-After the EFO horizon the gap is zero, so the inputs follow calendar-year
-growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
+The State Pension triple lock consumes both statutory inputs. The shared
+`indices.earnings_uprating` series also projects the Pension Credit standard
+minimum guarantee, with a zero floor on earnings growth. See
+[Pension Credit uprating](./pension-credit.ipynb#uprating) for its Savings Credit
+and pension-age Housing Benefit projections and reform behaviour.
+
+With the October 2026 EFO the baseline rises are 3.9% in April 2027 (the
+published May-July 2026 earnings), 3.4% in April 2028 (September 2027 CPI),
+2.5% in April 2029 to 2031 and 2.6% in April 2032, as in the OBR's triple
+lock row (EFO Table A.3). After the EFO horizon the gap is zero, so the
+inputs follow calendar-year growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
 so the baseline has none of the extra cost the triple lock builds up when
 September CPI and May-July earnings take turns to spike; the OBR's long-run
 projections add 0.56 percentage points a year over earnings for it (Fiscal

@@ -10,10 +10,11 @@ class is_qualifying_young_person_for_pension_credit(Variable):
         "their 16th birthday, whatever their education (reg. 4A(1)(a)), or in "
         "non-advanced education or approved training that meets the entry "
         "condition (reg. 4A(1)(b), (2) and (3)), and who is not receiving "
-        "benefits in their own right (reg. 4A(5)). The 1 September after the "
-        "19th birthday in reg. 4A(1)(b) is not modelled, and the own-right "
-        "benefits input covers Universal Credit, Employment and Support "
-        "Allowance and Jobseeker's Allowance but not Income Support."
+        "Universal Credit, Employment and Support Allowance, Jobseeker's "
+        "Allowance or Income Support in their own right (reg. 4A(5)). The "
+        "own-right flag or their own reported award shows the first three; "
+        "is_on_income_support shows Income Support. The model does not apply "
+        "reg. 4A(1)(b)'s end at the 1 September after the 19th birthday."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A"
@@ -31,6 +32,20 @@ class is_qualifying_young_person_for_pension_credit(Variable):
             "meets_qualifying_young_person_entry_condition_for_pension_credit",
             period,
         )
+        # Reg. 4A(5) applies to both routes. Raw person-level reports identify
+        # own awards without calculating family benefits, which depend on QYP
+        # status and could recurse. Unlike UC reg. 5(5), it lists income
+        # support, whose family follows the Child Benefit test and not this
+        # one, so is_on_income_support can read the calculated award.
+        receives_own_benefits = (
+            person("receives_benefits_in_own_right", period)
+            | (person("universal_credit_reported", period) > 0)
+            | (person("esa_income_reported", period) > 0)
+            | (person("esa_contrib_reported", period) > 0)
+            | (person("jsa_income_reported", period) > 0)
+            | (person("jsa_contrib_reported", period) > 0)
+            | person("is_on_income_support", period)
+        )
         return (
             person(
                 "meets_qualifying_young_person_age_condition_for_pension_credit",
@@ -40,5 +55,5 @@ class is_qualifying_young_person_for_pension_credit(Variable):
                 before_first_september_following_16th_birthday
                 | in_education_or_training
             )
-            & ~person("receives_benefits_in_own_right", period)
+            & ~receives_own_benefits
         )

@@ -1,0 +1,11 @@
+description: Age below which an earner falls in the under-21 group, whose age-related secondary percentage is 0% up to the upper secondary threshold.
+values:
+  2015-04-06:
+    value: 21
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.9A(3)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/9A
+metadata:
+  label: NI under-21 zero rate age limit
+  unit: year

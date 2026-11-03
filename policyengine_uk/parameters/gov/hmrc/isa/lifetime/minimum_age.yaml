@@ -1,0 +1,10 @@
+description: Minimum age for qualifying Lifetime ISA payments.
+values:
+  2017-04-06: 18
+metadata:
+  label: Lifetime ISA minimum payment age
+  period: year
+  unit: year
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 10A
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/10A

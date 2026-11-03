@@ -19,6 +19,9 @@ SITUATION = {
     },
 }
 RAW_VAT = 10_000 * 0.2 + 1_000 * 0.05
+# A situation's VAT excludes private school fees' official share of 2025-26
+# VAT receipts (gov.simulation.vat.private_school_share_of_receipts).
+KEEP = 1 - 0.008368
 
 
 def test_legacy_default_is_the_product_of_the_two_factors():
@@ -34,13 +37,13 @@ def test_legacy_default_is_the_product_of_the_two_factors():
 def test_reform_dict_to_legacy_path_changes_vat():
     reform = Reform.from_dict({LEGACY: {"2010-01-01.2100-12-31": 0.5}}, "uk")
     sim = Simulation(situation=SITUATION, reform=reform)
-    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.5)
+    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.5 * KEEP)
 
 
 def test_scenario_to_legacy_path_changes_vat():
     scenario = Scenario(parameter_changes={LEGACY: {"year:2025:1": 0.5}})
     sim = Simulation(situation=SITUATION, scenario=scenario)
-    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.5)
+    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.5 * KEEP)
 
 
 def test_untouched_legacy_path_uses_the_two_factors():
@@ -53,4 +56,4 @@ def test_untouched_legacy_path_uses_the_two_factors():
         "uk",
     )
     sim = Simulation(situation=SITUATION, reform=reform)
-    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.7)
+    assert sim.calculate("vat", 2025)[0] == pytest.approx(RAW_VAT / 0.7 * KEEP)

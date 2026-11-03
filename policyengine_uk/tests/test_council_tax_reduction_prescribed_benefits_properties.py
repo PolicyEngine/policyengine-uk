@@ -44,8 +44,8 @@ invariant 4:
    the savings credit where the award is savings credit only (para 14), and
    Pension Credit income otherwise.
 2. Pound for pound, every scheme: raising IIDB or IB by d, or awarding SDA,
-   raises Council Tax Reduction income plus the family's income tax and
-   National Insurance by exactly the added amount, wherever the general rules
+   raises Council Tax Reduction income plus the family's pre-charge income tax
+   and National Insurance by exactly the added amount, wherever the general rules
    apply before and after and the zero floor does not bind. The reduction
    never rises where the route (general rules, savings credit only, guarantee
    credit) is unchanged; in the national schemes, where both awards are
@@ -59,8 +59,8 @@ invariant 4:
    general rules, in every scheme.
 
 These compare the model's own measures. Invariant 1 relies on both measures
-deducting the family's whole income tax and National Insurance, an existing
-approximation in each.
+deducting the family's whole pre-charge income tax and National Insurance, an
+existing approximation in each.
 """
 
 import numpy as np
@@ -111,7 +111,7 @@ BENUNIT_VARIABLES = [
     "pension_credit_income",
     "pension_credit",
 ]
-PERSON_TOTALS = ["income_tax", "national_insurance"]
+PERSON_TOTALS = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
 
 
 def money(high):

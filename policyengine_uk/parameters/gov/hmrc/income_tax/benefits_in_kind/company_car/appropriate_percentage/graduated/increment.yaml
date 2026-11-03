@@ -1,0 +1,10 @@
+description: Rise in a company car's appropriate percentage for each full step of CO2 emissions above the graduated threshold.
+values:
+  2020-04-06: 0.01
+metadata:
+  unit: /1
+  period: year
+  label: Company car graduated appropriate percentage increment
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 139(3)(a)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/139

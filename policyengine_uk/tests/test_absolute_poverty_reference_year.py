@@ -95,11 +95,12 @@ def yrdef(measure, year):
     return float(average.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
 
-# The FYE 2011 line as policyengine-uk has carried it (60% of the FYE 2011
-# medians of 419 and 359 a week, and its FYE 2021 value).
+# The FYE 2011 line in FYE 2011 and FYE 2021 prices: 60% of DWP's published
+# FYE 2011 medians (418.91 BHC and 358.16 AHC a week in FYE 2011 prices).
+# test_absolute_poverty_fye2011_reference.py covers every year in between.
 FYE_2011_LINE = {
-    "bhc": {2010: 251.4, 2020: 305.7},
-    "ahc": {2010: 215.4, 2020: 261.92},
+    "bhc": {2010: 251.35, 2020: 301.34},
+    "ahc": {2010: 214.9, 2020: 259.01},
 }
 
 PROPERTY_SETTINGS = settings(
@@ -235,7 +236,7 @@ def test_ahc_line_is_positive_and_below_bhc_line(year):
 
 @PROPERTY_SETTINGS
 @given(
-    year=st.sampled_from([2020, 2021, 2024, 2026]),
+    year=st.sampled_from([2015, 2017, 2019, 2020, 2021, 2024, 2026]),
     earnings=st.lists(
         st.floats(min_value=0, max_value=60_000, allow_nan=False),
         min_size=1,

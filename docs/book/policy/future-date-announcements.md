@@ -8,17 +8,18 @@ values keyed by effective date.
 
 This was originally requested in [#636](https://github.com/PolicyEngine/policyengine-uk/issues/636)
 in the context of the Truss "growth plan" announcements in autumn 2022.
-The feature has been live and well-exercised since the model moved to
-date-keyed parameter values; this page documents the current usage
-pattern so that future analyses don't need to reinvent it.
+Nothing new was needed: parameter values have been keyed by effective
+date since the model began in 2020, and the parameter files already carry
+many future-dated rows. This page documents the current usage pattern so
+that future analyses don't need to reinvent it.
 
 ## How it works
 
 Every parameter is a `values:` map from effective date to value. When
 the tax-benefit system is built, `convert_to_fiscal_year_parameters`
-(`policyengine_uk/utils/parameters.py`) turns each parameter into one
-value per model year, where model year 2026 is the fiscal year 6 April
-2026 to 5 April 2027:
+(`policyengine_uk/utils/parameters.py`) turns each parameter under `gov`
+into one value per model year from 2015 to 2040, where model year 2026 is
+the fiscal year 6 April 2026 to 5 April 2027:
 
 - by default, the value in force on 30 April of that year;
 - for parameters with `fiscal_year_blend: true` in their metadata (fuel
@@ -26,7 +27,9 @@ value per model year, where model year 2026 is the fiscal year 6 April
   change part-way through the year counts for the share of the year it
   applies;
 - parameters with `preserve_calendar_dates: true` keep their statutory
-  dates, and their formulas annualise explicitly.
+  dates, and the code that reads them handles the dates itself (the
+  alcohol and tobacco duty formulas, for example, split each fiscal year
+  into dated segments with `policyengine_uk/utils/excise.py`).
 
 Example from
 [`gov/hmrc/income_tax/allowances/personal_allowance/amount.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/income_tax/allowances/personal_allowance/amount.yaml):
@@ -53,15 +56,16 @@ The 2030-04-06 row records a future-dated decision: the freeze to
 2026 s. 10. The file has no uprating. From the tax year after its last
 row, `policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py`
 applies the Income Tax Act 2007 s. 57 CPI indexation year by year. So
-model years up to 2030 return £12,570, and indexation starts in 2031.
+model years 2021 to 2030 return £12,570, and indexation starts in 2031.
 
 ## Patterns for common cases
 
 ### Announced but reversed before taking effect
 
 Some announcements are walked back before the effective date. The
-Truss "growth plan" basic-rate cut to 19% (announced September 2022,
-reversed October 2022) is the canonical example. To represent this
+basic-rate cut to 19%, which the Truss "growth plan" of 23 September 2022
+brought forward to April 2023 and which was reversed on 17 October 2022,
+is the canonical example. To represent this
 honestly:
 
 1. When the announcement is made, add the announced value at the
@@ -78,23 +82,32 @@ honestly:
 
 The baseline then follows what was finally enacted. PolicyEngine UK has
 no "policy as announced on date X" switch, so to score an announcement as
-it stood before a reversal, apply it as a reform (see
-the [excise duties page](../../engineering/excise-duties.md) for how
-dated reforms are annualised).
+it stood before a reversal, apply it as a reform (see "Dated changes" in
+the [scenarios guide](../usage/scenarios.md) for how dated reforms are
+annualised, and the [excise duties page](../../engineering/excise-duties.md)
+for duties that keep their calendar dates).
 
 ### Phased-in or staggered changes
 
-Phased rate changes are the most common future-dating pattern. Each
-phase is a row at its effective date with a separate `reference`. The
-`national_insurance/class_1/rates/employee/main.yaml` trajectory is a
-good worked example: 13.25% from April 2022 under the Health and Social
-Care Levy, back to 12% from November 2022 when the levy was repealed,
-then the cuts to 10% in January 2024 and 8% in April 2024.
+Phased rate changes are a common future-dating pattern. Each phase is a
+row at its effective date with a separate `reference`. The Class 1
+employee main rate (`gov.hmrc.national_insurance.class_1.employee_scale[1].rate`,
+in `national_insurance/class_1/employee_scale.yaml`) is a good worked
+example: 13.25% from April 2022 under the Health and Social Care Levy Act
+2021 (a temporary 1.25 percentage point rise for 2022-23, ahead of a
+separate levy due from April 2023), back to 12% for earnings paid from
+6 November 2022 under the Health and Social Care Levy (Repeal) Act 2022,
+then the cuts to 10% in January 2024 and 8% in April 2024. The rate has
+no `fiscal_year_blend`, so each model year takes the 30 April rate:
+13.25% for 2022, 12% for 2023 and 8% from 2024. The November 2022 and
+January 2024 changes do not show in annual results
+([#1807](https://github.com/PolicyEngine/policyengine-uk/issues/1807)).
 
 ### Announced abolitions
 
 For an abolition announced ahead of its effective date (for example the
-2025 Budget removal of the two-child limit, in
+removal of the two-child limit, announced at the 2025 Budget and since
+enacted by the Universal Credit (Removal of Two Child Limit) Act 2026, in
 [`gov/dwp/universal_credit/elements/child/limit/child_count.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/dwp/universal_credit/elements/child/limit/child_count.yaml)):
 
 - The relevant parameter (`gov.dwp.universal_credit.elements.child.limit.child_count`)
@@ -115,17 +128,19 @@ is £650 from 2022, £900 from 2023 and goes back to zero from
 1. **Cite the announcement in `metadata.reference`** at every
    future-dated row. Where possible, cite both the announcement and
    the legislation that enacts it once it is published. The 2022-04-06
-   row of `national_insurance/class_1/rates/employee/main.yaml`, for
-   example, cites both the Health and Social Care Levy Act 2021 and the
-   Budget document.
+   row of the Class 1 employee main rate
+   (`national_insurance/class_1/employee_scale.yaml`), for example, cites
+   both the Health and Social Care Levy Act 2021 and the Budget document.
 2. **Don't extrapolate**. Each future-dated row should reflect a
    specific announcement. If a parameter would otherwise move with
    uprating, let the uprating handle it. Adding a "frozen forever" row is
    a policy assertion that needs its own reference.
 3. **Check how the parameter is annualised.** A change dated part-way
    through a fiscal year only counts for part of the year if the
-   parameter has `fiscal_year_blend: true`; otherwise the model year takes
-   the value in force on 30 April.
+   parameter has `fiscal_year_blend: true`, or has
+   `preserve_calendar_dates: true` and a formula that splits the year (as
+   the alcohol and tobacco duties do); otherwise the model year takes the
+   value in force on 30 April.
 
 ## What this isn't
 
@@ -142,6 +157,6 @@ baseline tree with an effective-date row.
 ## References
 
 - Issue [#636](https://github.com/PolicyEngine/policyengine-uk/issues/636): the original request, from the Truss growth plan period.
-- PolicyEngine research: [Tax cuts in Prime Minister Truss's growth plan](https://www.policyengine.org/uk/research/tax-cuts-in-prime-minister-trusss-growth-plan), a worked example of modelling an announcement before its reversal.
+- PolicyEngine research: [Tax cuts in Prime Minister Truss's Growth Plan 2022](https://www.policyengine.org/uk/research/tax-cuts-in-prime-minister-trusss-growth-plan), a worked example of modelling an announcement before its reversal.
 - [PolicyEngine Core](https://github.com/PolicyEngine/policyengine-core): the date-keyed parameter mechanism underneath.
 - `convert_to_fiscal_year_parameters` in `policyengine_uk/utils/parameters.py`: how dated values become model-year values.

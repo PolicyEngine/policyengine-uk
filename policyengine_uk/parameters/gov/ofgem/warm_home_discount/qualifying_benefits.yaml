@@ -1,0 +1,40 @@
+description: Means-tested benefits whose receipt by a member of the household qualifies it for the Warm Home Discount in England and Wales. The Secretary of State sets them in the eligibility statement for each scheme year. In 2025-26, Core Group 1 covered Pension Credit Guarantee Credit and Core Group 2 the other benefits listed, including Pension Credit Savings Credit, so any Pension Credit qualifies. From 2026-27 a single core group covers both elements of Pension Credit. Before 2025-26, the low-income group also had to pass a high-cost-to-heat test on property data, which the model doesn't encode, so the list is empty and the model doesn't calculate the rebate for those years. The Warm Home Discount (England and Wales) Regulations 2026 set the scheme period to end on 31 March 2031, after scheme year 20 (2030-31), and an extension needs further regulations, so the list is empty from 2031-32.
+values:
+  2011-04-01: []
+  2025-04-01:
+    value:
+      - pension_credit
+      - universal_credit
+      - housing_benefit
+      - esa_income
+      - jsa_income
+      - income_support
+    metadata:
+      reference:
+        - title: "Warm Home Discount: eligibility statement, England and Wales, 2025 to 2026"
+          href: https://www.gov.uk/government/publications/warm-home-discount-eligibility-statement-england-and-wales-2025-to-2026-scheme-year/warm-home-discount-eligibility-statement-england-and-wales-2025-to-2026
+  2026-04-01:
+    value:
+      - pension_credit
+      - universal_credit
+      - housing_benefit
+      - esa_income
+    metadata:
+      reference:
+        - title: "Warm Home Discount: eligibility statement, England and Wales, 2026 to 2027"
+          href: https://www.gov.uk/government/publications/warm-home-discount-eligibility-statement-england-and-wales-2026-to-2027-scheme-year/warm-home-discount-eligibility-statement-england-and-wales-2026-to-2027
+  2031-04-01:
+    value: []
+    metadata:
+      reference:
+        - title: The Warm Home Discount (England and Wales) Regulations 2026, reg. 4(2)(b) (scheme period ends 31 March 2031)
+          href: https://www.legislation.gov.uk/uksi/2026/389/regulation/4/made
+        - title: The Warm Home Discount (England and Wales) Regulations 2026, reg. 3 ("scheme year" 16 to 20)
+          href: https://www.legislation.gov.uk/uksi/2026/389/regulation/3/made
+metadata:
+  unit: list
+  period: year
+  label: Warm Home Discount qualifying benefits
+  reference:
+    - title: The Warm Home Discount (England and Wales) Regulations 2026, reg. 10 (eligibility statement)
+      href: https://www.legislation.gov.uk/uksi/2026/389/regulation/10/made

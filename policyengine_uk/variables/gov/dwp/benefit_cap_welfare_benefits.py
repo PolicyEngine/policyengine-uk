@@ -1,8 +1,12 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.benefit_unit import award_of_couple
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
-from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
+from policyengine_uk.variables.gov.dwp.jsa_income import (
+    income_related_jsa_award_on_reports,
+)
 
 # Welfare benefits (Welfare Reform Act 2012 s. 96(10)) the benefit cap counts.
 # The cap counts those "to which the single person or couple is entitled" (UC
@@ -25,6 +29,8 @@ CLAIMANT_OR_PARTNER_BENEFITS = [
     "esa_contrib",
     "incapacity_benefit",
     "sda",
+    # s. 96(10)(n).
+    "widowed_parents_allowance",
 ]
 FAMILY_BENEFITS = [
     "child_benefit",
@@ -54,8 +60,9 @@ class benefit_cap_welfare_benefits(Variable):
         "housing_benefit_pre_benefit_cap). Universal Credit counts Housing "
         "Benefit as nil (UC Regs 2013 reg. 80(2A)), so "
         "uc_benefit_cap_reduction subtracts it; an entered total should "
-        "include it. Maternity allowance and the bereavement benefits, also "
-        "welfare benefits, are not modelled here."
+        "include it. Widowed parent's allowance counts; maternity allowance "
+        "and the other bereavement benefits, also welfare benefits, are not "
+        "modelled here."
     )
     definition_period = YEAR
     unit = GBP
@@ -80,14 +87,14 @@ class benefit_cap_welfare_benefits(Variable):
             period,
             "jsa_income",
             "jsa_income_reported",
-            income_related_jsa_award,
+            income_related_jsa_award_on_reports,
             couple,
         ) + award_of_couple(
             benunit,
             period,
             "esa_income",
             "esa_income_reported",
-            income_related_esa_award,
+            income_related_esa_award_on_reports,
             couple,
         )
         return income_based + add_for_members(

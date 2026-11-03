@@ -12,7 +12,9 @@ partner's earned income would exceed that threshold (reg. 62(3)).
 
 Invariants, for any generated population of single people, couples,
 couples with an older partner aged 65 to 80 (mixed-age once past State
-Pension age) and couples with an adult child in their benefit unit, with
+Pension age) and couples with an adult child in their benefit unit (the
+drawn adults supply is_claimant_or_partner: true for the couple, false for
+the adult child and children), with
 employment, self-employment profits and losses, pension contributions and
 start-up periods, in England, Wales and Scotland:
 
@@ -72,9 +74,11 @@ WORKING_AGE = st.integers(18, 64)
 # the tax year: Class 4 stays due for that year (SI 2001/1004 reg. 91(a)),
 # but primary Class 1 and Class 2 stop.
 PENSION_AGE = st.integers(65, 80)
-# The last shape has an adult child in the parents' benefit unit. The model
-# flags at most two claimants (is_claimant_or_partner), here the parents; the
-# couple is the two eldest claimants. The YAML tests flag a third by input.
+# The last shape has an adult child in the parents' benefit unit. The
+# situation supplies is_claimant_or_partner for the parents and not the adult
+# child, since the age presumption would read a parent 20 or more years
+# younger than the other as their child; the couple is the two eldest
+# claimants. The YAML tests flag a third by input.
 SHAPES = {
     "single": [WORKING_AGE],
     "couple": [WORKING_AGE, WORKING_AGE],
@@ -145,12 +149,14 @@ def situation(units, year, bump=None):
             if bump is not None and bump[:2] == (i, j):
                 variable, amount = bump[2], bump[3]
                 person[variable] = {year: adult[variable] + amount}
+            # The couple are the first two adults; an adult child is neither.
+            person["is_claimant_or_partner"] = {year: j < 2}
             person["would_claim_marriage_allowance"] = {year: False}
             people[name] = person
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
