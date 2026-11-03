@@ -2,7 +2,7 @@ description: >
   The London Borough of Newham counts the care component of disability living
   allowance at the highest rate and the daily living component of personal
   independence payment at either rate, for the applicant or a member of the
-  applicant's family, toward the enhanced disability premium in its
+  applicant's family, towards the enhanced disability premium in its
   working-age Council Tax Reduction scheme, and from 1 April 2014 armed forces
   independence payment. It counts each award only for a person under the
   qualifying age for State Pension Credit. Its scheme texts from 2022 also
@@ -13,8 +13,9 @@ description: >
   2016-17) or propose no changes (2020-21, 2021-22), its 2024-25 Council Tax
   booklet says the council is keeping the scheme in place, and its 2019-20 and
   2025-26 revisions changed other provisions; the texts on either side of each
-  of those years, and of 2018-19, keep the same para 12. The model reads the
-  list as at 30 April of each year.
+  of those years, and of 2018-19, count the same DLA care, PIP daily living
+  and armed forces independence payment awards. The model reads the list as
+  at 30 April of each year.
 metadata:
   label: Newham Council Tax Reduction enhanced disability premium qualifying benefits
   period: year
