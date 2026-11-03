@@ -59,11 +59,11 @@ class legacy_benefits_home_letting_income(Variable):
         )
         counted_sublet = max_(0, weekly_sublet - sublet_disregard)
 
-        # Boarders and lodgers are household members outside the head's
-        # benefit unit; what each pays counts for the head's benefit unit when
-        # the head is its claimant or partner.
-        head = person("is_household_head", period)
-        pays_head = ~person.benunit.any(head)
+        # Boarders and lodgers are household members outside the household
+        # head's benefit unit; what each pays counts for the head's benefit
+        # unit when the head is its claimant or partner.
+        head = person("is_resolved_household_head", period)
+        pays_head = ~person.benunit("benunit_contains_household_head", period)
         boarder = person("rent_paid_as_boarder", period) / WEEKS_IN_YEAR * pays_head
         lodger = person("rent_paid_as_lodger", period) / WEEKS_IN_YEAR * pays_head
         counted_board = (1 - board.excess_rate) * max_(0, boarder - board.amount)
@@ -84,8 +84,6 @@ class legacy_benefits_home_letting_income(Variable):
             benunit.max(household.sum(counted_board + counted_lodger_pension_age)),
             benunit.max(household.sum(counted_board + counted_lodger_working_age)),
         )
-        # Split by heads if more than one is flagged.
-        head_share = benunit.sum(head & claimant_or_partner) / max_(
-            benunit.max(household.sum(head)), 1
-        )
+        # Each household has one resolved household head.
+        head_share = benunit.any(head & claimant_or_partner)
         return (counted_sublet + from_occupiers * head_share) * WEEKS_IN_YEAR
