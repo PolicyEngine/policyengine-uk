@@ -231,10 +231,11 @@ def esa_abolition_claim(couple, parameters):
 
     The abolition reaches every remaining award on 1 July 2026 in England
     (SI 2025/1148 art. 3A), the households' default country, so it reaches
-    any award reported in a year with less than all of it payable. An
-    appointee saving (art. 3A(2), esa_income_appointee_saving) for a member
-    who reports the award keeps the whole claim payable, and a saving for a
-    member who reports nothing keeps nothing. would_claim_uc_at_legacy_closure
+    any award reported in a year with less than all of it payable. Where a
+    member who reports the award has an appointee saving
+    (esa_income_appointee_saving), DWP keeps the whole claim payable (art.
+    3A(2)); where only a member who reports nothing has one, DWP keeps
+    nothing in payment. would_claim_uc_at_legacy_closure
     keeps its default, true. The conditions are those of the other
     working-age closures: no Pension Credit report, and not all pension age.
     """

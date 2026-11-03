@@ -41,9 +41,9 @@ a mixed-age couple that keeps the SI 2019/37 art 4 saving
 (has_mixed_age_couple_pension_credit_saving, drawn) can get Pension Credit.
 The Secretary of State appointed 1 July 2026 for the abolition of
 income-related ESA to reach every remaining award (SI 2025/1148 art. 3A(1)),
-and an appointee saving keeps an award in payment (art. 3A(2)), so every
-adult drawn in 2026 has the saving (esa_income_appointee_saving) and each
-award stays payable for the whole year;
+and DWP keeps an award saved for an appointee in payment (art. 3A(2)), so
+every adult drawn in 2026 has the saving (esa_income_appointee_saving) and
+each award stays payable for the whole year;
 test_esa_income_abolition_properties.py tests unsaved awards. Adults have
 earnings, pensions and household savings, so some families pass Pension
 Credit's means test and others fail it, and in 2016 and 2018 some report
@@ -169,7 +169,8 @@ def examples(draw):
     tax_credits = year < 2025
     # The abolition of income-related ESA reaches unsaved awards from 1 July
     # 2026 (SI 2025/1148 art. 3A(1)), so every adult drawn in 2026 has the
-    # appointee saving (art. 3A(2)), which keeps the award payable all year.
+    # appointee saving, under which DWP keeps the award payable all year
+    # (art. 3A(2)).
     saved = year >= 2026
     units = draw(st.lists(families(tax_credits, saved), min_size=4, max_size=12))
     # In 2016, add case 18's man, whom Pension Credit pays only with the

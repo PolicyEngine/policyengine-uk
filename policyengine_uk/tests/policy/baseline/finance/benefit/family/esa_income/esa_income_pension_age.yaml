@@ -141,9 +141,9 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -181,9 +181,9 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -213,9 +213,9 @@
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -391,9 +391,9 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -422,17 +422,17 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -464,18 +464,18 @@
         age: 70
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
         esa_includes_support_component: true
       person2:
         age: 60
         is_claimant_or_partner: true
         esa_income_reported: 5_000
-        # An appointee saving (SI 2025/1148 art. 3A(2)) keeps this award in
-        # payment after the 1 July 2026 abolition, so the model pays it for
-        # the whole of 2026-27 (esa_income_payable_share).
+        # DWP keeps this award, saved for an appointee, in payment after the
+        # 1 July 2026 abolition (SI 2025/1148 art. 3A(2)), so the model pays
+        # it for the whole of 2026-27 (esa_income_payable_share).
         esa_income_appointee_saving: true
     benunits:
       benunit:
@@ -651,8 +651,8 @@
     # On another reading, para 4(2)(a) holds wherever the award disregarded at
     # least £20 of earnings, and he would then keep £525.20 of Pension Credit
     # with no ESA. The model takes "£20 was disregarded" to mean the £20
-    # disregard of Sch 7 paras 6 and 7(1), as para 5 disregards "any earnings
-    # ... which do not exceed the limits", not £20.
+    # disregard of Sch 7 paras 6 and 7(1), as under para 5 DWP disregards "any
+    # earnings ... which do not exceed the limits", not £20.
     esa_income_eligible: true
     esa_income: 5_491.20
     claimant_or_partner_esa_income: 5_491.20
@@ -696,10 +696,11 @@
     # 3_970 (WTC (Entitlement and Maximum Rate) Regs 2002 Sch 2), which counts
     # as Pension Credit income (SPCA 2002 s.15(1)(b)).
     # B(e): with the award HMRC pays working tax credit without its income
-    # test (TCA 2002 s.7(2)), so working tax credit is 3_970, and 10_000 + 3_970 - 1_040 = 12_930, over
-    # 12_352.60: nil. Savings credit counts no working tax credit (SPC Regs
-    # 2002 reg 9(a)): 10_000 - 1_040 = 8_960, 172.31 a week, under the
-    # £212.97 couple threshold: nil.
+    # test (TCA 2002 s.7(2)), so working tax credit comes to 3_970, and
+    # 10_000 + 3_970 - 1_040 = 12_930, over 12_352.60: nil. DWP counts no
+    # working tax credit in the savings credit (SPC Regs 2002 reg 9(a)):
+    # 10_000 - 1_040 = 8_960, 172.31 a week, under the £212.97 couple
+    # threshold: nil.
     # B(0): Pension Credit on 3_970 would be nil too, so it gives no
     # passport. The income test applies: 41% of income over £6,420 comes off,
     # 3_970 - 0.41 x (10_000 - 6_420) = 2_502.20. Then 10_000 + 2_502.20 -
