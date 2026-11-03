@@ -6,6 +6,8 @@ Core's ordinary clone/population-copy path; values remain in Core storage.
 """
 
 import csv
+import warnings
+from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
 
@@ -46,9 +48,20 @@ def _visible_branches(simulation):
 
 def _cell_mask(holder, branch, period):
     key = (branch, str(period))
-    for recorded, mask in getattr(holder, _HOLDER_MASKS, ()):
+    identifiers = tuple(holder.population.ids)
+    for recorded, (source_ids, mask) in getattr(holder, _HOLDER_MASKS, ()):
         if recorded == key:
-            return np.asarray(mask, dtype=bool)
+            if identifiers == source_ids:
+                return np.asarray(mask, dtype=bool)
+            by_id = dict(zip(source_ids, mask))
+            try:
+                return np.array(
+                    [by_id[identifier] for identifier in identifiers], dtype=bool
+                )
+            except KeyError as error:
+                raise ValueError(
+                    "Geography presence metadata does not identify household IDs."
+                ) from error
     # Array APIs and direct Core builders supply whole arrays. Only the UK
     # situation builder retains lossless sparse-cell presence.
     return np.ones(holder.population.count, dtype=bool)
@@ -56,11 +69,21 @@ def _cell_mask(holder, branch, period):
 
 def set_cell_mask(simulation, name, period, mask, *, branch=None) -> None:
     holder = simulation.get_holder(name)
+    identifiers = tuple(holder.population.ids)
+    mask = np.asarray(mask, dtype=bool)
+    if len(identifiers) != holder.population.count or mask.shape != (len(identifiers),):
+        raise ValueError("Geography presence must identify every household.")
+    if len(set(identifiers)) != len(identifiers):
+        raise ValueError("Geography presence requires unique household IDs.")
     key = (simulation.branch_name if branch is None else branch, str(period_(period)))
     records = tuple(
         item for item in getattr(holder, _HOLDER_MASKS, ()) if item[0] != key
     )
-    setattr(holder, _HOLDER_MASKS, records + ((key, tuple(bool(x) for x in mask)),))
+    setattr(
+        holder,
+        _HOLDER_MASKS,
+        records + ((key, (identifiers, tuple(bool(x) for x in mask))),),
+    )
 
 
 def input_facts(population, name, period, *, exact=False, before=False, override=None):
@@ -136,10 +159,12 @@ def _resolve(region, council, country):
         )
     )
     if mismatch.any():
-        rows = np.flatnonzero(mismatch).tolist()
-        raise ValueError(
+        warnings.warn(
             "Contradictory supplied region, country or local_authority "
-            f"for household positions {rows}."
+            f"for {np.count_nonzero(mismatch)} households; preserving explicit "
+            "inputs and region-first inference.",
+            UserWarning,
+            stacklevel=2,
         )
     from_country = np.where(
         np.isin(countries, tuple(_DEVOLVED) + ("UNKNOWN",)), countries, "LONDON"
@@ -206,13 +231,19 @@ def situation_presence(situation, default_period):
     return records
 
 
-def install_situation_presence(simulation, records) -> None:
+def install_situation_presence(simulation, records, builder) -> None:
     population = simulation.populations["household"]
     identifiers = population.ids
+    replicas = 1
+    if builder.has_axes:
+        identifiers = builder.entity_ids[population.entity.plural]
+        for parallel_axes in builder.axes:
+            replicas *= parallel_axes[0]["count"]
     for (name, period), supplied in records.items():
-        mask = np.array(
+        prototype_mask = np.array(
             [None in supplied or identifier in supplied for identifier in identifiers]
         )
+        mask = np.tile(prototype_mask, replicas)
         holder = population.get_holder(name)
         for branch, stored in holder.get_known_branch_periods():
             if (
@@ -338,6 +369,12 @@ def attach_household_presence(frame, simulation, period) -> None:
         "rows": tuple(zip(frame.index.tolist(), ids)),
         "masks": tuple(masks),
     }
+
+
+def copy_table_presence(source, target) -> None:
+    """Keep household geography facts across a weighted frame's row alignment."""
+    if GEOGRAPHY_MASKS in source.attrs:
+        target.attrs[GEOGRAPHY_MASKS] = deepcopy(source.attrs[GEOGRAPHY_MASKS])
 
 
 def table_presence(frame, name):

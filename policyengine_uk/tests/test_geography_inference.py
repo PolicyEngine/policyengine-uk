@@ -13,14 +13,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 from policyengine_core.periods import period as core_period
 from policyengine_core.holders.helpers import get_stored_input
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import SimulationBuilder
 
-from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.utils.household_subset import household_subset
 from policyengine_uk.variables.household.BRMA import brma as brma_variable
 from policyengine_uk.variables.household.demographic.country import (
     Country,
@@ -244,10 +246,24 @@ def test_later_council_input_for_another_household_does_not_replace_earlier_inpu
         {"local_authority": {YEAR: "MAIDSTONE"}, "region": {YEAR: "LONDON"}},
     ],
 )
-def test_conflicting_genuinely_supplied_geography_is_rejected(inputs, query):
-    with pytest.raises(ValueError):
+def test_conflicting_genuinely_supplied_geography_warns_and_retains_facts(
+    inputs, query
+):
+    with pytest.warns(UserWarning, match="Contradictory supplied"):
         simulation = Simulation(situation=situation([inputs]))
         simulation.calculate(query, YEAR)
+    for variable, values in inputs.items():
+        assert labels(simulation, variable) == [values[YEAR]]
+    expected_region = (
+        inputs["region"][YEAR]
+        if "region" in inputs
+        else next(
+            row["region"]
+            for row in ORACLE
+            if row["local_authority"] == inputs["local_authority"][YEAR]
+        )
+    )
+    assert labels(simulation, "region") == [expected_region]
 
 
 @pytest.mark.parametrize(
@@ -265,18 +281,21 @@ def test_consistent_constructor_facts_are_checked_after_all_fields_load(order):
     assert labels(simulation, "region") == ["SCOTLAND"]
 
 
-def test_failed_geography_input_change_does_not_mutate_the_simulation():
+def test_conflicting_geography_input_changes_warn_and_keep_each_explicit_fact():
     simulation = Simulation(situation=situation([{"country": {YEAR: "WALES"}}]))
     assert labels(simulation, "region") == ["WALES"]
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning, match="Contradictory supplied"):
         simulation.set_input("region", YEAR, ["LONDON"])
-    assert labels(simulation, "region") == ["WALES"]
+    assert labels(simulation, "region") == ["LONDON"]
     assert labels(simulation, "country") == ["WALES"]
-    simulation.set_input("local_authority", YEAR, ["CARDIFF"])
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning, match="Contradictory supplied"):
+        simulation.set_input("local_authority", YEAR, ["CARDIFF"])
+    assert labels(simulation, "local_authority") == ["CARDIFF"]
+    with pytest.warns(UserWarning, match="Contradictory supplied"):
         simulation.set_input("country", YEAR, ["SCOTLAND"])
-    assert labels(simulation, "country") == ["WALES"]
-    assert labels(simulation, "region") == ["WALES"]
+    assert labels(simulation, "country") == ["SCOTLAND"]
+    assert labels(simulation, "region") == ["LONDON"]
+    assert labels(simulation, "local_authority") == ["CARDIFF"]
 
 
 def test_single_household_scalar_enum_setters_and_invalid_multi_household_input():
@@ -765,3 +784,137 @@ def test_snapshot_does_not_promote_a_past_country_input_into_a_new_year(reform):
     assert labels(reloaded, "region") == ["SCOTLAND"]
     assert labels(reloaded, "country") == ["SCOTLAND"]
     assert labels(original, "country", YEAR) == [current_country]
+
+
+def test_noncontiguous_and_nested_household_subsets_keep_geography_by_identity():
+    simulation = Simulation(
+        situation=transport_ready_situation(
+            [
+                {"local_authority": {YEAR: "CARDIFF"}},
+                {"region": {YEAR: "LONDON"}},
+                {"local_authority": {YEAR: "OXFORD"}},
+                {"region": {YEAR: "UNKNOWN"}},
+                {"local_authority": {YEAR: "CITY_OF_EDINBURGH"}},
+            ]
+        ),
+        scenario=no_economic_assumptions,
+    )
+    original = ["WALES", "LONDON", "SOUTH_EAST", "UNKNOWN", "SCOTLAND"]
+    assert labels(simulation, "region") == original
+    people = np.array([False, True, False, True, True])
+    with household_subset(simulation, "geography_outer", people) as subset:
+        branch = subset.simulation
+        assert subset.person.tolist() == [1, 3, 4]
+        assert labels(branch, "region") == ["LONDON", "UNKNOWN", "SCOTLAND"]
+        np.testing.assert_array_equal(
+            branch.calculate("household_id", YEAR), [1002, 1004, 1005]
+        )
+        # Only the last cell's region was inferred; the genuine default and
+        # UNKNOWN inputs must survive a later council input in the subset.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            branch.set_input(
+                "local_authority", YEAR + 1, ["CITY_OF_LONDON", "MAIDSTONE", "CARDIFF"]
+            )
+            assert labels(branch, "region", YEAR + 1) == ["LONDON", "UNKNOWN", "WALES"]
+        assert not [
+            item for item in caught if "Contradictory supplied" in str(item.message)
+        ]
+        with household_subset(
+            branch, "geography_inner", np.array([True, False, True])
+        ) as nested:
+            assert nested.person.tolist() == [0, 2]
+            assert labels(nested.simulation, "region", YEAR + 1) == ["LONDON", "WALES"]
+            assert labels(nested.simulation, "country", YEAR + 1) == [
+                "ENGLAND",
+                "WALES",
+            ]
+            np.testing.assert_array_equal(
+                nested.simulation.calculate("household_id", YEAR), [1002, 1005]
+            )
+        assert "geography_inner" not in branch.branches
+    assert "geography_outer" not in simulation.branches
+    assert labels(simulation, "region") == original
+    assert labels(simulation, "region", YEAR + 1) == original
+
+
+@pytest.mark.parametrize("crossed", [False, True], ids=["parallel", "crossed"])
+def test_axis_replicas_preserve_sparse_and_default_equal_geography(crossed):
+    data = situation(
+        [
+            {"local_authority": {YEAR: "CITY_OF_EDINBURGH"}},
+            {"region": {YEAR: "LONDON"}},
+        ]
+    )
+    earnings = {
+        "name": "employment_income",
+        "index": 0,
+        "period": YEAR,
+        "min": 10_000,
+        "max": 30_000,
+        "count": 3,
+    }
+    pension = {
+        "name": "private_pension_income",
+        "index": 1,
+        "period": YEAR,
+        "min": 0,
+        "max": 1_000 if crossed else 2_000,
+        "count": 2 if crossed else 3,
+    }
+    data["axes"] = [[earnings], [pension]] if crossed else [[earnings, pension]]
+    simulation = Simulation(situation=data, scenario=no_economic_assumptions)
+    cells = 6 if crossed else 3
+    assert simulation.populations["household"].count == 2 * cells
+    np.testing.assert_allclose(
+        np.asarray(simulation.calculate("employment_income", YEAR))[::2],
+        [10_000, 20_000, 30_000] * (2 if crossed else 1),
+    )
+    np.testing.assert_allclose(
+        np.asarray(simulation.calculate("private_pension_income", YEAR))[1::2],
+        [0, 0, 0, 1_000, 1_000, 1_000] if crossed else [0, 1_000, 2_000],
+    )
+    assert labels(simulation, "brma") == ["LOTHIAN", "INNER_SOUTH_EAST_LONDON"] * cells
+    assert labels(simulation, "region") == ["SCOTLAND", "LONDON"] * cells
+    assert labels(simulation, "country") == ["SCOTLAND", "ENGLAND"] * cells
+    # A generated Scottish region must move; genuine default-equal London
+    # remains an override even when its later council lies outside London.
+    with pytest.warns(UserWarning, match="Contradictory supplied"):
+        simulation.set_input("local_authority", YEAR + 1, ["CARDIFF", "OXFORD"] * cells)
+    assert labels(simulation, "region", YEAR + 1) == ["WALES", "LONDON"] * cells
+    assert labels(simulation, "country", YEAR + 1) == ["WALES", "ENGLAND"] * cells
+
+
+def test_calculate_all_export_does_not_turn_inferred_geography_into_input():
+    data = transport_ready_situation(sparse_transport_inputs())
+    for household in data["households"].values():
+        household.update(
+            council_tax={YEAR: 1_000},
+            water_and_sewerage_charges={YEAR: 500},
+            rent={YEAR: 10_000},
+            tenure_type={YEAR: "RENT_PRIVATELY"},
+        )
+    donor = Simulation(situation=data, scenario=no_economic_assumptions)
+    simulation = Microsimulation(
+        dataset=UKSingleYearDataset.from_simulation(donor, YEAR),
+        scenario=no_economic_assumptions,
+    )
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        exported = simulation.calculate_all(YEAR)
+        # Default economic projection is deliberately enabled on this reload.
+        restored = Simulation(dataset=exported)
+        assert_transport_geography(restored)
+        assert np.all(restored.calculate("council_tax", YEAR + 1) > 0)
+        restored.set_input("local_authority", YEAR + 1, ["CARDIFF", "CITY_OF_LONDON"])
+        assert labels(restored, "region", YEAR + 1) == ["WALES", "LONDON"]
+        assert labels(restored, "country", YEAR + 1) == ["WALES", "ENGLAND"]
+        assert labels(restored, "brma", YEAR + 1) == [
+            "CARDIFF",
+            "INNER_SOUTH_EAST_LONDON",
+        ]
+    assert not [
+        item for item in caught if "Contradictory supplied" in str(item.message)
+    ]
+    assert_transport_geography(simulation)
+    assert_transport_geography(donor)

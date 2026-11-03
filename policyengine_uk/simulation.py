@@ -86,7 +86,9 @@ from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.geography import (
     GEOGRAPHY_FIELDS,
+    attach_household_presence,
     attach_input_frame_presence,
+    copy_table_presence,
     install_situation_presence,
     install_table_presence,
     merge_geography_formula,
@@ -1234,7 +1236,7 @@ class Simulation(CoreSimulation):
         builder = SimulationBuilder()
         builder.default_period = self.default_input_period
         builder.build_from_dict(self.tax_benefit_system, situation, self)
-        install_situation_presence(self, geography)
+        install_situation_presence(self, geography, builder)
         self.has_axes = builder.has_axes
         self._capture_cgt_supplied_inputs()
 
@@ -1555,7 +1557,10 @@ class Simulation(CoreSimulation):
                 for entity in ("benunit", "household"):
                     table = getattr(dataset[year], entity)
                     order = np.argsort(table[f"{entity}_id"].to_numpy())
-                    setattr(dataset[year], entity, table.iloc[order])
+                    aligned = table.iloc[order]
+                    if entity == "household":
+                        copy_table_presence(table, aligned)
+                    setattr(dataset[year], entity, aligned)
             reset_growthfactor_uprating(dataset)
 
         # The legacy gross projection/reset must finish before conversion.
@@ -1591,7 +1596,12 @@ class Simulation(CoreSimulation):
                     if entity in ("benunit", "household"):
                         # Align each year's group inputs to the sorted population
                         # without reordering the caller's table or the people.
-                        table = table.iloc[np.argsort(table[f"{entity}_id"].to_numpy())]
+                        aligned = table.iloc[
+                            np.argsort(table[f"{entity}_id"].to_numpy())
+                        ]
+                        if entity == "household":
+                            copy_table_presence(table, aligned)
+                        table = aligned
                     for variable in table.columns:
                         if variable not in self.tax_benefit_system.variables:
                             continue
@@ -1751,6 +1761,7 @@ class Simulation(CoreSimulation):
         person = MicroDataFrame(person, weights="person_weight")
         benunit = MicroDataFrame(benunit, weights="benunit_weight")
         household = MicroDataFrame(household, weights="household_weight")
+        attach_household_presence(household, self, period)
 
         return UKSingleYearDataset(
             person=person,

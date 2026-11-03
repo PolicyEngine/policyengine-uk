@@ -645,8 +645,9 @@ With no geography supplied, `region` defaults to `LONDON`, `country` to
 `ENGLAND` and `local_authority` to `MAIDSTONE`. These defaults do not count as
 provided facts. Explicit values equal to the defaults do count. Explicit
 `UNKNOWN` values remain unknown. Contradictory provided region, country and
-council values raise `ValueError`; callers changing a previously supplied
-region must also keep any provided council and country consistent.
+council values emit a `UserWarning` while retaining each explicit input.
+Region inference still prefers a provided region, then a council, then a
+country supplied for that year.
 
 For example, a household with `local_authority: CITY_OF_EDINBURGH` and no region uses
 `SCOTLAND`. A household with `local_authority: OXFORD` uses `SOUTH_EAST`.
@@ -668,6 +669,10 @@ before Core pads input arrays. Direct use of Core's `SimulationBuilder` has
 already replaced missing cells with whole-array defaults; those arrays retain
 whole-array input semantics. Single-household and wholly supplied Core inputs
 use the same geography formulas.
+
+Sparse geography presence follows household IDs through internal household
+subsets and in-memory exports. Numeric axes repeat the prototype households'
+geography facts in the builder's replica order.
 
 UK clones, branches and population rebuilds retain the geography presence of
 their actual supplied values. In-memory UK dataset snapshots, copies and input
