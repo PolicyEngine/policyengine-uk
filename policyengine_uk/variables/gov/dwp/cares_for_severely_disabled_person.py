@@ -55,7 +55,7 @@ class cares_for_severely_disabled_person(Variable):
             href="https://www.legislation.gov.uk/uksi/1976/409/regulation/3",
         ),
         dict(
-            title="The Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023 reg. 2(2)",
+            title="The Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023 reg. 2",
             href="https://www.legislation.gov.uk/ssi/2023/302/regulation/2",
         ),
         dict(
