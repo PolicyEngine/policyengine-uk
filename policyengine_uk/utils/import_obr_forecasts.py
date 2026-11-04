@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import argparse
 import copy
+import math
 import os
 import re
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import unquote
@@ -589,6 +591,59 @@ TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
 TABLE_NUMBER_RE = re.compile(r"\d+\.\d+")
 FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
+# The last year any growth series reaches: yoy_growth.yaml's last entries are
+# for 2073, and lag_source_years runs a lagged series a year past its source.
+# create_economic_assumption_indices stops at or before 2074, so a series that
+# stays positive to here stays positive in the model.
+LAST_INDEX_YEAR = 2074
+
+
+@dataclass(frozen=True)
+class RateComponent:
+    """A part of a duty's base and the rate parameter the model charges on it.
+
+    ``parameter`` is the rate's path in the model's parameter tree, such as
+    ``gov.hmrc.gambling_duty.remote_gaming.rate``. ``weight`` is the part's
+    size, in any unit: divided by the total of a line's weights, it is the
+    part's share of the base, held at that share in every year.
+
+    A part with a ``switch``, the path of a dated true-or-false parameter,
+    pays the rate at ``switched`` on the days the switch is true, as the
+    model's formula does for a part that moves between rates.
+    """
+
+    parameter: str
+    weight: float = 1.0
+    switch: str | None = None
+    switched: str | None = None
+
+    def __post_init__(self):
+        if (self.switch is None) != (self.switched is None):
+            raise ValueError(
+                f"{self.parameter}: a switched part needs both a switch and "
+                "the rate it switches to"
+            )
+
+    @property
+    def paths(self) -> tuple[str, ...]:
+        """The parameters the part's rate reads."""
+        return tuple(
+            path
+            for path in (self.parameter, self.switch, self.switched)
+            if path is not None
+        )
+
+
+@dataclass(frozen=True)
+class ReceiptsOutturn:
+    """A line's outturn receipts from outside the EFOs, in £ thousand (as
+    published) by the calendar year in which each fiscal year starts.
+    ``source`` names them in comments and ``title`` in references."""
+
+    source: str
+    title: str
+    href: str
+    receipts_thousands: tuple[tuple[int, float], ...]
 
 
 @dataclass(frozen=True)
@@ -600,11 +655,121 @@ class ReceiptsSeriesSpec:
     receipts on a cash basis are Table 3.8 in March 2026 and 3.9 in March
     2025. Titles and row labels are compared lowercased, without footnote
     markers.
+
+    A line with ``rates`` grows a duty's base rather than its receipts, so a
+    rate change the model applies itself moves receipts only once. Each
+    year's base is its receipts over the rate the model charges in that
+    fiscal year (see ``line_rate``). A year whose rate is zero has no base,
+    so the series holds the base flat into and out of it. A line with
+    ``outturn`` takes the years before the EFO's first from it, not from the
+    previous EFO, which it does not read. ``references`` are cited after the
+    sources of the levels.
+
+    A series under ``per_capita`` grows its line per head (``per_head``).
     """
 
     path: tuple[str, ...]
     title: str
     row: str
+    rates: tuple[RateComponent, ...] = ()
+    outturn: ReceiptsOutturn | None = None
+    references: tuple[tuple[str, str], ...] = ()
+
+    @property
+    def per_head(self) -> bool:
+        """Whether the series sits under ``per_capita``. Dataset projection
+        grows household weights by ``ons.population``, so
+        ``render_receipts_growth_yaml`` writes such a series' growth over one
+        plus that growth (``per_head_growth``, ``per_head_tail``), and the
+        weighted total grows with the line in every year."""
+        return self.path[0] == "per_capita"
+
+
+GAMBLING_RATES = "gov.hmrc.gambling_duty"
+MACHINE_GAMES = f"{GAMBLING_RATES}.machine_games"
+
+# The higher-stake share of Machine Games Duty's standard-rate base: the part
+# from machines with a maximum charge above £1 or a maximum prize above £100,
+# which pays the higher rate from 1 April 2027 (#2731). It is the Gambling
+# Commission's 2024-25 gaming machine yield in Category B over that in
+# Categories B and C, £ million (Industry Statistics, April 2025 to March
+# 2026 release, sheet 4, cells K34 and L34, revised). Category B holds the
+# machines outside Categories C and D, and Category C's limits are a £1
+# charge and a £100 prize. Category D machines either offer no cash prize,
+# so their games are not dutiable, or charge at most 20p for at most £10 in
+# cash, the lower-rate class (Finance Act 2012, Schedule 24, paragraphs 2(2)
+# and 5(2)). The statistics cover only the premises the Commission licenses
+# in Great Britain, not pubs, clubs or Northern Ireland: see
+# docs/engineering/gambling-duties.md for how that bears on the share.
+MACHINE_GAMES_HIGHER_STAKE_SHARE = 2_289.84969448829 / (
+    2_289.84969448829 + 232.47489298159996
+)
+
+
+def gambling_spec(
+    key: str,
+    row: str,
+    rates: tuple[RateComponent, ...],
+    receipts_thousands: tuple[tuple[int, float], ...],
+    **extra,
+) -> ReceiptsSeriesSpec:
+    """A betting and gaming duty's base per head (#2738): its line in the
+    receipts tables' forecast breakdown (Table 4.10 in October 2026, 3.10 in
+    March 2026), which publishes forecasts only, after HMRC's outturn. The
+    model's gambling inputs start in 2024-25, the first year here."""
+    return ReceiptsSeriesSpec(
+        path=("per_capita", "gambling_duty_bases", key),
+        title="betting and gaming duties forecast breakdown",
+        row=row,
+        rates=rates,
+        outturn=ReceiptsOutturn(
+            source="HMRC's receipts (July 2026 Betting and Gaming tables, "
+            "Table_1_BG_receipts)",
+            title="HMRC UK Betting and Gaming Statistics, July 2026 tables "
+            "(Table_1_BG_receipts, 2024-25 and 2025-26 receipts)",
+            href="https://assets.publishing.service.gov.uk/media/"
+            "6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods",
+            receipts_thousands=receipts_thousands,
+        ),
+        **extra,
+    )
+
+
+def machine_games_spec(higher_stake_share: float) -> ReceiptsSeriesSpec:
+    """Machine Games Duty's base. Each band's weight is its 2024-25 base (£):
+    HMRC's liabilities (Table_2_MGD row 20) over its rate. Table 4.10's line
+    includes Autumn Budget 2026's higher rate on higher-stake machines
+    (paragraph 4.45), so ``higher_stake_share`` of the standard-rate band
+    pays the higher rate on the days the model's switch is on, as
+    ``machine_games_duty`` charges a higher-stake input at that share."""
+    standard = 3_023_740_000
+    return gambling_spec(
+        "machine_games",
+        "machine games duty",
+        (
+            RateComponent(f"{MACHINE_GAMES}.rates.lower", 138_420_000),
+            RateComponent(
+                f"{MACHINE_GAMES}.rates.standard", standard * (1 - higher_stake_share)
+            ),
+            RateComponent(
+                f"{MACHINE_GAMES}.rates.standard",
+                standard * higher_stake_share,
+                switch=f"{MACHINE_GAMES}.higher_stake_machines_at_higher_rate",
+                switched=f"{MACHINE_GAMES}.rates.higher",
+            ),
+            RateComponent(f"{MACHINE_GAMES}.rates.higher", 2_384_000),
+        ),
+        ((2024, 609_245), (2025, 641_010)),
+        references=(
+            (
+                "Gambling Commission, Industry Statistics, April 2025 to March "
+                "2026 (sheet 4, 2024-25 gaming machine yield by category)",
+                "https://www.gamblingcommission.gov.uk/statistics-and-research/"
+                "publication/industry-statistics-annual-report-financial-year-april-"
+                "2025-to-march-2026-official-statistics",
+            ),
+        ),
+    )
 
 
 RECEIPTS_SERIES_SPECS = (
@@ -628,7 +793,161 @@ RECEIPTS_SERIES_SPECS = (
         title="other taxes",
         row="northern ireland business rates",
     ),
+    # The seven betting and gaming duties' bases. HMRC's receipts are row 45
+    # (2024-25) and row 46 (2025-26) of Table_1_BG_receipts, £ thousand.
+    gambling_spec(
+        "remote_gaming",
+        "remote gaming duty",
+        (RateComponent(f"{GAMBLING_RATES}.remote_gaming.rate"),),
+        ((2024, 1_162_539), (2025, 1_320_966)),
+    ),
+    gambling_spec(
+        "lottery",
+        "lottery duty",
+        (RateComponent(f"{GAMBLING_RATES}.lottery.rate"),),
+        ((2024, 931_887), (2025, 980_132)),
+    ),
+    # Each part's 2024-25 base (£): HMRC's General Betting Duty receipts over
+    # 15%, split by the Gambling Commission's 2024-25 gross gambling yield as
+    # Microcosm splits the model's inputs. Fixed odds take remote UK horse
+    # racing, land-based fixed odds and racing pools. Microcosm's split gives
+    # spread betting no part, so it has no weight.
+    gambling_spec(
+        "general_betting",
+        "general betting duty",
+        (
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.fixed_odds", 2_471_124_767
+            ),
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.remote", 2_163_978_657
+            ),
+            RateComponent(
+                f"{GAMBLING_RATES}.general_betting.rates.exchange_commission",
+                123_949_909,
+            ),
+        ),
+        ((2024, 713_858), (2025, 684_502)),
+        references=(
+            (
+                "Microcosm, FY2024-25 General Betting Duty bases split by the "
+                "Gambling Commission's gross gambling yield (docs/evidence/"
+                "uk-excise-quantities-1359/outputs/national_reconciliation.json)",
+                "https://github.com/PolicyEngine/microcosm/blob/main/docs/evidence/"
+                "uk-excise-quantities-1359/outputs/national_reconciliation.json",
+            ),
+            (
+                "Gambling Commission, industry statistics, April 2024 to March 2025",
+                "https://www.gamblingcommission.gov.uk/statistics-and-research/"
+                "publication/industry-statistics-annual-report-financial-year-april-"
+                "2024-to-march-2025",
+            ),
+        ),
+    ),
+    machine_games_spec(MACHINE_GAMES_HIGHER_STAKE_SHARE),
+    # The household Gaming Duty formula charges one effective rate, not the
+    # statutory bands.
+    gambling_spec(
+        "gaming",
+        "gaming duty",
+        (RateComponent("household.consumption.gambling.casino_effective_rate"),),
+        ((2024, 165_397), (2025, 173_902)),
+    ),
+    gambling_spec(
+        "bingo",
+        "bingo duty",
+        (RateComponent(f"{GAMBLING_RATES}.bingo.rate"),),
+        ((2024, 25_233), (2025, 26_073)),
+    ),
+    gambling_spec(
+        "pool_betting",
+        "pool betting duty",
+        (RateComponent(f"{GAMBLING_RATES}.pool_betting.rate"),),
+        ((2024, 8_125), (2025, 3_970)),
+    ),
 )
+
+
+@lru_cache(maxsize=None)
+def parameter_values(parameter: str) -> tuple[tuple[date, float], ...]:
+    """A parameter's dated values, earliest first, from its file in the
+    model's parameter tree. True and false read as 1 and 0."""
+    path = get_repo_root() / "policyengine_uk/parameters" / Path(*parameter.split("."))
+    values = yaml.safe_load(path.with_suffix(".yaml").read_text())["values"]
+    entries = []
+    for instant, value in values.items():
+        if isinstance(value, dict):
+            value = value["value"]
+        entries.append((date.fromisoformat(str(instant)), float(value)))
+    if not entries:
+        raise ValueError(f"{parameter} has no values")
+    return tuple(sorted(entries))
+
+
+def value_on(parameter: str, day: date) -> float:
+    """A parameter's value on ``day``. Before its first value it takes that
+    value, as the model does: it backdates each parameter's first value."""
+    entries = parameter_values(parameter)
+    value = entries[0][1]
+    for instant, entry in entries:
+        if instant <= day:
+            value = entry
+    return value
+
+
+def component_rate(component: RateComponent, day: date) -> float:
+    """The rate a part of a base pays on ``day``."""
+    if component.switch is not None and value_on(component.switch, day):
+        return value_on(component.switched, day)
+    return value_on(component.parameter, day)
+
+
+def fiscal_year_rate(component: RateComponent, year: int) -> float:
+    """A part's rate over the OBR's fiscal year ``year``, 1 April to 31
+    March, averaged by days."""
+    start, end = date(year, 4, 1), date(year + 1, 4, 1)
+    changes = {
+        instant
+        for path in component.paths
+        for instant, _ in parameter_values(path)
+        if start < instant < end
+    }
+    bounds = [start, *sorted(changes), end]
+    segments = [
+        (component_rate(component, lower), (upper - lower).days)
+        for lower, upper in zip(bounds, bounds[1:])
+    ]
+    if len({value for value, _ in segments}) == 1:
+        return segments[0][0]
+    return sum(value * days for value, days in segments) / (end - start).days
+
+
+def line_rate(spec: ReceiptsSeriesSpec, year: int) -> float:
+    """The rate the model charges on a line's base in fiscal year ``year``:
+    its parts' fiscal-year rates, averaged by their weights."""
+    total = sum(component.weight for component in spec.rates)
+    return (
+        sum(
+            component.weight * fiscal_year_rate(component, year)
+            for component in spec.rates
+        )
+        / total
+    )
+
+
+def growth_ratio(
+    spec: ReceiptsSeriesSpec, levels: dict[int, float], year: int
+) -> float:
+    """One plus a line's growth into ``year``, before rounding: the ratio of
+    its levels, or for a line with rates, of its bases, each year's receipts
+    over the rate the model charges (``line_rate``). A year whose rate, or
+    the year before's, is zero has no base, so the base holds flat."""
+    if not spec.rates:
+        return levels[year] / levels[year - 1]
+    rate, previous_rate = line_rate(spec, year), line_rate(spec, year - 1)
+    if rate == 0 or previous_rate == 0:
+        return 1.0
+    return (levels[year] / rate) / (levels[year - 1] / previous_rate)
 
 
 @dataclass(frozen=True)
@@ -648,12 +967,15 @@ class ReceiptsGrowth:
 
     The first year is outturn growth: this EFO's first (outturn) year over
     the year before in the previous EFO, where it is outturn. Each later
-    year is the ratio of this EFO's consecutive levels.
+    year is the ratio of this EFO's consecutive levels. A line with its own
+    outturn starts at that outturn's second year and has no previous line;
+    one with rates grows its base instead (see ``ReceiptsSeriesSpec``).
     """
 
     values: dict[int, float]
     line: ReceiptsLine
-    previous_line: ReceiptsLine
+    previous_line: ReceiptsLine | None
+    spec: ReceiptsSeriesSpec | None = None
 
 
 def fiscal_year_label(year: int) -> str:
@@ -860,49 +1182,147 @@ def find_receipts_line(
 
 
 def compute_receipts_growth(
-    xlsx_bytes: bytes, previous_xlsx_bytes: bytes
+    xlsx_bytes: bytes,
+    previous_xlsx_bytes: bytes,
+    specs: tuple[ReceiptsSeriesSpec, ...] = RECEIPTS_SERIES_SPECS,
 ) -> dict[tuple[str, ...], ReceiptsGrowth]:
     """Growth in each receipts line, from an EFO's receipts tables and an
     earlier EFO's, whose outturn is the base for the first year's growth.
 
     The first year must be outturn in this EFO, and the year before it
-    outturn in the earlier one (March 2025 for March 2026).
+    outturn in the earlier one (March 2025 for March 2026). A line with its
+    own outturn needs that outturn to reach the year before this EFO's
+    first instead.
     """
     sheets = read_workbook_sheets(xlsx_bytes)
-    previous_sheets = read_workbook_sheets(previous_xlsx_bytes)
+    previous_sheets = None
     result = {}
-    for spec in RECEIPTS_SERIES_SPECS:
+    for spec in specs:
         name = ".".join(spec.path)
         line = find_receipts_line(sheets, spec)
-        previous = find_receipts_line(previous_sheets, spec)
         first_year = min(line.levels)
         base_year = first_year - 1
-        if first_year not in line.outturn_years:
-            raise ValueError(
-                f"{name}: {fiscal_year_label(first_year)}, the first year in "
-                f"Table {line.table}, is not outturn"
-            )
-        if base_year not in previous.outturn_years:
-            raise ValueError(
-                f"{name}: the previous receipts tables have no "
-                f"{fiscal_year_label(base_year)} outturn; pass the EFO whose "
-                f"outturn year is {fiscal_year_label(base_year)}"
-            )
-        levels = {base_year: previous.levels[base_year], **line.levels}
+        if spec.outturn is not None:
+            previous = None
+            outturn = {
+                year: value / 1e6
+                for year, value in spec.outturn.receipts_thousands
+                if year < first_year
+            }
+            if base_year not in outturn:
+                raise ValueError(
+                    f"{name}: {spec.outturn.source} have no "
+                    f"{fiscal_year_label(base_year)}, the year before Table "
+                    f"{line.table}'s first; add them"
+                )
+            levels = {**outturn, **line.levels}
+            if sorted(levels) != list(range(min(levels), max(levels) + 1)):
+                raise ValueError(f"{name}: the outturn skips a year: {sorted(levels)}")
+        else:
+            if previous_sheets is None:
+                previous_sheets = read_workbook_sheets(previous_xlsx_bytes)
+            previous = find_receipts_line(previous_sheets, spec)
+            if first_year not in line.outturn_years:
+                raise ValueError(
+                    f"{name}: {fiscal_year_label(first_year)}, the first year in "
+                    f"Table {line.table}, is not outturn"
+                )
+            if base_year not in previous.outturn_years:
+                raise ValueError(
+                    f"{name}: the previous receipts tables have no "
+                    f"{fiscal_year_label(base_year)} outturn; pass the EFO whose "
+                    f"outturn year is {fiscal_year_label(base_year)}"
+                )
+            levels = {base_year: previous.levels[base_year], **line.levels}
+        rates = {year: line_rate(spec, year) for year in levels} if spec.rates else {}
         # Growth to or from a level at or below zero means nothing, and a
-        # zero last level would zero the series' index from then on.
+        # zero last level would zero the series' index from then on. A year
+        # whose rate is zero has no base to grow, whatever its receipts.
         for year, level in sorted(levels.items()):
-            if level <= 0:
+            if level <= 0 and rates.get(year) != 0:
                 raise ValueError(
                     f"{name}: {fiscal_year_label(year)} receipts of {level} are "
                     "not positive, so there is no growth to or from them"
                 )
         values = {
-            year: round(levels[year] / levels[year - 1] - 1, 6) + 0.0
-            for year in sorted(line.levels)
+            year: round(growth_ratio(spec, levels, year) - 1, 6) + 0.0
+            for year in sorted(levels)[1:]
         }
-        result[spec.path] = ReceiptsGrowth(values, line, previous)
+        check_index(name, values)
+        result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
     return result
+
+
+def check_index(name: str, values: dict[int, float]) -> None:
+    """Refuse growth that zeroes the index the model builds from it.
+
+    The model compounds the growth into an index rounded to five decimals
+    (create_economic_assumption_indices), from 1 in a line's first year when
+    the line has its own outturn. A positive base that rounds the index to
+    zero would zero it in every later year.
+    """
+    index = 1.0
+    for year, value in values.items():
+        index = round(index * (1 + value), 5)
+        if index <= 0:
+            raise ValueError(
+                f"{name}: {fiscal_year_label(year)} growth of {value} takes "
+                f"the index to {index} at five decimals, so the base is "
+                "too small to grow from"
+            )
+
+
+def population_growth(content: str) -> dict[int, float]:
+    """``ons.population`` growth by year, as a yoy_growth.yaml holds it."""
+    values = yaml.safe_load(content)["ons"]["population"]["values"]
+    return dict(
+        sorted(
+            (int(str(instant)[:4]), float(value)) for instant, value in values.items()
+        )
+    )
+
+
+def growth_in_effect(series: dict[int, float], year: int) -> float:
+    """A growth series' value in ``year`` as the model reads it: its latest
+    entry at or before the year, or its first entry before that, since the
+    model backdates each parameter's first value."""
+    earlier = [entry for entry in series if entry <= year]
+    return series[max(earlier) if earlier else min(series)]
+
+
+def per_head_growth(
+    growth: ReceiptsGrowth, population: dict[int, float]
+) -> ReceiptsGrowth:
+    """A series' growth per head, to six decimals: each year's growth before
+    rounding (``growth_ratio``), over one plus that year's ``ons.population``
+    growth, minus one.
+
+    Dataset projection grows each household's input by this and its weight
+    by the population growth, so the weighted input grows by their product,
+    the line's growth: a duty's base, for a line with rates.
+    """
+    spec = growth.spec
+    first = min(growth.line.levels)
+    if growth.previous_line is None:
+        earlier = {
+            year: value / 1e6
+            for year, value in spec.outturn.receipts_thousands
+            if year < first
+        }
+    else:
+        earlier = {first - 1: growth.previous_line.levels[first - 1]}
+    levels = {**earlier, **growth.line.levels}
+    values = {
+        year: round(
+            growth_ratio(spec, levels, year) / (1 + growth_in_effect(population, year))
+            - 1,
+            6,
+        )
+        + 0.0
+        for year in growth.values
+    }
+    check_index(".".join(growth.spec.path), values)
+    return replace(growth, values=values)
 
 
 def format_growth(value: float) -> str:
@@ -974,6 +1394,7 @@ def render_receipts_values(
     tail: dict[int, float],
     release: tuple[str, int],
     previous_release: tuple[str, int],
+    tail_comment: str = "the average_earnings long-run path above",
 ) -> list[str]:
     """A series' values entries: earlier years as they were, then this
     EFO's growth, then the average_earnings path."""
@@ -994,17 +1415,44 @@ def render_receipts_values(
     month, year = release
     previous_month, previous_year = previous_release
     published, previous = growth.line, growth.previous_line
-    table = f"Table {published.table}"
-    if previous.table != published.table:
-        table += f" ({previous_month} {previous_year}: Table {previous.table})"
+    efo_first = min(published.levels)
     pad = " " * indent
-    lines = kept + [
-        f"{pad}# Outturn ({fiscal_year_label(first_year)} over "
-        f"{fiscal_year_label(first_year - 1)}) from OBR EFO {month} {year} over "
-        f'{previous_month} {previous_year}, receipts {table} "{published.label}"',
-        f"{pad}{first_year}-01-01: {format_growth(growth.values[first_year])}",
-    ]
-    later = sorted(y for y in growth.values if y > first_year)
+    first_kind = "Outturn" if efo_first in published.outturn_years else "Forecast"
+    basis = receipts_basis(growth.spec)
+    lines = list(kept)
+    if previous is None:
+        # The years before the EFO's first, and the base of its first, are
+        # the line's own outturn.
+        source = growth.spec.outturn.source
+        years = sorted(y for y in growth.values if y < efo_first)
+        if years:
+            span = (
+                f"{fiscal_year_label(years[0])} over {fiscal_year_label(years[0] - 1)}"
+                if len(years) == 1
+                else f"{years[0]}-{years[-1]}"
+            )
+            lines.append(f"{pad}# Outturn ({span}) from {source}{basis}")
+            lines += [
+                f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years
+            ]
+        lines.append(
+            f"{pad}# {first_kind} ({fiscal_year_label(efo_first)} over "
+            f"{fiscal_year_label(efo_first - 1)}) from OBR EFO {month} {year}, "
+            f'receipts Table {published.table} "{published.label}", over '
+            f"{source}{basis}"
+        )
+    else:
+        table = f"Table {published.table}"
+        if previous.table != published.table:
+            table += f" ({previous_month} {previous_year}: Table {previous.table})"
+        lines.append(
+            f"{pad}# {first_kind} ({fiscal_year_label(efo_first)} over "
+            f"{fiscal_year_label(efo_first - 1)}) from OBR EFO {month} {year} over "
+            f'{previous_month} {previous_year}, receipts {table} "{published.label}"'
+            f"{basis}"
+        )
+    lines.append(f"{pad}{efo_first}-01-01: {format_growth(growth.values[efo_first])}")
+    later = sorted(y for y in growth.values if y > efo_first)
     for kind in ("Outturn", "Forecast"):
         years = [
             y for y in later if (y in published.outturn_years) == (kind == "Outturn")
@@ -1014,14 +1462,97 @@ def render_receipts_values(
         span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
         lines.append(
             f"{pad}# {kind} ({span}) from OBR EFO {month} {year}, receipts "
-            f"Table {published.table}"
+            f"Table {published.table}{basis}"
         )
         lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
-    lines.append(
-        f"{pad}# Beyond the OBR forecast: the average_earnings long-run path above"
-    )
+    lines.append(f"{pad}# Beyond the OBR forecast: {tail_comment}")
     lines += [f"{pad}{y}-01-01: {format_growth(v)}" for y, v in sorted(tail.items())]
     return lines
+
+
+def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
+    """How a line's growth is measured, for its comments: nothing for
+    receipts, the rates taken out for a base, and population for a base per
+    head."""
+    if spec is None or not spec.rates:
+        return ""
+    if spec.per_head:
+        return (
+            "; per head: base growth (receipts over the rate the model charges) "
+            "over one plus ons.population growth"
+        )
+    return "; base growth: receipts over the rate the model charges"
+
+
+def per_head_tail(
+    tail: dict[int, float], comment: str, population: dict[int, float]
+) -> tuple[dict[int, float], str]:
+    """A series' growth after the OBR's forecast per head, and its comment.
+
+    In each year from the tail's first to the last that it or
+    ``ons.population`` states, (1 + the tail's growth) / (1 + population
+    growth) - 1, to six decimals, written where the value changes. The model
+    holds each series' last value, so the weighted total grows by the tail in
+    every later year too.
+    """
+    first = min(tail)
+    yearly = {
+        year: round(
+            (1 + growth_in_effect(tail, year))
+            / (1 + growth_in_effect(population, year))
+            - 1,
+            6,
+        )
+        + 0.0
+        for year in range(first, max(max(tail), max(population), first) + 1)
+    }
+    return {
+        year: value
+        for year, value in yearly.items()
+        if year == first or value != yearly[year - 1]
+    }, f"{comment}; per head: (1 + that growth) / (1 + ons.population growth) - 1"
+
+
+def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float], str]:
+    """A series' growth after the OBR's forecast, and its comment: the
+    average_earnings path, held at zero in years a base's rate is zero in or
+    comes from. A base under ``per_capita`` divides that growth by one plus
+    ``ons.population`` growth (``per_head_tail``)."""
+    last = max(growth.values)
+    path = average_earnings_path(content, last)
+    spec = growth.spec
+    if spec is None or not spec.rates:
+        return path, "the average_earnings long-run path above"
+    # Rates hold their last value after their last change, as the path does.
+    changes = [
+        instant.year
+        for component in spec.rates
+        for parameter in component.paths
+        for instant, _ in parameter_values(parameter)
+    ]
+    end = max(max(path), max(changes) + 1, last + 1)
+    yearly = {}
+    for year in range(last + 1, end + 1):
+        if line_rate(spec, year) == 0 or line_rate(spec, year - 1) == 0:
+            yearly[year] = 0.0
+        else:
+            yearly[year] = path[max(y for y in path if y <= year)]
+    tail = {
+        year: value
+        for year, value in yearly.items()
+        if year == last + 1 or value != yearly[year - 1]
+    }
+    if all(value == 0 for value in yearly.values()):
+        comment = "held flat, as the rate is zero"
+    elif any(value == 0 for value in yearly.values()):
+        comment = (
+            "the average_earnings long-run path above, held flat where the rate is zero"
+        )
+    else:
+        comment = "the average_earnings long-run path above"
+    if spec.per_head:
+        return per_head_tail(tail, comment, population_growth(content))
+    return tail, comment
 
 
 def receipts_references(
@@ -1031,20 +1562,47 @@ def receipts_references(
 ) -> list[dict[str, str]]:
     month, year = release
     previous_month, previous_year = previous_release
+    current = {
+        "title": f"OBR EFO {month} {year} (detailed forecast tables, receipts, "
+        f"Table {growth.line.table})",
+        "href": build_efo_href(month, year),
+    }
+    spec = growth.spec
+    extra = [
+        {"title": title, "href": href}
+        for title, href in (spec.references if spec is not None else ())
+    ]
+    if growth.previous_line is None:
+        outturn = {"title": spec.outturn.title, "href": spec.outturn.href}
+        return [current, outturn, *extra]
     base_year = min(growth.values) - 1
     return [
-        {
-            "title": f"OBR EFO {month} {year} (detailed forecast tables, receipts, "
-            f"Table {growth.line.table})",
-            "href": build_efo_href(month, year),
-        },
+        current,
         {
             "title": f"OBR EFO {previous_month} {previous_year} (detailed forecast "
             f"tables, receipts, Table {growth.previous_line.table}; "
             f"{fiscal_year_label(base_year)} outturn)",
             "href": build_efo_href(previous_month, previous_year),
         },
+        *extra,
     ]
+
+
+def check_index_stays_positive(path: tuple[str, ...], values: dict) -> None:
+    """Compound a rendered series as create_economic_assumption_indices does,
+    from 1 in its first listed year, rounding to five decimals.
+    An index that rounds to zero would zero the base in every later year, and
+    one that overflows would make it infinite."""
+    growth = {str(instant): value for instant, value in values.items()}
+    index = 1.0
+    for year in range(int(min(growth)[:4]) + 1, LAST_INDEX_YEAR + 1):
+        in_force = max(instant for instant in growth if instant <= f"{year}-01-01")
+        index = round(index * (1 + growth[in_force]), 5)
+        if not (math.isfinite(index) and index > 0):
+            raise ValueError(
+                f"{'.'.join(path)}: the index reaches {index} in {year} at five "
+                "decimals, which the model cannot compound from"
+            )
 
 
 def render_receipts_growth_yaml(
@@ -1058,14 +1616,20 @@ def render_receipts_growth_yaml(
 
     Years before this EFO's first year are kept, so a series' index keeps
     its base year. Years after the OBR's receipts forecast follow
-    average_earnings as ``content`` holds it. The result is checked to
-    differ from ``content`` only in those values and references.
+    average_earnings as ``content`` holds it. A series under ``per_capita``
+    is written per head of ``ons.population`` as ``content`` holds it, in
+    every year to the last that population or the tail states. The result is
+    checked to differ from ``content`` only in those values and references.
     """
     before = yaml.safe_load(content)
     expected = copy.deepcopy(before)
     lines = content.split("\n")
+    population = None
     for path, series in growth.items():
-        tail = average_earnings_path(content, max(series.values))
+        if series.spec is not None and series.spec.per_head:
+            population = population or population_growth(content)
+            series = per_head_growth(series, population)
+        tail, tail_comment = receipts_tail(content, series)
         references = receipts_references(series, release, previous_release)
 
         start, end = _series_block(lines, ("obr", *path))
@@ -1077,7 +1641,13 @@ def render_receipts_growth_yaml(
             indent + 2,
         )
         new_values = render_receipts_values(
-            old_values, entry_indent, series, tail, release, previous_release
+            old_values,
+            entry_indent,
+            series,
+            tail,
+            release,
+            previous_release,
+            tail_comment,
         )
         lines = [*lines[: values_start + 1], *new_values, *lines[values_end:]]
 
@@ -1112,6 +1682,7 @@ def render_receipts_growth_yaml(
                 for year, value in {**series.values, **tail}.items()
             },
         }
+        check_index_stays_positive(path, node["values"])
         node["metadata"]["reference"] = references
 
     rendered = "\n".join(lines)
@@ -1120,6 +1691,829 @@ def render_receipts_growth_yaml(
             "Rewriting the receipts growth series changed more than their "
             "values and references"
         )
+    return rendered
+
+
+@dataclass(frozen=True)
+class LevelSeriesSpec:
+    """A series the OBR publishes as levels across a row of years, not as
+    growth down a column.
+
+    ``path`` names the series under ``obr``. The importer finds the table by
+    its title, as it finds receipts tables. The OBR gives one unit, ``unit``,
+    in the table's header; one row of cells holds consecutive calendar years;
+    and one row below it, labelled ``row``, holds a level under each year and
+    nowhere else. The importer compares titles, units and labels lowercased,
+    without a footnote marker: digits or superscript digits after a letter or
+    a closing bracket, as in "National Living Wage (NLW)1". The OBR's note
+    says the rate "has been set by the Government up until" a year and that
+    "figures beyond" it "are OBR estimates"; the importer labels the years
+    on each side of that year, and every such statement in the table must
+    name the same calendar year.
+
+    ``anchor`` names the scale whose last bracket's amount the series' index
+    uprates. The model projects that amount from its last dated value, and
+    its uprating rounds each projected rate to the nearest ``rounding``.
+    """
+
+    path: tuple[str, ...]
+    title: str
+    unit: str
+    row: str
+    anchor: str
+    rounding: float
+
+
+LEVEL_SERIES_SPECS = (
+    LevelSeriesSpec(
+        path=("national_living_wage",),
+        title="national living wage",
+        unit="£ per hour",
+        row="national living wage (nlw)",
+        # The scale's last bracket holds the national living wage.
+        anchor="gov.hmrc.minimum_wage.non_apprentice",
+        # gov.hmrc.minimum_wage rounds each projected rate to the nearest penny.
+        rounding=0.01,
+    ),
+)
+# A footnote marker ending a level table's title, unit or label.
+LEVEL_FOOTNOTE_RE = re.compile(
+    r"(?<=[a-z)\]])(?:\d+|[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]+)$", re.IGNORECASE
+)
+# A statement of the year the government has set the rate up until, with any
+# negation before it and the whole token after it, and a range such as
+# "2027 - 28" with its spaces.
+SET_BY_GOVERNMENT_RE = re.compile(
+    r"(?:\b(not|never)\s+(?:yet\s+)?(?:been\s+)?)?"
+    r"set by the government up until (\S+(?:\s*[-\u2013\u2014]\s*\S+)?)"
+)
+OBR_ESTIMATES_RE = re.compile(r"figures beyond (\d{4}) are obr estimates")
+
+
+@dataclass(frozen=True)
+class LevelLine:
+    """A level series as the OBR publishes it in one EFO: levels by calendar
+    year, and the last year whose rate the government has set."""
+
+    table: str
+    label: str
+    levels: dict[int, float]
+    set_until: int
+
+
+@dataclass(frozen=True)
+class LevelGrowth:
+    """Growth in a level series, by year, to six decimals, from the table's
+    second year to its last. compute_level_growth writes each year's level
+    over the year before's; penny_preserving_growth then changes the growth
+    in any year after the anchor's that would project another penny."""
+
+    values: dict[int, float]
+    line: LevelLine
+    spec: LevelSeriesSpec
+
+
+@dataclass(frozen=True)
+class LevelAnchor:
+    """The rate the model projects a level series' parameter from: that
+    parameter's last dated value, the date it takes effect, and the
+    parameter's uprating metadata. policyengine-core's uprate_parameters
+    projects each later rate from this value."""
+
+    instant: date
+    rate: float
+    uprating: dict
+
+
+def level_label(value: str | None) -> str:
+    """Return a level table's title, unit or label as the importer compares
+    it: lowercased, with single spaces and without a footnote marker."""
+    return LEVEL_FOOTNOTE_RE.sub("", normalise_label(value))
+
+
+def _year_columns(row: dict[str, str | None]) -> dict[str, int]:
+    """Return a row's columns and years, if every non-empty cell holds a
+    year."""
+    cells = {
+        column: str(value).strip()
+        for column, value in row.items()
+        if str(value or "").strip()
+    }
+    if cells and all(YEAR_RE.match(text) for text in cells.values()):
+        return {column: int(text) for column, text in cells.items()}
+    return {}
+
+
+def _set_until(rows: list[dict[str, str | None]], where: str) -> int:
+    """Read the last year the government has set from the OBR's note. Every
+    statement in the table of the year the government has set the rate up
+    until, or of the year beyond which figures are OBR estimates, must name
+    the same calendar year, and none may deny it."""
+    texts = [normalise_label(value) for row in rows for value in row.values()]
+    notes = [text for text in texts if SET_BY_GOVERNMENT_RE.search(text)]
+    if len(notes) != 1:
+        raise ValueError(
+            f"The importer needs one note in {where} saying which years the "
+            f"government has set and which the OBR estimates; found {len(notes)}"
+        )
+    statements = [
+        (negation, token.rstrip(".,;:)"))
+        for negation, token in SET_BY_GOVERNMENT_RE.findall(notes[0])
+    ]
+    for negation, token in statements:
+        if negation:
+            raise ValueError(
+                f"The OBR's note in {where} says the rate has {negation} been "
+                f"set by the government up until a year, so it names no year "
+                f"the government has set: {notes[0]!r}"
+            )
+        if not re.fullmatch(r"\d{4}", token):
+            raise ValueError(
+                f"The OBR's note in {where} gives {token!r}, not one calendar "
+                f"year, as the year the government has set the rate up until: "
+                f"{notes[0]!r}"
+            )
+    set_years = sorted({int(token) for _, token in statements})
+    if len(set_years) != 1:
+        raise ValueError(
+            f"The OBR's note in {where} names more than one year the "
+            f"government has set the rate up until, {set_years}: {notes[0]!r}"
+        )
+    set_until = set_years[0]
+    estimates = sorted(
+        {int(year) for text in texts for year in OBR_ESTIMATES_RE.findall(text)}
+    )
+    if estimates != [set_until]:
+        raise ValueError(
+            f"The importer found no statement in {where} that the figures "
+            f"beyond {set_until}, and no others, are OBR estimates; the OBR "
+            f"names {estimates or 'no year'}: {notes[0]!r}"
+        )
+    return set_until
+
+
+def find_level_line(
+    sheets: dict[str, list[dict[str, str | None]]], spec: LevelSeriesSpec
+) -> LevelLine:
+    """Read the levels in the one row labelled ``spec.row`` of the one table
+    titled ``spec.title``, across its row of years.
+
+    It refuses any other layout rather than read it: another unit, a second
+    row of years or of the label, a level missing under a year or one with
+    no year above it, or years that skip or repeat.
+    """
+    name = ".".join(spec.path)
+    tables = [
+        (table, sheet, table_rows)
+        for sheet, rows in sheets.items()
+        for table, title, table_rows in sheet_tables(rows)
+        if level_label(title) == spec.title
+    ]
+    if len(tables) != 1:
+        found = ", ".join(f"sheet {sheet}" for _, sheet, _ in tables) or "none"
+        raise ValueError(f'Expected one "{spec.title}" table for {name}; found {found}')
+    table, sheet, rows = tables[0]
+    where = f"Table {table} (sheet {sheet})"
+    year_rows = [index for index, row in enumerate(rows) if _year_columns(row)]
+    if len(year_rows) != 1:
+        raise ValueError(
+            "The importer needs one row of years across the columns of "
+            f"{where}; found {len(year_rows)}"
+        )
+    header = year_rows[0]
+    years = _year_columns(rows[header])
+    first_year_column = min(column_index(column) for column in years)
+    matches = []
+    for index, row in enumerate(rows):
+        labels = [
+            value
+            for column, value in sorted(
+                row.items(), key=lambda item: column_index(item[0])
+            )
+            if column_index(column) < first_year_column and normalise_label(value)
+        ]
+        if labels and level_label(labels[0]) == spec.row:
+            matches.append((index, labels[0], row))
+    if len(matches) != 1:
+        raise ValueError(
+            f'Expected one "{spec.row}" row in {where} for {name}; found {len(matches)}'
+        )
+    index, label, row = matches[0]
+    if index < header:
+        raise ValueError(f'{where} has its "{spec.row}" row above its years')
+    units = [
+        level_label(value)
+        for header_row in rows[:header]
+        for value in header_row.values()
+        if level_label(value)
+    ]
+    if units != [spec.unit]:
+        raise ValueError(
+            f"The importer needs the unit {spec.unit!r}, and no other, above the "
+            f"years in {where}; found {units}"
+        )
+    ordered = [years[column] for column in sorted(years, key=column_index)]
+    if ordered != list(range(ordered[0], ordered[0] + len(ordered))):
+        raise ValueError(f"{where}'s years skip, repeat or run backwards: {ordered}")
+    stray = sorted(
+        column
+        for column, value in row.items()
+        if column_index(column) >= first_year_column
+        and column not in years
+        and str(value or "").strip()
+    )
+    if stray:
+        raise ValueError(f"{where} has {name} values with no year above them: {stray}")
+    levels = {}
+    for column, year in years.items():
+        text = row.get(column)
+        try:
+            level = float(text)
+        except (TypeError, ValueError):
+            level = None
+        if level is None or not math.isfinite(level) or level <= 0:
+            raise ValueError(f"{where} has no positive {year} {name} level: {text!r}")
+        levels[year] = level
+    set_until = _set_until(rows, where)
+    if not min(levels) <= set_until <= max(levels):
+        raise ValueError(
+            f"The OBR's note in {where} says the government has set the rate up "
+            f"until {set_until}, outside the table's years "
+            f"{min(levels)}-{max(levels)}"
+        )
+    if TABLE_NUMBER_RE.fullmatch(sheet):
+        table = sheet
+    return LevelLine(
+        table=table,
+        label=LEVEL_FOOTNOTE_RE.sub("", " ".join(str(label).split())),
+        levels=dict(sorted(levels.items())),
+        set_until=set_until,
+    )
+
+
+def compute_level_growth(
+    xlsx_bytes: bytes, specs: tuple[LevelSeriesSpec, ...] = LEVEL_SERIES_SPECS
+) -> dict[tuple[str, ...], LevelGrowth]:
+    """Read the growth in each level series from an EFO's economy tables:
+    each year's level over the year before's, less one, to six decimals."""
+    sheets = read_workbook_sheets(xlsx_bytes)
+    result = {}
+    for spec in specs:
+        name = ".".join(spec.path)
+        line = find_level_line(sheets, spec)
+        values = {
+            year: round(line.levels[year] / line.levels[year - 1] - 1, 6) + 0.0
+            for year in sorted(line.levels)[1:]
+        }
+        for year, value in values.items():
+            if not math.isfinite(value):
+                raise ValueError(
+                    f"{name}: the {year} level over the {year - 1} level gives "
+                    f"growth of {value}, which the importer cannot write"
+                )
+        result[spec.path] = LevelGrowth(values, line, spec)
+    return result
+
+
+def dated_values(name: str, values: dict) -> dict[date, float]:
+    """Return a parameter's values by the day each takes effect.
+    policyengine-core's Parameter reads ``values`` (keys as text, as core's
+    YAML loader gives them) and drops any value marked expected; each key
+    then becomes the day core's instant() reads from it, so 2028-04-01,
+    quoted or not, and 2028-04 both name 1 April 2028. dated_values refuses
+    different keys that name the same day; core retains both."""
+    from policyengine_core.parameters import Parameter
+    from policyengine_core.periods import instant
+
+    dated = {}
+    for entry in Parameter(name, {"values": values}).values_list:
+        day = instant(entry.instant_str).date
+        if day in dated:
+            raise ValueError(f"{name} dates two values on {day}")
+        dated[day] = entry.value
+    return dated
+
+
+def read_level_anchor(spec: LevelSeriesSpec) -> LevelAnchor:
+    """Read the last dated value of ``spec.anchor``'s last bracket's amount,
+    and its uprating metadata, from its file in the model's parameter tree.
+    It loads the file with policyengine-core's YAML loader, which refuses a
+    key the file repeats, and takes the latest day dated_values reads, so
+    it anchors where core does. It refuses an amount that the series' index
+    does not uprate to the nearest ``spec.rounding``."""
+    from policyengine_core.parameters import config
+
+    path = (
+        get_repo_root() / "policyengine_uk/parameters" / Path(*spec.anchor.split("."))
+    )
+    amount = yaml.load(path.with_suffix(".yaml").read_text(), Loader=config.Loader)[
+        "brackets"
+    ][-1]["amount"]
+    uprating = amount["metadata"]["uprating"]
+    expected = {
+        "parameter": "gov.economic_assumptions.indices.obr." + ".".join(spec.path),
+        "rounding": {"type": "nearest", "interval": spec.rounding},
+    }
+    if uprating != expected:
+        raise ValueError(
+            f"{spec.anchor}'s last bracket must uprate by {expected['parameter']} "
+            f"to the nearest {spec.rounding}; its metadata gives {uprating}"
+        )
+    values = dated_values(f"{spec.anchor}'s last bracket", amount["values"])
+    instant = max(values)
+    return LevelAnchor(instant=instant, rate=float(values[instant]), uprating=uprating)
+
+
+def compound_model_index(values: dict, last_year: int) -> dict[int, float]:
+    """Compound a growth series' index as create_economic_assumption_indices
+    does, to ``last_year``: 1 in the series' first listed year, then each
+    year's index times one plus the growth in force on 1 January, rounded to
+    five decimals. The builder decides where an index ends (see
+    check_level_index_in_model)."""
+    growth = {str(instant): value for instant, value in values.items()}
+    first = int(min(growth)[:4])
+    index = {first: 1.0}
+    for year in range(first + 1, last_year + 1):
+        in_force = max(instant for instant in growth if instant <= f"{year}-01-01")
+        index[year] = round(index[year - 1] * (1 + growth[in_force]), 5)
+    return index
+
+
+def nearest_units(amount: float, rounding: float) -> float:
+    """Return ``amount`` as a whole number of ``rounding``, as
+    uprate_parameters (policyengine-core) rounds a projected rate to the
+    nearest interval: it divides by the interval first and rounds the
+    quotient with Python's round(), which takes a half to the even number.
+    £13.525 over £0.01 gives exactly 1,352.5 as a float, so £13.525 becomes
+    1,352 pennies. Infinity if the division overflows."""
+    units = amount / rounding
+    return round(units) if math.isfinite(units) else math.inf
+
+
+def level_text(level: float, rounding: float) -> str:
+    """Write ``level`` to the nearest ``rounding`` as the model rounds it
+    (nearest_units), with the interval's decimal places: "13.52" for
+    £13.525. If the division overflows, it formats the level itself to
+    those places."""
+    places = max(0, -Decimal(repr(rounding)).as_tuple().exponent)
+    units = nearest_units(level, rounding)
+    return f"{units * rounding if math.isfinite(units) else level:.{places}f}"
+
+
+def projected_rate_units(
+    index: dict[int, float], start: int, rate: float, year: int, rounding: float
+) -> float:
+    """Return the rate uprate_parameters (policyengine-core) projects for
+    ``year`` from ``rate``, in force in ``start``, as a whole number of
+    ``rounding``: the rate times the index's growth since, rounded to the
+    nearest ``rounding`` (nearest_units). Infinity if that overflows."""
+    return nearest_units(rate * (index[year] / index[start]), rounding)
+
+
+def _level_growth_series(series: LevelGrowth, kept: dict) -> dict[str, float]:
+    """Return the growth the model reads for a level series, keyed by date:
+    the years the file keeps before the table, then the table's."""
+    growth = {str(instant): value for instant, value in kept.items()}
+    growth.update({f"{year}-01-01": value for year, value in series.values.items()})
+    return growth
+
+
+def check_level_index(path: tuple[str, ...], series: LevelGrowth, kept: dict) -> None:
+    """Refuse a table whose growth takes the model's index to zero or
+    infinity. The model compounds ``kept``, the years the file keeps before
+    the table, and then the table's growth (compound_model_index), so the
+    importer compounds the same series."""
+    index = compound_model_index(_level_growth_series(series, kept), max(series.values))
+    for year, value in sorted(series.values.items()):
+        if not (math.isfinite(index[year]) and index[year] > 0):
+            raise ValueError(
+                f"{'.'.join(path)}: {year} growth of {value} takes the index to "
+                f"{index[year]} at five decimals, which the model cannot "
+                "compound from"
+            )
+
+
+def penny_preserving_growth(
+    path: tuple[str, ...], series: LevelGrowth, kept: dict, anchor: LevelAnchor
+) -> LevelGrowth:
+    """Choose the growth in each table year after ``anchor``'s so that the
+    model projects the table's level, both rounded to the nearest
+    ``series.spec.rounding``.
+
+    The model compounds ``kept``, the earlier years the file keeps, and then
+    ``series`` into an index (compound_model_index), and projects each later
+    rate from the anchor's rate (projected_rate_units). The importer refuses
+    a table whose level in the anchor's year differs from the anchor's rate
+    at that rounding, and one whose index starts after the anchor's year.
+    Where the OBR publishes the table's first level for a year after the
+    anchor's, the importer has no ratio into that year: the model carries
+    the anchor's rate there through the growth the importer keeps
+    (``kept``), and the importer refuses the table if that projection rounds
+    to another level than the OBR's. Each later year keeps its growth if the
+    projection rounds to the table's level. Otherwise the importer takes the
+    growth, to six decimals, from the level the index carries the rate to in
+    the year before to the table's level, or else the nearest six-decimal
+    growth to that which does round to the table's level. It refuses a year
+    that no six-decimal growth can reproduce.
+    """
+    name = ".".join(path)
+    line = series.line
+    rounding = series.spec.rounding
+    start, rate, last = anchor.instant.year, anchor.rate, max(line.levels)
+    if start in line.levels and nearest_units(
+        line.levels[start], rounding
+    ) != nearest_units(rate, rounding):
+        raise ValueError(
+            f"{name}: the OBR's {start} level, {line.levels[start]!r}, differs "
+            f"to the nearest {rounding} from {rate!r}, the rate "
+            f"{series.spec.anchor} holds from {anchor.instant}"
+        )
+    values = dict(series.values)
+    growth = _level_growth_series(series, kept)
+    first = int(min(growth)[:4])
+    if start < first:
+        raise ValueError(
+            f"{name}: the index starts in {first}, after {start}, the year of "
+            f"the last rate {series.spec.anchor} holds, so the model cannot "
+            "project from it"
+        )
+    for year in [year for year in sorted(line.levels) if year > start]:
+        index = compound_model_index(growth, last)
+        for base in (start, year - 1):
+            if not (math.isfinite(index[base]) and index[base] > 0):
+                raise ValueError(
+                    f"{name}: the index reaches {index[base]} in {base}, so the "
+                    f"model cannot project the {year} level"
+                )
+        refusal = ValueError(
+            f"{name}: no {year} growth to six decimals lets the model project "
+            f"the OBR's {year} level, {line.levels[year]!r}, from the {start} "
+            f"rate to the nearest {rounding}"
+        )
+        if not math.isfinite(line.levels[year] / rounding):
+            raise refusal
+        target = nearest_units(line.levels[year], rounding)
+        if year not in values:
+            projected = projected_rate_units(index, start, rate, year, rounding)
+            if projected != target:
+                raise ValueError(
+                    f"{name}: the OBR publishes Table {line.table} from {year}, "
+                    f"after {start}, the year of the last rate "
+                    f"{series.spec.anchor} holds: {rate!r} from "
+                    f"{anchor.instant}. The model carries that rate to {year} "
+                    "through the growth the importer keeps and projects "
+                    f"{level_text(projected * rounding, rounding)}, but the OBR "
+                    f"publishes {line.levels[year]!r}, which rounds to "
+                    f"{level_text(line.levels[year], rounding)} to the nearest "
+                    f"{rounding}"
+                )
+            continue
+
+        def units(micros: int) -> float:
+            try:
+                value = micros / 1_000_000
+            except OverflowError:
+                return math.inf
+            trial = compound_model_index({**growth, f"{year}-01-01": value}, last)
+            return projected_rate_units(trial, start, rate, year, rounding)
+
+        written = round(Decimal(repr(values[year])) * 1_000_000)
+        if units(written) == target:
+            continue
+
+        def first_above(bound: float) -> int:
+            """The least whole number of millionths, from -1 million (growth
+            of -100%), whose projection exceeds ``bound``. The projection
+            never falls as the growth rises, so a bisection finds it."""
+            low, high = -1_000_000, max(written, 1)
+            if units(low) > bound:
+                return low
+            while units(high) <= bound:
+                low, high = high, 2 * high
+            while high - low > 1:
+                middle = (low + high) // 2
+                if units(middle) > bound:
+                    high = middle
+                else:
+                    low = middle
+            return high
+
+        lowest, highest = first_above(target - 1), first_above(target) - 1
+        if lowest > highest:
+            raise refusal
+        carried = rate * (index[year - 1] / index[start])
+        ratio = line.levels[year] / carried - 1
+        sequential = round(ratio * 1e6) if math.isfinite(ratio * 1e6) else lowest
+        values[year] = min(max(sequential, lowest), highest) / 1_000_000 + 0.0
+        growth[f"{year}-01-01"] = values[year]
+    return replace(series, values=values)
+
+
+def _kept_level_values(obr: dict, path: tuple[str, ...], series: LevelGrowth) -> dict:
+    """Return the values a yoy_growth.yaml's ``obr`` mapping holds for a
+    level series before its table's second year, which a render keeps."""
+    node = obr
+    for key in path:
+        node = node[key]
+    return {
+        instant: value
+        for instant, value in node["values"].items()
+        if int(str(instant)[:4]) < min(series.values)
+    }
+
+
+def _level_anchor(
+    path: tuple[str, ...],
+    series: LevelGrowth,
+    anchors: dict[tuple[str, ...], LevelAnchor] | None,
+) -> LevelAnchor:
+    """Return ``anchors[path]`` if given, or else the anchor
+    read_level_anchor reads from the series' parameter file."""
+    return anchors[path] if anchors is not None else read_level_anchor(series.spec)
+
+
+def penny_preserving_level_growth(
+    content: str,
+    growth: dict[tuple[str, ...], LevelGrowth],
+    anchors: dict[tuple[str, ...], LevelAnchor] | None = None,
+) -> dict[tuple[str, ...], LevelGrowth]:
+    """Run penny_preserving_growth on each level series, given the years
+    before its table that ``content``, a yoy_growth.yaml, keeps, and its
+    anchor (``anchors``, or by default read_level_anchor)."""
+    obr = yaml.safe_load(content)["obr"]
+    return {
+        path: penny_preserving_growth(
+            path,
+            series,
+            _kept_level_values(obr, path, series),
+            _level_anchor(path, series, anchors),
+        )
+        for path, series in growth.items()
+    }
+
+
+def build_model_index(content: str, path: tuple[str, ...]) -> dict[int, float]:
+    """Build, by year, the index the model compounds from ``obr.<path>`` when
+    it reads ``content`` as its yoy_growth.yaml.
+
+    process_parameter_tree runs its generation steps on the parameters the
+    YAML files hold. This runs those steps, up to and including
+    create_economic_assumption_indices, on the same parameters with
+    ``content``'s growth series in place of the file's, and reads the index
+    that builder writes. The steps before it add growth series of their own,
+    and the builder decides where each index ends.
+    """
+    from policyengine_core.parameters import ParameterNode, config
+
+    from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+        create_economic_assumption_indices,
+    )
+    from policyengine_uk.tax_benefit_system import (
+        GENERATION_STEPS,
+        statutory_parameters,
+    )
+
+    parameters = statutory_parameters()
+    assumptions = parameters.gov.economic_assumptions
+    del assumptions.children["yoy_growth"]
+    assumptions.add_child(
+        "yoy_growth",
+        ParameterNode(
+            "gov.economic_assumptions.yoy_growth",
+            data=yaml.load(content, Loader=config.Loader),
+        ),
+    )
+    for step in GENERATION_STEPS:
+        parameters = step(parameters)
+        if step is create_economic_assumption_indices:
+            break
+    index = parameters.get_child(
+        "gov.economic_assumptions.indices.obr." + ".".join(path)
+    )
+    return {
+        int(entry.instant_str[:4]): entry.value
+        for entry in sorted(index.values_list, key=lambda entry: entry.instant_str)
+    }
+
+
+def check_level_index_in_model(
+    content: str,
+    path: tuple[str, ...],
+    series: LevelGrowth,
+    build_index=None,
+) -> None:
+    """Check the index the model builds from ``content``'s ``obr.<path>``
+    against the importer's. ``build_index(content, path)`` builds it; by
+    default build_model_index does, as the model does. The index must reach
+    the table's last year and stay above zero and finite in every year the
+    builder writes: from a year where it reaches zero, the model projects
+    no rate above zero from an earlier year's, and an infinite index stops
+    uprate_parameters rounding the rates it projects. compound_model_index
+    must compound the same index from the written series in each of those
+    years."""
+    name = ".".join(path)
+    model = (build_index or build_model_index)(content, path)
+    last = max(series.line.levels)
+    if max(model) < last:
+        raise ValueError(
+            f"{name}: the model's index ends in {max(model)}, so it cannot "
+            f"project the {last} level"
+        )
+    for year, value in sorted(model.items()):
+        if not (math.isfinite(value) and value > 0):
+            effect = (
+                f"from {year} the model projects no rate above zero from an "
+                "earlier year's rate"
+                if math.isfinite(value)
+                else "policyengine-core's uprate_parameters cannot round the "
+                f"rate it projects for {year}"
+            )
+            raise ValueError(
+                f"{name}: the model's index reaches {value} in {year} at five "
+                f"decimals, so {effect}"
+            )
+    node = yaml.safe_load(content)["obr"]
+    for key in path:
+        node = node[key]
+    importer = compound_model_index(node["values"], max(model))
+    differ = sorted(
+        year
+        for year in model.keys() | importer.keys()
+        if model.get(year) != importer.get(year)
+    )
+    if differ:
+        raise ValueError(
+            f"{name}: compound_model_index and the model's index differ in "
+            f"{differ}, so the importer cannot check the model's pennies"
+        )
+
+
+def average_earnings_years(content: str, after_year: int) -> dict[int, float]:
+    """Return ``average_earnings`` after ``after_year``, year for year: the
+    path ``average_earnings_path`` gives, with an entry in every year
+    average_earnings has one, so the two series list the same years."""
+    values = yaml.safe_load(content)["obr"]["average_earnings"]["values"]
+    later = {
+        int(str(instant)[:4]): float(value)
+        for instant, value in values.items()
+        if int(str(instant)[:4]) > after_year
+    }
+    return dict(sorted({**average_earnings_path(content, after_year), **later}.items()))
+
+
+def render_level_values(
+    old_lines: list[str],
+    indent: int,
+    growth: LevelGrowth,
+    tail: dict[int, float],
+    release: tuple[str, int],
+) -> list[str]:
+    """Render a level series' values entries: the earlier years it keeps,
+    then the growth into the rates the government has set, then into the
+    OBR's estimates, then the average_earnings path. Each comment writes the
+    OBR's levels to the penny the model rounds a rate to (level_text)."""
+    first_year = min(growth.values)
+    kept: list[str] = []
+    pending: list[str] = []
+    for line in old_lines:
+        match = VALUE_LINE_RE.match(line)
+        if match is None:
+            if line.strip() and not line.strip().startswith("#"):
+                raise ValueError(f"Unexpected line in a values block: {line!r}")
+            pending.append(line)
+            continue
+        if int(match.group(1)) < first_year:
+            kept += pending + [line]
+        pending = []
+
+    month, year = release
+    published = growth.line
+    pad = " " * indent
+    lines = list(kept)
+    source = (
+        f'OBR EFO {month} {year}, economy Table {published.table} "{published.label}"'
+    )
+    for kind, years in (
+        (
+            "The government set the rates for",
+            [y for y in growth.values if y <= published.set_until],
+        ),
+        (
+            "The OBR estimates the rates for",
+            [y for y in growth.values if y > published.set_until],
+        ),
+    ):
+        if not years:
+            continue
+        span = f"{years[0]}" if len(years) == 1 else f"{years[0]}-{years[-1]}"
+        start, end = years[0] - 1, years[-1]
+        first, last = (
+            level_text(published.levels[year], growth.spec.rounding)
+            for year in (start, end)
+        )
+        lines.append(
+            f"{pad}# {kind} {span}: £{first} in {start} to £{last} in {end} ({source})"
+        )
+        lines += [f"{pad}{y}-01-01: {format_growth(growth.values[y])}" for y in years]
+    lines.append(
+        f"{pad}# After the OBR forecast, the importer copies average_earnings "
+        "year for year"
+    )
+    lines += [f"{pad}{y}-01-01: {format_growth(v)}" for y, v in tail.items()]
+    return lines
+
+
+def render_level_series_yaml(
+    content: str,
+    growth: dict[tuple[str, ...], LevelGrowth],
+    release: tuple[str, int],
+    anchors: dict[tuple[str, ...], LevelAnchor] | None = None,
+    build_index=None,
+) -> str:
+    """Rewrite each level series' values and first reference in a
+    yoy_growth.yaml.
+
+    It keeps the years before the table's second year, so the series' index
+    keeps its base year, and the series' other references. It refuses a
+    table whose growth takes the index to zero (check_level_index), and
+    writes the growth penny_preserving_growth chooses from each series'
+    anchor (``anchors``, or by default read_level_anchor), so the model
+    projects each table level after the anchor's year to the table's penny.
+    Years after the table follow average_earnings as ``content`` holds it.
+    It checks that the result differs from ``content`` only in those values
+    and that reference. It then builds the model's index from the result
+    (check_level_index_in_model, with ``build_index``) and checks that the
+    index reaches the table's last year, stays above zero and finite to the
+    year the builder ends it, and matches the importer's.
+    """
+    month, year = release
+    expected = copy.deepcopy(yaml.safe_load(content))
+    lines = content.split("\n")
+    written = []
+    for path, series in growth.items():
+        node = expected["obr"]
+        for key in path:
+            node = node[key]
+        kept = _kept_level_values(expected["obr"], path, series)
+        check_level_index(path, series, kept)
+        series = penny_preserving_growth(
+            path, series, kept, _level_anchor(path, series, anchors)
+        )
+        tail = average_earnings_years(content, max(series.values))
+        start, end = _series_block(lines, ("obr", *path))
+        indent = 2 * len(path) + 2
+        values_start, values_end = _yaml_block(lines, "values", indent, start, end)
+        old_values = lines[values_start + 1 : values_end]
+        entry_indent = next(
+            (_indent(line) for line in old_values if VALUE_LINE_RE.match(line)),
+            indent + 2,
+        )
+        new_values = render_level_values(
+            old_values, entry_indent, series, tail, release
+        )
+        lines = [*lines[: values_start + 1], *new_values, *lines[values_end:]]
+
+        start, end = _series_block(lines, ("obr", *path))
+        metadata = _yaml_block(lines, "metadata", indent, start, end)
+        ref_start, ref_end = _yaml_block(
+            lines, "reference", indent + 2, metadata[0], metadata[1]
+        )
+        pad = " " * (indent + 2)
+        title = next(
+            (
+                index
+                for index in range(ref_start + 1, ref_end)
+                if lines[index].startswith(f"{pad}  - title: ")
+            ),
+            None,
+        )
+        if title is None or not lines[title + 1].startswith(f"{pad}    href: "):
+            raise ValueError(f"Could not find the first reference of {'.'.join(path)}")
+        reference = {
+            "title": build_reference_title(month, year, series.line.table),
+            "href": build_efo_href(month, year),
+        }
+        lines[title] = f"{pad}  - title: {reference['title']}"
+        lines[title + 1] = f"{pad}    href: {reference['href']}"
+
+        node["values"] = {
+            **kept,
+            **{
+                date(entry_year, 1, 1): value
+                for entry_year, value in {**series.values, **tail}.items()
+            },
+        }
+        node["metadata"]["reference"][0] = reference
+        written.append((path, series))
+
+    rendered = "\n".join(lines)
+    if yaml.safe_load(rendered) != expected:
+        raise ValueError(
+            "Rewriting the level series changed more than their values and "
+            "first reference"
+        )
+    for path, series in written:
+        check_level_index_in_model(rendered, path, series, build_index)
     return rendered
 
 
@@ -1320,14 +2714,46 @@ def print_summary(
         print(f"- {spec.key}: {', '.join(window)}")
 
 
-def print_receipts_summary(growth: dict[tuple[str, ...], ReceiptsGrowth]) -> None:
+def print_receipts_summary(
+    growth: dict[tuple[str, ...], ReceiptsGrowth],
+    population: dict[int, float] | None = None,
+) -> None:
+    """Print each series' growth: a series under ``per_capita`` per head when
+    ``population`` is given, as it is written."""
     print(f"Updating {len(growth)} OBR receipts growth series")
     for path, series in growth.items():
+        basis = ""
+        if series.spec is not None and series.spec.per_head:
+            if population is None:
+                basis = ", aggregate"
+            else:
+                series = per_head_growth(series, population)
+                basis = ", per head"
         window = ", ".join(
             f"{year}: {format_growth(value)}"
             for year, value in sorted(series.values.items())
         )
-        print(f"- {'.'.join(path)} (Table {series.line.table}): {window}")
+        print(f"- {'.'.join(path)} (Table {series.line.table}{basis}): {window}")
+
+
+def print_level_summary(growth: dict[tuple[str, ...], LevelGrowth]) -> None:
+    print(f"The importer reads {len(growth)} OBR level series")
+    for path, series in growth.items():
+        levels = series.line.levels
+        window = ", ".join(
+            f"{year}: {format_growth(value)}"
+            + (
+                ""
+                if value == round(levels[year] / levels[year - 1] - 1, 6) + 0.0
+                else " (the importer moves it off the levels' ratio, which "
+                "projects another penny)"
+            )
+            for year, value in sorted(series.values.items())
+        )
+        print(
+            f"- {'.'.join(path)} (Table {series.line.table}; the government "
+            f"has set rates up until {series.line.set_until}): {window}"
+        )
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -1392,7 +2818,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "Do not update the receipts growth series (stamp_duty_land_tax, "
-            "business_rates) that project corporate SDLT and business rates"
+            "business_rates) that project corporate SDLT and business rates, "
+            "or the gambling_duty_bases series that project the gambling "
+            "duty inputs"
+        ),
+    )
+    parser.add_argument(
+        "--skip-national-living-wage",
+        action="store_true",
+        help=(
+            "Do not update national_living_wage, which projects the minimum "
+            "wage rates, from the economy tables' national living wage table "
+            "(Table 1.13 in October 2026)"
         ),
     )
     parser.add_argument(
@@ -1581,7 +3018,15 @@ def main(argv: list[str] | None = None) -> int:
                 f"an EFO before {month} {year}"
             )
         receipts_growth = compute_receipts_growth(receipts_bytes, previous_bytes)
-        print_receipts_summary(receipts_growth)
+        print_receipts_summary(
+            receipts_growth, population_growth(source_yaml_path.read_text())
+        )
+    # The OBR publishes the national living wage's levels in the economy
+    # tables, so the importer refreshes it with the economy series unless
+    # --skip-national-living-wage leaves it alone.
+    level_growth = None
+    if not args.gaps_only and not args.skip_national_living_wage:
+        level_growth = compute_level_growth(workbook_bytes)
     calendar_values = (
         read_calendar_values(source_yaml_path) if args.gaps_only else series_values
     )
@@ -1620,6 +3065,17 @@ def main(argv: list[str] | None = None) -> int:
         yoy_path = args.output or source_yaml_path
         outputs[yoy_path] = render_receipts_growth_yaml(
             outputs[yoy_path], receipts_growth, (month, year), previous_release
+        )
+    if level_growth is not None:
+        yoy_path = args.output or source_yaml_path
+        # The importer chooses the growth that keeps each penny from the years
+        # the rendered file keeps before the table, so it prints the summary
+        # after rendering the other series.
+        print_level_summary(
+            penny_preserving_level_growth(outputs[yoy_path], level_growth)
+        )
+        outputs[yoy_path] = render_level_series_yaml(
+            outputs[yoy_path], level_growth, (month, year)
         )
     if write_gaps:
         gap_dir = get_forecast_gap_dir(source_yaml_path)

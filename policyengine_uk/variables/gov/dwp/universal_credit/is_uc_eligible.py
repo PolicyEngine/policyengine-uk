@@ -13,7 +13,12 @@ class is_uc_eligible(Variable):
         "nor can a partner who cannot be a joint claimant: where a member of "
         "a couple claims as a single person (regulation 3(3)), that member "
         "must meet the conditions, and the capital tested includes the other "
-        "member's (regulation 18(2)). A family on the Pension Credit route "
+        "member's (regulation 18(2)). The qualifying claimant must also meet, "
+        "or fall within an exception to, the condition that they are not "
+        "receiving education (meets_uc_education_condition): DWP's Advice "
+        "for Decision Making E2016 reads regulation 3(2) as needing one "
+        "member of a couple to meet all the basic conditions. A family on the "
+        "Pension Credit route "
         "(meets_pension_credit_age_conditions) is not eligible unless it "
         "claims when DWP moves it off its legacy benefits "
         "(claims_uc_at_legacy_closure). On that claim, a pension-age claimant "
@@ -26,8 +31,10 @@ class is_uc_eligible(Variable):
         "https://www.legislation.gov.uk/ukpga/2012/5/section/3",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
+        "https://assets.publishing.service.gov.uk/media/6a0474b6ee62840dba48a1eb/adme2.pdf",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/10",
     )
@@ -42,8 +49,30 @@ class is_uc_eligible(Variable):
         pension_age = benunit.members(
             "has_attained_state_pension_credit_qualifying_age", period
         )
+        # WRA 2012 s.4(1)(d): "is not receiving education", or excepted from
+        # it. Under UC Regs 2013 reg 3(2), a couple can claim jointly where (a)
+        # one member has reached the qualifying age for State Pension Credit
+        # "if the other member does meet that condition", "or" (b) one member
+        # receives education with no exception "if the other member does
+        # meet that condition or is excepted from it". DWP's Advice for
+        # Decision Making E2016 applies both "where one member of a couple
+        # meets all the basic UC conditions", so one claimant must meet the
+        # age and education conditions together. For a mixed-age couple:
+        # - neither studies: the younger member meets both (reg 3(2)(a));
+        # - the older member studies: reg 14(1)(f) excepts them, and the
+        #   younger member meets both (regs 14(1)(f) and 3(2)(a));
+        # - the younger member studies: the older member meets the education
+        #   condition and the younger the age condition, but neither meets
+        #   both, so they can't claim (ADM E2016);
+        # - both study: reg 14(1)(f) excepts the older member, who still
+        #   doesn't meet the age condition, so again neither meets both.
+        # A member of a couple who claims as a single person (reg 3(3)) must
+        # meet both themselves.
+        meets_education_condition = benunit.members(
+            "meets_uc_education_condition", period
+        )
         has_qualifying_claimant = benunit.any(
-            claimant & meets_minimum_age & ~pension_age
+            claimant & meets_minimum_age & ~pension_age & meets_education_condition
         )
         # No family gets both Pension Credit and Universal Credit (UC
         # (Transitional Provisions) Regs 2014 reg 5(1)(d)). A mixed-age couple
@@ -101,7 +130,11 @@ class is_uc_eligible(Variable):
             )
             > 0
         )
-        reg_60a = on_working_tax_credit & benunit.any(claimant & meets_minimum_age)
+        # Reg 60A waives only the upper age condition, so the claimant who
+        # meets the minimum age must meet the education condition too.
+        reg_60a = on_working_tax_credit & benunit.any(
+            claimant & meets_minimum_age & meets_education_condition
+        )
         route = (has_qualifying_claimant & ~pension_credit_route) | (
             closure_claim & (has_qualifying_claimant | reg_60a)
         )

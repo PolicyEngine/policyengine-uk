@@ -375,13 +375,13 @@ programs:
     name: Tax credits
     full_name: Tax Credits (Working Tax Credit and Child Tax Credit)
     category: Benefits
-    agency: DWP
+    agency: HMRC
     status: complete
     coverage: UK
     variable: tax_credits
     parameter_prefix: gov.dwp.tax_credits
     verified_start_year: 2022
-    notes: Legacy benefit being replaced by Universal Credit
+    notes: HMRC administered Working Tax Credit and Child Tax Credit until they ended on 5 April 2025
 
   - id: sda
     name: SDA
@@ -400,11 +400,11 @@ programs:
     category: Benefits
     agency: DWP
     status: complete
-    coverage: UK
+    coverage: England, Wales and Northern Ireland
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
-    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. From winter 2025-26 paid to everyone of pensionable age and recovered by the winter fuel payment charge (income tax)
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. The Scottish Government replaced it with Pension Age Winter Heating Payment from winter 2024-25. From winter 2025-26 HMRC recovers payments from higher-income recipients through the winter fuel payment charge (income tax)
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -572,7 +572,7 @@ programs:
     category: Taxes
     agency: Local
     status: complete
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax
     verified_start_year: 2022
 
@@ -582,7 +582,7 @@ programs:
     category: Benefits
     agency: Local
     status: partial
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
@@ -596,10 +596,22 @@ programs:
     agency: Treasury
     status: complete
     coverage: UK
+    variable: cost_of_living_support_payment
     parameter_prefix: gov.treasury.cost_of_living_support
     verified_start_year: 2022
     verified_end_year: 2023
-    notes: Temporary program, ended 2023
+    notes: >-
+      Temporary programme, paid in 2022-23 and 2023-24. The model pays the
+      means-tested payment to each benefit unit on Universal Credit, Pension
+      Credit, income-based JSA, income-related ESA or Income Support, or on
+      Child Tax Credit or Working Tax Credit and none of those (in 2022-23,
+      at least £26 of either credit for the year), the disability payment to
+      each person on PIP, DLA, Attendance Allowance or Armed Forces
+      Independence Payment, and the pensioner payment to each household with
+      a Winter Fuel Payment. It tests receipt over the year, not in the month
+      ending with each qualifying day, and has no variables for constant
+      attendance allowance, Adult Disability Payment, Child Disability
+      Payment or the mobility supplement.
 
   - id: energy_bills_rebate
     name: Energy Bills Rebate
@@ -639,7 +651,7 @@ programs:
     name: Energy Price Guarantee
     full_name: Energy Price Guarantee
     category: Benefits
-    agency: Ofgem
+    agency: DESNZ
     status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
@@ -668,7 +680,7 @@ programs:
     name: Scottish income tax
     full_name: Scottish Income Tax Rates
     category: Taxes
-    agency: Revenue Scotland
+    agency: HMRC
     status: complete
     coverage: Scotland
     verified_start_year: 2019

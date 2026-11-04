@@ -8,11 +8,20 @@ class income_support_applicable_income(Variable):
     documentation = (
         "The claimant's and partner's income for Income Support, including "
         "statutory sick, maternity and paternity pay, spousal maintenance and "
-        "tariff income from capital, less income tax, National Insurance, "
-        "half of pension contributions, £10 a week of widowed parent's "
-        "allowance and the Schedule 8 earnings disregard, which is capped at "
-        "net earnings (income_support_earnings_disregard). Child maintenance "
-        "is disregarded."
+        "tariff income from capital, less the income tax on that income, "
+        "National Insurance, half of pension contributions, £10 a week of "
+        "widowed parent's allowance and the Schedule 8 earnings disregard, "
+        "which is capped at net earnings (income_support_earnings_disregard). "
+        "Child maintenance is disregarded. Income derived from capital, such "
+        "as rent from property, interest and dividends, is treated as capital "
+        "from the date it is due (regulation 48(4)) and disregarded as income "
+        "(Schedule 9 paragraph 22); the capital counts through the capital "
+        "limit and tariff income. Tax on that income is not deducted, as "
+        "Schedule 9 paragraph 1 disregards tax only on income taken into "
+        "account. Rent for letting part of the home stays income, less the "
+        "paragraph 19 disregard. Rent from other premises whose value is "
+        "disregarded (Schedule 10 paragraphs 2, 4 and 25 to 28) also stays "
+        "income, but the model cannot identify those premises."
     )
     definition_period = YEAR
     unit = GBP
@@ -22,10 +31,13 @@ class income_support_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/38",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/35",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/40",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/48",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/1",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/4",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/15",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/19",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/22",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/73",
     )
 
@@ -41,8 +53,8 @@ class income_support_applicable_income(Variable):
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "property_income_after_finance_costs",
             "private_pension_income",
+            "legacy_benefits_home_letting_income",
             # Employer statutory pay is other income (regs 35(2)(b), 40(1)).
             "statutory_sick_pay",
             "statutory_maternity_pay",
@@ -56,12 +68,15 @@ class income_support_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
         income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
-        tax = add_for_members(
-            benunit,
-            period,
-            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
-            members,
-        )
+        # The deduction can be negative for one person, where another
+        # member's earnings move a Step 7 charge off them; the test deducts the
+        # counted members' sum, floored at nil, so it never adds tax to income.
+        tax = max_(
+            0,
+            add_for_members(
+                benunit, period, ["legacy_means_test_deducted_income_tax"], members
+            ),
+        ) + add_for_members(benunit, period, ["national_insurance"], members)
         income += add_for_members(benunit, period, ["social_security_income"], members)
         # IS Regs 1987 Sch 9 para 16(h): £10 a week of widowed parent's
         # allowance is disregarded; social_security_income counts it in full.
