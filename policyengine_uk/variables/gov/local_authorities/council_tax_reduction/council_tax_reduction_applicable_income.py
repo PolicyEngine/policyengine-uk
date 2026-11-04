@@ -19,7 +19,7 @@ class council_tax_reduction_applicable_income(Variable):
         "credit payable, where the award is savings credit only. Otherwise we "
         "deduct the pensioner earnings disregards from a pension-age family's "
         "net earnings, and add its tariff income from capital "
-        "(council_tax_reduction_pensioner_tariff_income). Councils in Great "
+        "(council_tax_reduction_tariff_income). Councils in Great "
         "Britain also exclude Child Benefit from a pensioner's general-rule "
         "income and count statutory sick and maternity pay as earnings. We "
         "omit the other "

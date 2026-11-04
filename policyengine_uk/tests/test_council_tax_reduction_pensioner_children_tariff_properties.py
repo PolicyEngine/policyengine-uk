@@ -10,7 +10,9 @@ Councils treat a pensioner's capital as a weekly income of £1 for each £500,
 or part of £500, over £10,000 (SI 2012/2885 Sch 1 para 37; WSI 2013/3029 Sch
 1 para 31; SSI 2012/319 reg 27(2)), except on the Pension Credit routes. The
 Secretary of State and Welsh Ministers count the excess up to £16,000; the
-Scottish Ministers set no ceiling.
+Scottish Ministers set no ceiling. council_tax_reduction_tariff_income
+carries that pensioner tariff, and also the Welsh and Scottish working-age
+tariffs, which these tests do not recompute.
 
 Each invariant holds on a fixed route and status. The generated families
 claim no Universal Credit, so neither capital nor a child can move a family
@@ -34,11 +36,13 @@ scheme, whose applicable amount can be lower.
    Tax Credit award includes individual elements for more. In Wales, councils
    also add the family premium with the first child. The generated families
    report no Child Tax Credit, so none has an award.
-3. A pensioner with no child and capital up to £10,000, and every working-age
-   family, gets no child amount, family premium or tariff income, so their
-   applicable amount, applicable income and award match origin/main.
+3. A pensioner with no child and capital up to £10,000 gets no child amount,
+   family premium or tariff income, and a working-age family gets no child
+   amount or family premium, so their applicable amount, applicable income
+   and award match main. An English working-age family also gets no tariff
+   income here, because its local scheme sets its own.
    test_matches_origin_main_on_unchanged_households checks that against
-   values computed on origin/main.
+   values computed on main.
 """
 
 import math
@@ -78,7 +82,7 @@ OUTPUTS = (
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_pensioner_child_amounts",
     "council_tax_reduction_pensioner_family_premium",
-    "council_tax_reduction_pensioner_tariff_income",
+    "council_tax_reduction_tariff_income",
     "council_tax_benefit",
 )
 SETTINGS = settings(
@@ -176,7 +180,7 @@ def test_tariff_income_is_the_tariff_and_never_falls_as_capital_rises(
     households = [dict(base, savings=capital) for capital in capitals]
     result = calculate(households, year)
     assert result["council_tax_reduction_pensioner"].all()
-    tariffs = result["council_tax_reduction_pensioner_tariff_income"]
+    tariffs = result["council_tax_reduction_tariff_income"]
     np.testing.assert_allclose(
         tariffs, [tariff(c, base["country"]) for c in capitals], atol=0.01
     )
@@ -239,9 +243,11 @@ def test_no_new_amounts_without_a_child_or_capital_over_10000_or_at_working_age(
     for index, spec in enumerate(households):
         child_amounts = result["council_tax_reduction_pensioner_child_amounts"][index]
         premium = result["council_tax_reduction_pensioner_family_premium"][index]
-        tariff_income = result["council_tax_reduction_pensioner_tariff_income"][index]
+        tariff_income = result["council_tax_reduction_tariff_income"][index]
         if not pensioner[index]:
-            assert child_amounts == premium == tariff_income == 0
+            assert child_amounts == premium == 0
+            if spec["country"] == "ENGLAND":
+                assert tariff_income == 0
             continue
         if not spec["children"]:
             assert child_amounts == premium == 0
@@ -261,7 +267,7 @@ def test_northern_ireland_gets_no_new_amounts():
     result = calculate([spec], 2026)
     assert result["council_tax_reduction_pensioner_child_amounts"][0] == 0
     assert result["council_tax_reduction_pensioner_family_premium"][0] == 0
-    assert result["council_tax_reduction_pensioner_tariff_income"][0] == 0
+    assert result["council_tax_reduction_tariff_income"][0] == 0
 
 
 # Pensioners with no child and capital up to £10,000, and working-age
@@ -325,8 +331,11 @@ DIFFERENTIAL_OUTPUTS = (
     "council_tax_reduction_applicable_income",
     "council_tax_benefit",
 )
-# We computed these on origin/main at 2da212abc for UNCHANGED_HOUSEHOLDS, in
-# order: applicable amount, applicable income and council_tax_benefit.
+# We computed these on main at 9dd44e142 for UNCHANGED_HOUSEHOLDS, in order:
+# applicable amount, applicable income and council_tax_benefit. In Scotland
+# and Wales the working-age families with savings of 12,000, 16,000 and 8,000
+# have working-age tariff income of 1 a week for each 250, or part, over
+# 6,000: 24 * 52 = 1,248, 40 * 52 = 2,080 and 8 * 52 = 416 a year.
 ORIGIN_MAIN = {
     2019: [
         (9_412, 12_000, 1_482.4),
@@ -338,15 +347,15 @@ ORIGIN_MAIN = {
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_170, 1_380.24),
         (9_412, 9_592.34, 1_963.93),
-        (3_801.2, 14_832.24, 0),
-        (5_972.2, 22_594.64, 0),
-        (3_801.2, 8_955.84, 969.07),
+        (3_801.2, 16_080.24, 0),
+        (5_972.2, 24_674.64, 0),
+        (3_801.2, 9_371.84, 885.87),
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_150, 1_384.24),
         (9_412, 9_592.34, 1_963.93),
-        (3_801.2, 14_812.24, 0),
-        (5_972.2, 22_574.64, 0),
-        (3_801.2, 8_955.84, 969.07),
+        (3_801.2, 16_060.24, 0),
+        (5_972.2, 24_654.64, 0),
+        (3_801.2, 9_371.84, 885.87),
         (3_801.2, 12_672.24, 225.79),
         (3_801.2, 12_672.24, 0),
         (3_801.2, 12_672.24, 0),
@@ -363,15 +372,15 @@ ORIGIN_MAIN = {
         (12_230.4, 12_000, 2_000),
         (18_304, 17_189.06, 2_000),
         (12_230.4, 0, 2_000),
-        (4_706, 15_673.86, 0),
-        (7_397, 24_007.26, 0),
-        (4_706, 9_000, 1_141.2),
+        (4_706, 16_921.86, 0),
+        (7_397, 26_087.26, 0),
+        (4_706, 9_416, 1_058),
         (12_230.4, 12_000, 2_000),
         (18_304, 17_166, 2_000),
         (12_230.4, 0, 2_000),
-        (4_706, 15_650.8, 0),
-        (7_397, 23_984.2, 0),
-        (4_706, 9_000, 1_141.2),
+        (4_706, 16_898.8, 0),
+        (7_397, 26_064.2, 0),
+        (4_706, 9_416, 1_058),
         (4_706, 13_331.2, 274.96),
         (4_706, 13_331.2, 0),
         (4_706, 13_331.2, 0),
@@ -388,15 +397,15 @@ ORIGIN_MAIN = {
         (13_312, 12_000, 2_000),
         (19_934.2, 17_205.67, 2_000),
         (13_312, 0, 2_000),
-        (4_968.6, 15_750.5, 0),
-        (7_807.8, 24_148.67, 0),
-        (4_968.6, 9_000, 1_193.72),
+        (4_968.6, 16_998.5, 0),
+        (7_807.8, 26_228.67, 0),
+        (4_968.6, 9_416, 1_110.52),
         (13_312, 12_000, 2_000),
         (19_934.2, 17_166, 2_000),
         (13_312, 0, 2_000),
-        (4_968.6, 15_726.2, 0),
-        (7_807.8, 24_109, 0),
-        (4_968.6, 9_000, 1_193.72),
+        (4_968.6, 16_974.2, 0),
+        (7_807.8, 26_189, 0),
+        (4_968.6, 9_416, 1_110.52),
         (4_968.6, 13_406.6, 312.4),
         (4_968.6, 13_406.6, 0),
         (4_968.6, 13_406.6, 0),
