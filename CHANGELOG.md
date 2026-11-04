@@ -1,3 +1,10 @@
+## [2.173.4] - 2026-11-04
+
+### Fixed
+
+- The aggregate impact report's `small_target_change` condition now reads only the reform's own target, so a reform that moves another reform's target in fewer than 10 records keeps its costing and target change unless another condition withholds them.
+
+
 ## [2.173.3] - 2026-11-04
 
 ### Fixed
