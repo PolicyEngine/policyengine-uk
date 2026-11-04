@@ -146,7 +146,14 @@ def input_facts(population, name, period, *, exact=False, before=False, override
     if override is not None and override[0] == name:
         known.add((simulation.branch_name, period_(override[1])))
     ordered = sorted(
-        ((branch, p) for branch, p in known if branch in branches),
+        (
+            (branch, p)
+            for branch, p in known
+            if branch in branches
+            and p.start <= period.start
+            and not (before and p.start == period.start)
+            and (not exact or p == period)
+        ),
         key=lambda item: (item[1].start, item[1].stop, -branches.index(item[0])),
         reverse=True,
     )
@@ -182,6 +189,8 @@ def input_facts(population, name, period, *, exact=False, before=False, override
             values[take] = _names(array, holder.variable.possible_values)[take]
             sources[take] = str(source)
             found |= take
+        if override is None and found.all():
+            break
     return values, found, sources
 
 

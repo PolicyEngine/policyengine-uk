@@ -8,6 +8,7 @@ from policyengine_core.periods import period
 from policyengine_core.simulations.simulation_builder import SimulationBuilder
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils import geography
 from policyengine_uk.utils.geography import _HOLDER_MASKS, _cell_mask, _resolve
 from policyengine_uk.utils.household_subset import household_subset
 
@@ -151,3 +152,118 @@ def test_native_whole_arrays_survive_subset_and_parent_restore():
     np.testing.assert_array_equal(
         native.calculate("country", year).decode_to_str(), expected["country"]
     )
+
+
+def _fact_scan_world(regions):
+    """Independent households with only the stated geography input cells."""
+    data = {"people": {}, "benunits": {}, "households": {}}
+    for index, inputs in enumerate(regions):
+        person = f"person{index}"
+        data["people"][person] = {"age": {2024: 40}}
+        data["benunits"][f"unit{index}"] = {"members": [person]}
+        data["households"][f"home{index}"] = {
+            "members": [person],
+            "region": inputs,
+        }
+    return Simulation(situation=data)
+
+
+def test_complete_latest_facts_do_not_read_irrelevant_older_tiers(monkeypatch):
+    """A full latest array makes earlier input retrieval unnecessary."""
+    simulation = _fact_scan_world(
+        [
+            {2024: "LONDON", 2026: "WALES", 2028: "SCOTLAND"},
+            {2024: "SCOTLAND", 2026: "UNKNOWN", 2028: "LONDON"},
+            {2024: "WALES", 2026: "SCOTLAND", 2028: "LONDON"},
+        ]
+    )
+    reads = []
+    original = geography.get_stored_input
+
+    def record(holder, source, branch):
+        reads.append((branch, str(source)))
+        return original(holder, source, branch)
+
+    monkeypatch.setattr(geography, "get_stored_input", record)
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    np.testing.assert_array_equal(values, ["WALES", "UNKNOWN", "SCOTLAND"])
+    np.testing.assert_array_equal(found, [True, True, True])
+    np.testing.assert_array_equal(sources, ["2026"] * 3)
+    assert reads == [(simulation.branch_name, "2026")]
+
+
+@pytest.mark.parametrize(
+    "query, options, expected, present, source",
+    [
+        (2026, {}, "SCOTLAND", True, "2026"),
+        (2026, {"before": True}, "WALES", True, "2024"),
+        (2025, {"exact": True}, "LONDON", False, None),
+    ],
+    ids=("ordinary", "before", "exact-missing"),
+)
+def test_fact_period_filters_preserve_values_presence_and_source(
+    query, options, expected, present, source
+):
+    simulation = _fact_scan_world([{2024: "WALES", 2026: "SCOTLAND", 2028: "LONDON"}])
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(query), **options
+    )
+    np.testing.assert_array_equal(values, [expected])
+    np.testing.assert_array_equal(found, [present])
+    np.testing.assert_array_equal(sources, [source])
+
+
+def test_partial_latest_facts_still_read_the_needed_older_cells():
+    simulation = _fact_scan_world(
+        [
+            {2024: "LONDON", 2026: "UNKNOWN"},
+            {2024: "WALES", 2028: "LONDON"},
+            {2026: "SCOTLAND"},
+        ]
+    )
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    np.testing.assert_array_equal(values, ["UNKNOWN", "WALES", "SCOTLAND"])
+    np.testing.assert_array_equal(found, [True, True, True])
+    np.testing.assert_array_equal(sources, ["2026", "2024", "2026"])
+
+
+def test_same_period_branch_input_precedes_parent_without_mutating_it():
+    parent = _fact_scan_world([{2024: "LONDON", 2026: "SCOTLAND"}])
+    branch = parent.get_branch("fact_scan", clone_system=True)
+    branch.set_input("region", 2026, ["WALES"])
+    for world, expected in [(branch, "WALES"), (parent, "SCOTLAND")]:
+        values, found, sources = geography.input_facts(
+            world.populations["household"], "region", period(2026)
+        )
+        np.testing.assert_array_equal(values, [expected])
+        np.testing.assert_array_equal(found, [True])
+        np.testing.assert_array_equal(sources, ["2026"])
+
+
+def test_complete_later_facts_do_not_skip_prospective_old_override_validation():
+    simulation = _fact_scan_world(
+        [
+            {2024: "LONDON", 2026: "SCOTLAND"},
+            {2024: "WALES", 2026: "LONDON"},
+        ]
+    )
+    with pytest.raises(ValueError, match="input length is 1.*2 households"):
+        geography.input_facts(
+            simulation.populations["household"],
+            "region",
+            period(2026),
+            override=("region", period(2024), ["LONDON"]),
+        )
+
+
+def test_needed_matching_presence_record_rejects_unknown_household_id():
+    holder = SimpleNamespace(
+        population=SimpleNamespace(ids=np.array(["unknown"]), count=1)
+    )
+    setattr(holder, _HOLDER_MASKS, ((("default", "2026"), (("known",), (True,))),))
+    with pytest.raises(ValueError, match="does not identify household IDs"):
+        _cell_mask(holder, "default", period(2026))
