@@ -16,6 +16,8 @@ the choice settled for Pension Credit on PolicyEngine/policyengine-uk#2019
 (option (a)): the tax on earnings is the extra tax the earnings cause, with
 the earnings as the top slice of income. council_tax_reduction_tax_deduction
 applies these rules, and council_tax_reduction_applicable_income deducts it.
+In the English and Welsh working-age schemes, the formula deducts what the
+legacy means tests deduct (legacy_means_test_deducted_income_tax).
 
 Each test builds households by hand in 2026, states its invariant in its
 docstring, and records the scheme of each household it draws as a Hypothesis
@@ -584,6 +586,10 @@ CASES = [
         country="WALES",
         benunits=[[dict(age=70, self_employment_income=60_000.0)]],
     ),
+    dict(
+        country="WALES",
+        benunits=[[dict(age=40, employment_income=20_000.0)]],
+    ),
 ]
 
 
@@ -694,4 +700,32 @@ def test_branch_takes_each_uncounted_income_out_of_income_tax():
     assert (
         with_supplement.calculate(INCOME_TAX, YEAR)[0]
         > without_supplement.calculate(INCOME_TAX, YEAR)[0] + 1
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        household(countries=("ENGLAND", "WALES"), pensioner=False),
+        min_size=1,
+        max_size=4,
+    )
+)
+def test_other_schemes_deduct_the_legacy_means_test_measure(households):
+    """Invariant 8. In the English and Welsh working-age schemes, the
+    deduction equals what the legacy means tests deduct: the applicant's and
+    partner's legacy_means_test_deducted_income_tax, with the sum floored at
+    nil, plus their National Insurance. So these schemes take no tax on the
+    interest, dividends or rent from property that they do not count, beyond
+    the extra tax that earnings cause on it."""
+    simulation = simulate(households)
+    schemes(simulation, households)
+    expected = np.maximum(
+        0, applicant_total(simulation, "legacy_means_test_deducted_income_tax")
+    ) + applicant_total(simulation, "national_insurance")
+    deduction = benunit_values(simulation, DEDUCTION)
+    assert np.allclose(deduction, expected, atol=0.01), (
+        households,
+        deduction,
+        expected,
     )
