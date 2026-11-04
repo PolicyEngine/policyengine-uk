@@ -29,6 +29,9 @@ scheme, whose applicable amount can be lower.
    £500, or part of £500, of capital above £10,000 (up to £16,000 in England
    and Wales), and it never falls as capital rises. Capital changes nothing
    else in the applicable income, and the award never rises with capital.
+   Councils give no award where capital exceeds £16,000 (SI 2012/2885 reg
+   11(2); WSI 2013/3029 reg 30; SSI 2012/319 reg 40), so Scotland's uncapped
+   tariff changes no award.
 2. For a family that claims no Universal Credit, adding a dependent child
    never lowers the applicable amount. For a pensioner, councils add 52 times
    the scheme's weekly rate for each extra child they count. In England from
@@ -190,6 +193,10 @@ def test_tariff_income_is_the_tariff_and_never_falls_as_capital_rises(
     other_income = result["council_tax_reduction_applicable_income"] - tariffs
     np.testing.assert_allclose(other_income, other_income[0], atol=0.01)
     assert (np.diff(result["council_tax_benefit"]) <= 0.01).all()
+    # Councils give no award where capital exceeds £16,000, so Scotland's
+    # uncapped tariff changes no award.
+    over_limit = np.asarray(capitals) > 16_000
+    assert (result["council_tax_benefit"][over_limit] <= 0.01).all()
 
 
 @SETTINGS
