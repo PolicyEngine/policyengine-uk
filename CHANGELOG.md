@@ -1,3 +1,10 @@
+## [2.174.2] - 2026-11-04
+
+### Fixed
+
+- Counted a 16-year-old outside education as a Universal Credit and Pension Credit qualifying young person until the 1 September following their 16th birthday (UC Regs 2013 reg. 5(1)(a); SPC Regs 2002 reg. 4A(1)(a)), in any year that starts before that date. Excluded young people reporting their own Universal Credit, income-related or contributory ESA, or income-based or contribution-based JSA from both statuses, and those receiving Income Support from Pension Credit's (UC Regs 2013 reg. 5(5); SPC Regs 2002 reg. 4A(5)).
+
+
 ## [2.174.1] - 2026-11-04
 
 ### Fixed
