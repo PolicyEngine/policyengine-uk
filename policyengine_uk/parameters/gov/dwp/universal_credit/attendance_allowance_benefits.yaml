@@ -1,0 +1,14 @@
+description: Benefits that the Secretary of State counts as attendance allowance for Universal Credit, heads (a) and (f) of the definition in regulation 2 of the Universal Credit Regulations 2013. The model holds no separate amount for heads (b), (d) and (e), so it leaves them out. In the Northern Ireland regulations the Secretary of State letters the same payments (a) to (e), with armed forces independence payment at (e).
+values:
+  2013-04-29:
+    - attendance_allowance
+    - armed_forces_independence_payment
+metadata:
+  unit: list
+  period: year
+  label: Universal Credit attendance allowance benefits
+  reference:
+    - title: Universal Credit Regulations 2013 reg 2 ("attendance allowance")
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
+    - title: Universal Credit Regulations (Northern Ireland) 2016 reg 2 ("attendance allowance")
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/2

@@ -15,6 +15,10 @@ import numpy as np
 from policyengine_core.model_api import max_
 
 from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    HOUSEHOLD_SOURCE_OF,
+    counted_person_sources,
+)
 
 # Household inputs holding the debt secured on each capital source, such as a
 # mortgage on a second property. The debt is deducted from the source it is
@@ -66,12 +70,23 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
     Explicit inputs for this period and branch, and values from a reformed
     formula, are kept as stored: matching a baseline value in float32 does
     not prove where a value came from. Any other source is a stored
-    amount."""
+    amount.
+
+    The function counts only the sources ``counted_person_sources`` keeps. A
+    person source that a household source includes (``HOUSEHOLD_SOURCE_OF``)
+    holds pounds the formulas moved out of that household source, so the
+    function values it as ``valued_capital`` values the household source:
+    less the sale-expense rate where ``capital.sale_expenses.sources`` lists
+    the household source."""
     person = benunit.members
     total = 0
-    for source in capital.person_sources:
+    for source in counted_person_sources(capital):
         stored = person(source, period)
         value = exact_amount(stored)
+        if HOUSEHOLD_SOURCE_OF.get(source) in capital.sale_expenses.sources:
+            value = less_sale_expenses(
+                value, capital.sale_expenses.rate, capital.round_down
+            )
         if source in CALCULATED_PERSON_SOURCES:
             calculate = CALCULATED_PERSON_SOURCES[source]
             # A holder can predate a reform; the system owns the active formula.

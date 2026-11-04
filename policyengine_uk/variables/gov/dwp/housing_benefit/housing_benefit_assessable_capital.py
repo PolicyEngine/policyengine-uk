@@ -5,6 +5,9 @@ from policyengine_uk.utils.capital_valuation import (
     valued_capital,
     valued_person_capital,
 )
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    pooled_person_capital,
+)
 
 
 class housing_benefit_assessable_capital(Variable):
@@ -12,23 +15,25 @@ class housing_benefit_assessable_capital(Variable):
     entity = BenUnit
     label = "Housing Benefit assessable capital"
     documentation = (
-        "Housing Benefit capital counted from the configured capital sources, "
-        "each valued at market value less 10% where a sale would incur "
+        "Housing Benefit capital counted from the configured capital sources. "
+        "The formula values each household source, less the ISA balances it "
+        "counts in their holders' own benunits, at market value less 10% where a sale would incur "
         "expenses and less any debt secured on it (reg. 47 of SI 2006/213, "
-        "reg. 45 of SI 2006/214). "
-        "Household sources are allocated across benunits in proportion to their "
-        "claimants and partners, a PolicyEngine convention because household "
-        "capital data cannot identify ownership; children and young persons add "
-        "no weight. Person-level sources, such as a Lifetime ISA, count only for "
-        "the holder's own benunit, and only when the holder is its claimant or "
-        "partner (is_claimant_or_partner): a dependant's capital is not the "
-        "claimant's. Where the Pension Credit award is savings credit only, the "
-        "Pension Credit assessment of capital is used instead. It is nil for a "
-        "family on Universal Credit, Income Support, income-based Jobseeker's "
-        "Allowance or income-related Employment and Support Allowance "
-        "(housing_benefit_on_passporting_benefit), and for a pension-age "
-        "family receiving a guarantee credit (the guarantee credit "
-        "passport)."
+        "reg. 45 of SI 2006/214), and values each "
+        "such ISA balance as it values that household source. "
+        "The "
+        "formula counts person-level sources, such as a Lifetime ISA and the cash and "
+        "stocks and shares ISAs, only in the holder's own benunit and only for its "
+        "claimant or partner (is_claimant_or_partner), and excludes dependants' "
+        "capital. It subtracts the ISA balances from the household capital before "
+        "allocating the remainder. The formula allocates the unidentified household "
+        "remainder by claimant and partner counts; children and young persons add no "
+        "weight. For savings credit alone, it uses the Pension Credit capital "
+        "assessment. For a family on Universal Credit, Income Support, income-based "
+        "Jobseeker's Allowance or income-related Employment and Support Allowance "
+        "(housing_benefit_on_passporting_benefit), and for a pension-age family "
+        "receiving a guarantee credit (the guarantee credit passport), it returns "
+        "zero."
     )
     definition_period = YEAR
     unit = GBP
@@ -52,7 +57,11 @@ class housing_benefit_assessable_capital(Variable):
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = valued_capital(
-            lambda variable: household(variable, period), p
+            lambda source: (
+                household(source, period)
+                - pooled_person_capital(benunit, source, period, p)
+            ),
+            p,
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = valued_person_capital(
