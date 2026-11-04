@@ -433,12 +433,15 @@ def test_both_forms_in_one_dataset_add_up_to_the_stored_total():
         uc = simulation.calculate("uc_assessable_capital", year)
         hb = simulation.calculate("housing_benefit_assessable_capital", year)
         for capital in (uc, hb):
+            # UC and Housing Benefit round each unit's capital to the nearest
+            # penny, so the household's two units can come to a penny over:
+            # savings of 1,268.69 in 2032 give each 634.345, which rounds up.
             by_household = np.bincount(benunit_household, weights=capital)
-            assert by_household == pytest.approx(holdings, rel=1e-6), year
+            assert by_household == pytest.approx(holdings, rel=1e-6, abs=0.011), year
         # The lodger counts their own balance on top of a third of the pool.
         pool = holdings[0] - counted[2]
-        assert uc[1] == pytest.approx(pool / 3 + counted[2], rel=1e-6), year
-        assert uc[0] == pytest.approx(2 * pool / 3, rel=1e-6), year
+        assert uc[1] == pytest.approx(pool / 3 + counted[2], rel=1e-6, abs=0.006), year
+        assert uc[0] == pytest.approx(2 * pool / 3, rel=1e-6, abs=0.006), year
     # #2781 keeps the stored 15,000, so the formula allocates savings of 4,000
     # and the unexplained 5,000 as 6,000 and 3,000. The second household's
     # pool holds only its savings.
