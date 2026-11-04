@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class pension_credit_assessable_capital(Variable):
@@ -6,19 +10,18 @@ class pension_credit_assessable_capital(Variable):
     entity = BenUnit
     label = "Pension Credit assessable capital"
     documentation = (
-        "Pension Credit capital counted from the configured capital sources, "
-        "split only across pension-age adults in the household so pensioner "
-        "couples pool capital together without dilution by unrelated working-"
-        "age adults. Person-level sources, such as a Lifetime ISA, count "
-        "only for the holder's own benunit, and only when the holder is its "
-        "claimant or partner (is_claimant_or_partner): a dependant's capital "
-        "is not the claimant's. Where `pension_credit_reported_capital` records "
-        "the benefit unit's own capital (0 or more), it replaces the "
-        "household proxy and the person-level sources. Unlike "
-        "`uc_assessable_capital`, another benefit unit's recorded capital is "
-        "not subtracted from the household capital that an unrecorded unit's "
-        "proxy shares out: the recorded figure and the household sources come "
-        "from different measures, so the proxy is left as it was."
+        "Pension Credit capital counted from the configured capital sources. The "
+        "formula allocates the household remainder only across the household's "
+        "pension-age adults, so unrelated working-age adults leave a pensioner "
+        "couple's share undiluted. The formula counts person-level sources, such as a "
+        "Lifetime ISA and the cash and stocks and shares ISAs, only in the holder's "
+        "own benunit and only for its claimant or partner (is_claimant_or_partner), "
+        "and excludes dependants' capital. It subtracts the ISA balances from the "
+        "household capital before allocating the remainder. A nonnegative "
+        "`pension_credit_reported_capital` replaces the unit's calculated capital. The "
+        "formula does not subtract another unit's capital report from the household "
+        "remainder before allocating that remainder. The report and household sources "
+        "measure different amounts."
     )
     definition_period = YEAR
     unit = GBP
@@ -28,11 +31,15 @@ class pension_credit_assessable_capital(Variable):
         household = benunit.household
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = sum(
+            household(source, period)
+            - pooled_person_capital(benunit, source, period, p)
+            for source in p.sources
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in p.person_sources
+            for source in counted_person_sources(p)
         )
         any_pension_age = benunit.any(
             person("has_attained_state_pension_credit_qualifying_age", period)

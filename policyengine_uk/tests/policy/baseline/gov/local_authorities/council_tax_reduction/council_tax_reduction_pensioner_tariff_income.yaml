@@ -1,8 +1,10 @@
-# Pensioner tariff income from capital. Councils treat a pensioner's capital
-# as a weekly income of £1 for each £500 over £10,000, and £1 for any part of
-# £500: England SI 2012/2885 Sch 1 para 37 and Wales WSI 2013/3029 Sch 1 para
-# 31 (each "not exceeding £16,000"), Scotland SSI 2012/319 reg 27(2), where
-# the Scottish Ministers set no ceiling. The Secretary of State, the Welsh
+# Pensioner tariff income from capital, in council_tax_reduction_tariff_income,
+# which also carries working-age tariff income in Wales and Scotland (Case 14).
+# Councils treat a pensioner's capital as a weekly income of £1 for each £500
+# over £10,000, and £1 for any part of £500: England SI 2012/2885 Sch 1 para
+# 37 and Wales WSI 2013/3029 Sch 1 para 31 (each "not exceeding £16,000"),
+# Scotland SSI 2012/319 reg 27(2), where the Scottish Ministers set no
+# ceiling. The Secretary of State, the Welsh
 # Ministers and the Scottish Ministers bar a reduction where capital exceeds
 # £16,000 (SI 2012/2885 reg 11(2); WSI 2013/3029 reg 30; SSI 2012/319 reg
 # 40). Councils disregard the whole capital and income of an applicant who,
@@ -37,7 +39,7 @@
         council_tax: 2_000
         savings: 10_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_tariff_income: 0
     council_tax_reduction_applicable_income: 12_570
 
 - name: Case 2, England, capital of 10,001 gives 1 a week for the part of 500.
@@ -61,7 +63,7 @@
         council_tax: 2_000
         savings: 10_001
   output:
-    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_tariff_income: 1 * 52
     council_tax_reduction_applicable_income: 12_570 + 52
 
 - name: Case 3, England, capital of 16,000 gives 12 a week.
@@ -86,7 +88,7 @@
         savings: 16_000
   output:
     # (16,000 - 10,000) / 500 = 12; 12 * 52 = 624.
-    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_tariff_income: 624
     council_tax_reduction_applicable_income: 13_194
     # 13,194 falls short of 13,312, so the council gives the maximum
     # reduction, the whole 2,000.
@@ -113,7 +115,7 @@
         council_tax: 2_000
         savings: 10_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_tariff_income: 0
     council_tax_reduction_applicable_income: 12_570
 
 - name: Case 5, Scotland, capital of 10,001 gives 1 a week for the part of 500.
@@ -137,7 +139,7 @@
         council_tax: 2_000
         savings: 10_001
   output:
-    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_tariff_income: 1 * 52
     council_tax_reduction_applicable_income: 12_570 + 52
 
 - name: Case 6, Scotland, capital of 16,000 gives 12 a week.
@@ -161,7 +163,7 @@
         council_tax: 2_000
         savings: 16_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 12 * 52
+    council_tax_reduction_tariff_income: 12 * 52
     council_tax_reduction_applicable_income: 12_570 + 12 * 52
     council_tax_reduction: 2_000
 
@@ -186,7 +188,7 @@
         council_tax: 2_000
         savings: 10_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_tariff_income: 0
     council_tax_reduction_applicable_income: 12_570
 
 - name: Case 8, Wales, capital of 10,001 gives 1 a week for the part of 500.
@@ -210,7 +212,7 @@
         council_tax: 2_000
         savings: 10_001
   output:
-    council_tax_reduction_pensioner_tariff_income: 1 * 52
+    council_tax_reduction_tariff_income: 1 * 52
     council_tax_reduction_applicable_income: 12_570 + 52
 
 - name: Case 9, Wales, capital of 16,000 gives 12 a week.
@@ -234,7 +236,7 @@
         council_tax: 2_000
         savings: 16_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 12 * 52
+    council_tax_reduction_tariff_income: 12 * 52
     council_tax_reduction_applicable_income: 12_570 + 12 * 52
     council_tax_reduction: 2_000
 
@@ -261,7 +263,7 @@
   output:
     # Income tax: (15,000 - 12,570) * 0.2 = 486. Income 15,000 - 486 + 624
     # = 15,138. Award 2,000 - 0.2 * (15,138 - 13,312) = 1,634.80.
-    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_tariff_income: 624
     council_tax_reduction_applicable_income: 15_138
     council_tax_reduction: 1_634.80
 
@@ -286,7 +288,7 @@
         council_tax: 2_000
         savings: 20_000
   output:
-    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_tariff_income: 624
     council_tax_reduction: 0
 
 - name: Case 12, a guarantee credit recipient's capital is wholly disregarded.
@@ -312,7 +314,7 @@
   output:
     in_receipt_of_guarantee_credit: true
     council_tax_reduction_assessable_capital: 0
-    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_tariff_income: 0
     council_tax_reduction_applicable_income: 0
     council_tax_reduction: 2_000
 
@@ -343,10 +345,10 @@
     # already counts Pension Credit's deemed income from capital in the
     # assessment of income.
     in_receipt_of_savings_credit_only: true
-    council_tax_reduction_pensioner_tariff_income: 0
+    council_tax_reduction_tariff_income: 0
     council_tax_reduction_applicable_income: 14_247.02
 
-- name: Case 14, a working-age Welsh earner's capital gives no tariff income here.
+- name: Case 14, a working-age Welsh earner's capital gives the working-age tariff, not the pensioner one.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -367,7 +369,11 @@
         savings: 12_000
   output:
     council_tax_reduction_pensioner: false
-    council_tax_reduction_pensioner_tariff_income: 0
+    # The Welsh Ministers' working-age tariff (WSI 2013/3029 Sch 6 para 33):
+    # 1 a week for each 250, or part of 250, over 6,000.
+    # (12,000 - 6,000) / 250 = 24; 24 * 52 = 1,248. The pensioner tariff
+    # would give (12,000 - 10,000) / 500 = 4 a week, or 208 a year.
+    council_tax_reduction_tariff_income: 1_248
 
 - name: Case 15, Scotland, capital of 20,000 gives 20 a week, with no ceiling, and the capital limit ends entitlement.
   period: 2026
@@ -392,7 +398,7 @@
   output:
     # SSI 2012/319 reg 27(2): (20,000 - 10,000) / 500 = 20; 20 * 1 * 52 =
     # 1,040.
-    council_tax_reduction_pensioner_tariff_income: 1_040
+    council_tax_reduction_tariff_income: 1_040
     # Reg 40: capital over 16,000, so no reduction.
     council_tax_reduction: 0
 
@@ -419,7 +425,7 @@
   output:
     # WSI 2013/3029 Sch 1 para 31, "not exceeding £16,000":
     # (16,000 - 10,000) / 500 = 12; 12 * 52 = 624.
-    council_tax_reduction_pensioner_tariff_income: 624
+    council_tax_reduction_tariff_income: 624
     # Reg 30: capital over 16,000, so no reduction.
     council_tax_reduction: 0
 
@@ -445,7 +451,7 @@
         council_tax: 2_000
         savings: 10_001
   output:
-    council_tax_reduction_pensioner_tariff_income: 52
+    council_tax_reduction_tariff_income: 52
     # Cash income nil; we deduct half the contributions, 0.5 * 3,000 = 1,500,
     # and floor the result at nil: max(0, 0 - 1,500) = 0. We add tariff
     # income, a separate source, after the floor: 0 + 1 * 52 = 52.
