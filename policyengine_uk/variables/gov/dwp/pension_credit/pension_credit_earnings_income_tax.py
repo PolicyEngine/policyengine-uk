@@ -3,9 +3,9 @@ from policyengine_uk.utils.pension_credit import employed_earnings_sources
 
 DECISION = (
     "PolicyEngine does not model PAYE codes, so which part of a person's "
-    "income tax is payable on their earnings is a methodology choice, put to "
-    "Max on PolicyEngine/policyengine-uk#2019 and settled as option (a): treat "
-    "earnings as the top slice of the person's income. "
+    "income tax is payable on their earnings is a methodology choice "
+    "(PolicyEngine/policyengine-uk#2019): earnings are treated as the top "
+    "slice of the person's income. "
 )
 
 # Income tax here is before the winter fuel payment charge, as in every means
@@ -18,6 +18,14 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
     """Each person's income tax before the winter fuel payment charge with
     every person's value of each of ``variables`` set to nil, on a branch
     that is dropped afterwards."""
+    return person_variable_with_inputs_zeroed(
+        simulation, period, variables, PRE_CHARGE_TAX
+    )
+
+
+def person_variable_with_inputs_zeroed(simulation, period, variables, output):
+    """Each person's ``output`` with every person's value of each of
+    ``variables`` set to nil, on a branch that is dropped afterwards."""
     name = "pension_credit_without_" + "_and_".join(variables)
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
@@ -29,7 +37,7 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         people = branch.populations["person"]
         for variable in variables:
             branch.set_input(variable, period, np.zeros(people.count))
-        return people(PRE_CHARGE_TAX, period)
+        return people(output, period)
     finally:
         del simulation.branches[name]
 

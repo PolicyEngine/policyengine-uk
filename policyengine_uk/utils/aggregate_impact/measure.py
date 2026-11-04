@@ -1288,7 +1288,12 @@ def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targ
 
 
 def withheld_reasons(
-    reformed, year: int, baseline: Optional[Mapping], components
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
 ) -> list:
     """Why the tool withholds a reform's costing and target change for
     ``year``: one reason per condition that holds, none when it publishes
@@ -1307,10 +1312,12 @@ def withheld_reasons(
       whose change would give that new small cell back
       (``small_component_left``);
     - changes gov_balance in 1 to 9 households (``small_balance_change``), or
-      a target variable in 1 to 9 records (``small_target_change``), by more
-      than ``CHANGE_GBP``: the change is theirs alone, as for a decile row.
-      ``measure`` checks the target of every reform it costs, so the reason
-      names the variable: this reform's own target or another's.
+      its own target, ``target``, in 1 to 9 records (``small_target_change``),
+      by more than ``CHANGE_GBP``: the change is theirs alone, as for a
+      decile row. ``target`` is the variable the reform's ``responds`` names,
+      or None for a reform that names none. Another reform's target counts
+      here as it would if no reform aimed at it: in gov_balance, and in the
+      component conditions above when it is a component (#2775).
 
     Withheld too when there is no baseline record for the year
     (``no_baseline``). With nothing to compare against, the function tests
@@ -1363,21 +1370,27 @@ def withheld_reasons(
     changed = np.abs(balance - baseline["balance"]) > CHANGE_GBP
     if small(_weighted_records(changed, baseline["household_weight"])):
         reasons.append(withheld_reason(SMALL_BALANCE_CHANGE, "gov_balance"))
-    for variable, before in baseline["targets"].items():
-        after = array(reformed, variable, year).astype(np.float64)
+    if target is not None:
+        after = array(reformed, target, year).astype(np.float64)
+        before = baseline["targets"][target]
         if small(
-            _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(variable))
+            _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(target))
         ):
-            reasons.append(withheld_reason(SMALL_TARGET_CHANGE, variable))
+            reasons.append(withheld_reason(SMALL_TARGET_CHANGE, target))
     return reasons
 
 
 def reform_withheld(
-    reformed, year: int, baseline: Optional[Mapping], components
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
 ) -> bool:
     """Whether the tool withholds a reform's costing and target change for
     ``year``: whether any condition of ``withheld_reasons`` holds."""
-    return bool(withheld_reasons(reformed, year, baseline, components))
+    return bool(withheld_reasons(reformed, year, baseline, components, target=target))
 
 
 def _record_reasons(record: dict, year: int, reasons: list) -> None:
@@ -1474,9 +1487,14 @@ def measure_reforms(
             parameters = reform_parameters(reform, baseline_parameters, years)
             outcome["parameters"] = parameters
             reformed = factory(reform=parameters)
+            target = None if reform.responds is None else reform.responds.variable
             for year in years:
                 reasons = withheld_reasons(
-                    reformed, year, (baseline or {}).get(year), components
+                    reformed,
+                    year,
+                    (baseline or {}).get(year),
+                    components,
+                    target=target,
                 )
                 if reasons:
                     hidden_years[year] = reasons
@@ -1493,16 +1511,15 @@ def measure_reforms(
                     records=records,
                 )
                 _record_reasons(rec.metrics[f"reforms.{reform.id}"], year, reasons)
-                if reform.responds is not None:
-                    variable = reform.responds.variable
+                if target is not None:
                     change = (
-                        weighted_total(reformed, variable, year)
-                        - baseline_targets[year][variable]
+                        weighted_total(reformed, target, year)
+                        - baseline_targets[year][target]
                     )
                     target_changes[year] = change
                     rec.metric(
                         f"reform_targets.{reform.id}",
-                        f"{reform.name}: change in {variable}",
+                        f"{reform.name}: change in {target}",
                         "reform_targets",
                         "gbp",
                         year,

@@ -85,8 +85,8 @@ from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
-    drop_calculated_totals,
     drop_calculated_values,
+    drop_calculated_years,
     retained_input_variables,
 )
 from policyengine_uk.utils.supplied_inputs import (
@@ -815,10 +815,9 @@ class Simulation(CoreSimulation):
                 continue
             native = self.tax_benefit_system.variables[part].definition_period
             if part_source.start > source.start or part_source.unit != native:
-                # Person balances stored for a later year than the total are
-                # the newer observation, and Core carries a balance stored in
-                # another unit flat rather than uprating it, so their sum
-                # stands.
+                # Person balances stored for a later year than the total give
+                # the newer observation, and Core doesn't uprate a balance
+                # stored in another unit, so their sum stands.
                 return None
         try:
             index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
@@ -1119,8 +1118,9 @@ class Simulation(CoreSimulation):
         for variable in self.tax_benefit_system.variables:
             if variable not in retained:
                 self.delete_arrays(variable)
-            elif variable in STORED_HOUSEHOLD_TOTALS:
-                drop_calculated_totals(self, variable)
+        drop_calculated_years(
+            self, retained.intersection(self.tax_benefit_system.variables)
+        )
 
     def get_known_variables(self):
         variables = []

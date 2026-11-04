@@ -5,8 +5,10 @@ Invariants:
 1. For any benefit unit, giving income to a member who is neither the
    claimant, the partner, nor the programme's own child or young person (for
    example an 18- or 19-year-old presumed the claimant's child but not in
-   education, or a third adult) never changes a means test's income. The UC,
-   HB, IS, tax credit, CTR and Pension Credit income totals are covered.
+   education, a 16-year-old outside education and past the 1 September
+   following their 16th birthday, or a third adult) never changes a means
+   test's income. The UC, HB, IS, tax credit, CTR and Pension Credit income
+   totals are covered.
 2. Giving income to the family's own child or young person never changes it
    either (HB Regs 2006 reg 25(3); IS Regs 1987 reg 23(2); Tax Credits
    (Definition and Calculation of Income) Regs 2002 reg 3(1); SSI 2021/249 reg
@@ -54,9 +56,10 @@ def families(draw):
     # member who by construction is
     # outside every programme's family: a 16-19-year-old at least 16 years
     # younger than the head (presumed the head's child) who is not in
-    # non-advanced education, so no programme's young person; or a third adult
-    # no older than the partner (the partner, earlier in member order, wins any
-    # age tie).
+    # non-advanced education and is past the 1 September following their 16th
+    # birthday (UC Regs 2013 reg. 5(1)(a)), so no programme's young person; or
+    # a third adult no older than the partner (the partner, earlier in member
+    # order, wins any age tie).
     kind = draw(st.sampled_from(["presumed_child", "third_adult"]))
     if kind == "presumed_child":
         other_age = draw(st.integers(16, 19))
@@ -81,6 +84,7 @@ def families(draw):
         {
             "age": other_age,
             "current_education": education,
+            "is_before_first_september_following_16th_birthday": False,
             "employment_income": draw(st.floats(1, 50_000)),
             "private_pension_income": draw(money),
             "savings_interest_income": draw(money),

@@ -1,0 +1,10 @@
+description: Step of capital above the threshold, or part of one, that the Scotland Council Tax Reduction pensioner scheme treats as yielding one amount of weekly tariff income.
+values:
+  2013-04-01: 500
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Scotland Council Tax Reduction pensioner tariff income capital step
+  reference:
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 27(2)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/27
