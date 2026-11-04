@@ -167,6 +167,7 @@ jobs:
             (cd "$side" && PYTHONPATH="$tool" .venv/bin/python -m pe_uk_aggregate_impact measure \
               --label "$side" \
               --profile-first-year \
+              --profile-first-guard-probe \
               --pin "$GITHUB_WORKSPACE/head/policyengine_uk/tests/certified_dataset.yaml" \
               --fallback-partition "$GITHUB_WORKSPACE/head/policyengine_uk/data/fiscal_partition.yaml" \
               --git-sha "$(git rev-parse HEAD)" \

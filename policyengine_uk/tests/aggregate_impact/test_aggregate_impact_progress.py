@@ -1058,3 +1058,147 @@ def test_disable_interrupt_keeps_one_owned_profile_and_reraises_the_original(
         if orphan is not None:
             normal_disable(orphan)
             infra._ORPHANED_PROFILE = None
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_cli_guard_profile_is_explicitly_opt_in(tool, monkeypatch, tmp_path, enabled):
+    infra = _infra(tool)
+    run = _cli(tool, monkeypatch, tmp_path)
+    run.args.profile_first_guard_probe = enabled
+    created, events = [], []
+    original = tool.measure.counted_once
+
+    def factory(out, label, *, window):
+        created.append((out, label, window))
+        return lambda event, phase, **scope: events.append((event, phase, scope))
+
+    def counted(*args, **kwargs):
+        observer = kwargs.pop("probe_profile", None)
+        if observer is not None:
+            observer("start", "first_counted_once_probe", year=args[2])
+            observer("stop", "first_counted_once_probe", year=args[2], completed=True)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(infra, "FirstYearProfiler", factory)
+    monkeypatch.setattr(tool.measure, "counted_once", counted)
+    assert tool.cli.cmd_measure(run.args) == 0
+    assert created == (
+        [(run.out / "first-guard-probe", "head", "first_counted_once_probe")]
+        if enabled
+        else []
+    )
+    assert events == (
+        [
+            ("start", "first_counted_once_probe", {"year": 2025}),
+            ("stop", "first_counted_once_probe", {"year": 2025, "completed": True}),
+        ]
+        if enabled
+        else []
+    )
+    assert run.writes[0][1]["metrics"][0]["values"] == {"2025": 1.0}
+
+
+def test_guard_profile_uses_its_own_window_once_and_preserves_default_payload(
+    tool, monkeypatch, tmp_path
+):
+    infra = _infra(tool)
+    state = _fake_profiler(infra, monkeypatch)
+    records = []
+    monkeypatch.setattr(
+        infra, "_publish", lambda out, record: records.append((out, record))
+    )
+    first = infra.FirstYearProfiler(tmp_path, "base")
+    guarded = infra.FirstYearProfiler(
+        tmp_path / "first-guard-probe", "base", window="first_counted_once_probe"
+    )
+    guarded("start", "first_ordinary_year", year=2026)
+    assert state["created"] == 0
+    first("start", "first_ordinary_year", year=2026)
+    first("stop", "first_ordinary_year", year=2026, completed=True)
+    for _ in range(2):
+        guarded("start", "first_counted_once_probe", year=2026)
+        guarded("stop", "first_counted_once_probe", year=2026, completed=True)
+    assert state["created"] == state["enabled"] == state["disabled"] == 2
+    assert state["active"] is None
+    assert len(records) == 2
+    assert "window" not in records[0][1]
+    assert records[1][0] == tmp_path / "first-guard-probe"
+    assert records[1][1]["window"] == "first_counted_once_probe"
+    assert records[1][1]["completed"] is True
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "/PRIVATE/policyengine_uk/utils/aggregate_impact/guard.py",
+        "/PRIVATE/pe_uk_aggregate_impact/guard.py",
+    ],
+)
+def test_guard_profile_allows_only_literal_infrastructure_ids(tool, filename):
+    infra = _infra(tool)
+    names = (
+        "_perturb",
+        "discard_formula_results",
+        "_set_guard_value",
+        "_head_arrays",
+        "_raw",
+        "_household",
+    )
+    entries = [_profile_entry(_profile_code(filename, name)) for name in names]
+    entries.append(_profile_entry(_profile_code(filename, "counted_once")))
+    entries.append(
+        _profile_entry(_profile_code("/PRIVATE/household_secret.py", "_raw"))
+    )
+    assert infra._safe_rows(entries) == []
+    rows = infra._safe_rows(entries, window="first_counted_once_probe")
+    assert {row["id"] for row in rows} == {
+        f"aggregate_impact.guard.py:{name}" for name in names
+    }
+    assert "PRIVATE" not in json.dumps(rows)
+    assert len(rows) <= infra.MAX_ROWS
+
+
+def test_guard_profile_native_backend_exports_calls_and_releases_ownership(
+    tool, monkeypatch, tmp_path
+):
+    from types import FunctionType
+
+    infra = _infra(tool)
+    stream = FlushedStream()
+    monkeypatch.setattr(infra.sys, "stderr", stream)
+    observed = FunctionType(
+        _profile_code("/PRIVATE/pe_uk_aggregate_impact/guard.py", "_head_arrays"), {}
+    )
+    previous = sys.getprofile()
+    observer = owned = None
+    backend = infra.FirstYearProfiler._monitoring_backend()
+    try:
+        sys.setprofile(None)
+        observer = infra.FirstYearProfiler(
+            tmp_path, "head", window="first_counted_once_probe"
+        )
+        observer("start", "first_counted_once_probe", year=2026)
+        owned = observer._profile
+        assert owned is not None
+        for _ in range(3):
+            observed()
+        observer("stop", "first_counted_once_probe", year=2026, completed=True)
+        assert sys.getprofile() is None
+        assert observer._profile is None
+        if backend is not None:
+            assert backend.get_tool(backend.PROFILER_ID) is None
+    finally:
+        _finish_real_profile(infra, observer, owned, previous)
+    record = json.loads((tmp_path / "infra-profile.json").read_text())
+    assert record["window"] == "first_counted_once_probe"
+    assert record["status"] == "ok" and record["completed"] is True
+    assert [row["id"] for row in record["functions"]] == [
+        "aggregate_impact.guard.py:_head_arrays"
+    ]
+    assert (
+        record["functions"][0]["calls"]
+        == record["functions"][0]["primitive_calls"]
+        == 3
+    )
+    assert "PRIVATE" not in stream.getvalue()
+    assert stream.flushes > 0

@@ -1,4 +1,4 @@
-"""Bounded, nonfinancial observations of the first ordinary measurement year."""
+"""Bounded, nonfinancial observations of selected measurement windows."""
 
 from __future__ import annotations
 
@@ -61,6 +61,24 @@ _ALLOWLIST = (
     ),
     *(
         (
+            f"aggregate_impact.guard.py:{name}",
+            (
+                ("policyengine_uk", "utils", "aggregate_impact", "guard.py"),
+                ("pe_uk_aggregate_impact", "guard.py"),
+            ),
+            name,
+        )
+        for name in (
+            "_perturb",
+            "discard_formula_results",
+            "_set_guard_value",
+            "_head_arrays",
+            "_raw",
+            "_household",
+        )
+    ),
+    *(
+        (
             f"aggregate_impact.measure.py:{name}",
             (
                 ("policyengine_uk", "utils", "aggregate_impact", "measure.py"),
@@ -86,13 +104,16 @@ def _literal_id(code):
     return None
 
 
-def _safe_rows(entries):
+def _safe_rows(entries, *, window="first_ordinary_year"):
     """Return observed allowlisted numeric statistics, never raw profile data."""
     rows = {}
     for entry in entries:
         try:
             literal = _literal_id(entry.code)
-            if literal is None:
+            if literal is None or (
+                literal.startswith("aggregate_impact.guard.py:")
+                and window != "first_counted_once_probe"
+            ):
                 continue
             calls, recursive = entry.callcount, entry.reccallcount
             own, cumulative = entry.inlinetime, entry.totaltime
@@ -162,7 +183,10 @@ class FirstYearProfiler:
     object-identity guarantee against a caller manually hijacking the same ID.
     """
 
-    def __init__(self, out, label):
+    def __init__(self, out, label, *, window="first_ordinary_year"):
+        if window not in ("first_ordinary_year", "first_counted_once_probe"):
+            raise ValueError("Unknown infrastructure profile window")
+        self.window = window
         self.out = out
         self.label = label if label in ("base", "head") else "other"
         self._attempted = False
@@ -185,7 +209,7 @@ class FirstYearProfiler:
 
     def _quarantine_profile(self):
         global _ORPHANED_PROFILE
-        # The CLI has one observer. Retain at most one lost enabled instance:
+        # Retain at most one lost enabled observer across CLI windows:
         # its native destructor can clear a caller's legacy hook. Once retained,
         # no later observer may activate; never inspect or publish its statistics.
         if _ORPHANED_PROFILE is None:
@@ -209,7 +233,7 @@ class FirstYearProfiler:
             raise
 
     def __call__(self, event, phase, **scope):
-        if phase != "first_ordinary_year":
+        if phase != self.window:
             return
         if event == "start" and not self._attempted:
             self._attempted = True
@@ -268,7 +292,10 @@ class FirstYearProfiler:
                 if not math.isfinite(elapsed) or elapsed < 0:
                     raise ValueError
                 if retired and self._reason is None:
-                    rows = _safe_rows(self._profile.getstats())
+                    if self.window == "first_ordinary_year":
+                        rows = _safe_rows(self._profile.getstats())
+                    else:
+                        rows = _safe_rows(self._profile.getstats(), window=self.window)
             except Exception:  # noqa: BLE001 - fixed reason, no exception text
                 if self._enabled:
                     self._quarantine_profile()
@@ -293,4 +320,6 @@ class FirstYearProfiler:
                     else "unavailable"
                 )
                 record["reason"] = self._reason
+            if self.window != "first_ordinary_year":
+                record["window"] = self.window
             _publish(self.out, record)

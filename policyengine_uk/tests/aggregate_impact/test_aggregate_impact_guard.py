@@ -842,3 +842,130 @@ def test_units_and_households_count_only_records_with_weight():
     # tax_a contains tax_b in households 1 and 2; only household 1 has weight.
     moves = [p for p in row["problems"] if p["head"] == "tax_a"]
     assert moves and all(p["households"] == 1 for p in moves)
+
+
+def _observed_guard_case(observer=None, *, selected=None, weights=(1, 2, 1)):
+    part = partition(["tax_a", "tax_b"])
+    sim = FakeSim(model(contains=False), {"x": [1000, 2000, 3000]}, weights)
+    snapshot = snapshot_inputs(sim, part.component_variables())
+    result = counted_once(
+        sim,
+        part,
+        YEAR,
+        1e-6,
+        snapshot,
+        variables_to_check=selected,
+        probe_profile=observer,
+    )
+    return sim, result
+
+
+def test_first_existing_guard_probe_preserves_calls_results_and_restoration(
+    monkeypatch,
+):
+    from policyengine_uk.utils.aggregate_impact import guard
+
+    calls, events = [], []
+    for name in ("_perturb", "_head_arrays", "_raw", "_restore"):
+        original = getattr(guard, name)
+
+        def record(*args, _name=name, _original=original, **kwargs):
+            key = tuple(args[2]) if _name == "_head_arrays" else str(args[1])
+            calls.append((_name, key))
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(guard, name, record)
+    reference, expected = _observed_guard_case()
+    original_calls = calls.copy()
+    calls.clear()
+
+    def observer(event, phase, **scope):
+        events.append((event, phase, scope, len(calls)))
+
+    observed, actual = _observed_guard_case(observer)
+    assert calls == original_calls
+    assert actual == expected
+    assert set(observed.inputs) == set(reference.inputs)
+    for key in reference.inputs:
+        np.testing.assert_array_equal(observed.inputs[key], reference.inputs[key])
+    assert [event[:3] for event in events] == [
+        ("start", "first_counted_once_probe", {"year": YEAR}),
+        ("stop", "first_counted_once_probe", {"year": YEAR, "completed": True}),
+    ]
+    start, stop = events[0][3], events[1][3]
+    assert calls[start][0] == "_perturb"
+    assert calls[stop - 1] == ("_raw", "gov_tax")
+    assert sum(name == "_perturb" for name, _ in calls[start:stop]) == 1
+    assert sum(name == "_perturb" for name, _ in calls) > 1
+
+
+@pytest.mark.parametrize("skip", ["selection", "weight"])
+def test_guard_without_an_eligible_probe_never_starts_observer(skip):
+    events = []
+
+    def observer(*args, **kwargs):
+        return events.append((args, kwargs))
+
+    _observed_guard_case(
+        observer,
+        selected=() if skip == "selection" else None,
+        weights=(0, 0, 0) if skip == "weight" else (1, 2, 1),
+    )
+    assert events == []
+
+
+@pytest.mark.parametrize("failure_event", ["start", "stop"])
+def test_guard_observer_errors_do_not_change_results(failure_event):
+    reference, expected = _observed_guard_case()
+
+    def observer(event, phase, **scope):
+        if event == failure_event:
+            raise OSError("PRIVATE_OBSERVER_FAILURE")
+
+    observed, actual = _observed_guard_case(observer)
+    assert actual == expected
+    for key in reference.inputs:
+        np.testing.assert_array_equal(observed.inputs[key], reference.inputs[key])
+
+
+@pytest.mark.parametrize("cleanup_error", [OSError, KeyboardInterrupt, SystemExit])
+def test_guard_financial_error_identity_survives_observer_cleanup(
+    monkeypatch, cleanup_error
+):
+    from policyengine_uk.utils.aggregate_impact import guard
+
+    original, calls, events = guard._head_arrays, [], []
+    financial_error = RuntimeError("PRIVATE_FINANCIAL_FAILURE")
+
+    def fail_probe(*args, **kwargs):
+        calls.append(None)
+        if len(calls) == 2:
+            raise financial_error
+        return original(*args, **kwargs)
+
+    def observer(event, phase, **scope):
+        events.append((event, scope))
+        if event == "stop":
+            raise cleanup_error("PRIVATE_CLEANUP_FAILURE")
+
+    monkeypatch.setattr(guard, "_head_arrays", fail_probe)
+    with pytest.raises(RuntimeError) as caught:
+        _observed_guard_case(observer)
+    assert caught.value is financial_error
+    assert events == [
+        ("start", {"year": YEAR}),
+        ("stop", {"year": YEAR, "completed": False}),
+    ]
+
+
+@pytest.mark.parametrize("interrupt_type", [KeyboardInterrupt, SystemExit])
+def test_guard_profile_keeps_a_genuine_stop_interrupt(interrupt_type):
+    interrupt = interrupt_type("PRIVATE_INTERRUPT")
+
+    def observer(event, phase, **scope):
+        if event == "stop":
+            raise interrupt
+
+    with pytest.raises(interrupt_type) as caught:
+        _observed_guard_case(observer)
+    assert caught.value is interrupt

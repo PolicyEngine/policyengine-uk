@@ -1627,6 +1627,7 @@ def measure(
     fingerprint_at_start: Optional[str] = None,
     checkpoint: Optional[Callable] = None,
     year_profile: Optional[Callable] = None,
+    guard_profile: Optional[Callable] = None,
 ) -> tuple:
     """Measure a simulation over the spec's horizon.
 
@@ -1712,6 +1713,9 @@ def measure(
     if run_guard:
         _checkpoint(checkpoint, "start", "counted_once", year=spec.guard_year)
         t = time.time()
+        guard_options = {}
+        if guard_profile is not None:
+            guard_options["probe_profile"] = guard_profile
         guard = counted_once(
             sim,
             partition,
@@ -1720,6 +1724,7 @@ def measure(
             snapshot,
             active=active_parameters(sim, partition, spec.guard_year),
             variables_to_check=guard_variables,
+            **guard_options,
         )
         _checkpoint(checkpoint, "end", "counted_once", year=spec.guard_year)
         timings["counted_once"] = round(time.time() - t, 2)

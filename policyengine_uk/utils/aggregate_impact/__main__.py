@@ -167,6 +167,23 @@ def cmd_measure(args) -> int:
             except Exception:  # noqa: BLE001 - optional diagnostics must not stop measurement
                 pass
 
+        guard_profile = None
+        if getattr(args, "profile_first_guard_probe", False):
+            try:
+                from .infra_profile import FirstYearProfiler
+
+                guard_profile = FirstYearProfiler(
+                    Path(args.out) / "first-guard-probe",
+                    args.label,
+                    window="first_counted_once_probe",
+                )
+            except Exception:  # noqa: BLE001 - optional diagnostics cannot stop finance
+                pass
+
+        guard_options = {}
+        if guard_profile is not None:
+            guard_options["guard_profile"] = guard_profile
+
         checkpoint("start", "measure")
         result, households = measure(
             sim,
@@ -180,6 +197,7 @@ def cmd_measure(args) -> int:
             fingerprint_at_start=fingerprint_at_start,
             checkpoint=checkpoint,
             year_profile=year_profile,
+            **guard_options,
         )
         checkpoint("end", "measure")
         write_result(args.out, result, households)
@@ -288,6 +306,11 @@ def main(argv=None) -> int:
         "--profile-first-year",
         action="store_true",
         help="record bounded infrastructure statistics for the first ordinary year",
+    )
+    m.add_argument(
+        "--profile-first-guard-probe",
+        action="store_true",
+        help="record infrastructure statistics for the first existing guard probe",
     )
     m.add_argument("--out", required=True)
     m.set_defaults(func=cmd_measure)

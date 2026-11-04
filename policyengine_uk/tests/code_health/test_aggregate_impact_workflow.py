@@ -444,3 +444,25 @@ def test_first_year_profile_flag_is_shared_by_both_measurements():
     )
     workflow = yaml.safe_load(WORKFLOW.read_text())
     assert workflow["jobs"]["report"]["timeout-minutes"] == 120
+
+
+def test_first_guard_probe_profile_is_shared_and_cannot_expand_work():
+    run = step_named("Measure base, then head")["run"]
+    assert run.count("--profile-first-guard-probe") == 1
+    assert run.index("--profile-first-guard-probe") < run.index(
+        'measure base "$BASE_NAME"'
+    )
+    assert run.index('measure base "$BASE_NAME"') < run.index(
+        'measure head "$HEAD_NAME"'
+    )
+    assert (
+        "--no-guard" not in run and "--no-reforms" not in run and "--years" not in run
+    )
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    assert workflow["jobs"]["report"]["timeout-minutes"] == 120
+    uploads = [s for s in steps() if "upload-artifact" in str(s.get("uses", ""))]
+    assert all(
+        {p.strip() for p in s["with"]["path"].splitlines() if p.strip()}
+        == ALLOWED_UPLOAD_PATHS
+        for s in uploads
+    )
