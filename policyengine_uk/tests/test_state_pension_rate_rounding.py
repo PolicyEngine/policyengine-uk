@@ -46,6 +46,10 @@ from policyengine_core.parameters import ParameterNode
 from policyengine_uk import Simulation
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.model_api import Scenario
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+    last_year,
+)
 from policyengine_uk.parameters.gov.dwp.state_pension.create_rate_projection import (
     project_weekly_rate,
     round_weekly_rate,
@@ -63,8 +67,10 @@ RATES = {
     "basic": f"{STATE_PENSION}.basic_state_pension.amount",
 }
 LAST_PUBLISHED = 2026
-# The uprating index runs to 2039; later years are held at its last value.
-PROJECTED = range(LAST_PUBLISHED + 1, 2040)
+# The projection runs to the last year of the triple lock index, which ends
+# where the growth series end; later years hold the final value.
+HORIZON = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
+PROJECTED = range(LAST_PUBLISHED + 1, HORIZON + 1)
 FIVE_PENCE = Decimal("0.05")
 WEEKS_IN_YEAR = 52
 # Simulations hold float32, which at £13,000 resolves about a tenth of a
@@ -117,6 +123,16 @@ def test_published_rates_are_the_parameter_files(scheme):
     amount = system.parameters.get_child(RATES[scheme])
     for date, value in stated.items():
         assert float(amount(f"{date}")) == pytest.approx(value, abs=1e-12), date
+
+
+@pytest.mark.parametrize("scheme", RATES)
+def test_the_projection_ends_where_the_indices_end(scheme):
+    rate = system.parameters.get_child(RATES[scheme])
+    index = system.parameters.get_child(TRIPLE_LOCK_INDEX)
+    assert last_year(rate) == last_year(index) == HORIZON
+    assert weekly(system.parameters, RATES[scheme], HORIZON) > weekly(
+        system.parameters, RATES[scheme], HORIZON - 1
+    )
 
 
 @pytest.mark.parametrize("scheme", RATES)

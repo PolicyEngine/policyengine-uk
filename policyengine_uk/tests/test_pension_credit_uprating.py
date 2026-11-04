@@ -44,6 +44,7 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_upratin
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
+    growth_horizon,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
@@ -53,7 +54,10 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 
 EARNINGS_INDEX = "gov.economic_assumptions.indices.earnings_uprating"
 FIRST_PROJECTION_YEAR = 2027
-LAST_INDEX_YEAR = 2039
+LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
+# The last year the synthetic growth series reach: their lagged series run a
+# year past the final observation, as the real ones do.
+LAST_SYNTHETIC_YEAR = 2040
 LAST_PUBLISHED_YEAR = FIRST_PROJECTION_YEAR - 1
 PARAMETERS_DIR = COUNTRY_DIR / "parameters"
 SMG_NAME = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
@@ -115,6 +119,7 @@ def synthetic_parameter_tree(path, phase_ins=()):
     """
     observations = {year: (0.02, 0.02) for year in range(2010, 2026)}
     observations.update({2026 + i: values for i, values in enumerate(path)})
+    final_observation = observations[max(observations)]
     parameters = ParameterNode(
         data={
             "gov": {
@@ -139,6 +144,11 @@ def synthetic_parameter_tree(path, phase_ins=()):
                                 "values": {
                                     f"{year}-01-01": values[position]
                                     for year, values in observations.items()
+                                }
+                                | {
+                                    f"{LAST_SYNTHETIC_YEAR - 1}-01-01": final_observation[
+                                        position
+                                    ]
                                 }
                             }
                             for name, position in (
@@ -184,6 +194,11 @@ def project_synthetic_parameters(parameters, unreformed=None):
 
 def synthetic_parameters(path, phase_ins=()):
     return project_synthetic_parameters(synthetic_parameter_tree(path, phase_ins))
+
+
+def test_the_synthetic_years_reach_the_end_of_the_generated_indices():
+    indices = synthetic_parameters([(0.039, 0.035)], [0.6]).gov.economic_assumptions
+    assert growth_horizon(indices.indices) == LAST_SYNTHETIC_YEAR
 
 
 def earnings_linked_amounts(parameters):
@@ -294,7 +309,7 @@ def test_projected_threshold_respects_phase_in_and_its_nonnegative_floor(
         guarantee = getattr(pc.guarantee_credit.minimum_guarantee, relation)
         threshold = getattr(pc.savings_credit.threshold, relation)
         maximum = getattr(pc.savings_credit.maximum, relation)
-        for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
             at, before = f"{year}-04-30", f"{year - 1}-04-30"
             rate = phase_in(at)
             if rate == 0:
