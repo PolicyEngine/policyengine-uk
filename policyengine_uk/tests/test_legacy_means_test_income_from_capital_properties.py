@@ -27,9 +27,11 @@ Invariants, for any generated population of families:
    personal allowance can leave rent or dividends taxable. Where someone has
    earnings, each means-test income changes by exactly minus the change in
    the tax that test deducts (legacy_means_test_deducted_income_tax, summed
-   over the members it counts) and in its earnings disregard, which is
-   capped at net earnings, unless floored or on a route that does not use
-   the test's own income rules. The awards are compared wherever none of
+   over the members it counts; for council tax reduction,
+   council_tax_reduction_tax_deduction, which applies each scheme's own
+   rule) and in its earnings disregard, which never exceeds net earnings,
+   unless a floor binds or the family takes a route that does not use the
+   test's own income rules. The test compares the awards wherever none of
    those taxes or disregards moves.
 2. Bounds: the counted home-letting income is between nil and the rent, and
    equals the rent less £20 a week, floored at nil.
@@ -57,10 +59,16 @@ Invariants, for any generated population of families:
    savings rise while the family stays on the same route (pensioner, UC
    award, passport, guarantee credit, savings credit only).
 6. Differential: for every generated family without self-employment income,
-   Income Support, Housing Benefit and the council tax reduction line deduct,
-   for each person they count, the same income tax as Pension Credit's tax
-   line: the pre-charge income tax less
-   legacy_means_test_uncounted_income_tax_without_earnings.
+   Income Support and Housing Benefit deduct, for each person they count, the
+   same income tax as Pension Credit's tax line: the pre-charge income tax
+   less legacy_means_test_uncounted_income_tax_without_earnings. The council
+   tax reduction line deducts council_tax_reduction_tax_deduction, which
+   deducts that tax only in the schemes it leaves to the legacy means tests
+   (the English and Welsh working-age schemes and outside Great Britain).
+   In Scotland's working-age scheme and Great Britain's pensioner schemes it
+   applies those schemes' own rules
+   (test_council_tax_reduction_tax_deduction_properties.py), so there the
+   line does not read Pension Credit's tax.
 7. Applicant: where the household head does not apply alone for council tax
    reduction, council_tax_reduction_home_letting_income equals
    legacy_benefits_home_letting_income; where the head applies alone, her
@@ -264,6 +272,13 @@ def calculate_with_taxes(units, year, variables, **kwargs):
     for income, members in TEST_MEMBERS.items():
         mask = np.asarray(sim.calculate(members, year), dtype=float)
         out[f"tax:{income}"] = sim.map_result(tax * mask, "person", "benunit")
+    # The council tax reduction line deducts each scheme's own measure, a
+    # benefit unit total for the applicant and partner, which equals the
+    # shared deduction only in the schemes it leaves to the legacy means
+    # tests.
+    out["tax:council_tax_reduction_applicable_income"] = np.asarray(
+        sim.calculate("council_tax_reduction_tax_deduction", year), dtype=float
+    )
     earnings = sum(
         np.abs(np.asarray(sim.calculate(v, year), dtype=float)) for v in EARNINGS
     )
@@ -485,12 +500,17 @@ def test_deducted_tax_without_earnings_is_the_step_4_split(units, year):
 @PROPERTY_SETTINGS
 @given(populations, st.sampled_from(YEARS))
 def test_the_four_tests_deduct_the_same_income_tax(units, year):
-    """Income Support, Housing Benefit and the council tax reduction line
-    deduct, for each person they count, the income tax Pension Credit's tax
-    line deducts. Each test's income is recomputed with the person's income
-    tax raised by one pound and compared with the original, so the check
-    reads each formula rather than the shared variable. The families have no
-    self-employment income, where Pension Credit's notional tax applies."""
+    """Income Support and Housing Benefit deduct, for each person they count,
+    the income tax Pension Credit's tax line deducts, and so does the council
+    tax reduction line in the schemes council_tax_reduction_tax_deduction
+    leaves to the legacy means tests (the English and Welsh working-age
+    schemes and outside Great Britain). In Scotland's working-age scheme and
+    Great Britain's pensioner schemes, the line applies those schemes' own
+    rules and does not respond to that tax. The test recomputes each test's
+    income with the person's income tax raised by one pound and compares it
+    with the original, so the check reads each formula rather than the
+    shared variable. The families have no self-employment income, where
+    Pension Credit's notional tax applies."""
     sim = Simulation(situation=situation(units, year))
     people = sim.populations["person"].count
     pension_credit_tax = np.asarray(
@@ -547,6 +567,15 @@ def test_the_four_tests_deduct_the_same_income_tax(units, year):
                 )
                 == 0
             )
+            # Each family is one benefit unit in its own household.
+            region = np.array([unit["region"] for unit in units])
+            pensioner = np.asarray(
+                sim.calculate("council_tax_reduction_pensioner", year)
+            ).astype(bool)
+            own_scheme_rules = (region != "NORTHERN_IRELAND") & (
+                pensioner | (region == "SCOTLAND")
+            )
+            counted = np.where(own_scheme_rules, 0.0, counted)
         checked = unfloored & own_rules
         # The earnings disregard is capped at net earnings, so it can fall
         # with them.
