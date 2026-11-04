@@ -1,3 +1,10 @@
+## [2.174.6] - 2026-11-04
+
+### Fixed
+
+- Universal Credit deductions count a supplied latent deduction rate only where `uc_has_deduction` is true, as the rate's own formula does. Under a protected floor reform, the flag reads the award left after the benefit cap as the floor limits it.
+
+
 ## [2.174.5] - 2026-11-04
 
 ### Fixed
