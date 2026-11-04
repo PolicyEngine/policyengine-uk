@@ -207,7 +207,8 @@
   absolute_error_margin: 0.01
   input:
     # Synthetic parameter control, not a statement of current law:
-    # £4,000 band less50% of£1,430 leaves£3,285; tax£343+£286=£629.
+    # Starter [1,430,4,715) and nil [4,000,5,000) overlap by£715.
+    # Their union is£3,570: savings tax£486 plus wage tax£286=£772.
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 4_000
     gov.hmrc.income_tax.rates.savings_starter_rate.phase_out: 0.5
     age: 55
@@ -215,6 +216,6 @@
     employment_income: 14_000
     savings_interest_income: 6_000
   output:
-    savings_income_tax: 343
-    income_tax: 629
+    savings_income_tax: 486
+    income_tax: 772
     savings_starter_rate_income: 3_285

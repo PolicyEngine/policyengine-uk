@@ -7,3 +7,178 @@
     basic_rate_earned_income: 37500
     higher_rate_earned_income: 62500
     add_rate_earned_income: 0
+
+# ITA 2007 ss.12,12A,12B and16: savings nil rate is a positioned
+# slice above the starting-rate limit, not an addition to a zero-rate prefix.
+# The custom limits and phase-out are reform controls, not enacted amounts.
+
+- name: nil rate starts at reformed limit 37500
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 37_500
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 38_000
+  output:
+    savings_income_tax: 0
+    savings_starter_rate_income: 37_500
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 0
+    add_rate_savings_income: 0
+
+- name: nil rate above basic limit leaves higher rate gap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 38_000
+  output:
+    savings_income_tax: 120
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 300
+    add_rate_savings_income: 0
+
+- name: current law starting and nil slices do not overlap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 7_000
+  output:
+    savings_income_tax: 200
+    savings_starter_rate_income: 5_000
+    savings_allowance: 1_000
+    basic_rate_savings_income: 1_000
+    higher_rate_savings_income: 0
+    add_rate_savings_income: 0
+
+- name: nil rate at basic limit is adjacent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 37_700
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 38_000
+  output:
+    savings_income_tax: 0
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 0
+    add_rate_savings_income: 0
+
+- name: one pound gap above basic limit is taxed
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 37_701
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 38_000
+  output:
+    savings_income_tax: 0.4
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 1
+    add_rate_savings_income: 0
+
+- name: nil slice upper boundary is not taxed
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 40_500
+  output:
+    savings_income_tax: 920
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 2_300
+    add_rate_savings_income: 0
+
+- name: one pound above nil slice is taxed
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 40_501
+  output:
+    savings_income_tax: 920.4
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 2_301
+    add_rate_savings_income: 0
+
+- name: custom zero phaseout uses union of overlapping reliefs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 5_000
+    gov.hmrc.income_tax.rates.savings_starter_rate.phase_out: 0
+    age: 40
+    region: LONDON
+    employment_income: 15_570
+    savings_interest_income: 6_000
+  output:
+    savings_income_tax: 200
+    savings_starter_rate_income: 5_000
+    savings_allowance: 1_000
+    basic_rate_savings_income: 1_000
+    higher_rate_savings_income: 0
+    add_rate_savings_income: 0
+
+- name: dividends above savings do not move nil slice
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 38_000
+    dividend_income: 1_000
+  output:
+    savings_income_tax: 120
+    savings_starter_rate_income: 37_700
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 300
+    add_rate_savings_income: 0
+
+- name: no savings income has no savings charge
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 40_000
+    age: 40
+    region: LONDON
+    employment_income: 12_570
+    savings_interest_income: 0
+  output:
+    savings_income_tax: 0
+    savings_starter_rate_income: 0
+    savings_allowance: 1_000
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 0
+    add_rate_savings_income: 0
