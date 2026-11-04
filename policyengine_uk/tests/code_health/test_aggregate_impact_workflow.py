@@ -61,7 +61,11 @@ if not WORKFLOW.exists():
         allow_module_level=True,
     )
 # No private household detail, dataset or blanket measured-directory upload.
-ALLOWED_UPLOAD_PATHS = {"report", "measured/*/timing.jsonl"}
+ALLOWED_UPLOAD_PATHS = {
+    "report",
+    "measured/*/timing.jsonl",
+    "measured/*/infra-profile.json",
+}
 
 
 def steps():
@@ -429,3 +433,14 @@ def test_only_dependabot_may_skip_a_run_with_no_data_access(tmp_path):
     assert measured.returncode != 0
     assert "::error::HUGGING_FACE_TOKEN is not available" in measured.stdout
     assert not (tmp_path / "measured" / "head" / "result.json").exists()
+
+
+def test_first_year_profile_flag_is_shared_by_both_measurements():
+    run = step_named("Measure base, then head")["run"]
+    assert run.count("--profile-first-year") == 1
+    assert run.index("--profile-first-year") < run.index('measure base "$BASE_NAME"')
+    assert run.index('measure base "$BASE_NAME"') < run.index(
+        'measure head "$HEAD_NAME"'
+    )
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    assert workflow["jobs"]["report"]["timeout-minutes"] == 120

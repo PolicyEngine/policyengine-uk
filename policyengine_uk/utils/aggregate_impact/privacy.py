@@ -42,11 +42,12 @@ Deliberate exceptions:
   component, so a reader can tell a reform whose own change is too small to
   publish from one that only touches another small cell. A published year
   records no reason, so it says nothing new.
-- A withheld year's ``small_target_change`` that names the reform's own
+- A withheld year's ``small_target_change``, which names the reform's own
   target, beside the ``responsive:<id>`` verdict the report publishes for
-  that year, says whether fewer than 10 records together moved the target by
-  at least the reform's minimum: a bound on that cell's total, never its
-  value. A ``small_balance_change`` says much the same when the target is
+  that year, says whether the target moved by at least the reform's minimum
+  overall. Where changes of ``CHANGE_GBP`` or less add nothing, that bounds
+  the total of the fewer than 10 records it counts, never their value. A
+  ``small_balance_change`` says much the same when the target is
   part of gov_balance and nothing offsets it there. The counting rule above
   already publishes more (one household's £10,000 beside ten pennies).
   Reasons from several reform rows can together bound a cell, even to an
@@ -54,6 +55,14 @@ Deliberate exceptions:
   records behind a published count of 10 show one record in each group),
   and the reform list, in CI the head's ``standard_reforms.yaml``, decides
   which rows exist.
+- When gov_balance contains a reform's target, the reform's costing less
+  the target's part is the change in the rest of gov_balance, whose records
+  the tool doesn't count. A reform that moves its target in 10 or more
+  records, and the rest of gov_balance in a few households only, can
+  publish a costing and a target change that together give the rest's
+  change there. The tool checks the reform's own target only, so the two
+  figures can give the change in another reform's target too, as they can
+  for a variable no reform aims at.
 
 Threat model. The report defends against disclosure through any combination
 of the figures it publishes, across any number of reports, from honest

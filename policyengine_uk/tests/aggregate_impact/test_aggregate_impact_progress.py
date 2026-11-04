@@ -129,7 +129,7 @@ def _stub_world(tool, monkeypatch, *, fail_reform=False, interrupt_year=False):
     monkeypatch.setattr(m, "baseline_records", lambda *args: {"stub": True})
     monkeypatch.setattr(m, "active_parameters", lambda *args: {})
     monkeypatch.setattr(m, "counted_once", counted)
-    monkeypatch.setattr(m, "withheld_reasons", lambda *args: [])
+    monkeypatch.setattr(m, "withheld_reasons", lambda *args, target=None: [])
     monkeypatch.setattr(m, "reform_parameters", lambda *args: {"rate": 2})
     monkeypatch.setattr(m, "stable_runtime", lambda *args: {"stub": True})
     monkeypatch.setattr(m, "tool_digest", lambda: "tool")
@@ -212,6 +212,7 @@ def _cli(tool, monkeypatch, tmp_path, *, fail_reform=False, interrupt_year=False
         no_reforms=False,
         reforms=str(tmp_path / "reforms.yaml"),
         no_guard=False,
+        profile_first_year=False,
         out=str(out),
     )
     return SimpleNamespace(
@@ -356,10 +357,704 @@ def test_workflow_uploads_only_report_and_timing_sidecars():
         if step.get("uses", "").startswith("actions/upload-artifact@")
     )
     assert step["if"] == "always()"
-    assert step["with"]["path"].splitlines() == ["report", "measured/*/timing.jsonl"]
+    assert step["with"]["path"].splitlines() == [
+        "report",
+        "measured/*/timing.jsonl",
+        "measured/*/infra-profile.json",
+    ]
     measure = next(
         step for step in job["steps"] if step.get("name") == "Measure base, then head"
     )["run"]
     assert measure.index('measure base "$BASE_NAME"') < measure.index(
         'measure head "$HEAD_NAME"'
     )
+
+
+def _infra(tool):
+    return importlib.import_module(tool.measure.__package__ + ".infra_profile")
+
+
+def _profile_code(filename, name="measure_year"):
+    def observed():
+        return None
+
+    return observed.__code__.replace(co_filename=filename, co_qualname=name)
+
+
+def _profile_entry(code, *, calls=4, recursive=1, own=0.25, total=0.5):
+    return SimpleNamespace(
+        code=code,
+        callcount=calls,
+        reccallcount=recursive,
+        inlinetime=own,
+        totaltime=total,
+    )
+
+
+def _fake_profiler(infra, monkeypatch, *, entries=(), fail=None):
+    state = {"active": None, "created": 0, "enabled": 0, "disabled": 0}
+
+    class Profile:
+        def enable(self):
+            state["enabled"] += 1
+            state["active"] = self
+            if fail == "enable":
+                raise RuntimeError("PRIVATE_STARTUP_MESSAGE")
+
+        def disable(self):
+            state["disabled"] += 1
+            if state["active"] is self:
+                state["active"] = None
+
+        def getstats(self):
+            if fail == "statistics":
+                raise RuntimeError("PRIVATE_STATISTICS_MESSAGE")
+            return entries
+
+    def factory():
+        state["created"] += 1
+        if fail == "construct":
+            raise RuntimeError("PRIVATE_CONSTRUCTOR_MESSAGE")
+        return Profile()
+
+    monkeypatch.setattr(
+        infra.FirstYearProfiler, "_monitoring_backend", staticmethod(lambda: None)
+    )
+    monkeypatch.setattr(infra.sys, "getprofile", lambda: state["active"])
+    monkeypatch.setattr(infra.cProfile, "Profile", factory)
+    return state
+
+
+def test_year_profile_observes_only_the_first_year_through_reset_and_gc(
+    tool, monkeypatch
+):
+    original = _stub_world(tool, monkeypatch)
+    original.spec.years = [2025, 2026]
+    monkeypatch.setattr(
+        tool.measure.gc, "collect", lambda: original.trace.append(("gc",))
+    )
+    expected, expected_households = _measure(tool, original)
+    observed = _stub_world(tool, monkeypatch)
+    observed.spec.years = [2025, 2026]
+    monkeypatch.setattr(
+        tool.measure.gc, "collect", lambda: observed.trace.append(("gc",))
+    )
+
+    def profile(event, phase, **scope):
+        observed.trace.append(("profile", event, phase, scope))
+
+    actual, actual_households = _measure(tool, observed, year_profile=profile)
+    assert [row for row in observed.trace if row[0] != "profile"] == original.trace
+    assert _payload(actual) == _payload(expected)
+    assert actual_households == expected_households
+    assert [row for row in observed.trace if row[0] == "profile"] == [
+        ("profile", "start", "first_ordinary_year", {"year": 2025}),
+        ("profile", "stop", "first_ordinary_year", {"year": 2025, "completed": True}),
+    ]
+    start = next(
+        i for i, row in enumerate(observed.trace) if row[:2] == ("profile", "start")
+    )
+    stop = next(
+        i for i, row in enumerate(observed.trace) if row[:2] == ("profile", "stop")
+    )
+    assert observed.trace[start + 1] == ("measure_year", "initial", 2025)
+    assert observed.trace[stop - 2 : stop] == [("reset", "initial"), ("gc",)]
+    assert stop < observed.trace.index(("measure_year", "initial", 2026))
+
+
+@pytest.mark.parametrize("error_type", [RuntimeError, KeyboardInterrupt, SystemExit])
+def test_financial_exceptions_propagate_after_first_year_profile_stop(
+    tool, monkeypatch, tmp_path, error_type
+):
+    infra = _infra(tool)
+    state = _fake_profiler(infra, monkeypatch)
+    records = []
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+    stub = _stub_world(tool, monkeypatch)
+    original_error = error_type("PRIVATE_FINANCIAL_MESSAGE")
+
+    def failed_year(*args):
+        raise original_error
+
+    monkeypatch.setattr(tool.measure, "measure_year", failed_year)
+    with pytest.raises(error_type) as caught:
+        _measure(tool, stub, year_profile=infra.FirstYearProfiler(tmp_path, "head"))
+    assert caught.value is original_error
+    assert state["enabled"] == state["disabled"] == 1
+    assert state["active"] is None
+    assert len(records) == 1
+    assert records[0]["status"] == "interrupted"
+    assert records[0]["completed"] is False
+    assert "PRIVATE_FINANCIAL_MESSAGE" not in json.dumps(records)
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_cli_first_year_profile_is_explicitly_opt_in(
+    tool, monkeypatch, tmp_path, enabled
+):
+    infra = _infra(tool)
+    run = _cli(tool, monkeypatch, tmp_path)
+    run.args.profile_first_year = enabled
+    created, events = [], []
+
+    def factory(out, label):
+        created.append((out, label))
+        return lambda event, phase, **scope: events.append((event, phase, scope))
+
+    monkeypatch.setattr(infra, "FirstYearProfiler", factory)
+    assert tool.cli.cmd_measure(run.args) == 0
+    assert run.writes[0][1]["status"] == "ok"
+    assert run.writes[0][1]["metrics"][0]["values"] == {"2025": 1.0}
+    assert created == ([(run.args.out, "head")] if enabled else [])
+    assert events == (
+        [
+            ("start", "first_ordinary_year", {"year": 2025}),
+            ("stop", "first_ordinary_year", {"year": 2025, "completed": True}),
+        ]
+        if enabled
+        else []
+    )
+
+
+def test_year_profile_callback_error_preserves_the_reference(tool, monkeypatch):
+    original = _stub_world(tool, monkeypatch)
+    expected, expected_households = _measure(tool, original)
+    observed = _stub_world(tool, monkeypatch)
+
+    def unavailable(*args, **kwargs):
+        raise OSError("PRIVATE_OBSERVER_MESSAGE")
+
+    actual, actual_households = _measure(tool, observed, year_profile=unavailable)
+    assert observed.trace == original.trace
+    assert _payload(actual) == _payload(expected)
+    assert actual_households == expected_households
+
+
+@pytest.mark.parametrize("failure", ["construct", "enable", "statistics"])
+def test_profiler_failure_preserves_financial_payload_and_uses_fixed_reason(
+    tool, monkeypatch, tmp_path, failure
+):
+    infra = _infra(tool)
+    original = _stub_world(tool, monkeypatch)
+    expected, expected_households = _measure(tool, original)
+    state = _fake_profiler(infra, monkeypatch, fail=failure)
+    records = []
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+    observed = _stub_world(tool, monkeypatch)
+    actual, actual_households = _measure(
+        tool, observed, year_profile=infra.FirstYearProfiler(tmp_path, "head")
+    )
+    assert observed.trace == original.trace
+    assert _payload(actual) == _payload(expected)
+    assert actual_households == expected_households
+    assert state["active"] is None
+    assert len(records) == 1
+    assert records[0]["status"] == "unavailable"
+    assert records[0]["reason"] == "observer_unavailable"
+    assert records[0]["completed"] is True
+    assert records[0]["functions"] == []
+    assert "PRIVATE_" not in json.dumps(records)
+
+
+def test_preexisting_profiler_is_never_replaced_or_disabled(
+    tool, monkeypatch, tmp_path
+):
+    infra = _infra(tool)
+    records = []
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+
+    def forbidden_factory():
+        raise AssertionError("the existing profiler owns this window")
+
+    monkeypatch.setattr(infra.cProfile, "Profile", forbidden_factory)
+    previous = sys.getprofile()
+
+    def existing(frame, event, arg):
+        return None
+
+    try:
+        sys.setprofile(existing)
+        observer = infra.FirstYearProfiler(tmp_path, "base")
+        observer("start", "first_ordinary_year", year=2026)
+        assert sys.getprofile() is existing
+        observer("stop", "first_ordinary_year", year=2026, completed=True)
+        assert sys.getprofile() is existing
+    finally:
+        sys.setprofile(previous)
+    assert len(records) == 1
+    assert records[0]["status"] == "skipped"
+    assert records[0]["reason"] == "preexisting_profiler"
+    assert records[0]["functions"] == []
+
+
+def _finish_real_profile(infra, observer, owned, previous):
+    # Failed assertions must not leave the native cProfile slot occupied.
+    try:
+        sys.setprofile(None)
+        if owned is not None:
+            owned.disable()
+        if getattr(infra, "_ORPHANED_PROFILE", None) is owned:
+            infra._ORPHANED_PROFILE = None
+        if observer is not None:
+            observer._profile = None
+    finally:
+        sys.setprofile(previous)
+
+
+def test_real_profiler_does_not_clear_a_midwindow_replacement(
+    tool, monkeypatch, tmp_path
+):
+    import cProfile
+    import weakref
+
+    infra = _infra(tool)
+    records = []
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+    previous = sys.getprofile()
+    observer = owned = owned_reference = None
+    backend = infra.FirstYearProfiler._monitoring_backend()
+
+    def replacement(frame, event, arg):
+        return None
+
+    try:
+        sys.setprofile(None)
+        observer = infra.FirstYearProfiler(tmp_path, "head")
+        observer("start", "first_ordinary_year", year=2026)
+        owned = observer._profile
+        assert isinstance(owned, cProfile.Profile)
+        owned_reference = weakref.ref(owned)
+        if backend is None:
+            assert sys.getprofile() is owned
+        else:
+            assert backend.get_tool(backend.PROFILER_ID) == "cProfile"
+        sys.setprofile(replacement)
+        observer("stop", "first_ordinary_year", year=2026, completed=True)
+        assert observer._profile is None
+        if backend is not None:
+            assert backend.get_tool(backend.PROFILER_ID) is None
+            # Observe cleanup too; a saved reference must not hide deallocation.
+            owned = None
+        assert sys.getprofile() is replacement
+    finally:
+        cleanup_owned = (
+            owned
+            if owned is not None
+            else (owned_reference() if owned_reference else None)
+        )
+        _finish_real_profile(infra, observer, cleanup_owned, previous)
+    assert len(records) == 1
+    if backend is None:
+        assert records[0]["reason"] == "observer_unavailable"
+    else:
+        assert records[0]["status"] == "ok"
+        assert "reason" not in records[0]
+    assert records[0]["functions"] == []
+
+
+@pytest.mark.parametrize("sink", ["file", "stderr"])
+def test_infra_profile_sinks_fail_independently_and_flush(
+    tool, monkeypatch, tmp_path, sink
+):
+    infra = _infra(tool)
+    _fake_profiler(infra, monkeypatch)
+    stream = FlushedStream()
+    monkeypatch.setattr(infra.sys, "stderr", stream)
+    if sink == "file":
+        (tmp_path / "infra-profile.json").mkdir()
+    else:
+
+        class BrokenStream:
+            def write(self, text):
+                raise OSError("PRIVATE_SINK_MESSAGE")
+
+            def flush(self):
+                raise OSError("PRIVATE_SINK_MESSAGE")
+
+        monkeypatch.setattr(infra.sys, "stderr", BrokenStream())
+    observer = infra.FirstYearProfiler(tmp_path, "PRIVATE_LABEL")
+    observer("start", "first_ordinary_year", year=2026)
+    observer("stop", "first_ordinary_year", year=2026, completed=True)
+    if sink == "file":
+        text = stream.getvalue()
+        assert stream.flushes > 0
+        assert text.startswith(infra.PREFIX)
+        record = json.loads(text[len(infra.PREFIX) :])
+    else:
+        record = json.loads((tmp_path / "infra-profile.json").read_text())
+    assert set(record) == {
+        "schema",
+        "status",
+        "label",
+        "year",
+        "completed",
+        "window_seconds",
+        "functions",
+    }
+    assert record["schema"] == infra.SCHEMA
+    assert record["status"] == "ok"
+    assert record["label"] == "other"
+    assert record["year"] == 2026
+    assert record["completed"] is True
+    assert record["functions"] == []
+    assert "PRIVATE_" not in json.dumps(record)
+    assert list(tmp_path.glob("*.pstats")) == []
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "/private/SECRET/policyengine_uk/utils/aggregate_impact/measure.py",
+        "/private/SECRET/pe_uk_aggregate_impact/measure.py",
+    ],
+)
+def test_profile_maps_normal_and_copied_layout_to_the_same_literal_id(tool, filename):
+    infra = _infra(tool)
+    code = _profile_code(filename)
+    expected_id = "aggregate_impact.measure.py:measure_year"
+    assert infra._literal_id(code) == expected_id
+    assert infra._safe_rows([_profile_entry(code)]) == [
+        {
+            "id": expected_id,
+            "calls": 4,
+            "primitive_calls": 3,
+            "self_seconds": 0.25,
+            "cumulative_seconds": 0.5,
+        }
+    ]
+
+
+def test_profile_rejects_unknown_symbols_and_component_boundary_collisions(tool):
+    infra = _infra(tool)
+    invalid = [
+        _profile_code("/SECRET/other/measure.py"),
+        _profile_code("/SECRET/notpolicyengine_uk/utils/aggregate_impact/measure.py"),
+        _profile_code("/SECRET/notpe_uk_aggregate_impact/measure.py"),
+        _profile_code("/SECRET/policyengine_uk/utils/geography.py", "PRIVATE_FUNCTION"),
+        "<PRIVATE_BUILTIN>",
+    ]
+    assert all(infra._literal_id(code) is None for code in invalid)
+    assert infra._safe_rows([_profile_entry(code) for code in invalid]) == []
+    valid = _profile_code("/SECRET/policyengine_uk/utils/geography.py", "input_facts")
+    rows = infra._safe_rows(
+        [_profile_entry(valid), *[_profile_entry(code) for code in invalid]]
+    )
+    assert len(rows) == 1
+    assert rows[0]["id"] == "policyengine_uk.utils.geography.py:input_facts"
+    assert len(rows) <= infra.MAX_ROWS == 50
+    assert "SECRET" not in json.dumps(rows) and "PRIVATE" not in json.dumps(rows)
+
+
+@pytest.mark.parametrize(
+    "bad_stats",
+    [
+        {"calls": True},
+        {"calls": -1},
+        {"recursive": 5},
+        {"recursive": -1},
+        {"own": float("nan")},
+        {"own": float("inf")},
+        {"own": -0.1},
+        {"total": float("-inf")},
+        {"total": -0.1},
+    ],
+)
+def test_profile_omits_nonfinite_negative_or_invalid_statistics(tool, bad_stats):
+    infra = _infra(tool)
+    code = _profile_code("/SECRET/pe_uk_aggregate_impact/measure.py")
+    assert infra._safe_rows([_profile_entry(code, **bad_stats)]) == []
+
+
+def test_profile_window_excludes_statistics_filtering_and_is_one_shot(
+    tool, monkeypatch, tmp_path
+):
+    infra = _infra(tool)
+    state = _fake_profiler(infra, monkeypatch)
+    clock = [10.0]
+    records = []
+    monkeypatch.setattr(infra.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+    observer = infra.FirstYearProfiler(tmp_path, "head")
+    observer("start", "first_ordinary_year", year=2026)
+
+    def expensive_filter(entries):
+        clock[0] = 99.0
+        return []
+
+    monkeypatch.setattr(infra, "_safe_rows", expensive_filter)
+    clock[0] = 11.0
+    observer("stop", "first_ordinary_year", year=2026, completed=True)
+    observer("start", "first_ordinary_year", year=2027)
+    observer("stop", "first_ordinary_year", year=2027, completed=True)
+    assert state["created"] == state["enabled"] == state["disabled"] == 1
+    assert len(records) == 1 and records[0]["window_seconds"] == 1.0
+    assert records[0]["year"] == 2026
+
+
+def test_profile_transport_accepts_exact_prefixed_byte_limit_and_rejects_one_more(
+    tool, monkeypatch, tmp_path
+):
+    infra = _infra(tool)
+    stream = FlushedStream()
+    monkeypatch.setattr(infra.sys, "stderr", stream)
+    # Exercise the transport-size seam directly; real records use the fixed schema above.
+    record = {"schema": infra.SCHEMA, "padding": ""}
+
+    def encode(value):
+        return json.dumps(value, sort_keys=True, allow_nan=False, separators=(",", ":"))
+
+    overhead = len((infra.PREFIX + encode(record) + "\n").encode("utf-8"))
+    record["padding"] = "x" * (infra.MAX_BYTES - overhead)
+    infra._publish(tmp_path / "exact", record)
+    assert len(stream.getvalue().encode("utf-8")) == infra.MAX_BYTES == 65_536
+    assert json.loads((tmp_path / "exact" / "infra-profile.json").read_text()) == record
+    assert stream.flushes == 1
+    record["padding"] += "x"
+    infra._publish(tmp_path / "too-large", record)
+    assert not (tmp_path / "too-large" / "infra-profile.json").exists()
+    assert len(stream.getvalue().encode("utf-8")) == infra.MAX_BYTES
+    assert stream.flushes == 1
+
+
+def test_real_profiler_exports_observed_allowlisted_calls_and_restores_hook(
+    tool, monkeypatch, tmp_path
+):
+    from types import FunctionType
+
+    infra = _infra(tool)
+    stream = FlushedStream()
+    monkeypatch.setattr(infra.sys, "stderr", stream)
+    code = _profile_code("/PRIVATE/pe_uk_aggregate_impact/measure.py")
+    observed = FunctionType(code, {})
+    previous = sys.getprofile()
+    observer = owned = None
+    backend = infra.FirstYearProfiler._monitoring_backend()
+    try:
+        sys.setprofile(None)
+        observer = infra.FirstYearProfiler(tmp_path, "base")
+        observer("start", "first_ordinary_year", year=2026)
+        owned = observer._profile
+        assert owned is not None
+        if backend is None:
+            assert sys.getprofile() is owned
+        else:
+            assert backend.get_tool(backend.PROFILER_ID) == "cProfile"
+        for _ in range(3):
+            observed()
+        observer("stop", "first_ordinary_year", year=2026, completed=True)
+        assert sys.getprofile() is None
+        assert observer._profile is None
+        if backend is not None:
+            assert backend.get_tool(backend.PROFILER_ID) is None
+    finally:
+        _finish_real_profile(infra, observer, owned, previous)
+    record = json.loads((tmp_path / "infra-profile.json").read_text())
+    assert record["status"] == "ok" and record["completed"] is True
+    assert record["label"] == "base"
+    assert record["functions"] == [
+        {
+            "id": "aggregate_impact.measure.py:measure_year",
+            "calls": 3,
+            "primitive_calls": 3,
+            "self_seconds": record["functions"][0]["self_seconds"],
+            "cumulative_seconds": record["functions"][0]["cumulative_seconds"],
+        }
+    ]
+    assert record["functions"][0]["self_seconds"] >= 0
+    assert record["functions"][0]["cumulative_seconds"] >= 0
+    assert json.loads(stream.getvalue()[len(infra.PREFIX) :]) == record
+    assert stream.flushes == 1
+    assert "PRIVATE" not in json.dumps(record)
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["infra-profile.json"]
+
+
+def _backend_profile_spy(infra, monkeypatch, backend):
+    import weakref
+
+    state = {"hook": None, "native": None, "created": 0, "disabled": 0, "destroyed": 0}
+
+    class Profile:
+        def __init__(self):
+            self.enabled = False
+
+        def enable(self):
+            self.enabled = True
+            if backend == "legacy":
+                state["hook"] = self
+            else:
+                state["native"] = "cProfile"
+
+        def disable(self):
+            self.enabled = False
+            state["disabled"] += 1
+            if backend == "legacy":
+                state["hook"] = None
+            else:
+                state["native"] = None
+
+        def getstats(self):
+            return []
+
+        def __del__(self):
+            state["destroyed"] += 1
+            # Model the documented danger of destroying an enabled lost owner.
+            if self.enabled:
+                state["hook" if backend == "legacy" else "native"] = None
+
+    def factory():
+        state["created"] += 1
+        profile = Profile()
+        state["weak_profile"] = weakref.ref(profile)
+        return profile
+
+    def get_tool(tool_id):
+        assert tool_id == 2
+        return state["native"]
+
+    native = SimpleNamespace(PROFILER_ID=2, get_tool=get_tool)
+    monkeypatch.setattr(
+        infra.FirstYearProfiler,
+        "_monitoring_backend",
+        staticmethod(lambda: native if backend == "native" else None),
+    )
+    monkeypatch.setattr(infra.sys, "getprofile", lambda: state["hook"])
+    monkeypatch.setattr(infra.cProfile, "Profile", factory)
+    records = []
+    monkeypatch.setattr(infra, "_publish", lambda out, record: records.append(record))
+    return state, records
+
+
+@pytest.mark.parametrize("backend", ["legacy", "native"])
+def test_busy_profile_backend_is_skipped_without_allocation(
+    tool, monkeypatch, tmp_path, backend
+):
+    infra = _infra(tool)
+    state, records = _backend_profile_spy(infra, monkeypatch, backend)
+    foreign_hook = object()
+    if backend == "legacy":
+        state["hook"] = foreign_hook
+    else:
+        state["native"] = "PRIVATE_FOREIGN_PROFILER"
+    observer = infra.FirstYearProfiler(tmp_path, "head")
+    observer("start", "first_ordinary_year", year=2026)
+    observer("stop", "first_ordinary_year", year=2026, completed=True)
+    assert state["created"] == state["disabled"] == state["destroyed"] == 0
+    assert state["hook"] is (foreign_hook if backend == "legacy" else None)
+    assert state["native"] == (
+        "PRIVATE_FOREIGN_PROFILER" if backend == "native" else None
+    )
+    assert len(records) == 1
+    assert records[0]["status"] == "skipped"
+    assert records[0]["reason"] == "preexisting_profiler"
+    assert records[0]["functions"] == []
+    assert "PRIVATE" not in json.dumps(records)
+
+
+@pytest.mark.parametrize("backend", ["legacy", "native"])
+def test_owned_profile_backend_retires_without_touching_an_independent_hook(
+    tool, monkeypatch, tmp_path, backend
+):
+    infra = _infra(tool)
+    state, records = _backend_profile_spy(infra, monkeypatch, backend)
+    observer = infra.FirstYearProfiler(tmp_path, "head")
+    observer("start", "first_ordinary_year", year=2026)
+    assert observer._profile is state["weak_profile"]()
+    independent_hook = object()
+    if backend == "native":
+        state["hook"] = independent_hook
+    observer("stop", "first_ordinary_year", year=2026, completed=True)
+    assert state["created"] == state["disabled"] == 1
+    assert state["destroyed"] == 1
+    assert observer._profile is None
+    assert infra._ORPHANED_PROFILE is None
+    assert state["native"] is None
+    assert state["hook"] is (independent_hook if backend == "native" else None)
+    assert len(records) == 1 and records[0]["status"] == "ok"
+    assert records[0]["completed"] is True and records[0]["functions"] == []
+
+
+@pytest.mark.parametrize("backend", ["legacy", "native"])
+def test_lost_profile_owner_is_quarantined_once_and_blocks_later_activation(
+    tool, monkeypatch, tmp_path, backend
+):
+    infra = _infra(tool)
+    state, records = _backend_profile_spy(infra, monkeypatch, backend)
+    observer = infra.FirstYearProfiler(tmp_path, "head")
+    foreign_hook = object()
+    try:
+        observer("start", "first_ordinary_year", year=2026)
+        weak_profile = state["weak_profile"]
+        if backend == "legacy":
+            state["hook"] = foreign_hook
+        else:
+            state["native"] = "PRIVATE_FOREIGN_PROFILER"
+        observer("stop", "first_ordinary_year", year=2026, completed=True)
+        assert observer._profile is None
+        assert infra._ORPHANED_PROFILE is weak_profile() is not None
+        del observer
+        assert weak_profile() is not None
+        later = infra.FirstYearProfiler(tmp_path, "base")
+        later("start", "first_ordinary_year", year=2027)
+        later("stop", "first_ordinary_year", year=2027, completed=True)
+        assert state["created"] == 1
+        assert state["disabled"] == state["destroyed"] == 0
+        assert infra._ORPHANED_PROFILE is weak_profile()
+        assert state["hook"] is (foreign_hook if backend == "legacy" else None)
+        assert state["native"] == (
+            "PRIVATE_FOREIGN_PROFILER" if backend == "native" else None
+        )
+        assert len(records) == 2
+        assert all(record["status"] == "unavailable" for record in records)
+        assert all(record["reason"] == "observer_unavailable" for record in records)
+        assert all(record["functions"] == [] for record in records)
+        assert "PRIVATE" not in json.dumps(records)
+    finally:
+        # Teardown takes back only this fake owner's state before releasing it.
+        orphan = infra._ORPHANED_PROFILE
+        if orphan is not None:
+            if backend == "legacy":
+                state["hook"] = orphan
+            else:
+                state["native"] = "cProfile"
+            orphan.disable()
+            infra._ORPHANED_PROFILE = None
+
+
+@pytest.mark.parametrize("error_type", [KeyboardInterrupt, SystemExit])
+def test_disable_interrupt_keeps_one_owned_profile_and_reraises_the_original(
+    tool, monkeypatch, tmp_path, error_type
+):
+    infra = _infra(tool)
+    state, records = _backend_profile_spy(infra, monkeypatch, "native")
+    observer = infra.FirstYearProfiler(tmp_path, "head")
+    observer("start", "first_ordinary_year", year=2026)
+    weak_profile = state["weak_profile"]
+    profile_type = type(observer._profile)
+    normal_disable = profile_type.disable
+    original_interrupt = error_type("PRIVATE_INTERRUPT_MESSAGE")
+    state["disable_attempts"] = 0
+
+    def interrupted_disable(self):
+        state["disable_attempts"] += 1
+        raise original_interrupt
+
+    monkeypatch.setattr(profile_type, "disable", interrupted_disable)
+    independent_hook = object()
+    state["hook"] = independent_hook
+    try:
+        with pytest.raises(error_type) as caught:
+            observer("stop", "first_ordinary_year", year=2026, completed=True)
+        assert caught.value is original_interrupt
+        assert observer._profile is None
+        assert infra._ORPHANED_PROFILE is weak_profile() is not None
+        del observer
+        assert state["created"] == state["disable_attempts"] == 1
+        assert state["disabled"] == state["destroyed"] == 0
+        assert state["hook"] is independent_hook
+        assert state["native"] == "cProfile"
+        assert records == []
+    finally:
+        orphan = infra._ORPHANED_PROFILE
+        if orphan is not None:
+            normal_disable(orphan)
+            infra._ORPHANED_PROFILE = None

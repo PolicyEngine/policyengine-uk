@@ -158,6 +158,15 @@ def cmd_measure(args) -> int:
         def factory(reform=None):
             return Microsimulation(dataset=dataset_object, reform=reform or None)
 
+        year_profile = None
+        if getattr(args, "profile_first_year", False):
+            try:
+                from .infra_profile import FirstYearProfiler
+
+                year_profile = FirstYearProfiler(args.out, args.label)
+            except Exception:  # noqa: BLE001 - optional diagnostics must not stop measurement
+                pass
+
         checkpoint("start", "measure")
         result, households = measure(
             sim,
@@ -170,6 +179,7 @@ def cmd_measure(args) -> int:
             provenance=provenance,
             fingerprint_at_start=fingerprint_at_start,
             checkpoint=checkpoint,
+            year_profile=year_profile,
         )
         checkpoint("end", "measure")
         write_result(args.out, result, households)
@@ -273,6 +283,11 @@ def main(argv=None) -> int:
     m.add_argument("--git-ref", default="")
     m.add_argument(
         "--no-guard", action="store_true", help="skip the counted-once check"
+    )
+    m.add_argument(
+        "--profile-first-year",
+        action="store_true",
+        help="record bounded infrastructure statistics for the first ordinary year",
     )
     m.add_argument("--out", required=True)
     m.set_defaults(func=cmd_measure)
