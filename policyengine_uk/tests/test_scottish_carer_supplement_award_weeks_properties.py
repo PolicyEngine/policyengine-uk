@@ -253,9 +253,9 @@ def pensioner(state_pension, country="SCOTLAND"):
 
 @PROPERTY_SETTINGS
 @given(people=batches(supplied=True))
-# 13 and 25 weeks of the 2026 rate after a move to England (reg 42), one week,
-# 60 weeks, a carer in Scotland with no caring inputs, and one the model finds
-# eligible.
+# 13 and 25 complete award weeks of the 2026 rate after a Sunday move to
+# England (reg 42), one week, 60 weeks, a carer in Scotland with no caring
+# inputs, and one the model finds eligible.
 @example(
     people=[
         england(1_123.85),

@@ -1038,7 +1038,7 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
   - id: scottish_carer_supplement
-    label: Carer's Allowance Supplement (Scotland)
+    label: Scottish Carer Supplement
     variable: scottish_carer_supplement
     entity: person
     report_group: disability_and_carers_benefits
