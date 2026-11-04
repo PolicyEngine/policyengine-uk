@@ -1,3 +1,20 @@
+## [2.174.0] - 2026-11-04
+
+### Added
+
+- The OBR forecasts importer now writes national living wage growth from the EFO economy tables' national living wage table (Table 1.13). It reads the OBR's levels across the table's row of years, projects each estimate from the last national living wage rate in the minimum wage parameters as the model does, and writes growth that keeps each estimate's penny.
+
+### Changed
+
+- Bring the economic assumptions page into line with the uprating map, the rent and water projections and the October 2026 road fuel forecast.
+
+### Fixed
+
+- The model now counts each person's cash ISA and stocks and shares ISA balances in their own benefit unit for Universal Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and income-related ESA, so a lodger's or an adult child's ISA no longer adds to the main family's capital.
+- When a caller sets an input for an earlier year after a calculation, recalculate the later years the default branch had grown, carried over or calculated from earlier inputs, as a named branch and a new simulation do.
+- Count armed forces independence payment as attendance allowance in the Universal Credit housing cost contribution exemption, so the model deducts no contribution for a non-dependant who receives it.
+
+
 ## [2.173.4] - 2026-11-04
 
 ### Fixed
