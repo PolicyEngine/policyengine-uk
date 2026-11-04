@@ -64,7 +64,8 @@ class council_tax_reduction_applicable_income(Variable):
         "The income tax and National Insurance deducted are those the scheme "
         "allows (council_tax_reduction_tax_deduction): on earnings only in "
         "Scotland's working-age scheme, on income taken into account in the "
-        "pensioner schemes, and the whole liability in the other schemes."
+        "pensioner schemes, and in the other schemes the income tax the "
+        "legacy means tests deduct (legacy_means_test_deducted_income_tax)."
     )
     definition_period = YEAR
     unit = GBP
@@ -356,7 +357,8 @@ class council_tax_reduction_applicable_income(Variable):
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
         # The income tax and National Insurance each scheme allows: on earnings
         # only in Scotland's working-age scheme, on income taken into account
-        # in the pensioner schemes (council_tax_reduction_tax_deduction).
+        # in the pensioner schemes, and in the other schemes what the legacy
+        # means tests deduct (council_tax_reduction_tax_deduction).
         tax = benunit("council_tax_reduction_tax_deduction", period)
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner

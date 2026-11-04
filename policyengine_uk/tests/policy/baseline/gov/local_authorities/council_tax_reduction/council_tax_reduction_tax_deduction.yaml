@@ -702,7 +702,7 @@
     # 40,000 - 3,486 - the 10 a week couple's earnings disregard (520).
     council_tax_reduction_applicable_income: 35_994
 
-- name: Wales's working-age scheme still deducts the whole income tax
+- name: Wales's working-age scheme deducts the tax the legacy means tests deduct
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -710,7 +710,7 @@
       adult:
         age: 40
         employment_income: 20_000
-        private_pension_income: 10_000
+        savings_interest_income: 20_000
     benunits:
       benunit:
         members: [adult]
@@ -722,10 +722,19 @@
         region: WALES
         council_tax: 2_000
   output:
-    # The model keeps the whole liability here, which the cases above do not
-    # cover: (30,000 - 12,570) x 20% = 3,486 and Class 1 594.40.
-    council_tax_reduction_tax_deduction: 4_080.40
-    council_tax_reduction_applicable_income: 25_919.60
+    # The formula leaves this scheme as the legacy means tests have it: the
+    # income tax less the tax the interest would bear without the pay
+    # (legacy_means_test_deducted_income_tax), and National Insurance.
+    # With the pay: non-savings 20,000 - 12,570 = 7,430 taxable, x 20% =
+    # 1,486; the interest above it gets no starting rate, a 1,000 personal
+    # savings allowance and 19,000 x 20% = 3,800, so 5,286. Without the pay:
+    # 20,000 - 12,570 = 7,430 of taxable interest, 5,000 at the starting rate
+    # and 1,000 allowance at nil, 1,430 x 20% = 286. 5,286 - 286 = 5,000.
+    # Class 1: (20,000 - 12,569.96) x 8% = 594.40.
+    legacy_means_test_deducted_income_tax: 5_000
+    council_tax_reduction_tax_deduction: 5_594.40
+    # The scheme counts the pay but not the interest: 20,000 - 5,594.40.
+    council_tax_reduction_applicable_income: 14_405.60
 
 - name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,661
   period: 2026

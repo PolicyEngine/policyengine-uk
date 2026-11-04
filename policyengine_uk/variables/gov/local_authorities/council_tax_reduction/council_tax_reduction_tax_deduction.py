@@ -49,9 +49,11 @@ class council_tax_reduction_tax_deduction(Variable):
         "includes any tax they add on savings and dividends and through the "
         "marriage allowance. Benefits in kind stay in both terms of each "
         "difference, since no scheme counts a payment in kind as earnings. "
-        "The English and Welsh working-age schemes, and families outside "
-        "Great Britain, deduct the whole income tax before the winter fuel "
-        "payment charge and all National Insurance. " + DECISION
+        "In the English and Welsh working-age schemes, and for families "
+        "outside Great Britain, the formula deducts what the legacy means "
+        "tests deduct: the applicant's and partner's "
+        "legacy_means_test_deducted_income_tax, with their sum floored at "
+        "nil, and all their National Insurance. " + DECISION
     )
     definition_period = YEAR
     unit = GBP
@@ -92,9 +94,23 @@ class council_tax_reduction_tax_deduction(Variable):
 
         income_tax = person(PRE_CHARGE_TAX, period)
         tax = total(income_tax)
-        whole_liability = tax + total(person("national_insurance", period))
         class_1 = total(person("ni_class_1_employee", period))
         zeros = np.zeros_like(tax)
+
+        # The other schemes deduct what the legacy means tests deduct: the
+        # applicant's and partner's legacy_means_test_deducted_income_tax,
+        # whose sum the formula floors at nil because one member's value can
+        # turn negative where another's earnings move a Step 7 charge off
+        # them, and all their National Insurance.
+        other_schemes = ~(
+            with_universal_credit | without_universal_credit | pensioner_scheme
+        )
+        if other_schemes.any():
+            legacy_deduction = max_(
+                0, total(person("legacy_means_test_deducted_income_tax", period))
+            ) + total(person("national_insurance", period))
+        else:
+            legacy_deduction = zeros
 
         # Each branch of income tax is read only where a scheme uses it.
         if (without_universal_credit | pensioner_scheme).any():
@@ -155,5 +171,5 @@ class council_tax_reduction_tax_deduction(Variable):
         return select(
             [with_universal_credit, without_universal_credit, pensioner_scheme],
             [uc_deduction, no_uc_deduction, pensioner_deduction],
-            default=whole_liability,
+            default=legacy_deduction,
         )
