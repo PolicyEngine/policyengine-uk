@@ -1,3 +1,10 @@
+## [2.174.5] - 2026-11-04
+
+### Fixed
+
+- Fix evidence reads a period after a quoted reproducer id as the end of the sentence, and its hint says to put an id in backticks when its name contains a comma or semicolon.
+
+
 ## [2.174.4] - 2026-11-04
 
 ### Fixed
