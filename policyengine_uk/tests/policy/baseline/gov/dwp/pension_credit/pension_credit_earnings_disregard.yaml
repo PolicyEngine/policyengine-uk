@@ -347,11 +347,11 @@
     # = 3,281.22, less 252 = 3,029.22.
     # Without earnings (next case): 15,430 taxable; 537.13 + 2,418.80 +
     # 509 x 21% = 3,062.82, less 252 = 2,810.82.
-    # The taxable income already exceeds 14,921 without the earnings, so the
-    # earnings do not cross into the intermediate band: all 1,040 bear 21%,
-    # adding 3,029.22 - 2,810.82 = 218.40 of tax. No Class 1 above State
-    # Pension age, so net earnings are 1,040 - 218.40 = 821.60, and the 20
-    # pound disregard (attendance allowance) of 1,040 is capped there.
+    # The taxable income exceeds 14,921 even without the earnings, so all
+    # 1,040 of the earnings bear 21%, adding 3,029.22 - 2,810.82 = 218.40 of
+    # tax. The claimant pays no Class 1 contributions above State Pension age,
+    # so net earnings come to 1,040 - 218.40 = 821.60, and the 20 pound
+    # disregard (attendance allowance), up to 1,040 a year, covers all 821.60.
     # Income: 29,040 - 3,029.22 - 821.60 = 25,189.18, as with no earnings.
     income_tax: [3_029.22, 0]
     pension_credit_earnings_disregard: 821.60
