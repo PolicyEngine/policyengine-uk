@@ -1,3 +1,10 @@
+## [2.174.3] - 2026-11-04
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
 ## [2.174.2] - 2026-11-04
 
 ### Fixed
