@@ -35,6 +35,7 @@ GDP and population assumptions remain supported.
 | `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts, property transactions taxes by sector: Table 4.7 in October 2026 |
 | `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 4.8 in October 2026 |
 | `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts, other taxes: Table 4.2 in October 2026 |
+| `per_capita.gambling_duty_bases.<duty>` | The base of each of the seven betting and gaming duties (receipts over the model's rate), per person | HMRC Betting and Gaming tables (2024-25, 2025-26), then EFO receipts, betting and gaming duties forecast breakdown: Table 4.10 in October 2026, over `ons.population` |
 
 The four receipts series project the corporate SDLT and business rates
 statistics (`gov.hmrc.stamp_duty.statistics`,
@@ -45,17 +46,77 @@ in an earlier EFO), the EFO's forecast years, and after them the
 `average_earnings` path. Years before the outturn year are kept, so each
 index keeps its base year.
 
+The seven `per_capita.gambling_duty_bases` series (`general_betting`,
+`pool_betting`, `remote_gaming`, `machine_games`, `gaming`, `bingo`,
+`lottery`) grow the gambling duty inputs (#2738). They grow a duty's base,
+not its receipts: each year's receipts divided by the rate the model charges
+that fiscal year. The model then applies its own rate changes, such as
+Remote Gaming Duty's rise from 21% to 40% on 1 April 2026, once. The OBR
+publishes only forecasts in Table 4.10, so each series starts from HMRC's
+2024-25 receipts, the model's base year, and its 2025-26 outturn, which the
+importer holds in `RECEIPTS_SERIES_SPECS`. The importer holds a base flat in
+any year whose rate is zero, as for Bingo Duty from 2026-27 on, and after the
+forecast it grows every other base with `average_earnings`. The importer
+writes each series per person, (1 +
+base growth) / (1 + `ons.population` growth) - 1 to six decimals, in every
+year to the last that `ons.population` states. Dataset projection grows
+household weights by `ons.population`, so the weighted inputs grow with the
+base. See
+[gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
+for each duty's rates, the higher-stake share Machine Games Duty's rate
+assumes, and the approximations.
+
 `national_living_wage` projects the minimum wage rates
-(`gov.hmrc.minimum_wage`) after the last rate set. It is the growth of the
-rates set to 2027, then the OBR's estimates in Table 1.13 of the detailed
-economy tables, then `average_earnings`' long-run growth. The checked-in
-estimates are the October 2026 EFO's, ahead of the other series' March 2026
-vintage, because HM Treasury costed Budget 2026's Carer's Allowance taper on
-them. `utils/import_obr_forecasts.py` doesn't read Table 1.13, so the series
-is updated by hand with each EFO. `test_minimum_wage_projection.py` holds the
-table and fails if the series stops reproducing it, or if its long-run years
-stop matching `average_earnings`. Each rate is set by an S.I., so this is a projection, not
-a formula.
+(`gov.hmrc.minimum_wage`) after the last rate set. The government sets each
+rate following the Low Pay Commission's recommendations, and the OBR
+publishes the rates the government has set, with its estimates of later
+ones, in the national living wage table of the detailed economy tables
+(Table 1.13 in October 2026). The series holds the growth into each of those
+rates, then `average_earnings`' long-run growth, year for year. HM Treasury
+costed Budget 2026's Carer's Allowance taper on the OBR's estimates.
+
+`utils/import_obr_forecasts.py` writes the series with the other economy
+series. It finds the table by its title and reads the level under each year
+across the table's one row of years. The importer divides each year's level
+by the previous year's level, subtracts one, and rounds to six decimals. The
+OBR identifies in its note the last year the government has set, and the
+importer labels the growth into those years and into the OBR's estimates with
+separate comments.
+
+The model projects the national living wage from the last rate in the last
+bracket of `gov/hmrc/minimum_wage/non_apprentice.yaml`. It carries that rate
+through the index it builds from this series and rounds each projected rate
+to the nearest penny. The importer reads that rate through policyengine-core's
+loader and Parameter, then projects each later table year with the model's
+rounding. Where a year's ratio would leave the model a penny off the
+OBR's level, the importer writes the six-decimal growth that keeps the OBR's
+penny. Where the OBR publishes no level for the year of that rate or earlier,
+the importer keeps the series' earlier growth into the table's first year and
+checks the model's penny there against the OBR's. The importer
+then runs the model's own generation steps on the file it would write. It
+checks that the model's index reaches the table's last year, stays above zero
+and finite in every year the model builds it, and matches the index the
+importer compounded.
+
+The importer stops before writing any file when:
+
+- the unit differs from £ per hour, or the table lacks one row of years or
+  one row labelled "National Living Wage (NLW)";
+- the years skip or repeat, a year lacks a positive level, or a figure has no
+  year above it;
+- the OBR's note names no single calendar year the government has set, or its
+  statements name different years;
+- the OBR's level in the year of the file's last rate differs from that rate
+  at the penny;
+- the OBR publishes no level for the year of that rate or earlier, and the
+  model carries the rate to another penny in the table's first year;
+- the model's index, built from the series the importer would write, reaches
+  zero or infinity in a year the model builds it; or
+- no six-decimal growth keeps an estimate's penny.
+
+`test_minimum_wage_projection.py` holds the October 2026 table, checks it
+against the importer's fixture, and fails if the series stops reproducing the
+table to the penny, or if its long-run years stop matching `average_earnings`.
 
 ## Time horizons
 
@@ -120,13 +181,14 @@ benefit-unit capital without overwriting programme-specific countable capital.
 Changing that formula to carry every direct input would alter situation
 semantics.
 
-Source coverage and processed parameter dates are distinct: fiscal-year
-conversion materialises annual values through 2040, while cumulative economic
-indices compound only through 2039. A later parameter lookup retains the final
-scalar; for a raw growth series that repeats the growth rate, but for a
-cumulative index it freezes the level. Extending the dataset to the raw
-series' final year would therefore be both costly and inconsistent with Core
-uprating after the cumulative-index horizon.
+Source coverage and processed parameter dates are distinct. Cumulative
+economic indices compound to the last year any growth series covers, which is
+one year past `yoy_growth.yaml` because the lagged series run a year past
+their source. A series that ends sooner holds its final growth rate to that
+year: that is an extrapolation, and it matters more the further a series
+falls short of the horizon. Past the horizon a parameter lookup retains the
+final scalar; for a raw growth series that repeats the growth rate, but for a
+cumulative index it freezes the level.
 
 From 2031 onward, dataset projection also grows stored columns whose variables
 have a class-level `uprating` index but are absent from `uprating_indices.yaml`.
@@ -179,9 +241,9 @@ The additional indices have their own source limits:
 
 | Stored input | Variable index | Source coverage and terminal behavior |
 |---|---|---|
-| Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2039. |
-| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 5.0%; that rate carries into later years when the cumulative index is generated, through 2039. |
-| Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2039. |
+| Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2074. |
+| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 5.0%; that rate carries into later years when the cumulative index is generated, through 2074. |
+| Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2074. |
 | Rail usage | `gov.dft.rail.ridership_index` | The source cumulative index ends in 2029 at 1.044. Its terminal level stays flat, so the projection ratio is one in 2031 and 2032. |
 
 The `indices.*` paths in this table are relative to
@@ -458,9 +520,27 @@ the forecast levels, though not their growth.
    `policyengine_uk/tests/test_corporate_receipts_statistics.py`
    (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass
    `--skip-receipts-growth` only to leave them on the previous EFO.
-7. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
+   The same run refreshes the `per_capita.gambling_duty_bases` series from
+   the new EFO's betting and gaming duties forecast breakdown and the
+   `ons.population` growth in `yoy_growth.yaml`, so rerun it after any change
+   to that population series. They read no previous EFO: the year before the
+   table's first comes from HMRC's receipts in each spec. When the table starts a year later (2027-28 in October 2027), add
+   HMRC's outturn for the year before from its latest Betting and Gaming
+   tables; the importer stops and names the year until you do. Check the
+   EFO's policy tables for any new measure in the betting and gaming lines.
+   Then update the published levels in
+   `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
+7. The importer refreshes `national_living_wage` in the same run, from the
+   new economy tables' national living wage table (Table 1.13 in October
+   2026), with `average_earnings` after it. Then replace the cut-down table in
+   `policyengine_uk/tests/fixtures/obr_economy/` (see its README) and the
+   levels in `OBR_NATIONAL_LIVING_WAGE` in
+   `policyengine_uk/tests/test_minimum_wage_projection.py`. Pass
+   `--skip-national-living-wage` only to leave the series on the previous
+   EFO.
+8. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
    [Dataset projection horizon](#dataset-projection-horizon)).
-8. Refresh the household energy price inputs (see
+9. Refresh the household energy price inputs (see
    [Household energy prices](#household-energy-prices)) from the new EFO's
    economy tables, the MM23 release of the same month and the latest Energy
    Trends tables. The importer records the last quarter ONS publishes in
@@ -512,13 +592,6 @@ The rail fare indices (`gov.dft.rail.fare_index` and `prior_law_fare_index`),
 Bank Rate (`gov.boe.base_rate`, economy Table 1.9) and households' financial
 assets (`household.wealth.financial_assets`, Table 1.11) also take October
 2026 values.
-
-The national living wage forecast (economy Table 1.13) is not read here. Until
-PolicyEngine/policyengine-uk#2700 adds it as `obr.national_living_wage`, the
-minimum wage rates, and the rules built on them, stay at their April 2026
-levels; #2721 tracks teaching the importer to read the table. Whichever of
-#2700 and the October 2026 update merges second copies the 2032+ earnings path
-into that series.
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).

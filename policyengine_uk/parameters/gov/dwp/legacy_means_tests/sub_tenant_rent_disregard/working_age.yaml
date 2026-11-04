@@ -1,0 +1,30 @@
+description: >
+  Weekly amount disregarded from the rent a working-age claimant receives from
+  a person who occupies part of the claimant's home under a contractual
+  liability to pay for it, other than board and lodging; rent below this
+  amount is disregarded in full. Income Support, income-based Jobseeker's
+  Allowance, income-related Employment and Support Allowance and working-age
+  Housing Benefit use it, and the working-age council tax reduction schemes
+  in Wales and the English default scheme copy it. Before April 2008 the
+  disregard was £4 plus a further amount where the payment included heating;
+  the heating amount is not modelled.
+metadata:
+  label: Legacy benefits working-age sub-tenant rent disregard
+  period: week
+  unit: currency-GBP
+  reference:
+    - title: The Income Support (General) Regulations 1987 Schedule 9 para. 19
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/19
+    - title: The Income Support (General) Regulations 1987 Schedule 9 para. 19 (as made)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/made
+    - title: The Housing Benefit Regulations 2006 Schedule 5 para. 22
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/22
+    - title: The Jobseeker's Allowance Regulations 1996 Schedule 7 para. 20
+      href: https://www.legislation.gov.uk/uksi/1996/207/schedule/7/paragraph/20
+    - title: The Employment and Support Allowance Regulations 2008 Schedule 8 para. 20
+      href: https://www.legislation.gov.uk/uksi/2008/794/schedule/8/paragraph/20
+    - title: The Social Security (Miscellaneous Amendments) (No. 5) Regulations 2007 regs. 1(2), 1(3), 5(12) and 11(12)
+      href: https://www.legislation.gov.uk/uksi/2007/2618/regulation/1/made
+values:
+  1988-04-11: 4
+  2008-04-07: 20

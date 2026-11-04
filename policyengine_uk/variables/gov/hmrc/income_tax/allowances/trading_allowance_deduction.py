@@ -18,7 +18,10 @@ class trading_allowance_deduction(Variable):
         "it, and a larger profit as already reflecting the better of actual "
         "expenses and the allowance, so taxable profit jumps from nil to the "
         "full profit just above the allowance. Receipts below profit are "
-        "inconsistent and treated as unknown. The model compares the raw loss "
+        "inconsistent and treated as unknown. For people the input data mark "
+        "as claimants or non-claimants (trading_allowance_claim_status), see "
+        "policyengine_uk/utils/trading_allowance.py. The model compares the "
+        "raw loss "
         "supplied for this tax year, before net-income and relief-cap limits, "
         "with the allowance's effective saving after other deductions, "
         "including its relief on miscellaneous income. "
@@ -60,5 +63,5 @@ class trading_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        trade_relief, _ = trading_allowance_reliefs(person, period, parameters)
+        trade_relief, _, _ = trading_allowance_reliefs(person, period, parameters)
         return trade_relief
