@@ -1,3 +1,10 @@
+## [2.174.1] - 2026-11-04
+
+### Fixed
+
+- Use the Universal Credit award before debt deductions when calculating working-age Council Tax Reduction in Merton, Kingston upon Thames, Newham and Westminster.
+
+
 ## [2.174.0] - 2026-11-04
 
 ### Added
