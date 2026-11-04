@@ -8,7 +8,17 @@ from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit_earnings_in
 # pensioner schemes' general route: the Scottish Carer Supplement (SSI
 # 2012/319 reg 27(1)(j)(xxib)), miscellaneous income, benefits in kind (no
 # scheme counts a payment in kind as earnings), savings interest and other
-# investment income, and dividends.
+# investment income, dividends, and the profits of a property business
+# (property_income), such as rent from a property the applicant doesn't live
+# in. The model taxes those profits through property_income alone. Without
+# them, the finance-cost reduction comes to nil on the branch, because
+# property_finance_costs_relieved caps the costs it relieves at the property
+# profits, so the reduction goes with the rent. property_rental_income only
+# measures receipts for the property allowance, which can't take taxable
+# property income below the nil the branch leaves, so the formula keeps it.
+# Rent for letting part of the home (sublet_income) counts on the pensioner
+# route (council_tax_reduction_home_letting_income), so the formula keeps it
+# too; the model charges no income tax on it.
 PENSIONER_UNCOUNTED_INCOME = [
     "scottish_carer_supplement",
     "miscellaneous_income",
@@ -16,6 +26,7 @@ PENSIONER_UNCOUNTED_INCOME = [
     "savings_interest_income",
     "other_investment_income",
     "dividend_income",
+    "property_income",
 ]
 
 # The Step 7 charges of ITA 2007 s. 23 that income_tax_charges holds,
@@ -39,7 +50,9 @@ class council_tax_reduction_income_tax_on_other_counted_income(Variable):
         "and statutory sick, maternity and paternity pay), self-employment "
         "income, or the taxed income the pensioner schemes do not count: the "
         "Scottish Carer Supplement, miscellaneous income, benefits in kind, "
-        "savings interest, other investment income and dividends. It also "
+        "savings interest, other investment income, dividends and the profits "
+        "of a property business (property_income), with the finance-cost "
+        "reduction that goes with them. It also "
         "leaves out the Step 7 charges of ITA 2007 s. 23 that "
         "income_tax_charges holds, the High Income Child Benefit Charge and "
         "the pension annual allowance charge: through the first, HMRC "

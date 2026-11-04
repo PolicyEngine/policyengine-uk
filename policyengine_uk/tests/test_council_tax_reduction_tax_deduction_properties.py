@@ -51,6 +51,9 @@ UNCOUNTED = [
     "miscellaneous_income",
     "company_car_benefit",
 ]
+# The same with the profits of a property business, which the strategies below
+# draw on their own.
+PENSIONER_UNCOUNTED = UNCOUNTED + ["property_income"]
 # Taxed income other than earnings that Scotland's working-age scheme counts
 # or treats as capital.
 UNEARNED = [
@@ -217,7 +220,7 @@ def test_scottish_working_age_deduction_matches_pension_credit_earnings_tax(
 @PROPERTY_SETTINGS
 @given(
     st.lists(household(pensioner=True, earnings=False), min_size=1, max_size=4),
-    st.sampled_from(UNCOUNTED),
+    st.sampled_from(PENSIONER_UNCOUNTED),
     money(60_000),
     st.booleans(),
 )
@@ -616,6 +619,7 @@ UNCOUNTED_CASES = [
     ("dividend_income", 10_000.0),
     ("miscellaneous_income", 10_000.0),
     ("company_car_benefit", 10_000.0),
+    ("property_income", 10_000.0),
 ]
 
 
@@ -639,6 +643,36 @@ def test_branch_takes_each_uncounted_income_out_of_income_tax():
     assert np.allclose(branch, expected, atol=0.01), (branch, expected)
     tax_with_income = np.asarray(simulate(with_income).calculate(INCOME_TAX, YEAR))
     assert np.all(tax_with_income > expected + 1), tax_with_income
+
+    # A landlord's finance costs earn a 20% tax reduction on the rent. The
+    # branch drops the reduction with the rent, so it gives the same tax with
+    # or without the costs.
+    landlords = simulate(
+        [
+            dict(
+                country="ENGLAND",
+                benunits=[
+                    [
+                        {
+                            **base,
+                            "property_income": 10_000.0,
+                            "property_finance_costs": costs,
+                        }
+                    ]
+                ],
+            )
+            for costs in (0.0, 5_000.0)
+        ]
+    )
+    landlord_tax = np.asarray(landlords.calculate(INCOME_TAX, YEAR))
+    assert np.isclose(landlord_tax[0] - landlord_tax[1], 1_000, atol=0.01)
+    assert np.allclose(
+        landlords.calculate(
+            "council_tax_reduction_income_tax_on_other_counted_income", YEAR
+        ),
+        expected,
+        atol=0.01,
+    )
 
     carer = dict(
         age=70,
