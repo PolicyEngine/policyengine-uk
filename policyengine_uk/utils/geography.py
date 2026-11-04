@@ -130,17 +130,28 @@ def set_cell_mask(simulation, name, period, mask, *, branch=None) -> None:
     )
 
 
-def input_facts(population, name, period, *, exact=False, before=False, override=None):
+def input_facts(
+    population,
+    name,
+    period,
+    *,
+    exact=False,
+    before=False,
+    override=None,
+    with_sources: bool = True,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Latest genuinely supplied cells, their presence and source periods.
 
     Read exact stored input tiers rather than cached/carried values. An
     optional prospective whole-array input supports validation before mutation.
+    With ``with_sources=False``, omit source-period bookkeeping and return
+    ``None`` in the third slot; values, presence and validation are unchanged.
     """
     simulation = population.simulation
     holder = population.get_holder(name)
     values = np.full(population.count, holder.variable.default_value.name, dtype=object)
     found = np.zeros(population.count, dtype=bool)
-    sources = np.full(population.count, None, dtype=object)
+    sources = np.full(population.count, None, dtype=object) if with_sources else None
     branches = _visible_branches(simulation)
     known = set(holder.get_known_branch_periods())
     if override is not None and override[0] == name:
@@ -187,7 +198,8 @@ def input_facts(population, name, period, *, exact=False, before=False, override
         take = mask & ~found
         if take.any():
             values[take] = _names(array, holder.variable.possible_values)[take]
-            sources[take] = str(source)
+            if sources is not None:
+                sources[take] = str(source)
             found |= take
         if override is None and found.all():
             break
@@ -239,7 +251,12 @@ def resolved_region(population, period, *, override=None):
     return _resolve(
         *(
             input_facts(
-                population, name, period, exact=name == "country", override=override
+                population,
+                name,
+                period,
+                exact=name == "country",
+                override=override,
+                with_sources=False,
             )
             for name in ("region", "local_authority", "country")
         )
@@ -322,7 +339,11 @@ def merge_geography_formula(simulation, variable, period, native, had_array):
     population = simulation.get_variable_population(variable.name)
     resolved_region(population, period)
     values, supplied, _ = input_facts(
-        population, variable.name, period, exact=variable.name in {"country", "brma"}
+        population,
+        variable.name,
+        period,
+        exact=variable.name in {"country", "brma"},
+        with_sources=False,
     )
     if supplied.all():
         return variable.possible_values.encode(values)

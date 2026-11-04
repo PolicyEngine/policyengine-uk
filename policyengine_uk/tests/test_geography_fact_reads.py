@@ -267,3 +267,185 @@ def test_needed_matching_presence_record_rejects_unknown_household_id():
     setattr(holder, _HOLDER_MASKS, ((("default", "2026"), (("known",), (True,))),))
     with pytest.raises(ValueError, match="does not identify household IDs"):
         _cell_mask(holder, "default", period(2026))
+
+
+def test_overlay_does_not_allocate_unused_source_period_buffers(monkeypatch):
+    """A normal warm overlay needs facts, but not their source-date vectors."""
+    import policyengine_uk.simulation as simulation_module
+
+    simulation = _fact_scan_world(
+        [{2026: "SCOTLAND"}, {2026: "WALES"}, {2026: "LONDON"}]
+    )
+    expected = ["SCOTLAND", "WALES", "ENGLAND"]
+    simulation.set_input("country", 2026, expected)
+    np.testing.assert_array_equal(simulation.calculate("country", 2026), expected)
+    entered = []
+    allocations = []
+    active = []
+    original_overlay = simulation_module.merge_geography_formula
+
+    def observed_overlay(*args, **kwargs):
+        entered.append(args[1].name)
+        active.append(True)
+        try:
+            return original_overlay(*args, **kwargs)
+        finally:
+            active.pop()
+
+    class ObservedNumpy:
+        def __getattr__(self, name):
+            return getattr(np, name)
+
+        def full(self, shape, fill_value, *args, **kwargs):
+            if active and fill_value is None and kwargs.get("dtype") is object:
+                allocations.append(shape)
+            return np.full(shape, fill_value, *args, **kwargs)
+
+    monkeypatch.setattr(simulation_module, "merge_geography_formula", observed_overlay)
+    monkeypatch.setattr(geography, "np", ObservedNumpy())
+    actual = simulation.calculate("country", 2026)
+    np.testing.assert_array_equal(actual, expected)
+    assert entered == ["country"], "The public calculation must exercise its overlay."
+    assert allocations == [], "The overlay discarded allocated source-period vectors."
+
+
+@pytest.mark.parametrize(
+    "query, options, expected, present, sources",
+    [
+        (
+            2026,
+            {},
+            ["UNKNOWN", "WALES", "SCOTLAND"],
+            [True, True, True],
+            ["2026", "2024", "2026"],
+        ),
+        (
+            2026,
+            {"before": True},
+            ["LONDON", "WALES", "LONDON"],
+            [True, True, False],
+            ["2024", "2024", None],
+        ),
+        (
+            2025,
+            {"exact": True},
+            ["LONDON", "LONDON", "LONDON"],
+            [False, False, False],
+            [None, None, None],
+        ),
+    ],
+    ids=("ordinary", "before", "exact-missing"),
+)
+def test_optional_sources_preserve_sparse_values_and_presence(
+    query, options, expected, present, sources
+):
+    simulation = _fact_scan_world(
+        [
+            {2024: "LONDON", 2026: "UNKNOWN"},
+            {2024: "WALES", 2028: "LONDON"},
+            {2026: "SCOTLAND"},
+        ]
+    )
+    population = simulation.populations["household"]
+    ordinary = geography.input_facts(population, "region", period(query), **options)
+    explicit = geography.input_facts(
+        population, "region", period(query), with_sources=True, **options
+    )
+    omitted = geography.input_facts(
+        population, "region", period(query), with_sources=False, **options
+    )
+    for result in (ordinary, explicit, omitted):
+        np.testing.assert_array_equal(result[0], expected)
+        np.testing.assert_array_equal(result[1], present)
+        assert result[0].dtype == np.dtype(object)
+        assert result[1].dtype == np.dtype(bool)
+    for result in (ordinary, explicit):
+        np.testing.assert_array_equal(result[2], sources)
+        assert result[2].dtype == np.dtype(object)
+    assert omitted[2] is None
+    assert not np.shares_memory(ordinary[0], omitted[0])
+    assert not np.shares_memory(ordinary[1], omitted[1])
+
+
+@pytest.mark.parametrize(
+    "replacement, message",
+    [
+        (["LONDON"], "input length is 1.*2 households"),
+        (["NOT_A_REGION", "WALES"], "Invalid value.*NOT_A_REGION"),
+    ],
+    ids=("bad-length", "bad-enum"),
+)
+def test_omitting_sources_keeps_older_override_validation(replacement, message):
+    simulation = _fact_scan_world(
+        [
+            {2024: "LONDON", 2026: "SCOTLAND"},
+            {2024: "WALES", 2026: "LONDON"},
+        ]
+    )
+    population = simulation.populations["household"]
+    with pytest.raises(ValueError, match=message):
+        geography.input_facts(
+            population,
+            "region",
+            period(2026),
+            override=("region", period(2024), replacement),
+            with_sources=False,
+        )
+    values, present, sources = geography.input_facts(population, "region", period(2026))
+    np.testing.assert_array_equal(values, ["SCOTLAND", "LONDON"])
+    np.testing.assert_array_equal(present, [True, True])
+    np.testing.assert_array_equal(sources, ["2026", "2026"])
+
+
+def test_overlay_rereads_inputs_after_warning_hook_mutates_input(monkeypatch):
+    """A standard warning hook can replace the requested public input."""
+    import warnings
+
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        simulation.set_input("country", 2026, ["ENGLAND"])
+    mutations = []
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", UserWarning)
+        original_showwarning = warnings.showwarning
+
+        def move_input(message, category, filename, lineno, file=None, line=None):
+            if "Contradictory supplied" in str(message) and not mutations:
+                mutations.append("country")
+                simulation.set_input("country", 2026, ["SCOTLAND"])
+            return original_showwarning(message, category, filename, lineno, file, line)
+
+        with monkeypatch.context() as patch:
+            patch.setattr(warnings, "showwarning", move_input)
+            actual = simulation.calculate("country", 2026)
+    assert mutations == ["country"]
+    assert len([x for x in caught if "Contradictory supplied" in str(x.message)]) == 1
+    np.testing.assert_array_equal(actual, ["SCOTLAND"])
+    np.testing.assert_array_equal(simulation.calculate("country", 2026), ["SCOTLAND"])
+    np.testing.assert_array_equal(simulation.calculate("region", 2026), ["SCOTLAND"])
+
+
+def test_omitting_sources_preserves_custom_decoder_side_effects(monkeypatch):
+    simulation = _fact_scan_world([{2026: "WALES"}, {2026: "UNKNOWN"}])
+    population = simulation.populations["household"]
+    holder = population.get_holder("region")
+    array = geography.get_stored_input(holder, period(2026), simulation.branch_name)
+    original_decoder = array.decode_to_str
+    calls = []
+
+    def custom_decoder():
+        calls.append("decoded")
+        return original_decoder()
+
+    monkeypatch.setattr(array, "decode_to_str", custom_decoder)
+    ordinary = geography.input_facts(population, "region", period(2026))
+    omitted = geography.input_facts(
+        population, "region", period(2026), with_sources=False
+    )
+    for result in (ordinary, omitted):
+        np.testing.assert_array_equal(result[0], ["WALES", "UNKNOWN"])
+        np.testing.assert_array_equal(result[1], [True, True])
+    np.testing.assert_array_equal(ordinary[2], ["2026", "2026"])
+    assert omitted[2] is None
+    assert calls == ["decoded", "decoded"]
