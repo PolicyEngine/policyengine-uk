@@ -27,7 +27,7 @@ from policyengine_uk.tests.test_pension_credit_uprating import (
     FIRST_PROJECTION_YEAR,
     HB_NAME,
     HB_RELATIONS,
-    LAST_INDEX_YEAR,
+    LAST_SYNTHETIC_YEAR,
     RAW_HB,
     RAW_SC,
     RAW_SMG,
@@ -85,7 +85,7 @@ def maximum_path(draw):
     """One to three explicit anchors, from the year before the base onwards."""
     years = draw(
         st.lists(
-            st.integers(FIRST_PROJECTION_YEAR - 2, LAST_INDEX_YEAR),
+            st.integers(FIRST_PROJECTION_YEAR - 2, LAST_SYNTHETIC_YEAR),
             min_size=1,
             max_size=3,
             unique=True,
@@ -107,7 +107,7 @@ def combined_reforms(draw):
     and a path of maximum Savings Credit anchors for each relationship."""
     reforms = {}
     for path in REFORM_PATHS:
-        year = draw(st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR))
+        year = draw(st.integers(FIRST_PROJECTION_YEAR - 1, LAST_SYNTHETIC_YEAR))
         value = draw(
             nonnegative_rate if path.endswith("phase_in") else nonnegative_amount
         )
@@ -206,7 +206,7 @@ def test_combined_reforms_build_and_never_project_negative_amounts(
 
     for name in PROJECTED_PATHS:
         parameter = projected.get_child(name)
-        for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
             assert parameter(f"{year}-04-30") >= 0, (name, year, reforms)
             # A no-op maximum update still permits the ordinary rates-update fill.
             if name in changed_maxima:
@@ -291,7 +291,7 @@ def own_anchor_path(draw):
     """One to three explicit own amounts, in year order, from the base year."""
     years = draw(
         st.lists(
-            st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR),
+            st.integers(FIRST_PROJECTION_YEAR - 1, LAST_SYNTHETIC_YEAR),
             min_size=1,
             max_size=3,
             unique=True,
@@ -322,7 +322,7 @@ def test_explicit_own_anchors_survive_projection(paths, anchors):
     for year, value in anchors:
         assert own(f"{year}-04-30") == value, (year, anchors)
     index = projected.get_child(index_path)
-    for year in range(anchors[0][0], LAST_INDEX_YEAR + 1):
+    for year in range(anchors[0][0], LAST_SYNTHETIC_YEAR + 1):
         at = f"{year}-04-30"
         in_force = [value for anchor_year, value in anchors if anchor_year <= year]
         if in_force[-1] == 0:
@@ -353,7 +353,7 @@ def test_advanced_base_preserves_a_pre_base_maximum_reform(first_year):
         f"{HB_NAME}.lone_parent.aged",
     ):
         assert projected.get_child(name)("2028-04-30") == pytest.approx(259.75)
-        for year in range(2028, LAST_INDEX_YEAR + 1):
+        for year in range(2028, LAST_SYNTHETIC_YEAR + 1):
             at = f"{year}-04-30"
             assert projected.get_child(name)(at) == pytest.approx(
                 projected.get_child(f"{SMG_NAME}.SINGLE")(at)
@@ -368,7 +368,7 @@ def test_maximum_reforms_reach_both_dependent_forecasts(first_year):
         start=f"{first_year}-04-01", value=0
     )
     projected = project_synthetic_parameters(parameters, unreformed)
-    for year in range(max(first_year, FIRST_PROJECTION_YEAR), LAST_INDEX_YEAR + 1):
+    for year in range(max(first_year, FIRST_PROJECTION_YEAR), LAST_SYNTHETIC_YEAR + 1):
         at = f"{year}-04-30"
         guarantee = projected.get_child(f"{SMG_NAME}.SINGLE")(at)
         assert projected.get_child(f"{SC_NAME}.maximum.SINGLE")(at) == 0
@@ -415,7 +415,7 @@ def test_a_reformed_own_base_takes_precedence_over_a_maximum_reform(
         return project_synthetic_parameters(parameters, unreformed)
 
     combined, own_base_only = project(True), project(False)
-    for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+    for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
         at = f"{year}-04-30"
         assert combined.get_child(own_base)(at) == pytest.approx(
             own_base_only.get_child(own_base)(at), rel=1e-12
@@ -433,7 +433,7 @@ def test_a_reformed_own_base_takes_precedence_over_a_maximum_reform(
 def test_unreformed_higher_allowances_equal_guarantee_plus_maximum_every_year(path):
     parameters = synthetic_parameters(path)
     for allowance, guarantee, maximum in higher_allowances(parameters):
-        for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
             at = f"{year}-04-30"
             assert allowance(at) == pytest.approx(
                 guarantee(at) + maximum(at), abs=1e-9
@@ -484,7 +484,7 @@ def test_guarantee_increases_match_main_and_keep_protected_allowances_above_guar
     _apply_reforms(parameters, reforms)
     projected = project_synthetic_parameters(parameters, unreformed)
     main = _main_parameters(path, reforms=reforms)
-    for year in range(FIRST_PROJECTION_YEAR, LAST_INDEX_YEAR + 1):
+    for year in range(FIRST_PROJECTION_YEAR, LAST_SYNTHETIC_YEAR + 1):
         at = f"{year}-04-30"
         guarantee = projected.get_child(f"{SMG_NAME}.SINGLE")(at)
         for name in FOLLOWS_SINGLE_MAXIMUM:
@@ -592,7 +592,7 @@ def test_reconciled_builders_agree_with_main_where_its_behavior_is_retained(path
     main = _main_parameters(path)
     reconciled = synthetic_parameters(path)
     for name in PROJECTED_PATHS:
-        for year in range(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR - 1, LAST_SYNTHETIC_YEAR + 1):
             at = f"{year}-04-30"
             assert reconciled.get_child(name)(at) == pytest.approx(
                 main.get_child(name)(at), rel=0, abs=1e-9
@@ -606,7 +606,7 @@ def test_reconciled_builders_agree_with_main_where_its_behavior_is_retained(path
     reforms=maximum_reforms(),
     index_reform=st.none()
     | st.tuples(
-        st.integers(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR),
+        st.integers(FIRST_PROJECTION_YEAR - 1, LAST_SYNTHETIC_YEAR),
         st.floats(min_value=1, max_value=1e6),
     ),
 )
@@ -648,7 +648,7 @@ def test_maximum_reforms_reproduce_main_with_a_floored_threshold(
     _apply_reforms(parameters, reforms)
     reconciled = project_synthetic_parameters(parameters, unreformed)
     for name in PROJECTED_PATHS:
-        for year in range(FIRST_PROJECTION_YEAR - 1, LAST_INDEX_YEAR + 1):
+        for year in range(FIRST_PROJECTION_YEAR - 1, LAST_SYNTHETIC_YEAR + 1):
             at = f"{year}-04-30"
             expected = main.get_child(name)(at)
             if ".threshold." in name:

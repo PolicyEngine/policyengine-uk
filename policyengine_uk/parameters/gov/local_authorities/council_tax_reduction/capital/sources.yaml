@@ -1,0 +1,44 @@
+description: >
+  Household capital counted for the council tax reduction capital limit and
+  tariff income, outside the Pension Credit and Universal Credit routes. Every
+  scheme counts the whole of the applicant's capital unless a schedule
+  disregards it, including land and property other than the home: the
+  prescribed requirements for pensioners in England (Schedule 1 paragraph
+  31(1)) and Wales (Schedule 1 paragraph 25(1)), the Welsh working-age rules
+  (Schedule 6 paragraph 26(1)), the English default scheme (paragraph 63(1)),
+  the Scottish pension-age scheme (regulation 41(1)) and the Scottish
+  working-age schemes (SSI 2012/303 regulation 43(1) to 31 March 2022, then
+  SSI 2021/249 regulations 67 and 69). `main_residence_value` is left out
+  because the home is disregarded. `corporate_wealth` is also left out for
+  now: in the data it is mostly imputed pension wealth, which the schemes
+  disregard, and it cannot yet be separated (issue 1936). Land and property
+  are valued less sale expenses (`sale_expenses`).
+metadata:
+  label: Council tax reduction capital sources
+  unit: list
+  period: year
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 reg. 11(2) and Schedule 1 para. 31
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/31
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule para. 63
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/63
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 reg. 30
+      href: https://www.legislation.gov.uk/wsi/2013/3029/regulation/30
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 25
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/25
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 26
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/26
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 regs. 40 and 41
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/41
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 43 (persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/43
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 67
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/67
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 69
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/69
+values:
+  2013-04-01:
+    - savings
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
