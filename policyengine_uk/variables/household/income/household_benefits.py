@@ -3,6 +3,7 @@ from policyengine_uk.model_api import *
 
 HOUSEHOLD_BENEFIT_VARIABLES = [
     "child_benefit",
+    "guardians_allowance",
     "council_tax_benefit",
     "esa_income",
     "esa_contrib",

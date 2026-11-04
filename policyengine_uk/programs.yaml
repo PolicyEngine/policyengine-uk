@@ -87,6 +87,19 @@ programs:
     verified_start_year: 2019
     notes: Includes High Income Child Benefit Charge
 
+  - id: guardians_allowance
+    name: Guardian's Allowance
+    full_name: Guardian's Allowance
+    category: Benefits
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: guardians_allowance
+    parameter_prefix: gov.hmrc.guardians_allowance
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: Full-rate cash and tax/benefit interactions for source-qualified entitlement and payable child-weeks in 2024–2026. Calculated cash belongs to an entitled person who is also its recipient; a distinct lawful payee or exceptional payment requires authoritative direct cash. No automatic orphan eligibility or national data imputation. Cash must be disjoint from other reported income; historical cap transitions are not reconstructed.
+
   - id: stamp_duty_land_tax
     name: Stamp Duty Land Tax
     full_name: Stamp Duty Land Tax

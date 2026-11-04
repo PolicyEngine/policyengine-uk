@@ -51,7 +51,8 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "attendance allowance, a war pension or armed forces compensation, "
         "disability living allowance, personal independence payment, armed "
         "forces independence payment, or entitlement to carer's allowance or "
-        "carer support payment; or a Housing Benefit claimant is receiving "
+        "carer support payment or Guardian's Allowance; or a Housing "
+        "Benefit claimant is receiving "
         "Universal Credit (reg. 75F(1)(g)), whose own cap applies instead. "
         "Housing Benefit has no claim by a member of a couple as a single "
         "person, so the partner's benefits always count. Another member of "
@@ -78,6 +79,7 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75F",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/73F",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
     )
 
@@ -144,8 +146,17 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
             benunit("universal_credit_pre_benefit_cap", period) > 0
         ) & (benunit("housing_benefit_pre_benefit_cap", period) > 0)
 
+        # Reg 75F(1)(i), NI reg 73F(1)(ha): entitlement, not cash receipt.
+        guardians_allowance = parameters(
+            period
+        ).gov.dwp.benefit_cap.guardians_allowance_exempt & benunit.any(
+            (claimant_or_partner | young_person)
+            & person("is_entitled_to_guardians_allowance", period)
+        )
+
         return (
-            receiving_universal_credit
+            guardians_allowance
+            | receiving_universal_credit
             | esa_support_component
             | received_by(CLAIMANT_OR_PARTNER_BENEFITS, claimant_or_partner)
             | received_by(

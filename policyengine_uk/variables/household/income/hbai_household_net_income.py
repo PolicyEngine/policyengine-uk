@@ -27,6 +27,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "free_school_milk",
     "free_tv_licence_value",
     "child_benefit",
+    "guardians_allowance",
     "council_tax_benefit",
     "esa_income",
     "esa_contrib",
