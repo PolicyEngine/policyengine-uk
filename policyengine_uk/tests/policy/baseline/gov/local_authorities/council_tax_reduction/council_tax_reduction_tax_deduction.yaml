@@ -119,8 +119,9 @@
     # the pay: 7,430 taxable; 753.73 + 3,463 x 20% = 692.60, so 1,446.33. The
     # pay adds 7,535.72. Class 1 1,394.40.
     council_tax_reduction_tax_deduction: 8_930.12
-    # 30,000 + 20,000 - 8,930.12.
-    council_tax_reduction_applicable_income: 41_069.88
+    # The scheme counts the pay but not the rent from property, which the
+    # model treats as income from capital: 30,000 - 8,930.12.
+    council_tax_reduction_applicable_income: 21_069.88
 
 - name: Scotland's working-age scheme keeps benefits in kind beneath the pay
   period: 2026
