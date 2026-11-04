@@ -51,7 +51,10 @@ Invariants, on generated households under baseline law:
    non-dependant family's Pension Credit in a branch with every housing costs
    element set to nil, where the carer test reads the award without housing
    costs. test_the_non_dependant_branch_reads_the_award_without_housing_costs
-   pins the one kind of case where that changes a deduction.
+   pins that reading in three request orders, for a household where the
+   branch's result changes no deduction, and
+   test_the_branch_decides_a_blind_partners_deduction pins a household where
+   the branch's result decides one.
 
 A reform that makes is_uc_eligible read Pension Credit would cycle through the
 attribution, which reads eligibility; these tests do not cover reforms.
@@ -686,13 +689,19 @@ def test_small_housing_costs_with_a_work_allowance_leave_no_award():
     assert severe[1] == pytest.approx(86.05 * WEEKS)
 
 
-def veteran_situation(exempt=None):
+def veteran_situation(pension_credit=None, veteran_exempt=None, blind_partner=False):
     """A blind carer (40) earning £20,000 rents from the council at £6,000 a
     year as household head and cares 35 hours a week for a veteran (70) in
     another family of the household, who receives armed forces independence
-    payment and £13,000 of State Pension. exempt, if given, supplies the
-    veteran family's Pension Credit exemption from the non-dependant
-    deduction."""
+    payment and £13,000 of State Pension. The carer claims alone, so UC Regs
+    2013 Sch 4 para 15(1)(a) and (2)(a) exempt the carer, a blind single
+    renter, from every non-dependant deduction; the model holds no such
+    exemption. pension_credit, if given, supplies the veteran family's
+    uc_non_dep_receives_pension_credit, which the model otherwise reads from
+    a branch. veteran_exempt, if given, supplies the veteran's
+    uc_non_dep_deduction_exempt. blind_partner adds the veteran's blind
+    partner (68), who receives no disability benefit, and raises the
+    veteran's State Pension to £21,000."""
     people = {
         "carer": {
             "age": {YEAR: 40},
@@ -712,14 +721,23 @@ def veteran_situation(exempt=None):
         "carer_unit": {"members": ["carer"]},
         "veteran_unit": {"members": ["veteran"], "would_claim_uc": {YEAR: False}},
     }
-    if exempt is not None:
-        benunits["veteran_unit"]["uc_non_dep_receives_pension_credit"] = {YEAR: exempt}
+    if pension_credit is not None:
+        benunits["veteran_unit"]["uc_non_dep_receives_pension_credit"] = {
+            YEAR: pension_credit
+        }
+    if veteran_exempt is not None:
+        people["veteran"]["uc_non_dep_deduction_exempt"] = {YEAR: veteran_exempt}
     household = {
         "members": ["carer", "veteran"],
         "country": {YEAR: "ENGLAND"},
         "tenure_type": {YEAR: "RENT_FROM_COUNCIL"},
         "rent": {YEAR: 6_000},
     }
+    if blind_partner:
+        people["veteran"]["state_pension"] = {YEAR: 21_000}
+        people["partner"] = {"age": {YEAR: 68}, "is_blind": {YEAR: True}}
+        benunits["veteran_unit"]["members"].append("partner")
+        household["members"].append("partner")
     return {"people": people, "benunits": benunits, "households": {"h": household}}
 
 
@@ -733,20 +751,26 @@ def test_the_non_dependant_branch_reads_the_award_without_housing_costs(first):
     # with no non-dependant deduction. The award includes the carer element,
     # so the veteran, whom DWP and the model treat as severely disabled
     # through armed forces independence payment, gets no severe disability
-    # addition, and with £250 a week of State Pension against a standard
-    # minimum guarantee of £238.00, no Pension Credit.
+    # addition. The veteran pays income tax of 86.00 and keeps 12,914.00 of
+    # State Pension, which exceeds the standard minimum guarantee of 238.00
+    # x 52 = 12,376.00, so the veteran gets no Pension Credit.
     #
-    # The deduction's exemption reads the veteran's Pension Credit in a
-    # branch with every housing costs element set to nil. There the carer's
-    # award, 7,610.88 - 9,855.78, comes to nil, the veteran gets the addition
-    # (DWP ignores a blind resident, SPC Regs 2002 Sch I para 2(2)(b)) and
-    # Pension Credit, (238.00 + 86.05 - 250.00) x 52 = 3,850.60, and the model
-    # exempts the veteran from the deduction. UC Regs 2013 Sch 4 para 16(2)
-    # names no armed forces independence payment, so the law, in which the
-    # veteran gets no Pension Credit, deducts 96.55 x 12 = 1,158.60 and leaves
-    # an award of 2,596.50, which still includes the carer element. This test
-    # pins the model's figures, whichever variable the simulation requests
-    # first.
+    # uc_non_dep_receives_pension_credit reads the veteran's Pension Credit
+    # in a branch with every housing costs element set to nil. There the
+    # carer's award, 7,610.88 - 9,855.78, comes to nil, the veteran gets the
+    # addition (DWP ignores a blind resident, SPC Regs 2002 Sch I para
+    # 2(2)(b)) and Pension Credit of (238.00 + 86.05) x 52 - 12,914.00 =
+    # 3,936.60, so the branch returns true.
+    #
+    # In law DWP deducts nothing for this household, on two grounds. UC Regs
+    # 2013 Sch 4 para 15(1)(a) and (2)(a) exempt the carer, a blind single
+    # renter, from every deduction. Para 16(2)(d) exempts the veteran, who
+    # receives "attendance allowance" under head (f) of reg 2's definition,
+    # armed forces independence payment. The model holds the second ground
+    # (uc_receives_attendance_allowance) but not the first, so the model's
+    # award and the law's agree at 3,755.10, and the branch's result changes
+    # neither. This test pins the model's figures, whichever variable the
+    # simulation requests first.
     sim = Simulation(situation=veteran_situation())
     sim.calculate(first, YEAR)
     assert sim.calculate("has_uc_award_with_carer_element", YEAR).tolist() == [
@@ -761,10 +785,97 @@ def test_the_non_dependant_branch_reads_the_award_without_housing_costs(first):
     assert sim.calculate("uc_non_dep_deductions", YEAR)[0] == 0
     award = sim.calculate("universal_credit_pre_benefit_cap", YEAR)
     assert award[0] == pytest.approx(3_755.10, abs=0.01)
-    # The law's figures, with the exemption supplied as the law reads it.
-    law = Simulation(situation=veteran_situation(exempt=False))
-    assert law.calculate("uc_non_dep_deductions", YEAR)[0] == pytest.approx(96.55 * 12)
+    # The branch's result set to its value in law, false, since the veteran
+    # gets no Pension Credit: the model still exempts the veteran through
+    # armed forces independence payment and deducts nothing.
+    law = Simulation(situation=veteran_situation(pension_credit=False))
+    assert law.calculate("uc_non_dep_deduction_exempt", YEAR).tolist() == [
+        False,
+        True,
+    ]
+    assert law.calculate("uc_non_dep_deductions", YEAR)[0] == 0
     law_award = law.calculate("universal_credit_pre_benefit_cap", YEAR)
-    assert law_award[0] == pytest.approx(2_596.50, abs=0.01)
+    assert law_award[0] == pytest.approx(3_755.10, abs=0.01)
     assert law.calculate("has_uc_award_with_carer_element", YEAR)[0]
     assert law.calculate("pension_credit", YEAR)[1] == 0
+    # A counterfactual that neither the law nor the model gives this
+    # household: with the veteran's exemption supplied as false, the model
+    # deducts 96.55 x 12 = 1,158.60 and leaves an award of 3,755.10 -
+    # 1,158.60 = 2,596.50. The award still includes the carer element, so
+    # even a deduction would leave the carer test and the veteran's nil
+    # Pension Credit unchanged.
+    counterfactual = Simulation(situation=veteran_situation(veteran_exempt=False))
+    assert counterfactual.calculate("uc_non_dep_deductions", YEAR)[0] == pytest.approx(
+        96.55 * 12
+    )
+    counterfactual_award = counterfactual.calculate(
+        "universal_credit_pre_benefit_cap", YEAR
+    )
+    assert counterfactual_award[0] == pytest.approx(2_596.50, abs=0.01)
+    assert counterfactual.calculate("has_uc_award_with_carer_element", YEAR)[0]
+    assert counterfactual.calculate("pension_credit", YEAR)[1] == 0
+
+
+def test_the_branch_decides_a_blind_partners_deduction():
+    # The veteran of the test above, now with £21,000 of State Pension and a
+    # blind partner (68) who receives no disability benefit. Para 16(2)
+    # exempts the veteran through armed forces independence payment but
+    # lists no blindness, so only the family's Pension Credit can exempt the
+    # partner, and the branch's result decides the partner's deduction.
+    #
+    # The veteran pays income tax of (21,000 - 12,570) x 0.20 - 1,260 x 0.20
+    # = 1,434.00, with the partner's marriage allowance, and the couple keep
+    # 19,566.00, which exceeds the couple's standard minimum guarantee of
+    # 363.25 x 52 = 18,889.00, so the couple get no Pension Credit. In the
+    # branch, the carer's award comes to nil, and SPC Regs 2002 Sch I para
+    # 1(1)(c) gives the couple the addition (the veteran receives armed
+    # forces independence payment, the partner is blind, and DWP ignores the
+    # blind carer as a resident under para 2(2)(b)): Pension Credit comes to
+    # (363.25 + 86.05) x 52 - 19,566.00 = 3,797.60, the branch returns true,
+    # and the model exempts the partner and deducts nothing.
+    #
+    # In law DWP deducts nothing either, because para 15(1)(a) and (2)(a)
+    # exempt the carer, a blind single renter, from every deduction; the
+    # carer's award then comes to 3,755.10, includes the carer element and
+    # leaves the couple without the addition or Pension Credit. The model
+    # holds no para 15 exemption, so with the branch's result supplied at
+    # its value in law, false, the model deducts 96.55 x 12 = 1,158.60 for
+    # the partner and leaves an award of 2,596.50.
+    sim = Simulation(situation=veteran_situation(blind_partner=True))
+    assert sim.calculate("has_uc_award_with_carer_element", YEAR).tolist() == [
+        True,
+        False,
+        False,
+    ]
+    assert sim.calculate("pension_credit", YEAR).tolist() == [0, 0]
+    assert sim.calculate("uc_non_dep_receives_pension_credit", YEAR).tolist() == [
+        False,
+        True,
+    ]
+    assert sim.calculate("uc_non_dep_deduction_exempt", YEAR).tolist() == [
+        False,
+        True,
+        True,
+    ]
+    assert sim.calculate("uc_non_dep_deductions", YEAR)[0] == 0
+    award = sim.calculate("universal_credit_pre_benefit_cap", YEAR)
+    assert award[0] == pytest.approx(3_755.10, abs=0.01)
+    branch = Simulation(situation=veteran_situation(blind_partner=True))
+    branch.set_input("uc_housing_costs_element", YEAR, [0, 0])
+    assert branch.calculate("pension_credit", YEAR)[1] == pytest.approx(
+        3_797.60, abs=0.01
+    )
+    flag_false = Simulation(
+        situation=veteran_situation(pension_credit=False, blind_partner=True)
+    )
+    assert flag_false.calculate("uc_non_dep_deduction_exempt", YEAR).tolist() == [
+        False,
+        True,
+        False,
+    ]
+    assert flag_false.calculate("uc_non_dep_deductions", YEAR)[0] == pytest.approx(
+        96.55 * 12
+    )
+    flag_false_award = flag_false.calculate("universal_credit_pre_benefit_cap", YEAR)
+    assert flag_false_award[0] == pytest.approx(2_596.50, abs=0.01)
+    assert flag_false.calculate("has_uc_award_with_carer_element", YEAR)[0]
