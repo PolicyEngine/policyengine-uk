@@ -1,3 +1,17 @@
+## [2.174.7] - 2026-11-04
+
+### Changed
+
+- Document why the model leaves out Great Britain's £200 Alternative Fuel Payment.
+
+### Fixed
+
+- The model applies the 2020–21 residential SDLT relief dates that Parliament set in the SDLT (Temporary Relief) Act 2020 and Finance Act 2021 s87. It uses a £500,000 nil band without first-time buyers' relief from 8 July 2020 to 30 June 2021, then a £250,000 nil band from 1 July to 30 September 2021. In model year 2021 it charges no SDLT on a main-home purchase up to £500,000. The model also dates the residential lease rent table to those periods and adds its £250,000 nil band from 23 September 2022 to 31 March 2025.
+- Classified the Budget 2026 helper variables in the fiscal partition.
+- Pay the 2022 £150 to Council Tax Reduction recipients in any council tax band in Scotland and Wales, as Scottish and Welsh councils did.
+- The aggregate impact tool's `calibrate` command now refuses a reform when any result lacks a finite target change for a year, and names the reform and the year. It stopped with a bare `TypeError` on a withheld year, read past NaN and infinity in a later year, and ignored a year in the horizon that a result lacked.
+
+
 ## [2.174.6] - 2026-11-04
 
 ### Fixed
