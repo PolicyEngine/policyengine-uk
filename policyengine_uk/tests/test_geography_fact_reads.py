@@ -449,3 +449,281 @@ def test_omitting_sources_preserves_custom_decoder_side_effects(monkeypatch):
     np.testing.assert_array_equal(ordinary[2], ["2026", "2026"])
     assert omitted[2] is None
     assert calls == ["decoded", "decoded"]
+
+
+@pytest.mark.parametrize("decoded_dtype", [object, "U16"])
+@pytest.mark.parametrize("with_sources", [False, True])
+def test_full_native_decode_keeps_target_dtype_identity_and_ownership(
+    monkeypatch, decoded_dtype, with_sources
+):
+    class Label(str):
+        pass
+
+    label = Label("SCOTLAND")
+    decoded = np.array([label, "WALES"], dtype=decoded_dtype)
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}, {2026: "WALES"}])
+    targets, calls = [], []
+    original_full = np.full
+
+    def full(shape, fill, *args, **kwargs):
+        result = original_full(shape, fill, *args, **kwargs)
+        if fill == "LONDON" and result.dtype == object:
+            targets.append(result)
+        return result
+
+    def names(*args):
+        calls.append("decode")
+        return decoded
+
+    monkeypatch.setattr(geography.np, "full", full)
+    monkeypatch.setattr(geography, "_names", names)
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"],
+        "region",
+        period(2026),
+        with_sources=with_sources,
+    )
+    assert calls == ["decode"]
+    assert len(targets) == 1 and values is targets[0]
+    assert values is not decoded and values.dtype == np.dtype(object)
+    assert not np.shares_memory(values, decoded)
+    np.testing.assert_array_equal(values, ["SCOTLAND", "WALES"])
+    np.testing.assert_array_equal(found, [True, True])
+    if decoded_dtype is object:
+        assert values[0] is label
+    if with_sources:
+        np.testing.assert_array_equal(sources, ["2026", "2026"])
+    else:
+        assert sources is None
+    values[0] = "LONDON"
+    assert decoded[0] == "SCOTLAND"
+
+
+def test_sparse_decoder_keeps_boolean_indexing_and_default_cells(monkeypatch):
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}, {2026: "WALES"}])
+    events = []
+
+    class Indexed(np.ndarray):
+        def __getitem__(self, key):
+            events.append(("index", key.copy()))
+            return super().__getitem__(key)
+
+    decoded = np.array(["SCOTLAND", "WALES"], dtype=object).view(Indexed)
+
+    def names(*args):
+        events.append(("decode", None))
+        return decoded
+
+    monkeypatch.setattr(geography, "_names", names)
+    monkeypatch.setattr(geography, "_cell_mask", lambda *args: np.array([True, False]))
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    assert [event[0] for event in events] == ["decode", "index"]
+    np.testing.assert_array_equal(events[1][1], [True, False])
+    np.testing.assert_array_equal(values, ["SCOTLAND", "LONDON"])
+    np.testing.assert_array_equal(found, [True, False])
+    np.testing.assert_array_equal(sources, ["2026", None])
+
+
+@pytest.mark.parametrize("view", [False, True])
+def test_temporary_decoder_weakref_runs_before_target_assignment(monkeypatch, view):
+    import weakref
+
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}, {2026: "WALES"}])
+    target, references, events = {}, [], []
+    original_full = np.full
+
+    def full(shape, fill, *args, **kwargs):
+        result = original_full(shape, fill, *args, **kwargs)
+        if fill == "LONDON" and result.dtype == object:
+            target["values"] = result
+        return result
+
+    def released(reference):
+        events.append("released")
+        target["values"][:] = "UNKNOWN"
+
+    def names(*args):
+        events.append("decode")
+        owner = np.array(["SCOTLAND", "WALES"], dtype=object)
+        references.append(weakref.ref(owner, released))
+        return owner.view() if view else owner
+
+    monkeypatch.setattr(geography.np, "full", full)
+    monkeypatch.setattr(geography, "_names", names)
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    assert events == ["decode", "released"]
+    assert values is target["values"]
+    np.testing.assert_array_equal(values, ["SCOTLAND", "WALES"])
+    np.testing.assert_array_equal(found, [True, True])
+    np.testing.assert_array_equal(sources, ["2026", "2026"])
+
+
+def test_custom_decoder_getitem_error_retains_exception_identity(monkeypatch):
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    marker = RuntimeError("custom decoder index")
+    events = []
+
+    class Indexed(np.ndarray):
+        def __getitem__(self, key):
+            events.append("index")
+            raise marker
+
+    def names(*args):
+        events.append("decode")
+        return np.array(["SCOTLAND"], dtype=object).view(Indexed)
+
+    monkeypatch.setattr(geography, "_names", names)
+    with pytest.raises(RuntimeError) as caught:
+        geography.input_facts(
+            simulation.populations["household"], "region", period(2026)
+        )
+    assert caught.value is marker
+    assert events == ["decode", "index"]
+
+
+def test_custom_target_assignment_error_keeps_temporary_release_order(monkeypatch):
+    import weakref
+
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    marker = RuntimeError("custom target assignment")
+    events, references = [], []
+    original_full = np.full
+
+    class Target(np.ndarray):
+        def __setitem__(self, key, value):
+            events.append("assign")
+            assert type(key) is np.ndarray and key.dtype == bool
+            raise marker
+
+    def full(shape, fill, *args, **kwargs):
+        result = original_full(shape, fill, *args, **kwargs)
+        return (
+            result.view(Target)
+            if fill == "LONDON" and result.dtype == object
+            else result
+        )
+
+    def names(*args):
+        decoded = np.array(["SCOTLAND"], dtype=object)
+        references.append(
+            weakref.ref(decoded, lambda reference: events.append("released"))
+        )
+        return decoded
+
+    monkeypatch.setattr(geography.np, "full", full)
+    monkeypatch.setattr(geography, "_names", names)
+    with pytest.raises(RuntimeError) as caught:
+        geography.input_facts(
+            simulation.populations["household"], "region", period(2026)
+        )
+    assert caught.value is marker
+    assert events == ["released", "assign"]
+
+
+@pytest.mark.parametrize(
+    "decoded, error",
+    [
+        (np.array(1, dtype=object), IndexError),
+        (np.array([["SCOTLAND"]], dtype=object), TypeError),
+    ],
+)
+def test_malformed_decoder_shapes_keep_original_index_errors(
+    monkeypatch, decoded, error
+):
+    # Bind each oracle to the exact pre-change NumPy assignment, including
+    # the distinction between source-index and target-assignment failures.
+    old_values = np.full(1, "LONDON", dtype=object)
+    old_take = np.ones(1, dtype=bool)
+    with pytest.raises(error):
+        old_values[old_take] = decoded[old_take]
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    monkeypatch.setattr(geography, "_names", lambda *args: decoded)
+    with pytest.raises(error):
+        geography.input_facts(
+            simulation.populations["household"], "region", period(2026)
+        )
+
+
+def test_native_numeric_decoder_keeps_original_object_conversion(monkeypatch):
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}, {2026: "WALES"}])
+    decoded = np.array([1, 2], dtype=np.int16)
+    monkeypatch.setattr(geography, "_names", lambda *args: decoded)
+    values, found, _ = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    assert values.dtype == np.dtype(object)
+    np.testing.assert_array_equal(values, [1, 2])
+    np.testing.assert_array_equal(found, [True, True])
+
+
+@pytest.mark.parametrize("owner_kind", ["object", "structured"])
+def test_decoder_owner_payload_destruction_keeps_original_assignment_order(
+    monkeypatch, owner_kind
+):
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    target, events = {}, []
+    original_full = np.full
+
+    class Payload:
+        def __del__(self):
+            events.append("payload released")
+            target["values"][:] = "UNKNOWN"
+
+    def full(shape, fill, *args, **kwargs):
+        result = original_full(shape, fill, *args, **kwargs)
+        if fill == "LONDON" and result.dtype == object:
+            target["values"] = result
+        return result
+
+    def names(*args):
+        if owner_kind == "object":
+            owner = np.array(["SCOTLAND", Payload()], dtype=object)
+            return owner[:1]
+        owner = np.empty(1, dtype=[("label", "U16"), ("payload", object)])
+        owner["label"] = "SCOTLAND"
+        owner["payload"][0] = Payload()
+        return owner["label"]
+
+    monkeypatch.setattr(geography.np, "full", full)
+    monkeypatch.setattr(geography, "_names", names)
+    values, found, sources = geography.input_facts(
+        simulation.populations["household"], "region", period(2026)
+    )
+    assert events == ["payload released"]
+    assert values is target["values"]
+    np.testing.assert_array_equal(values, ["SCOTLAND"])
+    np.testing.assert_array_equal(found, [True])
+    np.testing.assert_array_equal(sources, ["2026"])
+
+
+def test_read_only_native_target_releases_decoded_payload_before_error_handler(
+    monkeypatch,
+):
+    simulation = _fact_scan_world([{2026: "SCOTLAND"}])
+    events = []
+    original_full = np.full
+
+    class Payload:
+        def __del__(self):
+            events.append("released")
+
+    def full(shape, fill, *args, **kwargs):
+        result = original_full(shape, fill, *args, **kwargs)
+        if fill == "LONDON" and result.dtype == object:
+            result.setflags(write=False)
+        return result
+
+    monkeypatch.setattr(geography.np, "full", full)
+    monkeypatch.setattr(
+        geography, "_names", lambda *args: np.array([Payload()], dtype=object)
+    )
+    with pytest.raises(ValueError, match="read-only") as caught:
+        geography.input_facts(
+            simulation.populations["household"], "region", period(2026)
+        )
+    assert "read-only" in str(caught.value)
+    assert events == ["released"]

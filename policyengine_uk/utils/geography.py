@@ -10,6 +10,7 @@ import warnings
 from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
+from weakref import getweakrefcount as _weakref_count
 
 import numpy as np
 from policyengine_core.enums import Enum as CoreEnum, EnumArray
@@ -130,6 +131,36 @@ def set_cell_mask(simulation, name, period, mask, *, branch=None) -> None:
     )
 
 
+def _can_copy_full_input(values, decoded, take):
+    """Use basic assignment only for complete native arrays with pure owners."""
+    if (
+        type(values) is not np.ndarray
+        or type(decoded) is not np.ndarray
+        or type(take) is not np.ndarray
+    ):
+        return False
+    if (
+        values.dtype != object
+        or decoded.dtype.kind not in ("O", "U")
+        or take.dtype != bool
+    ):
+        return False
+    if values.ndim != 1 or decoded.shape != values.shape or take.shape != values.shape:
+        return False
+    if not bool(take.all()):
+        return False
+    # A temporary decoder array or a custom backing owner can have observable
+    # destruction. The fallback preserves its original release ordering.
+    if decoded.dtype.kind == "O":
+        return decoded.base is None and _weakref_count(decoded) == 0
+    owner = decoded
+    while type(owner) is np.ndarray:
+        if owner.dtype.hasobject or _weakref_count(owner):
+            return False
+        owner = owner.base
+    return owner is None or type(owner) is bytes
+
+
 def input_facts(
     population,
     name,
@@ -197,7 +228,21 @@ def input_facts(
             mask = _cell_mask(holder, branch, source)
         take = mask & ~found
         if take.any():
-            values[take] = _names(array, holder.variable.possible_values)[take]
+            decoded = _names(array, holder.variable.possible_values)
+            if _can_copy_full_input(values, decoded, take):
+                try:
+                    values[:] = decoded
+                finally:
+                    del decoded
+            else:
+                try:
+                    selected = decoded[take]
+                finally:
+                    del decoded
+                try:
+                    values[take] = selected
+                finally:
+                    del selected
             if sources is not None:
                 sources[take] = str(source)
             found |= take
