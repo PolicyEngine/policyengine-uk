@@ -85,8 +85,9 @@
 # - the disable_simulated_benefits reform;
 # - a supplied part-year amount before the reduction, which the model nets
 #   against an overlapping benefit paid all year: 1,123.85 for 13 award weeks
-#   and 2,000 a year of State Pension net to 0, where the weekly rule leaves
-#   623.85 of Carer Support Payment and 152.10 of supplement;
+#   and 2,000 a year of State Pension net to 0, where Social Security
+#   Scotland nets them week by week and pays 623.85 of Carer Support
+#   Payment and 152.10 of supplement;
 # - part weeks, where Social Security Scotland pays a whole weekly supplement
 #   for each award week in which Carer Support Payment is payable.
 
