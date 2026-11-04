@@ -1,6 +1,6 @@
-# loss_relief holds trade losses brought forward from earlier years (ITA 2007
-# s.83). A loss made in the year itself is trading_loss, relieved against
-# general income instead (see trade_loss_relief_against_general_income.yaml).
+# loss_relief is opening unrelieved trade-loss stock (ITA 2007 s.83).
+# Explicit entries override the automatically computed opening balance.
+# A new loss is trading_loss, relieved against general income first.
 
 - name: Losses brought forward come off the trade's profits
   period: 2024
@@ -25,7 +25,7 @@
     taxable_employment_income: 20_000
     adjusted_net_income: 20_000
 
-- name: Last year's trading loss is not brought forward automatically
+- name: Last year's unused trading loss is brought forward automatically
   period: 2024
   absolute_error_margin: 0
   input:
@@ -35,5 +35,5 @@
       2023: 5_000
       2024: 0
   output:
-    loss_relief: 0
-    taxable_self_employment_income: 10_000
+    loss_relief: 5_000
+    taxable_self_employment_income: 5_000

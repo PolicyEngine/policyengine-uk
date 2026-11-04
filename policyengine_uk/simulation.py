@@ -1114,13 +1114,8 @@ class Simulation(CoreSimulation):
         )
 
     def reset_calculations(self):
-        retained = retained_input_variables(self)
         self._external_input_change_pending = False
-        for variable in self.tax_benefit_system.variables:
-            if variable not in retained:
-                self.delete_arrays(variable)
-            elif variable in STORED_HOUSEHOLD_TOTALS:
-                drop_calculated_totals(self, variable)
+        drop_calculated_values(self)
 
     def get_known_variables(self):
         variables = []
