@@ -1,0 +1,23 @@
+description: >
+  Whether the Westminster council tax reduction scheme for people under
+  pension age disregards the whole capital of an applicant on Income Support,
+  income-based Jobseeker's Allowance or income-related Employment and Support
+  Allowance. The council's working-age scheme mirrors the Council Tax
+  Reduction Schemes (Default Scheme) (England) Regulations 2012 with uprated
+  amounts and a war pension disregard (cabinet report, 15 December 2025, para.
+  4.22), so it keeps the default scheme's disregard of the whole capital of an
+  applicant on Income Support, income-based Jobseeker's Allowance or income-
+  related Employment and Support Allowance (the default scheme's Schedule 10
+  paragraph 8). The council's full scheme text is not published, so this is
+  inferred from that statement.
+metadata:
+  label: Westminster council tax reduction disregards passported applicants' capital
+  unit: bool
+  period: year
+  reference:
+    - title: Westminster City Council cabinet report, 15 December 2025, para. 4.22
+      href: https://www.westminster.gov.uk/sites/default/files/media/documents/cabinet-public-pack-15-december-2025.pdf
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule (the scheme), Schedule 10 para. 8
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule
+values:
+  2026-04-01: true
