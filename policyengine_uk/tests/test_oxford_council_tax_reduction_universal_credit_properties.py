@@ -48,11 +48,11 @@ applicant has a Universal Credit award:
    family that keeps its award, since each pound contributed lowers DWP's
    net earned income and raises the award by at most the 55% taper.
 6. Differential: for families without a carer or disabled child element,
-   the Appendix 3 income less any deductions for debts, with Universal
-   Credit's unearned income in place of Oxford's other income, equals the
-   Universal Credit income on which Merton, Kingston upon Thames, Newham and
-   Westminster assess the same family, recovered from each council's award
-   (they count the award after those deductions).
+   the Appendix 3 income, with Universal Credit's unearned income in place
+   of Oxford's other income, equals the Universal Credit income on which
+   Merton, Kingston upon Thames, Newham and Westminster assess the same
+   family, recovered from each council's award (they, like Oxford, count the
+   award before deductions for debts).
 7. Earlier years: in 2025, before the scheme the model holds, the reduction
    of such a family is the band of its paragraphs 14 to 27 income less Child
    Benefit, with no tariff income, as the model gave before PolicyEngine
@@ -594,6 +594,7 @@ LARGE_COUNCIL_TAX = 50_000
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=6))
 @example(units=example_families()[:1])
+@example(units=couple_and_debt_families()[1:])
 def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
     units,
 ):
@@ -642,12 +643,11 @@ def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
                 * values["council_tax_reduction_joint_liability_share"][j]
             )
             award = values[variable][j]
-            # Those councils count the award after deductions for debts,
-            # which Oxford adds back, and Universal Credit's unearned income,
-            # where Oxford counts its own other income.
+            # Those councils, like Oxford, count the award before deductions
+            # for debts. They count Universal Credit's unearned income where
+            # Oxford counts its own other income.
             council_income = (
                 values["oxford_council_tax_reduction_universal_credit_income"][i]
-                - values["uc_deductions"][i]
                 - values["oxford_council_tax_reduction_universal_credit_other_income"][
                     i
                 ]
