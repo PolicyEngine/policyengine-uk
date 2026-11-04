@@ -10,13 +10,17 @@ class uc_non_dep_receives_pension_credit(Variable):
     documentation = (
         "Whether a family not liable for rent receives Pension Credit, for the "
         "Universal Credit non-dependant housing contribution exemption. Such "
-        "a family's own Universal Credit housing element is zero. Calculating "
-        "its Pension Credit in a branch with that element fixed at zero "
-        "therefore preserves its entitlement, including legacy-closure "
-        "routing, take-up, explicit inputs and frozen Pension Credit reforms. "
-        "It avoids evaluating a renter's own Pension Credit while calculating "
-        "their Universal Credit housing element. Rent-liable families' "
-        "branch results are disregarded because they are not non-dependants."
+        "a family's own Universal Credit housing element is zero. The formula "
+        "calculates its Pension Credit in a branch with every family's "
+        "housing costs element set to nil, which keeps the family's "
+        "legacy-closure routing, take-up, explicit inputs and frozen Pension "
+        "Credit reforms. Where the family's severe disability addition reads "
+        "a renter's Universal Credit award that includes the carer element, "
+        "the branch reads that award without housing costs, so the branch's "
+        "Pension Credit can differ from the family's own. The branch avoids "
+        "evaluating a renter's own Pension Credit while calculating their "
+        "Universal Credit housing element. The formula ignores the branch "
+        "result for a rent-liable family, which is not a non-dependant."
     )
     definition_period = YEAR
     reference = (
@@ -26,9 +30,11 @@ class uc_non_dep_receives_pension_credit(Variable):
 
     def formula(benunit, period, parameters):
         # A non-dependant is not liable for the rent (Sch 4 para 9(2)(d)),
-        # so their own housing element is already zero. This branch keeps
-        # their actual Pension Credit calculation while breaking the cycle
-        # through the renter's UC entitlement and pension-age route.
+        # so their own housing element is already zero. The branch keeps
+        # their Pension Credit calculation and breaks the cycle through the
+        # renter's UC entitlement and pension-age route. Where their severe
+        # disability addition reads a renter's carer element, the branch
+        # reads the renter's award without housing costs.
         simulation = benunit.simulation
         # Income tax is independent of the UC housing element. Calculate
         # the earnings counterfactuals on the parent so this branch and
