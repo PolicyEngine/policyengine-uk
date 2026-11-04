@@ -1,3 +1,106 @@
+## [2.174.3] - 2026-11-04
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
+## [2.174.2] - 2026-11-04
+
+### Fixed
+
+- Counted a 16-year-old outside education as a Universal Credit and Pension Credit qualifying young person until the 1 September following their 16th birthday (UC Regs 2013 reg. 5(1)(a); SPC Regs 2002 reg. 4A(1)(a)), in any year that starts before that date. Excluded young people reporting their own Universal Credit, income-related or contributory ESA, or income-based or contribution-based JSA from both statuses, and those receiving Income Support from Pension Credit's (UC Regs 2013 reg. 5(5); SPC Regs 2002 reg. 4A(5)).
+
+
+## [2.174.1] - 2026-11-04
+
+### Fixed
+
+- Use the Universal Credit award before debt deductions when calculating working-age Council Tax Reduction in Merton, Kingston upon Thames, Newham and Westminster.
+
+
+## [2.174.0] - 2026-11-04
+
+### Added
+
+- The OBR forecasts importer now writes national living wage growth from the EFO economy tables' national living wage table (Table 1.13). It reads the OBR's levels across the table's row of years, projects each estimate from the last national living wage rate in the minimum wage parameters as the model does, and writes growth that keeps each estimate's penny.
+
+### Changed
+
+- Bring the economic assumptions page into line with the uprating map, the rent and water projections and the October 2026 road fuel forecast.
+
+### Fixed
+
+- The model now counts each person's cash ISA and stocks and shares ISA balances in their own benefit unit for Universal Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and income-related ESA, so a lodger's or an adult child's ISA no longer adds to the main family's capital.
+- When a caller sets an input for an earlier year after a calculation, recalculate the later years the default branch had grown, carried over or calculated from earlier inputs, as a named branch and a new simulation do.
+- Count armed forces independence payment as attendance allowance in the Universal Credit housing cost contribution exemption, so the model deducts no contribution for a non-dependant who receives it.
+
+
+## [2.173.4] - 2026-11-04
+
+### Fixed
+
+- The aggregate impact report's `small_target_change` condition now reads only the reform's own target, so a reform that moves another reform's target in fewer than 10 records keeps its costing and target change unless another condition withholds them.
+
+
+## [2.173.3] - 2026-11-04
+
+### Fixed
+
+- Stop counting rent from property, and deducting tax on rent, interest and dividends, in the Income Support, Housing Benefit, Pension Credit and council tax reduction means tests, which treat income derived from capital as capital; count rent for letting part of the home less the £20 weekly sub-tenant disregard, except where a working-age council tax reduction applicant's income is the Universal Credit assessment. The residential finance-cost tax reduction now comes off the tax on property income. Council tax reduction now counts land and property other than the home as capital, at market value less 10% for the expenses of sale and less any debt secured on it; adds the national schemes' tariff income from capital (England for pensioners, Wales and Scotland); uses the Universal Credit assessment of capital for a working-age applicant with an award of Universal Credit, including one the benefit cap or deductions reduce to nil, where the scheme says so; and disregards the whole capital of an applicant on Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance in Wales, in Scotland before April 2022, and in the Kingston, Merton, Westminster and Oxford schemes. All four tests deduct the same income tax: the tax before the winter fuel payment charge, less the tax that rent, interest and dividends, and any Step 7 charge, would bear if nobody had earnings, so earnings carry the extra tax they cause. Council tax reduction counts the rent its own applicant and partner receive for letting part of the home: where a household head applies alone, it counts her rent and not the benefit unit's claimant's and partner's, and it counts her tariff income even when the claimant and partner receive Pension Credit. Each test floors at nil the sum of the deducted income tax over the members it counts, and Pension Credit first takes out the tax on self-employed profit that its notional tax replaces.
+
+
+## [2.173.2] - 2026-11-04
+
+### Fixed
+
+- The model now applies the Universal Credit condition that a claimant is not receiving education, with its exceptions, to people a user or dataset flags with the new `is_in_full_time_education` input, and reads maintenance funding for non-advanced courses from the new `has_education_maintenance_funding` input.
+
+
+## [2.173.1] - 2026-11-04
+
+### Fixed
+
+- The Cost of Living Payment amounts now read zero before 2022, so the model no longer pays them in 2015-16 to 2021-22. Following the Social Security (Additional Payments) Acts 2022 and 2023, the model now pays the means-tested payment to each benefit unit on Universal Credit, Pension Credit, income-based JSA, income-related ESA or Income Support, or on Child Tax Credit or Working Tax Credit alone (in 2022-23, with at least £26 of either credit), but not to one on Housing Benefit alone, and pays the £150 disability payment to each person on PIP, DLA, Attendance Allowance or Armed Forces Independence Payment.
+
+
+## [2.173.0] - 2026-11-03
+
+### Added
+
+- Add `soc2020_major_group` and `soc2020_sub_major_group`, person enum inputs for the SOC 2020 major group (9 groups) and sub-major group (26 groups) of the person's main job, or of their last job if they are not in work, with NONE for none or unknown, so that datasets can carry occupation. `SOC2020_MAJOR_GROUP_CODES` and `SOC2020_SUB_MAJOR_GROUP_CODES`, beside the enums, give each member's SOC code. The FRS codes the major group; the sub-major group has to be imputed within it from a survey that codes it.
+
+### Changed
+
+- `sic_industry_division`'s label and documentation now say the division is the main job's, or the last job's for a person not in work, since the FRS asks the employment questions of everyone who has ever worked.
+
+
+## [2.172.1] - 2026-11-03
+
+### Fixed
+
+- Housing Benefit reserves the Working Tax Credit income disregard before deducting childcare costs in historical tax-credit years, and settles it separately before and after the accommodation disregard starts under a reform that keeps tax credits.
+- Housing Benefit helpers apply reform conditions when they rebuild the earnings, Working Tax Credit and accommodation disregards, the childcare deduction, its limit and applicable income.
+
+
+## [2.172.0] - 2026-11-03
+
+### Added
+
+- Add `trading_allowance_claim_status`, a person input saying whether the input data's self-employment profit already deducts the trading allowance (claimant), deducts actual expenses above it (non-claimant), or is unknown (the default, which keeps the current treatment), so that changes to the allowance, such as the Budget 2026 raise to £3,000, reach the traders who already claim it. Add `gov.simulation.trading_allowance_claimant_expense_share`, which sets claimants' unknown expenses, by default so that a cut adds nothing to their taxable profit (a lower bound).
+
+### Changed
+
+- Raise the time limit of the Python test shards from 75 to 90 minutes: on 1 November shards took up to 75 minutes on slower runners and were cancelled with no test failing.
+
+
+## [2.171.1] - 2026-11-03
+
+### Fixed
+
+- Economic assumption indices now end where the growth series end (2074) instead of at 2039, so the State Pension, tax thresholds, benefit rates and every input grown by an index keep moving after 2039 rather than freezing at their 2039 level.
+
+
 ## [2.171.0] - 2026-11-02
 
 ### Added
