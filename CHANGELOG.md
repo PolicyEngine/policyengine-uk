@@ -1,3 +1,10 @@
+## [2.174.4] - 2026-11-04
+
+### Fixed
+
+- Benefit cap reduction now reports the amount the cap takes off the awards: the Universal Credit part is the regulation 81 amount up to the award (uc_benefit_cap_reduction_after_floor), not the gross regulation 81 amount, which can exceed it.
+
+
 ## [2.174.3] - 2026-11-04
 
 ### Fixed
