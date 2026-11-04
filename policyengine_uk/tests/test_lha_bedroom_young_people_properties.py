@@ -484,9 +484,10 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
 
 @st.composite
 def adult_member(draw):
-    """A member aged 16 or over who is not in education, so never a
-    qualifying young person, with or without Attendance Allowance (an
-    exemption under UC Regs 2013 Sch 4 para 16(2))."""
+    """A member aged 16 or over who is not in education, with or without
+    Attendance Allowance (an exemption under UC Regs 2013 Sch 4 para 16(2)).
+    Outside education, UC reg 5(1)(a) makes them a qualifying young person
+    only before the 1 September after their 16th birthday."""
     return dict(
         age=draw(st.integers(16, 64)),
         is_male=draw(st.booleans()),
@@ -569,9 +570,11 @@ def test_every_in_unit_non_dependant_with_a_room_owes_a_contribution(case):
     i = names.index(f"h{target[0]}_f{target[1]}_added")
     in_unit = calc("is_benefit_unit_non_dependant_for_universal_credit")[i]
     head = calc("is_resolved_household_head")[i]
-    # The added member is never a qualifying young person or a claimant, so
-    # the definition reduces to the inputs.
-    assert in_unit == (person["age"] >= 16 and not head)
+    # The added member is never a claimant. Outside education, they count as
+    # a qualifying young person only before the 1 September after their 16th
+    # birthday (UC reg 5(1)(a)), which the formula reads.
+    qualifying = calc("is_qualifying_young_person_for_universal_credit")[i]
+    assert in_unit == (person["age"] >= 16 and not head and not qualifying)
     if not in_unit:
         return
     # An in-unit non-dependant owes a contribution unless aged under 21 or
