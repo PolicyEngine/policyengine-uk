@@ -1,3 +1,10 @@
+## [2.173.3] - 2026-11-04
+
+### Fixed
+
+- Stop counting rent from property, and deducting tax on rent, interest and dividends, in the Income Support, Housing Benefit, Pension Credit and council tax reduction means tests, which treat income derived from capital as capital; count rent for letting part of the home less the £20 weekly sub-tenant disregard, except where a working-age council tax reduction applicant's income is the Universal Credit assessment. The residential finance-cost tax reduction now comes off the tax on property income. Council tax reduction now counts land and property other than the home as capital, at market value less 10% for the expenses of sale and less any debt secured on it; adds the national schemes' tariff income from capital (England for pensioners, Wales and Scotland); uses the Universal Credit assessment of capital for a working-age applicant with an award of Universal Credit, including one the benefit cap or deductions reduce to nil, where the scheme says so; and disregards the whole capital of an applicant on Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance in Wales, in Scotland before April 2022, and in the Kingston, Merton, Westminster and Oxford schemes. All four tests deduct the same income tax: the tax before the winter fuel payment charge, less the tax that rent, interest and dividends, and any Step 7 charge, would bear if nobody had earnings, so earnings carry the extra tax they cause. Council tax reduction counts the rent its own applicant and partner receive for letting part of the home: where a household head applies alone, it counts her rent and not the benefit unit's claimant's and partner's, and it counts her tariff income even when the claimant and partner receive Pension Credit. Each test floors at nil the sum of the deducted income tax over the members it counts, and Pension Credit first takes out the tax on self-employed profit that its notional tax replaces.
+
+
 ## [2.173.2] - 2026-11-04
 
 ### Fixed
