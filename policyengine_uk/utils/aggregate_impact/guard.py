@@ -107,7 +107,11 @@ def _visible_branches(sim):
 
 def _capture_input_origins(sim, variables):
     """Copy actual registered input slots before any synthetic write."""
-    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+    from policyengine_uk.utils.supplied_inputs import (
+        SUPPLIED_INPUT_VARIABLES,
+        CalculatedValue,
+        same_array,
+    )
 
     names = set(variables) & SUPPLIED_INPUT_VARIABLES
     if not names:
@@ -129,9 +133,18 @@ def _capture_input_origins(sim, variables):
             if value is None:
                 continue
             marker = model.get(key)
-            is_model = marker is not None and np.array_equal(marker, value)
+            is_model = marker is not None and same_array(marker, value)
+            is_calculated = is_model and isinstance(marker, CalculatedValue)
             if key in keys or is_model:
-                slots.append((branch, period, np.array(value, copy=True), is_model))
+                slots.append(
+                    (
+                        branch,
+                        period,
+                        np.array(value, copy=True),
+                        is_model,
+                        is_calculated,
+                    )
+                )
         origins[name] = tuple(slots)
     return origins
 
@@ -166,7 +179,10 @@ def _guard_snapshot(sim, snapshot, variables):
         if snapshot.owner is not sim:
             raise ValueError("Input snapshot belongs to a different simulation")
         return snapshot
-    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+    from policyengine_uk.utils.supplied_inputs import (
+        SUPPLIED_INPUT_VARIABLES,
+        same_array,
+    )
 
     origins = _capture_input_origins(sim, variables)
     # Plain mappings remain supported when their registered values agree with
@@ -174,8 +190,8 @@ def _guard_snapshot(sim, snapshot, variables):
     for name in set(snapshot) & SUPPLIED_INPUT_VARIABLES:
         for period, value in snapshot[name]:
             if not any(
-                saved_period == period and np.array_equal(saved_value, value)
-                for _, saved_period, saved_value, _ in origins.get(name, ())
+                saved_period == period and same_array(saved_value, value)
+                for _, saved_period, saved_value, *_ in origins.get(name, ())
             ):
                 raise ValueError("Plain input snapshot has no matching original slot")
     return _InputSnapshot(snapshot, owner=sim, origins=origins)
@@ -202,6 +218,7 @@ def _restore(sim, variable, snapshot):
         SUPPLIED_INPUT_VARIABLES,
         drop_missing_model_values,
         drop_missing_supplied_inputs,
+        record_model_value,
         set_model_value,
     )
 
@@ -220,12 +237,24 @@ def _restore(sim, variable, snapshot):
     holder.delete_arrays(branch_name=sim.branch_name)
     drop_missing_supplied_inputs(sim, variable)
     drop_missing_model_values(sim, variable)
-    for branch, period, value, is_model in snapshot.origins[variable]:
+    restored_calculated = False
+    for branch, period, value, is_model, is_calculated in snapshot.origins[variable]:
         if branch == sim.branch_name:
-            if is_model:
+            if is_calculated:
+                # A value that stands for a calculation stays one. It can hold
+                # the NaN set_input refuses, so it goes straight into the
+                # holder, and the discard below drops what the simulation
+                # calculated from the synthetic value, as set_input does on a
+                # branch.
+                holder._set(period, value, branch, is_input=True)
+                record_model_value(sim, variable, period, branch, calculated=True)
+                restored_calculated = True
+            elif is_model:
                 set_model_value(sim, variable, period, value)
             else:
                 sim.set_input(variable, period, value)
+    if restored_calculated:
+        discard_formula_results(sim)
 
 
 def _months(year):

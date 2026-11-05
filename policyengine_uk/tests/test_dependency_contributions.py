@@ -8,11 +8,13 @@ read. The trace shows which variables the target read, over which periods and
 on which branch, in the latest calculation that gave the value the simulation
 holds. A dependency already zero wherever the target read it contributes zero,
 also to a formula that asks supplied_input or stored_as_input about what it
-read. Four cases raise: a target that reads its own value within the year
-(recalculating it over the year replaces that value), a target set as an input
-(which reads nothing), values no calculation in the trace gave, and a read on a
-branch of a subset of households (the recalculation cannot hold it). For any
-household drawn below:
+read. A formula that read no variables has no contributions. Two cases always
+raise: a target set as an input (which reads nothing), and values no
+calculation in the trace gave and the formula does not give. Two raise where a
+float dependency needs a recalculation: a target that reads its own value
+within the year (recalculating it over the year replaces that value), and a
+read on a branch of a subset of households (the recalculation cannot hold it).
+For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
    from a fresh simulation in which the target's float direct dependencies are
@@ -39,6 +41,7 @@ import pandas as pd
 import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from hypothesis.extra.numpy import arrays
 from plotly import graph_objects as go
 
 from policyengine_core import periods
@@ -66,10 +69,18 @@ from policyengine_uk.utils.dependencies import (
     calculate_dependency_contributions,
     create_waterfall_chart,
     get_variable_dependencies,
+    reads_nothing,
+    same_values,
 )
 from policyengine_uk.utils.labour_supply_responses import response_source
 from policyengine_uk.utils.measurement_branches import BEHAVIOURAL_RESPONSES
-from policyengine_uk.utils.supplied_inputs import stored_as_input
+from policyengine_uk.utils.supplied_inputs import (
+    CalculatedValue,
+    record_model_value,
+    same_array,
+    stored_as_input,
+    supplied_input,
+)
 
 YEARS = [2024, 2025, 2026, 2027]
 # Defined only by adds and subtracts of their direct dependencies.
@@ -201,13 +212,13 @@ def assert_unchanged(sim, before):
     after = stored_values(sim)
     assert after.keys() == values.keys()
     for key, array in values.items():
-        assert np.array_equal(after[key], array), key
+        assert same_array(after[key], array), key
     assert recorded_inputs(sim) == inputs
     after_models = model_values(sim)
     assert after_models.keys() == models.keys()
     for key, (kind, array) in models.items():
         assert after_models[key][0] is kind, key
-        assert np.array_equal(after_models[key][1], array), key
+        assert same_array(after_models[key][1], array), key
     assert set(sim.branches) == branches
 
 
@@ -771,11 +782,11 @@ def test_months_inherited_from_the_parent_simulation():
     assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
 
 
-def core_toy_simulation(*variables, cache_blacklist=None):
+def core_toy_simulation(*variables, cache_blacklist=None, parameters=None):
     system = TaxBenefitSystem([CORE_PERSON])
     # Core can't clone a system without parameters, and a branch with a
     # system of its own needs a clone.
-    system.parameters = ParameterNode("", data={})
+    system.parameters = ParameterNode("", data=parameters or {})
     for variable in variables:
         system.add_variable(variable)
     if cache_blacklist:
@@ -1395,6 +1406,366 @@ def test_a_month_stored_directly_raises():
 
     with pytest.raises(ValueError, match="no calculation in the trace gave"):
         calculate_dependency_contributions(sim, "core_monthly_leaf", 2026)
+
+
+def test_values_stored_over_a_formula_that_reads_nothing_raise():
+    # The formula gives 10 and reads nothing, which doesn't explain the 99.
+    sim = core_toy_simulation(core_leaf)
+    sim.calculate("core_leaf", 2026)
+    sim.get_holder("core_leaf").put_in_cache(
+        np.array([99.0]), periods.period(2026), sim.branch_name, derived=True
+    )
+    assert sim.calculate("core_leaf", 2026) == 99
+
+    with pytest.raises(ValueError, match="no calculation in the trace gave"):
+        calculate_dependency_contributions(sim, "core_leaf", 2026)
+
+
+@pytest.mark.parametrize("target", ["core_leaf_and_double", "core_monthly_leaf"])
+def test_values_calculated_before_tracing_began_raise(target):
+    # The trace shows only a read of the stored value, and the formula reads
+    # variables the trace doesn't show.
+    sim = core_toy_simulation(
+        core_leaf, core_double, core_leaf_and_double, core_monthly_leaf
+    )
+    sim.trace = False
+    sim.calculate(target, 2026)
+    sim.trace = True
+    before = snapshot(sim)
+
+    with pytest.raises(ValueError, match="no calculation in the trace gave"):
+        calculate_dependency_contributions(sim, target, 2026)
+    assert_unchanged(sim, before)
+
+
+class core_leaf_while_active(CoreVariable):
+    label = "Core leaf while active"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        if not parameters(period).active:
+            return 0.0
+        return person("core_leaf", period)
+
+
+class core_monthly_while_active(CoreVariable):
+    label = "Core monthly while active"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = MONTH
+
+    def formula(person, period, parameters):
+        if not parameters(period).active:
+            return 0.0
+        return person("core_leaf", period.this_year) / 12
+
+
+@pytest.mark.parametrize("on_a_branch", [False, True])
+@pytest.mark.parametrize(
+    "variable", [core_leaf_while_active, core_monthly_while_active]
+)
+def test_a_later_calculation_that_reads_only_a_parameter(variable, on_a_branch):
+    # The formula now returns before it reads a variable, so what its earlier
+    # calculation read doesn't explain the zero.
+    name = variable.__name__
+    sim = core_toy_simulation(
+        core_leaf,
+        variable,
+        parameters={"active": {"values": {"2026-01-01": True}}},
+    )
+    assert sim.calculate(name, 2026) == pytest.approx(10)
+    target = sim.get_branch("closed", clone_system=True) if on_a_branch else sim
+    target.tax_benefit_system.modify_parameters({"active": {"2026": False}})
+    target.delete_arrays(name, 2026)
+    assert target.calculate(name, 2026) == 0
+
+    assert calculate_dependency_contributions(target, name, 2026).empty
+
+
+@pytest.mark.parametrize("on_a_branch", [False, True])
+def test_a_later_calculation_that_reads_only_a_parameter_and_gives_the_same_value(
+    on_a_branch,
+):
+    # The latest calculation that gave the zero read no variables, though an
+    # earlier one that read core_leaf gave it too.
+    name = "core_leaf_while_active"
+    sim = core_toy_simulation(
+        core_leaf,
+        core_leaf_while_active,
+        parameters={"active": {"values": {"2026-01-01": True}}},
+    )
+    sim.set_input("core_leaf", 2026, [0.0])
+    assert sim.calculate(name, 2026) == 0
+    target = sim.get_branch("closed", clone_system=True) if on_a_branch else sim
+    target.tax_benefit_system.modify_parameters({"active": {"2026": False}})
+    target.delete_arrays(name, 2026)
+    assert target.calculate(name, 2026) == 0
+
+    assert calculate_dependency_contributions(target, name, 2026).empty
+
+
+def constant_formula(name, definition):
+    # A version of the variable called name whose formula reads nothing, for
+    # a system to replace it with: its node looks like a read of a stored value.
+    class constant(CoreVariable):
+        label = "Constant"
+        value_type = float
+        entity = CORE_PERSON
+        definition_period = definition
+
+        def formula(person, period):
+            return 0.0
+
+    constant.__name__ = name
+    return constant
+
+
+@pytest.mark.parametrize("on_a_branch", [False, True])
+@pytest.mark.parametrize(
+    "name,variables,definition",
+    [
+        ("core_leaf_and_double", (core_double, core_leaf_and_double), YEAR),
+        ("core_monthly_leaf", (core_monthly_leaf,), MONTH),
+    ],
+)
+def test_a_later_formula_that_reads_nothing(name, variables, definition, on_a_branch):
+    sim = core_toy_simulation(core_leaf, *variables)
+    assert sim.calculate(name, 2026) > 0
+    target = sim.get_branch("closed", clone_system=True) if on_a_branch else sim
+    target.tax_benefit_system.update_variable(constant_formula(name, definition))
+    target.delete_arrays(name, 2026)
+    assert target.calculate(name, 2026) == 0
+    before = snapshot(target)
+    roots = len(target.tracer.trees)
+
+    assert calculate_dependency_contributions(target, name, 2026).empty
+
+    # Running the formula again left the values, the records, the branches and
+    # the trace as they were. The one new root is the function's own
+    # calculation of the target.
+    assert_unchanged(target, before)
+    assert len(target.tracer.trees) == roots + 1
+
+
+@pytest.mark.parametrize("set_as_an_input", [False, True])
+def test_a_neutralized_target_reads_nothing(set_as_an_input):
+    # It reads as its default, whatever its parent's calculation read and
+    # whatever the branch holds.
+    name = "core_leaf_and_double"
+    sim = core_toy_simulation(core_leaf, core_double, core_leaf_and_double)
+    assert sim.calculate(name, 2026) == 30
+    branch = sim.get_branch("neutralized", clone_system=True)
+    if set_as_an_input:
+        branch.set_input(name, 2026, [5.0])
+    branch.tax_benefit_system.neutralize_variable(name)
+    assert branch.calculate(name, 2026) == 0
+
+    assert calculate_dependency_contributions(branch, name, 2026).empty
+
+
+def test_a_formula_that_returns_before_it_reads_a_variable():
+    # With the scheme closed on the branch, lifetime_isa_bonus returns before
+    # it reads a variable, so the age and payments its parent's calculation
+    # read don't explain the branch's zero.
+    class close_the_lifetime_isa(Reform):
+        def apply(self):
+            self.modify_parameters({"gov.hmrc.isa.lifetime.in_effect": {"2026": False}})
+
+    year = 2026
+    sim = Simulation(
+        situation={
+            "people": {
+                "person": {"age": {year: 30}, "lifetime_isa_payments": {year: 4_000.0}}
+            },
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        },
+        trace=True,
+    )
+    assert sim.calculate("lifetime_isa_bonus", year).tolist() == [1_000]
+    branch = sim.get_branch("closed", clone_system=True)
+    branch.apply_reform(close_the_lifetime_isa)
+    assert branch.calculate("lifetime_isa_bonus", year).tolist() == [0]
+    before = snapshot(branch)
+
+    assert calculate_dependency_contributions(branch, "lifetime_isa_bonus", year).empty
+    assert_unchanged(branch, before)
+    # On the parent, it still reads the payments.
+    assert (
+        calculate_dependency_contributions(sim, "lifetime_isa_bonus", year)[
+            "lifetime_isa_payments"
+        ]
+        == 1_000
+    )
+
+
+def test_running_a_formula_again_tells_a_constant_from_a_stored_value():
+    sim = core_toy_simulation(core_leaf, core_double, core_leaf_and_double)
+    year = periods.period(2026)
+    sim.calculate("core_leaf_and_double", year)
+    # Its formula gives the value and reads nothing.
+    assert reads_nothing(sim, "core_leaf", year, np.array([10.0]))
+    # Its formula gives another value.
+    assert not reads_nothing(sim, "core_leaf", year, np.array([99.0]))
+    # Its formula gives the value but reads variables.
+    assert not reads_nothing(sim, "core_leaf_and_double", year, np.array([30.0]))
+    assert set(sim.branches) == set()
+
+
+@pytest.mark.parametrize("year_first", [False, True])
+def test_a_yearly_target_over_a_month(year_first):
+    # Over a month it divides its year, so the recalculation has to calculate
+    # the year again rather than divide the one the simulation holds.
+    name = "core_leaf_and_double"
+    sim = core_toy_simulation(core_leaf, core_double, core_leaf_and_double)
+    if year_first:
+        sim.calculate(name, 2026)
+    assert sim.calculate(name, "2026-03") == 2.5
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(sim, name, "2026-03")
+
+    assert contributions.to_dict() == pytest.approx(
+        {"core_double": 20 / 12, "core_leaf": 10 / 12}
+    )
+    assert_unchanged(sim, before)
+
+
+def test_household_net_income_over_a_month():
+    sim = traced_simulation(2026, [(40, 40_000.0, 0.0)], [])
+    mean = sim.calculate("household_net_income", "2026-03").mean()
+    assert mean > 0
+
+    contributions = calculate_dependency_contributions(
+        sim, "household_net_income", "2026-03"
+    )
+
+    assert contributions.sum() == pytest.approx(mean, abs=tolerance(mean))
+
+
+class bus_in_london_trips(CoreVariable):
+    # A name utils/supplied_inputs.py answers for, with a calculation that
+    # gives the NaN set_input refuses.
+    label = "Calculated NaN"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return np.nan
+
+
+def leaf_unless_supplied(person, on, period):
+    on("bus_in_london_trips", period)
+    supplied = supplied_input(on, "bus_in_london_trips", period) is not None
+    stored = stored_as_input(on, "bus_in_london_trips", period)
+    return on("core_leaf", period) + 100 * supplied + 1000 * stored
+
+
+class core_asks_about_nan(CoreVariable):
+    label = "Core asks about NaN"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return leaf_unless_supplied(person, person, period)
+
+
+class core_asks_about_nan_on_a_branch(CoreVariable):
+    label = "Core asks about NaN on a branch"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        sim = person.simulation
+        route = sim.get_branch("nan_route")
+        try:
+            return leaf_unless_supplied(person, route.populations["person"], period)
+        finally:
+            del sim.branches["nan_route"]
+
+
+@pytest.mark.parametrize(
+    "target,cache_blacklist",
+    [
+        # The simulation doesn't store the NaN, so the branch holds it.
+        (core_asks_about_nan, ["bus_in_london_trips"]),
+        # The formula read it on a branch that's gone, so the branch holds it.
+        (core_asks_about_nan_on_a_branch, None),
+    ],
+)
+def test_a_calculated_nan_stays_calculated(target, cache_blacklist):
+    sim = core_toy_simulation(
+        bus_in_london_trips, core_leaf, target, cache_blacklist=cache_blacklist
+    )
+    assert sim.calculate(target.__name__, 2026) == 10
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(sim, target.__name__, 2026)
+
+    assert contributions.to_dict() == {"core_leaf": 10, "bus_in_london_trips": 0}
+    assert_unchanged(sim, before)
+
+
+# NaN, each infinity and any finite float32: arrays()'s own float elements
+# rarely give NaN.
+ELEMENTS = st.one_of(
+    st.just(float("nan")),
+    st.just(float("inf")),
+    st.just(float("-inf")),
+    st.floats(width=32, allow_nan=False, allow_infinity=False),
+)
+
+
+def float32_arrays(length):
+    return arrays(np.float32, length, elements=ELEMENTS, fill=st.nothing())
+
+
+@settings(max_examples=50, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(values=float32_arrays(1))
+@example(values=np.array([np.nan], dtype=np.float32))
+def test_a_recorded_value_stays_what_it_was_recorded_as(values):
+    name = "bus_in_london_trips"
+    year = periods.period(2026)
+    sim = core_toy_simulation(bus_in_london_trips)
+    person = sim.populations["person"]
+    sim.get_holder(name)._set(year, values, sim.branch_name, is_input=True)
+    record_model_value(sim, name, year, sim.branch_name, calculated=True)
+    assert supplied_input(person, name, year) is None
+    assert not stored_as_input(person, name, year)
+    record_model_value(sim, name, year, sim.branch_name)
+    assert supplied_input(person, name, year) is None
+    assert stored_as_input(person, name, year)
+
+
+@settings(max_examples=200, deadline=None)
+@given(
+    a=float32_arrays(3),
+    b=float32_arrays(3),
+    # Elements where this holds match a's, so that arrays that agree come up.
+    matching=arrays(np.bool_, 3),
+)
+@example(
+    a=np.full(3, np.nan, np.float32),
+    b=np.full(3, np.nan, np.float32),
+    matching=np.zeros(3, np.bool_),
+)
+def test_same_array_is_equality_where_nan_equals_nan(a, b, matching):
+    b = np.where(matching, a, b)
+    expected = bool(np.all((a == b) | (np.isnan(a) & np.isnan(b))))
+    assert same_array(a, b) == expected
+    assert same_values(a, b) == expected
+    assert same_array(a, a.view(CalculatedValue))
+
+
+def test_same_array_compares_what_cannot_hold_nan():
+    assert same_array(np.array(["a", "b"]), np.array(["a", "b"]))
+    assert not same_array(np.array(["a", "b"]), np.array(["a", "c"]))
+    assert not same_array(np.array([1.0]), np.array([1.0, 2.0]))
 
 
 def landlord(finance_costs):

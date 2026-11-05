@@ -252,19 +252,31 @@ def supplied_input(
     return None
 
 
+def same_array(a, b) -> bool:
+    """Whether two arrays hold the same values, where NaN equals NaN.
+
+    A calculation can give NaN (``set_input`` refuses it), and the record of a
+    value that holds NaN must still match the value it records."""
+    try:
+        return np.array_equal(a, b, equal_nan=True)
+    except TypeError:
+        # equal_nan needs numbers.
+        return np.array_equal(a, b)
+
+
 def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
-    return written is not None and np.array_equal(written, value)
+    return written is not None and same_array(written, value)
 
 
 class CalculatedValue(np.ndarray):
     """A model value (see ``record_model_value``) that stands for a value the
     simulation calculated, not one a scenario set.
 
-    The record of model values holds it as an array of this type. Indexing
-    and copying keep the type, so a clone, a branch, a household subset
-    (utils/household_subset.py) and a rebuild keep the mark with the
+    The record of model values holds it as an array of this type. Array
+    indexing and copying keep the type, so a clone, a branch, a household
+    subset (utils/household_subset.py) and a rebuild keep the mark with the
     value."""
 
 
@@ -277,7 +289,7 @@ def _is_calculated_value(simulation, holder, branch_name, period) -> bool:
     if not isinstance(written, CalculatedValue):
         return False
     stored = get_stored_input(holder, period, branch_name)
-    return stored is not None and np.array_equal(written, stored)
+    return stored is not None and same_array(written, stored)
 
 
 def record_model_value(
