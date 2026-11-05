@@ -1,3 +1,10 @@
+## [2.175.1] - 2026-11-05
+
+### Fixed
+
+- The model now opens the reg 60A Universal Credit route on a legacy closure claim only when the claimant or partner reports Working Tax Credit, and the formula for the pension-age Council Tax Reduction test reads the same reports; a report by a child or another adult in the benefit unit no longer opens the route or makes the award a reg 60A award.
+
+
 ## [2.175.0] - 2026-11-05
 
 ### Added
