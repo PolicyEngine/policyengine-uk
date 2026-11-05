@@ -1,0 +1,24 @@
+description: >
+  Whether the Scottish council tax reduction scheme for people under pension
+  age takes the capital of an applicant with an award of Universal Credit
+  from the Secretary of State's calculation for that award. The Council Tax
+  Reduction (Scotland) Regulations 2012 did (regulation 26(4) as made;
+  regulation 26(6) after SSI 2018/69 substituted the regulation). The Council Tax Reduction (Scotland) Regulations 2021, in force
+  from 1 April 2022, have no such rule: the authority calculates every
+  applicant's capital itself (regulations 66 to 70).
+metadata:
+  label: Scotland working-age council tax reduction uses the Universal Credit capital assessment
+  unit: bool
+  period: year
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 26(4) (as made)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/26/made
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 26(6) (as at 1 April 2021)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/26/2021-04-01
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 1 (commencement, 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/1
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 66
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/66
+values:
+  2013-04-01: true
+  2022-04-01: false
