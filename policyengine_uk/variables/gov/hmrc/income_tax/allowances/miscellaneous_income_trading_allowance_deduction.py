@@ -20,7 +20,9 @@ class miscellaneous_income_trading_allowance_deduction(Variable):
         "contributions exceed relevant UK earnings (see "
         "utils/trading_allowance.py). Ordinary treatment to claim a current "
         "trading loss (no full relief, s. 783AL, or no partial relief, s. "
-        "783AM) leaves it unrelieved. Only "
+        "783AM) leaves it unrelieved. trading_allowance_claim_status changes "
+        "how much of the allowance trade receipts take up (see "
+        "policyengine_uk/utils/trading_allowance.py). Only "
         "income tax reads this deduction, through taxable_miscellaneous_income; "
         "means tests and gross income bases read "
         "miscellaneous_income_before_trading_allowance. Datasets that hold "
@@ -50,5 +52,7 @@ class miscellaneous_income_trading_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        _, miscellaneous_relief = trading_allowance_reliefs(person, period, parameters)
+        _, miscellaneous_relief, _ = trading_allowance_reliefs(
+            person, period, parameters
+        )
         return miscellaneous_relief

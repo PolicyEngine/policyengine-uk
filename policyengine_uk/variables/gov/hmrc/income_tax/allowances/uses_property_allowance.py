@@ -137,8 +137,15 @@ class uses_property_allowance(Variable):
         "allowance is used whenever it lowers taxable property income, "
         "without comparing tax. That is always the lower tax before the "
         "winter fuel payment charge. While the charge has effect it can "
-        "rarely cost more: the lower tax can raise the income Pension Credit "
-        "counts and end an award that exempts the person from the charge. "
+        "rarely cost more: the lower tax can lower the income tax the "
+        "Pension Credit formula deducts "
+        "(legacy_means_test_deducted_income_tax), which raises the income "
+        "Pension Credit counts and can end an award that exempts the person "
+        "from the charge. The deduction moves with the route where earnings "
+        "carry tax on the profits, and, without earnings, where the profits "
+        "change the tax on income Pension Credit counts: through its share "
+        "of a general tax reduction, the Marriage Allowance or the personal "
+        "allowance taper. "
         "The model does not compare routes for these landlords, because "
         "that works out the benefits on both routes for the whole "
         "population and made simulations several times slower; on the "
@@ -177,8 +184,10 @@ class uses_property_allowance(Variable):
         # Without a reduction at stake, lower taxable property income means
         # lower tax before the winter fuel payment charge, so the allowance
         # is used without comparing. The charge can rarely reverse that
-        # (lower tax can end Pension Credit and with it the exemption,
-        # s.681I(4)); see the documentation for why that is not compared.
+        # (lower tax can lower the tax the Pension Credit formula deducts,
+        # and so end Pension Credit and with it the exemption, s.681I(4));
+        # see the documentation for when that happens and why it is not
+        # compared.
         uses = lowers_income & ~reduction_at_stake
         choosing = lowers_income & reduction_at_stake
         if not choosing.any():
