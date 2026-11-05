@@ -188,19 +188,18 @@ def test_a_value_recorded_as_calculated_is_neither_supplied_nor_an_input():
     # utils/dependencies.py stores values the simulation calculated as
     # inputs, so that they stay put, and records them as model values that
     # stand for a calculation.
-    sim = Simulation(
-        situation={
-            "people": {
-                "first": {"age": {2026: 40}, "employment_income": {2026: 30_000}},
-                "second": {"age": {2026: 50}, "employment_income": {2026: 40_000}},
-            },
-            "benunits": {"b1": {"members": ["first"]}, "b2": {"members": ["second"]}},
-            "households": {
-                "h1": {"members": ["first"]},
-                "h2": {"members": ["second"]},
-            },
-        }
-    )
+    two_people = {
+        "people": {
+            "first": {"age": {2026: 40}, "employment_income": {2026: 30_000}},
+            "second": {"age": {2026: 50}, "employment_income": {2026: 40_000}},
+        },
+        "benunits": {"b1": {"members": ["first"]}, "b2": {"members": ["second"]}},
+        "households": {
+            "h1": {"members": ["first"]},
+            "h2": {"members": ["second"]},
+        },
+    }
+    sim = Simulation(situation=two_people)
     year = period(2026)
     name = "adjusted_net_income"
     sim.set_input(name, year, [1_000.0, 2_000.0])
@@ -213,7 +212,11 @@ def test_a_value_recorded_as_calculated_is_neither_supplied_nor_an_input():
             stored_as_input(person, name, year),
         )
 
-    for copy in (sim, sim.clone(), sim.get_branch("copy")):
+    # A simulation that takes sim's populations takes the record with them
+    # (keep_population_records).
+    rebuilt = Simulation(situation=two_people)
+    rebuilt.build_from_populations(sim.populations)
+    for copy in (sim, sim.clone(), sim.get_branch("copy"), rebuilt):
         assert answers(copy) == (None, False)
     with household_subset(sim, "subset", np.array([False, True])) as subset:
         assert subset.person is not None

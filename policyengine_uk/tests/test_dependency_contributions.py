@@ -22,10 +22,10 @@ household drawn below:
    dependencies, the contributions sum to the mean of the target, also when
    one dependency feeds another (pension contributions get tax relief).
 3. Leaves the simulation as it was: the simulation holds every value it stored
-   before the call, unchanged, after it, and gains nothing (no values, no
-   recorded inputs, no branches) apart from what the helper's own calculation
-   of the target stores or drops, which the tests calculate first. So a second
-   call returns the same contributions.
+   before the call, unchanged, after it, with the same records of inputs and
+   model values, and gains nothing (no values, no records, no branches) apart
+   from what the helper's own calculation of the target stores or drops, which
+   the tests calculate first. So a second call returns the same contributions.
 4. Non-float dependencies contribute zero.
 
 Monthly variables are the case that broke: zeroing a monthly dependency over a
@@ -183,23 +183,41 @@ def stored_values(sim):
 
 def recorded_inputs(sim):
     # The record of set_input values that apply_reform keeps and
-    # to_input_dataframe exports, for the names sim reads.
-    visible = {"default", sim.branch_name}
-    return {key for key in getattr(sim, "_user_input_keys", set()) if key[1] in visible}
+    # to_input_dataframe exports, for every branch name.
+    return set(getattr(sim, "_user_input_keys", None) or ())
+
+
+def model_values(sim):
+    # The model's own values (set_model_value), and the calculated values a
+    # branch of the helper marks (record_model_value), with their classes.
+    return {
+        key: (type(value), np.array(value))
+        for key, value in (getattr(sim, "_model_values", None) or {}).items()
+    }
 
 
 def assert_unchanged(sim, before):
-    values, inputs, branches = before
+    values, inputs, models, branches = before
     after = stored_values(sim)
     assert after.keys() == values.keys()
     for key, array in values.items():
         assert np.array_equal(after[key], array), key
     assert recorded_inputs(sim) == inputs
+    after_models = model_values(sim)
+    assert after_models.keys() == models.keys()
+    for key, (kind, array) in models.items():
+        assert after_models[key][0] is kind, key
+        assert np.array_equal(after_models[key][1], array), key
     assert set(sim.branches) == branches
 
 
 def snapshot(sim):
-    return stored_values(sim), recorded_inputs(sim), set(sim.branches)
+    return (
+        stored_values(sim),
+        recorded_inputs(sim),
+        model_values(sim),
+        set(sim.branches),
+    )
 
 
 def reference_contributions(year, adults, child_ages, target, dependencies, values):
