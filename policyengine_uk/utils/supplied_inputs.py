@@ -13,10 +13,9 @@ The record can still outlive the value it names. A value cached over an input
 takes that storage tier (memory or disk) off the holder's record of where the
 input is (``Holder._user_input_storage``), but leaves the entry in
 ``_user_input_keys``. So every helper here reads a supplied value only if it is
-still stored, and only from a tier that the holder records the input in and
-that holds a value the engine did not calculate, as
-``Holder._stores_user_input`` decides whether an input survives (see
-``stored_supplied_value``). A missing
+still stored, and only from a tier in which ``Holder._stores_user_input``
+finds the input: one that the holder records the input in and that holds a
+value the engine did not calculate (see ``stored_supplied_value``). A missing
 value, or one carried over, calculated or cached into the same tier, is not
 supplied; an input stored on disk under a value cached in memory still is.
 
@@ -281,11 +280,11 @@ def stored_supplied_value(holder, period: Period, branch_name: str):
 
     A record can outlive its stored value (see above), and a value calculated
     later can take its place in one tier while the input survives in the
-    other. So read only a tier that the holder records the input in (either
-    tier when it records none) and that holds a value it did not calculate,
-    as ``Holder._stores_user_input`` decides whether an input survives.
-    Reading memory before disk instead could return a calculated value cached
-    over an input stored on disk.
+    other. So read only a tier in which ``Holder._stores_user_input`` finds
+    the input: one that the holder records the input in (either tier when it
+    records none) and that holds a value it did not calculate, memory first.
+    Reading memory before disk regardless could return a value cached over an
+    input stored on disk.
     """
     storage = _supplied_value_storage(holder, period, branch_name)
     return None if storage is None else storage.get(period, branch_name)
@@ -294,19 +293,12 @@ def stored_supplied_value(holder, period: Period, branch_name: str):
 def _supplied_value_storage(holder, period: Period, branch_name: str):
     """The storage (memory or disk) from which ``stored_supplied_value``
     reads, or None if the supplied value is gone."""
-    recorded = (getattr(holder, "_user_input_storage", None) or {}).get(
-        (branch_name, str(period))
-    )
-    locations = recorded[1] if recorded is not None else {"memory", "disk"}
     for location, storage in (
         ("memory", holder._memory_storage),
         ("disk", holder._disk_storage),
     ):
-        if (
-            location in locations
-            and storage is not None
-            and storage.has(period, branch_name)
-            and not storage.is_derived(period, branch_name)
+        if storage is not None and holder._stores_user_input(
+            period, branch_name, location
         ):
             return storage
     return None
