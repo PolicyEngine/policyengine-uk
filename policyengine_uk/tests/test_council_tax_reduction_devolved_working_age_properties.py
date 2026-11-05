@@ -263,21 +263,20 @@ def test_welsh_fixed_amounts_start_with_the_2013_scheme():
     from policyengine_uk.system import system
 
     wales = system.parameters.gov.local_authorities.wales.council_tax_reduction
-    working_age = wales.working_age
     first = {
-        "earnings_disregard.single": 5,
-        "earnings_disregard.couple": 10,
-        "earnings_disregard.lone_parent": 25,
-        "earnings_disregard.disability_or_carer": 20,
-        "earnings_disregard.additional": 17.10,
-        "tariff_income.threshold": 6_000,
-        "tariff_income.step": 250,
-        "tariff_income.amount": 1,
-        "childcare.maximum_one_child": 175,
-        "childcare.maximum_two_or_more_children": 300,
+        "working_age.earnings_disregard.single": 5,
+        "working_age.earnings_disregard.couple": 10,
+        "working_age.earnings_disregard.lone_parent": 25,
+        "working_age.earnings_disregard.disability_or_carer": 20,
+        "working_age.earnings_disregard.additional": 17.10,
+        "means_test.tariff_income.working_age.threshold": 6_000,
+        "means_test.tariff_income.working_age.step": 250,
+        "means_test.tariff_income.working_age.amount": 1,
+        "working_age.childcare.maximum_one_child": 175,
+        "working_age.childcare.maximum_two_or_more_children": 300,
     }
     for name, value in first.items():
-        parameter = working_age.get_child(name)
+        parameter = wales.get_child(name)
         earliest = parameter.values_list[-1]
         assert earliest.instant_str == "2013-04-01", name
         assert earliest.value == value, name
