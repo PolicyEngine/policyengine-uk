@@ -14,9 +14,11 @@
 # Westminster the model applies the Default Scheme's list (S.I. 2012/2886 Sch
 # 3 para 12(1)): DLA care highest and PIP daily living at either rate, without
 # AFIP. The four London councils keep the qualifying age for State Pension
-# Credit as the age limit. Each council's list starts on or before 1 April
-# 2013, so the model applies it in every model year, and reads each year's
-# rules at 30 April.
+# Credit as the age limit. The model applies Kingston's list in 2013-14 to
+# 2017-18 and from 2023-24, and keeps the Housing Benefit list in 2018-19 to
+# 2022-23 because no complete scheme text for those years survives. The
+# other councils' lists apply in every model year. The model reads each
+# year's rules at 30 April.
 # Unless a case sets `is_disabled_for_benefits`, it keeps its default, false,
 # and the model pays no disability premium, although the schemes give one to
 # a claimant under the qualifying age who receives these awards (for example
@@ -756,3 +758,99 @@
     # 16,365.32; pension 12,500 + 1,448.12 - 1,800 = 12,148.12, without AFIP
     # as in Case 15.
     household_net_income: [16_365.32, 12_148.12]
+
+- name: Case 18, Kingston keeps the Housing Benefit condition for AFIP in 2020.
+  period: 2020
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # Kingston's list does not apply; the GB Housing Benefit list counts AFIP.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+
+- name: Case 19, Kingston keeps the Housing Benefit condition for AFIP in 2022.
+  period: 2022
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # Kingston's list does not apply; the GB Housing Benefit list counts AFIP.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+
+- name: Case 20, Kingston's own list omits AFIP in 2017.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # Kingston's list applies and counts only highest DLA care or PIP daily living.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+
+- name: Case 21, Kingston's own list omits AFIP in 2024.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # Kingston's list applies and counts only highest DLA care or PIP daily living.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+
+- name: Case 22, Kingston keeps the Housing Benefit condition for highest DLA care in 2020.
+  period: 2020
+  input:
+    people:
+      person1:
+        age: 30
+        dla_sc_category: HIGHER
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # The GB Housing Benefit list counts has_highest_dla_sc_award.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+
+- name: Case 23, Merton's own list still omits AFIP in 2020.
+  period: 2020
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    # Merton's list still counts only highest DLA care or PIP daily living.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false

@@ -1,0 +1,39 @@
+description: >
+  If this is true, the model applies Kingston upon Thames's own qualifying
+  benefit list for the enhanced disability premium in its working-age
+  Council Tax Reduction scheme. The model applies that list in 2013-14 to
+  2017-18 and from 2023-24. It keeps the Housing Benefit list in 2018-19 to
+  2022-23 because no complete scheme text for those years survives. The model
+  reads this parameter as at 30 April of each year, like the qualifying
+  benefit list.
+metadata:
+  label: Kingston upon Thames Council Tax Reduction enhanced disability premium qualifying benefits apply
+  period: year
+  unit: bool
+  reference:
+    - title: Council, 11 December 2012, item 42 (a scheme from 1 April 2013 adopting the Default Scheme)
+      href: https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. 3 para. 12 (as made)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/regulation/12/made
+    - title: Decision 2535, 17 December 2013 (2014/15 the same as 2013/14 apart from uprating)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=2535
+    - title: Decision 2707, 16 July 2014 (2015/16 and 2016/17 unchanged apart from uprating)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=2707
+    - title: Decision 3042, 15 December 2015 (revisions from 1 April 2016 and 1 April 2017, none to Sch 3 para 12)
+      href: https://moderngov.kingston.gov.uk/ieDecisionDetails.aspx?ID=3042
+    - title: Council Tax Reduction Scheme 2021-2022 (truncated archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20221206070019id_/https://www.kingston.gov.uk/downloads/file/616/council-tax-reduction-scheme-2021-2022
+    - title: Council Tax Reduction Scheme 2022-2023 (truncated archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20221206083043id_/https://www.kingston.gov.uk/downloads/file/513/council-tax-reduction-scheme-2022-2023
+    - title: Council Tax Reduction Scheme 2023, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/downloads/CTRS_2023_Final.pdf
+    - title: Council Tax Reduction Scheme 2024-2025, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/downloads/Council_Tax_Reduction_Scheme_2024_2025.pdf
+    - title: Council Tax Reduction Scheme 2025 - 2026, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/2025-04/Council_Tax_Reduction_Scheme_2025_26.pdf
+    - title: Council Tax Reduction Scheme 2026 - 2027, Sch. 3 para. 12(1)(b), (c)
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf
+values:
+  2013-04-01: true
+  2018-04-01: false
+  2023-04-01: true

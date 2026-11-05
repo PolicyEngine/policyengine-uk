@@ -29,8 +29,11 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "its Cabinet says from December 2020 that its local scheme mirrors "
         "those Regulations, though the model cites no full Westminster scheme "
         "text. Those four councils count an award only for a person under the "
-        "qualifying age for State Pension Credit, and each list starts on or "
-        "before 1 April 2013, so the model applies it in every model year. In "
+        "qualifying age for State Pension Credit. The model applies Kingston's "
+        "list in 2013-14 to 2017-18 and from 2023-24, and keeps the Housing "
+        "Benefit list in 2018-19 to 2022-23 because no complete scheme text "
+        "for those years survives. The other three councils' lists start on "
+        "or before 1 April 2013 and apply in every model year. In "
         "every other scheme the model applies the Housing Benefit condition "
         "(receives_enhanced_disability_premium_qualifying_benefit, under the "
         "same age limit). Welsh councils apply that condition under W.S.I. "
@@ -83,7 +86,8 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
             [
                 is_scotland_scheme(country),
                 is_merton_area(local_authority, country),
-                is_kingston_upon_thames_area(local_authority, country),
+                is_kingston_upon_thames_area(local_authority, country)
+                & la.kingston_upon_thames.council_tax_reduction.enhanced_disability_premium.qualifying_benefits_apply,
                 is_newham_area(local_authority, country),
                 is_westminster_area(local_authority, country),
             ],
