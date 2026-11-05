@@ -1299,3 +1299,212 @@
     council_tax_reduction_working_age_unearned_income: 6_000
     council_tax_reduction_working_age_applicable_income: 6_000
     simulated_council_tax_reduction_benunit: 1_793.72
+
+- name: Wales, the childcare cap counts only children with charges
+  # WSI 2013/3029 Sch 6 para 20(3): the £300 cap applies "where the
+  # applicant's family includes more than one child in respect of whom
+  # relevant child care charges are paid". Lone parent, children aged 5 and
+  # 10, charges of £12,000 on the five-year-old only, so the £175 cap applies:
+  # 175 x 52 = 9,100. Earnings 40,000 - 5,486 tax - 2,194.40 NI = 32,319.60;
+  # disregard (25 + 17.10) x 52 = 2,189.20; income 32,319.60 - 2,189.20 -
+  # 9,100 = 21,030.40. Applicable amount (101.85 + 2 x 87.88 + 20.22) x 52 =
+  # 15,487.16; award 3,000 - 0.2 x 5,543.24 = 1,891.35 (the £300 cap would
+  # deduct all 12,000 and pay 2,471.35).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 40_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      young_child:
+        age: 5
+        childcare_expenses: 12_000
+      older_child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, young_child, older_child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, young_child, older_child]
+        region: WALES
+        country: WALES
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 32_319.60
+    council_tax_reduction_working_age_earnings_disregard: 2_189.20
+    council_tax_reduction_working_age_childcare_deduction: 9_100
+    council_tax_reduction_working_age_applicable_amount: 15_487.16
+    council_tax_reduction_working_age_applicable_income: 21_030.40
+    simulated_council_tax_reduction_benunit: 1_891.35
+    council_tax_reduction: 1_891.35
+
+- name: Wales, charges entered on the parent take the one-child cap
+  # The same family with the £12,000 of charges entered on the parent rather
+  # than on either child. The formula still deducts them, at the one-child cap
+  # of 175 x 52 = 9,100, so the award matches the case above: 1,891.35.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 40_000
+        weekly_hours: 30
+        childcare_expenses: 12_000
+        council_tax_benefit_reported: 100
+      young_child:
+        age: 5
+      older_child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, young_child, older_child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, young_child, older_child]
+        region: WALES
+        country: WALES
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_childcare_deduction: 9_100
+    council_tax_reduction: 1_891.35
+
+- name: Scotland without UC, the childcare cap counts only children with charges
+  # SSI 2021/249 reg 38(4): £175 a week where only one child has relevant
+  # childcare charges. Lone parent, children aged 5 and 10, £12,000 of
+  # charges on the five-year-old only: cap 175 x 52 = 9,100. Earnings
+  # 32,254.53 after tax and NI; disregard (25 + 17.10) x 52 = 2,189.20;
+  # income 32,254.53 - 2,189.20 - 9,100 = 20,965.33. Applicable amount
+  # (95.55 + 2 x 109.85) x 52 = 16,393; award 3,000 - 0.2 x 4,572.33 =
+  # 2,085.53 (the £300 cap would deduct all 12,000 and pay 2,665.53).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 40_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      young_child:
+        age: 5
+        childcare_expenses: 12_000
+      older_child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, young_child, older_child]
+        would_claim_uc: false
+        would_claim_tfc: false
+    households:
+      household:
+        members: [parent, young_child, older_child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 32_254.53
+    council_tax_reduction_working_age_earnings_disregard: 2_189.20
+    council_tax_reduction_working_age_childcare_deduction: 9_100
+    council_tax_reduction_working_age_applicable_amount: 16_393
+    council_tax_reduction_working_age_applicable_income: 20_965.33
+    council_tax_reduction: 2_085.53
+
+- name: Scotland with UC, the childcare cap counts only children with charges
+  # SSI 2021/249 reg 42(4): £290 a week in 2026 where only one child has
+  # relevant childcare charges. Lone parent on UC, children aged 5 and 10,
+  # £24,000 of charges on the five-year-old only. UC pays a childcare element
+  # of 0.85 x 24,000 = 20,400, which reg 78(3) grosses up to 24,000; cap 290 x
+  # 52 = 15,080. Earnings 17,959.27 on the UC measure; disregard 25 x 52 =
+  # 1,300; relevant UC payments min(7,869.84 + 20,400, award 28,177.04) =
+  # 28,177.04; income 17,959.27 - 1,300 + 28,177.04 - 15,080 = 29,756.31.
+  # Applicable amount 16,393; award 3,000 - 0.2 x 13,363.31 = 327.34 (the
+  # £497 cap would deduct all 24,000 and pay 2,111.34).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 20_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      young_child:
+        age: 5
+        childcare_expenses: 24_000
+      older_child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, young_child, older_child]
+        would_claim_tfc: false
+    households:
+      household:
+        members: [parent, young_child, older_child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 3_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_has_universal_credit: true
+    uc_childcare_element: 20_400
+    council_tax_reduction_working_age_earned_income: 17_959.27
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_relevant_universal_credit_payments: 28_177.04
+    council_tax_reduction_working_age_childcare_deduction: 15_080
+    council_tax_reduction_working_age_applicable_income: 29_756.31
+    council_tax_reduction: 327.34
+
+- name: Scotland without UC, childcare comes off after unearned income
+  # SSI 2021/249 reg 38(2): estimate earned income, add unearned income, then
+  # deduct relevant childcare charges. Lone parent aged 60, child aged 5,
+  # £5,000 self-employed profit from 30 hours (no notional tax or Class 4 on
+  # it), £15,000 private pension, £9,000 of charges (under the 175 x 52 =
+  # 9,100 cap). Income 5,000 - 1,300 (£25 lone parent disregard; the £17.10
+  # needs employed earnings from April 2022) + 15,000 - 9,000 = 9,700, below
+  # the applicable amount (95.55 + 109.85) x 52 = 10,680.80, so the award is
+  # the full 1,800. Deducting the charges from earnings alone would count
+  # 15,000 and pay 936.16, with household net income 18,916.43.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 60
+        self_employment_income: 5_000
+        weekly_hours: 30
+        private_pension_income: 15_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 5
+        childcare_expenses: 9_000
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_tfc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 5_000
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_working_age_unearned_income: 15_000
+    council_tax_reduction_working_age_childcare_deduction: 9_000
+    council_tax_reduction_working_age_applicable_amount: 10_680.80
+    council_tax_reduction_working_age_applicable_income: 9_700
+    council_tax_reduction: 1_800
+    household_net_income: 19_780.27

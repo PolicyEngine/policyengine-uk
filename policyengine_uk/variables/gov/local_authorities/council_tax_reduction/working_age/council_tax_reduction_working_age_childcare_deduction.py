@@ -15,16 +15,23 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
     documentation = (
         "Annual relevant childcare charges deducted from a working-age "
         "applicant's income in Scotland or Wales. Without Universal Credit, "
-        "childcare spending is deducted from earnings after the earnings "
-        "disregards (never below zero), up to a weekly cap for "
-        "one child or for two or more, where a lone parent, or both members "
-        "of a couple, are in remunerative work. A Scottish applicant with "
-        "Universal Credit deducts the Universal Credit childcare costs element "
-        "grossed up to the full cost, up to higher caps. A Welsh applicant "
-        "with Universal Credit uses the Secretary of State's income figure, "
-        "which has no childcare deduction. The number of children in the "
-        "family stands in for the number with childcare charges, and the "
-        "incapacity, hospital and prison cases for couples are not modelled."
+        "the charges are capped at a weekly maximum where a lone parent, or "
+        "both members of a couple, are in remunerative work. Wales deducts "
+        "them from earnings after the earnings disregards (never below zero); "
+        "Scotland deducts them from earnings plus unearned income "
+        "(council_tax_reduction_working_age_applicable_income). A Scottish "
+        "applicant with Universal Credit deducts the Universal Credit "
+        "childcare costs element grossed up to the full cost, up to higher "
+        "caps. A Welsh applicant with Universal Credit uses the Secretary of "
+        "State's income figure, which has no childcare deduction. Each cap "
+        "depends on how many children in the family have relevant childcare "
+        "charges paid in respect of them: the formula counts the children "
+        "with positive childcare_expenses, and takes the two-or-more-children "
+        "cap only where at least two of them have charges. Where the family's "
+        "charges sit on an adult rather than on any child, the formula still "
+        "deducts them, at the one-child cap. The formula does not model the "
+        "incapacity, hospital and "
+        "prison cases for couples."
     )
     definition_period = YEAR
     unit = GBP
@@ -44,8 +51,16 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
         scotland = is_scotland_scheme(benunit.household("country", period))
         person = benunit.members
         claimant_or_partner = working_age_applicant_or_partner(person, period)
-        children = benunit.sum(working_age_child(person, period))
-        two_or_more = children >= 2
+        child = working_age_child(person, period)
+        children = benunit.sum(child)
+        # Each cap depends on the children "in respect of whom relevant
+        # childcare charges are paid" (WSI 2013/3029 Sch 6 para 20(3); SSI
+        # 2021/249 regs 38(4) and 42(4)), not on all the family's children.
+        # Charges entered on an adult count towards the deduction at the
+        # one-child cap.
+        expenses = person("childcare_expenses", period)
+        children_with_charges = benunit.sum(child & (expenses > 0))
+        two_or_more = children_with_charges >= 2
         has_universal_credit = benunit(
             "council_tax_reduction_working_age_has_universal_credit", period
         )
@@ -58,7 +73,7 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
         )
         in_work = person("weekly_hours", period) >= benunit.project(hours_threshold)
         all_claimants_in_work = benunit.sum(claimant_or_partner & ~in_work) == 0
-        charges = benunit.sum(person("childcare_expenses", period))
+        charges = benunit.sum(expenses)
         weekly_cap = where(
             scotland,
             where(

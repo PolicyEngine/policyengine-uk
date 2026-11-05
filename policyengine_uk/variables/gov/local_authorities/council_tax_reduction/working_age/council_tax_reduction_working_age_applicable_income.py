@@ -17,9 +17,14 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         "Universal Credit counts the Secretary of State's Universal Credit "
         "income figure (earnings before the work allowance, plus Universal "
         "Credit unearned income) plus the Universal Credit award. Everyone "
-        "else counts net earnings less disregards and childcare charges, "
-        "unearned income (in Wales, less tax on it), tariff income from "
-        "capital and, in Scotland, the relevant Universal Credit payments."
+        "else counts net earnings less disregards, unearned income (in "
+        "Wales, less tax on it), tariff income from capital and, in Scotland, "
+        "the relevant Universal Credit payments, less relevant childcare "
+        "charges. Wales deducts the charges from earnings, so they never take "
+        "earnings below zero or reduce other income (WSI 2013/3029 Sch 6 para "
+        "20(1)(c)). Scotland deducts them from the total of earned and "
+        "unearned income, with or without Universal Credit (SSI 2021/249 "
+        "regs 38(2) and 42(2)). Income never falls below zero."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,12 +55,14 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         childcare = benunit(
             "council_tax_reduction_working_age_childcare_deduction", period
         )
-        # Without Universal Credit, childcare charges come off earnings after
-        # the disregards (WSI 2013/3029 Sch 6 para 20(1)(c); SSI 2021/249 reg
-        # 38(2)(c)). A Scottish applicant with Universal Credit deducts them
-        # from income (reg 42(2)(c)).
+        # Wales deducts childcare charges "from any earnings" (WSI 2013/3029
+        # Sch 6 para 20(1)(c)), after the disregards. Scotland estimates
+        # earned income, adds unearned income and then deducts the charges
+        # (SSI 2021/249 reg 38(2) without Universal Credit, reg 42(2) with
+        # it), so they can reduce unearned income too.
+        from_earnings = wales & ~has_universal_credit
         earnings_after_deductions = max_(
-            0, earnings - disregard - where(has_universal_credit, 0, childcare)
+            0, earnings - disregard - where(from_earnings, childcare, 0)
         )
         unearned = benunit("council_tax_reduction_working_age_unearned_income", period)
         # Wales disregards tax on unearned income (Sch 9 para 4); Scotland
@@ -82,7 +89,7 @@ class council_tax_reduction_working_age_applicable_income(Variable):
                     "council_tax_reduction_relevant_universal_credit_payments",
                 ],
             )
-            - where(has_universal_credit, childcare, 0)
+            - where(from_earnings, 0, childcare)
         )
         income = where(
             wales & has_universal_credit,

@@ -20,6 +20,19 @@ Invariants, for any working-age family in Scotland or Wales:
 4. A claimant on income-related ESA and not on Universal Credit gets the
    whole liability (SSI 2021/249 reg 13(11); WSI 2013/3029 Sch 9 para 8),
    whatever their earnings.
+5. The childcare cap depends on how many children have relevant childcare
+   charges paid in respect of them (WSI 2013/3029 Sch 6 para 20(3); SSI
+   2021/249 regs 38(4) and 42(4)). So a family whose charges sit on one child
+   gets the same deduction however many other children it has. Without
+   Universal Credit the deduction stays the same; a Scottish family with
+   Universal Credit never deducts more than the one-child cap.
+6. Scotland, without Universal Credit: the applicant's income falls by
+   exactly the childcare deduction while it stays above zero, so the
+   deduction reduces unearned income as well as earnings (SSI 2021/249 reg
+   38(2)). The only other effect of the charges is through the earnings
+   disregard: the £17.10 additional disregard needs earnings that cover the
+   charges, and from April 2022 only employed earnings qualify, so the
+   disregard never changes for a family with no employed earnings.
 
 Each example puts every family and its variants in one simulation, so the
 formulas also run on arrays with several benefit units and households.
@@ -302,3 +315,128 @@ def test_welsh_universal_credit_rent_cancels_only_given_housing_costs():
     assert work_allowance[0] > work_allowance[1] == work_allowance[2]
     assert abs(award[1] - award[2]) < 0.01
     assert award[0] < award[1]
+
+
+@st.composite
+def childcare_families(draw, region=None, universal_credit=None):
+    region = region or draw(st.sampled_from(REGIONS))
+    couple = draw(st.booleans())
+    hours = st.sampled_from([0, 16, 30, 40])
+    people = [
+        {
+            "age": draw(st.integers(25, 60)),
+            "employment_income": draw(st.sampled_from([0, 4_000, 15_000, 35_000])),
+            "self_employment_income": draw(st.floats(0, 25_000)),
+            "private_pension_income": draw(st.floats(0, 20_000)),
+            "weekly_hours": draw(hours),
+            "council_tax_benefit_reported": 100,
+        }
+    ]
+    if couple:
+        people.append(
+            {
+                "age": draw(st.integers(25, 60)),
+                "employment_income": draw(st.floats(0, 20_000)),
+                "weekly_hours": draw(hours),
+            }
+        )
+    people.append(
+        {
+            "age": draw(st.integers(0, 12)),
+            "childcare_expenses": draw(st.floats(0, 30_000)),
+        }
+    )
+    return {
+        "region": region,
+        "people": people,
+        "would_claim_uc": (
+            draw(st.booleans()) if universal_credit is None else universal_credit
+        ),
+        "rent": 0,
+        "council_tax": draw(st.floats(500, 3_500)),
+        "savings": draw(st.floats(0, 15_000)),
+        "esa_income": 0,
+    }
+
+
+def with_other_children(unit, ages):
+    return {**unit, "people": unit["people"] + [{"age": age} for age in ages]}
+
+
+def without_charges(unit):
+    people = [dict(p) for p in unit["people"]]
+    people[-1]["childcare_expenses"] = 0
+    return {**unit, "people": people}
+
+
+@SETTINGS
+@given(
+    st.lists(childcare_families(), min_size=1, max_size=5),
+    st.lists(st.integers(0, 15), min_size=1, max_size=3),
+)
+def test_childcare_cap_ignores_children_without_charges(units, other_ages):
+    n = len(units)
+    variants = units + [with_other_children(u, other_ages) for u in units]
+    sim = Simulation(situation=situation(variants))
+    deduction = sim.calculate(
+        "council_tax_reduction_working_age_childcare_deduction", YEAR
+    )
+    has_uc = sim.calculate(
+        "council_tax_reduction_working_age_has_universal_credit", YEAR
+    )
+    p = sim.tax_benefit_system.parameters(YEAR).gov.local_authorities
+    scottish_uc_one_child_cap = (
+        p.scotland.council_tax_reduction.working_age.childcare.universal_credit_maximum_one_child
+        * 52
+    )
+    for i in range(n):
+        j = n + i
+        if has_uc[i] != has_uc[j]:
+            continue
+        if not has_uc[i]:
+            # 5. Without UC, the other children leave the deduction as it is.
+            assert abs(deduction[j] - deduction[i]) < 0.01, (units[i], other_ages)
+        elif units[i]["region"] == "SCOTLAND":
+            # 5. With UC, the one-child cap holds whatever the family size.
+            assert deduction[j] <= scottish_uc_one_child_cap + 0.01, (
+                units[i],
+                other_ages,
+            )
+
+
+@SETTINGS
+@given(
+    st.lists(
+        childcare_families(region="SCOTLAND", universal_credit=False),
+        min_size=1,
+        max_size=5,
+    )
+)
+def test_scottish_childcare_comes_off_earned_and_unearned_income(units):
+    n = len(units)
+    variants = units + [without_charges(u) for u in units]
+    sim = Simulation(situation=situation(variants))
+    income = sim.calculate("council_tax_reduction_working_age_applicable_income", YEAR)
+    deduction = sim.calculate(
+        "council_tax_reduction_working_age_childcare_deduction", YEAR
+    )
+    disregard = sim.calculate(
+        "council_tax_reduction_working_age_earnings_disregard", YEAR
+    )
+    has_uc = sim.calculate(
+        "council_tax_reduction_working_age_has_universal_credit", YEAR
+    )
+    passported = sim.calculate("council_tax_reduction_working_age_passported", YEAR)
+    for i in range(n):
+        j = n + i
+        if has_uc[i] or passported[i]:
+            continue
+        employed = sum(p.get("employment_income", 0) for p in units[i]["people"])
+        if employed == 0:
+            assert abs(disregard[i] - disregard[j]) < 0.01, units[i]
+        # 6. Income falls by the deduction, net of any change in the
+        # disregard, while it stays above zero; it never falls below zero.
+        assert income[i] >= 0, units[i]
+        if income[i] > 0.01:
+            expected = deduction[i] + disregard[i] - disregard[j]
+            assert abs((income[j] - income[i]) - expected) < 0.02, units[i]
