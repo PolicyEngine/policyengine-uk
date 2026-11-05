@@ -1301,14 +1301,12 @@
     uc_receiving_education: [false]
     is_uc_eligible: true
 
-- name: Case 44, the same 18-year-old in Northern Ireland in a home the family owns receives education.
-  # A rent rebate or allowance needs rent or a similar payment (Housing Benefit
-  # Regulations (Northern Ireland) 2006 reg. 13(1)), so the model reads the report
-  # as a rate rebate (reg. 12). SR 2016/226 reg. 6(2): the claim ends it the day
-  # before the award starts. On the first day the claimant has no existing
-  # benefit, so they count as a qualifying young person and receive education
-  # (Universal Credit Regulations (Northern Ireland) 2016 reg. 12(1)). No
-  # exception applies, so they get no Universal Credit.
+- name: Case 44, the same 18-year-old in Northern Ireland, whose report covers only a rate rebate, receives education.
+  # SR 2016/226 reg. 6(2): the claim ends a rate rebate the day before the award
+  # starts. On the first day the claimant has no existing benefit, so they count
+  # as a qualifying young person and receive education (Universal Credit
+  # Regulations (Northern Ireland) 2016 reg. 12(1)). No exception applies, so they
+  # get no Universal Credit.
   period: 2026
   input:
     people:
@@ -1317,6 +1315,7 @@
         current_education: POST_SECONDARY
         is_in_full_time_education: true
         housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
     benunits:
       benunit:
         members: [person1]
@@ -1384,3 +1383,34 @@
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [false]
     is_uc_eligible: true
+
+- name: Case 47, the same 18-year-old in a caravan the family owns in Northern Ireland, with a rent allowance, keeps the ordinary route.
+  # Housing Benefit Regulations (Northern Ireland) 2006 reg. 13(1)(f) and (g): a
+  # rent rebate or allowance covers mooring charges for a houseboat and site
+  # payments for a caravan or mobile home, so an owner can get one. SR 2016/226
+  # reg. 6(2A) runs it on for two weeks, so on the first day reg. 29 keeps the
+  # claimant out of the definition, as in case 43. They get the standard allowance
+  # for a single person under 25: 12 x 338.58 (SR 2026/54 reg. 3(3)(a)).
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+    universal_credit: 4_062.96

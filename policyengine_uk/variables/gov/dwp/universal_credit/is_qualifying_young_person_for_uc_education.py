@@ -51,15 +51,12 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "days as reg. 8, and SR 2019/152 reg. 4 gives the income-related ESA "
         "run-on to claims made from 22 July 2020, with one difference: a claim "
         "ends a rate rebate the day before the award starts (reg. 6(2)), and "
-        "only a rent rebate or allowance runs on (reg. 6(2A)). The report "
-        "doesn't show the form. A rent rebate or allowance needs rent or a "
-        "similar payment (Housing Benefit Regulations (Northern Ireland) 2006 "
-        "reg. 13(1)), so the formula reads a report in a family that doesn't "
-        "rent as a rate rebate (reg. 12), and a claimant with no other "
-        "existing benefit counts as a qualifying young person on the first "
-        "day. The model can't see someone who owns a caravan or houseboat and "
-        "pays site or mooring charges (reg. 13(1)(f) and (g)), so it reads "
-        "their rent allowance as a rate rebate."
+        "only a rent rebate or allowance runs on (reg. 6(2A)). "
+        "housing_benefit_reported doesn't show the form, so the formula reads "
+        "housing_benefit_report_is_rate_rebate_only: a claimant with that "
+        "status and no other existing benefit counts as a qualifying young "
+        "person on the first day. It defaults to False, so the formula reads "
+        "any other report as a rent rebate or allowance."
     )
     definition_period = YEAR
     reference = (

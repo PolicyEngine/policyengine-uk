@@ -208,6 +208,7 @@ def adult(draw, ages):
         uc_is_responsible_foster_parent_of_child_under_one=draw(rarely),
         uc_is_foster_parent_or_new_friend_or_family_carer=draw(rarely),
         housing_benefit_reported=draw(st.sampled_from([0, 0, 0, 0, 6_000])),
+        housing_benefit_report_is_rate_rebate_only=draw(rarely),
         working_tax_credit_reported=draw(st.sampled_from([0, 0, 0, 0, 1_000])),
         employment_income=draw(st.sampled_from([0, 0, 4_000, 15_000])),
         is_claimant_or_partner=True,
@@ -357,9 +358,8 @@ def excluded_on_first_day(case, result):
     Universal Credit award. That day a Housing Benefit or income-related ESA
     award the claim ends still runs (SI 2014/1230 reg. 8(2A)), but the claim
     has already ended a claimant's or partner's Child Tax Credit (reg.
-    8(2)(a)) and, in Northern Ireland, their rate rebate (SR 2016/226 reg.
-    6(2)), which the model reads from a report in a family that doesn't
-    rent."""
+    8(2)(a)) and, in Northern Ireland, a report of a rate rebate alone (SR
+    2016/226 reg. 6(2); housing_benefit_report_is_rate_rebate_only)."""
     flags = []
     index = 0
     for f, fam in enumerate(case["families"]):
@@ -378,7 +378,9 @@ def excluded_on_first_day(case, result):
             if name == "housing_benefit_reported":
                 rate_rebate_ended = (
                     fam["household"]["region"] == "NORTHERN_IRELAND"
-                    and fam["household"]["tenure_type"] == "OWNED_OUTRIGHT"
+                    and fam["people"][i - index].get(
+                        "housing_benefit_report_is_rate_rebate_only", False
+                    )
                     and claims
                     and result["is_claimant_or_partner"][i]
                 )
@@ -790,10 +792,11 @@ def check(case):
 # Credit: in 2026, after the family's legacy awards closed on their tax
 # credit report, which ended their Housing Benefit; and in 2024, reporting
 # their own Child Tax Credit, which the claim ends the day before the award,
-# with no child to except them. In Northern Ireland in 2026, an owner reports
-# what the model reads as a rate rebate, which the claim ends the day before
-# the award (SR 2016/226 reg. 6(2)), and a tenant reports a rent rebate or
-# allowance, which runs on (reg. 6(2A)).
+# with no child to except them. In Northern Ireland in 2026, one owner reports
+# a rate rebate alone, which the claim ends the day before the award (SR
+# 2016/226 reg. 6(2)). Another owner and a tenant report a rent rebate or
+# allowance, which runs on (reg. 6(2A)): an owner can get one on site or
+# mooring payments (SR 2006/405 reg. 13(1)(f) and (g)).
 CLAIM_EXAMPLES = [
     dict(
         year=2026,
@@ -829,6 +832,18 @@ CLAIM_EXAMPLES = [
     dict(
         year=2026,
         families=[
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        housing_benefit_reported=6_000,
+                        housing_benefit_report_is_rate_rebate_only=True,
+                    )
+                ],
+                region="NORTHERN_IRELAND",
+            ),
             single_family(
                 [
                     person(

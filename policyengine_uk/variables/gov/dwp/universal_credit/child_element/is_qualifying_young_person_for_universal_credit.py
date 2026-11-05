@@ -113,9 +113,9 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     award (reg. 8(2)(a)), so the formula keeps the Child Tax Credit limb.
     In Northern Ireland the claim has also already ended a rate rebate (SR
     2016/226 reg. 6(2)), and only a rent rebate or allowance runs on (reg.
-    6(2A)), so there the formula keeps the Housing Benefit limb for a family
-    that doesn't rent. The year gates and the legacy closures apply either
-    way."""
+    6(2A)), so there the formula keeps the Housing Benefit limb for a report
+    of a rate rebate alone (housing_benefit_report_is_rate_rebate_only). The
+    year gates and the legacy closures apply either way."""
     # The Secretary of State excludes a person entitled to an existing
     # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
     # reports, the model's legacy closure proxy and the family's Universal
@@ -177,16 +177,14 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     # On the first day of the award a Housing Benefit award the claim ends
     # still runs (reg. 8(2A)). In Northern Ireland only a rent rebate or
     # allowance still runs (SR 2016/226 reg. 6(2A)): the claim has already
-    # ended a rate rebate (reg. 6(2)). The report doesn't show the form. A
-    # rent rebate or allowance needs rent or a similar payment (Housing
-    # Benefit Regulations (Northern Ireland) 2006 reg. 13(1)), so the formula
-    # reads a report in a family that doesn't rent as a rate rebate (reg. 12).
+    # ended a rate rebate (reg. 6(2)). The report doesn't show the form, so
+    # the formula reads housing_benefit_report_is_rate_rebate_only.
     if at_claim_start:
         country = person.household("country", period)
         claim_has_ended_housing_benefit = (
             claim_ends_own_award
             & (country == country.possible_values.NORTHERN_IRELAND)
-            & ~person.benunit("benunit_is_renting", period)
+            & person("housing_benefit_report_is_rate_rebate_only", period)
         )
     else:
         claim_has_ended_housing_benefit = claim_ends_own_award
