@@ -1,3 +1,26 @@
+## [2.175.7] - 2026-11-05
+
+### Fixed
+
+- The aggregate checker fails an infinite or NaN response on every counted-once check, says which failures rest on such a response or on a head it could not hold, judges as usual every household where the heads it holds stay finite, names two heads that turn NaN instead of stopping with an error, says when the base could not confirm a failure, and rejects a fiscal partition that puts a colon in a name it writes into a check id or scope.
+- The documentation site now publishes nine programme and validation notebooks it left out, among them Housing Benefit and the childcare entitlements, and lists the gambling duties page. Links on three pages reach their targets, and the model baseline page pins its parameter links to a commit so each line anchor stays on the value it cites. Twelve parameter labels now spell LBTT, LTT, LHA and TV in capitals. The residential SDLT lease rent rates take the unit /1, and the programme registry names HMRC as the agency for Scottish income tax. The childcare examples now state the birth dates and school status behind their amounts, the student loan page describes each plan from the regulations and says Plan 5 carries no liability before 6 April 2026, and the Housing Benefit page gives the 1 July 2026 abolition date with its exceptions.
+- The trading loss property test now holds Universal Credit's income tax and National Insurance deductions in respect of the trade at their with-loss values when it nets the loss off the profit. The test no longer fails when a loss exceeds the profit beside a private pension.
+
+
+## [2.175.6] - 2026-11-05
+
+### Fixed
+
+- Dataset projection grows alcohol and tobacco quantity inputs with the OBR's forecasts of clearances per person, using one index per product group. The model charges later duty rates on those projected quantities.
+
+
+## [2.175.5] - 2026-11-05
+
+### Fixed
+
+- Add pensioner child amounts and family premiums to Council Tax Reduction in England, Scotland and Wales, and count a Scottish pensioner's whole capital over £10,000 in tariff income, as SSI 2012/319 reg 27(2) sets no ceiling.
+
+
 ## [2.175.4] - 2026-11-05
 
 ### Changed
