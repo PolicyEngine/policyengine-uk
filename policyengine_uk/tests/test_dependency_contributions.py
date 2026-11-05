@@ -9,11 +9,12 @@ on which branch, in the latest calculation that gave the value the simulation
 holds. A dependency already zero wherever the target read it contributes zero,
 also to a formula that asks supplied_input or stored_as_input about what it
 read. A formula that read no variables has no contributions. Two cases always
-raise: a target set as an input (which reads nothing), and values no
-calculation in the trace gave and the formula does not give. Two raise where a
-float dependency needs a recalculation: a target that reads its own value
-within the year (recalculating it over the year replaces that value), and a
-read on a branch of a subset of households (the recalculation cannot hold it).
+raise: a target set as an input (which reads nothing), unless the system
+neutralizes it, and values no calculation in the trace gave and the formula
+does not give. Two raise where a float dependency needs a recalculation: a
+target that reads its own value within the year (recalculating it over the
+year replaces that value), and a read on a branch of a subset of households
+(the recalculation cannot hold it).
 For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
@@ -30,9 +31,9 @@ For any household drawn below:
    the tests calculate first. So a second call returns the same contributions.
 4. Non-float dependencies contribute zero.
 
-Monthly variables are the case that broke: zeroing a monthly dependency over a
-year, or restoring it, raised "Inconsistent input", because the months already
-held values that did not add up to the annual one. Comparisons allow float32
+Monthly variables are the case that broke: restoring a monthly dependency over
+a year raised "Inconsistent input", because the months already held the zeros
+as inputs, which did not add up to the annual value. Comparisons allow float32
 rounding: the model stores values as float32.
 """
 

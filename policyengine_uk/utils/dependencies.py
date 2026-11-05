@@ -105,15 +105,6 @@ def latest_calculation(nodes, value=None):
     return None
 
 
-def branches_read_from(branch_name, chain):
-    # The branches that may have calculated a value read on branch_name: for
-    # a branch of chain, that branch or any after it in chain (its
-    # ancestors); for another branch, that branch alone.
-    if branch_name in chain:
-        return chain[chain.index(branch_name) :]
-    return [branch_name]
-
-
 def no_calculation_gave(variable_name, period):
     return ValueError(
         f"The simulation holds values of '{variable_name}' over {period} that "
@@ -180,27 +171,20 @@ def is_period_wrapper(child, node):
 
 
 def calculation_read(child, sim, calculations):
-    # The calculation that stored the value child (a node with no children)
-    # read: the latest that gave child's value, on the first branch child
-    # reads from (see branches_read_from) with one. Otherwise child itself if
-    # its formula gives that value without reading a variable (see
-    # reads_nothing), or if child reads on a branch that is not an ancestor
-    # of sim's, which sim can't run it on, and no calculation there gave
-    # another value. An error otherwise.
+    # The calculation that stored the value child (a node with no children,
+    # on a branch of sim's chain) read: the latest that gave child's value, on
+    # child's branch or the first of its ancestors with one. Otherwise child
+    # itself if its formula gives that value without reading a variable (see
+    # reads_nothing). An error otherwise.
     period = periods.period(child.period)
     chain = branch_chain(sim)
-    calculated = False
-    for branch_name in branches_read_from(child.branch_name, chain):
+    for branch_name in chain[chain.index(child.branch_name) :]:
         found = calculations.get((child.name, period, branch_name))
         if found:
-            calculated = True
             node = latest_calculation(found, child.value)
             if node is not None:
                 return node
-    if child.branch_name not in chain:
-        if not calculated:
-            return child
-    elif child.value is None or reads_nothing(sim, child.name, period, child.value):
+    if reads_nothing(sim, child.name, period, child.value):
         return child
     raise no_calculation_gave(child.name, period)
 
@@ -269,10 +253,11 @@ def get_direct_reads(variable_name, sim, period, value=None):
     branch read.
 
     Raises ValueError if sim holds variable_name as an input over one of its
-    definition periods within period, which reads nothing. Also raises if no
-    calculation in the trace gave value, or the values a calculation of
-    variable_name read from storage, and its formula does not give them
-    without reading a variable (see reads_nothing).
+    definition periods within period, which reads nothing (a neutralized
+    variable reads as its default instead). Also raises if no calculation in
+    the trace gave value, or the values a calculation of variable_name read
+    from storage, and its formula does not give them without reading a
+    variable (see reads_nothing).
     """
     period = periods.period(period)
     check_not_input(variable_name, sim, period)
@@ -567,18 +552,20 @@ def calculate_dependency_contributions(
     after mapping to map_to and selecting filter if given. So where a target
     only adds and subtracts float variables it reads, the contributions sum
     to its mean, unless top_n drops some. Other variables contribute zero,
-    and a formula that read no variables has no contributions. Apart from
-    what its own calculation of variable_name over year stores or drops in
-    sim, as any Simulation.calculate does, sim's values stay as they were. The
-    tax-benefit system needs parameters, as every PE-UK system has: the
-    recalculation runs on a branch with a clone of it.
+    and a formula that read no variables, or a neutralized variable, has no
+    contributions. Apart from what its own calculation of variable_name over
+    year stores or drops in sim, as any Simulation.calculate does, sim's
+    values stay as they were. The tax-benefit system needs parameters, as
+    every PE-UK system has: the recalculation runs on a branch with a clone
+    of it.
 
     Raises ValueError if sim holds variable_name over year as an input
-    (which reads nothing), or if no calculation in the trace gave the values
-    sim holds and its formula does not give them without reading a variable
-    (see reads_nothing). Where a float dependency needs a recalculation, also
-    raises if variable_name reads its own value within year, or reads on a
-    branch of a subset of households (see calculate_with_dependency_zeroed).
+    (which reads nothing) and the system does not neutralize it, or if no
+    calculation in the trace gave the values sim holds and its formula does
+    not give them without reading a variable (see reads_nothing). Where a
+    float dependency needs a recalculation, also raises if variable_name reads
+    its own value within year, or reads on a branch of a subset of households
+    (see calculate_with_dependency_zeroed).
 
     Limitations:
 
