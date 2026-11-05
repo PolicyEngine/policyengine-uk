@@ -238,5 +238,5 @@ combination checked before imputation.
 Population and LVT effects with the compatible data release stay unmeasured
 until that release exists and its rebuild and recalibration finish. Existing
 land target definitions and target weights stay the same, but calculated land,
-losses and fitted geographic weights can change. Production rebuilding, recalibration
-and impact measurement are separate release work.
+losses and fitted geographic weights can change. Production rebuilding,
+recalibration and impact measurement are separate release work.
