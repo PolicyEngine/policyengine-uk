@@ -1,0 +1,10 @@
+description: Capital above which the Wales Council Tax Reduction pensioner scheme treats capital as yielding a weekly tariff income.
+values:
+  2013-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wales Council Tax Reduction pensioner tariff income threshold
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 31
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/31

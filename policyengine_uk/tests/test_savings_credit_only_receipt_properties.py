@@ -185,7 +185,7 @@ def family(ages, **overrides):
 # recipient; and a working-age family.
 KNOWN_FAMILIES = [
     family([90], state_pension=12_480.0),
-    family([90], state_pension=12_480.0, savings=12_000.0, other_property=5_000.0),
+    family([90], state_pension=12_480.0, savings=12_000.0, other_property=4_400.0),
     family([90], state_pension=12_480.0, savings=12_000.0, rent=6_000.0),
     family([90], state_pension=12_480.0, would_claim_pc=False),
     family([70], state_pension=9_000.0),
@@ -394,9 +394,11 @@ def test_known_families_detect_main():
         )
         assert not np.any(fix[FLAG])
         # Main keeps the Pension Credit assessment. The owner with capital is
-        # tested on 17,000 against the 16,000 limit and gets no council tax
-        # reduction, where the scheme's own rules give 2,000 on savings of
-        # 12,000. The tenant has no Housing Benefit tariff income, where
+        # tested on 16,400 (savings 12,000 and property 4,400) against the
+        # 16,000 limit and gets no council tax reduction, where the scheme's
+        # own rules count the property less 10% for the expenses of sale,
+        # 12,000 + 3,960 = 15,960, and give 2,000. The tenant has no Housing
+        # Benefit tariff income, where
         # Housing Benefit's own rules count 4 a week on savings of 12,000
         # (208). Its Housing Benefit income is the same on both routes: with
         # no savings credit paid, the Pension Credit assessment is the State
@@ -408,6 +410,9 @@ def test_known_families_detect_main():
             "simulated_council_tax_reduction_benunit",
             "housing_benefit_tariff_income",
         ]
+        capital = "council_tax_reduction_assessable_capital"
+        assert main[capital][OWNER_WITH_CAPITAL] == 16_400
+        assert fix[capital][OWNER_WITH_CAPITAL] == 15_960
         reduction = "simulated_council_tax_reduction_benunit"
         assert main[reduction][OWNER_WITH_CAPITAL] == 0
         assert abs(fix[reduction][OWNER_WITH_CAPITAL] - 2_000) < 0.01
@@ -496,22 +501,40 @@ def test_stopping_pension_credit_payments_ends_savings_credit_only_receipt():
 
 
 def test_stopping_pension_credit_payments_ends_the_pension_credit_capital_test():
-    # Savings of 12,000 and other property worth 5,000. The Pension Credit
-    # assessment of capital counts both (17,000), above the 16,000 limit, so
+    # Savings of 12,000 and other property worth 4,400. The Pension Credit
+    # assessment of capital counts both (16,400), above the 16,000 limit, so
     # the savings-credit-only award leaves no council tax reduction. Deemed
-    # income is 1 a week for each 500 over 10,000: 14 a week, so the savings
-    # credit is 0.6 x 29.93 - 0.4 x (254.00 - 238.00) = 11.558 a week (601.02).
-    data = single_pensioner(savings=12_000.0, other_property=5_000.0)
+    # income is 1 a week for each 500, or part of 500, over 10,000: 6,400 /
+    # 500 = 12.8, so 13 a week (SPC Regs 2002 reg 15(6)). Income is 240.00 +
+    # 13.00 = 253.00 a week, so the savings credit is 0.6 x (238.00 - 208.07)
+    # - 0.4 x (253.00 - 238.00) = 17.958 - 6.00 = 11.958 a week (621.82).
+    data = single_pensioner(savings=12_000.0, other_property=4_400.0)
     unreformed = Simulation(situation=data)
-    assert abs(unreformed.calculate("savings_credit", YEAR)[0] - 601.02) < 0.01
+    assert abs(unreformed.calculate("savings_credit", YEAR)[0] - 621.82) < 0.01
     assert unreformed.calculate(FLAG, YEAR).tolist() == [True]
     capital = "council_tax_reduction_assessable_capital"
-    assert unreformed.calculate(capital, YEAR)[0] == 17_000
+    assert unreformed.calculate(capital, YEAR)[0] == 16_400
     assert unreformed.calculate("council_tax_reduction", YEAR)[0] == 0
 
-    # With Pension Credit not paid the scheme's own capital rule applies, for
-    # which household savings (12,000) stand in, within the limit.
+    # With Pension Credit not paid the scheme's own capital rule applies: the
+    # savings and the property less 10% for the expenses of sale (SI
+    # 2012/2885 Sch 1 para 32(a)), 12,000 + 3,960 = 15,960, within the limit.
+    # Tariff income is 1 a week for each 500, or part of 500, over 10,000
+    # (Sch 1 para 37): 5,960 / 500 = 11.92, so 12 a week, 624 a year. Income
+    # 12,480 + 624 = 13,104 is below the applicable amount of 256.00 a week
+    # (13,312), so the reduction is the whole 2,000.
     stopped = Simulation(situation=data, scenario=scenario(stopped=True))
     assert stopped.calculate(FLAG, YEAR).tolist() == [False]
-    assert stopped.calculate(capital, YEAR)[0] == 12_000
+    assert stopped.calculate(capital, YEAR)[0] == 15_960
+    assert (
+        abs(stopped.calculate("council_tax_reduction_tariff_income", YEAR)[0] - 624)
+        < 0.01
+    )
+    assert (
+        abs(
+            stopped.calculate("council_tax_reduction_applicable_income", YEAR)[0]
+            - 13_104
+        )
+        < 0.01
+    )
     assert abs(stopped.calculate("council_tax_reduction", YEAR)[0] - 2_000) < 0.01
