@@ -82,3 +82,51 @@
   output:
     forgoes_universal_credit_for_tax_free_childcare: false
     universal_credit_pre_benefit_cap: 0
+
+# Income-related ESA ends on 1 July 2026 in Great Britain whether or not the
+# family claims (SI 2025/1148 art. 3A(1)), so from 2027-28 an ESA report no
+# longer holds the family to its claim. An award saved for an appointee (art.
+# 3A(2)) still ends on a claim (art. 3A(3)), so it does.
+- name: An income-related ESA award its abolition has ended ends either way, so the award is still forgone
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    esa_income_reported: 5_000
+    legacy_benefits_closed: false
+  output:
+    esa_income_payable_share: 0
+    forgoes_universal_credit_for_tax_free_childcare: true
+    universal_credit_pre_benefit_cap: 0
+
+- name: A saved income-related ESA award keeps the claim after the abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    esa_income_reported: 5_000
+    esa_income_appointee_saving: true
+    legacy_benefits_closed: false
+  output:
+    esa_income_payable_share: 1
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 1_993
+
+- name: In 2026-27 an income-related ESA award is payable until 30 June, so it keeps the claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    esa_income_reported: 5_000
+    legacy_benefits_closed: false
+  output:
+    # 6 April to 30 June 2026 is 86 of the 365 days of 2026-27.
+    esa_income_payable_share: 0.235616
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 1_993

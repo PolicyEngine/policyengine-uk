@@ -378,8 +378,8 @@
     housing_benefit: 20
 
 # A family paid Housing Benefit alongside Universal Credit (specified or
-# temporary accommodation). The model's Housing Benefit eligibility rules this
-# out for a Universal Credit claimant, so both awards are supplied.
+# temporary accommodation). The case supplies both awards so that it tests the
+# cap alone.
 - name: UC reg 80(2A) and HB reg 75F(1)(g) - a family receiving both is capped only through UC, with its Housing Benefit counted as nil
   period: 2025
   input:

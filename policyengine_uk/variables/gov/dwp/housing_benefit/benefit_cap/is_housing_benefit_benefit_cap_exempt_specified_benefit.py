@@ -136,10 +136,11 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         # Benefit before the cap; it is then capped through Universal Credit,
         # which counts its Housing Benefit as nil (UC Regs 2013 reg 80(2A)).
         # A family on Universal Credit alone keeps the exceptions above, so
-        # the two schemes' exceptions can be compared for it. Housing Benefit
-        # eligibility (housing_benefit_eligible) rules out a family that
-        # claims Universal Credit, so this applies only where both awards are
-        # supplied.
+        # the two schemes' exceptions can be compared for it. A family
+        # receives both awards in specified or temporary accommodation, where
+        # Housing Benefit continues beside a Universal Credit claim or opens
+        # on a new claim (housing_benefit_eligible), or where a user supplies
+        # both amounts.
         receiving_universal_credit = (
             benunit("universal_credit_pre_benefit_cap", period) > 0
         ) & (benunit("housing_benefit_pre_benefit_cap", period) > 0)

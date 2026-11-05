@@ -19,11 +19,14 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 # Benefit as nil (UC Regs 2013 reg. 80(2A)), so its cap reads
 # uc_benefit_cap_welfare_benefits, these benefits without Housing Benefit.
 # Universal Credit before the cap is in the total too; HB reg. 75F(1)(g) puts a
-# family receiving it outside the Housing Benefit cap. Reg. 75C(2)(a) counts
-# Housing Benefit for specified accommodation as nil; the model's input
-# in_specified_or_temporary_accommodation does not separate specified from
-# temporary accommodation, so that Housing Benefit is counted at its amount
-# before the cap.
+# family receiving it outside the Housing Benefit cap. A family in specified
+# or temporary accommodation can receive both awards (housing_benefit_eligible),
+# and DWP then counts its Housing Benefit as nil in the Universal Credit cap.
+# Where the Housing Benefit cap applies, to a family without Universal Credit,
+# the council counts Housing Benefit for specified accommodation as nil (reg.
+# 75C(2)(a)); the model's input in_specified_or_temporary_accommodation does
+# not separate specified from temporary accommodation, so the formula counts
+# that Housing Benefit at its amount before the cap.
 CLAIMANT_OR_PARTNER_BENEFITS = [
     "jsa_contrib",
     "esa_contrib",
