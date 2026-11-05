@@ -1,18 +1,18 @@
 """The model draws nothing while a simulation is built or run.
 
 A formula is a pure, deterministic function of its inputs
-(policyengine-core#500), and seeding does not exempt a draw. Stochastic
-inputs such as take-up flags are drawn when the dataset is built and stored
-as input variables; the model compares them with its rules. policyengine-core#519 checks formulas
-for numpy and stdlib randomness when variables register, but a hand-written
-integer hash of entity ids passes that check, so this scan looks for the
-hash as well.
+(policyengine-core#500), and seeding does not exempt a draw. The dataset
+build draws stochastic inputs such as take-up flags and stores them as input
+variables; the model compares them with its rules. policyengine-core#519
+checks formulas for numpy and stdlib randomness when variables register, but
+a hand-written integer hash of entity ids passes that check, so this scan
+looks for the hash as well.
 
 Every module of the package except tests is parsed (formulas, reforms,
-scenarios, simulation code, data loading, uprating and utilities). A name resolves to
-everything it may refer to where it is used: the targets of every binding
-that may be the one read, in each scope Python looks in, so the scan errs
-toward reporting. Bindings come from imports, named imports and re-exports
+scenarios, simulation code, data loading, uprating and utilities). A name
+resolves to everything it may refer to where it is used: the targets of every
+binding that may be the one read, in each scope Python looks in, so the scan
+errs toward reporting. Bindings come from imports, named imports and re-exports
 followed across the package, star imports, assignments of a name or
 attribute chain (``xp = np``, also in tuples), default arguments, ``global``
 and ``nonlocal`` (the nearest enclosing function that binds the name,
@@ -144,8 +144,9 @@ an assignment to a plain name (unpacking, ``for``, ``with``, parameters),
 the values calls return (``r =
 importlib.import_module("random")`` is caught at the import; a later
 ``r.random()`` is not), names ``match`` patterns capture, or methods as draw
-helpers. A lookup that nests deeper than MAX_RESOLUTION_DEPTH fails the scan
-rather than passing unresolved.
+helpers. It looks for draws, not for other reads that differ between runs,
+such as the clock (policyengine-uk#2875). A lookup that nests deeper than
+MAX_RESOLUTION_DEPTH fails the scan rather than passing unresolved.
 
 EXEMPT lists reviewed occurrences that are not draws; RATCHET lists today's
 engine-time draws that still have to move into the data. Both count exact
@@ -170,9 +171,10 @@ PACKAGE = Path(__file__).resolve().parents[2]
 TESTS = PACKAGE / "tests"
 
 RATCHET = {
-    # The splitmix64 finalizer that maps entity ids to uniform draws on
-    # [0, 1): its three mixing constants and three xorshift steps. Every
-    # other entry calls it, or calls what calls it.
+    # The splitmix64 finaliser that maps entity ids to uniform draws on
+    # [0, 1): the three splitmix64 constants the scan recognises and three
+    # xorshift steps. The formula, uprating and simulation loading entries
+    # below call it, or call what calls it.
     "utils/stochastic.py": {
         ("splitmix64_uniform", "hash constant"): 3,
         ("splitmix64_uniform", "xorshift"): 3,
@@ -219,9 +221,11 @@ RATCHET = {
     "dynamics/participation.py": {
         ("apply_participation_responses", "random source"): 1,
     },
-    # UC rebalancing scenario: a seeded numpy Generator draws one value per
-    # benefit unit and compares it with the new claimant share; the Scenario
-    # at module level passes on the modifier.
+    # UC rebalancing: a seeded numpy Generator draws one value per benefit
+    # unit and compares it with the new claimant share. Simulation.__init__
+    # applies it to every simulation through the Scenario object, a call the
+    # scan does not follow; the Scenario at module level passes on the
+    # modifier.
     "scenarios/uc_reform.py": {
         ("add_universal_credit_reform", "random source"): 1,
         ("<module>", "draw helper call"): 1,
@@ -3777,6 +3781,9 @@ def test_a_computed_all_may_name_any_module_below_its_package():
         ("import pkg\ng = getattr(pkg, 'a')\n", {"pkg.a"}, set()),
         ("import sys\nsys.modules['pkg.a'].f()\n", {"pkg.a"}, set()),
         ("from sys import modules\nmodules.get('pkg.a').f()\n", {"pkg.a"}, set()),
+        # sys.modules holds the module itself, not its top package.
+        ("import sys\nsys.modules['pkg.sub'].a.f()\n", {"pkg.sub.a"}, set()),
+        ("import sys\nsys.modules.get('pkg.sub').a.f()\n", {"pkg.sub.a"}, set()),
         ("f = lambda: __import__('pkg').a.f()\n", set(), {"pkg.a"}),
         # __import__ returns the top package; import_module the module.
         ("__import__('pkg.sub').a.f()\n", {"pkg.a", "pkg.sub.a"}, set()),
