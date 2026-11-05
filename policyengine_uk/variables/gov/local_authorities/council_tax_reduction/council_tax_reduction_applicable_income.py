@@ -10,26 +10,28 @@ class council_tax_reduction_applicable_income(Variable):
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
     documentation = (
-        "Income taken into account in the Council Tax Reduction means test. The "
-        "pensioner schemes disregard the whole income of an applicant who, or "
-        "whose partner, is in receipt of Pension Credit guarantee credit, and "
-        "use the Secretary of State's Pension Credit assessment of income, plus "
-        "the savings credit payable, where the award is savings credit only. "
-        "Otherwise a pension-age family's net earnings are reduced by the "
-        "pensioner earnings disregards. Great Britain's pensioner schemes "
-        "also exclude Child Benefit from general-rule income; statutory sick "
-        "and maternity pay remain counted as earnings. The other adjustments those "
-        "provisions allow (childcare charges, the £20 earnings disregards "
-        "and the rest) are not modelled. Spousal maintenance counts less one "
+        "We count the applicant's and partner's income "
+        "(is_council_tax_reduction_applicant_or_partner) in the Council Tax "
+        "Reduction means test. Under the pensioner schemes, councils "
+        "disregard the whole income of an applicant who, or whose partner, is "
+        "in receipt of Pension Credit guarantee credit, and use the Secretary "
+        "of State's Pension Credit assessment of income, plus the savings "
+        "credit payable, where the award is savings credit only. Otherwise we "
+        "deduct the pensioner earnings disregards from a pension-age family's "
+        "net earnings, and add its tariff income from capital "
+        "(council_tax_reduction_tariff_income). Councils in Great "
+        "Britain also exclude Child Benefit from a pensioner's general-rule "
+        "income and count statutory sick and maternity pay as earnings. We "
+        "omit the other "
+        "adjustments these provisions allow (childcare charges, the £20 "
+        "earnings disregards and the rest). Spousal maintenance counts less one "
         "£15 weekly disregard where the applicant's family includes a child "
         "or young person (the statutory family-premium condition in England's "
         "default and Welsh schemes). "
         "Widowed Parent's Allowance counts less £15 weekly per recipient. "
-        "Child maintenance is excluded. Scotland's working-age maintenance "
+        "We count no child maintenance. Scotland's working-age maintenance "
         "rule, like Universal Credit, requires a court order or agreement; "
-        "the input is assumed to meet that condition. "
-        "The income counted is the Council Tax Reduction applicant's and "
-        "partner's (is_council_tax_reduction_applicant_or_partner). "
+        "we assume the input meets that condition. "
         "Where the household head applies alone "
         "(council_tax_reduction_head_applies_alone), the benefit unit's own "
         "awards (Child Benefit, Income Support, income-based JSA, "
@@ -38,11 +40,10 @@ class council_tax_reduction_applicable_income(Variable):
         "head, so none of them counts. Industrial injuries disablement "
         "benefit, severe disablement allowance and incapacity benefit count "
         "in every scheme, for the applicant and partner only, not for "
-        "children or young persons. War pensions and Armed Forces "
-        "Compensation Scheme payments are not counted: Scotland disregards or "
-        "omits them, and English and Welsh councils may relieve them beyond "
-        "the prescribed £10 a week, so the model takes the full disregard. "
-        "No scheme "
+        "children or young persons. We disregard war pensions and Armed "
+        "Forces Compensation Scheme payments in full: Scottish councils count "
+        "none of them, and English and Welsh councils may relieve them beyond "
+        "the prescribed £10 a week. No scheme "
         "counts income derived from capital, such as rent from property, "
         "interest and dividends, as income, so it is not listed and tax on it "
         "is not deducted (legacy_means_test_income_tax). The pensioner schemes "
@@ -69,6 +70,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/37",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/31",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
@@ -127,7 +131,7 @@ class council_tax_reduction_applicable_income(Variable):
         # 21(3); SSI 2021/249 reg 36(2)); the other schemes count the
         # applicant's and partner's alone. Anyone else in the benefit unit does
         # not count either. A household head who applies alone is the
-        # applicant, whatever else the benefit unit reads her as.
+        # applicant, whatever else the benefit unit reads them as.
         person = benunit.members
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         applicant_family = ~head_applies_alone
