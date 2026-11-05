@@ -122,3 +122,25 @@
         members: person
   output:
     uc_housing_costs_element: 0
+
+- name: Specified or temporary accommodation brings no element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 1_000
+        uc_non_dep_deductions: 0
+        uc_LHA_cap: 5_000
+        in_specified_or_temporary_accommodation: true
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    # UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B; NI: SR 2016/216 Sch 1
+    # paras 3(e), 3(ea), 4 and 4A.
+    uc_housing_costs_element: 0
