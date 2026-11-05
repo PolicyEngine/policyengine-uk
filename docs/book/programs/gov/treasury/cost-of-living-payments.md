@@ -16,12 +16,21 @@ spike in domestic energy prices. Two strands:
   England, a one-off in 2022-23. Households qualified on their band on 1
   April 2022. The guidance asked billing authorities to pay from April and
   set 30 September 2022 as the deadline for the payments the government
-  would reconcile (paragraph 7). Scotland and Wales paid their own £150
-  awards to bands A–D, and also to Council Tax Reduction recipients in any
-  band, which the model leaves out. Northern Ireland levies domestic rates,
-  not council tax, and had no Council Tax Rebate, so the model pays none
-  there whatever the household's council tax band (the enhanced FRS gives
-  every Northern Ireland household band A, the default policyengine-uk-data
+  would reconcile (paragraph 7). Scottish councils paid the Cost of Living
+  Award and Welsh councils the Cost of Living Support Scheme, £150 each, to
+  bands A–D and to Council Tax Reduction recipients in any band. Scottish
+  councils tested receipt on 14 February 2022 and Welsh councils on 15
+  February 2022. The model reads `council_tax_reduction` for the whole year.
+  Councils in all three nations also paid band E homes they charged at band
+  D under the disabled band reduction. The model has no input for that
+  reduction. In Scotland and Wales it pays those homes only when they also
+  receive Council Tax Reduction; in England it never pays them. The model
+  doesn't simulate Scotland's separate Council Tax Reduction for bands E to
+  H (regulation 14A; SSI 2016/253), so a Scottish household on that alone
+  misses the payment. Northern Ireland levies domestic rates, not
+  council tax, and had no Council Tax Rebate, so the model pays none there
+  whatever the household's council tax band (the enhanced FRS gives every
+  Northern Ireland household band A, the default policyengine-uk-data
   assigns when the FRS records no band).
 - **Energy Bills Support Scheme**, a £400 discount on domestic electricity
   bills in Great Britain, paid in six monthly instalments from October 2022
@@ -30,9 +39,9 @@ spike in domestic energy prices. Two strands:
   package. Northern Ireland paid £600 in one go from January 2023: £400 of
   support and a £200 Alternative Fuel Payment, to each domestic electricity
   customer on 2 January 2023, whatever fuel the household heats with (EBSS
-  AFP NI Direction, 23 December 2022, paragraph 3 and footnote 1). Great
-  Britain's £200 Alternative Fuel Payment, for households that heat with
-  heating oil, LPG, biomass and other alternative fuels, is not modelled.
+  AFP NI Direction, 23 December 2022, paragraph 3 and footnote 1). The model
+  leaves out Great Britain's £200 Alternative Fuel Payment, which suppliers
+  paid on electricity meters the government listed in areas off the gas grid.
 
 PolicyEngine models these via:
 
@@ -48,6 +57,9 @@ PolicyEngine models these via:
   - `energy_bills_credit.yaml` — a yearly top-up, zero by default, kept for
     reforms
   - `council_tax_rebate/bands.yaml` — qualifying CT bands (A–D)
+  - `council_tax_rebate/council_tax_reduction_countries.yaml` — countries
+    whose councils also paid Council Tax Reduction recipients in any band
+    (Scotland and Wales)
   - `council_tax_rebate/amount.yaml` — £150 in 2022-23 and nothing in any
     other year
 
@@ -77,6 +89,33 @@ credit by financial year would move all three measures together. `epg_subsidy` s
 calendar year in the same way; it counts in household net income and
 government spending but not in HBAI income. The model keeps one timing for
 both schemes for now.
+
+### Great Britain's Alternative Fuel Payment
+
+Electricity suppliers in Great Britain paid £200 to 1,842,760 customers,
+£368.6 million in all ([DESNZ supplier data](https://www.gov.uk/government/publications/alternative-fuel-payment-gb-payments-made-by-electricity-suppliers-to-customers)),
+and local authorities paid 89,750 more through the Alternative Fund
+([DESNZ applications data](https://www.gov.uk/government/publications/energy-bills-support-scheme-alternative-fund-gb-ni-and-alternative-fuel-payment-alternative-fund-applications-made-by-customers)).
+The model leaves out both, so it understates 2023 income and government
+spending by about £387 million. The omission affects 2023 alone.
+
+Suppliers paid whoever held the account, at the start of 1 February 2023, for
+each electricity meter the Secretary of State named ([direction](https://assets.publishing.service.gov.uk/media/63ceba6fe90e071bac7eadce/alternative-fuels-payment-gb-ministerial-direction.pdf),
+paragraph 6). The department built that list from postcodes not connected to
+the gas grid and removed areas with high use of electric heating
+([interim evaluation](https://www.gov.uk/government/publications/domestic-energy-affordability-support-schemes-in-great-britain-interim-evaluation),
+page 54).
+
+Spending on liquid and solid fuels does not pick out the households on that
+list. In the Living Costs and Food Survey, about a third of Great Britain
+households buying these fuels have gas central heating, and more than a third
+of households with oil, solid fuel, calor gas or other gas central heating
+report no purchase. The enhanced FRS 2023-24 carries neither
+`liquid_fuel_consumption` nor
+`solid_fuel_consumption`. PolicyEngine's Microcosm dataset carries both from
+2024, and its 842,000 Great Britain households with spending on either fall 54%
+short of DESNZ's count. None of the model's datasets with a 2023 year records a
+household's heating fuel or gas connection.
 
 ## Household Energy Payment (2026-27)
 
@@ -171,6 +210,9 @@ payment to someone who gets only those.
 - [HMT/DWP, May 2022 cost-of-living support package announcement](https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living)
 - DWP, [Cost-of-Living Payments 2023-24 guidance](https://www.gov.uk/guidance/cost-of-living-payments-2023-to-2024) (means-tested, pensioner and disability strands).
 - HMT, [Energy Bills Support Scheme](https://www.gov.uk/government/publications/the-energy-bills-support-scheme-explainer) and [Council Tax Energy Rebate](https://www.gov.uk/government/publications/the-council-tax-rebate-2022-23-billing-authority-guidance).
+- Scottish Government, [Local Government Finance Circular 2/2022](https://www.gov.scot/publications/local-government-finance-circular-2-2022-guidance-to-local-authorities-april-2022-cost-of-living-award/) (Cost of Living Award).
+- Welsh Government, [Cost of Living Support Scheme guide for local authorities](https://www.gov.wales/cost-living-support-scheme-guide-local-authorities-html).
+- [The Council Tax Reduction (Scotland) Amendment (No. 2) Regulations 2016](https://www.legislation.gov.uk/ssi/2016/253/made) (Council Tax Reduction for bands E to H).
 - DWP, [HBAI quality and methodology information report, FYE 2023](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2023/households-below-average-income-series-quality-and-methodology-information-report-fye-2023) (treatment of the cost-of-living support schemes in HBAI income).
 - House of Commons Library briefing [CBP-9501 — Cost of Living Payments and the energy crisis](https://commonslibrary.parliament.uk/research-briefings/cbp-9501/).
 - [Social Security (Additional Payments) Act 2022](https://www.legislation.gov.uk/ukpga/2022/38), sections 1 to 5 (the 2022-23 means-tested and disability payments).
