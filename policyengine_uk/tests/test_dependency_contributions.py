@@ -6,9 +6,13 @@ year with that dependency zero wherever the target read it (each period, on
 each branch) and every other variable the target read held at the value it
 read. The trace shows which variables the target read, over which periods and
 on which branch, in the latest calculation that gave the value the simulation
-holds. A target that reads its own value within the year raises, since
-recalculating it over the year replaces that value. For any household drawn
-below:
+holds. A dependency already zero wherever the target read it contributes zero,
+also to a formula that asks whether a value it read was supplied. Four cases
+raise: a target that reads its own value within the year (recalculating it
+over the year replaces that value), a target set as an input (which reads
+nothing), values no calculation in the trace gave, and a read on a branch of a
+subset of households (the recalculation cannot hold it). For any household
+drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
    from a fresh simulation in which the target's float direct dependencies are
@@ -19,7 +23,9 @@ below:
    one dependency feeds another (pension contributions get tax relief).
 3. Leaves the simulation as it was: every value it stored before the call is
    stored, unchanged, after it, and nothing is added (no values, no recorded
-   inputs, no branches). So a second call returns the same contributions.
+   inputs, no branches) apart from what the helper's own calculation of the
+   target stores or drops, which the tests calculate first. So a second call
+   returns the same contributions.
 4. Non-float dependencies contribute zero.
 
 Monthly variables are the case that broke: zeroing a monthly dependency over a
@@ -52,6 +58,9 @@ from policyengine_uk.model_api import (
     Scenario,
     Variable,
 )
+from policyengine_uk.tests.test_housing_benefit_accommodation_dates import (
+    situation as housing_benefit_situation,
+)
 from policyengine_uk.utils.dependencies import (
     calculate_dependency_contribution_change,
     calculate_dependency_contributions,
@@ -60,6 +69,7 @@ from policyengine_uk.utils.dependencies import (
 )
 from policyengine_uk.utils.labour_supply_responses import response_source
 from policyengine_uk.utils.measurement_branches import BEHAVIOURAL_RESPONSES
+from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 YEARS = [2024, 2025, 2026, 2027]
 # Defined only by adds and subtracts of their direct dependencies.
@@ -1160,6 +1170,26 @@ class core_stock_and_leaf(CoreVariable):
         return person("core_leaf", period) + person("core_month_stock", period)
 
 
+class core_leaf_and_double(CoreVariable):
+    label = "Core leaf and double"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return person("core_leaf", period) + person("core_double", period)
+
+
+class core_monthly_leaf(CoreVariable):
+    label = "Core monthly leaf"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = MONTH
+
+    def formula(person, period):
+        return person("core_leaf", period.this_year) / 12
+
+
 def test_reads_on_a_branch_named_afresh():
     sim = core_toy_simulation(core_leaf, core_double, core_from_fresh_branch)
     sim.calculate("core_from_fresh_branch", 2026)
@@ -1226,11 +1256,13 @@ def test_a_calculation_that_restarts():
     assert contributions.to_dict() == {"core_from_input": 20, "core_twenty": 20}
 
 
-def test_a_target_that_reads_its_own_value_over_the_same_year():
+def test_a_target_that_sets_itself_as_an_input():
+    # Its formula sets its own value as an input, which reads nothing, and
+    # then reads it: a ValueError, not a RecursionError.
     sim = core_toy_simulation(core_sets_itself)
     sim.calculate("core_sets_itself", 2026)
 
-    with pytest.raises(ValueError, match="reads its own value"):
+    with pytest.raises(ValueError, match="as an input"):
         calculate_dependency_contributions(sim, "core_sets_itself", 2026)
 
 
@@ -1264,3 +1296,201 @@ def test_a_monthly_stock_read_over_a_year_is_held_at_december(cache_blacklist):
     contributions = calculate_dependency_contributions(sim, "core_stock_and_leaf", 2026)
 
     assert contributions.to_dict() == {"core_leaf": 10, "core_month_stock": 120}
+
+
+def test_a_core_target_set_as_an_input_raises():
+    # The trace shows a calculation that read the leaf and the double, but
+    # the value it holds now is an input, which reads nothing.
+    sim = core_toy_simulation(core_leaf, core_double, core_leaf_and_double)
+    assert sim.calculate("core_leaf_and_double", 2026) == 30
+    sim.set_input("core_leaf_and_double", 2026, [100.0])
+    before = snapshot(sim)
+
+    with pytest.raises(ValueError, match="as an input"):
+        calculate_dependency_contributions(sim, "core_leaf_and_double", 2026)
+    assert_unchanged(sim, before)
+
+
+@pytest.mark.parametrize("calculated_first", [False, True])
+def test_household_net_income_set_as_an_input_raises(calculated_first):
+    year, adults, child_ages = EARNER_WITH_PENSION
+    sim = Simulation(situation=make_situation(year, adults, child_ages), trace=True)
+    if calculated_first:
+        assert sim.calculate("household_net_income", year)[0] != 100_000
+    sim.set_input("household_net_income", year, [100_000.0])
+    # The calculation after an input changes drops the values calculated
+    # before it, as any calculation does.
+    assert sim.calculate("household_net_income", year).tolist() == [100_000]
+    before = snapshot(sim)
+
+    with pytest.raises(ValueError, match="as an input"):
+        calculate_dependency_contributions(sim, "household_net_income", year)
+    assert_unchanged(sim, before)
+
+
+def test_values_no_calculation_gave_raise():
+    # The trace shows the calculation of 30, not where 99 came from.
+    sim = core_toy_simulation(core_leaf, core_double, core_leaf_and_double)
+    sim.calculate("core_leaf_and_double", 2026)
+    sim.get_holder("core_leaf_and_double").put_in_cache(
+        np.array([99.0]), periods.period(2026), sim.branch_name, derived=True
+    )
+    assert sim.calculate("core_leaf_and_double", 2026) == 99
+
+    with pytest.raises(ValueError, match="no calculation in the trace gave"):
+        calculate_dependency_contributions(sim, "core_leaf_and_double", 2026)
+
+
+def test_a_monthly_core_target_over_a_year():
+    sim = core_toy_simulation(core_leaf, core_monthly_leaf)
+    assert sim.calculate("core_monthly_leaf", 2026) == pytest.approx(10)
+
+    contributions = calculate_dependency_contributions(sim, "core_monthly_leaf", 2026)
+
+    assert contributions.to_dict() == pytest.approx({"core_leaf": 10})
+
+
+def test_a_month_set_as_an_input_raises():
+    # The year sums its months, and March, an input, reads nothing.
+    sim = core_toy_simulation(core_leaf, core_monthly_leaf)
+    sim.set_input("core_monthly_leaf", "2026-03", [5.0])
+    assert sim.calculate("core_monthly_leaf", 2026) == pytest.approx(10 * 11 / 12 + 5)
+
+    with pytest.raises(
+        ValueError, match="'core_monthly_leaf' over 2026-03 as an input"
+    ):
+        calculate_dependency_contributions(sim, "core_monthly_leaf", 2026)
+
+
+def test_a_month_stored_directly_raises():
+    # The year sums the months stored, and March's calculation gave 10 / 12,
+    # not the 5 stored over it.
+    sim = core_toy_simulation(core_leaf, core_monthly_leaf)
+    for month in periods.period(2026).get_subperiods(MONTH):
+        sim.calculate("core_monthly_leaf", month)
+    sim.get_holder("core_monthly_leaf").put_in_cache(
+        np.array([5.0]), periods.period("2026-03"), sim.branch_name, derived=True
+    )
+    assert sim.calculate("core_monthly_leaf", 2026) == pytest.approx(10 * 11 / 12 + 5)
+
+    with pytest.raises(ValueError, match="no calculation in the trace gave"):
+        calculate_dependency_contributions(sim, "core_monthly_leaf", 2026)
+
+
+def landlord(finance_costs):
+    return {
+        "property_rental_income": 2_000,
+        "property_income": 2_000,
+        "property_finance_costs": finance_costs,
+    }
+
+
+def test_a_read_on_a_subset_of_households_raises():
+    # uses_property_allowance compares income tax with and without the
+    # allowance on branches of a subset of households (household_subset). The
+    # trace does not show which households the subset held, and zeroing a
+    # dependency can change them, so the values read there cannot be held.
+    # An employee, and the two landlords test_household_subset.py lists as
+    # electing, each in a household of their own.
+    year = 2026
+    adults = [
+        ({"age": 40, "employment_income": 30_000}, False),
+        ({"age": 40, "employment_income": 30_000, **landlord(100)}, True),
+        ({"age": 70, "private_pension_income": 33_500, **landlord(1_500)}, True),
+    ]
+    people, benunits, households = {}, {}, {}
+    for i, (adult, claims_pension_credit) in enumerate(adults):
+        person = f"adult_{i}"
+        people[person] = {name: {year: value} for name, value in adult.items()}
+        benunits[f"benunit_{i}"] = {
+            "members": [person],
+            "would_claim_pc": {year: claims_pension_credit},
+            "would_claim_uc": {year: False},
+        }
+        households[f"household_{i}"] = {
+            "members": [person],
+            "country": {year: "ENGLAND"},
+        }
+    sim = Simulation(
+        situation={"people": people, "benunits": benunits, "households": households},
+        trace=True,
+    )
+    assert sim.calculate("uses_property_allowance", year).tolist() == [
+        False,
+        True,
+        True,
+    ]
+    before = snapshot(sim)
+
+    with pytest.raises(ValueError, match="subset of households"):
+        calculate_dependency_contributions(
+            sim, "uses_property_allowance", year, map_to="household"
+        )
+    assert_unchanged(sim, before)
+
+
+def test_reads_a_formula_asks_were_supplied_stay_as_they_were():
+    # person_bus_fare_spending splits local_bus_trips by region unless
+    # bus_in_london_trips or other_local_bus_trips was supplied, which it asks
+    # supplied_input. Neither was: it read both as zero, and zeroing them
+    # leaves supplied_input's answer, and so the spending, as it was.
+    year = 2026
+    sim = Simulation(
+        situation={
+            "people": {"person": {"age": {year: 40}, "local_bus_trips": {year: 100}}},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {
+                "household": {"members": ["person"], "region": {year: "NORTH_EAST"}}
+            },
+        },
+        trace=True,
+    )
+    spending = sim.calculate("person_bus_fare_spending", year)[0]
+    assert spending > 0
+    trips = ["bus_in_london_trips", "other_local_bus_trips"]
+    for name in trips:
+        assert sim.calculate(name, year).tolist() == [0]
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(
+        sim, "person_bus_fare_spending", year
+    )
+
+    for name in trips:
+        assert contributions[name] == 0
+    # With no local bus trips, nothing is spent.
+    assert contributions["local_bus_trips"] == pytest.approx(
+        spending, abs=tolerance(spending)
+    )
+    assert_unchanged(sim, before)
+
+
+def test_housing_benefit_reads_its_applicable_income_as_calculated():
+    # 2026 has two accommodation-disregard periods (from 5 October). Then
+    # housing_benefit_entitlement uses the applicable income it read only
+    # where pension-age rules or a passporting benefit keep annual income,
+    # unless the income was set as an input (stored_as_input), when the award
+    # comes from it alone. Neither rule applies here, and the income was
+    # calculated, so zeroing it leaves the award as it was. As an input, the
+    # zero would raise the award to the full rent.
+    year = 2026
+    income = "housing_benefit_applicable_income"
+    sim = Simulation(situation=housing_benefit_situation((year,)), trace=True)
+    entitlement = sim.calculate("housing_benefit_entitlement", year)[0]
+    assert 0 < entitlement < 10_400
+    assert sim.calculate(income, year)[0] > 0
+    benunit = sim.populations["benunit"]
+    assert not stored_as_input(benunit, income, periods.period(year))
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(
+        sim, "housing_benefit_entitlement", year
+    )
+
+    assert contributions[income] == 0
+    assert_unchanged(sim, before)
+    supplied = Simulation(situation=housing_benefit_situation((year,)))
+    supplied.set_input(income, year, [0.0])
+    assert supplied.calculate("housing_benefit_entitlement", year)[0] == pytest.approx(
+        10_400
+    )

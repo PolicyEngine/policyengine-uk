@@ -1,8 +1,15 @@
 import re
 import numpy as np
 from policyengine_core import periods
+from policyengine_core.enums import EnumArray
 from policyengine_core.variables import QuantityType
 from policyengine_uk.system import system
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    record_model_value,
+    stored_as_input,
+    supplied_input,
+)
 import plotly.express as px
 import pandas as pd
 from plotly import graph_objects as go
@@ -65,23 +72,39 @@ def index_trace(tracer):
     return calculations, keys
 
 
+def comparable(values):
+    # Enum values by name: a calculation the caller asks for directly decodes
+    # them (see Simulation.calculate), and one a formula asks for does not.
+    if isinstance(values, EnumArray):
+        return values.decode_to_str()
+    return np.asarray(values)
+
+
 def same_values(a, b):
+    a, b = comparable(a), comparable(b)
     try:
-        return np.array_equal(np.asarray(a), np.asarray(b))
+        # NaN where both hold NaN is the same value.
+        return np.array_equal(a, b, equal_nan=True)
+    except TypeError:
+        # equal_nan needs numbers.
+        pass
+    try:
+        return np.array_equal(a, b)
     except (TypeError, ValueError):
         return False
 
 
 def latest_calculation(nodes, value=None):
-    # The latest calculation that gave value, or the latest if none did or
-    # value is None. A branch keeps the values its parent held when the
+    # The latest calculation, or with value the latest that gave value, or
+    # None if none did. A branch keeps the values its parent held when the
     # branch was created, so the parent's latest calculation need not be the
     # one that gave the branch its value.
-    if value is not None:
-        for node in reversed(nodes):
-            if node.value is not None and same_values(node.value, value):
-                return node
-    return nodes[-1]
+    if value is None:
+        return nodes[-1]
+    for node in reversed(nodes):
+        if node.value is not None and same_values(node.value, value):
+            return node
+    return None
 
 
 def branches_read_from(branch_name, chain):
@@ -93,16 +116,32 @@ def branches_read_from(branch_name, chain):
     return [branch_name]
 
 
+def no_calculation_gave(variable_name, period):
+    return ValueError(
+        f"The simulation holds values of '{variable_name}' over {period} that "
+        f"no calculation in the trace gave (values stored directly, say), so "
+        f"the trace does not show what they read."
+    )
+
+
 def find_calculation(variable_name, period, chain, calculations, keys, value=None):
-    # The node of variable_name's calculation over period that gave value (see
-    # latest_calculation), on the first branch of chain that calculated it,
-    # or None if the trace shows variable_name over period with no variables
-    # read (a formula of parameters alone, say).
+    # The node of variable_name's calculation over period: the latest on the
+    # first branch of chain that calculated it, or with value the latest on
+    # the first branch of chain with one that gave value (see
+    # latest_calculation). None if the trace shows variable_name over period
+    # with no variables read (a formula of parameters alone, say), and an
+    # error if calculations on chain gave only other values.
     period = periods.period(period)
+    calculated = False
     for branch_name in chain:
         nodes = calculations.get((variable_name, period, branch_name))
         if nodes:
-            return latest_calculation(nodes, value)
+            calculated = True
+            node = latest_calculation(nodes, value)
+            if node is not None:
+                return node
+    if calculated:
+        raise no_calculation_gave(variable_name, period)
     if any((variable_name, period, branch_name) in keys for branch_name in chain):
         return None
     raise ValueError(
@@ -126,23 +165,38 @@ def is_period_wrapper(child, node):
     )
 
 
+def calculation_read(child, calculations, chain):
+    # The calculation that stored the value child (a node with no children)
+    # read: the latest that gave child's value, on the first branch child
+    # reads from (see branches_read_from) with one. child itself if no branch
+    # there calculated it, and an error if calculations there gave only
+    # other values.
+    period = periods.period(child.period)
+    calculated = False
+    for branch_name in branches_read_from(child.branch_name, chain):
+        found = calculations.get((child.name, period, branch_name))
+        if found:
+            calculated = True
+            node = latest_calculation(found, child.value)
+            if node is not None:
+                return node
+    if calculated:
+        raise no_calculation_gave(child.name, period)
+    return child
+
+
 def get_dependency_nodes(node, calculations=None, chain=None):
     # The nodes of what node read directly: what it read is under its period
     # wrappers (see is_period_wrapper). A wrapper that read a value already
     # stored has no children of its own, so calculations (from index_trace)
-    # gives the calculation that stored it. The variable read on another
-    # branch is a dependency, as is the variable read over a period that
-    # neither contains nor is contained in its own.
+    # gives the calculation that stored it (see calculation_read). The
+    # variable read on another branch is a dependency, as is the variable
+    # read over a period that neither contains nor is contained in its own.
     nodes = []
     for child in node.children:
         if is_period_wrapper(child, node):
             if not child.children and calculations is not None:
-                child_period = periods.period(child.period)
-                for branch_name in branches_read_from(child.branch_name, chain or []):
-                    found = calculations.get((child.name, child_period, branch_name))
-                    if found:
-                        child = latest_calculation(found, child.value)
-                        break
+                child = calculation_read(child, calculations, chain or [])
             nodes.extend(get_dependency_nodes(child, calculations, chain))
         else:
             nodes.append(child)
@@ -168,16 +222,37 @@ def get_variable_dependencies(variable_name, sim, period=None):
     return [child.name for child in get_dependency_nodes(node, calculations, chain)]
 
 
+def check_not_input(variable_name, sim, period):
+    # A value set as an input reads nothing, and a calculation of it that
+    # the trace shows read what gave another value.
+    variable = sim.tax_benefit_system.variables[variable_name]
+    inputs = sim.get_holder(variable_name).get_input_periods(sim.branch_name)
+    for held in definition_periods(variable, [period]):
+        if held in inputs:
+            raise ValueError(
+                f"The simulation holds '{variable_name}' over {held} as an "
+                f"input, which reads nothing, so no variable read contributes "
+                f"to it."
+            )
+
+
 def get_direct_reads(variable_name, sim, period, value=None):
     """What variable_name, calculated over period, read directly.
 
-    From sim's trace, in the calculation that gave value if one did (see
+    From sim's trace, in the calculation that gave value (see
     latest_calculation): a dict from (branch, variable) to a dict from each
     period read to the latest node of that read, in the order of the first
     read of each variable. branch is None for sim's branch and its ancestors
     (sim reads their values as its own), and otherwise the name of the
     branch read.
+
+    Raises ValueError if sim holds variable_name over a period it is
+    defined for within period as an input, which reads nothing, or if no
+    calculation in the trace gave value or the values a calculation of
+    variable_name read from storage.
     """
+    period = periods.period(period)
+    check_not_input(variable_name, sim, period)
     calculations, keys = index_trace(sim.tracer)
     chain = branch_chain(sim)
     node = find_calculation(variable_name, period, chain, calculations, keys, value)
@@ -277,6 +352,68 @@ def check_reads_of_itself(variable_name, period, reads):
             )
 
 
+def check_entities_read(sim, variable_name, on, name, read):
+    # A value read on another branch is held for the branch of that name
+    # the recalculation makes, and so must have one entry for each entity
+    # in sim. A branch of a subset of households (utils/household_subset.py)
+    # holds fewer, and the trace does not show which: the recalculation's
+    # subset then holds the households its values select, which zeroing
+    # can change.
+    if on is None:
+        return
+    count = sim.get_variable_population(name).count
+    for node in read.values():
+        shape = np.shape(node.value) if node.value is not None else ()
+        if shape and shape[0] != count:
+            raise ValueError(
+                f"'{variable_name}' read '{name}' on branch '{on}', which "
+                f"holds {shape[0]} values of it where the simulation holds "
+                f"{count}: a branch of a subset of households (see "
+                f"utils/household_subset.py). The contributions cannot hold "
+                f"what it read there, as the recalculation's subset need not "
+                f"hold the same households."
+            )
+
+
+def value_held(sim, on, name, read, held):
+    # The value of name over held that variable_name read on branch on (None
+    # for sim's branch and its ancestors), with whether sim holds it there:
+    # the one sim holds, or else the one the trace shows (or the branch of
+    # sim named on holds).
+    variable = sim.tax_benefit_system.variables[name]
+    if on is None:
+        value = sim.get_holder(name).get_array(held, sim.branch_name)
+        if value is not None:
+            return value, True
+    value = value_read(variable, read, held)
+    if value is None and on in sim.branches:
+        value = sim.branches[on].get_holder(name).get_array(held, on)
+    return value, False
+
+
+def how_held(sim, on, name, period, value):
+    # How the simulation held value, the value of name over period read on
+    # branch on (None for sim's branch and its ancestors), as the helpers in
+    # utils/supplied_inputs.py tell it: "supplied", "model" (the model's own,
+    # set_model_value) or "calculated". None for a variable those helpers do
+    # not answer for. A branch the recalculation makes in place of one sim
+    # no longer holds (a formula drops its branches) holds sim's value, and
+    # value is sim's if it is the one sim holds. A value sim does not hold
+    # counts as calculated.
+    if name not in SUPPLIED_INPUT_VARIABLES:
+        return None
+    source = sim.branches.get(on, sim) if on is not None else sim
+    holds = source.get_holder(name).get_array(period, source.branch_name)
+    if holds is None or not same_values(holds, value):
+        return "calculated"
+    population = source.get_variable_population(name)
+    if supplied_input(population, name, period) is not None:
+        return "supplied"
+    if stored_as_input(population, name, period):
+        return "model"
+    return "calculated"
+
+
 def calculate_with_dependency_zeroed(
     sim, variable_name, dependency, year, map_to=None, reads=None
 ):
@@ -305,57 +442,70 @@ def calculate_with_dependency_zeroed(
     name the formula of variable_name creates from the new branch reads it:
     the value variable_name read there, from the trace (or from the branch of
     sim with that name).
+
+    A formula that asks whether a value was supplied (supplied_input and
+    stored_as_input in utils/supplied_inputs.py) gets the answer it got in
+    sim: each value stored that sim calculated, the zeros included, is
+    recorded as a model value that stands for a calculation, and each the
+    model set (set_model_value) as a model value.
+
+    Raises ValueError, before making the branch, if variable_name read on a
+    branch of a subset of households (utils/household_subset.py): the
+    recalculation cannot hold what it read there.
     """
     period = periods.period(year)
-    variables = sim.tax_benefit_system.variables
     if reads is None:
         reads = get_direct_reads(variable_name, sim, period)
     check_reads_of_itself(variable_name, period, reads)
+
+    variables = sim.tax_benefit_system.variables
+    deletions, inputs = [], []
+    for (on, name), read in reads.items():
+        check_entities_read(sim, variable_name, on, name, read)
+        read_periods = list(read)
+        covering = definition_periods(variables[name], read_periods)
+        if name == dependency:
+            zeros = np.zeros(sim.get_variable_population(name).count)
+            deletions.extend((name, on, deleted) for deleted in read_periods + covering)
+            for held in covering:
+                value, _ = value_held(sim, on, name, read, held)
+                status = how_held(sim, on, name, held, value)
+                inputs.append((name, held, zeros, on, status))
+            continue
+        for held in covering:
+            value, sim_holds = value_held(sim, on, name, read, held)
+            if sim_holds:
+                # The new branch reads sim's value as its own.
+                continue
+            if value is None:
+                raise ValueError(
+                    f"'{name}' over {held} cannot keep the value "
+                    f"'{variable_name}' read: neither the simulation nor "
+                    f"its trace holds it."
+                )
+            inputs.append((name, held, value, on, how_held(sim, on, name, held, value)))
 
     branch_name = unused_branch_name(sim)
     branch = sim.get_branch(branch_name, clone_system=True)
     try:
         branch.trace = False
-        deletions, inputs = [], []
-        for (on, name), read in reads.items():
-            stored_under = branch.branch_name if on is None else on
-            read_periods = list(read)
-            covering = definition_periods(variables[name], read_periods)
-            if name == dependency:
-                zeros = np.zeros(sim.get_variable_population(name).count)
-                deletions.extend(
-                    (name, on, deleted) for deleted in read_periods + covering
-                )
-                inputs.extend((name, held, zeros, stored_under) for held in covering)
-                continue
-            for held in covering:
-                if on is None:
-                    if (
-                        branch.get_holder(name).get_array(held, stored_under)
-                        is not None
-                    ):
-                        continue
-                    value = value_read(variables[name], read, held)
-                else:
-                    value = value_read(variables[name], read, held)
-                    if value is None and on in sim.branches:
-                        value = sim.branches[on].get_holder(name).get_array(held, on)
-                if value is None:
-                    raise ValueError(
-                        f"'{name}' over {held} cannot keep the value "
-                        f"'{variable_name}' read: neither the simulation nor "
-                        f"its trace holds it."
-                    )
-                inputs.append((name, held, value, stored_under))
-
         branch.delete_arrays(variable_name, period)
         for name, on, deleted in deletions:
             if on is None:
                 branch.delete_arrays(name, deleted)
             else:
                 branch.get_holder(name).delete_arrays(deleted, on)
-        for name, held, value, stored_under in inputs:
+        for name, held, value, on, status in inputs:
+            stored_under = branch_name if on is None else on
             branch.get_holder(name)._set(held, value, stored_under, is_input=True)
+            if status in ("model", "calculated"):
+                record_model_value(
+                    branch,
+                    name,
+                    held,
+                    stored_under,
+                    calculated=status == "calculated",
+                )
         return branch.calculate(variable_name, period, map_to=map_to)
     finally:
         sim.branches.pop(branch_name, None)
@@ -374,9 +524,37 @@ def calculate_dependency_contributions(
     and every other variable read held (see calculate_with_dependency_zeroed),
     after mapping to map_to and selecting filter if given. So for a target
     that adds and subtracts what it reads, the contributions sum to its mean.
-    Other variables contribute zero. sim's values are left unchanged. The
+    Other variables contribute zero. Apart from what its own calculation of
+    variable_name over year stores or drops in sim, as any
+    Simulation.calculate does, sim's values are left as they were. The
     tax-benefit system needs parameters, as every PE-UK system has: the
     recalculation runs on a branch with a clone of it.
+
+    Raises ValueError if sim holds variable_name over year as an input
+    (which reads nothing), if no calculation in the trace gave the values
+    sim holds, or if variable_name read on a branch of a subset of
+    households and reads a float, which needs a recalculation (see
+    calculate_with_dependency_zeroed).
+
+    Limitations:
+
+    - What a formula reads from another simulation (sim.baseline, say) is
+      not in sim's trace, so it gets no contribution and is not held. The
+      recalculation reads it from that simulation afresh, from the values
+      the formula gives it there (relative_income_change sets the earnings
+      it read as inputs on a branch of sim.baseline), and that simulation
+      can calculate and trace more.
+    - A formula that names the branch it makes by the first name free on the
+      simulation it runs on (marginal_tax_rate, say) takes the name it took
+      in sim only if that name is free on the recalculation's branch too,
+      which holds no branches. Where sim held a branch by that name, the
+      formula took another in sim, the recalculation does not hold what the
+      formula read on it, and the contributions change.
+    - Of the calculations that gave the values sim holds, the latest gives
+      the reads. Where calculations with other reads gave equal values,
+      that need not be the calculation the values came from: a branch keeps
+      the values its parent held when the branch was made, and the parent
+      can calculate equal values from other reads later.
     """
     original_values = sim.calculate(variable_name, year)
 

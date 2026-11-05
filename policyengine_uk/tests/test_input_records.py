@@ -17,7 +17,13 @@ from policyengine_core.experimental.memory_config import MemoryConfig
 from policyengine_core.periods import period
 
 from policyengine_uk import Simulation
-from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
+from policyengine_uk.utils.household_subset import household_subset
+from policyengine_uk.utils.supplied_inputs import (
+    record_model_value,
+    set_model_value,
+    stored_as_input,
+    supplied_input,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -176,3 +182,48 @@ def test_rebuilt_populations_forget_the_inputs_they_replace():
     holder.put_in_cache(np.array([123.0]), period(2026))
     person = sim.populations["person"]
     assert supplied_input(person, "adjusted_net_income", period(2026)) is None
+
+
+def test_a_value_recorded_as_calculated_is_neither_supplied_nor_an_input():
+    # utils/dependencies.py stores values the simulation calculated as
+    # inputs, so that they stay put, and records them as model values that
+    # stand for a calculation.
+    sim = Simulation(
+        situation={
+            "people": {
+                "first": {"age": {2026: 40}, "employment_income": {2026: 30_000}},
+                "second": {"age": {2026: 50}, "employment_income": {2026: 40_000}},
+            },
+            "benunits": {"b1": {"members": ["first"]}, "b2": {"members": ["second"]}},
+            "households": {
+                "h1": {"members": ["first"]},
+                "h2": {"members": ["second"]},
+            },
+        }
+    )
+    year = period(2026)
+    name = "adjusted_net_income"
+    sim.set_input(name, year, [1_000.0, 2_000.0])
+    record_model_value(sim, name, year, sim.branch_name, calculated=True)
+
+    def answers(simulation):
+        person = simulation.populations["person"]
+        return (
+            supplied_input(person, name, year),
+            stored_as_input(person, name, year),
+        )
+
+    for copy in (sim, sim.clone(), sim.get_branch("copy")):
+        assert answers(copy) == (None, False)
+    with household_subset(sim, "subset", np.array([False, True])) as subset:
+        assert subset.person is not None
+        assert subset.simulation.calculate(name, 2026).tolist() == [2_000]
+        assert answers(subset.simulation) == (None, False)
+    # The model's own value counts as an input, though it is not supplied.
+    set_model_value(sim, name, year, [1_000.0, 2_000.0])
+    assert answers(sim) == (None, True)
+    # A value set for the period is supplied, even one equal to the model's.
+    sim.set_input(name, year, [1_000.0, 2_000.0])
+    supplied, stored = answers(sim)
+    assert supplied.tolist() == [1_000, 2_000]
+    assert stored
