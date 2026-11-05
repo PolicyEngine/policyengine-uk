@@ -105,13 +105,28 @@ def _visible_branches(sim):
     return branches
 
 
+def _same_array(a, b) -> bool:
+    """Equality where NaN equals NaN, as ``supplied_inputs.same_array`` has it.
+
+    CI runs the pull request head's copy of this tool against the base's
+    package too, which need not have that helper, so the tool keeps a copy.
+    """
+    try:
+        return np.array_equal(a, b, equal_nan=True)
+    except TypeError:
+        # equal_nan needs numbers.
+        return np.array_equal(a, b)
+
+
 def _capture_input_origins(sim, variables):
     """Copy actual registered input slots before any synthetic write."""
-    from policyengine_uk.utils.supplied_inputs import (
-        SUPPLIED_INPUT_VARIABLES,
-        CalculatedValue,
-        same_array,
-    )
+    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+
+    try:
+        from policyengine_uk.utils.supplied_inputs import CalculatedValue
+    except ImportError:
+        # A base's package without it (see _same_array) records no such value.
+        CalculatedValue = ()
 
     names = set(variables) & SUPPLIED_INPUT_VARIABLES
     if not names:
@@ -133,7 +148,7 @@ def _capture_input_origins(sim, variables):
             if value is None:
                 continue
             marker = model.get(key)
-            is_model = marker is not None and same_array(marker, value)
+            is_model = marker is not None and _same_array(marker, value)
             is_calculated = is_model and isinstance(marker, CalculatedValue)
             if key in keys or is_model:
                 slots.append(
@@ -179,10 +194,7 @@ def _guard_snapshot(sim, snapshot, variables):
         if snapshot.owner is not sim:
             raise ValueError("Input snapshot belongs to a different simulation")
         return snapshot
-    from policyengine_uk.utils.supplied_inputs import (
-        SUPPLIED_INPUT_VARIABLES,
-        same_array,
-    )
+    from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
 
     origins = _capture_input_origins(sim, variables)
     # Plain mappings remain supported when their registered values agree with
@@ -190,7 +202,7 @@ def _guard_snapshot(sim, snapshot, variables):
     for name in set(snapshot) & SUPPLIED_INPUT_VARIABLES:
         for period, value in snapshot[name]:
             if not any(
-                saved_period == period and same_array(saved_value, value)
+                saved_period == period and _same_array(saved_value, value)
                 for _, saved_period, saved_value, *_ in origins.get(name, ())
             ):
                 raise ValueError("Plain input snapshot has no matching original slot")
@@ -218,7 +230,6 @@ def _restore(sim, variable, snapshot):
         SUPPLIED_INPUT_VARIABLES,
         drop_missing_model_values,
         drop_missing_supplied_inputs,
-        record_model_value,
         set_model_value,
     )
 
@@ -245,7 +256,10 @@ def _restore(sim, variable, snapshot):
                 # the NaN set_input refuses, so it goes straight into the
                 # holder, and the discard below drops what the simulation
                 # calculated from the synthetic value, as set_input does on a
-                # branch.
+                # branch. Only a package with CalculatedValue gets here, and
+                # it has this helper too (see _same_array).
+                from policyengine_uk.utils.supplied_inputs import record_model_value
+
                 holder._set(period, value, branch, is_input=True)
                 record_model_value(sim, variable, period, branch, calculated=True)
                 restored_calculated = True

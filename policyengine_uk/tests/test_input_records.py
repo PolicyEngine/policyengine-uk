@@ -11,6 +11,9 @@ that simulation's records of the inputs they hold, so the two simulations do
 not share holders.
 """
 
+import sys
+from types import ModuleType
+
 import numpy as np
 import pytest
 from policyengine_core.experimental.memory_config import MemoryConfig
@@ -23,6 +26,7 @@ from policyengine_uk.utils.aggregate_impact.guard import (
     _set_guard_value,
     snapshot_inputs,
 )
+from policyengine_uk.utils import supplied_inputs
 from policyengine_uk.utils.household_subset import household_subset
 from policyengine_uk.utils.supplied_inputs import (
     CalculatedValue,
@@ -293,6 +297,38 @@ def test_the_aggregate_guard_restores_a_value_recorded_as_calculated(values):
     assert same_array(stored, np.array(values, dtype=stored.dtype))
     # What the simulation calculated from the synthetic value is gone.
     assert sim.get_holder("net_income").get_array(YEAR, sim.branch_name) is None
+
+
+def test_the_aggregate_guard_runs_against_a_package_without_the_newer_helpers(
+    monkeypatch,
+):
+    # CI runs the pull request head's copy of the tool against the base's
+    # package too, so the guard can't assume the base has these names. The
+    # package's own functions keep them, as a base's keep what they use.
+    older = ModuleType(supplied_inputs.__name__)
+    newer = {"CalculatedValue", "record_model_value", "same_array"}
+    vars(older).update(
+        {
+            name: value
+            for name, value in vars(supplied_inputs).items()
+            if name not in newer
+        }
+    )
+    monkeypatch.setitem(sys.modules, supplied_inputs.__name__, older)
+    sim = Simulation(situation=TWO_PEOPLE)
+    set_model_value(sim, INCOME, YEAR, [1_000.0, 2_000.0])
+
+    snapshot = snapshot_inputs(sim, [INCOME])
+    _set_guard_value(sim, INCOME, YEAR, [1_100.0, 2_100.0])
+    _restore(sim, INCOME, snapshot)
+
+    assert sim.get_holder(INCOME).get_array(YEAR, sim.branch_name).tolist() == [
+        1_000,
+        2_000,
+    ]
+    assert answers(sim) == (None, True)
+    plain = {INCOME: [(YEAR, np.array([1_000.0, 2_000.0], dtype=np.float32))]}
+    assert _guard_snapshot(sim, plain, [INCOME]).origins[INCOME]
 
 
 def test_the_aggregate_guard_matches_a_plain_snapshot_that_holds_a_nan():
