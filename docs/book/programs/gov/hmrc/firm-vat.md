@@ -159,7 +159,7 @@ component sits against our current data:
 | Component | Public source | FRS coverage | Datalab source |
 |-----------|---------------|--------------|----------------|
 | Firm turnover distribution | ONS *UK business: activity, size and location* | sole-trader / partnership profit (not turnover) via FRS self-employment income | HMRC Datalab: anonymised VAT returns |
-| Industry sector | SIC codes from ONS *Inter-Departmental Business Register (IDBR)* | main-job SIC 2007 division only (`sic_industry_division`); no firm-level sector | HMRC Datalab |
+| Industry sector | SIC codes from ONS *Inter-Departmental Business Register (IDBR)* | main- or last-job SIC 2007 division only (`sic_industry_division`); no firm-level sector | HMRC Datalab |
 | VAT registration share | HMRC *VAT statistics* (annual) | not in FRS | HMRC Datalab |
 | Input VAT shares | ONS *Supply and Use tables* | not applicable | HMRC Datalab |
 

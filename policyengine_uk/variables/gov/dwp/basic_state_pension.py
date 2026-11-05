@@ -21,7 +21,12 @@ class basic_state_pension(Variable):
         else:
             data_year = period.start.year
 
-        reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
+        # The age addition is paid by state_pension_age_addition, so split
+        # the reported amount without it.
+        reported = (
+            person("state_pension_reported_excluding_age_addition", data_year)
+            / WEEKS_IN_YEAR
+        )
         pension_type = person("state_pension_type", period)
         # state_pension_reported was observed under the legislated rates, so
         # split it at the baseline's data-year rate, not the reformed one.

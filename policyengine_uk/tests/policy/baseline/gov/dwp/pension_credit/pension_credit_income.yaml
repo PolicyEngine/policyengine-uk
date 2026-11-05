@@ -63,7 +63,13 @@
     pension_credit_deemed_income: 52
     pension_credit_income: 52
 
-- name: Case 4, property income and non-main-home capital count for Pension Credit.
+- name: Case 4, rent from a let property is not Pension Credit income; the property counts through deemed income.
+  # SPC Regs 2002 Sch IV para 18 disregards any actual income from capital, so
+  # the £10,476 of rent does not count. Capital: 455 + 90% of 55,370 (reg.
+  # 19(a)) = 50,288. Deemed income (reg 15(6)): 50,288 - 10,000 = 40,288,
+  # ceil(40,288 / 500) = 81, so £81 a week, 4,212 a year. Guarantee credit =
+  # (238 - 81) x 52 = 8,164. Savings credit is nil, as qualifying income (£81 a
+  # week) falls below the savings credit threshold.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -80,16 +86,12 @@
         other_residential_property_value: 55_370
         savings: 455
   output:
-    # 455 + 90% of 55,370 (SPC Regs 2002 reg. 19(a)). Deemed income is
-    # 81 steps of 500 above 10,000 at 1 a week: 81 * 52 = 4,212.
     pension_credit_assessable_capital: 50_288
     pension_credit_deemed_income: 4_212
-    pension_credit_income: 14_688
-    # Income exceeds the 12,376 guarantee, so no guarantee credit. Savings
-    # credit: 60% of (12,376 - 208.07 * 52) = 933.82, less 40% of
-    # (14,688 - 12,376) = 924.80, leaves 9.02.
-    guarantee_credit: 0
-    pension_credit: 9.016
+    pension_credit_income: 4_212
+    guarantee_credit: 8_164
+    savings_credit: 0
+    pension_credit: 8_164
 
 - name: Case 5, 2026 Pension Credit uses tariff income with the published guarantee rate.
   period: 2026
@@ -182,7 +184,7 @@
     pension_credit_income: 18_514
     pension_credit: 0
 
-- name: Positive property income still counts in Pension Credit income.
+- name: Positive property income does not count in Pension Credit income, nor does its tax.
   period: 2026
   absolute_error_margin: 1
   input:
@@ -200,8 +202,11 @@
         region: WALES
         tenure_type: OWNED_OUTRIGHT
   output:
-    # 20,000 + 3,000, less income tax of 20% of (23,000 - 12,570) = 2,086.
-    pension_credit_income: 20_914
+    # SPC Regs 2002 Sch IV para 18 disregards actual income from capital; the
+    # let property counts through deemed income instead. Only the tax on the
+    # pension is deducted (reg 17(10)(a)): 20,000 - 20% x (20,000 - 12,570) =
+    # 18,514, as without the property.
+    pension_credit_income: 18_514
     pension_credit: 0
 
 # Issue #2255, earnings. A self-employment loss is not set against wages
