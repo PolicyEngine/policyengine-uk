@@ -1,3 +1,10 @@
+## [2.175.6] - 2026-11-05
+
+### Fixed
+
+- Dataset projection grows alcohol and tobacco quantity inputs with the OBR's forecasts of clearances per person, using one index per product group. The model charges later duty rates on those projected quantities.
+
+
 ## [2.175.5] - 2026-11-05
 
 ### Fixed
