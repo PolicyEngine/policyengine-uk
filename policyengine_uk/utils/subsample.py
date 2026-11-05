@@ -11,10 +11,10 @@ gives the sample weights with the same totals as before. policyengine-core's
   read. The UK builder would also rebuild every year from the first one,
   projected forward, rather than keep each year's inputs;
 - it reads each person's household and benefit unit back from the stored
-  ``person_household_id`` and ``person_benunit_id`` inputs, which need not be
-  exact: the UK model has stored them as 32-bit floats, which hold integers
-  exactly only up to 2**24, so larger identifiers would merge households and
-  benefit units (policyengine-uk#2267);
+  ``person_household_id`` and ``person_benunit_id`` inputs, which need not
+  match the populations: ``set_input`` can store any value there, and the
+  model stores them as 32-bit integers, which change identifiers outside
+  that range;
 - it rebuilds a ``baseline`` branch, while a UK simulation's baseline is a
   simulation of its own.
 
@@ -79,6 +79,22 @@ WEIGHT_VARIABLES = frozenset(
 DEFAULT_SEED = "policyengine-uk"
 
 UKDataset = Union[UKSingleYearDataset, UKMultiYearDataset]
+
+# What a simulation records about the data it was built from, which a rebuild
+# of its populations resets and a subsample keeps. Each is about variables,
+# periods or the dataset as a whole, not about records, so it holds for the
+# sample:
+# - where each capital gains input came from, by variable and period, and the
+#   periods a neutralised capital gains input read as its default;
+# - the dataset's ISA income contract for each year, which sets how savings
+#   interest is represented and projected;
+# - the series the dataset's savings income grows by.
+DATASET_RECORDS = (
+    "_cgt_input_provenance",
+    "_cgt_defaulted_periods",
+    "_isa_income_contracts",
+    "_savings_income_projection",
+)
 
 
 def _random_state(seed) -> np.random.RandomState:
@@ -212,11 +228,16 @@ def _subsample_single_year_dataset(
             (household, draws_of(household["household_id"])),
         )
     ]
+    # The year's declarations of how its amounts were measured and grow
+    # describe every row, so they hold for the sample.
     subsample = UKSingleYearDataset(
         person=tables[0],
         benunit=tables[1],
         household=tables[2],
         fiscal_year=dataset.time_period,
+        energy_price_basis=dataset.energy_price_basis,
+        isa_income_contract=copy.deepcopy(dataset.isa_income_contract),
+        savings_income_projection=dataset.savings_income_projection,
     )
     subsample._enum_columns = dict(dataset._enum_columns)
     return subsample
@@ -268,11 +289,8 @@ class _Subsample:
     # model's own value (set_model_value) rather than a supplied one.
     inputs: List[Tuple[str, Period, np.ndarray, bool]]
     dataset: Optional[UKDataset]
-    # Where each capital gains input came from, by variable and period, and
-    # the periods a neutralised input read as its default: about periods,
-    # not records, so they hold for the sample.
-    cgt_provenance: Optional[dict]
-    cgt_defaulted_periods: Optional[set]
+    # The values of DATASET_RECORDS the simulation holds.
+    records: Dict[str, object]
 
 
 def _sorted_positions(kept: np.ndarray, ids: np.ndarray) -> np.ndarray:
@@ -357,12 +375,11 @@ def _plan(
         ),
         inputs=inputs,
         dataset=dataset,
-        cgt_provenance=copy.deepcopy(
-            getattr(simulation, "_cgt_input_provenance", None)
-        ),
-        cgt_defaulted_periods=copy.copy(
-            getattr(simulation, "_cgt_defaulted_periods", None)
-        ),
+        records={
+            name: copy.deepcopy(getattr(simulation, name))
+            for name in DATASET_RECORDS
+            if hasattr(simulation, name)
+        },
     )
 
 
@@ -400,12 +417,10 @@ def _apply(
             set_model_value(simulation, name, period, values)
         else:
             simulation.set_input(name, period, values)
-    # The rebuild recorded each capital gains input as supplied; restore
-    # where each one came from.
-    if subsample.cgt_provenance is not None:
-        simulation._cgt_input_provenance = copy.deepcopy(subsample.cgt_provenance)
-    if subsample.cgt_defaulted_periods is not None:
-        simulation._cgt_defaulted_periods = set(subsample.cgt_defaulted_periods)
+    # The rebuild reset what the simulation recorded about its data, and
+    # recorded each capital gains input as supplied; restore them.
+    for name, value in subsample.records.items():
+        setattr(simulation, name, copy.deepcopy(value))
     simulation.start_instant = start_instant
     # Drop results calculated on the populations the subsample replaced.
     simulation._invalidate_all_caches()

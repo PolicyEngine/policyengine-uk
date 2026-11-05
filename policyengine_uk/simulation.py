@@ -1676,7 +1676,8 @@ class Simulation(CoreSimulation):
         ``set_input``) is kept for the sampled records, for every period, and
         so is every value the model stored as its own (``set_model_value``),
         which stays the model's. So does the record of where each capital
-        gains input came from. Calculated values are dropped and recalculated
+        gains input came from, and what the dataset declared about how its
+        amounts grow (its ISA income contracts and savings income series). Calculated values are dropped and recalculated
         on the sample, and the tracer starts again.
 
         Each supplied weight is replaced so that its total is unchanged in

@@ -79,6 +79,10 @@ from policyengine_core.tracers import FullTracer
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.isa_income import LEGACY_CONTRACT, simulation_contract
+from policyengine_uk.data.savings_income_projection import (
+    OBR_SAVINGS_INCOME_2022_2025,
+)
 from policyengine_uk.utils.subsample import (
     WEIGHT_VARIABLES,
     draw_household_counts,
@@ -622,6 +626,48 @@ def test_where_capital_gains_inputs_came_from_is_kept():
             "application"
         ]
     )
+
+
+def test_how_the_dataset_says_its_amounts_grow_is_kept():
+    """The dataset's ISA income contract, savings income series and energy
+    price basis describe every household, so the sample keeps them."""
+    data = dataset()
+    data = UKSingleYearDataset(
+        person=data.person.assign(
+            savings_interest_income=np.arange(len(data.person)) * 500.0,
+            individual_savings_account_interest_income=100.0,
+        ),
+        benunit=data.benunit,
+        household=data.household,
+        fiscal_year=2025,
+        isa_income_contract=dict(LEGACY_CONTRACT),
+        savings_income_projection=OBR_SAVINGS_INCOME_2022_2025,
+        energy_price_basis={"period_type": "fiscal_year", "period_value": 2025},
+    )
+    full = Microsimulation(dataset=data)
+    simulation = Microsimulation(dataset=data)
+    full_dataset = simulation.dataset
+    years = full_dataset.years
+    contracts = {year: simulation_contract(simulation, year) for year in years}
+
+    simulation.subsample(n=4, seed=0, time_period=2026)
+
+    for each in (simulation, simulation.baseline):
+        assert {year: simulation_contract(each, year) for year in years} == contracts
+        assert each._savings_income_projection == OBR_SAVINGS_INCOME_2022_2025
+    sample = simulation.dataset
+    for year in years:
+        for name in (
+            "isa_income_contract",
+            "savings_income_projection",
+            "energy_price_basis",
+        ):
+            assert getattr(sample[year], name) == getattr(full_dataset[year], name)
+    # Under the legacy contract the model projects savings interest past the
+    # dataset's last year from gross interest.
+    expected = by_id(full, "savings_interest_income", 2035)
+    for record, value in by_id(simulation, "savings_interest_income", 2035).items():
+        assert value == pytest.approx(expected[record])
 
 
 def test_results_match_the_same_households_in_the_full_simulation():
