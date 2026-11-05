@@ -59,9 +59,9 @@ def index_trace(tracer):
     """Index the trace's calculations by (variable, period, branch name).
 
     A formula that ran shows the variables it read as the node's children and
-    the parameters it read as the node's parameters. A variable read again
-    after core calculated it gets a node with neither, and so does a formula
-    that read neither (see calculation_again). The index lists the nodes with
+    the parameters it read as the node's parameters. A read of a variable core
+    already calculated leaves a node with neither, and so does a formula that
+    read neither (see calculation_again). The index lists the nodes with
     either, in the order core calculated them. Also returns the keys of every
     node.
     """
@@ -116,21 +116,23 @@ def calculation_again(sim, variable_name, period, value=None):
     # had run it. None if it does not give value. The trace can show a read of
     # values with no calculation of them over that period:
     # - a formula that reads neither a variable nor a parameter (a constant, a
-    #   variable with no formula) leaves the node a read of a stored value
-    #   leaves;
+    #   variable with no formula) leaves the same node as a read of a stored
+    #   value;
     # - core keeps one value of a stock under its definition period, and of an
     #   eternal variable under eternity, so the calculation that gave it can
     #   sit under any period that reads that value;
     # - calculate_add and calculate_divide store their result with no node of
     #   the variable over that period;
     # - the simulation can calculate values before tracing began.
-    # Core rejects a formula that references randomness when it builds the
-    # variable (check_formula_determinism). This run can still read otherwise
-    # than the calculation that gave the values: what the formula reads can
-    # have changed since, and a formula can ask what the simulation stores (see
-    # the limitations of calculate_dependency_contributions). It runs on a
-    # branch with a tracer of its own, so sim and its trace stay as they were.
-    # An error the formula raises on this run reaches the caller.
+    # Core rejects a formula whose own code references randomness when it builds
+    # the variable (check_formula_determinism), though not the helpers a formula
+    # calls. Equal values don't show equal reads: what the formula reads can
+    # have changed since the calculation that gave them, and a formula can ask
+    # what the simulation stores. This run's nodes go to a tracer of its own, on
+    # a branch the function removes, so sim keeps its trace and values, apart
+    # from what a formula does to its parent or another simulation. The
+    # limitations of calculate_dependency_contributions cover all of these. An
+    # error the formula raises on this run reaches the caller.
     with branch_without(sim, variable_name, period, trace=True) as branch:
         result = branch.calculate(variable_name, period)
         node = next(node for node in branch.tracer.trees if node.name == variable_name)
@@ -193,11 +195,11 @@ def is_period_wrapper(child, node):
 
 
 def calculation_read(child, sim, calculations):
-    # The calculation that stored the value child (a node with no children,
-    # on a branch of sim's chain) read: the latest that gave child's value, on
-    # child's branch or the first of its ancestors with one. Otherwise the
-    # calculation run again, if it gives that value (see calculation_again).
-    # An error otherwise.
+    # Finds the calculation that stored the value child read (child has no
+    # children and sits on a branch of sim's chain): the latest that gave
+    # child's value, on child's branch or the first of its ancestors with one.
+    # Failing that, runs the formula again and takes that run if it gives that
+    # value (see calculation_again). Raises otherwise.
     period = periods.period(child.period)
     chain = branch_chain(sim)
     for branch_name in chain[chain.index(child.branch_name) :]:
@@ -493,11 +495,11 @@ def calculate_with_dependency_zeroed(
     (response_source in utils/labour_supply_responses.py) takes them from the
     branch, not from sim.
 
-    The branch stores the zeros, and a value read that it does not hold, as
-    inputs straight into its holders: Simulation.set_input would also drop
-    the values calculated from the value it replaces, and the recalculation
-    would recalculate those with dependency zero. As inputs, they stay in a
-    branch a formula creates from it and then sets an input on. The branch
+    The function stores the zeros, and a value read the branch does not hold,
+    as inputs straight into the branch's holders. Simulation.set_input would
+    also drop the values calculated from the value it replaces, and the branch
+    would then work those out again with dependency zero. As inputs, they stay
+    in a branch a formula creates from it and then sets an input on. The branch
     stores a read on another branch under that branch's name, so the branch
     of that name the formula of variable_name creates from the new branch
     reads it: the value variable_name read there, from the trace (or from
@@ -580,15 +582,17 @@ def calculate_dependency_contributions(
     The variables variable_name reads directly in its calculation over year
     that gave the values sim holds, the periods it reads them over and the
     branches it reads them on, come from sim's trace, so sim needs
-    trace=True. A float one's contribution is the mean of variable_name minus
-    variable_name recalculated with that variable zero wherever it read it,
-    and every other variable read held (see calculate_with_dependency_zeroed),
-    after mapping to map_to and selecting filter if given. So where a target
-    only adds and subtracts float variables it reads, the trace shows those
-    reads and the target's values stay finite, the contributions sum to its
-    mean, unless top_n drops some. Other variables contribute zero where the
-    target's values stay finite, and a formula that read no variables, or a
-    neutralized variable, has no contributions. Apart from what its own
+    trace=True. For each float one, the function recalculates variable_name
+    with that variable zero wherever it read it and every other variable read
+    held (see calculate_with_dependency_zeroed). Its contribution is the mean
+    of variable_name minus that recalculation, after mapping to map_to and
+    selecting filter if given. The function skips a variable whose name
+    contains weight. So where a target only adds and subtracts float variables
+    it reads, the trace shows those reads and the target's values stay finite,
+    the contributions sum to its mean, unless the function skips one or top_n
+    drops some. Other variables contribute zero where the target's values stay
+    finite, and a calculation that read no variables, or a neutralized
+    variable, has no contributions. Apart from what its own
     calculation of variable_name over year stores or drops in sim, as any
     Simulation.calculate does, sim's values stay as they were. The tax-benefit
     system needs parameters, as every PE-UK system has: the recalculation runs
@@ -621,14 +625,19 @@ def calculate_dependency_contributions(
       in sim only if that name is free on the recalculation's branch too,
       which holds no branches. Where sim held a branch by that name, the
       formula took another in sim, the recalculation does not hold what the
-      formula read on it, and the contributions change.
+      formula read on it, and the contributions change. A formula that names
+      its own branch dependency-contribution, as the function names its
+      branch, can show reads there as reads on sim's own branch, or raise
+      core's CycleError if it calculates itself there. No PE-UK formula does.
     - Of the calculations that gave the values sim holds, the latest gives
       the reads. Where calculations with other reads gave equal values,
       that need not be the calculation the values came from: a branch keeps
       the values its parent held when the parent made it, and the parent
       can calculate equal values from other reads later. A reform can also
       replace a formula with a constant equal to what it gave, which leaves
-      no calculation in the index.
+      no calculation in the index. Where the function runs a formula again,
+      equal values don't show equal reads either: what the formula reads can
+      have changed since the calculation that gave them.
     - The function runs formulas again, on branches of its own. A formula that
       writes to its parent simulation (sim, on those branches) or to an object
       outside the simulation writes there again, so sim can change. PE-UK's
@@ -655,9 +664,12 @@ def calculate_dependency_contributions(
     - A target with an infinite or NaN value can have contributions that
       aren't finite: subtracting infinity from itself gives NaN, also for a
       variable that otherwise contributes zero. uc_benefit_cap holds infinity
-      for an exempt household.
-    - A bool or enum target that reads a variable raises TypeError, since the
-      function subtracts its values.
+      for an exempt household. Zeroing a variable a formula divides by can
+      give infinity or NaN too (equiv_household_net_income divides by
+      household_equivalisation_bhc).
+    - The function subtracts a target's values for each variable it doesn't
+      skip, so a bool or enum target raises TypeError there, unless an error
+      above comes first.
     """
     original_values = sim.calculate(variable_name, year)
 

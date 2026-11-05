@@ -192,12 +192,11 @@ def supplied_by(population, variable_name: str, period: Period) -> bool:
 
 
 def stored_as_input(population, variable_name: str, period: Period) -> bool:
-    """Whether the value stored for ``variable_name`` and ``period``, on this
-    branch or one it was made from, was set as an input: supplied, or the
-    model's own (``set_model_value``). A value the engine carried over from
-    an earlier period, or cached after a calculation, is not, and nor is a
-    model value that stands for a calculation (``record_model_value`` with
-    ``calculated=True``).
+    """Whether a caller or the model (``set_model_value``) set the value stored
+    for ``variable_name`` and ``period`` as an input, on this branch or an
+    ancestor. A value the engine carried over from an earlier period, or cached
+    after a calculation, doesn't count, and nor does a model value that stands
+    for a calculation (``record_model_value`` with ``calculated=True``).
 
     The holder answers from the input record of the simulation bound to it,
     which also tells a tier's input from a cache in the other tier.

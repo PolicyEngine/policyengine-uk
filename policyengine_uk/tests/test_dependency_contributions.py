@@ -6,19 +6,20 @@ year with that dependency zero wherever the target read it (each period, on
 each branch) and every other variable the target read held at the value it
 read. The trace shows which variables the target read, over which periods and
 on which branch, in the latest calculation that gave the value the simulation
-holds. A dependency already zero wherever the target read it contributes zero,
-also to a formula that asks supplied_input or stored_as_input about what it
-read. A formula that read no variables has no contributions, and a value a
-formula reads with no node in the trace (through supplied_input, say) gets none.
-Where no calculation in the trace gave the value (a stock over a period of
-another unit, or a value calculated before tracing began), the reads come from
-running the formula again, if it gives that value. Two cases always raise: a target set as
-an input (which reads nothing), unless the system neutralizes it, and values
-neither the trace nor the formula gives. Two raise where a float dependency
-needs a recalculation: a target that reads its own value within the year
-(recalculating it over the year replaces that value), and a read on a branch
-of a subset of households (the recalculation cannot hold it). A formula that
-refuses a zero raises its own error, with the dependency it zeroed.
+holds. Where the target's values stay finite, a dependency already zero
+wherever the target read it contributes zero, also to a formula that asks
+supplied_input or stored_as_input about what it read. A calculation that read
+no variables has no contributions, and a value a formula reads with no node in
+the trace (through supplied_input, say) gets none. Where no calculation in the
+trace gave the value (a stock over a period of another unit, or a value
+calculated before tracing began), the reads come from running the formula
+again, if it gives that value. The function raises for a target set as an
+input (which reads nothing), unless the system neutralizes it, and for values
+neither the trace nor the formula gives. Where a float dependency needs a
+recalculation, it also raises for a target that reads its own value within the
+year (recalculating it over the year replaces that value) and for a read on a
+branch of a subset of households (the recalculation cannot hold it). A formula
+that refuses a zero raises its own error, with the dependency it zeroed.
 For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
@@ -40,10 +41,10 @@ For any household drawn below:
    from read. A formula that asks what the simulation stores can read otherwise
    (test_a_formula_that_asks_what_the_simulation_stores).
 
-Monthly variables are the case that broke: restoring a monthly dependency over
-a year raised "Inconsistent input", because the months already held the zeros
-as inputs, which did not add up to the annual value. Comparisons allow float32
-rounding: the model stores values as float32.
+The old helper raised "Inconsistent input" when it restored a monthly dependency
+over a year: the months already held the zeros as inputs, which did not add up
+to the annual value. Comparisons allow float32 rounding: the model stores values
+as float32.
 """
 
 import numpy as np
@@ -1054,9 +1055,14 @@ def test_a_target_that_reads_no_variables():
     assert contributions.empty
 
 
-def test_an_enum_target_matches_the_calculation_a_formula_asked_for():
+def test_an_enum_target_matches_the_calculation_a_formula_asked_for(monkeypatch):
     # A formula gets an enum encoded, and Simulation.calculate decodes it for
     # its caller, so the trace's node and the caller's value read differently.
+    # They match by name, so the trace answers and the formula doesn't run again.
+    def no_run(*args):
+        raise AssertionError("ran the formula again")
+
+    monkeypatch.setattr("policyengine_uk.utils.dependencies.calculation_again", no_run)
     sim = Simulation(situation=make_situation(2026, [(40, 0.0, 0.0)], []), trace=True)
     sim.calculate("uc_standard_allowance", 2026)
     value = sim.calculate("uc_standard_allowance_claimant_type", 2026)
@@ -2226,6 +2232,54 @@ def test_an_infinite_target_gives_contributions_that_are_not_finite():
         "is_uc_benefit_cap_exempt",
     }
     assert contributions.isna().all()
+
+
+class core_weight_share(CoreVariable):
+    label = "Core weight share"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return 1.0
+
+
+class core_leaf_and_weight(CoreVariable):
+    label = "Core leaf and weight"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+    adds = ["core_leaf", "core_weight_share"]
+
+
+class core_has_weight(CoreVariable):
+    label = "Core has weight"
+    value_type = bool
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        return person("core_weight_share", period) > 0
+
+
+def test_a_name_containing_weight_gets_no_contribution():
+    # The function skips such a name, as main does, so the contributions of a
+    # target that adds one don't sum to its mean.
+    sim = core_toy_simulation(core_leaf, core_weight_share, core_leaf_and_weight)
+    assert sim.calculate("core_leaf_and_weight", 2026) == 11
+
+    assert calculate_dependency_contributions(
+        sim, "core_leaf_and_weight", 2026
+    ).to_dict() == {"core_leaf": 10}
+
+
+def test_a_bool_target_that_reads_only_a_name_containing_weight():
+    # The function subtracts a target's values only for a variable it keeps, so
+    # this bool target raises no TypeError.
+    sim = core_toy_simulation(core_weight_share, core_has_weight)
+    assert sim.calculate("core_has_weight", 2026)
+
+    assert calculate_dependency_contributions(sim, "core_has_weight", 2026).empty
 
 
 class core_raises(CoreVariable):
