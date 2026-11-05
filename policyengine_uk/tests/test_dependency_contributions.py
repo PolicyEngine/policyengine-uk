@@ -15,7 +15,7 @@ does not give. Two raise where a float dependency needs a recalculation: a
 target that reads its own value within the year (recalculating it over the
 year replaces that value), and a read on a branch of a subset of households
 (the recalculation cannot hold it). A formula that refuses a zero raises its
-own error.
+own error, with the dependency it zeroed.
 For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
@@ -1065,9 +1065,9 @@ def test_an_enum_target_matches_the_calculation_a_formula_asked_for():
     [
         # birth_instant rejects an age of zero with the date of birth the real
         # age gave, which the recalculation holds.
-        ("state_pension_age", "Set age to the age on 6 October"),
+        ("state_pension_age", "'age' zero .*Set age to the age on 6 October"),
         # No category fits no bedrooms.
-        ("LHA_category", "Invalid value"),
+        ("LHA_category", "'LHA_allowed_bedrooms' zero .*Invalid value"),
     ],
 )
 def test_a_formula_that_refuses_a_zero_raises_its_own_error(target, message):
