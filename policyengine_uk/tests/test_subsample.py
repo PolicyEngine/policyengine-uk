@@ -14,9 +14,12 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    float32 precision, and so is the total of every other supplied weight over
    its own entity.
 3. Quantized weights: with ``quantize_weights`` (the default), a household's
-   weight is a whole multiple of total / ``n``, and the multiples sum to ``n``.
+   weight is its number of draws times the year's total over the draws of
+   households with a positive weight that year: a whole multiple of
+   total / ``n`` in the sampling year, and in any year where every drawn
+   household has a positive weight, with the multiples summing to ``n``.
    Without it, a household's weight is proportional to its old weight times a
-   whole number of draws.
+   whole number of draws. Either way a zero weight stays zero, in every year.
 4. Links: a kept household or benefit unit has exactly the people it had, a
    kept person keeps their household and benefit unit, and no other record is
    kept. This holds for identifiers that 32-bit floats cannot tell apart, and
@@ -48,6 +51,10 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    sample and closes on the old weight as the sample grows.
 10. Trace and inputs: the tracer starts again, and a supplied input stored on
     disk is kept, not a value calculated later and cached over it in memory.
+11. Model values and origins: a value the model stored as its own
+    (``set_model_value``, as the Universal Credit health element reform does
+    for every simulation) stays the model's, not supplied, and the record of
+    where each capital gains input came from is unchanged.
 
 The properties are generated for datasets of one year, which the model
 projects, and of several years whose weights change differently from
@@ -67,10 +74,15 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.data_storage import OnDiskStorage
 from policyengine_core.periods import period as period_
+from policyengine_core.reforms import Reform
 from policyengine_core.tracers import FullTracer
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.isa_income import LEGACY_CONTRACT, simulation_contract
+from policyengine_uk.data.savings_income_projection import (
+    OBR_SAVINGS_INCOME_2022_2025,
+)
 from policyengine_uk.utils.subsample import (
     WEIGHT_VARIABLES,
     draw_household_counts,
@@ -78,7 +90,10 @@ from policyengine_uk.utils.subsample import (
     subsample_dataset,
 )
 from policyengine_uk.utils.supplied_inputs import (
+    is_model_value,
+    set_model_value,
     stored_supplied_value,
+    supplied_input,
     supplied_input_arrays,
 )
 
@@ -472,6 +487,209 @@ def test_a_trace_starts_again_on_the_sample():
     assert len(flat["household_net_income<2025, (default)>"]["value"]) == 1
 
 
+def test_a_model_value_stays_the_models():
+    """Formulas ask whether a value was supplied (``supplied_input``). A value
+    the model stored as its own must not read as supplied after the rebuild,
+    while a supplied one still does."""
+    simulation = Microsimulation(dataset=dataset())
+    benunits = ids(simulation, "benunit")
+    model = np.arange(1.0, len(benunits) + 1) * 100
+    set_model_value(simulation, "uc_LCWRA_element", 2026, model)
+    simulation.set_input("uc_carer_element", 2026, np.full(len(benunits), 7.0))
+    model_by_benunit = dict(zip(benunits, model))
+    # The Universal Credit health element reform stores the model's own
+    # values for other years in every simulation.
+    model_periods = {
+        str(period)
+        for name, period, values in supplied_input_arrays(simulation)
+        if is_model_value(simulation, name, period, values)
+    }
+    assert {"2026", "2027"} <= model_periods
+
+    simulation.subsample(n=3, seed=1)
+
+    benunit = simulation.populations["benunit"]
+    kept = ids(simulation, "benunit")
+    assert supplied_input(benunit, "uc_LCWRA_element", period_(2026)) is None
+    assert by_id(simulation, "uc_LCWRA_element", 2026) == {
+        unit: model_by_benunit[unit] for unit in kept
+    }
+    assert supplied_input(benunit, "uc_carer_element", period_(2026)).tolist() == (
+        [7.0] * len(kept)
+    )
+    for held in (simulation, simulation.baseline):
+        assert {
+            str(period)
+            for name, period, values in supplied_input_arrays(held)
+            if is_model_value(held, name, period, values)
+        } >= model_periods - {"2026"}
+
+
+@pytest.mark.parametrize("model", [False, True], ids=["supplied", "model"])
+@pytest.mark.xfail(
+    strict=True,
+    raises=AssertionError,
+    reason="needs policyengine-core holder resync",
+)
+def test_neutralized_inputs_and_model_values_survive_subsampling(model):
+    """Neutralisation hides stored inputs without discarding them or their owner."""
+    data = dataset([(100.0, [1]), (100.0, [1])])
+    data.person["employment_income"] = 30_000.0
+    simulation = Microsimulation(dataset=data)
+    name = "adjusted_net_income"
+    period = period_(2025)
+    original_variable = simulation.tax_benefit_system.get_variable(name).__class__
+    original_values = np.array([10_000.0, 11_000.0])
+    if model:
+        set_model_value(simulation, name, period, original_values)
+    else:
+        simulation.set_input(name, period, original_values)
+    original_by_person = dict(zip(ids(simulation, "person"), original_values))
+
+    class NeutralizeIncome(Reform):
+        def apply(self):
+            self.neutralize_variable(name)
+
+    class RestoreIncome(Reform):
+        def apply(self):
+            self.replace_variable(original_variable)
+
+    simulation.apply_reform(NeutralizeIncome)
+    expected_results = {
+        variable: by_id(simulation, variable, period)
+        for variable in ("net_income", "income_tax")
+    }
+    if not model:
+        assert all(
+            value == 0
+            for result in expected_results.values()
+            for value in result.values()
+        )
+
+    simulation.subsample(n=1, seed=0, time_period=2025)
+
+    kept = ids(simulation, "person")
+    expected_input = [original_by_person[person] for person in kept]
+    assert (name, str(period)) in supplied(simulation)
+    stored = stored_supplied_value(
+        simulation.get_holder(name), period, simulation.branch_name
+    )
+    np.testing.assert_array_equal(stored, expected_input)
+    assert is_model_value(simulation, name, period, stored) is model
+    assert simulation.tax_benefit_system.get_variable(name).is_neutralized
+    np.testing.assert_array_equal(values(simulation, name, period), np.zeros(len(kept)))
+    person = simulation.populations["person"]
+    if model:
+        assert supplied_input(person, name, period) is None
+    else:
+        np.testing.assert_array_equal(
+            supplied_input(person, name, period), np.zeros(len(kept))
+        )
+    for variable, expected in expected_results.items():
+        assert by_id(simulation, variable, period) == {
+            person: expected[person] for person in kept
+        }
+
+    simulation.apply_reform(RestoreIncome)
+
+    np.testing.assert_array_equal(values(simulation, name, period), expected_input)
+    assert is_model_value(simulation, name, period, np.asarray(expected_input)) is model
+    if model:
+        assert supplied_input(person, name, period) is None
+    else:
+        np.testing.assert_array_equal(
+            supplied_input(person, name, period), expected_input
+        )
+
+
+def test_where_capital_gains_inputs_came_from_is_kept():
+    data = dataset()
+    data.person["capital_gains"] = np.arange(len(data.person)) * 1_000.0
+    simulation = Microsimulation(dataset=data)
+    full = simulation.dataset
+    before = simulation.capital_gains_projection_metadata["application"]
+    statuses = {record["status"] for record in before["by_period"].values()}
+    assert statuses == {"supplied", "projected"}
+
+    simulation.subsample(n=3, seed=1)
+
+    assert simulation.capital_gains_projection_metadata["application"] == before
+    assert (
+        simulation.dataset._cgt_extension_provenance == full._cgt_extension_provenance
+    )
+    # Differential: a simulation built from the subsampled dataset reports
+    # the same origins as one built from the full dataset.
+    rebuilt = Microsimulation(dataset=simulation.dataset)
+    assert (
+        rebuilt.capital_gains_projection_metadata["application"]
+        == Microsimulation(dataset=full).capital_gains_projection_metadata[
+            "application"
+        ]
+    )
+
+
+def test_a_neutralised_capital_gains_input_still_reads_as_its_default():
+    data = dataset()
+    data.person["capital_gains"] = np.arange(len(data.person)) * 1_000.0
+    simulation = Microsimulation(dataset=data)
+
+    class NeutraliseGains(Reform):
+        def apply(self):
+            self.neutralize_variable("capital_gains_before_response")
+
+    simulation.apply_reform(NeutraliseGains)
+    simulation.calculate("capital_gains_before_response", 2026)
+    before = simulation.capital_gains_projection_metadata["application"]
+    by_variable = before["by_variable"]["capital_gains_before_response"]
+    assert by_variable["2026"]["status"] == "default"
+
+    simulation.subsample(n=3, seed=1)
+
+    assert simulation.capital_gains_projection_metadata["application"] == before
+
+
+def test_how_the_dataset_says_its_amounts_grow_is_kept():
+    """The dataset's ISA income contract, savings income series and energy
+    price basis describe every household, so the sample keeps them."""
+    data = dataset()
+    data = UKSingleYearDataset(
+        person=data.person.assign(
+            savings_interest_income=np.arange(len(data.person)) * 500.0,
+            individual_savings_account_interest_income=100.0,
+        ),
+        benunit=data.benunit,
+        household=data.household,
+        fiscal_year=2025,
+        isa_income_contract=dict(LEGACY_CONTRACT),
+        savings_income_projection=OBR_SAVINGS_INCOME_2022_2025,
+        energy_price_basis={"period_type": "fiscal_year", "period_value": 2025},
+    )
+    full = Microsimulation(dataset=data)
+    simulation = Microsimulation(dataset=data)
+    full_dataset = simulation.dataset
+    years = full_dataset.years
+    contracts = {year: simulation_contract(simulation, year) for year in years}
+
+    simulation.subsample(n=4, seed=0, time_period=2026)
+
+    for each in (simulation, simulation.baseline):
+        assert {year: simulation_contract(each, year) for year in years} == contracts
+        assert each._savings_income_projection == OBR_SAVINGS_INCOME_2022_2025
+    sample = simulation.dataset
+    for year in years:
+        for name in (
+            "isa_income_contract",
+            "savings_income_projection",
+            "energy_price_basis",
+        ):
+            assert getattr(sample[year], name) == getattr(full_dataset[year], name)
+    # Under the legacy contract the model projects savings interest past the
+    # dataset's last year from gross interest.
+    expected = by_id(full, "savings_interest_income", 2035)
+    for record, value in by_id(simulation, "savings_interest_income", 2035).items():
+        assert value == pytest.approx(expected[record])
+
+
 def test_results_match_the_same_households_in_the_full_simulation():
     """Subsampling changes which households are held and their weights,
     not what the model calculates for a household."""
@@ -860,19 +1078,40 @@ def test_a_total_that_cannot_be_kept_names_the_weight():
     assert ids(simulation, "household") == households
 
 
-def test_unquantized_weights_need_a_sampled_record_with_weight():
+@pytest.mark.parametrize("quantize", [True, False])
+def test_a_weight_held_only_by_records_not_drawn_is_refused(quantize):
     """The third household holds all of the original weight and is never
-    drawn, so scaling the old weights cannot keep that total; counting draws
-    can."""
+    drawn, and the drawn ones stand for no one, so no sample keeps that
+    total."""
     data = dataset([(100.0, [1]), (200.0, [2]), (0.0, [1])])
     data.household["original_weight"] = [0.0, 0.0, 9.0]
     simulation = Microsimulation(dataset=data)
 
     with pytest.raises(ValueError, match="original_weight for 2025.*no weight"):
-        simulation.subsample(n=2, quantize_weights=False)
+        simulation.subsample(n=2, quantize_weights=quantize)
 
-    simulation.subsample(n=2)
-    assert values(simulation, "original_weight", 2025).sum() == pytest.approx(9.0)
+
+def test_a_zero_weight_stays_zero_in_every_year():
+    """A household drawn by its positive weight in one year keeps a zero
+    weight in a year where it has one, and the year's total goes to the
+    drawn households that stand for someone that year."""
+    years = []
+    for year, weights in ((2025, [100.0, 200.0, 300.0]), (2026, [0.0, 200.0, 300.0])):
+        years.append(dataset([(weight, [1]) for weight in weights], year=year))
+    simulation = Microsimulation(dataset=UKMultiYearDataset(datasets=years))
+
+    simulation.subsample(n=6, seed=0, time_period=2025)
+
+    first = FIRST_HOUSEHOLD_ID
+    kept = ids(simulation, "household")
+    assert first in kept
+    weights_2026 = weights_by_id(simulation, 2026)
+    assert weights_2026[first] == 0
+    assert sum(weights_2026.values()) == pytest.approx(500.0)
+    assert sum(weights_by_id(simulation, 2025).values()) == pytest.approx(600.0)
+    assert rescale_weights(np.array([0.0, 100, 100]), np.array([1, 1, 0])).tolist() == (
+        [0.0, 200.0, 0.0]
+    )
 
 
 # Properties of the draw and the weights.
@@ -946,7 +1185,7 @@ def test_a_second_weight_keeps_its_own_total(weights, counts, quantize):
             st.lists(st.integers(0, 5), min_size=len(weights), max_size=len(weights))
         )
     )
-    drawn_weight = (counts if quantize else weights * counts).sum()
+    drawn_weight = (counts * (weights > 0) if quantize else weights * counts).sum()
     if weights.sum() > 0 and drawn_weight == 0:
         with pytest.raises(ValueError, match="no weight"):
             rescale_weights(weights, counts, quantize)

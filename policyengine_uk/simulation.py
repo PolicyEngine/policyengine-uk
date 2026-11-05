@@ -82,7 +82,6 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
-from policyengine_uk.utils.subsample import subsample_simulation
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
@@ -90,6 +89,7 @@ from policyengine_uk.utils.measurement_branches import (
     drop_calculated_years,
     retained_input_variables,
 )
+from policyengine_uk.utils.subsample import subsample_simulation
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -1673,15 +1673,20 @@ class Simulation(CoreSimulation):
         first given weights are used instead.
 
         Every value the simulation was given (from its dataset or through
-        ``set_input``) is kept for the sampled records, for every period.
-        Calculated values are dropped and recalculated on the sample, and the
-        tracer starts again. Each supplied weight is replaced so that its
-        total is unchanged in every period: a household's new weight is
-        proportional to the number of times it was drawn, and also to its old
-        weight without ``quantize_weights``. With ``quantize_weights``, a
-        household's new weight in ``time_period``, averaged over draws, is
-        its old one; in another period that holds only if the household's
-        share of the total weight is the same there.
+        ``set_input``) is kept for the sampled records, for every period, and
+        so is every value the model stored as its own (``set_model_value``),
+        which stays the model's. So does the record of where each capital
+        gains input came from, and what the dataset declared about how its
+        amounts grow (its ISA income contracts and savings income series). Calculated values are dropped and recalculated
+        on the sample, and the tracer starts again.
+
+        Each supplied weight is replaced so that its total is unchanged in
+        every period: a household's new weight is proportional to the number
+        of times it was drawn, and also to its old weight without
+        ``quantize_weights``. A zero weight stays zero. With
+        ``quantize_weights``, a household's new weight in ``time_period``,
+        averaged over draws, is its old one; in another period that holds
+        only if the household's share of the total weight is the same there.
 
         ``baseline`` is replaced with a copy subsampled to the same
         households, which keeps its own policy and inputs. The baseline the

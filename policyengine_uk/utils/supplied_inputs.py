@@ -41,7 +41,8 @@ it), when ``delete_arrays`` removes it, and when a rebuild installs
 populations that do not hold it, and a clone or branch gets its own copy of
 the record.
 
-``supplied_input_arrays`` answers for every variable.
+``supplied_input_arrays`` answers for every variable. It includes values
+``set_model_value`` stored, which ``is_model_value`` tells apart.
 """
 
 from typing import List, Optional, Tuple
@@ -322,6 +323,15 @@ def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
     return written is not None and np.array_equal(written, value)
+
+
+def is_model_value(simulation, variable_name: str, period: Period, value) -> bool:
+    """Whether ``value``, stored for ``variable_name`` and ``period`` on this
+    simulation's branch, is the model's own value (``set_model_value``)
+    rather than a supplied one."""
+    return _is_model_value(
+        simulation, (variable_name, simulation.branch_name, period), value
+    )
 
 
 def set_model_value(simulation, variable_name: str, period, value) -> None:

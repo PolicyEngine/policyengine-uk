@@ -11,10 +11,10 @@ gives the sample weights with the same totals as before. policyengine-core's
   read. The UK builder would also rebuild every year from the first one,
   projected forward, rather than keep each year's inputs;
 - it reads each person's household and benefit unit back from the stored
-  ``person_household_id`` and ``person_benunit_id`` inputs, which need not be
-  exact: the UK model has stored them as 32-bit floats, which hold integers
-  exactly only up to 2**24, so larger identifiers would merge households and
-  benefit units (policyengine-uk#2267);
+  ``person_household_id`` and ``person_benunit_id`` inputs, which need not
+  match the populations: ``set_input`` can store any value there, and the
+  model stores them as 32-bit integers, which change identifiers outside
+  that range;
 - it rebuilds a ``baseline`` branch, while a UK simulation's baseline is a
   simulation of its own.
 
@@ -23,6 +23,7 @@ simulation's populations, whose identifiers and memberships are exact, and
 subsample the baseline and the dataset with the same draw.
 """
 
+import copy
 import hashlib
 import operator
 from dataclasses import dataclass
@@ -48,14 +49,21 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.supplied_inputs import supplied_input_arrays
+from policyengine_uk.utils.supplied_inputs import (
+    is_model_value,
+    set_model_value,
+    supplied_input_arrays,
+)
 
 if TYPE_CHECKING:
     from policyengine_uk.simulation import Simulation
 
 # Variables that count how many units of the population a record stands for.
 # A subsample rescales each one that is supplied as an input, so that its
-# total over its own entity is unchanged.
+# total over its own entity is unchanged. Each is rescaled on its own, so a
+# person weight supplied alongside household weights need not equal the new
+# weight of the person's household, as the model's person_weight formula
+# makes it; the datasets supply neither person_weight nor benunit_weight.
 WEIGHT_VARIABLES = frozenset(
     {
         "household_weight",
@@ -71,6 +79,22 @@ WEIGHT_VARIABLES = frozenset(
 DEFAULT_SEED = "policyengine-uk"
 
 UKDataset = Union[UKSingleYearDataset, UKMultiYearDataset]
+
+# What a simulation records about the data it was built from, which a rebuild
+# of its populations resets and a subsample keeps. Each is about variables,
+# periods or the dataset as a whole, not about records, so it holds for the
+# sample:
+# - where each capital gains input came from, by variable and period, and the
+#   periods a neutralised capital gains input read as its default;
+# - the dataset's ISA income contract for each year, which sets how savings
+#   interest is represented and projected;
+# - the series the dataset's savings income grows by.
+DATASET_RECORDS = (
+    "_cgt_input_provenance",
+    "_cgt_defaulted_periods",
+    "_isa_income_contracts",
+    "_savings_income_projection",
+)
 
 
 def _random_state(seed) -> np.random.RandomState:
@@ -126,7 +150,10 @@ def rescale_weights(
 
     A drawn record's new weight is proportional to the number of times its
     household was drawn (``counts``), and also to its old weight when
-    ``quantize_weights`` is false. A record that was not drawn gets zero.
+    ``quantize_weights`` is false. A record that was not drawn gets zero, and
+    so does a record whose weight is zero: it stands for no one, which a
+    subsample keeps. (A household drawn by its weight in one year can have a
+    zero weight in another, and a person or benefit unit weight can be zero.)
     """
     weights = np.asarray(weights, dtype=float)
     total = weights.sum()
@@ -136,12 +163,14 @@ def rescale_weights(
         raise ValueError("the weights include negative values")
     if total == 0:
         return np.zeros_like(weights)
-    drawn = counts.astype(float) if quantize_weights else weights * counts
+    drawn = (
+        (counts * (weights > 0)).astype(float) if quantize_weights else weights * counts
+    )
     drawn_total = drawn.sum()
     if drawn_total == 0:
         raise ValueError(
-            "the sampled records have no weight. Use quantize_weights=True or "
-            "a different sample"
+            "the sampled records have no weight. Draw a different sample, or "
+            "sample by this period's weights"
         )
     return drawn * (total / drawn_total)
 
@@ -199,11 +228,16 @@ def _subsample_single_year_dataset(
             (household, draws_of(household["household_id"])),
         )
     ]
+    # The year's declarations of how its amounts were measured and grow
+    # describe every row, so they hold for the sample.
     subsample = UKSingleYearDataset(
         person=tables[0],
         benunit=tables[1],
         household=tables[2],
         fiscal_year=dataset.time_period,
+        energy_price_basis=dataset.energy_price_basis,
+        isa_income_contract=copy.deepcopy(dataset.isa_income_contract),
+        savings_income_projection=dataset.savings_income_projection,
     )
     subsample._enum_columns = dict(dataset._enum_columns)
     return subsample
@@ -224,7 +258,7 @@ def subsample_dataset(
         quantize_weights: As for ``Simulation.subsample``.
     """
     if isinstance(dataset, UKMultiYearDataset):
-        return UKMultiYearDataset(
+        subsample = UKMultiYearDataset(
             datasets=[
                 _subsample_single_year_dataset(
                     dataset[year], household_ids, counts, quantize_weights
@@ -232,6 +266,13 @@ def subsample_dataset(
                 for year in dataset.years
             ]
         )
+        # Which capital gains inputs the loader projected, by variable and
+        # year, which a simulation built from the dataset reports.
+        if hasattr(dataset, "_cgt_extension_provenance"):
+            subsample._cgt_extension_provenance = copy.deepcopy(
+                dataset._cgt_extension_provenance
+            )
+        return subsample
     return _subsample_single_year_dataset(
         dataset, household_ids, counts, quantize_weights
     )
@@ -244,9 +285,12 @@ class _Subsample:
     simulation: "Simulation"
     # The arguments of Simulation.build_from_ids.
     ids: Tuple[np.ndarray, ...]
-    # Each supplied input, cut down to the sample.
-    inputs: List[Tuple[str, Period, np.ndarray]]
+    # Each supplied input, cut down to the sample, and whether it is the
+    # model's own value (set_model_value) rather than a supplied one.
+    inputs: List[Tuple[str, Period, np.ndarray, bool]]
     dataset: Optional[UKDataset]
+    # The values of DATASET_RECORDS the simulation holds.
+    records: Dict[str, object]
 
 
 def _sorted_positions(kept: np.ndarray, ids: np.ndarray) -> np.ndarray:
@@ -302,11 +346,12 @@ def _plan(
     inputs = []
     for name, period, values in supplied_input_arrays(simulation):
         entity_key = simulation.tax_benefit_system.get_variable(name).entity.key
+        model = is_model_value(simulation, name, period, values)
         if name in WEIGHT_VARIABLES:
             values = _rescaled(
                 name, period, values, entity_counts[entity_key], quantize_weights
             )
-        inputs.append((name, period, values[positions[entity_key]]))
+        inputs.append((name, period, values[positions[entity_key]], model))
 
     # A simulation and its baseline usually share one dataset object, so
     # subsample each dataset once and share the result in the same way.
@@ -330,6 +375,11 @@ def _plan(
         ),
         inputs=inputs,
         dataset=dataset,
+        records={
+            name: copy.deepcopy(getattr(simulation, name))
+            for name in DATASET_RECORDS
+            if hasattr(simulation, name)
+        },
     )
 
 
@@ -350,8 +400,27 @@ def _apply(
     # reported for the sample: a flat trace keeps a variable's first value.
     simulation.tracer = tracer
     simulation.build_from_ids(*subsample.ids)
-    for name, period, values in subsample.inputs:
-        simulation.set_input(name, period, values)
+    for name, period, values, model in subsample.inputs:
+        holder = simulation.get_holder(name)
+        if holder.variable.is_neutralized:
+            # These are canonical stored inputs, not new inputs. set_input
+            # rejects them while neutralised, but they must survive so the
+            # input record and a later restoration still see them.
+            holder._set(period, values, simulation.branch_name, is_input=True)
+            if model:
+                simulation._model_values[(name, simulation.branch_name, period)] = (
+                    np.array(values)
+                )
+        elif model:
+            # Keep it the model's: formulas that ask whether a value was
+            # supplied would otherwise read it as the user's.
+            set_model_value(simulation, name, period, values)
+        else:
+            simulation.set_input(name, period, values)
+    # The rebuild reset what the simulation recorded about its data, and
+    # recorded each capital gains input as supplied; restore them.
+    for name, value in subsample.records.items():
+        setattr(simulation, name, copy.deepcopy(value))
     simulation.start_instant = start_instant
     # Drop results calculated on the populations the subsample replaced.
     simulation._invalidate_all_caches()
