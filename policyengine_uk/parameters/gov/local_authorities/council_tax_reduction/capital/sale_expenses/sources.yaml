@@ -10,10 +10,11 @@ description: >
   sale (DMG 29623, on the identically worded Income Support rule). Under each
   scheme's rule for capital outside the United Kingdom, councils take the same
   10%, where there would be expenses attributable to sale, and any encumbrance
-  secured on the capital off its value under either limb: each rule puts both
-  deductions after its two limbs, and SSI 2021/249 applies regulation 70(1) to
-  the value regulation 70(2) gives. The data hold no secured debt for overseas
-  or other property, so the formula takes only the 10% off them.
+  secured on the capital off its value under either limb, because each rule's
+  closing words follow both of its limbs; under SSI 2021/249, councils take
+  regulation 70(1)'s deductions off the value regulation 70(2) gives. The data
+  hold no secured debt for overseas or other property, so the formula takes
+  only the 10% off them.
 metadata:
   label: Council tax reduction capital sources with sale expenses
   period: year
