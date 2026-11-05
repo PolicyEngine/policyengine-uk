@@ -457,3 +457,66 @@ def test_annual_gb_cap_exemption_does_not_backdate_before_commencement(year, exp
     )
     assert values[UC_SPECIFIED].tolist() == [expected]
     assert values[HB_SPECIFIED].tolist() == [expected]
+
+
+@pytest.mark.parametrize("abolish_council_tax", [False, True])
+def test_ga_remains_a_unique_ordered_and_uprated_budget_term(abolish_council_tax):
+    """Guardian cash belongs to both additive benefit-uprating groups."""
+    from policyengine_uk.programs import (
+        budget_programs,
+        budget_variables,
+        budget_variables_in_effect,
+        uprated_benefit_variables,
+    )
+
+    terms = [p for p in budget_programs() if p.variable == "guardians_allowance"]
+    assert len(terms) == 1
+    term = terms[0]
+    assert term.budget == "benefit"
+    assert term.uprating == ("all", "non_sp")
+    assert term.dropped_when is None
+    order = budget_variables("benefit")
+    assert order.count("guardians_allowance") == 1
+    assert order.index("guardians_allowance") == order.index("child_benefit") + 1
+    raw = yaml.safe_load((MODEL / "programs.yaml").read_text())
+    assert raw["budget_order"]["benefit"] == order
+
+    simulation = Simulation(
+        situation=family([guardian(), child()]),
+        reform={"gov.contrib.abolish_council_tax": abolish_council_tax},
+    )
+    active = budget_variables_in_effect(
+        "benefit", simulation.tax_benefit_system.parameters(str(YEAR))
+    )
+    assert active.count("guardians_allowance") == 1
+    for rate in ("all", "non_sp"):
+        assert uprated_benefit_variables(active, rate).count("guardians_allowance") == 1
+
+
+def test_ga_cash_is_counted_once_with_additive_budget_uprating():
+    """The total adds £500 cash, £25 general and £50 non-pension uprating."""
+    values = []
+    for payment in (0, 500):
+        simulation = Simulation(
+            situation=family(
+                [
+                    guardian(
+                        age=70,
+                        private_pension_income=40_000,
+                        miscellaneous_income=137,
+                        guardians_allowance=payment,
+                    ),
+                    child(),
+                ],
+                benunit={"would_claim_uc": False},
+            ),
+            reform={
+                "gov.contrib.benefit_uprating.all": 0.05,
+                "gov.contrib.benefit_uprating.non_sp": 0.10,
+            },
+        )
+        values.append(
+            np.asarray(simulation.calculate("household_benefits", YEAR)).copy()
+        )
+    # Both selectors scale the original cash: 500 + 0.05 * 500 + 0.10 * 500.
+    np.testing.assert_allclose(values[1] - values[0], [575], rtol=0, atol=0.01)

@@ -1,97 +1,36 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.programs import (
+    budget_variables,
+    budget_variables_in_effect,
+    uprated_benefit_variables,
+)
 
-
-HOUSEHOLD_BENEFIT_VARIABLES = [
-    "child_benefit",
-    "guardians_allowance",
-    "council_tax_benefit",
-    "esa_income",
-    "esa_contrib",
-    "housing_benefit",
-    "income_support",
-    "jsa_income",
-    "jsa_contrib",
-    "pension_credit",
-    "universal_credit",
-    "working_tax_credit",
-    "child_tax_credit",
-    "attendance_allowance",
-    "afcs",
-    "bsp",
-    "war_widows_pension",
-    "widowed_parents_allowance",
-    "carers_allowance",
-    "dla",
-    "iidb",
-    "incapacity_benefit",
-    "pip",
-    "sda",
-    "state_pension",
-    "maternity_allowance",
-    "statutory_sick_pay",
-    "statutory_maternity_pay",
-    "statutory_paternity_pay",
-    "ssmg",
-    "basic_income",
-    "epg_subsidy",
-    "cost_of_living_support_payment",
-    "energy_bills_rebate",
-    "household_energy_payment",
-    "winter_fuel_allowance",
-    "pawhp",
-    "tax_free_childcare",
-    "extended_childcare_entitlement",
-    "universal_childcare_entitlement",
-    "targeted_childcare_entitlement",
-    "wales_childcare_offer",
-    "care_to_learn",
-    "childcare_grant",
-    "parents_learning_allowance",
-    "adult_dependants_grant",
-    "travel_grant",
-    "disabled_students_allowance",
-    "bursary_fund_16_to_19",
-    "nhs_spending",
-    "dfe_education_spending",
-    "dft_subsidy_spending",
-    "healthy_start_vouchers",
-    "two_child_limit_payment",
-    "scottish_child_payment",
-    "carer_support_payment",
-    "scottish_carer_supplement",
-    "disability_basic_income",
-]
+# The terms flagged `budget: benefit` in programs.yaml, in its budget_order.
+HOUSEHOLD_BENEFIT_VARIABLES = budget_variables("benefit")
 
 
 class household_benefits(Variable):
     value_type = float
     entity = Household
     label = "household benefits"
-    documentation = "Total value of benefits received by household"
+    documentation = (
+        "Total value of the benefits the household receives, less any a "
+        "reform removes, such as Council Tax Reduction when a reform "
+        "abolishes council tax, plus each benefit uprating rate a reform sets "
+        "times the benefits that rate covers."
+    )
     definition_period = YEAR
     unit = GBP
 
     def formula(household, period, parameters):
-        contrib = parameters(period).gov.contrib
-        uprating = contrib.benefit_uprating
-        benefits = HOUSEHOLD_BENEFIT_VARIABLES
-        if contrib.abolish_council_tax:
-            benefits = [
-                benefit for benefit in benefits if benefit != "council_tax_benefit"
-            ]
+        p = parameters(period)
+        uprating = p.gov.contrib.benefit_uprating
+        benefits = budget_variables_in_effect("benefit", p)
         general_benefits = add(
-            household,
-            period,
-            [benefit for benefit in benefits if benefit not in ["basic_income"]],
+            household, period, uprated_benefit_variables(benefits, "all")
         )
         non_sp_benefits = add(
-            household,
-            period,
-            [
-                benefit
-                for benefit in benefits
-                if benefit not in ["state_pension", "basic_income"]
-            ],
+            household, period, uprated_benefit_variables(benefits, "non_sp")
         )
         return (
             add(household, period, benefits)

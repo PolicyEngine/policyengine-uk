@@ -50,9 +50,13 @@
 #     kind: component (summed or read inside `head`), measure_within (an
 #     analytical decomposition already inside `head` through its inputs),
 #     composite (spans several heads), duplicate (same value as `head`),
-#     baseline_measure, assessment (a tax amount worked out for a means test,
-#     a ceiling or a record, not a payment), change_measure (a wage change
-#     that already sits inside the incomes a head taxes).
+#     baseline_measure, assessment (an amount worked out for a means test, a
+#     benefit's eligibility or taper, a tax base, election, ceiling or record,
+#     not a payment), change_measure (a wage change that already sits inside
+#     the incomes a head taxes).
+#   spending_exclusions[]: components and assessments within spending heads,
+#     with the same variable, kind, head and note fields as exclusions. These
+#     are not additional payments alongside the named spending head.
 #   model_double_counts[]: known violations still in the model: a variable a
 #     total lists although the head variable `contained_in` already adds it.
 #     None since the #2159 fix gave corporate_sdlt its own head.
@@ -723,6 +727,10 @@ exclusions:
   - {variable: other_tax_credits, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: property_finance_cost_relief, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
   - {variable: pension_tax_allowance, kind: component, head: income_tax, note: "A tax reduction, subtracted inside income_tax."}
+  - {variable: miscellaneous_income_trading_allowance_deduction, kind: assessment, head: income_tax, note: "Trading allowance relief on a tax base, deducted inside taxable_miscellaneous_income; not a separate tax reduction or payment."}
+  - {variable: uses_trading_allowance, kind: assessment, head: income_tax, note: "The election between trading allowance relief and ordinary treatment, not a monetary amount."}
+  - {variable: miscellaneous_income_before_trading_allowance, kind: assessment, head: income_tax, note: "The gross miscellaneous income base used by income tax and means tests, not an additional receipt."}
+  - {variable: income_not_otherwise_charged, kind: assessment, head: income_tax, note: "The part of miscellaneous_income eligible for trading allowance relief, already within that income base."}
   - {variable: basic_rate_earned_income_tax, kind: assessment, head: income_tax, note: "Earned income tax by band; earned_income_tax does not read it."}
   - {variable: higher_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
   - {variable: add_rate_earned_income_tax, kind: assessment, head: income_tax, note: "As above."}
@@ -766,12 +774,18 @@ exclusions:
   - {variable: pool_betting_duty, kind: component, head: gambling_duty}
   - {variable: remote_gaming_duty, kind: component, head: gambling_duty}
   - {variable: machine_games_duty, kind: component, head: gambling_duty}
+  - {variable: machine_games_standard_rate_higher_stake_net_takings, kind: component, head: gambling_duty, note: "A subset of the standard-rate machine-games tax base, read inside machine_games_duty; not additional net takings or a separate receipt."}
   - {variable: gaming_duty, kind: component, head: gambling_duty}
   - {variable: bingo_duty, kind: component, head: gambling_duty}
   - {variable: lottery_duty, kind: component, head: gambling_duty}
   - {variable: car_vehicle_excise_duty, kind: component, head: vehicle_excise_duty}
   # Council tax net of a benefit
   - {variable: council_tax_less_benefit, kind: composite, spans: [council_tax], note: "Council tax net of Council Tax Reduction (the OBR's basis). The totals count gross council tax and credit the reduction as spending, so adding this would count council tax twice."}
+
+spending_exclusions:
+  - {variable: carers_allowance_weekly_earnings_above_limit, kind: assessment, head: carers_allowance, note: "Weekly earnings excess used for eligibility and the earnings taper, not an additional benefit payment."}
+  - {variable: ebr_alternative_fuel_payment, kind: component, head: energy_bills_rebate, note: "The annual Alternative Fuel Payment already included in energy_bills_rebate."}
+  - {variable: monthly_ebr_alternative_fuel_payment, kind: component, head: energy_bills_rebate, note: "Monthly payments summed into ebr_alternative_fuel_payment, already included in energy_bills_rebate."}
 
 model_double_counts: []
 

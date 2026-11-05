@@ -44,7 +44,14 @@ Invariants:
    claimant's child either way (the any-age gap).
    Before/after families share one Simulation to avoid repeated
    model construction, but occupy distinct households and benefit units.
-5. Supplied claimant/partner role vectors, valid or not, are returned
+5. UC reg 5(1)(a) and SPC reg 4A(1)(a): the year counts in the route when it
+   starts (6 April) before the 1 September following the 16th birthday, for
+   every date of birth checked against calendar arithmetic. Within ages 16 to
+   19 and without own-right benefits, that route alone makes a UC or PC
+   qualifying young person whatever the education inputs; without it the
+   education route is unchanged. Own-right benefits exclude both routes. UC
+   and PC agree below 19, where only UC's terminal date differs.
+6. Supplied claimant/partner role vectors, valid or not, are returned
    unchanged on any benefit unit. Widening an unflagged member's gap below
    the claimant, with the claimant, flags, other members and HBAI adulthood
    fixed, never makes a member the presumption excludes the partner.
@@ -55,8 +62,10 @@ Invariants:
 Scope: these are tests of the ENCODED statutory limbs, not full entitlement.
 Education status proxies full-time non-advanced study: hours, employment
 contracts, approved providers and interruptions are unobserved. CB/CTC leaver
-extensions are omitted, as is UC/PC's unconditional age-16-to-next-September
-route. UC's terminal date is an input; PC's September terminal date is absent.
+extensions are omitted. UC/PC's route to the 1 September after the 16th
+birthday, which has no education condition, counts for a year that starts
+before that date (invariant 5). UC's terminal date is an input; PC's September
+terminal date is absent.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
@@ -70,11 +79,12 @@ Statutory texts and HBAI glossary were fetched on 2026-09-28; URLs accompany
 the independent scalar references below. No network or survey data is used.
 """
 
+from datetime import date, timedelta
 from itertools import product
 from unittest.mock import patch
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -190,8 +200,17 @@ def statutory_child(age):
     return age < 16
 
 
+def in_route_to_first_september_after_16th_birthday(p):
+    # UC reg 5(1)(a) and SPC reg 4A(1)(a) have no education condition. With no
+    # date of birth, a whole age on 6 October places the birthday on 6 April,
+    # so the year (from 6 April) starts before the 1 September following the
+    # 16th birthday exactly when that age is under 17.
+    return p.get("is_before_first_september_following_16th_birthday", p["age"] < 17)
+
+
 def qualifying_young_person(p, programme):
-    # Education/training routes only (see omissions in module docstring):
+    # CB and CTC: education/training routes only (see omissions in module
+    # docstring). UC and PC: also the route with no education condition.
     # CB: https://www.legislation.gov.uk/uksi/2006/223/regulation/3
     # CB own-benefit restriction: https://www.legislation.gov.uk/uksi/2006/223/regulation/8
     # UC: https://www.legislation.gov.uk/uksi/2013/376/regulation/5
@@ -199,6 +218,11 @@ def qualifying_young_person(p, programme):
     # PC: https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A
     if not 16 <= p["age"] < 20 or p["receives_benefits_in_own_right"]:
         return False
+    if programme in {
+        "universal_credit",
+        "pension_credit",
+    } and in_route_to_first_september_after_16th_birthday(p):
+        return True
     if not (non_advanced_education(p) or p["is_in_approved_training"]):
         return False
     if (
@@ -993,6 +1017,111 @@ def test_unflagged_adult_pairs_follow_the_20_year_gap():
     expected = [c for a, b in pairs for c in (True, a - b < 20)]
     np.testing.assert_array_equal(claimants, expected)
     assert expected == [c for f in families for c in claimants_or_partners(f)]
+
+
+ROUTE = "is_before_first_september_following_16th_birthday"
+
+
+def first_september_following_16th_birthday(born):
+    # Calendar arithmetic, independent of the model's month grid: a 16th
+    # birthday before 1 September is followed by 1 September of the same year,
+    # and one on or after it by the next year's. A 29 February birthday is
+    # before 1 September whichever day it is kept on in other years.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/5
+    # https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A
+    return date(born.year + 16 + ((born.month, born.day) >= (9, 1)), 9, 1)
+
+
+def age_on_6_october(born, year):
+    return year - born.year - ((10, 6) < (born.month, born.day))
+
+
+def assert_route_matches_calendar(births, year):
+    families = [
+        [person(age_on_6_october(born, year), date_of_birth=int(f"{born:%Y%m%d}"))]
+        for born in births
+    ]
+    # The fiscal year starts on 6 April.
+    expected = [
+        date(year, 4, 6) < first_september_following_16th_birthday(born)
+        for born in births
+    ]
+    assert_values(simulate(families, year), ROUTE, expected, year)
+
+
+def test_route_year_starts_before_first_september_for_every_birthday():
+    # Every date of birth from 2008 to 2011: ages 14 to 18 on 6 October 2026,
+    # including the 31 August / 1 September and 6 April / 6 October edges.
+    start, end = date(2008, 1, 1), date(2012, 1, 1)
+    births = [start + timedelta(days=d) for d in range((end - start).days)]
+    assert_route_matches_calendar(births, YEAR)
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(st.dates(date(1990, 1, 1), date(2031, 12, 31)), min_size=1, max_size=30),
+    st.integers(2013, 2031),
+)
+def test_route_matches_calendar_arithmetic_in_any_year(births, year):
+    births = [born for born in births if age_on_6_october(born, year) >= 0]
+    assume(births)
+    assert_route_matches_calendar(births, year)
+
+
+def test_route_alone_qualifies_and_leaves_the_education_route_unchanged():
+    # Ages 14 to 21, every education value, own-right benefits, approved
+    # training, apprenticeship and looked-after status, with the route input
+    # off then on (innermost, so each subject's two rows are adjacent).
+    rows = list(
+        product(
+            range(14, 22),
+            EDUCATIONS,
+            product((False, True), repeat=4),
+            (False, True),
+        )
+    )
+    families = [
+        [
+            person(40, is_parent=True, is_benunit_head=True, **{ROUTE: False}),
+            person(
+                age,
+                current_education=education,
+                receives_benefits_in_own_right=own_benefits,
+                is_in_approved_training=training,
+                is_apprentice=apprentice,
+                is_looked_after_by_local_authority=looked_after,
+                **{ROUTE: route},
+            ),
+        ]
+        for age, education, flags, route in rows
+        for own_benefits, training, apprentice, looked_after in [flags]
+    ]
+    # The oracle: the route, else the education route as before.
+    assert_definitions(families)
+    sim = simulate(families)
+    age = np.array([row[0] for row in rows[::2]])
+    own_benefits = np.array([row[2][0] for row in rows[::2]])
+    qyp = {
+        programme: sim.calculate(f"is_qualifying_young_person_for_{programme}", YEAR)[
+            1::2
+        ].reshape(-1, 2)
+        for programme in ("universal_credit", "pension_credit")
+    }
+    for programme, status in qyp.items():
+        # Switching the route on never removes the status.
+        assert (status[:, 1] >= status[:, 0]).all(), programme
+        # With the route on, ages 16 to 19 without own-right benefits qualify,
+        # whatever the education inputs, and nobody else does.
+        np.testing.assert_array_equal(
+            status[:, 1], (16 <= age) & (age < 20) & ~own_benefits, err_msg=programme
+        )
+        # Own-right benefits exclude both routes.
+        assert not status[own_benefits].any(), programme
+    # Below 19 the two programmes' definitions are the same.
+    below_19 = age < 19
+    np.testing.assert_array_equal(
+        qyp["universal_credit"][below_19], qyp["pension_credit"][below_19]
+    )
 
 
 def test_wide_gap_couples_by_head_order_and_with_supplied_roles():
