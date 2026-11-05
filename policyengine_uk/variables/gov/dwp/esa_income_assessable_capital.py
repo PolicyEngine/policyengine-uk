@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    counted_person_sources,
+    pooled_person_capital,
+)
 
 
 class esa_income_assessable_capital(Variable):
@@ -6,17 +10,17 @@ class esa_income_assessable_capital(Variable):
     entity = BenUnit
     label = "Assessable capital for income-related ESA"
     documentation = (
-        "Household capital apportioned to the benefit unit for the income-related "
-        "ESA capital test. Because the dataset only stores these stocks at "
-        "household level, the model allocates full household capital to any "
-        "benunit with a reported income-related ESA award and only falls back to "
-        "a claimant-and-partner share when nobody in the household is on that "
-        "reported claim path. This allocation is a PolicyEngine convention; "
-        "the data cannot identify ownership of capital. "
-        "Person-level sources, such as a Lifetime ISA, count only for the "
-        "holder's own benunit, and only when the holder is its claimant or "
-        "partner (is_claimant_or_partner): a dependant's capital is not the "
-        "claimant's."
+        "Household capital apportioned to the benefit unit for the income-related ESA "
+        "capital test. For capital whose owner the data do not identify, the model "
+        "allocates the full household remainder to any benunit with a reported "
+        "income-related ESA award and falls back to a claimant-and-partner share when "
+        "nobody in the household reports such an award. No regulation sets that "
+        "allocation; it approximates ownership the data don't record. The formula "
+        "counts person-level sources, such as a Lifetime ISA and the cash and stocks "
+        "and shares ISAs, only in the holder's own benunit and only for its claimant "
+        "or partner (is_claimant_or_partner), and excludes dependants' capital. It "
+        "subtracts the ISA balances from the household capital before allocating the "
+        "remainder."
     )
     definition_period = YEAR
     unit = GBP
@@ -25,12 +29,13 @@ class esa_income_assessable_capital(Variable):
 
     def formula(benunit, period, parameters):
         ESA = parameters(period).gov.dwp.ESA.income
-        sources = ESA.capital.sources
         person = benunit.members
         claiming_esa_income = add(benunit, period, ["esa_income_reported"]) > 0
 
         household_capital = sum(
-            benunit.max(person.household(source, period)) for source in sources
+            benunit.max(person.household(source, period))
+            - pooled_person_capital(benunit, source, period, ESA.capital)
+            for source in ESA.capital.sources
         )
         # Regulation 83(2) excludes children's and young persons' capital.
         # The claimant/partner weights approximate otherwise unobserved ownership.
@@ -51,7 +56,7 @@ class esa_income_assessable_capital(Variable):
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
-            for source in ESA.capital.person_sources
+            for source in counted_person_sources(ESA.capital)
         )
         household_share = where(
             household_reporting_claimants > 0, claiming_proxy, fallback_proxy
