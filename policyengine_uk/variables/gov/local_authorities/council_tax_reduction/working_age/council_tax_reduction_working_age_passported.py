@@ -9,9 +9,10 @@ class council_tax_reduction_working_age_passported(Variable):
         "Whether the applicant or partner is on Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
         "Allowance and has no award of Universal Credit "
-        "(council_tax_reduction_universal_credit_award). In Scotland such an applicant "
-        "gets the maximum reduction (SSI 2021/249 reg 13(11)); in Wales the "
-        "whole of their income and capital is disregarded (WSI 2013/3029 "
+        "(council_tax_reduction_universal_credit_award). In Scotland such an "
+        "applicant gets the maximum reduction (SSI 2021/249 reg 13(11)); in "
+        "Wales the scheme disregards the whole of their income and capital "
+        "(WSI 2013/3029 "
         "Sch 9 para 8, Sch 10 para 8)."
     )
     definition_period = YEAR

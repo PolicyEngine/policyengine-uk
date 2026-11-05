@@ -15,8 +15,9 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
     documentation = (
         "Annual relevant childcare charges deducted from a working-age "
         "applicant's income in Scotland or Wales. Without Universal Credit, "
-        "the charges are capped at a weekly maximum where a lone parent, or "
-        "both members of a couple, are in remunerative work. Wales deducts "
+        "the formula deducts the charges, up to a weekly maximum, where a "
+        "lone parent, or both members of a couple, work 16 hours or more a "
+        "week (remunerative work). Wales deducts "
         "them from earnings after the earnings disregards (never below zero); "
         "Scotland deducts them from earnings plus unearned income "
         "(council_tax_reduction_working_age_applicable_income). A Scottish "
