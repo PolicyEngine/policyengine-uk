@@ -1,3 +1,10 @@
+## [2.175.5] - 2026-11-05
+
+### Fixed
+
+- Add pensioner child amounts and family premiums to Council Tax Reduction in England, Scotland and Wales, and count a Scottish pensioner's whole capital over £10,000 in tariff income, as SSI 2012/319 reg 27(2) sets no ceiling.
+
+
 ## [2.175.4] - 2026-11-05
 
 ### Changed
