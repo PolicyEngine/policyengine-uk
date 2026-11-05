@@ -470,3 +470,31 @@ def test_no_take_up_call_passes_a_rate():
         if isinstance(node, ast.Name) and node.id == "_GRADUATE_LOAN_TAKE_UP"
     ]
     assert len(readers) == 2  # the assignment and the fallback's comparison
+
+
+@settings(PROPERTY)
+@given(
+    legacy=st.lists(st.floats(0, 1, exclude_max=True), min_size=1, max_size=30),
+    share_index=st.integers(0, len(SHARE_GRID) - 1),
+)
+def test_encoded_draws_keep_every_grid_decision_in_each_consumer(legacy, share_index):
+    """Representation: a reference-encoded draw lies in [0, 1), survives a
+    float32 round trip, sits within 2^-24 of its legacy draw, and gives the
+    legacy decision in both consumers at every covered threshold."""
+    legacy = np.asarray(legacy, dtype=np.float64)
+    for thresholds, consumer in (
+        (SHARE_GRID, new_claimants_by_draw),
+        (PIP_THRESHOLDS, phased_out_by_draw),
+    ):
+        stored, feasible, _ = encode(legacy, thresholds)
+        assert feasible.all()
+        as_loaded = np.asarray(stored, dtype=np.float32)
+        assert ((as_loaded >= 0) & (as_loaded < 1)).all()
+        np.testing.assert_array_equal(
+            as_loaded.astype(np.float64).astype(np.float32), as_loaded
+        )
+        assert (np.abs(as_loaded.astype(np.float64) - legacy) < 2.0**-24).all()
+        threshold = thresholds[share_index % len(thresholds)]
+        np.testing.assert_array_equal(
+            consumer(as_loaded, threshold), legacy < threshold
+        )
