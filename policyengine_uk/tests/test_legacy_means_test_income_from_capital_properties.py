@@ -50,8 +50,10 @@ Invariants, for any generated population of families:
    capital there. Each test floors the sum of the deduction over the members
    it counts at nil.
 5. Tariff: the council tax reduction tariff income that replaces the actual
-   income from capital is never negative, never more than the yield at the
-   16,000 capital limit (40 steps of 250 at 4.35 a month, 2,088 a year), nil
+   income from capital is never negative, never more than the Universal
+   Credit yield at the 16,000 capital limit (40 steps of 250 at 4.35 a month,
+   2,088 a year), which exceeds the uncapped Scottish pensioner tariff on the
+   generated savings of up to 20,000 (20 steps of 500 at 1 a week, 1,040), nil
    outside the national schemes (Northern Ireland, and English people under
    pension age, whose local schemes set their own), and never falls when
    savings rise while the family stays on the same route (pensioner, UC
