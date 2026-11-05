@@ -1202,3 +1202,93 @@ def test_guard_profile_native_backend_exports_calls_and_releases_ownership(
     )
     assert "PRIVATE" not in stream.getvalue()
     assert stream.flushes > 0
+
+
+@pytest.mark.parametrize("window", ["first_ordinary_year", "first_counted_once_probe"])
+def test_profile_exports_three_native_hotspot_frames_without_model_imports(
+    tool, monkeypatch, tmp_path, window
+):
+    from types import FunctionType
+
+    infra = _infra(tool)
+    specifications = (
+        (
+            "/PRIVATE/policyengine_uk/utils/geography.py",
+            "country_from_region",
+            "policyengine_uk.utils.geography.py:country_from_region",
+        ),
+        (
+            "/PRIVATE/policyengine_core/enums/enum.py",
+            "Enum.encode",
+            "policyengine_core.enums.enum.py:Enum.encode",
+        ),
+        (
+            "/PRIVATE/numpy/lib/_arraysetops_impl.py",
+            "isin",
+            "numpy.lib._arraysetops_impl.py:isin",
+        ),
+    )
+    observed = [
+        FunctionType(_profile_code(filename, qualname), {})
+        for filename, qualname, _ in specifications
+    ]
+    rejected = [
+        FunctionType(_profile_code(filename, "PRIVATE_FUNCTION"), {})
+        for filename, _, _ in specifications
+    ]
+    rejected.extend(
+        FunctionType(
+            _profile_code(filename.replace("/PRIVATE/", "/PRIVATE/not"), name), {}
+        )
+        for filename, name, _ in specifications
+    )
+    stream = FlushedStream()
+    monkeypatch.setattr(infra.sys, "stderr", stream)
+    previous = sys.getprofile()
+    observer = owned = None
+    backend = infra.FirstYearProfiler._monitoring_backend()
+    try:
+        sys.setprofile(None)
+        observer = infra.FirstYearProfiler(tmp_path, "head", window=window)
+        observer("start", window, year=2026)
+        owned = observer._profile
+        assert owned is not None
+        for calls, function in enumerate(observed, 1):
+            for _ in range(calls):
+                function()
+        for function in rejected:
+            function()
+        observer("stop", window, year=2026, completed=True)
+        assert sys.getprofile() is None
+        assert observer._profile is None
+        if backend is not None:
+            assert backend.get_tool(backend.PROFILER_ID) is None
+    finally:
+        _finish_real_profile(infra, observer, owned, previous)
+
+    record = json.loads((tmp_path / "infra-profile.json").read_text())
+    assert record["status"] == "ok" and record["completed"] is True
+    if window == "first_ordinary_year":
+        assert "window" not in record
+    else:
+        assert record["window"] == window
+    rows = record["functions"]
+    expected = {entry[2]: calls for calls, entry in enumerate(specifications, 1)}
+    assert [row["id"] for row in rows] == sorted(expected)
+    for row in rows:
+        assert set(row) == {
+            "id",
+            "calls",
+            "primitive_calls",
+            "self_seconds",
+            "cumulative_seconds",
+        }
+        assert row["calls"] == row["primitive_calls"] == expected[row["id"]]
+        for key in ("self_seconds", "cumulative_seconds"):
+            assert type(row[key]) in (int, float)
+            assert 0 <= row[key] < float("inf")
+    assert len(rows) <= infra.MAX_ROWS == 50
+    assert len(stream.getvalue().encode("utf-8")) <= infra.MAX_BYTES == 65_536
+    assert "PRIVATE" not in stream.getvalue()
+    assert stream.flushes > 0
+    assert tool.blocked_imports == []

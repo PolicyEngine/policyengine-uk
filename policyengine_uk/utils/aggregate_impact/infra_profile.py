@@ -88,6 +88,21 @@ _ALLOWLIST = (
         )
         for name in ("measure_year", "array", "weighted_total", "baseline_records")
     ),
+    (
+        "policyengine_uk.utils.geography.py:country_from_region",
+        (("policyengine_uk", "utils", "geography.py"),),
+        "country_from_region",
+    ),
+    (
+        "policyengine_core.enums.enum.py:Enum.encode",
+        (("policyengine_core", "enums", "enum.py"),),
+        "Enum.encode",
+    ),
+    (
+        "numpy.lib._arraysetops_impl.py:isin",
+        (("numpy", "lib", "_arraysetops_impl.py"),),
+        "isin",
+    ),
 )
 
 
