@@ -219,10 +219,11 @@ def test_a_value_recorded_as_calculated_is_neither_supplied_nor_an_input():
         assert subset.person is not None
         assert subset.simulation.calculate(name, 2026).tolist() == [2_000]
         assert answers(subset.simulation) == (None, False)
-    # The model's own value counts as an input, though it is not supplied.
+    # The model's own value counts as an input, though no one supplied it.
     set_model_value(sim, name, year, [1_000.0, 2_000.0])
     assert answers(sim) == (None, True)
-    # A value set for the period is supplied, even one equal to the model's.
+    # A value the scenario sets for the period counts as supplied, even one
+    # equal to the model's.
     sim.set_input(name, year, [1_000.0, 2_000.0])
     supplied, stored = answers(sim)
     assert supplied.tolist() == [1_000, 2_000]

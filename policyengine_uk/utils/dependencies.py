@@ -55,10 +55,10 @@ def branch_chain(sim):
 def index_trace(tracer):
     """Index the trace's calculations by (variable, period, branch name).
 
-    A variable read again after it was calculated gets a node without
+    A variable read again after core calculated it gets a node without
     children, so a calculation's node is one with children: the index lists
-    them in the order calculated. Also returns the keys of every node, with
-    children or not.
+    them in the order core calculated them. Also returns the keys of every
+    node, with children or not.
     """
     calculations, keys = {}, set()
     stack = list(reversed(tracer.trees))
@@ -97,7 +97,7 @@ def same_values(a, b):
 def latest_calculation(nodes, value=None):
     # The latest calculation, or with value the latest that gave value, or
     # None if none did. A branch keeps the values its parent held when the
-    # branch was created, so the parent's latest calculation need not be the
+    # parent created it, so the parent's latest calculation need not be the
     # one that gave the branch its value.
     if value is None:
         return nodes[-1]
@@ -108,9 +108,9 @@ def latest_calculation(nodes, value=None):
 
 
 def branches_read_from(branch_name, chain):
-    # A value read on a branch of chain may have been calculated on any
-    # branch after it in chain (an ancestor's); one read on another branch,
-    # on that branch.
+    # The branches that may have calculated a value read on branch_name: for
+    # a branch of chain, that branch or any after it in chain (its
+    # ancestors); for another branch, that branch alone.
     if branch_name in chain:
         return chain[chain.index(branch_name) :]
     return [branch_name]
@@ -153,8 +153,8 @@ def find_calculation(variable_name, period, chain, calculations, keys, value=Non
 def is_period_wrapper(child, node):
     # A variable calculated over a period other than its definition period (a
     # monthly one summed over a year, or a yearly one divided into a month)
-    # has itself as a child on the same branch for each period it is
-    # calculated over.
+    # has itself as a child on the same branch for each period core
+    # calculates it over.
     child_period = periods.period(child.period)
     node_period = periods.period(node.period)
     return (
@@ -190,8 +190,8 @@ def get_dependency_nodes(node, calculations=None, chain=None):
     # wrappers (see is_period_wrapper). A wrapper that read a value already
     # stored has no children of its own, so calculations (from index_trace)
     # gives the calculation that stored it (see calculation_read). The
-    # variable read on another branch is a dependency, as is the variable
-    # read over a period that neither contains nor is contained in its own.
+    # variable read on another branch is a dependency, and so is the variable
+    # read over a period that neither contains its own nor lies within it.
     nodes = []
     for child in node.children:
         if is_period_wrapper(child, node):
@@ -246,8 +246,8 @@ def get_direct_reads(variable_name, sim, period, value=None):
     (sim reads their values as its own), and otherwise the name of the
     branch read.
 
-    Raises ValueError if sim holds variable_name over a period it is
-    defined for within period as an input, which reads nothing, or if no
+    Raises ValueError if sim holds variable_name as an input over one of its
+    definition periods within period, which reads nothing, or if no
     calculation in the trace gave value or the values a calculation of
     variable_name read from storage.
     """
@@ -291,9 +291,10 @@ def value_read(variable, read, period):
 
 
 def definition_periods(variable, read_periods):
-    # The periods variable is defined for that make up each read period, or
-    # that contain it (the year a month of a yearly variable is in). A stock
-    # read over a longer period than its own is its value in the last.
+    # The definition periods of variable that make up each read period, or
+    # that contain it (the year a month of a yearly variable falls in). A
+    # stock read over a longer period than its own takes its value in the
+    # last.
     unit = variable.definition_period
     result = []
     for read_period in read_periods:
@@ -346,16 +347,17 @@ def check_reads_of_itself(variable_name, period, reads):
         if overlaps(period, read_period):
             raise ValueError(
                 f"'{variable_name}' reads its own value over {read_period}, "
-                f"within {period}, so its direct dependencies over {period} "
-                f"cannot be zeroed one at a time. Calculate the contributions "
-                f"over each period it is defined for instead."
+                f"within {period}, and recalculating it over {period} "
+                f"replaces that value, so no recalculation can hold what it "
+                f"read. Calculate the contributions over each of its "
+                f"definition periods instead."
             )
 
 
 def check_entities_read(sim, variable_name, on, name, read):
-    # A value read on another branch is held for the branch of that name
-    # the recalculation makes, and so must have one entry for each entity
-    # in sim. A branch of a subset of households (utils/household_subset.py)
+    # The recalculation holds a value read on another branch for the branch
+    # of that name it makes, so the value needs one entry for each entity in
+    # sim. A branch of a subset of households (utils/household_subset.py)
     # holds fewer, and the trace does not show which: the recalculation's
     # subset then holds the households its values select, which zeroing
     # can change.
@@ -421,14 +423,14 @@ def calculate_with_dependency_zeroed(
 
     reads (by default get_direct_reads(variable_name, sim, year)) gives what
     variable_name read directly, the periods it read each variable over, and
-    the branch it read it on. Wherever variable_name read dependency, its
-    value is zero for each period it is defined for that makes up or
-    contains a period read. Every other variable read keeps the value it
+    the branch it read it on. Wherever variable_name read dependency, the
+    function sets it to zero for each of its definition periods that make up
+    or contain a period read. Every other variable read keeps the value it
     had, so the result is the change from dependency alone.
 
     Runs on a new untraced branch of sim, removed from sim.branches before
     returning: what the branch stores or deletes stays in the branch, so sim
-    is left as it was. The branch has a tax-benefit system of its own, so a
+    stays as it was. The branch has a tax-benefit system of its own, so a
     formula that takes values from the nearest ancestor with the same system
     (response_source in utils/labour_supply_responses.py) takes them from the
     branch, not from sim.
@@ -437,17 +439,17 @@ def calculate_with_dependency_zeroed(
     inputs straight into its holders: Simulation.set_input would also drop
     the values calculated from the value it replaces, and the recalculation
     would recalculate those with dependency zero. As inputs, they stay in a
-    branch a formula creates from it and then sets an input on. A read on
-    another branch is stored under that branch's name, so the branch of that
-    name the formula of variable_name creates from the new branch reads it:
-    the value variable_name read there, from the trace (or from the branch of
-    sim with that name).
+    branch a formula creates from it and then sets an input on. The branch
+    stores a read on another branch under that branch's name, so the branch
+    of that name the formula of variable_name creates from the new branch
+    reads it: the value variable_name read there, from the trace (or from
+    the branch of sim with that name).
 
-    A formula that asks whether a value was supplied (supplied_input and
-    stored_as_input in utils/supplied_inputs.py) gets the answer it got in
-    sim: each value stored that sim calculated, the zeros included, is
-    recorded as a model value that stands for a calculation, and each the
-    model set (set_model_value) as a model value.
+    A formula that asks supplied_input or stored_as_input
+    (utils/supplied_inputs.py) about a value it reads gets the answer it got
+    in sim: the function records each value it stores that sim calculated,
+    the zeros included, as a model value that stands for a calculation, and
+    each value the model set (set_model_value) as a model value.
 
     Raises ValueError, before making the branch, if variable_name read on a
     branch of a subset of households (utils/household_subset.py): the
@@ -520,13 +522,13 @@ def calculate_dependency_contributions(
     that gave the values sim holds, the periods it reads them over and the
     branches it reads them on, come from sim's trace, so sim needs
     trace=True. A float one's contribution is the mean of variable_name minus
-    variable_name recalculated with that variable zero wherever it was read,
+    variable_name recalculated with that variable zero wherever it read it,
     and every other variable read held (see calculate_with_dependency_zeroed),
     after mapping to map_to and selecting filter if given. So for a target
     that adds and subtracts what it reads, the contributions sum to its mean.
     Other variables contribute zero. Apart from what its own calculation of
     variable_name over year stores or drops in sim, as any
-    Simulation.calculate does, sim's values are left as they were. The
+    Simulation.calculate does, sim's values stay as they were. The
     tax-benefit system needs parameters, as every PE-UK system has: the
     recalculation runs on a branch with a clone of it.
 
@@ -538,12 +540,13 @@ def calculate_dependency_contributions(
 
     Limitations:
 
-    - What a formula reads from another simulation (sim.baseline, say) is
-      not in sim's trace, so it gets no contribution and is not held. The
-      recalculation reads it from that simulation afresh, from the values
-      the formula gives it there (relative_income_change sets the earnings
-      it read as inputs on a branch of sim.baseline), and that simulation
-      can calculate and trace more.
+    - What a formula reads from another simulation (sim.baseline, say)
+      isn't in sim's trace, so it gets no contribution and the function
+      doesn't hold it. The recalculation reads it from that simulation
+      afresh, from the values the formula gives it there
+      (relative_income_change sets the earnings it read as inputs on a
+      branch of sim.baseline), and that simulation can calculate and trace
+      more.
     - A formula that names the branch it makes by the first name free on the
       simulation it runs on (marginal_tax_rate, say) takes the name it took
       in sim only if that name is free on the recalculation's branch too,
@@ -553,7 +556,7 @@ def calculate_dependency_contributions(
     - Of the calculations that gave the values sim holds, the latest gives
       the reads. Where calculations with other reads gave equal values,
       that need not be the calculation the values came from: a branch keeps
-      the values its parent held when the branch was made, and the parent
+      the values its parent held when the parent made it, and the parent
       can calculate equal values from other reads later.
     """
     original_values = sim.calculate(variable_name, year)

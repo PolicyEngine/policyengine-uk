@@ -7,12 +7,12 @@ each branch) and every other variable the target read held at the value it
 read. The trace shows which variables the target read, over which periods and
 on which branch, in the latest calculation that gave the value the simulation
 holds. A dependency already zero wherever the target read it contributes zero,
-also to a formula that asks whether a value it read was supplied. Four cases
-raise: a target that reads its own value within the year (recalculating it
-over the year replaces that value), a target set as an input (which reads
-nothing), values no calculation in the trace gave, and a read on a branch of a
-subset of households (the recalculation cannot hold it). For any household
-drawn below:
+also to a formula that asks supplied_input or stored_as_input about what it
+read. Four cases raise: a target that reads its own value within the year
+(recalculating it over the year replaces that value), a target set as an input
+(which reads nothing), values no calculation in the trace gave, and a read on a
+branch of a subset of households (the recalculation cannot hold it). For any
+household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
    from a fresh simulation in which the target's float direct dependencies are
@@ -21,11 +21,11 @@ drawn below:
 2. Adds up: for a target defined only by `adds` and `subtracts` of its direct
    dependencies, the contributions sum to the mean of the target, also when
    one dependency feeds another (pension contributions get tax relief).
-3. Leaves the simulation as it was: every value it stored before the call is
-   stored, unchanged, after it, and nothing is added (no values, no recorded
-   inputs, no branches) apart from what the helper's own calculation of the
-   target stores or drops, which the tests calculate first. So a second call
-   returns the same contributions.
+3. Leaves the simulation as it was: the simulation holds every value it stored
+   before the call, unchanged, after it, and gains nothing (no values, no
+   recorded inputs, no branches) apart from what the helper's own calculation
+   of the target stores or drops, which the tests calculate first. So a second
+   call returns the same contributions.
 4. Non-float dependencies contribute zero.
 
 Monthly variables are the case that broke: zeroing a monthly dependency over a
@@ -274,9 +274,9 @@ def test_the_calculation_over_the_year_asked_for():
 
 
 def test_months_calculated_before_their_year():
-    # Each month is stored before the year is calculated, so the year's trace
-    # node has a child for each month that only read the stored value; the
-    # months' own calculations show what they read.
+    # The simulation stores each month before it calculates the year, so the
+    # year's trace node has a child for each month that only read the stored
+    # value; the months' own calculations show what they read.
     year, adults, child_ages = EARNER_WITH_CHILD
     sim = traced_simulation(year, adults, child_ages, [])
     for month in periods.period(year).get_subperiods(periods.MONTH):
@@ -635,7 +635,7 @@ class toy_carried(Variable):
 
     def formula(person, period, parameters):
         # Last year's value reads this year's toy_annual, so zeroing
-        # toy_annual would change it unless it is held.
+        # toy_annual would change it unless the function holds it.
         if period.start.year <= 2025:
             return 2 * person("toy_annual", period.offset(1))
         return person("toy_annual", period) + person("toy_carried", period.last_year)
@@ -671,18 +671,18 @@ TOY_VARIABLES = [
 ]
 # A target, and the contribution of each variable it reads.
 TOY_CONTRIBUTIONS = [
-    # A yearly variable read over a month: its year is zeroed.
+    # A yearly variable read over a month: the function zeroes its year.
     ("toy_annual_in_january", {"toy_annual": 100}),
     # A monthly flow summed over the year.
     ("toy_monthly_sum", {"toy_monthly": 78}),
     # A monthly stock read over a year: its last month.
     ("toy_stock_at_year", {"toy_stock": 12}),
     ("toy_eternal_at_year", {"toy_eternal": 77}),
-    # toy_double reads toy_annual, but is held at 2,400 when toy_annual is
-    # zeroed.
+    # toy_double reads toy_annual, but the function holds it at 2,400 when it
+    # zeroes toy_annual.
     ("toy_diamond", {"toy_annual": 1_200, "toy_double": 2_400}),
-    # Last year's value (2,400), zeroed where it was read as well as over the
-    # year, and held when toy_annual is zeroed.
+    # Last year's value (2,400): the function zeroes it where the target read
+    # it as well as over the year, and holds it when it zeroes toy_annual.
     ("toy_carried", {"toy_annual": 1_200, "toy_carried": 2_400}),
 ]
 
@@ -725,7 +725,7 @@ def test_a_target_that_reads_its_own_earlier_months(toy_simulation):
         {"toy_monthly": 3, "toy_monthly_total": 8}
     )
     # Over the year each month reads the one before, which recalculating the
-    # year replaces, so that read cannot be held.
+    # year replaces, so no recalculation can hold that read.
     with pytest.raises(ValueError, match="reads its own value"):
         calculate_dependency_contributions(sim, "toy_monthly_total", 2026)
 
@@ -755,8 +755,8 @@ def test_months_inherited_from_the_parent_simulation():
 
 def core_toy_simulation(*variables, cache_blacklist=None):
     system = TaxBenefitSystem([CORE_PERSON])
-    # Without parameters a system cannot be cloned, as a branch with a system
-    # of its own needs.
+    # Core can't clone a system without parameters, and a branch with a
+    # system of its own needs a clone.
     system.parameters = ParameterNode("", data={})
     for variable in variables:
         system.add_variable(variable)
@@ -850,8 +850,8 @@ def test_reads_on_another_branch():
     assert calculate_dependency_contributions(
         sim, "core_from_comparison", 2026
     ).to_dict() == {"core_from_comparison": 10}
-    # core_double, read on the comparison branch too, is held there when
-    # core_leaf is zeroed.
+    # The target reads core_double on the comparison branch too, and the
+    # function holds it there when it zeroes core_leaf.
     assert calculate_dependency_contributions(
         sim, "core_sum_from_comparison", 2026
     ).to_dict() == {"core_leaf": 10, "core_double": 20}
@@ -859,8 +859,9 @@ def test_reads_on_another_branch():
 
 
 def test_an_uncached_read_is_held_at_the_value_it_read():
-    # core_branch_sensitive is not stored, and recalculating it on another
-    # branch gives 20: the trace shows the 10 the target read.
+    # The simulation doesn't store core_branch_sensitive (cache_blacklist),
+    # and recalculating it on another branch gives 20: the trace shows the 10
+    # the target read.
     sim = core_toy_simulation(
         core_leaf,
         core_branch_sensitive,
@@ -917,8 +918,9 @@ def test_the_same_variable_on_another_branch_is_a_dependency():
 
 
 def test_a_year_starting_in_july():
-    # Each variable is held, and zeroed, for the year from July: not for the
-    # calendar year, which a yearly variable stores under another key.
+    # The function holds, and zeroes, each variable for the year from July:
+    # not for the calendar year, which a yearly variable stores under another
+    # key.
     year, adults, child_ages = EARNER_WITH_PENSION
     period = "year:2026-07"
     sim = traced_simulation(year, adults, child_ages, [])
@@ -963,7 +965,7 @@ def test_a_dependency_already_zero_contributes_nothing():
 def test_a_labour_supply_response():
     # response_source sends a branch that shares its parent's tax-benefit
     # system to the parent's response; the new branch has a system of its own,
-    # so the response is recalculated from what it read there.
+    # so it recalculates the response from what it read there.
     year = 2025
     target = "employment_income_behavioral_response"
     scenario = Scenario(
@@ -1274,7 +1276,7 @@ def test_a_core_target_that_reads_no_variables():
 
 
 def test_its_own_value_over_a_year_starting_in_july():
-    # year:2025-07 overlaps 2026 but is stored under another key.
+    # year:2025-07 overlaps 2026, but core stores it under another key.
     sim = core_toy_simulation(core_leaf, core_from_july)
     sim.calculate("core_from_july", 2026)
 
@@ -1389,7 +1391,7 @@ def test_a_read_on_a_subset_of_households_raises():
     # uses_property_allowance compares income tax with and without the
     # allowance on branches of a subset of households (household_subset). The
     # trace does not show which households the subset held, and zeroing a
-    # dependency can change them, so the values read there cannot be held.
+    # dependency can change them, so nothing can hold the values it read there.
     # An employee, and the two landlords test_household_subset.py lists as
     # electing, each in a household of their own.
     year = 2026
@@ -1430,10 +1432,11 @@ def test_a_read_on_a_subset_of_households_raises():
 
 
 def test_reads_a_formula_asks_were_supplied_stay_as_they_were():
-    # person_bus_fare_spending splits local_bus_trips by region unless
-    # bus_in_london_trips or other_local_bus_trips was supplied, which it asks
-    # supplied_input. Neither was: it read both as zero, and zeroing them
-    # leaves supplied_input's answer, and so the spending, as it was.
+    # person_bus_fare_spending splits local_bus_trips by region unless the
+    # situation supplied bus_in_london_trips or other_local_bus_trips, which
+    # it asks supplied_input. This one supplied neither: the formula read both
+    # as zero, and zeroing them leaves supplied_input's answer, and so the
+    # spending, as it was.
     year = 2026
     sim = Simulation(
         situation={
@@ -1458,7 +1461,7 @@ def test_reads_a_formula_asks_were_supplied_stay_as_they_were():
 
     for name in trips:
         assert contributions[name] == 0
-    # With no local bus trips, nothing is spent.
+    # With no local bus trips, the person spends nothing.
     assert contributions["local_bus_trips"] == pytest.approx(
         spending, abs=tolerance(spending)
     )
@@ -1469,10 +1472,10 @@ def test_housing_benefit_reads_its_applicable_income_as_calculated():
     # 2026 has two accommodation-disregard periods (from 5 October). Then
     # housing_benefit_entitlement uses the applicable income it read only
     # where pension-age rules or a passporting benefit keep annual income,
-    # unless the income was set as an input (stored_as_input), when the award
-    # comes from it alone. Neither rule applies here, and the income was
-    # calculated, so zeroing it leaves the award as it was. As an input, the
-    # zero would raise the award to the full rent.
+    # unless a scenario set the income as an input (stored_as_input), when the
+    # award comes from it alone. Neither rule applies here, and the simulation
+    # calculated the income, so zeroing it leaves the award as it was. As an
+    # input, the zero would raise the award to the full rent.
     year = 2026
     income = "housing_benefit_applicable_income"
     sim = Simulation(situation=housing_benefit_situation((year,)), trace=True)

@@ -287,8 +287,8 @@ def record_model_value(
     ``branch_name`` as the model's own value, as ``set_model_value`` does
     for the value it stores. With ``calculated``, record it as a value that
     stands for a calculation (``CalculatedValue``), which ``stored_as_input``
-    does not count as an input. Records nothing if no value is stored
-    there.
+    does not count as an input. Records nothing if the holder stores no
+    value there.
 
     The record lasts only while the value is the one stored, as for
     ``set_model_value``."""
