@@ -595,11 +595,10 @@ def calculate_dependency_contributions(
     variable, has no contributions. The function returns a Series of floats,
     largest first. Where there are no contributions, it returns an empty one,
     which create_waterfall_chart and calculate_dependency_contribution_change
-    accept. Apart from what its own
-    calculation of variable_name over year stores or drops in sim, as any
-    Simulation.calculate does, sim's values stay as they were. The tax-benefit
-    system needs parameters, as every PE-UK system has: the recalculation runs
-    on a branch with a clone of it.
+    accept. Apart from what its own calculation of variable_name over year
+    stores or drops in sim, as any Simulation.calculate does, sim's values
+    stay as they were. The tax-benefit system needs parameters, as every
+    PE-UK system has: the recalculation runs on a branch with a clone of it.
 
     Where no calculation in the trace gave the values sim holds (a stock over
     a period of another unit, or values calculated before tracing began, say),
@@ -726,6 +725,19 @@ def calculate_dependency_contributions(
 def calculate_dependency_contribution_change(
     baseline_sim, reform_sim, variable_name, year, reform_year=None, top_n=5
 ):
+    """Each variable's contributions to variable_name in two simulations.
+
+    The function calls calculate_dependency_contributions for baseline_sim
+    over year, and for reform_sim over reform_year, or over year where
+    reform_year is None. It returns a row for each variable either names,
+    with the baseline and reform contributions and the change (reform minus
+    baseline). The relative_change column divides that change by the
+    baseline's absolute value, or by 1 where the baseline is 0. A variable
+    that one simulation doesn't name gets 0 there, and so does a NaN
+    contribution (from an infinite target, say). top_n keeps the rows with
+    the largest absolute change, and the function sorts the rows by change,
+    largest first.
+    """
     baseline_dependency = calculate_dependency_contributions(
         baseline_sim, variable_name, year
     )
