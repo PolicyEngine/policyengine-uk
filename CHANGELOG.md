@@ -1,3 +1,10 @@
+## [2.175.2] - 2026-11-05
+
+### Fixed
+
+- PolicyEngine now includes the claimant's and partner's Maternity Allowance when it calculates the benefit cap on Universal Credit and Housing Benefit. It leaves a non-dependent adult's allowance out (#2784). Parliament lists the allowance among the welfare benefits whose total the Secretary of State may cap (Welfare Reform Act 2012 s.96(10)(i)).
+
+
 ## [2.175.1] - 2026-11-05
 
 ### Fixed
