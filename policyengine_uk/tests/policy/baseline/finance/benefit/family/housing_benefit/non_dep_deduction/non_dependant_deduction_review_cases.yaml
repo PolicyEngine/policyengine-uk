@@ -1063,17 +1063,16 @@
         country: ENGLAND
         local_authority: MAIDSTONE
   output:
-    # The Universal Credit cap counts 14,000 UC and 5,129.80 child benefit,
-    # 19,129.80, under the 22,020 cap, so UC stays 14,000 (UC reg 81). Joint
-    # gross income is 9,200 wages + 6,000 Maternity Allowance + 14,000 UC +
-    # 5,129.80 child benefit = 660.19 a week: the top bands, 131.45 HB and
-    # 15.95 CTR. Welfare Reform Act 2012 s.96(10)(i) makes Maternity
-    # Allowance a welfare benefit, which the model's cap leaves out (#2784).
-    # Counting it gives 25,129.80, 3,109.80 over the cap, so UC of 10,890.20,
-    # 600.38 a week and the 485 bands: 6,232.20 HB and 691.60 CTR.
-    universal_credit: [0, 14_000]
-    housing_benefit_non_dep_deductions: [6_835.40, 0]
-    council_tax_reduction_non_dep_deductions: [829.40, 0]
+    # The Universal Credit cap counts 14,000 UC, 5,129.80 child benefit and the
+    # partner's 6,000 Maternity Allowance (Welfare Reform Act 2012 s.96(10)(i)):
+    # 25,129.80, which exceeds the 22,020 cap by 3,109.80, so DWP cuts UC to
+    # 10,890.20 (UC reg 81). Joint gross income comes to 9,200 wages + 6,000
+    # Maternity Allowance + 10,890.20 UC + 5,129.80 child benefit = 600.38 a
+    # week: the 485 bands, 119.85 HB and 13.30 CTR a week, so the council
+    # deducts 6,232.20 HB and 691.60 CTR a year.
+    universal_credit: [0, 10_890.20]
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
 
 - name: A self-employment loss does not cancel a non-dependant's gross wages
   period: 2026
