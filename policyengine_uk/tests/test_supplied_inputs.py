@@ -46,6 +46,7 @@ import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.data_storage import OnDiskStorage
+from policyengine_core.enums import Enum
 from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 
@@ -98,22 +99,46 @@ def recorded_input_array(simulation, variable, year):
     return None if value is None else np.asarray(value).tolist()
 
 
+def stored_period(sim, variable, year):
+    """The period a test stores ``variable`` for: ``year``, or its first month
+    for a monthly variable."""
+    definition = sim.tax_benefit_system.get_variable(variable)
+    return period_(f"{year}-01" if definition.definition_period == "month" else year)
+
+
+def value_of_type(sim, variable, number):
+    """A one-person value of ``variable``'s type, built from ``number``: the
+    number itself, True for a boolean, or one of an enum's values."""
+    definition = sim.tax_benefit_system.get_variable(variable)
+    if definition.value_type is Enum:
+        names = [item.name for item in definition.possible_values]
+        return definition.possible_values.encode(
+            np.array([names[int(number) % len(names)]])
+        )
+    if definition.value_type is bool:
+        return np.array([bool(number)])
+    return np.array([number], dtype=definition.dtype)
+
+
 @pytest.mark.parametrize("variable", sorted(SUPPLIED_INPUT_VARIABLES))
 def test_a_value_cached_over_an_input_is_not_supplied(variable):
     sim = single_person()
     holder = sim.get_holder(variable)
     population = holder.population
-    sim.set_input(variable, 2025, [100.0])
-    assert read(population, variable, 2025) == [100.0]
+    period = stored_period(sim, variable, 2025)
+    supplied = value_of_type(sim, variable, 1)
+    cached = value_of_type(sim, variable, 0)
+    sim.set_input(variable, period, supplied)
+    assert supplied_input(population, variable, period).tolist() == supplied.tolist()
 
-    holder.put_in_cache(np.array([999.0]), period_(2025))
+    holder.put_in_cache(cached, period)
 
-    assert holder.get_array(period_(2025)).tolist() == [999.0]
-    assert read(population, variable, 2025) is None
+    assert holder.get_array(period).tolist() == cached.tolist()
+    assert supplied_input(population, variable, period) is None
     assert supplied_input_periods(population, variable) == []
-    assert not holder._stores_user_input(period_(2025), "default")
+    assert not holder._stores_user_input(period, "default")
     if hasattr(sim, "_get_recorded_input_array"):
-        assert recorded_input_array(sim, variable, 2025) is None
+        assert sim._get_recorded_input_array(variable, period) is None
 
 
 def test_other_years_inputs_are_still_supplied():
@@ -229,16 +254,6 @@ def test_a_neutralised_input_reads_as_its_default_only_while_it_is_stored():
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
 
 
-# Every variable in SUPPLIED_INPUT_VARIABLES, with a value for 2025 and 2026.
-SUPPLIED = {
-    "bus_fare_spending": 300.0,
-    "bus_in_london_trips": 40.0,
-    "other_local_bus_trips": 60.0,
-    "local_bus_trips": 110.0,
-    "ni_class_4_losses_brought_forward": 500.0,
-    "ni_class_4_trading_loss": 200.0,
-    "trading_loss": 1_000.0,
-}
 CALCULATED = [
     "household_net_income",
     "income_tax",
@@ -256,32 +271,45 @@ CALCULATED = [
 def assert_supplied(sim, expected):
     for variable in SUPPLIED_INPUT_VARIABLES:
         population = sim.get_variable_population(variable)
-        years = sorted(year for name, year in expected if name == variable)
-        assert supplied_input_periods(population, variable) == [
-            period_(year) for year in years
-        ]
-        for year in years:
-            assert read(population, variable, year) == [expected[variable, year]]
+        stored = sorted(
+            (period for name, period in expected if name == variable),
+            key=lambda period: period.start,
+        )
+        assert supplied_input_periods(population, variable) == stored, variable
+        for period in stored:
+            assert (
+                supplied_input(population, variable, period).tolist()
+                == expected[variable, period]
+            ), (variable, period)
     for variable, branch_name, period in sim._user_input_keys:
         assert sim.get_holder(variable)._stores_user_input(period, branch_name)
 
 
 def test_calculating_leaves_every_supplied_value_supplied():
-    assert set(SUPPLIED) == SUPPLIED_INPUT_VARIABLES
-    sim = single_person(
-        {
-            "self_employment_income": {year: 30_000 for year in range(2024, 2028)},
-            "employment_income": {year: 10_000 for year in range(2024, 2028)},
-        }
-    )
-    expected = {}
+    situation = {
+        "self_employment_income": {year: 30_000 for year in range(2024, 2028)},
+        "employment_income": {year: 10_000 for year in range(2024, 2028)},
+    }
+    sim = single_person(situation)
+    # The situation's registered inputs, then a value of every other
+    # registered variable for 2025 and 2026.
+    expected = {
+        (variable, period_(year)): [float(value)]
+        for variable, values in situation.items()
+        if variable in SUPPLIED_INPUT_VARIABLES
+        for year, value in values.items()
+    }
     for year in (2025, 2026):
-        for variable, value in SUPPLIED.items():
-            sim.set_input(variable, year, [value + year])
-            expected[variable, year] = value + year
+        for number, variable in enumerate(sorted(SUPPLIED_INPUT_VARIABLES), 1):
+            if variable in situation:
+                continue
+            period = stored_period(sim, variable, year)
+            value = value_of_type(sim, variable, number + year)
+            sim.set_input(variable, period, value)
+            expected[variable, period] = value.tolist()
     branch = sim.get_branch("reform")
     branch.set_input("trading_loss", 2027, [123.0])
-    branch_expected = {**expected, ("trading_loss", 2027): 123.0}
+    branch_expected = {**expected, ("trading_loss", period_(2027)): [123.0]}
 
     for simulation in (sim, branch):
         for year in (2024, 2025, 2026, 2027, 2028):
