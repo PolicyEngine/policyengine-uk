@@ -256,6 +256,8 @@ def input_source(population, name: str, period) -> Optional[InputSource]:
     if schema is None:
         raise StoredDrawError(f"{name} is not a registered stored draw.")
     simulation = population.simulation
+    if name not in simulation.tax_benefit_system.variables:
+        raise StoredDrawError(f"{name} has no current definition.")
     holder = population.get_holder(name)
     period = periods.period(period)
     _check_request(holder, name, schema, period)

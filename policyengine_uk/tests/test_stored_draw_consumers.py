@@ -63,6 +63,8 @@ from policyengine_uk.tests.stored_draw_fixtures import (
 from policyengine_uk.utils.stochastic import splitmix64_uniform
 from policyengine_uk.utils.stored_draws import StoredDrawError
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 STATUS = "uc_receives_new_claimant_health_element"
 UC_DRAW = "uc_new_claimant_health_element_draw"
 PIP_DRAW = "pip_phase_in_draw"

@@ -49,6 +49,8 @@ from policyengine_uk.utils.stored_draws import (
     input_source,
 )
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 DRAW = "pip_phase_in_draw"
 GROUP_DRAW = "uc_new_claimant_health_element_draw"
 VALUES = np.array([0.25, 0.5, 0.75], dtype=np.float32)
@@ -378,6 +380,7 @@ def test_redefinitions_raise():
         {"formula": lambda person, period, parameters: 0.5},
         {"adds": ["age"]},
         {"value_type": int, "default_value": 1},
+        {"requires_computation_after": "age"},
     ):
         sim = built({2025: VALUES})
         body = dict(
@@ -392,6 +395,14 @@ def test_redefinitions_raise():
         for p in (2025, 2026):
             with pytest.raises(StoredDrawError, match="current definition"):
                 sim.calculate(DRAW, p)
+
+
+def test_a_draw_removed_from_the_system_raises():
+    sim = built({2025: VALUES})
+    population = sim.get_variable_population(DRAW)
+    del sim.tax_benefit_system.variables[DRAW]
+    with pytest.raises(StoredDrawError, match="has no current definition"):
+        input_source(population, DRAW, 2025)
 
 
 def test_a_draw_moved_to_another_entity_raises():
@@ -610,4 +621,77 @@ def test_situations_keep_cores_path():
     )
     np.testing.assert_array_equal(
         sim.calculate_divide(DRAW, "2025-06"), np.float32([1 / 12])
+    )
+
+
+def test_two_inputs_starting_on_one_day_carry_the_one_core_carries():
+    sim = built()
+    sim.set_input(DRAW, 2024, VALUES)
+    sim.set_input(DRAW, "year:2024:2", OTHER)
+    for p in (2025, 2026, 2025):
+        source = source_of(sim, p)
+        assert source.period == period("year:2024:2")
+        np.testing.assert_array_equal(sim.calculate(DRAW, p), OTHER)
+        np.testing.assert_array_equal(core_answer(sim, p), OTHER)
+
+
+def test_a_register_only_input_uses_its_tiers_mark():
+    sim = built({2025: VALUES})
+    holder = sim.get_holder(DRAW)
+    holder._user_input_storage.clear()
+    assert source_of(sim, 2026).period == period(2025)
+    np.testing.assert_array_equal(sim.calculate(DRAW, 2026), VALUES)
+
+
+def test_a_dumped_and_restored_draw_is_its_own_source(tmp_path):
+    from policyengine_core.tools.simulation_dumper import (
+        dump_simulation,
+        restore_simulation,
+    )
+
+    sim = built({2025: VALUES})
+    dump_simulation(sim, str(tmp_path / "dump"))
+    restored = restore_simulation(str(tmp_path / "dump"), sim.tax_benefit_system)
+    source = source_of(restored, 2026)
+    assert source.period == period(2025)
+
+
+def test_an_after_load_modifier_input_is_supplied_and_its_baseline_lacks_it():
+    from policyengine_uk.model_api import Scenario
+
+    def supply(simulation):
+        simulation.set_input(DRAW, 2025, VALUES)
+
+    sim = Simulation(
+        dataset=one_person_units_frame(count=3),
+        scenario=Scenario(simulation_modifier=supply),
+    )
+    assert source_of(sim, 2026).period == period(2025)
+    np.testing.assert_array_equal(sim.calculate(DRAW, 2026), VALUES)
+    assert source_of(sim.baseline, 2026) is None
+
+
+def test_a_reform_formula_reads_the_draw_through_the_check():
+    sim = built({2025: VALUES})
+
+    class doubles_the_draw(Variable):
+        value_type = float
+        entity = Person
+        definition_period = YEAR
+        label = "twice the draw"
+
+        def formula(person, period, parameters):
+            return person(DRAW, period) * 2
+
+    sim.tax_benefit_system.add_variable(doubles_the_draw)
+    np.testing.assert_array_equal(sim.calculate("doubles_the_draw", 2026), VALUES * 2)
+    sim.get_holder(DRAW)._memory_storage.put(
+        OTHER, period(2027), "default", derived=True
+    )
+    with pytest.raises(StoredDrawError, match="differs from its supplied source"):
+        sim.calculate("doubles_the_draw", 2027)
+    missing = built()
+    missing.tax_benefit_system.add_variable(doubles_the_draw)
+    np.testing.assert_array_equal(
+        missing.calculate("doubles_the_draw", 2026), [2, 2, 2]
     )

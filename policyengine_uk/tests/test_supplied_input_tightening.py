@@ -37,6 +37,8 @@ from policyengine_uk.utils.supplied_inputs import (
     supplied_input_periods,
 )
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 NEW_COLUMNS = (
     "uc_new_claimant_health_element_draw",
     "pip_phase_in_draw",

@@ -45,6 +45,10 @@ from policyengine_uk.data.economic_assumptions import (
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.core_route_checks import (
+    check_identifiers,
+    check_supplied_periods,
+)
 from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.savings_income_projection import (
     SAVINGS_INCOME_PROJECTION_KEY,
@@ -1445,6 +1449,22 @@ class Simulation(CoreSimulation):
             time_period_values = data[variable_name]
             return time_period_values[first_time_period]
 
+        # Populations use sorted group IDs; arrays in a Core dataset follow
+        # the order of that period's supplied identifier array instead.
+        group_orders = {
+            entity: {
+                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
+            }
+            for entity in ("benunit", "household")
+        }
+        # The export below keeps only the first period, and the rebuild
+        # re-declares groups by their int32 identifiers: refuse data whose
+        # stored columns either would change.
+        check_identifiers(data)
+        check_supplied_periods(
+            data, self.tax_benefit_system, first_time_period, group_orders
+        )
+
         # Build entity structure from IDs
         self.build_from_ids(
             *map(
@@ -1465,15 +1485,6 @@ class Simulation(CoreSimulation):
             [period_(first_time_period).start.year],
         )
         self._savings_income_projection = savings_income_projection
-
-        # Populations use sorted group IDs; arrays in a Core dataset follow
-        # the order of that period's supplied identifier array instead.
-        group_orders = {
-            entity: {
-                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
-            }
-            for entity in ("benunit", "household")
-        }
 
         # Load all variable values
         for variable in data:
