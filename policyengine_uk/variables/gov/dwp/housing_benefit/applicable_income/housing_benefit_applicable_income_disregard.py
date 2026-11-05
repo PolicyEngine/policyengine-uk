@@ -1,4 +1,78 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+    hb_covers_additional_disregard,
+    hb_standard_earnings_disregard,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
+    hb_accommodation_segments,
+    hb_apply_defined_for,
+    hb_uses_annual_override,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
+    hb_segment_childcare_deduction,
+    hb_segment_wtc_disregard,
+)
+
+
+def hb_capped_accommodation(benunit, period, accommodation):
+    """Cap a full accommodation amount at the net earnings the standard
+    disregard leaves."""
+    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    standard = hb_standard_earnings_disregard(benunit, period)
+    return min_(max_(accommodation, 0), max_(net - standard, 0))
+
+
+def hb_segment_earnings_disregard(benunit, period, parameters, accommodation):
+    """Apply childcare and earnings limits to one full accommodation amount.
+    Return the earnings disregard and childcare deduction. Use an annual
+    override for the earnings disregard where present; otherwise apply its
+    defined_for condition. Leave WTC to hb_segment_deductions so a condition
+    on WTC can read the earnings disregard."""
+    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    standard = hb_standard_earnings_disregard(benunit, period)
+    accommodation = hb_capped_accommodation(benunit, period, accommodation)
+    childcare = hb_segment_childcare_deduction(
+        benunit, period, parameters, accommodation
+    )
+    name = "housing_benefit_applicable_income_disregard"
+    if hb_uses_annual_override(
+        benunit, period, name, housing_benefit_applicable_income_disregard.formula
+    ):
+        return benunit(name, period), childcare
+    p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
+    additional = where(
+        benunit(
+            "meets_housing_benefit_additional_earnings_disregard_conditions", period
+        )
+        & hb_covers_additional_disregard(
+            benunit, period, parameters, accommodation, childcare
+        ),
+        p.worker * WEEKS_IN_YEAR,
+        0,
+    )
+    disregard = where(
+        benunit("housing_benefit_on_passporting_benefit", period),
+        net,
+        standard + accommodation + additional,
+    )
+    return hb_apply_defined_for(benunit, period, name, disregard), childcare
+
+
+def hb_segment_deductions(benunit, period, parameters, accommodation):
+    """Return the earnings disregard, WTC disregard and childcare deduction
+    for one full accommodation amount. Use annual overrides where present;
+    otherwise apply each variable's defined_for condition."""
+    disregard, childcare = hb_segment_earnings_disregard(
+        benunit, period, parameters, accommodation
+    )
+    wtc_disregard = hb_segment_wtc_disregard(
+        benunit,
+        period,
+        parameters,
+        hb_capped_accommodation(benunit, period, accommodation),
+        childcare,
+    )
+    return disregard, wtc_disregard, childcare
 
 
 class housing_benefit_applicable_income_disregard(Variable):
@@ -26,6 +100,10 @@ class housing_benefit_applicable_income_disregard(Variable):
         "(housing_benefit_permitted_work_disregard) replaces the ordinary "
         "standard amount, retaining a higher lone-parent disregard. It does "
         "not replace the separate accommodation or additional disregard."
+        " The annual result combines the capped deductions calculated with "
+        "the full accommodation amount in each effective-date segment. "
+        "Entitlement applies its income threshold and taper within those "
+        "segments rather than using an averaged disregard as a weekly rule."
     )
     definition_period = YEAR
     unit = GBP
@@ -45,57 +123,10 @@ class housing_benefit_applicable_income_disregard(Variable):
     )
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
-        net_earnings = benunit("housing_benefit_net_earnings", period)
-        # Share the selected/replaced standard with the savings-credit route.
-        standard = benunit(
-            "housing_benefit_applied_standard_earnings_disregard", period
-        )
-        # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
-        # specified or temporary accommodation. It applies alongside paras 3
-        # to 10A, none of which excludes it, and takes the earnings they
-        # leave.
-        accommodation = min_(
-            benunit(
-                "housing_benefit_specified_or_temporary_accommodation_disregard",
-                period,
-            ),
-            net_earnings - standard,
-        )
-        # Working age Sch 4 para 17; pension age Sch 4 para 9.
-        additional_amount = p.worker * WEEKS_IN_YEAR
-        childcare = benunit(
-            "housing_benefit_applicable_income_childcare_element", period
-        )
-        # "Equal or exceed", compared in pence: net earnings are float32, so
-        # exactly £1,149.20 is held as £1,149.19995, and an exact comparison
-        # with the total fails at equality. From 5 October 2026 the total
-        # includes the para 18 amount (para 17(3)(a), "paragraphs 3 to 10A
-        # and 18"); it is zero under the pension-age para 9(3)(a).
-        covers_additional = np.round(net_earnings.astype(float), 2) >= np.round(
-            (standard + accommodation + childcare + additional_amount).astype(float),
-            2,
-        )
-        additional = where(
-            benunit(
-                "meets_housing_benefit_additional_earnings_disregard_conditions", period
+        return sum(
+            hb_segment_earnings_disregard(benunit, period, parameters, accommodation)[0]
+            * share
+            for accommodation, share in hb_accommodation_segments(
+                benunit, period, parameters
             )
-            & covers_additional,
-            additional_amount,
-            0,
-        )
-        # Working age Sch 4 para 12 (NI: SR 2006/405 Sch 5 para 12): "Where a
-        # claimant is on universal credit, income support, an income-based
-        # jobseeker's allowance or an income-related employment and support
-        # allowance, his earnings." The working-age Regulations apply at any
-        # age where the claimant or partner is on one of these benefits (SI
-        # 2006/213 reg 5(1)(b); SI 2006/214 reg 5(2)), so there is no age
-        # condition.
-        on_passporting_benefit = benunit(
-            "housing_benefit_on_passporting_benefit", period
-        )
-        return where(
-            on_passporting_benefit,
-            net_earnings,
-            standard + accommodation + additional,
         )

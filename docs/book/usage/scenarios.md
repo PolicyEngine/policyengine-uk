@@ -186,12 +186,23 @@ calculations retain them too. To undo an override, call
 variable's formula or default runs again. A reset alone no longer undoes an
 input supplied after construction.
 
-Every top-level `set_input` on a built simulation queues dependent-cache cleanup
-before its next outermost read. This includes simulations with no modifier: a
+Every top-level `Simulation.set_input` on a built simulation queues
+dependent-cache cleanup before its next outermost read. This includes simulations with no modifier: a
 caller can read Child Benefit, add an amount and then obtain fresh income and
 response values. Inputs stored only on another clone or branch do not become
 the parent's inputs. Formula and framework writes during a calculation keep
 their existing selective invalidation.
+
+In that cleanup, as in `reset_calculations`, the simulation keeps only the
+years of each input variable that the data, a modifier or a caller supplied.
+It calculates the other years again, whether it grew them from an earlier
+input by the variable's uprating index, carried an earlier input into them,
+ran the variable's formula for them or, for a stored household total, grew
+them from an earlier total. So when a caller sets an input for an earlier year
+after a calculation, the later years the simulation had already filled follow
+it, as they do on a named branch and in a new simulation that gets the same
+inputs. The simulation keeps a later year that the data or `set_input`
+supplied.
 
 Direct edits of the parameter tree require a separate array-cache boundary.
 After calling a parameter's `update` method on a built simulation, call

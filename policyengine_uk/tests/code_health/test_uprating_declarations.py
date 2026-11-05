@@ -42,13 +42,15 @@ KNOWN_UNUPRATED = {
 # Variables the YAML deliberately uprates by an index other than the one they
 # declare, with the reason.
 KNOWN_INDEX_OVERRIDES = {
-    # Declares ons.household_interest_income; the YAML applies per_capita.gdp.
-    # Flagged in #1862 for someone with the context to say which is intended.
+    # The savings income inputs. Dataset projection grows them by the OBR's
+    # savings income forecast per person to 2025-26 and by GDP per head after
+    # it (growth_rate in data/economic_assumptions.py), which no single
+    # declared index expresses. The first two declare
+    # ons.household_interest_income and the third obr.per_capita.gdp, which
+    # Core uses for direct inputs. Aligning those surfaces is #1862.
     "savings_interest_income",
-    # Like ordinary savings interest, noncash ISA interest declares the ONS
-    # household index but follows the existing GDP dataset rule. Broader
-    # alignment of those two surfaces remains separate work in #2638.
     "non_cash_isa_cash_interest",
+    "other_investment_income",
 }
 
 

@@ -291,10 +291,10 @@
     property_rental_income: 5_000
     property_income: 5_000
   output:
-    # Property: 5,000 of receipts with no expenses, so (5,000 - 1,000) x 22%
-    # = 880.
-    property_income_tax: 880
-    income_tax: 2_366
+    # Property: 5,000 of receipts with no expenses, so (5,000 - 1,000) x 24%
+    # = 960. Earnings: (20,000 - 12,570) x 20% = 1,486.
+    property_income_tax: 960
+    income_tax: 2_446
     uc_income_tax_on_earnings: 1_486
 
 - name: A tax reduction comes off the tax on earnings first

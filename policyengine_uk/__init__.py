@@ -15,5 +15,6 @@ from policyengine_uk.system import (
     variables,
 )
 from .model_api import *
+from policyengine_uk import programs
 
 REPO = Path(__file__).parent

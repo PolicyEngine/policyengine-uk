@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.hmrc.tax_free_childcare._top_up import (
+    meets_tax_free_childcare_family_conditions,
+)
 
 
 class tax_free_childcare_eligible(Variable):
@@ -9,24 +12,8 @@ class tax_free_childcare_eligible(Variable):
     defined_for = "would_claim_tfc"
 
     def formula(benunit, period, parameters):
-        has_qualifying_child = benunit.any(
-            benunit.members("tax_free_childcare_qualifying_child", period),
-        )
-
-        meets_income_condition = benunit.all(
-            benunit.members("tax_free_childcare_meets_income_requirements", period)
-            | ~benunit.members("is_parent", period)
-        )
-
         childcare_eligible = benunit("tax_free_childcare_program_eligible", period)
-
-        work_eligible = benunit("tax_free_childcare_work_condition", period)
-
-        return np.logical_and.reduce(
-            [
-                has_qualifying_child,
-                meets_income_condition,
-                childcare_eligible,
-                work_eligible,
-            ]
+        return np.logical_and(
+            meets_tax_free_childcare_family_conditions(benunit, period),
+            childcare_eligible,
         )

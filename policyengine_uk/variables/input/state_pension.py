@@ -23,6 +23,7 @@ class state_pension(Variable):
                     "basic_state_pension",
                     "additional_state_pension",
                     "new_state_pension",
+                    "state_pension_age_addition",
                 ],
             )
             * uprating

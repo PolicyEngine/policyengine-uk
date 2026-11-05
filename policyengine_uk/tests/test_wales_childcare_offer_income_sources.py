@@ -83,7 +83,7 @@ REVIEWED = {
         "savings_interest_income",
         "other_investment_income",
         "dividend_income",
-        "taxable_miscellaneous_income",
+        "miscellaneous_income_before_trading_allowance",
         "maintenance_income",
         "spousal_maintenance_income",
     },

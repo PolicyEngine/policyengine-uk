@@ -44,6 +44,38 @@ above-cap excess are unchanged; their legal classification, maintenance priority
 and annual projection remain separate work under #2410. No maintenance or last
 resort cash interface or new category incidence is introduced.
 
+## Awards a reform creates
+
+No deduction comes out of an award that a simulation has and its baseline does
+not (`uc_award_carries_deductions`). This applies whether the dataset supplies
+the deduction attributes or the model draws them. Before, a taper cut gave
+some families a first award that a deduction drawn for the existing caseload
+then took much of (#2753).
+
+This is an assumption. The incidence, rates and types describe the existing
+caseload's debts, and the model takes it that a family a reform brings onto
+Universal Credit repays none of them from its new award. For an advance that is
+a fair first-year view, because the advance is a loan the family receives
+first. But third-party deductions (housing cost arrears, fuel and water among
+others, [SI 2013/380 Schedule 6](https://www.legislation.gov.uk/uksi/2013/380/schedule/6))
+and overpayment recovery apply to any claimant with those debts. The assumption
+also holds in every year compared, so a family a 2027 reform brings on still
+repays nothing from that award in 2030. It therefore slightly raises the cost of
+reforms that widen Universal Credit.
+
+A simulation is compared with its baseline where it may differ from it
+(`Simulation.changed_from_baseline`):
+
+- **Built with a reform.** Its baseline is the current-law simulation.
+- **Changed after it was built,** by `apply_reform` or by a step that ends with
+  `drop_computed_arrays`, as policyengine.py's simulation modifiers do. Its
+  baseline is the copy made when it was built.
+
+In any other simulation every award carries deductions, so a plain current-law
+run does not work out Universal Credit twice. A `set_input` alone does not count
+as a change. The comparison works out the baseline award only for the households
+holding an award, in a branch holding only them.
+
 ## Validation against DWP deductions statistics
 
 Enhanced FRS 2023/24 v1.40.3, against [DWP's Universal Credit deductions statistics](https://www.gov.uk/government/statistics/universal-credit-quarterly-statistics-29-april-2013-to-12-february-2026/universal-credit-deductions-statistics-march-2025-to-february-2026).
@@ -91,7 +123,7 @@ JRF specifies the combined limit, not a priority between the two: their [Septemb
 
 Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
 
-Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction_after_floor` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `uc_benefit_cap_reduction`, the regulation 81 amount, itself stays gross, and so does `benefit_cap_reduction`, which adds it to the Housing Benefit reduction. Read `uc_benefit_cap_reduction_after_floor` for the cap reduction applied to a UC award under a floor reform.
+Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction_after_floor` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `uc_benefit_cap_reduction`, the regulation 81 amount, itself stays gross. `benefit_cap_reduction` adds the applied amount, `uc_benefit_cap_reduction_after_floor`, to the Housing Benefit reduction, so under a floor reform it reports the cap reduction the floor leaves.
 
 ### Other assumptions
 
@@ -126,3 +158,7 @@ A cap of 1 − *x* is equivalent to a protected minimum floor at *x* of the stan
 Statutory parameters — the cap, the protected floor, the minimum payable penny, the abolition switches — live under `gov.dwp.universal_credit.deductions`. The calibrated distributions live under `gov.simulation.uc_deductions`: they describe the world, not the law.
 
 The assignment formulas are an explicit fallback. The end state imputes `uc_latent_deduction_rate` and `uc_deduction_combination` at dataset build, at which point the model consumes them as plain inputs and the fallback retires; raw-FRS users keep working through the fallback until then. Assignment uses deterministic splitmix64 hashes of `benunit_id`, reproducible across runs and machines, and overridable by datasets or situations through `uc_deduction_random_draw` and `uc_deduction_type_random_draw`. Every simulation built from data gets the hashed draws, including a constituency or local authority filtered from the national data, and a benefit unit gets the same draw there as in the national run. Household situations get no deductions unless set explicitly.
+
+`uc_has_deduction` decides which benefit units have deductions: a unit claiming Universal Credit, with an award left after the benefit cap that carries deductions (`uc_award_carries_deductions`), whose incidence draw falls below its region's incidence. The latent rate counts only for those units, whether the formula assigns it or a dataset or situation supplies it, so a supplied rate follows the same rule as the formula. A dataset that stores latent rates therefore needs the draws that assign them, and Microcosm stores both. On such a dataset, a reform that lowers incidence drops the stored rates of the units the flag no longer assigns. One that raises it flags more units, but the dataset stores no rate for them, so it adds no deductions. A unit that keeps the flag keeps its stored rate, while the formula rescales each draw by the new incidence, so stored rates don't cost an incidence reform in full. To give a household situation deductions, set `uc_has_deduction` to true with `uc_latent_deduction_rate` and `uc_deduction_combination`. Alternatively, supply the advance cash (`uc_advance_repayment_amount`) or the rate itself (`uc_deduction_rate`). Those two describe a known deduction, so they apply whatever the flag says.
+
+A protected floor reform limits what the benefit cap and deductions together take to the floor allowance (`uc_maximum_reduction`), so a family that the cap takes to nil under current law can keep an award. The flag reads the award left after the cap as the floor limits it. Such a family can therefore have deductions, which the floor meets first, as for any other family. Under current law the floor is zero, and the flag reads the award left after the full cap.

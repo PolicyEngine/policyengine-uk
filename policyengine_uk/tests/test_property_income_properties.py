@@ -23,7 +23,6 @@ pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2027
 ALLOWANCE = 1_000
-PROPERTY_BASIC_RATE = 0.22
 OTHER_EMPLOYMENT_INCOME = [0, 8_000, 13_000, 30_000, 60_000, 110_000, 200_000]
 # Every third person is a Scottish taxpayer.
 SCOTTISH = [i % 3 == 2 for i in range(7)]
@@ -198,7 +197,13 @@ def test_taxable_profit_matches_statutory_reference(sim, drawn):
     ).all()
 
 
+# Finance costs relieved in full below the tax due: the reduction is the
+# whole property basic rate on them (24% from 2027-28 after Budget 2026).
+UNCAPPED_RELIEF = (1_471.59, 57_327.72, 0.0, 500.0, "below_profit", 0.45, 121.28)
+
+
 @SETTINGS
+@example([UNCAPPED_RELIEF] * CASES)
 @given(cases)
 def test_relief_accounting(sim, drawn):
     r = run(sim, drawn)
@@ -232,11 +237,11 @@ def test_relief_accounting(sim, drawn):
     ).all()
     # The reduction is at most the property basic rate on the costs, and at
     # most the Step 5 tax.
+    rate = sim.tax_benefit_system.parameters.gov.hmrc.income_tax.rates.property.basic(
+        f"{YEAR}-04-30"
+    )
     assert (r["relief"] >= 0).all()
-    assert (
-        r["relief"]
-        <= PROPERTY_BASIC_RATE * r["relievable"] + tolerance(r["relievable"])
-    ).all()
+    assert (r["relief"] <= rate * r["relievable"] + tolerance(r["relievable"])).all()
     assert (r["relief"] <= r["pre_charges"] + tolerance(r["pre_charges"])).all()
     # What is not relieved is carried forward; on the allowance route this
     # year's costs are replaced by the allowance and only the amount brought
@@ -376,8 +381,8 @@ def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
 # household. Each landlord with finance costs to relieve must still choose
 # the route that gives them the lower income tax including the charge, with
 # every other route held fixed. Landlords without finance costs take the
-# allowance without comparing (uses_property_allowance); review r7's lone
-# pensioner below shows that can cost more, an intended limit pinned by its
+# allowance without comparing (uses_property_allowance); the lone pensioner
+# with wages below shows that can cost more, an intended limit pinned by its
 # own test.
 PENSIONER_YEAR = 2025
 PENSIONER_HOUSEHOLDS = 6
@@ -394,6 +399,7 @@ pensioner_landlord = st.tuples(
     st.one_of(amount, st.sampled_from([3_300.0])),  # profit
     st.floats(min_value=0, max_value=950),  # expenses
     st.sampled_from([0.0, 0.0, 675.0, 1_200.0, 1_500.0]),  # finance costs
+    st.sampled_from([0.0, 0.0, 27_000.0, 31_562.0, 37_047.55]),  # wages
 )
 pensioner_household = st.tuples(
     st.sampled_from([66, 70, 80, 85]),  # claimant's age
@@ -409,29 +415,33 @@ pensioner_households = st.lists(
     min_size=PENSIONER_HOUSEHOLDS,
     max_size=PENSIONER_HOUSEHOLDS,
 )
-NO_INCOME = (0.0, 0.0, 0.0, 0.0, 0.0)
-# Review r7's cases (2026-10-16). A pensioner with six children and no
-# finance costs: the allowance lowers tax before the charge by £160, which
-# ends Pension Credit of £80 and so the exemption from the £200 charge.
+NO_INCOME = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+# A pensioner with wages and six children and no finance costs. Pension
+# Credit counts no property profits (SPC Sch IV para 18), but without the
+# wages the pension and profits fall within the personal allowance, so the
+# wages cause all the tax and Pension Credit deducts it. The allowance lowers
+# that tax by £160, which ends Pension Credit of £80 and so the exemption
+# from the £200 charge.
 LONE_PENSIONER = (
     70,
     10,
     40,
-    (35_207.0, 0.0, 3_300.0, 200.0, 0.0),
+    (9_070.0, 0.0, 3_300.0, 200.0, 0.0, 31_562.0),
     NO_INCOME,
     NO_INCOME,
     False,
 )
-# A couple's Pension Credit, through the claimant's election, takes the
+# A couple's Pension Credit (savings credit), through the claimant's
+# election and the tax the claimant's wages cause on the profits, takes the
 # partner out of entitlement and raises the lodger's shared payment and
 # charge from £150 to £200; the lodger's own election must hold that fixed.
 SHARED_PAYMENT = (
     70,
     85,
     85,
-    (42_772.55, 0.0, 3_300.0, 200.0, 1_200.0),
+    (9_000.0, 0.0, 3_300.0, 200.0, 1_200.0, 37_047.55),
     NO_INCOME,
-    (40_000.0, 0.0, 3_300.0, 200.0, 675.0),
+    (40_000.0, 0.0, 3_300.0, 200.0, 675.0, 0.0),
     False,
 )
 PENSIONER_SETTINGS = settings(
@@ -453,6 +463,7 @@ def pensioner_sim():
             "property_income": {PENSIONER_YEAR: 0},
             "property_rental_income": {PENSIONER_YEAR: 0},
             "property_finance_costs": {PENSIONER_YEAR: 0},
+            "employment_income": {PENSIONER_YEAR: 0},
         }
 
     people, benunits, households = {}, {}, {}
@@ -494,13 +505,14 @@ def set_pensioner_inputs(sim, drawn, uses_allowance=None):
             for age, landlord in zip(household_ages, landlords)
         ] + [NO_INCOME] * CHILDREN
         claims_pc += [True, claims]
-    pension, dividends, profit, expenses, costs = map(np.array, zip(*incomes))
+    pension, dividends, profit, expenses, costs, wages = map(np.array, zip(*incomes))
     sim.set_input("age", PENSIONER_YEAR, np.array(ages, dtype=float))
     sim.set_input("private_pension_income", PENSIONER_YEAR, pension)
     sim.set_input("dividend_income", PENSIONER_YEAR, dividends)
     sim.set_input("property_income", PENSIONER_YEAR, profit)
     sim.set_input("property_rental_income", PENSIONER_YEAR, profit + expenses)
     sim.set_input("property_finance_costs", PENSIONER_YEAR, costs)
+    sim.set_input("employment_income", PENSIONER_YEAR, wages)
     sim.set_input("would_claim_pc", PENSIONER_YEAR, np.array(claims_pc))
     if uses_allowance is None:
         sim.delete_arrays("uses_property_allowance", PENSIONER_YEAR)
@@ -547,13 +559,14 @@ def test_no_pensioner_lowers_their_tax_and_charge_by_switching_alone(
 def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_costs_more(
     pensioner_sim,
 ):
-    """Intended violation: review r7's lone pensioner (no finance costs).
+    """Intended violation: a lone pensioner with wages (no finance costs).
 
-    The allowance lowers tax before the charge by £160 but ends £80 of Pension
-    Credit and with it the exemption from the £200 charge, so expenses would
-    give the lower income tax (£5,187.40 against £5,227.40). The model does
-    not compare routes for landlords without finance costs, so it takes the
-    allowance.
+    Without the wages, the pension and profits fall within the personal
+    allowance, so Pension Credit deducts the whole tax as the wages'. The
+    allowance lowers that tax by £160 but ends £80 of Pension Credit and with
+    it the exemption from the £200 charge, so expenses would give the lower
+    income tax (£6,272.40 against £6,312.40). The model does not compare
+    routes for landlords without finance costs, so it takes the allowance.
     """
     sim = pensioner_sim
     drawn = [LONE_PENSIONER] * PENSIONER_HOUSEHOLDS
@@ -568,10 +581,10 @@ def test_a_landlord_without_finance_costs_takes_the_allowance_even_where_it_cost
     routes = sim.calculate("uses_property_allowance", PENSIONER_YEAR)
     income_tax = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
     assert routes[claimants].all()
-    assert income_tax[pinned] == pytest.approx(5_227.40, abs=0.01)
+    assert income_tax[pinned] == pytest.approx(6_312.40, abs=0.01)
     set_pensioner_inputs(sim, drawn, routes & ~claimants)
     with_expenses = sim.calculate("income_tax", PENSIONER_YEAR).astype(float)
-    assert with_expenses[pinned] == pytest.approx(5_187.40, abs=0.01)
+    assert with_expenses[pinned] == pytest.approx(6_272.40, abs=0.01)
 
 
 # Reviews r1 and r2 of #2695. winter_fuel_payment_charge_ceiling bounds the

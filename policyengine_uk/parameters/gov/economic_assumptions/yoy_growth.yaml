@@ -205,6 +205,91 @@ obr:
         - title: OBR long-run economic methodology (the 3.83% rate from 2036, unchanged from November 2025)
           href: https://obr.uk/forecasts-in-depth/the-economy-forecast/potential-output-and-the-output-gap/
 
+  national_living_wage:
+    description: National living wage year-on-year growth, for the rate from April of each year.
+    # The OBR forecasts the national living wage itself, in £ an hour, in the
+    # EFO detailed economy tables (Table 1.13 in October 2026): the rates the
+    # Government has set, then "OBR estimates consistent with the rest of our
+    # economy forecast". utils/import_obr_forecasts.py reads the table and
+    # writes each year's rate over the year before's, to six decimals, so
+    # compounding them reproduces the table to the penny. It writes the years
+    # the Government has set and the OBR's estimates under separate comments
+    # below; gov.hmrc.minimum_wage cites the regulations or Budget behind
+    # each rate set. HM Treasury costed the Budget 2026 Carer's Allowance
+    # taper on these "OBR projections for increases in the National Living
+    # Wage" (policy costings, October 2026). After the EFO horizon the
+    # importer copies average_earnings' long-run growth: in its 2026 remit to
+    # the Low Pay Commission, the government says two-thirds of median hourly
+    # earnings "should continue to be the key reference point for future
+    # rates".
+    values:
+      # The government set the rates for 2021-2027: £8.72 in 2020 to £13.21 in 2027 (OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)")
+      2021-01-01: 0.021789
+      2022-01-01: 0.066218
+      2023-01-01: 0.096842
+      2024-01-01: 0.097889
+      2025-01-01: 0.067308
+      2026-01-01: 0.04095
+      2027-01-01: 0.039339
+      # The OBR estimates the rates for 2028-2031: £13.21 in 2027 to £14.62 in 2031 (OBR EFO October 2026, economy Table 1.13 "National Living Wage (NLW)")
+      2028-01-01: 0.022984
+      2029-01-01: 0.025251
+      2030-01-01: 0.027289
+      2031-01-01: 0.026986
+      # After the OBR forecast, the importer copies average_earnings year for year
+      2032-01-01: 0.0285
+      2033-01-01: 0.0309
+      2034-01-01: 0.0334
+      2035-01-01: 0.0358
+      2036-01-01: 0.0383
+      2037-01-01: 0.0383
+      2038-01-01: 0.0383
+      2039-01-01: 0.0383
+      2040-01-01: 0.0383
+      2041-01-01: 0.0383
+      2042-01-01: 0.0383
+      2043-01-01: 0.0383
+      2044-01-01: 0.0383
+      2045-01-01: 0.0383
+      2046-01-01: 0.0383
+      2047-01-01: 0.0383
+      2048-01-01: 0.0383
+      2049-01-01: 0.0383
+      2050-01-01: 0.0383
+      2051-01-01: 0.0383
+      2052-01-01: 0.0383
+      2053-01-01: 0.0383
+      2054-01-01: 0.0383
+      2055-01-01: 0.0383
+      2056-01-01: 0.0383
+      2057-01-01: 0.0383
+      2058-01-01: 0.0383
+      2059-01-01: 0.0383
+      2060-01-01: 0.0383
+      2061-01-01: 0.0383
+      2062-01-01: 0.0383
+      2063-01-01: 0.0383
+      2064-01-01: 0.0383
+      2065-01-01: 0.0383
+      2066-01-01: 0.0383
+      2067-01-01: 0.0383
+      2068-01-01: 0.0383
+      2069-01-01: 0.0383
+      2070-01-01: 0.0383
+      2071-01-01: 0.0383
+      2072-01-01: 0.0383
+      2073-01-01: 0.0383
+    metadata:
+      unit: /1
+      label: National living wage growth
+      reference:
+        - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.13)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        - title: HM Treasury, Budget 2026 policy costings, Carer's Allowance taper (cost base)
+          href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf
+        - title: Low Pay Commission remit 2026
+          href: https://www.gov.uk/government/publications/national-minimum-wage-and-national-living-wage-low-pay-commission-remit-2026/low-pay-commission-remit-2026-national-living-wage-and-national-minimum-wage
+
   consumer_price_index:
     description: Consumer price index year-on-year growth.
     values:
@@ -304,12 +389,12 @@ obr:
       # 2027 (57.95p raised by Q1 2027 RPI growth, OBR economy Table 1.7),
       # then 63.21p, 65.13p, 67.07p and 68.61p from 1 April 2028 to 2031,
       # each raised by the previous calendar year's RPI growth in obr.rpi.
-      # That is the schedule PolicyEngine/policyengine-uk#2719 puts into
-      # gov.hmrc.fuel_duty.petrol_and_diesel, so once it is law the model's
-      # duty on these volumes reproduces the OBR's road fuel receipts. Until
-      # then current law there is the Budget 2025 schedule (60.03p from April
-      # 2027). The derivation is policyengine-uk-data's
-      # sources/road_fuel_volume.py.
+      # That is the schedule in gov.hmrc.fuel_duty.petrol_and_diesel
+      # (PolicyEngine/policyengine-uk#2719). The OBR's receipts year starts on
+      # 1 April and the model's on 6 April, so a model year takes in five days
+      # of the next April's rate, and the model's duty on these volumes comes
+      # close to the OBR's road fuel receipts rather than matching them. The
+      # derivation is policyengine-uk-data's sources/road_fuel_volume.py.
       2026-01-01: -0.02315665811165113
       2027-01-01: -0.030554808261277322
       2028-01-01: -0.0397847818644439
@@ -635,6 +720,43 @@ obr:
         - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.12)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
 
+  savings_income:
+    description: Savings income year-on-year growth, from the OBR's receipts forecast.
+    # The "Savings income" row of the OBR's "Self-employed income streams:
+    # growth rates" table, percentage change on a year earlier, pre-measures,
+    # rounded to 4 decimals. The fiscal year starting in year t is stored at
+    # t-01-01, as for ons.population. Each year is from the latest table that
+    # has it:
+    # - 2024-2031: EFO October 2026, receipts Table 4.5 (2024-25 34.961%,
+    #   2025-26 0.650%). The table heads 2024-25 onwards "Forecast".
+    # - 2023: EFO March 2026, receipts Table 3.5 (129.854%, the same in the
+    #   November 2025 table).
+    # - 2022: EFO October 2024, receipts Table 3.5 (50.358%). It is the first
+    #   listed year, so it is the base of the generated index (index 1 at
+    #   2022) and its own growth is not in the index (#2692).
+    # The table ends at 2031-32; a parameter keeps its last value after that.
+    values:
+      2022-01-01: 0.5036
+      2023-01-01: 1.2985
+      2024-01-01: 0.3496
+      2025-01-01: 0.0065
+      2026-01-01: 0.0067
+      2027-01-01: 0.0614
+      2028-01-01: 0.0514
+      2029-01-01: 0.0494
+      2030-01-01: 0.0556
+      2031-01-01: 0.0589
+    metadata:
+      unit: /1
+      label: Savings income growth
+      reference:
+        - title: OBR, Economic and fiscal outlook October 2026, detailed forecast tables, receipts, Table 4.5 (sha256 d115705716d77b11c190385d41cb1924f30080c9331a8a386c04d4e65a368e95)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, Table 3.5 (sha256 f65b6cb7f96931d4abd85940794eb60f6f65afca8bbf16c74a4548bf92766a28)
+          href: https://obr.uk/docs/d055fbf02d5b3g6jq8l2/efo-march-2026-detailed-forecast-tables-receipts.xlsx
+        - title: OBR, Economic and fiscal outlook October 2024, detailed forecast tables, receipts, Table 3.5 (sha256 16d69c0981f45e5b7fe3fa35d08bfe09e6170440231d546f374a9f4d48191991)
+          href: https://obr.uk/docs/dlm_uploads/Receipts_Detailed_forecast_tables_October_2024.xlsx
+
   # Growth in each country's council tax receipts, net of council tax
   # reduction. Receipts are the Band D level times the tax base (Band D
   # equivalent dwellings), so they grow with the number of homes as well as
@@ -869,6 +991,392 @@ obr:
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 
   per_capita:
+    # Gambling duty bases per person (#2738), which project the household
+    # gambling inputs (data/uprating_indices.yaml). Each series grows a
+    # duty's base, not its receipts: each year's receipts over the rate the
+    # model charges, so the model applies its own rate changes once (see
+    # docs/engineering/gambling-duties.md). The importer writes the base's
+    # growth over one plus ons.population growth, to six decimals: (1 + base
+    # growth) / (1 + population growth) - 1. Dataset projection grows
+    # household weights by ons.population, so the weighted base grows with
+    # the duty's base. After the OBR's forecast the base grows with
+    # average_earnings, or holds flat while its rate is zero, and the importer
+    # divides that growth the same way in each year to ons.population's last.
+    # policyengine_uk/utils/import_obr_forecasts.py writes every year after
+    # the 2024 base year from HMRC's outturn, the EFO's receipts tables and
+    # the ons.population growth below.
+    gambling_duty_bases:
+      remote_gaming:
+        description: Growth per person in the Remote Gaming Duty base, the duty's receipts over the rate the model charges.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: 0.132539
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Remote gaming duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: 0.091574
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: 0.009315
+          2028-01-01: 0.019987
+          2029-01-01: 0.020268
+          2030-01-01: 0.011003
+          2031-01-01: 0.003881
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: Remote Gaming Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+      lottery:
+        description: Growth per person in the Lottery Duty base, the duty's receipts over the rate the model charges.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: 0.048312
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Lottery duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: -0.154336
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: 0.021712
+          2028-01-01: 0.028957
+          2029-01-01: 0.02954
+          2030-01-01: 0.026297
+          2031-01-01: 0.026866
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: Lottery Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+      general_betting:
+        description: Growth per person in the General Betting Duty base, the duty's receipts over the rates the model charges, each weighted by its part's 2024-25 share of the base.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: -0.044277
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "General betting duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: -0.044128
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: 0.025705
+          2028-01-01: 0.043246
+          2029-01-01: 0.032385
+          2030-01-01: 0.026778
+          2031-01-01: 0.025912
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: General Betting Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+            - title: Microcosm, FY2024-25 General Betting Duty bases split by the Gambling Commission's gross gambling yield (docs/evidence/uk-excise-quantities-1359/outputs/national_reconciliation.json)
+              href: https://github.com/PolicyEngine/microcosm/blob/main/docs/evidence/uk-excise-quantities-1359/outputs/national_reconciliation.json
+            - title: Gambling Commission, industry statistics, April 2024 to March 2025
+              href: https://www.gamblingcommission.gov.uk/statistics-and-research/publication/industry-statistics-annual-report-financial-year-april-2024-to-march-2025
+      machine_games:
+        description: Growth per person in the Machine Games Duty base, the duty's receipts over the rates the model charges, each weighted by its band's 2024-25 share of the base, with the higher-stake share of the standard-rate band at the higher rate from 1 April 2027.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: 0.048678
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Machine games duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: 0.054148
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: -0.003614
+          2028-01-01: 0.034551
+          2029-01-01: 0.007554
+          2030-01-01: 0.009337
+          2031-01-01: 0.021314
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: Machine Games Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+            - title: Gambling Commission, Industry Statistics, April 2025 to March 2026 (sheet 4, 2024-25 gaming machine yield by category)
+              href: https://www.gamblingcommission.gov.uk/statistics-and-research/publication/industry-statistics-annual-report-financial-year-april-2025-to-march-2026-official-statistics
+      gaming:
+        description: Growth per person in the Gaming Duty base, the duty's receipts over the casino effective rate the model charges.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: 0.047963
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Gaming duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: -0.000114
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: 0.059753
+          2028-01-01: 0.000213
+          2029-01-01: -0.000768
+          2030-01-01: 0.00304
+          2031-01-01: -0.006826
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: Gaming Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+      bingo:
+        description: Growth per person in the Bingo Duty base, the duty's receipts over the rate the model charges; the base holds flat once the rate is zero.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: 0.029891
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Bingo duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: -0.001996
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: -0.001298
+          2028-01-01: -0.001697
+          2029-01-01: -0.002096
+          2030-01-01: -0.002494
+          2031-01-01: -0.002394
+          # Beyond the OBR forecast: held flat, as the rate is zero; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: -0.002195
+          2033-01-01: -0.002096
+          2034-01-01: -0.001896
+          2035-01-01: -0.001797
+          2036-01-01: -0.001697
+          2037-01-01: -0.001597
+          2038-01-01: -0.001498
+          2040-01-01: -0.001398
+          2042-01-01: -0.001298
+          2044-01-01: -0.001199
+          2045-01-01: -0.001099
+          2047-01-01: -0.000999
+          2048-01-01: -0.000899
+          2049-01-01: -0.000799
+          2050-01-01: -0.0006
+          2051-01-01: -0.0005
+          2052-01-01: -0.0003
+          2053-01-01: -0.0002
+          2054-01-01: 0.0000
+          2055-01-01: 0.0001
+          2056-01-01: 0.0003
+          2057-01-01: 0.0004
+          2058-01-01: 0.0005
+          2059-01-01: 0.0006
+          2060-01-01: 0.0007
+          2061-01-01: 0.000801
+          2064-01-01: 0.000901
+          2071-01-01: 0.001001
+        metadata:
+          unit: /1
+          label: Bingo Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+      pool_betting:
+        description: Growth per person in the Pool Betting Duty base, the duty's receipts over the rate the model charges.
+        values:
+          # Base year (2024-25): the gambling duty inputs start in model year 2024
+          2024-01-01: 0.0000
+          # Outturn (2025-26 over 2024-25) from HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2025-01-01: -0.512992
+          # Forecast (2026-27 over 2025-26) from OBR EFO October 2026, receipts Table 4.10 "Pool betting duty", over HMRC's receipts (July 2026 Betting and Gaming tables, Table_1_BG_receipts); per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2026-01-01: -0.288858
+          # Forecast (2027-2031) from OBR EFO October 2026, receipts Table 4.10; per head: base growth (receipts over the rate the model charges) over one plus ons.population growth
+          2027-01-01: -0.053757
+          2028-01-01: 0.064652
+          2029-01-01: -0.009525
+          2030-01-01: 0.053325
+          2031-01-01: 0.040869
+          # Beyond the OBR forecast: the average_earnings long-run path above; per head: (1 + that growth) / (1 + ons.population growth) - 1
+          2032-01-01: 0.026242
+          2033-01-01: 0.02874
+          2034-01-01: 0.03144
+          2035-01-01: 0.033939
+          2036-01-01: 0.036538
+          2037-01-01: 0.036641
+          2038-01-01: 0.036745
+          2040-01-01: 0.036848
+          2042-01-01: 0.036952
+          2044-01-01: 0.037056
+          2045-01-01: 0.037159
+          2047-01-01: 0.037263
+          2048-01-01: 0.037366
+          2049-01-01: 0.03747
+          2050-01-01: 0.037677
+          2051-01-01: 0.037781
+          2052-01-01: 0.037989
+          2053-01-01: 0.038092
+          2054-01-01: 0.0383
+          2055-01-01: 0.038404
+          2056-01-01: 0.038612
+          2057-01-01: 0.038715
+          2058-01-01: 0.038819
+          2059-01-01: 0.038923
+          2060-01-01: 0.039027
+          2061-01-01: 0.039131
+          2064-01-01: 0.039235
+          2071-01-01: 0.039339
+        metadata:
+          unit: /1
+          label: Pool Betting Duty base growth per person
+          reference:
+            - title: OBR EFO October 2026 (detailed forecast tables, receipts, Table 4.10)
+              href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+            - title: HMRC UK Betting and Gaming Statistics, July 2026 tables (Table_1_BG_receipts, 2024-25 and 2025-26 receipts)
+              href: https://assets.publishing.service.gov.uk/media/6ab54fd9fe72ed1e2b02f06b/2026_Jul_Bet_and_Gam_Tab.ods
+
     gdp:
       description: Per capita nominal GDP year-on-year growth.
       values:
@@ -941,6 +1449,31 @@ obr:
         label: Per capita non-labour income growth
         reference:
           - title: OBR EFO October 2026 (detailed forecast tables, economy, Table 1.12)
+            href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+
+    savings_income:
+      description: Per capita savings income year-on-year growth.
+      values:
+        # obr.savings_income divided by one plus ons.population, both for
+        # the fiscal year starting in year t: (1 + growth) / (1 + population)
+        # - 1, rounded to 4 decimals. Dataset projection grows household
+        # weights by population, so each person's savings income grows by
+        # this from 2022 to 2025 (data/economic_assumptions.py, growth_rate).
+        2022-01-01: 0.4880
+        2023-01-01: 1.2681
+        2024-01-01: 0.3366
+        2025-01-01: 0.0032
+        2026-01-01: 0.0047
+        2027-01-01: 0.0600
+        2028-01-01: 0.0496
+        2029-01-01: 0.0472
+        2030-01-01: 0.0530
+        2031-01-01: 0.0564
+      metadata:
+        unit: /1
+        label: Per capita savings income growth
+        reference:
+          - title: OBR, Economic and fiscal outlook October 2026, detailed forecast tables, receipts, Table 4.5, divided by ons.population growth
             href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
 
   house_prices:
