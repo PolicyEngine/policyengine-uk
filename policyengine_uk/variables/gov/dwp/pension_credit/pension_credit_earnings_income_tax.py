@@ -3,14 +3,28 @@ from policyengine_uk.utils.pension_credit import employed_earnings_sources
 
 DECISION = (
     "PolicyEngine does not model PAYE codes, so which part of a person's "
-    "income tax is payable on their earnings is a methodology choice, put to "
-    "Max on PolicyEngine/policyengine-uk#2019 and settled as option (a): treat "
-    "earnings as the top slice of the person's income. "
+    "income tax is payable on their earnings is a methodology choice "
+    "(PolicyEngine/policyengine-uk#2019): earnings are treated as the top "
+    "slice of the person's income. "
 )
+
+# Income tax here is before the winter fuel payment charge, as in every means
+# test: the charge recovers a payment rather than taxing earnings, and it
+# depends on Pension Credit, so deducting it would make the model circular.
+PRE_CHARGE_TAX = "income_tax_before_winter_fuel_payment_charge"
 
 
 def income_tax_with_inputs_zeroed(simulation, period, variables):
-    """Each person's income tax with every person's value of each of
+    """Each person's income tax before the winter fuel payment charge with
+    every person's value of each of ``variables`` set to nil, on a branch
+    that is dropped afterwards."""
+    return person_variable_with_inputs_zeroed(
+        simulation, period, variables, PRE_CHARGE_TAX
+    )
+
+
+def person_variable_with_inputs_zeroed(simulation, period, variables, output):
+    """Each person's ``output`` with every person's value of each of
     ``variables`` set to nil, on a branch that is dropped afterwards."""
     name = "pension_credit_without_" + "_and_".join(variables)
     while name in simulation.branches or name == simulation.branch_name:
@@ -23,7 +37,7 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
         people = branch.populations["person"]
         for variable in variables:
             branch.set_input(variable, period, np.zeros(people.count))
-        return people("income_tax", period)
+        return people(output, period)
     finally:
         del simulation.branches[name]
 
@@ -33,7 +47,8 @@ class pension_credit_income_tax_without_employment_income(Variable):
     entity = Person
     label = "Income tax without employed earnings, for Pension Credit"
     documentation = (
-        "The person's income tax if nobody in the simulation had employed "
+        "The person's income tax before the winter fuel payment charge if "
+        "nobody in the simulation had employed "
         "earnings: employment income and the statutory sick, maternity and "
         "paternity pay that SPC Regs 2002 reg. 17A(2) counts as earnings. " + DECISION
     )
@@ -41,7 +56,7 @@ class pension_credit_income_tax_without_employment_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        income_tax = person("income_tax", period)
+        income_tax = person(PRE_CHARGE_TAX, period)
         sources = employed_earnings_sources(parameters, period)
         if not any((person(source, period) != 0).any() for source in sources):
             return income_tax
@@ -53,7 +68,8 @@ class pension_credit_income_tax_without_earnings(Variable):
     entity = Person
     label = "Income tax without earnings, for Pension Credit"
     documentation = (
-        "The person's income tax if nobody in the simulation had employed "
+        "The person's income tax before the winter fuel payment charge if "
+        "nobody in the simulation had employed "
         "earnings (employment income and statutory sick, maternity and "
         "paternity pay) or self-employment income. " + DECISION
     )
@@ -82,6 +98,7 @@ class pension_credit_employment_income_tax(Variable):
         "earnings (employment income and statutory sick, maternity and "
         "paternity pay), which SPC Regs 2002 reg. 17(10) disregards in their "
         "net amount: the fall in the claimant's and partner's income tax "
+        "before the winter fuel payment charge "
         "without anyone's employed earnings, never negative. It includes any tax the "
         "earnings add on savings and dividends (a lost starting-rate band or "
         "personal savings allowance) and any effect of one partner's earnings "
@@ -99,7 +116,7 @@ class pension_credit_employment_income_tax(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        added = person("income_tax", period) - person(
+        added = person(PRE_CHARGE_TAX, period) - person(
             "pension_credit_income_tax_without_employment_income", period
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
@@ -112,7 +129,8 @@ class pension_credit_self_employment_income_tax(Variable):
     label = "Income tax actually payable on self-employed profit, for Pension Credit"
     documentation = (
         "The income tax the claimant's and partner's self-employment income "
-        "adds to their income tax, beneath any employed earnings: the fall in "
+        "adds to their income tax before the winter fuel payment charge, "
+        "beneath any employed earnings: the fall in "
         "their income tax without anyone's employed earnings when nobody has "
         "self-employment income either, never negative. Pension Credit income "
         "replaces it with the notional tax of the Computation of Earnings "

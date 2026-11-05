@@ -85,6 +85,7 @@
     benunits:
       benunit:
         members: [claimant, partner]
+        would_claim_uc: false
     households:
       household:
         members: [claimant, partner]

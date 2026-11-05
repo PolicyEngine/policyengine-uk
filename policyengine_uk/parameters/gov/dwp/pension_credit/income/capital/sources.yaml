@@ -1,4 +1,10 @@
 description: >
+  The formulas count ordinary accessible cash ISAs separately from savings,
+  at their cash value, without a generic cash sale-cost deduction.
+  Where the data tie a cash ISA or stocks and shares ISA balance to a member,
+  the formulas count it through `person_sources` in the holder's own benefit
+  unit and subtract it from `cash_isa` or `share_like_capital` before they
+  allocate the rest.
   PolicyEngine approximation of Pension Credit capital sources that count
   toward deemed income from capital, excluding the claimant's main home.
   `private_pension_wealth` is excluded because Schedule V paragraphs 22 and 23
@@ -26,6 +32,7 @@ metadata:
 values:
   2003-10-06:
     - savings
+    - cash_isa
     - owned_land
     - other_residential_property_value
     - non_residential_property_value

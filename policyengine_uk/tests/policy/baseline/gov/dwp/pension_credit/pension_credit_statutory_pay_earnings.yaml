@@ -214,9 +214,11 @@
     people:
       person1:
         age: 70
+        is_claimant_or_partner: true
         state_pension: 0
       person2:
         age: 35
+        is_claimant_or_partner: true
         statutory_maternity_pay: 194.32 * 52
     benunits:
       benunit:
@@ -326,9 +328,11 @@
     people:
       person1:
         age: 70
+        is_claimant_or_partner: true
         state_pension: 20_000
       person2:
         age: 40
+        is_claimant_or_partner: true
         employment_income: 5_000
         statutory_maternity_pay: 194.32 * 52
     benunits:
@@ -383,4 +387,3 @@
     # 17,147), 0.6 * (19,855 - 17,147)) = min(1,045.20, 1,624.80) = 1,045.20;
     # amount B = 0.4 * (19,855 - 18,889) = 386.40; savings credit 658.80.
     savings_credit: 658.80
-

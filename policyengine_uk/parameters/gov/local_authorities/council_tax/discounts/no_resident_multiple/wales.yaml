@@ -1,0 +1,14 @@
+description: The multiple of the appropriate percentage discounted where a chargeable dwelling in Wales has no resident. Until 31 March 2026 section 11(2)(a) of the Local Government Finance Act 1992 applied to Wales and gave twice the appropriate percentage. From 1 April 2026 section 11 is England-only and the Welsh discounts are prescribed under section 11E; regulation 4 of the 2026 Regulations prescribes 50 per cent only where there are residents and every one of them is disregarded, and regulation 6 prescribes 50 per cent for an unoccupied dwelling only in the narrow caravan-pitch, boat-mooring and job-related cases. No general no-resident discount is prescribed, so the multiple is zero from that date.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: Wales council tax no-resident discount multiple
+  reference:
+    - title: "Local Government Finance Act 1992, section 11(2)(a) (applied to England and Wales until 31 March 2026)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/11
+    - title: "The Council Tax (Discounts, Disregards and Exemptions) (Wales) Regulations 2026 (S.I. 2026/8 (W.)), regulations 4 and 6"
+      href: https://www.legislation.gov.uk/wsi/2026/8/regulation/4/made
+values:
+  1993-04-01: 2
+  2026-04-01: 0

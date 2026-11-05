@@ -1,0 +1,132 @@
+# HB SI 2006/213 regs 35(1)(i), 36(3); pension-age HB SI 2006/214
+# regs 35(1)(h)-(i), 36(2); England pensioner CTR SI 2012/2885 Sch 1
+# paras 18 and 19(2). Each treats statutory sick, maternity and paternity
+# pay as earnings and deducts the income tax attributable to earnings.
+# The existing tax attribution is retained: wages 10,000 + statutory pay 2,000
+# are 12,000 / 22,000 of the raw income including the private pension.
+# Tax before the WFP charge is given as an input to isolate attribution.
+# 12,000 - 1,886 * 12,000 / 22,000 = 10,971.272727. The pension is not earnings.
+# A second person of pension age checks the HB and CTR pensioner consumers.
+
+- name: Statutory sick pay enters earnings and the tax denominator exactly once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 40
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_sick_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_sick_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+    benunits:
+      worker_unit:
+        members: [worker]
+      pensioner_unit:
+        members: [pensioner]
+    households:
+      worker_household:
+        members: [worker]
+        country: ENGLAND
+      pensioner_household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: [10_971.272727, 10_971.272727]
+    council_tax_reduction_net_earnings: [10_971.272727, 10_971.272727]
+
+- name: Statutory maternity pay enters earnings and the tax denominator exactly once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 40
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_maternity_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_maternity_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+    benunits:
+      worker_unit:
+        members: [worker]
+      pensioner_unit:
+        members: [pensioner]
+    households:
+      worker_household:
+        members: [worker]
+        country: ENGLAND
+      pensioner_household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: [10_971.272727, 10_971.272727]
+    council_tax_reduction_net_earnings: [10_971.272727, 10_971.272727]
+
+- name: Statutory paternity pay enters earnings and the tax denominator exactly once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 40
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_paternity_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        private_pension_income: 10_000
+        statutory_paternity_pay: 2_000
+        income_tax_before_winter_fuel_payment_charge: 1_886
+        ni_class_1_employee: 0
+        ni_class_2: 0
+        ni_class_4: 0
+        pension_contributions: 0
+    benunits:
+      worker_unit:
+        members: [worker]
+      pensioner_unit:
+        members: [pensioner]
+    households:
+      worker_household:
+        members: [worker]
+        country: ENGLAND
+      pensioner_household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: [10_971.272727, 10_971.272727]
+    council_tax_reduction_net_earnings: [10_971.272727, 10_971.272727]

@@ -12,11 +12,11 @@ def is_full_time_student_non_dep(person, period):
 
 def applicant_has_universal_credit(benunit, period):
     """Whether the Council Tax Reduction applicant has the benefit unit's
-    Universal Credit award. The award belongs to the benefit unit's claimant
-    and partner, so not to a household head who applies alone."""
-    return (benunit("universal_credit", period) > 0) & ~benunit(
-        "council_tax_reduction_head_applies_alone", period
-    )
+    Universal Credit award (council_tax_reduction_universal_credit_award),
+    including one the benefit cap or deductions reduce to nil. The award
+    belongs to the benefit unit's claimant and partner, so not to a household
+    head who applies alone."""
+    return benunit("council_tax_reduction_universal_credit_award", period)
 
 
 def legacy_council_tax_reduction(
@@ -33,13 +33,36 @@ def legacy_council_tax_reduction(
     would_claim = benunit("would_claim_council_tax_reduction", period)
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
-    universal_credit = benunit("universal_credit", period)
     has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
+    # The councils use "the calculation or estimate of the amount of the
+    # income of the applicant ... made by the Secretary of State for the
+    # purpose of determining the award of universal credit", plus "the amount
+    # of the award of universal credit" (Council Tax Reduction Schemes
+    # (Default Scheme) (England) Regulations 2012, Sch. para. 37(1) and
+    # (3)(a)). Kingston upon Thames and Merton reproduce para. 37, Newham
+    # refers to the same calculation and counts "the amount of entitlement to
+    # universal credit", and Westminster bases its scheme on the Default
+    # Scheme. The model takes that income as earned income after tax,
+    # National Insurance and pension contributions, plus unearned income. The
+    # Secretary of State applies the work allowance and taper to the award
+    # (UC Regs 2013 reg. 22), not to the income, so the model counts earned
+    # income before the work allowance. The Secretary of State reduces the
+    # award for the benefit cap (reg. 81(1)), then recovers debts from it:
+    # payments on account such as advances (SI 2013/383 reg. 10),
+    # overpayments (SI 2013/384 reg. 10) and the claimant's liabilities to
+    # third parties (SI 2013/380 Sch. 6 para. 2(1)). The Secretary of State
+    # may not make a third-party deduction that leaves less than a penny
+    # payable (Sch. 6 para. 3(1)(a)), and in para. 11(5) treats the award and
+    # the amount payable as two figures. The councils count the award after
+    # the benefit cap and before debt deductions.
+    # universal_credit gives the amount payable, so the model adds
+    # uc_deductions to it to recover that award.
+    uc_award = benunit("universal_credit", period) + benunit("uc_deductions", period)
     uc_applicable_income = (
-        benunit("uc_earned_income", period)
+        benunit("uc_earned_income_before_work_allowance", period)
         + benunit("uc_unearned_income", period)
-        + universal_credit
+        + uc_award
     )
     applicable_amount = where(has_uc_award, uc_applicable_amount, applicable_amount)
     applicable_income = where(has_uc_award, uc_applicable_income, applicable_income)
@@ -62,10 +85,20 @@ def legacy_council_tax_reduction(
         - excess_income * ctr.means_test.withdrawal_rate
         - non_dep_deductions,
     )
+    # council_tax_reduction_assessable_capital takes the Universal Credit
+    # assessment for an award of Universal Credit (the default scheme's
+    # para 37(6)), including one the benefit cap or deductions reduce to nil.
+    # Most councils keep the default scheme's disregard of the whole capital of
+    # an applicant on Income Support, income-based JSA or income-related ESA
+    # (its Schedule 10 para 8); each scheme says whether it does.
+    passported_capital_disregarded = (
+        relevant_income_based_benefit
+        & ctr.means_test.disregards_passported_applicants_capital
+    )
     capital = where(
-        has_uc_award,
-        benunit("uc_assessable_capital", period),
-        benunit.household("savings", period),
+        passported_capital_disregarded,
+        0,
+        benunit("council_tax_reduction_assessable_capital", period),
     )
     capital_eligible = capital <= ctr.means_test.capital_limit
     return (
@@ -131,8 +164,15 @@ def normal_gross_income_non_dep_deduction(
         "property_income_after_finance_costs",
         "private_pension_income",
         "savings_interest_income",
+        # Normal gross income includes exempt returns. Dataset normalization
+        # separates these from ordinary interest without changing that gross.
+        "tax_free_savings_income",
         "dividend_income",
+        "individual_savings_account_dividend_income",
         "state_pension",
+        # Normal gross income includes maintenance, although it is exempt
+        # from income tax (Default Scheme Sch para 30(2), (9)).
+        "spousal_maintenance_income",
     ]
     earned_income_components = [
         "employment_income",

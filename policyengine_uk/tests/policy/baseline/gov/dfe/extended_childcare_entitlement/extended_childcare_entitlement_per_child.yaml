@@ -1,9 +1,13 @@
+# Birthday terms are intersected, not multiplied as annual shares. Whole ages
+# imply 6 April birthdays: base hours start in September, while working-parent
+# hours may already exist in April. April uses the preceding qualifying age
+# band; later terms use the new band, from the same annual funding table.
 # Each child's working parent hours are the part of its funded hours above the
 # universal (3-4) or targeted (2) hours: Childcare Act 2016 s.1(6)(a), and DfE's
 # statutory guidance (April 2026) para A1.11 for a 2-year-old eligible for both.
 # Rates per hour: 2025 £8.53 (age 2); 2026 £12.04 (under 2),
 # £8.90 (age 2) and £6.61 (3-4).
-- name: A 2-year-old eligible for both gets 15 targeted plus 15 working parent hours
+- name: A 2-year-old has targeted first hours only from September
   period: 2026
   absolute_error_margin: 0.05
   input:
@@ -16,12 +20,11 @@
         extended_childcare_entitlement_eligible: true
         targeted_childcare_entitlement_eligible: true
   output:
-    # 570 x 8.90 each
-    targeted_childcare_entitlement: 5073.00
-    extended_childcare_entitlement_per_child: 5073.00
-    extended_childcare_entitlement: 5073.00
+    targeted_childcare_entitlement: 3_382.00
+    extended_childcare_entitlement_per_child: 7_957.20
+    extended_childcare_entitlement: 7_957.20
 
-- name: Before September 2025 a 2-year-old eligible for both gets the targeted 15 hours
+- name: The annual 2025 schedule has summer working hours before targeted provision
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -34,10 +37,8 @@
         extended_childcare_entitlement_eligible: true
         targeted_childcare_entitlement_eligible: true
   output:
-    # The working parent total (15 hours at 1 January 2025) is no more than
-    # the targeted 570 hours: 570 x 8.53 targeted, nothing on top.
-    targeted_childcare_entitlement: 4862.10
-    extended_childcare_entitlement_per_child: 0
+    targeted_childcare_entitlement: 3_241.40
+    extended_childcare_entitlement_per_child: 2_192.60
 
 - name: A 1-year-old has no universal or targeted hours to come off
   period: 2026
@@ -107,9 +108,9 @@
     extended_childcare_entitlement_per_child: 9150.40
 
 # Until April 2024 the minimum age was three (reg 13(2)(a) as made). A
-# standalone universal claim runs all year; the working parent hours top it up
-# to 30 a week only in the terms after the third birthday. Rate: £5.88 (3-4).
-- name: A 3-year-old qualifying from September keeps a full year of universal hours
+# universal and working-parent claims both start after the third birthday.
+# They share the same two terms here. Rate: £5.88 (3-4).
+- name: A 3-year-old qualifying from September gets two common funded terms
   period: 2023
   absolute_error_margin: 0.05
   input:
@@ -122,8 +123,7 @@
         members: [child]
         extended_childcare_entitlement_eligible: true
   output:
-    # 570 x 5.88, then 15 more hours a week in two of the three terms.
-    universal_childcare_entitlement: 3351.60
+    universal_childcare_entitlement: 2_234.40
     extended_childcare_entitlement_per_child: 2234.40
 
 - name: Without standalone take-up such a child's universal hours come only in those terms
@@ -157,14 +157,13 @@
         extended_childcare_entitlement_eligible: true
         would_claim_universal_childcare: false
   output:
-    # 15 x 38 x 6.61 in each programme, preserving all 30 funded hours.
     universal_childcare_entitlement_eligible: true
-    universal_childcare_entitlement: 3767.70
-    extended_childcare_entitlement_per_child: 3767.70
+    universal_childcare_entitlement: 2_511.80
+    extended_childcare_entitlement_per_child: 5_893.80
     is_child_receiving_universal_childcare: true
     is_child_receiving_extended_childcare: true
 
-- name: Below 15 hours all working parent usage is universal despite false standalone take-up
+- name: Below 15 hours universal funds only its two common terms
   period: 2026
   absolute_error_margin: 0.05
   input:
@@ -178,11 +177,10 @@
         extended_childcare_entitlement_eligible: true
         would_claim_universal_childcare: false
   output:
-    # 10 x 38 x 6.61; the unpaid standalone floor is not added.
-    universal_childcare_entitlement: 2511.80
-    extended_childcare_entitlement_per_child: 0
+    universal_childcare_entitlement: 1_674.5333
+    extended_childcare_entitlement_per_child: 1_127.33
     is_child_receiving_universal_childcare: true
-    is_child_receiving_extended_childcare: false
+    is_child_receiving_extended_childcare: true
 
 - name: False universal take-up with a ten-hour family cap keeps the ten funded hours
   period: 2026
@@ -234,13 +232,12 @@
         would_claim_targeted_childcare: false
   output:
     targeted_childcare_entitlement_eligible: true
-    # 15 x 38 x 8.90 in each programme (DfE A1.11).
-    targeted_childcare_entitlement: 5073.00
-    extended_childcare_entitlement_per_child: 5073.00
+    targeted_childcare_entitlement: 3_382.00
+    extended_childcare_entitlement_per_child: 7_957.20
     is_child_receiving_targeted_childcare: true
     is_child_receiving_extended_childcare: true
 
-- name: Below 15 hours all working parent usage is targeted despite false standalone take-up
+- name: Below 15 hours targeted funds only its two common terms
   period: 2026
   absolute_error_margin: 0.05
   input:
@@ -255,13 +252,12 @@
         extended_childcare_entitlement_eligible: true
         would_claim_targeted_childcare: false
   output:
-    # 10 x 38 x 8.90, with no unfunded floor subtracted.
-    targeted_childcare_entitlement: 3382.00
-    extended_childcare_entitlement_per_child: 0
+    targeted_childcare_entitlement: 2_254.6667
+    extended_childcare_entitlement_per_child: 1_525.07
     is_child_receiving_targeted_childcare: true
-    is_child_receiving_extended_childcare: false
+    is_child_receiving_extended_childcare: true
 
-- name: Before the 30-hour expansion working parent participation is entirely targeted
+- name: Before expansion the summer working hours precede targeted provision
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -275,8 +271,8 @@
         extended_childcare_entitlement_eligible: true
         would_claim_targeted_childcare: false
   output:
-    targeted_childcare_entitlement: 4862.10
-    extended_childcare_entitlement_per_child: 0
+    targeted_childcare_entitlement: 3_241.40
+    extended_childcare_entitlement_per_child: 2_192.60
 
 - name: Legal targeted eligibility alone does not create take-up
   period: 2026
@@ -318,19 +314,25 @@
         age: 30
       child:
         age: 3
+        # Deliberate synthetic birthday: universal provision starts on
+        # 1 April, retaining this fixture's full-570-hour assumption.
+        date_of_birth: 20230331
     benunits:
       benunit:
         members: [parent, child]
         extended_childcare_entitlement_eligible: true
   output:
-    # (1,140 - 570) x 6.61 for the child only
-    extended_childcare_entitlement_per_child: [0, 3767.70]
-    extended_childcare_entitlement: 3767.70
+    # The adult gets zero; the child's 1,140 funded hours include 570
+    # universal hours, leaving 570 * £6.61 in the working-parent top-up.
+    universal_childcare_entitlement: [0, 3_767.70]
+    targeted_childcare_entitlement: [0, 0]
+    extended_childcare_entitlement_per_child: [0, 3_767.70]
+    extended_childcare_entitlement: 3_767.70
 
 # The same overlap through the targeted eligibility formula itself: Income
 # Support is a qualifying benefit, and eligibility for the working parent
 # entitlement no longer switches the targeted hours off.
-- name: Income Support family eligible for both keeps the targeted hours and gets 15 on top
+- name: Income Support family has targeted first hours in the two common terms
   period: 2026
   absolute_error_margin: 0.05
   input:
@@ -348,13 +350,12 @@
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: true
-    # 570 x 8.90 each
-    targeted_childcare_entitlement: 5073.00
-    extended_childcare_entitlement_per_child: 5073.00
+    targeted_childcare_entitlement: 3_382.00
+    extended_childcare_entitlement_per_child: 7_957.20
     is_child_receiving_targeted_childcare: true
     is_child_receiving_extended_childcare: true
 
-- name: Income Support family eligible for both before September 2025 gets the targeted 15 hours
+- name: Income Support family has summer working hours before targeted starts in 2025
   period: 2025
   absolute_error_margin: 0.05
   input:
@@ -372,8 +373,7 @@
         country: ENGLAND
   output:
     targeted_childcare_entitlement_eligible: true
-    # 570 x 8.53 targeted; the 15-hour working parent total adds nothing.
-    targeted_childcare_entitlement: 4862.10
-    extended_childcare_entitlement_per_child: 0
+    targeted_childcare_entitlement: 3_241.40
+    extended_childcare_entitlement_per_child: 2_192.60
     is_child_receiving_targeted_childcare: true
-    is_child_receiving_extended_childcare: false
+    is_child_receiving_extended_childcare: true

@@ -1,4 +1,10 @@
 description: >
+  The formulas count ordinary accessible cash ISAs separately from savings,
+  at their cash value, without a generic cash sale-cost deduction.
+  Where the data tie a cash ISA or stocks and shares ISA balance to a member,
+  the formulas count it through `person_sources` in the holder's own benefit
+  unit and subtract it from `cash_isa` or `share_like_capital` before they
+  allocate the rest.
   Model variables currently mapped to countable income-related Employment and
   Support Allowance capital. The Employment and Support Allowance Regulations
   2008 treat capital as assessable unless it is disregarded under Schedule 9.
@@ -17,11 +23,11 @@ description: >
   occupational or personal pension and the value of funds held under a
   personal pension scheme. Other Schedule 9 disregards and the higher
   residential-care capital disregard are not yet modeled because the current
-  dataset does not isolate those states or asset holdings. Because the dataset
-  only provides household-level capital stocks, the model allocates the full
-  household total to benunits with a reported income-related ESA award and
-  only falls back to an adult-share proxy when nobody in the household is on
-  that reported claim path. That allocation is a data approximation, not a
+  dataset does not isolate those states or asset holdings. For capital whose
+  owner the data do not identify, the model allocates the full household
+  remainder to benunits with a reported income-related ESA award and falls
+  back to claimant and partner shares when nobody in the household reports
+  such an award. That allocation is a data approximation, not a
   legislated ownership rule.
 metadata:
   label: Income-related ESA countable capital sources
@@ -37,6 +43,7 @@ metadata:
 values:
   2008-10-27:
     - savings
+    - cash_isa
     - owned_land
     - share_like_capital
     - other_residential_property_value
