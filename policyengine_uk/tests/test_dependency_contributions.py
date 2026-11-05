@@ -40,6 +40,12 @@ For any household drawn below:
    period, and running the formula again gives what the calculation it came
    from read. A formula that asks what the simulation stores can read otherwise
    (test_a_formula_that_asks_what_the_simulation_stores).
+6. Ranks what it returns, for the toy shapes drawn: the function returns a
+   Series of floats, largest first, empty where there are no contributions;
+   top_n keeps the contributions largest in absolute value. The change table
+   holds every variable either simulation's contributions name, zero where one
+   names none, with the reform's minus the baseline's as the change. The charts
+   draw those rows, and no bars where there are none.
 
 The old helper raised "Inconsistent input" when it restored a monthly dependency
 over a year: the months already held the zeros as inputs, which did not add up
@@ -80,6 +86,7 @@ from policyengine_uk.utils.dependencies import (
     calculate_dependency_contribution_change,
     calculate_dependency_contributions,
     calculation_again,
+    create_waterfall_change_chart,
     create_waterfall_chart,
     get_direct_reads,
     get_variable_dependencies,
@@ -2126,6 +2133,45 @@ def test_a_neutralized_target_equal_to_what_its_formula_gave(target):
     assert get_variable_dependencies(target, branch, 2026) == []
 
 
+def test_the_charts_and_the_change_table_take_a_neutralized_target():
+    # A neutralized target has no contributions. top_n, the change table and
+    # the charts rank with nlargest, which rejects the object dtype pandas
+    # gives a Series built from no values, so the empty result holds floats.
+    target = "lifetime_isa_bonus"
+    sim = Simulation(
+        situation={"age": {2026: 40}, "lifetime_isa_payments": {2026: 4_000}},
+        trace=True,
+    )
+    assert sim.calculate(target, 2026) == 1_000
+    branches = []
+    for name in ["neutralized", "also_neutralized"]:
+        branch = sim.get_branch(name, clone_system=True)
+        branch.tax_benefit_system.neutralize_variable(target)
+        assert branch.calculate(target, 2026) == 0
+        branches.append(branch)
+
+    contributions = calculate_dependency_contributions(
+        branches[0], target, 2026, top_n=5
+    )
+    assert contributions.empty
+    assert pd.api.types.is_float_dtype(contributions)
+    assert list(create_waterfall_chart(branches[0], target, 2026).data[0].x) == []
+    assert calculate_dependency_contribution_change(*branches, target, 2026).empty
+    chart = create_waterfall_change_chart(*branches, target, 2026)
+    assert list(chart.data[0].x) == []
+
+    # Against the simulation the branches came from, each read loses the 1,000
+    # it contributes there, as on main: with age or payments zero, that
+    # simulation pays no bonus.
+    change = calculate_dependency_contribution_change(sim, branches[0], target, 2026)
+    assert change.to_dict() == {
+        "baseline": {"age": 1_000, "lifetime_isa_payments": 1_000},
+        "reform": {"age": 0, "lifetime_isa_payments": 0},
+        "change": {"age": -1_000, "lifetime_isa_payments": -1_000},
+        "relative_change": {"age": -1, "lifetime_isa_payments": -1},
+    }
+
+
 def test_a_constant_equal_to_what_the_formula_it_replaced_gave():
     # A limitation the docstring lists: a constant leaves no calculation in the
     # index, so the reads come from the calculation that gave equal values.
@@ -2280,6 +2326,125 @@ def test_a_bool_target_that_reads_only_a_name_containing_weight():
     assert sim.calculate("core_has_weight", 2026)
 
     assert calculate_dependency_contributions(sim, "core_has_weight", 2026).empty
+
+
+class core_double_less_leaf(CoreVariable):
+    label = "Core double less leaf"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+    adds = ["core_double"]
+    subtracts = ["core_leaf"]
+
+
+class core_leaf_and_double_less_twenty(CoreVariable):
+    label = "Core leaf and double less twenty"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+    adds = ["core_leaf", "core_double"]
+    subtracts = ["core_twenty"]
+
+
+# Targets with no contributions (core_leaf reads nothing), one, two, and three
+# with signs that differ and absolute values that tie.
+RANKED_TOYS = [
+    "core_leaf",
+    "core_double",
+    "core_leaf_and_double",
+    "core_double_less_leaf",
+    "core_leaf_and_double_less_twenty",
+    "core_leaf_and_weight",
+]
+
+
+def ranked_toy_simulation(name, neutralized):
+    sim = core_toy_simulation(
+        core_leaf,
+        core_double,
+        core_twenty,
+        core_weight_share,
+        core_leaf_and_double,
+        core_double_less_leaf,
+        core_leaf_and_double_less_twenty,
+        core_leaf_and_weight,
+    )
+    if neutralized is not None:
+        sim.tax_benefit_system.neutralize_variable(neutralized)
+    sim.calculate(name, 2026)
+    return sim
+
+
+def assert_ranks(ranked, full, top_n, column=None):
+    # ranked holds the rows of full largest in absolute value, top_n of them
+    # if given, with the same values, largest value first.
+    values = ranked if column is None else ranked[column]
+    every = full if column is None else full[column]
+    assert list(values) == sorted(values, reverse=True)
+    assert set(ranked.index) <= set(full.index)
+    if top_n is None:
+        assert len(ranked) == len(full)
+    else:
+        assert len(ranked) == min(top_n, len(full))
+    kept, dropped = every.loc[ranked.index], every.drop(ranked.index)
+    assert list(kept) == list(values)
+    if len(kept) and len(dropped):
+        assert kept.abs().min() >= dropped.abs().max()
+
+
+@settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(
+    name=st.sampled_from(RANKED_TOYS),
+    neutralized=st.tuples(*[st.sampled_from([None, "target", "core_leaf"])] * 2),
+    top_n=st.one_of(st.none(), st.integers(0, 4)),
+)
+# Fail on main: the defaults rank a target that read nothing, and a baseline or
+# reform that neutralizes the target, with nlargest.
+@example(name="core_leaf", neutralized=(None, None), top_n=5)
+@example(name="core_leaf_and_double_less_twenty", neutralized=("target", None), top_n=5)
+@example(name="core_leaf_and_double_less_twenty", neutralized=(None, "target"), top_n=1)
+def test_the_charts_and_the_change_table_rank_what_the_function_returns(
+    name, neutralized, top_n
+):
+    baseline, reform = (
+        ranked_toy_simulation(name, name if which == "target" else which)
+        for which in neutralized
+    )
+    full = calculate_dependency_contributions(baseline, name, 2026)
+    full_reform = calculate_dependency_contributions(reform, name, 2026)
+    for contributions in (full, full_reform):
+        assert pd.api.types.is_float_dtype(contributions)
+        assert_ranks(contributions, contributions, None)
+
+    ranked = calculate_dependency_contributions(baseline, name, 2026, top_n=top_n)
+    assert pd.api.types.is_float_dtype(ranked)
+    assert_ranks(ranked, full, top_n)
+    chart = create_waterfall_chart(baseline, name, 2026, top_n=top_n)
+    assert list(chart.data[0].x) == list(ranked.index)
+    assert list(chart.data[0].y) == list(ranked)
+
+    table = calculate_dependency_contribution_change(
+        baseline, reform, name, 2026, top_n=None
+    )
+    names = full.index.union(full_reform.index)
+    assert set(table.index) == set(names)
+    for column, contributions in [("baseline", full), ("reform", full_reform)]:
+        assert pd.api.types.is_float_dtype(table[column])
+        expected = contributions.reindex(names).fillna(0)
+        assert table[column].to_dict() == expected.to_dict()
+    assert (table["change"] == table["reform"] - table["baseline"]).all()
+    assert_ranks(table, table, None, column="change")
+
+    ranked_table = calculate_dependency_contribution_change(
+        baseline, reform, name, 2026, top_n=top_n
+    )
+    assert_ranks(ranked_table, table, top_n, column="change")
+    pd.testing.assert_frame_equal(ranked_table, table.loc[ranked_table.index])
+    change_chart = create_waterfall_change_chart(
+        baseline, reform, name, 2026, top_n=top_n
+    )
+    assert list(change_chart.data[0].x) == list(ranked_table.index)
+    assert list(change_chart.data[0].y) == list(ranked_table["change"])
 
 
 class core_raises(CoreVariable):

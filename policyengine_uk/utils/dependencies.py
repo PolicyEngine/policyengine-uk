@@ -592,7 +592,10 @@ def calculate_dependency_contributions(
     the contributions sum to its mean, unless the function skips one or top_n
     drops some. Other variables contribute zero where the target's values stay
     finite, and a calculation that read no variables, or a neutralized
-    variable, has no contributions. Apart from what its own
+    variable, has no contributions. The function returns a Series of floats,
+    largest first. Where there are no contributions, it returns an empty one,
+    which create_waterfall_chart and calculate_dependency_contribution_change
+    accept. Apart from what its own
     calculation of variable_name over year stores or drops in sim, as any
     Simulation.calculate does, sim's values stay as they were. The tax-benefit
     system needs parameters, as every PE-UK system has: the recalculation runs
@@ -667,9 +670,12 @@ def calculate_dependency_contributions(
       for an exempt household. Zeroing a variable a formula divides by can
       give infinity or NaN too (equiv_household_net_income divides by
       household_equivalisation_bhc).
-    - The function subtracts a target's values for each variable it doesn't
-      skip, so a bool or enum target raises TypeError there, unless an error
-      above comes first.
+    - The function subtracts the target's values, after mapping them to
+      map_to, for each variable it doesn't skip. The subtraction raises
+      TypeError for bool and enum values, unless an error above comes first.
+      Mapping from a person to a group, or between groups, does arithmetic
+      on the values first: it turns bools into numbers, which subtract, and
+      raises TypeError for enum values.
     """
     original_values = sim.calculate(variable_name, year)
 
@@ -703,7 +709,12 @@ def calculate_dependency_contributions(
             contribution = (original_values_mapped - new_values_mapped).mean()
         dependency_contributions[variable] = contribution
 
-    result = pd.Series(dependency_contributions)
+    if dependency_contributions:
+        result = pd.Series(dependency_contributions)
+    else:
+        # pandas gives a Series built from no values object dtype, and
+        # nlargest (top_n, the change table, the charts) rejects that.
+        result = pd.Series(dtype=float)
 
     if top_n is not None:
         # Keep the top N variables by absolute contribution
