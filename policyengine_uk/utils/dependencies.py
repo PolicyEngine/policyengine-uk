@@ -155,8 +155,7 @@ def find_calculation(variable_name, period, sim, calculations, keys, value=None)
     # values read. An error if the trace shows it but nothing gives value, or
     # if the trace does not show it.
     period = periods.period(period)
-    variable = sim.tax_benefit_system.get_variable(variable_name)
-    if variable is not None and variable.is_neutralized:
+    if sim.tax_benefit_system.variables[variable_name].is_neutralized:
         return None
     shown = False
     for branch_name in branch_chain(sim):

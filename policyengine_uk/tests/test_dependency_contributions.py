@@ -1518,6 +1518,30 @@ def test_values_calculated_before_tracing_began(target, expected):
     assert_unchanged(sim, before)
 
 
+def test_a_month_calculated_before_tracing_began():
+    # The year's node shows only a read of March's stored value, and March's
+    # formula gives that value again.
+    sim = core_toy_simulation(core_leaf, core_monthly_leaf)
+    sim.trace = False
+    sim.calculate("core_monthly_leaf", "2026-03")
+    sim.trace = True
+    assert sim.calculate("core_monthly_leaf", 2026) == pytest.approx(10)
+    before = snapshot(sim)
+
+    contributions = calculate_dependency_contributions(sim, "core_monthly_leaf", 2026)
+
+    assert contributions.to_dict() == pytest.approx({"core_leaf": 10})
+    assert_unchanged(sim, before)
+
+
+def test_a_variable_the_trace_does_not_show_raises():
+    sim = core_toy_simulation(core_leaf, core_double)
+    sim.calculate("core_leaf", 2026)
+
+    with pytest.raises(ValueError, match="The trace shows no calculation"):
+        get_variable_dependencies("core_double", sim, 2026)
+
+
 def test_running_the_formula_again_matches_the_trace():
     # A clone that starts tracing holds values it did not calculate, so running
     # each formula again gives the reads, where the traced simulation has them
@@ -2117,6 +2141,48 @@ def test_a_formula_that_raises_when_it_runs_again():
         calculate_dependency_contributions(sim, "core_raises", 2026)
 
     assert_unchanged(sim, before)
+
+
+class core_reads_then_raises(CoreVariable):
+    label = "Core reads then raises"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        person("core_leaf", period)
+        raise RuntimeError("no value")
+
+
+class core_catches_a_late_failure(CoreVariable):
+    label = "Core catches a late failure"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = YEAR
+
+    def formula(person, period):
+        try:
+            person("core_reads_then_raises", period)
+        except RuntimeError:
+            pass
+        return person("core_leaf", period)
+
+
+def test_what_a_calculation_read_before_it_raised_gave_no_value():
+    # The trace shows the node with what it read and no value, so the formula
+    # runs again, and its error reaches the caller.
+    sim = core_toy_simulation(
+        core_leaf, core_reads_then_raises, core_catches_a_late_failure
+    )
+    assert sim.calculate("core_catches_a_late_failure", 2026) == 10
+
+    with pytest.raises(RuntimeError, match="no value"):
+        get_direct_reads("core_reads_then_raises", sim, 2026)
+    contributions = calculate_dependency_contributions(
+        sim, "core_catches_a_late_failure", 2026
+    )
+
+    assert contributions.to_dict() == {"core_leaf": 10}
 
 
 @pytest.mark.parametrize(
