@@ -1,3 +1,10 @@
+## [2.175.0] - 2026-11-05
+
+### Added
+
+- The budget totals `household_tax` and `household_benefits` now read their terms from the `budget` fields in `programs.yaml`, and `policyengine_uk.programs.budget_programs()` returns each term with its label, tax or benefit flag and group. Calculated values do not change.
+
+
 ## [2.174.8] - 2026-11-05
 
 ### Fixed
