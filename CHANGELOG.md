@@ -1,3 +1,17 @@
+## [2.175.2] - 2026-11-05
+
+### Fixed
+
+- PolicyEngine now includes the claimant's and partner's Maternity Allowance when it calculates the benefit cap on Universal Credit and Housing Benefit. It leaves a non-dependent adult's allowance out (#2784). Parliament lists the allowance among the welfare benefits whose total the Secretary of State may cap (Welfare Reform Act 2012 s.96(10)(i)).
+
+
+## [2.175.1] - 2026-11-05
+
+### Fixed
+
+- The model now opens the reg 60A Universal Credit route on a legacy closure claim only when the claimant or partner reports Working Tax Credit, and the formula for the pension-age Council Tax Reduction test reads the same reports; a report by a child or another adult in the benefit unit no longer opens the route or makes the award a reg 60A award.
+
+
 ## [2.175.0] - 2026-11-05
 
 ### Added
