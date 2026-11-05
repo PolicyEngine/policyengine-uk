@@ -651,15 +651,16 @@
     # gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours and
     # gov.hmrc.minimum_wage.non_apprentice). So DWP disregards "any earnings
     # derived from that work which do not exceed the limits" (ESA Regs 2008
-    # Sch 7 para 5): all of them, not £20. The expected values take "£20 was
-    # disregarded" to mean the £20 disregard of Sch 7 paras 6 and 7(1), as
-    # under para 5 DWP disregards "any earnings ... which do not exceed the
-    # limits", not a fixed £20. On that reading he fails para 4(2)(a), his
-    # Pension Credit would fall back to B(0), nil, and his ESA would come back,
-    # so ESA with no Pension Credit holds and Pension Credit with no ESA does
-    # not. On another reading, para 4(2)(a) holds wherever DWP disregarded at
-    # least £20 of earnings in the award, and he would then keep £525.20 of
-    # Pension Credit with no ESA while he stays in employment (para 4(2)(b)).
+    # Sch 7 para 5): all of them, not £20. The expected values agree with the
+    # reading under which "£20 was disregarded" means the £20 disregard of
+    # Sch 7 paras 6 and 7(1), as under para 5 DWP disregards "any earnings ...
+    # which do not exceed the limits", not a fixed £20. On that reading he
+    # fails para 4(2)(a), his Pension Credit would fall back to B(0), nil, and
+    # his ESA would come back, so ESA with no Pension Credit holds and Pension
+    # Credit with no ESA does not. On another reading, para 4(2)(a) holds
+    # wherever DWP disregarded at least £20 of earnings in the award, and he
+    # would then keep £525.20 of Pension Credit with no ESA while he stays in
+    # employment (para 4(2)(b)).
     esa_income_eligible: true
     esa_income: 5_491.20
     claimant_or_partner_esa_income: 5_491.20
@@ -933,7 +934,7 @@
     # disregarded in respect of earnings taken into account in that award"
     # and "the person whose earnings qualified for the disegard continues in
     # employment after the termination of that award". Once the couple
-    # claimed, it could then keep 366.60 of Pension Credit with no ESA. The
+    # claimed, it could then keep £366.60 of Pension Credit with no ESA. The
     # model holds no record of how an award started, and
     # pension_credit_earnings_disregard does not apply para 4(2), so the model
     # pays this couple the award and no Pension Credit, as in case 18.

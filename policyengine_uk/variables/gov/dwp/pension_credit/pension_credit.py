@@ -35,8 +35,10 @@ class pension_credit(Variable):
     def formula(benunit, period, parameters):
         entitlement = benunit("pension_credit_entitlement", period)
         would_claim = benunit("would_claim_pc", period)
-        # WRA 2007 Sch 1 para 6(1)(c) and (d): with the couple's
-        # income-related ESA in payment, the couple has no Pension Credit.
+        # The formula pays nothing while the couple has income-related ESA,
+        # so that no couple gets both: Parliament allows the award only where
+        # neither member of the couple is entitled to State Pension Credit
+        # (WRA 2007 Sch 1 para 6(1)(c) and (d)).
         couple_esa = benunit("claimant_or_partner_esa_income", period)
         amount = where(couple_esa > 0, 0, entitlement * would_claim)
 
