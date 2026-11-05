@@ -7,16 +7,23 @@ class council_tax_reduction_premiums(Variable):
     label = "Council Tax Reduction disability and carer premiums"
     documentation = (
         "The disability and carer premiums in the Council Tax Reduction "
-        "applicable amount, which are the applicant's. A pensioner "
-        "(council_tax_reduction_pensioner) has the pension-age schedule (the "
-        "severe disability and carer premiums), anyone else the working-age "
-        "schedule. Where the applicant is the benefit unit's claimant, these "
-        "are the benefit unit's premiums (pension_age_benefits_premiums or "
-        "working_age_benefits_premiums). Where the household head applies "
+        "applicable amount. A pensioner (council_tax_reduction_pensioner) has "
+        "the pension-age schedule (the severe disability and carer premiums, "
+        "and the disabled child and enhanced disability premiums for each "
+        "qualifying child or young person in the family), anyone else the "
+        "working-age schedule. Where the applicant is the benefit unit's "
+        "claimant, these are the benefit unit's premiums: for a pensioner, "
+        "pension_age_benefits_premiums plus "
+        "council_tax_reduction_pensioner_child_disability_premiums; otherwise "
+        "working_age_benefits_premiums, with Council Tax Reduction's own "
+        "severe disability and enhanced disability premiums in place of the "
+        "shared ones. Where the household head applies "
         "alone (council_tax_reduction_head_applies_alone), they are the "
         "premiums of a single claimant on the head's own circumstances, under "
-        "the same conditions: the disability and enhanced disability premiums "
-        "on her own disability (working age only); the severe disability "
+        "the same conditions: the disability premium on her own disability and "
+        "the enhanced disability premium on the scheme's condition "
+        "(meets_council_tax_reduction_enhanced_disability_premium_condition), "
+        "both working age only; the severe disability "
         "premium if she receives a qualifying benefit, no carer benefit is "
         "paid for caring for her, and no other resident aged 18 or over is "
         "her non-dependant (everyone else in the household, since she has no "
@@ -46,14 +53,27 @@ class council_tax_reduction_premiums(Variable):
         pensioner = benunit("council_tax_reduction_pensioner", period)
         # The working-age severe disability premium takes Council Tax
         # Reduction's own family test (council_tax_reduction_severe_disability_
-        # premium, which differs from the shared premium in Scotland).
+        # premium, which differs from the shared premium in Scotland), and the
+        # enhanced disability premium the scheme's own condition
+        # (council_tax_reduction_enhanced_disability_premium).
         benefit_unit_premiums = where(
             pensioner,
-            benunit("pension_age_benefits_premiums", period),
+            # A pensioner's premiums include the disabled child and enhanced
+            # disability premiums for the family's children and young persons
+            # (SI 2012/2885 Sch 1 para 6(1)(d); WSI 2013/3029 Sch 1 para
+            # 1(1)(d); SSI 2012/319 reg 20(d)).
+            benunit("pension_age_benefits_premiums", period)
+            + benunit(
+                "council_tax_reduction_pensioner_child_disability_premiums", period
+            ),
             benunit("working_age_benefits_premiums", period)
             + (
                 benunit("council_tax_reduction_severe_disability_premium", period)
                 - benunit("severe_disability_premium", period)
+            )
+            + (
+                benunit("council_tax_reduction_enhanced_disability_premium", period)
+                - benunit("enhanced_disability_premium", period)
             ),
         )
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
@@ -94,7 +114,12 @@ class council_tax_reduction_premiums(Variable):
         disability_premiums = ~pensioner * (
             head_has(person("is_disabled_for_benefits", period))
             * disability.disability_single
-            + head_has(person("is_enhanced_disabled_for_benefits", period))
+            + head_has(
+                person(
+                    "meets_council_tax_reduction_enhanced_disability_premium_condition",
+                    period,
+                )
+            )
             * disability.enhanced_single
         )
         head_premiums = (disability_premiums + severe + carer_premium) * WEEKS_IN_YEAR

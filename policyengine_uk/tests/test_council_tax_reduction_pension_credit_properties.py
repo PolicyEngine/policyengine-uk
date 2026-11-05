@@ -7,8 +7,8 @@ Law:
   24). Capital for the 16,000 limit is calculated under the same Part (SI
   2012/2885 reg 11(3); WSI 2013/3029 reg 30(2)), so the limit cannot apply.
   The award is the maximum reduction less non-dependant deductions.
-- Savings credit only: the Secretary of State's assessment of income and
-  capital is used, adjusted for the savings credit payable (SI 2012/2885 Sch 1
+- Savings credit only: councils use the Secretary of State's assessment of
+  income and capital and add the savings credit payable (SI 2012/2885 Sch 1
   para 14; WSI 2013/3029 Sch 1 para 8; SSI 2012/319 reg 25).
 
 Invariants, for any generated population of families, where L is the eligible
@@ -22,22 +22,22 @@ liability, ND the non-dependant deductions and A the applicable amount:
    A) - ND) when the Pension Credit assessment of capital is within 16,000, and
    nothing otherwise.
 4. Differential: everyone else keeps the general formula, max(0, L - 0.2 x
-   max(0, I - A) - ND) when capital C is within 16,000, where I is the
-   general income definition plus tariff income on C, both recomputed here
-   from their components and the regulations rather than read from the
-   variables under test, less pensioners' Child Benefit and the schemes'
-   pensioner earnings disregard (recomputed from the statutory sums). C is household savings plus other property at 90%
-   of its value (SI 2012/2885 Sch 1 para 32(a)), or, for a Welsh Universal
-   Credit recipient, the Universal Credit assessment of capital (WSI
-   2013/3029 Sch 6 para 9(6)), or nil for a Welsh applicant on Income
-   Support or income-based JSA or ESA (Sch 10 para 8). A UC award includes
-   one the cap or deductions reduce to nil. Tariff income is 1 a week per
-   500, or part,
-   over 10,000 for pensioners (Sch 1 para 37); for people under pension age
-   in Wales and Scotland 1 a week per 250, or part, over 6,000 (WSI
-   2013/3029 Sch 6 para 33; SSI 2021/249 reg 63(1)(b)), or with Universal
-   Credit 4.35 a month (UC Regs 2013 reg 72; SSI 2021/249 reg 63(1)(a)), and
-   nil on Income Support or income-based JSA or ESA.
+   max(0, I - A) - ND) when capital C is within 16,000, where I is the general
+   income definition plus tariff income on C, both recomputed here from their
+   components and the regulations rather than read from the variables under
+   test, less pensioners' Child Benefit and the schemes' pensioner earnings
+   disregard (recomputed from the statutory sums). C is household savings plus
+   other property at 90% of its value (SI 2012/2885 Sch 1 para 32(a)), or, for
+   a Welsh Universal Credit recipient, the Universal Credit assessment of
+   capital (WSI 2013/3029 Sch 6 para 9(6)), or nil for a Welsh applicant on
+   Income Support or income-based JSA or ESA (Sch 10 para 8). A UC award
+   includes one the cap or deductions reduce to nil. Tariff income is 1 a week
+   per 500, or part, over 10,000 for pensioners (Sch 1 para 37), counting
+   capital up to 16,000 except in Scotland (SSI 2012/319 reg 27(2)); for people
+   under pension age in Wales and Scotland 1 a week per 250, or part, over
+   6,000 (WSI 2013/3029 Sch 6 para 33; SSI 2021/249 reg 63(1)(b)), or with
+   Universal Credit 4.35 a month (UC Regs 2013 reg 72; SSI 2021/249 reg
+   63(1)(a)), and nil on Income Support or income-based JSA or ESA.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
@@ -445,11 +445,14 @@ def expected_capital(unit, values, i):
 
 
 def expected_tariff_income(unit, values, i, capital):
-    def steps(threshold, step):
-        return np.ceil(max(0.0, min(capital, CAPITAL_LIMIT) - threshold) / step)
+    def steps(threshold, step, limit=CAPITAL_LIMIT):
+        return np.ceil(max(0.0, min(capital, limit) - threshold) / step)
 
     if values["council_tax_reduction_pensioner"][i]:
-        return steps(10_000, 500) * 52
+        # SSI 2012/319 reg 27(2) sets no ceiling on a Scottish pensioner's
+        # counted capital.
+        limit = np.inf if unit["country"] == "SCOTLAND" else CAPITAL_LIMIT
+        return steps(10_000, 500, limit) * 52
     if unit["country"] == "ENGLAND":
         return 0.0
     if universal_credit_route(values, i):
@@ -607,9 +610,10 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
 
 
 def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
-    """A pensioner with £39,500 of total income is charged the winter fuel
-    payment (ITEPA 2003 s.681I) through income tax. CTR deducts the tax
-    before the charge, so the routes agree with the main definition."""
+    """This pensioner's total income of £39,500 exceeds £35,000, so they owe
+    income tax equal to their Winter Fuel Payment (ITEPA 2003 s.681I(1) and
+    (3); winter_fuel_payment_charge). CTR deducts income tax before that
+    charge, so the routes agree with the main definition."""
     family = dict(
         shape="single_pension",
         ages=[70],

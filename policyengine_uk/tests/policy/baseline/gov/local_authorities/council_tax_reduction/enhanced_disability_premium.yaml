@@ -1,0 +1,524 @@
+# Enhanced disability premium in working-age Council Tax Reduction.
+# Welsh councils count DLA care highest, PIP daily living enhanced or AFIP,
+# for an applicant or family member "who has not attained the qualifying age
+# for state pension credit" (CTR (Prescribed Requirements) (Wales) Regs 2013
+# Sch 7 para 12(1)). Scottish councils count the same benefits for the
+# applicant or partner (CTR (Scotland) Regs 2021 Sch 1 para 14(1)), with no
+# age limit from 20 June 2022 (S.S.I. 2022/161), and attendance allowance at
+# either rate from 1 April 2023 (para 14(1)(g), S.S.I. 2023/38). Merton and
+# Kingston upon Thames count DLA care highest and PIP daily living at either
+# rate and omit AFIP (Merton's Local Council Tax Support Scheme Rules 2026 and
+# Kingston upon Thames's Council Tax Reduction Scheme 2026 - 2027, Sch 3 para
+# 12(1)). Newham counts DLA care highest, PIP daily living at either rate and
+# AFIP (Newham's Council Tax Reduction Scheme 2026, Sch 3 para 12(1)). The
+# three London councils keep the qualifying age for State Pension Credit as
+# the age limit. The model applies each council's list from the first scheme
+# year whose text supports it: Merton's from 2023-24 (the 2023 rules), and
+# Kingston upon Thames's and Newham's in every model year, since their texts
+# support them from 2013-14 (Newham's with AFIP from 2014-15). It applies the
+# Housing Benefit condition in Merton before 2023 and in Westminster, and
+# reads each year's rules at 30 April.
+# 2026-27 amounts: enhanced disability premium £22.00 single, £31.40 couple;
+# severe disability premium £86.05 single.
+
+- name: Case 1, Welsh working-age CTR premiums include the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: ENHANCED
+    households:
+      household:
+        members: [person1]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    council_tax_reduction_pensioner: false
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: 1_144
+    # Plus the severe disability premium, 86.05 * 52 = 4,474.60: 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 2, Scottish working-age CTR counts attendance allowance at either rate from 2023.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        aa_category: LOWER
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    council_tax_reduction_pensioner: false
+    # The model's legacy premium does not count attendance allowance.
+    enhanced_disability_premium: 0
+    # Para 14(1)(g): 22.00 * 52 = 1,144.00.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+    council_tax_reduction_enhanced_disability_premium: 1_144
+    # Severe disability premium 4,474.60 + 1,144.00 = 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 3, Scottish working-age CTR does not count attendance allowance in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        aa_category: LOWER
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    council_tax_reduction_enhanced_disability_premium: 0
+    # The model pays only the severe disability premium, at the 2022-23
+    # single rate £69.40: 69.40 * 52 = 3,608.80.
+    council_tax_reduction_premiums: 3_608.80
+
+- name: Case 4, Scottish working-age CTR pays the couple rate for an over-age partner from 2023.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    is_couple: true
+    # Because the couple receives income-based Jobseeker's Allowance, the
+    # model applies the working-age scheme.
+    council_tax_reduction_pensioner: false
+    # The model's legacy premium applies the age limit.
+    enhanced_disability_premium: 0
+    # Scottish councils apply no age limit under para 14(1)(b): 31.40 * 52 =
+    # 1,632.80.
+    council_tax_reduction_enhanced_disability_premium: 1_632.80
+    # The model pays no other premium, because only one partner has a severe
+    # disability premium qualifying benefit.
+    council_tax_reduction_premiums: 1_632.80
+
+- name: Case 5, Scottish working-age CTR applied the age limit in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    is_couple: true
+    council_tax_reduction_pensioner: false
+    # Para 14(1)(b) as in force on 30 April 2022: "the applicant's partner,
+    # who has not attained pensionable age".
+    council_tax_reduction_enhanced_disability_premium: 0
+    council_tax_reduction_premiums: 0
+
+- name: Case 6, Welsh working-age CTR keeps the age limit for an over-age partner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
+    households:
+      household:
+        members: [person1, person2]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    is_couple: true
+    council_tax_reduction_pensioner: false
+    # Sch 7 para 12(1)(b): "who has not attained the qualifying age for state
+    # pension credit".
+    council_tax_reduction_enhanced_disability_premium: 0
+    council_tax_reduction_premiums: 0
+
+- name: Case 7, a household head who applies alone gets the premium for enhanced PIP daily living.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 50
+        is_household_head: true
+        pip_dl_category: ENHANCED
+      person2:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person3:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person4:
+        age: 0
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    council_tax_reduction_pensioner: false
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false, false, false]
+    # The head's own single-rate premium 1,144.00, plus the severe disability
+    # premium 4,474.60 (the other residents are under 18): 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 8, a Scottish household head who applies alone and receives attendance allowance gets the premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 50
+        is_household_head: true
+        aa_category: LOWER
+      person2:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person3:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      person4:
+        age: 0
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: true
+    council_tax_reduction_pensioner: false
+    # Para 14(1)(g) 1,144.00 plus the severe disability premium 4,474.60:
+    # 5,618.60.
+    council_tax_reduction_premiums: 5_618.60
+
+- name: Case 9, AFIP adds no enhanced disability premium to a Merton reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+        private_pension_income: 12_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The model's legacy premium still counts AFIP for Housing Benefit and
+    # Income Support (HB para 15(1)(d)).
+    enhanced_disability_premium: 1_144
+    # Merton omits AFIP from Sch 3 para 12(1).
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    council_tax_reduction_enhanced_disability_premium: 0
+    # AFIP counts toward the severe disability premium: 86.05 * 52 =
+    # 4,474.60.
+    council_tax_reduction_premiums: 4_474.60
+    # Personal allowance 95.55 * 52 = 4,968.60, plus 4,474.60: 9,443.20.
+    council_tax_reduction_applicable_amount: 9_443.20
+    # 1,800 - 20% of (12,000 - 9,443.20) = 1,800 - 511.36 = 1,288.64.
+    simulated_council_tax_reduction_benunit: 1_288.64
+
+- name: Case 10, AFIP meets Newham's and Westminster's conditions but not Merton's or Kingston upon Thames's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      kingston:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      newham:
+        age: 30
+        armed_forces_independence_payment: 2_000
+      westminster:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    benunits:
+      merton:
+        members: [merton]
+      kingston:
+        members: [kingston]
+      newham:
+        members: [newham]
+      westminster:
+        members: [westminster]
+    households:
+      merton:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, true, true]
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: [0, 0, 1_144, 1_144]
+    enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
+
+- name: Case 11, standard PIP daily living meets the Merton, Kingston upon Thames and Newham conditions but not Westminster's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton:
+        age: 30
+        pip_dl_category: STANDARD
+      kingston:
+        age: 30
+        pip_dl_category: STANDARD
+      newham:
+        age: 30
+        pip_dl_category: STANDARD
+      westminster:
+        age: 30
+        pip_dl_category: STANDARD
+    benunits:
+      merton:
+        members: [merton]
+      kingston:
+        members: [kingston]
+      newham:
+        members: [newham]
+      westminster:
+        members: [westminster]
+    households:
+      merton:
+        members: [merton]
+        country: ENGLAND
+        local_authority: MERTON
+      kingston:
+        members: [kingston]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      newham:
+        members: [newham]
+        country: ENGLAND
+        local_authority: NEWHAM
+      westminster:
+        members: [westminster]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+  output:
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true, false]
+    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144, 0]
+    # Under HB para 15(1)(c), claimants qualify only at the enhanced rate.
+    enhanced_disability_premium: [0, 0, 0, 0]
+
+- name: Case 12, the Merton and Newham schemes keep the age limit for an over-age partner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      merton1:
+        age: 60
+      merton2:
+        age: 70
+        pip_dl_category: STANDARD
+      newham1:
+        age: 60
+      newham2:
+        age: 70
+        armed_forces_independence_payment: 2_000
+    benunits:
+      merton:
+        members: [merton1, merton2]
+        jsa_income: 3_000
+      newham:
+        members: [newham1, newham2]
+        jsa_income: 3_000
+    households:
+      merton:
+        members: [merton1, merton2]
+        country: ENGLAND
+        local_authority: MERTON
+      newham:
+        members: [newham1, newham2]
+        country: ENGLAND
+        local_authority: NEWHAM
+  output:
+    is_couple: [true, true]
+    # Because each couple receives income-based Jobseeker's Allowance, the
+    # model applies the working-age scheme.
+    council_tax_reduction_pensioner: [false, false]
+    # Para 12(1)(c) and (p): "who has not attained the qualifying age for
+    # state pension credit".
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, false, false]
+    council_tax_reduction_enhanced_disability_premium: [0, 0]
+
+- name: Case 13, Merton applies the Housing Benefit condition in 2022, before its own list starts.
+  # The 2023 rules are the earliest Merton scheme text the model cites, so in
+  # 2022 the model applies the Housing Benefit condition (HB Regs 2006 Sch 3
+  # para 15(1)(c): the enhanced rate only). The case pins the 2022-23 energy
+  # and cost of living payments at zero, so household net income moves only
+  # with the reduction. 2022-23 rates: PIP daily living standard 61.85,
+  # personal allowance (25 or over) 77.00, severe disability premium 69.40.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: STANDARD
+        private_pension_income: 11_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+  output:
+    enhanced_disability_premium: 0
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    council_tax_reduction_enhanced_disability_premium: 0
+    # The severe disability premium alone: 69.40 * 52 = 3,608.80.
+    council_tax_reduction_premiums: 3_608.80
+    # Personal allowance 77.00 * 52 = 4,004.00, plus 3,608.80: 7,612.80.
+    council_tax_reduction_applicable_amount: 7_612.80
+    # 1,800 - 20% of (11,000 - 7,612.80) = 1,800 - 677.44 = 1,122.56.
+    council_tax_reduction: 1_122.56
+    # Pension 11,000 + PIP 61.85 * 52 = 3,216.20 + reduction 1,122.56 -
+    # council tax 1,800 = 13,538.76. The pension falls below the 12,570
+    # personal allowance, so the model charges no income tax.
+    household_net_income: 13_538.76
+
+- name: Case 14, Merton's own list counts standard PIP daily living from 2023, the year of its 2023 rules.
+  # Merton's Local Council Tax Support Scheme Rules 2023, Sch 3 para 12(1)(c):
+  # PIP daily living "payable at either rate". The case pins the 2023-24 energy
+  # and cost of living payments at zero. 2023-24 rates: PIP daily living
+  # standard 68.10, personal allowance (25 or over) 84.80, severe disability
+  # premium 76.40, enhanced disability premium 19.55.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: STANDARD
+        private_pension_income: 11_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+  output:
+    # The legacy premium still counts the enhanced rate only.
+    enhanced_disability_premium: 0
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+    # 19.55 * 52 = 1,016.60.
+    council_tax_reduction_enhanced_disability_premium: 1_016.60
+    # Severe disability premium 76.40 * 52 = 3,972.80, plus 1,016.60:
+    # 4,989.40.
+    council_tax_reduction_premiums: 4_989.40
+    # Personal allowance 84.80 * 52 = 4,409.60, plus 4,989.40: 9,399.00.
+    council_tax_reduction_applicable_amount: 9_399
+    # 1,800 - 20% of (11,000 - 9,399.00) = 1,800 - 320.20 = 1,479.80.
+    council_tax_reduction: 1_479.80
+    # Pension 11,000 + PIP 68.10 * 52 = 3,541.20 + reduction 1,479.80 -
+    # council tax 1,800 = 14,221.00. The pension falls below the 12,570
+    # personal allowance, so the model charges no income tax.
+    household_net_income: 14_221
