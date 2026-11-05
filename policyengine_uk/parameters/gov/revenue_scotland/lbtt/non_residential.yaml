@@ -17,7 +17,7 @@ brackets:
 description: Rates on Scotland's non-residential property purchases.
 metadata:
   economy: false
-  label: Lbtt on non-residential property
+  label: LBTT on non-residential property
   propagate_metadata_to_children: true
   rate_unit: /1
   reference:
