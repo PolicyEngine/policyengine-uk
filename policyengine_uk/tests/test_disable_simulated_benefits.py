@@ -898,7 +898,7 @@ def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_pers
     assert unreformed.calculate(predicate, year)[1::2].tolist() == [
         legacy_closed,
         legacy_closed,
-        False,
+        year >= 2027,
         False,
         tax_credits_closed,
         tax_credits_closed,

@@ -59,9 +59,10 @@
 
 - name: An 18-year-old claimant's own income-related ESA report excludes them while they don't claim Universal Credit.
   # Nothing ends the award: the claimant doesn't claim Universal Credit and
-  # reports no closed benefit, so the model pays the £3,000 of income-related
-  # ESA on their report and they're entitled to it. They get no Universal
-  # Credit.
+  # reports no closed benefit, and the claim pays for 86 of the 365 days of
+  # 2026-27 (esa_income_payable_share 0.2356), so the model pays 3,000 x 86 /
+  # 365 = 706.85 of income-related ESA on their report and they're entitled
+  # to it. They get no Universal Credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -83,7 +84,7 @@
         tenure_type: OWNED_OUTRIGHT
   output:
     esa_income_report_closed: [false]
-    esa_income: 3_000
+    esa_income: 706.85
     is_qualifying_young_person_for_universal_credit: [false]
     universal_credit: 0
 

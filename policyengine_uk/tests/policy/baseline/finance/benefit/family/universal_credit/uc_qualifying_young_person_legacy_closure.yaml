@@ -29,9 +29,11 @@
 #   2026 without the child element: 12 x 424.90 = 5,098.80
 
 - name: A young person's own income-related ESA report alone removes the child element in 2026.
-  # No closure applies: the young person reports no closed benefit, so the
-  # model pays the £3,000 of income-related ESA (esa_income) and the young
-  # person is entitled to it. UC: 12 x 424.90 = 5,098.80.
+  # No closure applies: the young person reports no closed benefit, and the
+  # claim pays for 86 of the 365 days of 2026-27 (esa_income_payable_share
+  # 0.2356), so the model pays 3,000 x 86 / 365 = 706.85 of income-related
+  # ESA (esa_income) and the young person is entitled to it. UC: 12 x 424.90
+  # = 5,098.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -55,7 +57,7 @@
         tenure_type: OWNED_OUTRIGHT
   output:
     person_legacy_benefits_closed: [false, false]
-    esa_income: 3_000
+    esa_income: 706.85
     is_qualifying_young_person_for_universal_credit: [false, false]
     uc_child_element: 0
     universal_credit: 5_098.80

@@ -25,9 +25,11 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "ESA only after their capital and work screens. The model pays Income "
         "Support, income-based JSA and tax credits only while "
         "gov.dwp.income_support.active, gov.dwp.JSA.income.active and "
-        "gov.dwp.tax_credits.active hold, and has no closure date for Housing "
-        "Benefit or income-related ESA. The formula also reads those three "
-        "benefits' reports while "
+        "gov.dwp.tax_credits.active hold, has no closure date for Housing "
+        "Benefit, and pays an income-related ESA claim only while it stays "
+        "payable (esa_income_payable_share), so the formula reads its report "
+        "only then. The formula also reads the Income Support, income-based "
+        "JSA and tax credit reports while "
         "gov.contrib.policyengine.disable_simulated_benefits is on. The reform "
         "that switch turns on pays them at their reported amounts in the "
         "dataset year and the nine years after it, and the formula still reads "
@@ -138,9 +140,14 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     # false, so while the switch is on the formula keeps the person's own
     # closure alone.
     claimant_or_partner = person("is_claimant_or_partner", period)
-    esa_income_open = ~person("esa_income_report_closed", period) | (
-        own_award_open & (paid_as_reported or at_claim_start)
-    )
+    # The Secretary of State (SI 2025/1148 art. 3A) and, in Northern
+    # Ireland, the Department for Communities (SR 2025/176 art. 3A) end old
+    # style income-related ESA claims on the appointed date unless an
+    # appointee saving keeps them (esa_income_payable_share).
+    esa_income_open = (
+        ~person("esa_income_report_closed", period)
+        | (own_award_open & (paid_as_reported or at_claim_start))
+    ) & ((person("esa_income_payable_share", period) > 0) | paid_as_reported)
     claim_ends_own_award = (
         claimant_or_partner
         & person.benunit("claims_universal_credit", period)

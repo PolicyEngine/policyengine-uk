@@ -8,8 +8,9 @@
 # the model's legacy closure, or for a claimant or partner the family's
 # Universal Credit claim, ends the award on it, and only if no reform
 # neutralises it. The model pays Income Support and income-based
-# JSA until 31 March 2026 and tax credits until 5 April 2025, and has no
-# closure date for Housing Benefit or income-related ESA. It also ends a
+# JSA until 31 March 2026 and tax credits until 5 April 2025, has no
+# closure date for Housing Benefit, and pays an income-related ESA claim
+# only while it stays payable (esa_income_payable_share). It also ends a
 # person's legacy awards when its annual migration proxy closes them, and
 # the predicate follows that closure
 # (uc_qualifying_young_person_legacy_closure.yaml covers it). In these cases
