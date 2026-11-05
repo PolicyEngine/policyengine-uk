@@ -1603,6 +1603,19 @@ class core_year_stock_from_input(CoreVariable):
         return person("core_input", period)
 
 
+class core_december_carries(CoreVariable):
+    label = "Core December carries"
+    value_type = float
+    entity = CORE_PERSON
+    definition_period = MONTH
+
+    def formula(person, period):
+        monthly = person("core_monthly_leaf", period)
+        if period.start.month == 12:
+            return monthly + person("core_december_carries", period.last_month)
+        return monthly
+
+
 def period_toy_simulation():
     return core_toy_simulation(
         core_leaf,
@@ -1611,6 +1624,7 @@ def period_toy_simulation():
         core_year_stock,
         core_month_stock_of_leaf,
         core_eternal_of_leaf,
+        core_december_carries,
     )
 
 
@@ -1772,7 +1786,38 @@ def test_a_twelfth_core_stored_with_no_node_over_the_month():
     assert_unchanged(sim, before)
 
 
-@settings(max_examples=40, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@pytest.mark.parametrize("before_tracing", [False, True])
+def test_a_month_that_reads_its_own_earlier_month_over_a_year(before_tracing):
+    # December reads November, which recalculating the year replaces, whether
+    # the trace shows that read or running the formula again does.
+    sim = period_toy_simulation()
+    if before_tracing:
+        sim.trace = False
+    sim.calculate("core_december_carries", 2026)
+    if before_tracing:
+        sim.trace = True
+    sim.calculate("core_december_carries", 2026)
+    before = snapshot(sim)
+
+    reads = get_direct_reads("core_december_carries", sim, 2026)
+
+    assert list(reads[(None, "core_december_carries")]) == [periods.period("2026-11")]
+    assert len(reads[(None, "core_monthly_leaf")]) == 12
+    with pytest.raises(
+        ValueError, match="reads its own value over 2026-11, within 2026"
+    ):
+        calculate_dependency_contributions(sim, "core_december_carries", 2026)
+    assert_unchanged(sim, before)
+
+
+def contributions_or_error(sim, name, asked):
+    try:
+        return calculate_dependency_contributions(sim, name, asked).to_dict()
+    except ValueError as error:
+        return str(error)
+
+
+@settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(
     name=st.sampled_from(
         [
@@ -1781,6 +1826,7 @@ def test_a_twelfth_core_stored_with_no_node_over_the_month():
             "core_year_stock",
             "core_month_stock_of_leaf",
             "core_eternal_of_leaf",
+            "core_december_carries",
         ]
     ),
     first=st.lists(
@@ -1788,20 +1834,28 @@ def test_a_twelfth_core_stored_with_no_node_over_the_month():
         max_size=3,
     ),
     asked=st.sampled_from(["2026", "2026-03", "2026-12", "year:2026-07"]),
+    before_tracing=st.booleans(),
 )
 def test_contributions_do_not_depend_on_what_the_simulation_calculated_first(
-    name, first, asked
+    name, first, asked, before_tracing
 ):
-    fresh = calculate_dependency_contributions(period_toy_simulation(), name, asked)
+    fresh = contributions_or_error(period_toy_simulation(), name, asked)
     sim = period_toy_simulation()
+    if before_tracing:
+        sim.trace = False
     for period in first:
         sim.calculate(name, period)
+    if before_tracing:
+        sim.trace = True
     sim.calculate(name, asked)
     before = snapshot(sim)
 
-    contributions = calculate_dependency_contributions(sim, name, asked)
+    contributions = contributions_or_error(sim, name, asked)
 
-    assert contributions.to_dict() == pytest.approx(fresh.to_dict())
+    if isinstance(fresh, str):
+        assert contributions == fresh
+    else:
+        assert contributions == pytest.approx(fresh)
     assert_unchanged(sim, before)
 
 

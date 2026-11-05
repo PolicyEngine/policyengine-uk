@@ -112,10 +112,9 @@ def no_calculation_gave(variable_name, period):
 
 
 def calculation_again(sim, variable_name, period, value=None):
-    # variable_name's calculation over period, from running it again, with its
-    # direct reads as the node's children, as if sim had run it. None if it
-    # does not give value. The trace can show a read of values with no
-    # calculation of them over that period:
+    # variable_name's calculation over period, from running it again, as if sim
+    # had run it. None if it does not give value. The trace can show a read of
+    # values with no calculation of them over that period:
     # - a formula that reads neither a variable nor a parameter (a constant, a
     #   variable with no formula) leaves the node a read of a stored value
     #   leaves;
@@ -135,7 +134,6 @@ def calculation_again(sim, variable_name, period, value=None):
         node = next(node for node in branch.tracer.trees if node.name == variable_name)
     if value is not None and not same_values(result, value):
         return None
-    node.children = get_dependency_nodes(node)
     stack = [node]
     while stack:
         current = stack.pop()
