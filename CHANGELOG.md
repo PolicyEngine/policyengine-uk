@@ -1,3 +1,10 @@
+## [2.175.4] - 2026-11-05
+
+### Changed
+
+- The NICs salary sacrifice cap, childcare hours and childcare income limit property tests build fewer simulations, with the same strategies, example counts and assertions.
+
+
 ## [2.175.3] - 2026-11-05
 
 ### Fixed
