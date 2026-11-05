@@ -256,7 +256,9 @@ def same_array(a, b) -> bool:
     """Whether two arrays hold the same values, where NaN equals NaN.
 
     A calculation can give NaN (``set_input`` refuses it), and the record of a
-    value that holds NaN must still match the value it records."""
+    value that holds NaN must still match the value it records. NaT equals NaT
+    too, as ``np.array_equal`` has it. An object array compares with ``==``, so
+    a NaN in one does not equal itself."""
     try:
         return np.array_equal(a, b, equal_nan=True)
     except TypeError:

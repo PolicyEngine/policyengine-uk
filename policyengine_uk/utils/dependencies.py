@@ -61,7 +61,7 @@ def index_trace(tracer):
     A formula that ran shows the variables it read as the node's children and
     the parameters it read as the node's parameters. A variable read again
     after core calculated it gets a node with neither, and so does a formula
-    that read neither (see reads_nothing). The index lists the nodes with
+    that read neither (see calculation_again). The index lists the nodes with
     either, in the order core calculated them. Also returns the keys of every
     node.
     """
@@ -93,14 +93,12 @@ def same_values(a, b):
 
 
 def latest_calculation(nodes, value=None):
-    # The latest calculation, or with value the latest that gave value, or
-    # None if none did. A branch keeps the values its parent held when the
-    # parent created it, so the parent's latest calculation need not be the
-    # one that gave the branch its value.
-    if value is None:
-        return nodes[-1]
+    # The latest calculation that gave a value, or with value the latest that
+    # gave value, or None if none did. A branch keeps the values its parent
+    # held when the parent created it, so the parent's latest calculation need
+    # not be the one that gave the branch its value.
     for node in reversed(nodes):
-        if node.value is not None and same_values(node.value, value):
+        if node.value is not None and (value is None or same_values(node.value, value)):
             return node
     return None
 
@@ -108,34 +106,58 @@ def latest_calculation(nodes, value=None):
 def no_calculation_gave(variable_name, period):
     return ValueError(
         f"The simulation holds values of '{variable_name}' over {period} that "
-        f"no calculation in the trace gave (a caller stored them, or the "
-        f"simulation calculated them before tracing began, say), so the trace "
-        f"does not show what they read."
+        f"no calculation in the trace gave and its formula does not give (a "
+        f"caller stored them, say), so nothing shows what they read."
     )
 
 
-def reads_nothing(sim, variable_name, period, value):
-    # Whether variable_name's formula gives value over period without reading
-    # a variable. A formula that reads neither a variable nor a parameter (a
-    # constant, a variable neutralized or with no formula) leaves the node a
-    # read of a stored value leaves, so only running it again tells them
-    # apart. It runs on a branch with a tracer of its own, so sim and its trace
-    # stay as they were.
+def calculation_again(sim, variable_name, period, value=None):
+    # variable_name's calculation over period, from running it again, with its
+    # direct reads as the node's children, as if sim had run it. None if it
+    # does not give value. The trace can show a read of values with no
+    # calculation of them over that period:
+    # - a formula that reads neither a variable nor a parameter (a constant, a
+    #   variable with no formula) leaves the node a read of a stored value
+    #   leaves;
+    # - core keeps one value of a stock under its definition period, and of an
+    #   eternal variable under eternity, so the calculation that gave it can
+    #   sit under any period that reads that value;
+    # - calculate_add and calculate_divide store their result with no node of
+    #   the variable over that period;
+    # - the simulation can calculate values before tracing began.
+    # Core rejects a formula that references randomness when it builds the
+    # variable (check_formula_determinism), so where this run gives the values
+    # sim holds, its reads explain them. It runs on a branch with a tracer of
+    # its own, so sim and its trace stay as they were. An error the formula
+    # raises on this run reaches the caller.
     with branch_without(sim, variable_name, period, trace=True) as branch:
         result = branch.calculate(variable_name, period)
         node = next(node for node in branch.tracer.trees if node.name == variable_name)
-    return same_values(result, value) and not get_dependency_nodes(node)
+    if value is not None and not same_values(result, value):
+        return None
+    node.children = get_dependency_nodes(node)
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        if current.branch_name == branch.branch_name:
+            current.branch_name = sim.branch_name
+        stack.extend(current.children)
+    return node
 
 
 def find_calculation(variable_name, period, sim, calculations, keys, value=None):
     # The node of variable_name's calculation over period: the latest on the
     # first branch of sim's chain that calculated it, or with value the latest
     # on the first branch of the chain with one that gave value (see
-    # latest_calculation). None if the trace shows variable_name over period
-    # but no calculation (without value), or if its formula gives value
-    # without reading a variable (see reads_nothing). An error if the trace
-    # shows it but nothing gives value, or if the trace does not show it.
+    # latest_calculation). Failing that, the calculation run again, if it gives
+    # value (see calculation_again). None if the system neutralizes
+    # variable_name: it reads as its default, whatever a calculation of equal
+    # values read. An error if the trace shows it but nothing gives value, or
+    # if the trace does not show it.
     period = periods.period(period)
+    variable = sim.tax_benefit_system.get_variable(variable_name)
+    if variable is not None and variable.is_neutralized:
+        return None
     shown = False
     for branch_name in branch_chain(sim):
         key = (variable_name, period, branch_name)
@@ -150,9 +172,10 @@ def find_calculation(variable_name, period, sim, calculations, keys, value=None)
             f"The trace shows no calculation of '{variable_name}' over {period}. "
             f"Calculate it with trace=True."
         )
-    if value is None or reads_nothing(sim, variable_name, period, value):
-        return None
-    raise no_calculation_gave(variable_name, period)
+    node = calculation_again(sim, variable_name, period, value)
+    if node is None:
+        raise no_calculation_gave(variable_name, period)
+    return node
 
 
 def is_period_wrapper(child, node):
@@ -173,9 +196,9 @@ def is_period_wrapper(child, node):
 def calculation_read(child, sim, calculations):
     # The calculation that stored the value child (a node with no children,
     # on a branch of sim's chain) read: the latest that gave child's value, on
-    # child's branch or the first of its ancestors with one. Otherwise child
-    # itself if its formula gives that value without reading a variable (see
-    # reads_nothing). An error otherwise.
+    # child's branch or the first of its ancestors with one. Otherwise the
+    # calculation run again, if it gives that value (see calculation_again).
+    # An error otherwise.
     period = periods.period(child.period)
     chain = branch_chain(sim)
     for branch_name in chain[chain.index(child.branch_name) :]:
@@ -184,9 +207,10 @@ def calculation_read(child, sim, calculations):
             node = latest_calculation(found, child.value)
             if node is not None:
                 return node
-    if reads_nothing(sim, child.name, period, child.value):
-        return child
-    raise no_calculation_gave(child.name, period)
+    node = calculation_again(sim, child.name, period, child.value)
+    if node is None:
+        raise no_calculation_gave(child.name, period)
+    return node
 
 
 def get_dependency_nodes(node, sim=None, calculations=None):
@@ -195,9 +219,13 @@ def get_dependency_nodes(node, sim=None, calculations=None):
     # stored has no children of its own, so calculations (from index_trace)
     # gives the calculation that stored it (see calculation_read). The
     # variable read on another branch is a dependency, and so is the variable
-    # read over a period that neither contains its own nor lies within it.
+    # read over a period that neither contains its own nor lies within it. A
+    # node with no value raised and a formula caught the error, so it gave node
+    # nothing.
     nodes = []
     for child in node.children:
+        if child.value is None:
+            continue
         if is_period_wrapper(child, node):
             if not child.children and calculations is not None:
                 child = calculation_read(child, sim, calculations)
@@ -210,7 +238,8 @@ def get_dependency_nodes(node, sim=None, calculations=None):
 def get_variable_dependencies(variable_name, sim, period=None):
     """The variables variable_name reads directly, from sim's trace.
 
-    With period, those its latest calculation over period read; otherwise
+    With period, those its latest calculation over period read, once each
+    (get_direct_reads says which calculation, and when it raises); otherwise
     those of the first node of variable_name the trace shows.
     """
     if period is None:
@@ -218,11 +247,8 @@ def get_variable_dependencies(variable_name, sim, period=None):
         if not node:
             return []
         return [child.name for child in get_dependency_nodes(node)]
-    calculations, keys = index_trace(sim.tracer)
-    node = find_calculation(variable_name, period, sim, calculations, keys)
-    if node is None:
-        return []
-    return [child.name for child in get_dependency_nodes(node, sim, calculations)]
+    reads = get_direct_reads(variable_name, sim, period)
+    return list(dict.fromkeys(name for _, name in reads))
 
 
 def check_not_input(variable_name, sim, period):
@@ -252,12 +278,14 @@ def get_direct_reads(variable_name, sim, period, value=None):
     (sim reads their values as its own), and otherwise the name of the
     branch read.
 
+    Where no calculation in the trace gave value, or the values a calculation
+    of variable_name read from storage, the reads come from running the
+    formula again, if it gives them (see calculation_again). A neutralized
+    variable reads as its default, so it reads nothing.
+
     Raises ValueError if sim holds variable_name as an input over one of its
-    definition periods within period, which reads nothing (a neutralized
-    variable reads as its default instead). Also raises if no calculation in
-    the trace gave value, or the values a calculation of variable_name read
-    from storage, and its formula does not give them without reading a
-    variable (see reads_nothing).
+    definition periods within period, which reads nothing, unless the system
+    neutralizes it. Also raises if nothing gives those values.
     """
     period = periods.period(period)
     check_not_input(variable_name, sim, period)
@@ -566,13 +594,18 @@ def calculate_dependency_contributions(
     every PE-UK system has: the recalculation runs on a branch with a clone
     of it.
 
+    Where no calculation in the trace gave the values sim holds (a stock over
+    a period of another unit, or values calculated before tracing began, say),
+    the function runs the formula again and takes what it read there, if it
+    gives those values (see calculation_again). An error from that run reaches
+    the caller.
+
     Raises ValueError if sim holds variable_name over year as an input
-    (which reads nothing) and the system does not neutralize it, or if no
-    calculation in the trace gave the values sim holds and its formula does
-    not give them without reading a variable (see reads_nothing). Where a
-    float dependency needs a recalculation, also raises if variable_name reads
-    its own value within year, or reads on a branch of a subset of households
-    (see calculate_with_dependency_zeroed).
+    (which reads nothing) and the system does not neutralize it, or if neither
+    the trace nor the formula gives the values sim holds. Where a float
+    dependency needs a recalculation, also raises if variable_name reads its
+    own value within year, or reads on a branch of a subset of households (see
+    calculate_with_dependency_zeroed).
 
     Limitations:
 
@@ -593,7 +626,14 @@ def calculate_dependency_contributions(
       the reads. Where calculations with other reads gave equal values,
       that need not be the calculation the values came from: a branch keeps
       the values its parent held when the parent made it, and the parent
-      can calculate equal values from other reads later.
+      can calculate equal values from other reads later. A reform can also
+      replace a formula with a constant equal to what it gave, which leaves
+      no calculation in the index.
+    - The function runs formulas again, on branches of its own. A formula that
+      writes to its parent simulation (sim, on those branches) or to an object
+      outside the simulation writes there again, so sim can change. PE-UK's
+      formulas write to branches they make, not to their parents. What one
+      writes to another simulation falls under the first limitation.
     - A formula can refuse the values the recalculation gives it, and the
       function then raises a ValueError with that formula's message and the
       dependency it zeroed, with sim as it was. The recalculation holds every
