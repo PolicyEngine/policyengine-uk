@@ -1,0 +1,24 @@
+description: >
+  Whether the Scottish council tax reduction scheme for people under pension
+  age disregards the whole capital of an applicant on Income Support,
+  income-based Jobseeker's Allowance or income-related Employment and Support
+  Allowance. The Council Tax Reduction (Scotland) Regulations 2012 did
+  (Schedule 5 paragraph 7). The Council Tax Reduction (Scotland) Regulations
+  2021, in force from 1 April 2022, have no such disregard in Schedule 4:
+  regulation 13(11) treats a qualifying income-related benefit claimant as
+  meeting the income conditions, and regulation 13(1) still applies the
+  capital limit.
+metadata:
+  label: Scotland working-age council tax reduction disregards passported applicants' capital
+  unit: bool
+  period: year
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 Schedule 5 para. 7 (as at 1 April 2021)
+      href: https://www.legislation.gov.uk/ssi/2012/303/schedule/5/paragraph/7/2021-04-01
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 1 (commencement, 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/1
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 13
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/13
+values:
+  2013-04-01: true
+  2022-04-01: false
