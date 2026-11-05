@@ -9,6 +9,8 @@
 # award the claim has ended, so for a claimant or partner the UC qualifying
 # young person test (SI 2014/1230 reg. 28) follows those three limbs. For a
 # dependant it doesn't: a parent's claim leaves the dependant's own award.
+# The model ends no Working Tax Credit, Income Support or income-based JSA
+# award on the claim, so the predicate follows no claim limb for them.
 #
 # would_claim_uc decides the claim here. A case without a claim also sets
 # would_claim_uc_at_legacy_closure false, so the family claims nothing when
@@ -279,6 +281,42 @@
     child_tax_credit: 3_455
     is_qualifying_young_person_for_universal_credit: [false, false, false]
     universal_credit: 0
+
+- name: An 18-year-old lone parent's own Working Tax Credit report excludes them though they claim Universal Credit.
+  # Tax credits pay in 2024. The model ends Working Tax Credit when the
+  # family's legacy awards close, but not on its Universal Credit claim
+  # (is_WTC_eligible reads legacy_benefits_closed, not
+  # claims_universal_credit). The claimant works 16 hours a week and looks
+  # after a child, so they meet the model's lone parent hours test (16 hours
+  # from age 16), and the model keeps their award beside the claim. The
+  # predicate follows no claim limb for Working Tax Credit, so the
+  # claimant's own report still excludes them.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        weekly_hours: 16
+        working_tax_credit_reported: 1_000
+      child:
+        age: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, child]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: true
+    is_qualifying_young_person_under_universal_credit_regulation_5: [true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
 
 - name: An 18-year-old partner's own Housing Benefit report excludes them while their mixed-age couple keeps the Pension Credit route.
   # A claimant aged 75 who reports Pension Credit and an 18-year-old partner

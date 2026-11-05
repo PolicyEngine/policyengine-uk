@@ -17,7 +17,8 @@
 # 17-year-old on a non-advanced course in the parent's benefit unit, North
 # East, owned outright, no income. Cases 7 and 8 use the same family renting
 # from the council at £6,000 a year and claiming no Universal Credit, so only
-# the closure can end its Housing Benefit. Case 9 has a parent aged 70. The parent claims Universal Credit as a single
+# the closure can end its Housing Benefit. Case 9 has a parent aged 70. In
+# every case but 7 and 8 the parent claims Universal Credit as a single
 # claimant over 25 (universal_credit/standard_allowance/amount.yaml
 # SINGLE_OLD: £400.14 a month in 2025-26, £424.90 in 2026-27) and gets the
 # first child higher amount for a qualifying young person

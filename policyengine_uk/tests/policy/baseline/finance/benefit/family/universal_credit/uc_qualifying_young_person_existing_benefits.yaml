@@ -15,8 +15,9 @@
 # (uc_qualifying_young_person_legacy_closure.yaml covers it). In these cases
 # a young person's own report closes their legacy awards only where that
 # benefit's year gate has already closed, so the closure decides no case.
-# The claim limbs end only a claimant's or partner's own award
-# (uc_qualifying_young_person_universal_credit_claim.yaml covers them), so
+# The predicate follows the family's Universal Credit claim only for a
+# claimant's or partner's own award
+# (uc_qualifying_young_person_universal_credit_claim.yaml covers it), so
 # the cases that test a claimant's own Child Tax Credit or Housing Benefit
 # report claim no Universal Credit (would_claim_uc). The first six cases,
 # and the four after the seventh, share one household: a parent aged 45 and

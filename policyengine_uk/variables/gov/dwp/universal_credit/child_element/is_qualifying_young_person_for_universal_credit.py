@@ -31,9 +31,12 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "gov.contrib.policyengine.disable_simulated_benefits is on. The reform "
         "that switch turns on pays them at their reported amounts in the "
         "dataset year and the nine years after it, and the formula still reads "
-        "them in later years. That reform pays each report whether or not the "
-        "family claims Universal Credit, so while the switch is on the formula "
-        "leaves out the Universal Credit claim limbs below. The model also ends"
+        "them in later years. In those years the reform also pays a claimant's "
+        "or partner's own income-related ESA, Housing Benefit and Child Tax "
+        "Credit report whether or not the family claims Universal Credit, so "
+        "while the switch is on the formula leaves out the Universal Credit "
+        "claim limbs below. It leaves them out in later years too, when the "
+        "model again ends those awards on the family's claim. The model also ends"
         " a person's legacy awards once its annual migration proxy closes them:"
         " it ends their Income Support, income-based JSA and income-related ESA"
         " when person_legacy_benefits_closed holds, the family's tax credits "
@@ -48,7 +51,9 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "(esa_income_report_closed), when the family claims "
         "(claims_universal_credit). For a claimant or partner, the formula "
         "follows those limbs too. The family's claim doesn't end a dependant's "
-        "own award, so for a dependant the formula doesn't. It can't read "
+        "own award, so for a dependant the formula doesn't. The model ends no "
+        "Working Tax Credit, Income Support or income-based JSA award on the "
+        "claim, so the formula follows no claim limb for them. It can't read "
         "housing_benefit_eligible: that variable's Pension Credit route reads "
         "left_pension_route_at_legacy_closure, which reads this variable "
         "through is_uc_entitled and the child element. So the formula keeps a "
@@ -67,6 +72,8 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2013/983/article/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/2",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
@@ -84,7 +91,8 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         # that year and the nine after it, closure dates included, and holds
         # both legacy closures false in those years. The formula reads the
         # switch, not those years, so in a later year it still reads a tax
-        # credit report that the model no longer pays.
+        # credit report that the model no longer pays, and still leaves out
+        # the claim limbs below.
         paid_as_reported = bool(p.contrib.policyengine.disable_simulated_benefits)
         system = person.simulation.tax_benefit_system
 
@@ -110,10 +118,11 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         # income-related ESA when the family claims (esa_income_report_closed),
         # and the formula follows it. claims_universal_credit reads
         # would_claim_uc, would_claim_uc_at_legacy_closure and
-        # legacy_benefits_closed, not this variable. The reform behind
-        # disable_simulated_benefits pays each report as reported whether or
-        # not the family claims, and holds the legacy closures false in its
-        # years, so under it the formula keeps the person's own closure alone.
+        # legacy_benefits_closed, not this variable. In its years the reform
+        # behind disable_simulated_benefits pays each report as reported
+        # whether or not the family claims, and holds the legacy closures
+        # false, so while the switch is on the formula keeps the person's own
+        # closure alone.
         claimant_or_partner = person("is_claimant_or_partner", period)
         esa_income_open = ~person("esa_income_report_closed", period) | (
             own_award_open & paid_as_reported

@@ -928,18 +928,24 @@ def test_a_claimant_on_a_benefit_the_reform_pays_beside_universal_credit_is_no_q
     # A claim for Universal Credit ends the claimant's own income-related
     # ESA, Housing Benefit and Child Tax Credit (SI 2014/1230 reg. 8(2) and
     # (2A); SI 2013/983 art. 4), and without the reform the model ends each
-    # award on the claim, so the predicate doesn't read the report. The
-    # reform pays each report as reported, claim or none, so the claimant
-    # stays entitled to it and the predicate excludes them.
+    # award on the claim, so the predicate doesn't read the report (the
+    # model's year gate closes the Child Tax Credit report from 2025 too).
+    # In its years, the dataset year and the nine after it, the reform pays
+    # each report as reported, claim or none, so the claimant stays entitled
+    # to it and the predicate excludes them.
     reformed = Simulation(situation=claimant_situation(), scenario=REFORM)
     unreformed = Simulation(situation=claimant_situation())
     predicate = "is_qualifying_young_person_for_universal_credit"
     benefit = CLAIMANT_REPORTS[report]
     person = 2 * index
-    paid = reformed.calculate(benefit, year)
-    paid = paid[person] if benefit == "esa_income" else paid[index]
+
+    def paid(simulation):
+        amounts = simulation.calculate(benefit, year)
+        return float(amounts[person] if benefit == "esa_income" else amounts[index])
+
     assert reformed.calculate("claims_universal_credit", year)[index]
-    assert float(paid) == 3_000
+    assert paid(reformed) == 3_000
     assert not reformed.calculate(predicate, year)[person]
     assert unreformed.calculate("claims_universal_credit", year)[index]
+    assert paid(unreformed) == 0
     assert unreformed.calculate(predicate, year)[person]

@@ -7,10 +7,11 @@
 # benefit (income-based JSA and Income Support until 31 March 2026), reads an
 # income-related ESA, income-based JSA or Income Support report only until
 # the person's legacy awards close (person_legacy_benefits_closed), and
-# reads none that a reform neutralises. A claim for Universal Credit also
-# ends a claimant's or partner's own income-related ESA
+# reads none that a reform neutralises. The model also ends a claimant's or
+# partner's own income-related ESA when the family claims Universal Credit
 # (esa_income_report_closed), so the cases that test a claimant's own
-# income-related ESA report claim no Universal Credit (would_claim_uc). The Secretary of State excludes own awards
+# income-related ESA report claim no Universal Credit (would_claim_uc). The
+# Secretary of State excludes own awards
 # from the Pension Credit routes, including income support (SPC reg. 4A(5)):
 # is_on_income_support reads it, from the calculated award for a claimant or
 # partner and from their own report for anyone else. The reports identify the
