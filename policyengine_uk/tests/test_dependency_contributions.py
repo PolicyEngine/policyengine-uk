@@ -14,7 +14,8 @@ neutralizes it, and values no calculation in the trace gave and the formula
 does not give. Two raise where a float dependency needs a recalculation: a
 target that reads its own value within the year (recalculating it over the
 year replaces that value), and a read on a branch of a subset of households
-(the recalculation cannot hold it).
+(the recalculation cannot hold it). A formula that refuses a zero raises its
+own error.
 For any household drawn below:
 
 1. Matches a reference: each float dependency's contribution equals the one
@@ -65,10 +66,12 @@ from policyengine_uk.model_api import (
 from policyengine_uk.tests.test_housing_benefit_accommodation_dates import (
     situation as housing_benefit_situation,
 )
+from policyengine_uk.utils.aggregate_impact.guard import _same_array
 from policyengine_uk.utils.dependencies import (
     calculate_dependency_contribution_change,
     calculate_dependency_contributions,
     create_waterfall_chart,
+    get_direct_reads,
     get_variable_dependencies,
     reads_nothing,
     same_values,
@@ -1042,6 +1045,42 @@ def test_a_target_that_reads_no_variables():
     assert contributions.empty
 
 
+def test_an_enum_target_matches_the_calculation_a_formula_asked_for():
+    # A formula gets an enum encoded, and Simulation.calculate decodes it for
+    # its caller, so the trace's node and the caller's value read differently.
+    sim = Simulation(situation=make_situation(2026, [(40, 0.0, 0.0)], []), trace=True)
+    sim.calculate("uc_standard_allowance", 2026)
+    value = sim.calculate("uc_standard_allowance_claimant_type", 2026)
+
+    reads = get_direct_reads(
+        "uc_standard_allowance_claimant_type", sim, 2026, value=value
+    )
+
+    assert value.dtype.kind == "U"
+    assert {name for _, name in reads} == {"is_uc_single_or_joint_claimant", "age"}
+
+
+@pytest.mark.parametrize(
+    "target,message",
+    [
+        # birth_instant rejects an age of zero with the date of birth the real
+        # age gave, which the recalculation holds.
+        ("state_pension_age", "Set age to the age on 6 October"),
+        # No category fits no bedrooms.
+        ("LHA_category", "Invalid value"),
+    ],
+)
+def test_a_formula_that_refuses_a_zero_raises_its_own_error(target, message):
+    sim = Simulation(situation=make_situation(2026, [(40, 0.0, 0.0)], []), trace=True)
+    sim.calculate(target, 2026)
+    before = snapshot(sim)
+
+    with pytest.raises(ValueError, match=message):
+        calculate_dependency_contributions(sim, target, 2026)
+
+    assert_unchanged(sim, before)
+
+
 class core_from_fresh_branch(CoreVariable):
     label = "Core from a fresh branch"
     value_type = float
@@ -1760,13 +1799,16 @@ def test_same_array_is_equality_where_nan_equals_nan(a, b, matching):
     expected = bool(np.all((a == b) | (np.isnan(a) & np.isnan(b))))
     assert same_array(a, b) == expected
     assert same_values(a, b) == expected
+    # The aggregate impact tool's copy, for a base's package without same_array.
+    assert _same_array(a, b) == expected
     assert same_array(a, a.view(CalculatedValue))
 
 
-def test_same_array_compares_what_cannot_hold_nan():
-    assert same_array(np.array(["a", "b"]), np.array(["a", "b"]))
-    assert not same_array(np.array(["a", "b"]), np.array(["a", "c"]))
-    assert not same_array(np.array([1.0]), np.array([1.0, 2.0]))
+@pytest.mark.parametrize("compare", [same_array, _same_array])
+def test_same_array_compares_what_cannot_hold_nan(compare):
+    assert compare(np.array(["a", "b"]), np.array(["a", "b"]))
+    assert not compare(np.array(["a", "b"]), np.array(["a", "c"]))
+    assert not compare(np.array([1.0]), np.array([1.0, 2.0]))
 
 
 def landlord(finance_costs):

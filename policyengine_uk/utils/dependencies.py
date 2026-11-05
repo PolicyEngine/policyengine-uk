@@ -587,6 +587,14 @@ def calculate_dependency_contributions(
       that need not be the calculation the values came from: a branch keeps
       the values its parent held when the parent made it, and the parent
       can calculate equal values from other reads later.
+    - A formula can refuse the values the recalculation gives it, and the
+      function then raises that formula's error, with sim as it was. The
+      recalculation holds every other variable read, so state_pension_age,
+      which reads age and date_of_birth, gets an age of zero with the date of
+      birth the real age gave, and birth_instant (utils/dates.py) rejects
+      them. LHA_category has no category for no bedrooms.
+    - A bool or enum target that reads a variable raises TypeError, since the
+      function subtracts its values.
     """
     original_values = sim.calculate(variable_name, year)
 
