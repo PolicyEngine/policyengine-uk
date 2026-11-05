@@ -81,6 +81,19 @@ def property_simulation(people: dict):
     return sim
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulations():
+    # Under pytest's default import mode, the import above loads
+    # policyengine_uk.tests.test_state_pension_age, a separate module from the
+    # test_state_pension_age that pytest collects by bare name (this directory
+    # has no __init__.py). Its differential_simulation cache is filled here, so
+    # it is cleared here. Drop the cached simulations once this module's tests
+    # are done, instead of for the rest of the test process.
+    yield
+    differential_simulation.cache_clear()
+    one_person_units_template.cache_clear()
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_qualifying_age_matches_statute_for_every_birth_date(year):
     """For births every third day from 1945 to 1984 and on both sides of every
@@ -184,17 +197,23 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
     assert np.array_equal(
         sim.calculate("council_tax_reduction_pensioner", year), attained
     )
-    assert np.array_equal(sim.calculate("is_benefit_cap_exempt_other", year), attained)
-    aged = sim.tax_benefit_system.parameters(
-        f"{year}-06-01"
-    ).gov.dwp.housing_benefit.allowances.single.aged
+    # HB Regs 2006 reg 5: Housing Benefit under the pension-age regulations
+    # has no cap.
     assert np.array_equal(
-        np.isclose(
-            sim.calculate("council_tax_reduction_applicable_amount", year),
-            aged * WEEKS_IN_YEAR,
-        ),
-        attained,
+        sim.calculate("is_housing_benefit_benefit_cap_exempt", year), attained
     )
+    allowances = sim.tax_benefit_system.parameters(
+        f"{year}-06-01"
+    ).gov.dwp.housing_benefit.allowances
+    amount = sim.calculate("council_tax_reduction_applicable_amount", year)
+    at_pension_age_rate = np.isclose(amount, allowances.single.aged * WEEKS_IN_YEAR)
+    if allowances.pension_age_cutoff is not None:
+        # England's lower rate for those who attained State Pension age on or
+        # after 1 April 2021 (SI 2012/2885 Sch 2 para 1).
+        at_pension_age_rate |= np.isclose(
+            amount, allowances.single.aged_from_cutoff * WEEKS_IN_YEAR
+        )
+    assert np.array_equal(at_pension_age_rate, attained)
     if year <= 2023:
         assert np.array_equal(
             sim.calculate("winter_fuel_allowance", year) > 0, attained

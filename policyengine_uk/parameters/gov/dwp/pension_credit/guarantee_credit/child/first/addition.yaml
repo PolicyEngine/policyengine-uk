@@ -8,9 +8,7 @@ metadata:
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
   unit: currency-GBP
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2022-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
   2019-02-01: 63.84
   2020-04-01: 64.82

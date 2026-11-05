@@ -1,0 +1,90 @@
+# SSI 2024/367 arts1–3:8% from5December2024 for unprotected contracts.
+# https://www.legislation.gov.uk/ssi/2024/367/made
+# Existing annual transactional-tax convention samples30April, so2024
+# retains6% and2025onward uses8%. These cases do not simulate actual
+# late2024transaction dates or the protected pre5December contract rule.
+# A £300,000 purchase's unchanged ordinary LBTT is£4,600:
+# £105,000*2%+£50,000*5% (SSI2015/126 TableA).
+# ADS adds£18,000 at6%, or£24,000 at8%. Purchase/rent inputs are explicit;
+# no liability flag, intermediate tax or property stock is forced.
+
+- name: Annual 2024 additional purchase retains the April sample at six percent
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    region: SCOTLAND
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_and_buildings_transaction_tax: 22_600
+
+- name: Annual 2025 additional purchase pays eight percent ADS
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    region: SCOTLAND
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_and_buildings_transaction_tax: 28_600
+
+- name: Annual 2026 additional purchase retains eight percent ADS
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    region: SCOTLAND
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_and_buildings_transaction_tax: 28_600
+
+- name: Ordinary main-home purchase receives no ADS
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    region: SCOTLAND
+    main_residential_property_purchased: 300_000
+    main_residential_property_purchased_is_first_home: false
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_and_buildings_transaction_tax: 4_600
+
+- name: English purchase has no Scottish LBTT liability
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    region: LONDON
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300_000
+    non_residential_property_purchased: 0
+    rent: 0
+    cumulative_residential_rent: 0
+    non_residential_rent: 0
+    cumulative_non_residential_rent: 0
+  output:
+    land_and_buildings_transaction_tax: 0

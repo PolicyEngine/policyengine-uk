@@ -1,0 +1,21 @@
+description: The Wales Council Tax Reduction scheme deducts this share of pension contributions when it calculates an applicant's net earnings and a self-employed earner's net profit, for pensioners and for applicants who are not pensioners and have no award of Universal Credit.
+values:
+  2013-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Wales Council Tax Reduction pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 1 para. 13(2)(b) and (c) and (5)(c) (employed earners who are pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/13
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 1 para. 23(1)(b)(ii), (2)(c) and (8)(b) (self-employed earners who are pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/23
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 15(3)(b) and (c) and (6)(c) (employed earners who are not pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/15
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 24(1)(b)(ii) and (c)(ii), (3)(c) and (9)(b) (self-employed earners who are not pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/24
+    - title: The Council Tax Reduction Schemes (Default Scheme) (Wales) Regulations 2013 Sch. paras. 39, 49 and 58
+      href: https://www.legislation.gov.uk/wsi/2013/3035/schedule
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 Sch. 1 paras. 13 and 23 and Sch. 6 paras. 15 and 24 (2013-14 schemes; revoked from 1 April 2014)
+      href: https://www.legislation.gov.uk/wsi/2012/3144/contents/made

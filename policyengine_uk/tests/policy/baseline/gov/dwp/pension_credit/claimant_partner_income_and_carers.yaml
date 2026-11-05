@@ -6,7 +6,7 @@
       claimant:
         age: 75
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -52,7 +52,7 @@
         age: 75
         is_parent: true
         state_pension: 8_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -82,7 +82,7 @@
         age: 75
         is_parent: true
         state_pension: 10_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -90,7 +90,7 @@
         is_in_non_advanced_education: true
         age_started_or_accepted_current_education_or_training: 18
         employment_income: 3_000
-        income_tax: 100
+        income_tax_before_winter_fuel_payment_charge: 100
         national_insurance: 100
         pension_contributions: 2_000
     benunits:
@@ -114,7 +114,7 @@
         is_parent: true
         state_pension: 8_000
         basic_income: 100
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -139,7 +139,7 @@
         state_pension: 5_000
         employment_income: 1_000
         jsa_contrib: 100
-        income_tax: 100
+        income_tax_before_winter_fuel_payment_charge: 100
         national_insurance: 0
         pension_contributions: 200
         is_entitled_to_carer_benefit: true
@@ -148,7 +148,7 @@
         private_pension_income: 2_000
         self_employment_income: 500
         esa_contrib: 200
-        income_tax: 50
+        income_tax_before_winter_fuel_payment_charge: 50
         national_insurance: 25
         pension_contributions: 100
         is_entitled_to_carer_benefit: true
@@ -160,9 +160,13 @@
     is_claimant_or_partner: [true, true]
     # SPCA 2002 s.5: gross = 5,000 + 1,000 + 100 + 2,000 + 500 + 200
     # + 104 = 8,904; deductions = 100 + 50 + 25 + 50% * 300 = 325.
-    pension_credit_income: 8_579
+    # Sch VI para 3 (both carers): 20 pounds a week, capped at net earnings
+    # (claimant 1,000 - 100 tax - 100 half contributions = 800; partner
+    # 500 - 25 NI - 50 tax - 50 = 375; 1,175), so 1,040 is disregarded:
+    # 8,904 - 325 - 1,040.
+    pension_credit_income: 7_539
     # Reg.9: remove the claimant's 100 JSA and partner's 200 ESA.
-    savings_credit_income: 8_279
+    savings_credit_income: 7_239
     # Sch.I para.4 and the 2026 carer addition: 2 * 48.15 * 52 = 5,007.60.
     carer_minimum_guarantee_addition: 5_007.60
 
@@ -197,7 +201,7 @@
         age: 75
         is_parent: true
         state_pension: 10_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:

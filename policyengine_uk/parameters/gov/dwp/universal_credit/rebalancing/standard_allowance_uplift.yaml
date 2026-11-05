@@ -1,13 +1,13 @@
-description: Uplift in the Standard Allowance for Universal Credit, in addition to the annual inflationary increase, compared to 2025-26 levels.
+description: Uplift to the Universal Credit standard allowance above CPI-only uprating from its 2025-26 level (the relevant uplift percentage). It is not compounded on the previous year's uplift.
 values:
-  2025-01-01: 0.000
-  2026-01-01: 0.023
-  2027-01-01: 0.031
-  2028-01-01: 0.040
-  2029-01-01: 0.048
+  2025-04-06: 0.000
+  2026-04-06: 0.023
+  2027-04-06: 0.031
+  2028-04-06: 0.040
+  2029-04-06: 0.048
 metadata:
   unit: /1
   label: Universal Credit rebalancing standard allowance uplift
   reference:
-    - title: Universal Credit Bill
-      href: https://bills.parliament.uk/publications/62123/documents/6889
+    - title: Universal Credit Act 2025 s. 1(4)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/1

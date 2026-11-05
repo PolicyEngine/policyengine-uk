@@ -11,8 +11,9 @@ class has_attained_state_pension_credit_qualifying_age(Variable):
         "Whether the person has reached the qualifying age for State Pension "
         "Credit by the middle of the fiscal year (6 October), so is over it for "
         "most of the year. Men born before 6 December 1953 reach it before "
-        "their own State Pension age of 65, so in 2018-19 and earlier this can "
-        "hold where is_SP_age does not; under the statutory timetable, from "
+        "their own State Pension age of 65, except those born on 6 November "
+        "1953, who reach both ages at 65. In 2018-19 and earlier this can hold "
+        "where is_SP_age does not; under the statutory timetable, from "
         "2019-20 the two agree for everyone."
     )
     definition_period = YEAR

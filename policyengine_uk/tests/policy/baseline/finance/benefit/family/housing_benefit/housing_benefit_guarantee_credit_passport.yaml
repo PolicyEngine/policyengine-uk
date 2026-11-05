@@ -222,13 +222,14 @@
     # Pension Credit capital income: SI 2002/1792 reg 15(6), and the repo's
     # pension_credit.income.capital parameters, give £1/week per £500 above
     # £10,000: ceil((20,000 - 10,000) / 500) x 1 x 52 = £1,040/year.
-    # The 2025 SINGLE minimum_guarantee parameter is £221.85/week:
-    # 221.85 x 52 = £11,536.20; 11,536.20 - (10,000 + 1,040) = £496.20.
-    # Both are entitled; only the claimant receives that Guarantee Credit.
+    # The 2025-26 single standard minimum guarantee is £227.10/week (SI
+    # 2025/295): 227.10 x 52 = £11,809.20; 11,809.20 - (10,000 + 1,040) =
+    # £769.20. Both are entitled; only the claimant receives that Guarantee
+    # Credit.
     pension_credit_deemed_income: [1_040, 1_040]
-    minimum_guarantee: [11_536.20, 11_536.20]
-    guarantee_credit: [496.20, 496.20]
-    pension_credit: [0, 496.20]
+    minimum_guarantee: [11_809.20, 11_809.20]
+    guarantee_credit: [769.20, 769.20]
+    pension_credit: [0, 769.20]
     in_receipt_of_guarantee_credit: [false, true]
     # SI 2006/214 reg 26 disregards income and capital only on receipt:
     # https://www.legislation.gov.uk/uksi/2006/214/regulation/26

@@ -16,7 +16,7 @@ from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 def calculate_derivative(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -30,7 +30,9 @@ def calculate_derivative(
 
     Args:
         sim: PolicyEngine simulation object
-        target_variable: Variable to measure changes in (typically household_net_income)
+        target_variable: Variable to measure changes in (by default HBAI net
+            income before a negative income is reset to zero, so that the
+            rate reflects the household's actual budget constraint)
         input_variable: Variable to change (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to apply changes to
@@ -89,7 +91,7 @@ def calculate_derivative(
 
 def calculate_relative_income_change(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     year: int = 2025,
 ) -> pd.DataFrame:
     """Calculate relative change in income between baseline and scenario.
@@ -135,7 +137,7 @@ def calculate_relative_income_change(
 
 def calculate_derivative_change(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -204,7 +206,7 @@ def calculate_labour_substitution_elasticities(
     """Calculate labour supply substitution elasticities by demographic group.
 
     Uses OBR elasticity estimates to assign substitution elasticities based on
-    gender, marital status, and presence/age of children. These elasticities
+    gender, partnership status, and presence/age of children. These elasticities
     measure how labour supply responds to changes in marginal tax rates.
 
     Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf
@@ -218,7 +220,8 @@ def calculate_labour_substitution_elasticities(
     """
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender", year)
-    is_married = sim.calculate("is_married", year, map_to="person")
+    # OBR Tables A1/A2 include cohabiting couples; legal marriage is separate.
+    is_couple = sim.calculate("is_couple", year, map_to="person")
     composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
@@ -227,31 +230,31 @@ def calculate_labour_substitution_elasticities(
     elasticities = np.zeros(gender.shape, dtype=float)
 
     # Married or cohabiting women - higher elasticities, especially with young children
-    married_women = (gender == "FEMALE") & is_married
-    elasticities[married_women & ~has_children] = 0.14  # No children
+    partnered_women = (gender == "FEMALE") & is_couple
+    elasticities[partnered_women & ~has_children] = 0.14  # No children
 
     # Elasticities vary significantly by youngest child's age
-    elasticities[married_women & has_children & (youngest_child_age <= 2)] = (
+    elasticities[partnered_women & has_children & (youngest_child_age <= 2)] = (
         0.301  # 0-2 years
     )
     elasticities[
-        married_women
+        partnered_women
         & has_children
         & (youngest_child_age >= 3)
         & (youngest_child_age <= 4)
     ] = 0.439  # 3-4 years (highest)
     elasticities[
-        married_women
+        partnered_women
         & has_children
         & (youngest_child_age >= 5)
         & (youngest_child_age <= 10)
     ] = 0.173  # 5-10 years
-    elasticities[married_women & has_children & (youngest_child_age >= 11)] = (
+    elasticities[partnered_women & has_children & (youngest_child_age >= 11)] = (
         0.160  # 11+ years
     )
 
-    # Lone parents - lower elasticities than married women, reflecting different constraints
-    lone_parents = (gender == "FEMALE") & ~is_married & has_children
+    # Lone parents - lower elasticities than partnered women, reflecting different constraints
+    lone_parents = ~is_couple & has_children
     elasticities[lone_parents & (youngest_child_age <= 4)] = 0.094  # 0-4 years
     elasticities[
         lone_parents & (youngest_child_age >= 5) & (youngest_child_age <= 10)
@@ -261,10 +264,10 @@ def calculate_labour_substitution_elasticities(
     ] = 0.136  # 11-18 years
 
     # Men (excluding lone fathers) - moderate, consistent elasticity
-    elasticities[(gender == "MALE") & ~(~is_married & has_children)] = 0.15
+    elasticities[(gender == "MALE") & ~(~is_couple & has_children)] = 0.15
 
     # Single women without children - same as men
-    elasticities[(gender == "FEMALE") & ~is_married & ~has_children] = 0.15
+    elasticities[(gender == "FEMALE") & ~is_couple & ~has_children] = 0.15
 
     return elasticities
 
@@ -276,7 +279,7 @@ def calculate_labour_net_income_elasticities(
     """Calculate labour supply income elasticities by demographic group.
 
     Uses OBR elasticity estimates to assign income elasticities based on
-    gender, marital status, and presence/age of children. These elasticities
+    gender, partnership status, and presence/age of children. These elasticities
     measure how labour supply responds to changes in unearned income.
 
     Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf
@@ -291,7 +294,8 @@ def calculate_labour_net_income_elasticities(
     """
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender", year)
-    is_married = sim.calculate("is_married", year, map_to="person")
+    # OBR Tables A1/A2 include cohabiting couples; legal marriage is separate.
+    is_couple = sim.calculate("is_couple", year, map_to="person")
     composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
@@ -300,33 +304,33 @@ def calculate_labour_net_income_elasticities(
     elasticities = np.zeros(gender.shape, dtype=float)
 
     # Married or cohabiting women - negative income elasticities (normal good)
-    married_women = (gender == "FEMALE") & is_married
-    elasticities[married_women & ~has_children] = (
+    partnered_women = (gender == "FEMALE") & is_couple
+    elasticities[partnered_women & ~has_children] = (
         0.0  # No income effect without children
     )
 
     # Stronger negative income effects with younger children
     elasticities[
-        married_women & has_children & (youngest_child_age <= 2)
+        partnered_women & has_children & (youngest_child_age <= 2)
     ] = -0.185  # 0-2 years
     elasticities[
-        married_women
+        partnered_women
         & has_children
         & (youngest_child_age >= 3)
         & (youngest_child_age <= 4)
     ] = -0.173  # 3-4 years
     elasticities[
-        married_women
+        partnered_women
         & has_children
         & (youngest_child_age >= 5)
         & (youngest_child_age <= 10)
     ] = -0.102  # 5-10 years
     elasticities[
-        married_women & has_children & (youngest_child_age >= 11)
+        partnered_women & has_children & (youngest_child_age >= 11)
     ] = -0.063  # 11+ years
 
-    # Lone parents - smaller negative income effects than married women
-    lone_parents = (gender == "FEMALE") & ~is_married & has_children
+    # Lone parents - smaller negative income effects than partnered women
+    lone_parents = ~is_couple & has_children
     elasticities[lone_parents & (youngest_child_age <= 4)] = -0.037  # 0-4 years
     elasticities[
         lone_parents & (youngest_child_age >= 5) & (youngest_child_age <= 10)
@@ -336,10 +340,10 @@ def calculate_labour_net_income_elasticities(
     ] = -0.054  # 11-18 years
 
     # Men (excluding lone fathers) - small negative income effect
-    elasticities[(gender == "MALE") & ~(~is_married & has_children)] = -0.05
+    elasticities[(gender == "MALE") & ~(~is_couple & has_children)] = -0.05
 
     # Single women without children - same as men
-    elasticities[(gender == "FEMALE") & ~is_married & ~has_children] = -0.05
+    elasticities[(gender == "FEMALE") & ~is_couple & ~has_children] = -0.05
 
     return elasticities
 

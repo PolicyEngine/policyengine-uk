@@ -159,6 +159,8 @@
     savings_credit: 0.6 * (238 - 208.07) * 52
 
 - name: Housing Benefit and Council Tax Reduction no longer fall where Guarantee Credit used to end for a couple whose partner receives Carer's Allowance
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher couple allowance applies (SI 2006/214 Sch 3 para 1(2)(b)).
   # Before #1952, Pension Credit left out the partner's Carer's Allowance, so
   # Guarantee Credit ran on to a private pension of 9,700 and the Housing
   # Benefit and Council Tax Reduction passports ended at 9,800, when both
@@ -171,19 +173,19 @@
   input:
     people:
       claimant_1:
-        age: 70
+        age: 72
         state_pension: 13_500
         private_pension_income: 9_700
       carer_1:
-        age: 70
+        age: 72
         state_pension: 0
         care_hours: 35
       claimant_2:
-        age: 70
+        age: 72
         state_pension: 13_500
         private_pension_income: 9_800
       carer_2:
-        age: 70
+        age: 72
         state_pension: 0
         care_hours: 35
     benunits:
@@ -225,6 +227,8 @@
     council_tax_benefit: [1_323.32, 1_307.32]
 
 - name: Net income rises where Guarantee Credit now ends for a couple whose partner receives Carer's Allowance
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher couple allowance applies (SI 2006/214 Sch 3 para 1(2)(b)).
   # Guarantee Credit ends at a private pension of about 4,164 (income 21,392.80
   # = the minimum guarantee). Across 4,100 to 4,200 net income rises by
   # 100 - 20 tax - 51.40 Guarantee Credit = 28.60: Housing Benefit and Council
@@ -235,19 +239,19 @@
   input:
     people:
       claimant_1:
-        age: 70
+        age: 72
         state_pension: 13_500
         private_pension_income: 4_100
       carer_1:
-        age: 70
+        age: 72
         state_pension: 0
         care_hours: 35
       claimant_2:
-        age: 70
+        age: 72
         state_pension: 13_500
         private_pension_income: 4_200
       carer_2:
-        age: 70
+        age: 72
         state_pension: 0
         care_hours: 35
     benunits:
@@ -282,6 +286,8 @@
     council_tax_benefit: [2_000, 2_000]
 
 - name: Pension-age Housing Benefit counts Carer Support Payment but not the Scottish Carer Supplement
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher couple allowance applies (SI 2006/214 Sch 3 para 1(2)(b)).
   # HB (SPC) Regs 2006 reg 29(1)(j)(xviiha), inserted by SI 2026/246 art 21(3).
   # Income is above the minimum guarantee, so no Guarantee Credit passport.
   # Nobody pays income tax: 12,000 and 6,000 + 5,103.80 are each below the
@@ -291,11 +297,11 @@
   input:
     people:
       claimant:
-        age: 70
+        age: 72
         state_pension: 0
         private_pension_income: 12_000
       carer:
-        age: 70
+        age: 72
         state_pension: 0
         private_pension_income: 6_000
         care_hours: 35

@@ -6,7 +6,7 @@
 - name: No capital gains
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 0
   output:
     capital_gains_tax: 0
@@ -14,7 +14,7 @@
 - name: Capital gains below annual exempt amount
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 2_000
   output:
     capital_gains_tax: 0
@@ -22,7 +22,7 @@
 - name: Capital gains just above annual exempt amount
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 3_500
   output:
     capital_gains_tax: 90
@@ -30,7 +30,7 @@
 - name: Basic rate capital gains tax
   period: 2025
   input:
-    adjusted_net_income: 20_000
+    net_income: 20_000
     capital_gains: 23_000
   output:
     capital_gains_tax: 3_600
@@ -39,7 +39,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 50_000
+    net_income: 50_000
     capital_gains: 50_000
   output:
     capital_gains_tax: 11_263.80
@@ -47,7 +47,7 @@
 - name: Additional rate capital gains tax
   period: 2025
   input:
-    adjusted_net_income: 150_000
+    net_income: 150_000
     capital_gains: 100_000
   output:
     capital_gains_tax: 23_280
@@ -56,7 +56,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 35_000
+    net_income: 35_000
     capital_gains: 40_000
   output:
     capital_gains_tax: 7_963.80
@@ -64,7 +64,7 @@
 - name: High capital gains, low income
   period: 2025
   input:
-    adjusted_net_income: 10_000
+    net_income: 10_000
     capital_gains: 200_000
   output:
     capital_gains_tax: 45_018
@@ -73,7 +73,7 @@
   period: 2025
   absolute_error_margin: 0.1
   input:
-    adjusted_net_income: 500_000
+    net_income: 500_000
     capital_gains: 1_000_000
   output:
     capital_gains_tax: 239_280
@@ -81,7 +81,7 @@
 - name: Edge case, capital gains exactly equal to annual exempt amount
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 3_000
   output:
     capital_gains_tax: 0
@@ -105,7 +105,7 @@
   input:
     people:
       person1:
-        adjusted_net_income: 9_324
+        net_income: 9_324
         capital_gains: 228_890
       person2:
         capital_gains: -124_972
@@ -117,7 +117,7 @@
 - name: Case 13, Gift Aid extends the basic rate band for capital gains.
   period: 2018
   input:
-    adjusted_net_income: 41_850
+    net_income: 41_850
     gift_aid: 40_000
     capital_gains: 70_000
   output:
@@ -136,7 +136,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 11_336.06
+    net_income: 11_336.06
     capital_gains: 32_942.86
   output:
     capital_gains_tax: 5_389.71
@@ -150,7 +150,7 @@
   period: 2024
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 20_000
+    net_income: 20_000
     capital_gains: 23_000
   output:
     capital_gains_tax: 2_692.60
@@ -159,7 +159,7 @@
   period: 2024
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 150_000
+    net_income: 150_000
     capital_gains: 100_000
   output:
     capital_gains_tax: 21_079.56

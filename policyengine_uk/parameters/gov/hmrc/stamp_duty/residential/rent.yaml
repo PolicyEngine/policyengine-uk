@@ -9,8 +9,42 @@ brackets:
     2003-07-10: 60000
     2005-04-07: 120000
     2006-07-19: 125000
-    2020-07-08: 500000
-    2021-03-31: 125000
+    2020-07-08:
+      value: 500000
+      metadata:
+        reference:
+        - href: https://www.legislation.gov.uk/ukpga/2020/15/section/1
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1(1), (4)
+    2021-07-01:
+      value: 250000
+      metadata:
+        reference:
+        - href: https://www.legislation.gov.uk/ukpga/2020/15/section/1
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1(1)(b), as amended by Finance Act 2021 s. 87(2)(a)
+        - href: https://www.legislation.gov.uk/ukpga/2020/15/section/1A
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1A(1), (4), inserted by Finance Act 2021 s. 87(3)
+    2021-10-01:
+      value: 125000
+      metadata:
+        reference:
+        - href: https://www.legislation.gov.uk/ukpga/2020/15/section/1A
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1A(1)(b), inserted by Finance Act 2021 s. 87(3)
+        - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5/paragraph/2
+          title: Finance Act 2003 schedule 5 paragraph 2(3) Table A
+    2022-09-23:
+      value: 250000
+      metadata:
+        reference:
+        - href: https://www.legislation.gov.uk/ukpga/2023/2/section/1/enacted
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2023 s. 1(1), (4)
+    2025-04-01:
+      value: 125000
+      metadata:
+        reference:
+        - href: https://www.legislation.gov.uk/ukpga/2023/2/section/1/enacted
+          title: Stamp Duty Land Tax (Temporary Relief) Act 2023 s. 1(1)(b)
+        - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5/paragraph/2
+          title: Finance Act 2003 schedule 5 paragraph 2(3) Table A
 description: Stamp Duty Land Tax progressive rates for cumulative rents on residential
   property.
 metadata:
@@ -23,4 +57,8 @@ metadata:
     title: Finance Act 2003 schedule 5
   - href: https://www.legislation.gov.uk/ukpga/2020/15/section/1/enacted
     title: Stamp Duty Land Tax (Temporary Relief) Act 2020
+  - href: https://www.legislation.gov.uk/ukpga/2021/26/section/87/enacted
+    title: Finance Act 2021 s. 87
+  - href: https://www.legislation.gov.uk/ukpga/2023/2/section/1/enacted
+    title: Stamp Duty Land Tax (Temporary Relief) Act 2023 s. 1(4)
   threshold_unit: currency-GBP

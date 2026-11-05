@@ -26,8 +26,17 @@ devolved programs, use the appropriate devolved agency path, such as
 - Use `np.ceil` and other NumPy functions where OpenFisca formulas need array
   behavior.
 - Cite durable policy sources in `reference` fields when available.
-- Parameter labels should be concise, lowercase, and stable.
+- Parameter labels should be concise, use sentence case, and stay stable.
 - Add or update focused tests alongside variables and parameters.
+
+Use a concise noun phrase in sentence case for a parameter label. Capitalise
+the first word, preserve capitals in programme proper names and acronyms, and
+use lowercase for other ordinary words. For example, change `capital limit`
+to `Capital limit`; retain `Universal Credit standard allowance`. Explain the
+quantity's purpose and programme in its description. Follow the
+[parameter description guide](../parameter-descriptions.md#labels-and-descriptions)
+for wording examples, punctuation and the distinction between automatic checks
+and semantic review.
 
 ## Program Registry
 
@@ -53,6 +62,14 @@ use `notes` for a concise qualification that does not fit the structured fields.
 Change `verified_start_year` or `verified_end_year` only after verifying that
 parameters and tests cover the stated years. Current entries use the status
 values `complete` and `partial`.
+
+The registry also defines the budget totals `household_tax` and
+`household_benefits`, and `policyengine_uk.programs.budget_programs()` serves
+their terms to downstream code. The `Program registry` section of
+`.github/CONTRIBUTING.md` defines the budget fields (`budget`, `group`,
+`budget_dropped_when`, `budget_uprating`), the `budget_terms` section and
+`budget_order`. Add or remove a term of either total in `programs.yaml`, never
+in the formula modules.
 
 ## Refactoring Recovery Lessons
 

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.country import Country
 
 
 class council_tax_reduction_pensioner(Variable):
@@ -12,22 +13,39 @@ class council_tax_reduction_pensioner(Variable):
         "on Income Support, income-based Jobseeker's Allowance or "
         "income-related Employment and Support Allowance, or has an award of "
         "Universal Credit. A mixed-age couple on Universal Credit is therefore "
-        "not a pensioner in England, Wales or Scotland. Each applicant's "
+        "not a pensioner in England, Wales or Scotland. Wholly pension-age "
+        "tax credit migrants whose upper UC age limit is waived under "
+        "regulation 60A retain pensioner treatment in England from the "
+        "2025-26 scheme year and Wales from 2026-27; Scotland treats their "
+        "UC awards under the working-age rules. As in is_uc_eligible, the "
+        "formula recognises a reg 60A award only where the claimant or "
+        "partner reports Working Tax Credit. Other wholly pension-age "
+        "UC input awards retain the model's approximation for an award "
+        "awaiting termination or made in error. Each applicant's "
         "scheme follows their own family, so where families share the rent "
         "and each claims, a working-age family is assessed under the "
         "working-age rules even if the household head's family is "
         "pension-age, and the reverse. The shared applicable allowance uses "
-        "this test, as does English scheme selection; Welsh and Scottish "
-        "scheme selection retains its existing approximations."
+        "this test, as does English scheme selection, the choice between the "
+        "pensioner and working-age tariff income from capital, and the "
+        "Scottish income rules; Welsh and Scottish award formulas retain "
+        "their existing approximations."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2012/2885/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2025/39/regulation/1",
+        "https://www.legislation.gov.uk/uksi/2025/39/regulation/4",
         "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/3",
         "https://www.legislation.gov.uk/wsi/2013/3029/regulation/3",
+        "https://www.legislation.gov.uk/wsi/2026/13/regulation/1",
+        "https://www.legislation.gov.uk/wsi/2026/13/regulation/4",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/3",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/12",
         "https://www.legislation.gov.uk/ssi/2012/303/regulation/12",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
+        "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
+        "https://www.legislation.gov.uk/ukpga/2002/21/section/10",
     )
 
     def formula(benunit, period, parameters):
@@ -57,26 +75,53 @@ class council_tax_reduction_pensioner(Variable):
             & ~head_applies_alone
         )
         # The award before the benefit cap: the cap reduces an award
-        # (UC Regs 2013 reg 81) rather than removing it. An award counts only
-        # where the applicant or partner is under the qualifying age, which
-        # Universal Credit needs (UC Regs 2013 reg 3(2)(a)). A dependant is
+        # (UC Regs 2013 reg 81) rather than removing it. An ordinary award
+        # counts where the applicant or partner is under the qualifying age
+        # (UC Regs 2013 reg 3(2)(a)). A dependant is
         # neither: outside a head who applies alone, the applicant and partner
         # are the benefit unit's claimant and partner, and
         # is_claimant_or_partner presumes a member under 20 and at least 16
         # years younger than the claimant to be their child, so a pensioner's
         # 18- or 19-year-old does not count, whether or not is_parent
         # identifies the pensioner as the parent.
-        # This also stands in for the rules that disregard an award held after
-        # both members reach the qualifying age (SI 2012/2885 reg 3(2);
-        # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)). England, and Wales
-        # for schemes from 2026-27, also disregard a tax credit migrant's award
-        # (UC (TP) Regs 2014 reg 60A) and Scotland does not; the model does not
-        # model those migrants.
         working_age_applicant = benunit.any(applicant_or_partner & ~over_qualifying_age)
+        # The model recognises reg 60A awards through the closure claim and
+        # the Working Tax Credit reported by the claimant or partner, as
+        # is_uc_eligible does. The waiver applies to a single pension-age
+        # claimant or joint claimants both pension age, not mixed-age
+        # couples, and only where they hold the Working Tax Credit award. A
+        # couple claims the credit together (Tax Credits Act 2002 s.3(3)),
+        # so both members hold its award (s.10(1)); the claimant holds no
+        # part of an award another benefit-unit member claimed.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        pension_age_tax_credit_migrant = (
+            benunit("claims_uc_at_legacy_closure", period)
+            & (
+                benunit.sum(
+                    person("working_tax_credit_reported", period) * claimant_or_partner
+                )
+                > 0
+            )
+            & ~working_age_applicant
+        )
+        country = benunit.household("country", period)
+        # Commencement alone does not determine the scheme: SI 2025/39
+        # reg 1(3) applies from the financial year beginning April 2025;
+        # WSI 2026/13 reg 1(3) from April 2026. Model years represent those
+        # scheme years. SSI 2021/249 reg 3 has no reg 60A migrant exception.
+        migrant_award_disregarded = (
+            (country == Country.ENGLAND) & (period.start.year >= 2025)
+        ) | ((country == Country.WALES) & (period.start.year >= 2026))
+        # Other awards with no working-age applicant retain the existing
+        # approximation for a final UC assessment-period run-on or an award
+        # made in error (SI 2012/2885 reg 3(2); SSI 2021/249 reg 3(2)).
         universal_credit_award = (
             benunit("is_uc_entitled", period)
             & ~head_applies_alone
-            & working_age_applicant
+            & (
+                working_age_applicant
+                | (pension_age_tax_credit_migrant & ~migrant_award_disregarded)
+            )
         )
         return (
             attained_qualifying_age & ~income_related_benefit & ~universal_credit_award

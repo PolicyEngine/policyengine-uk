@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.excise import fiscal_year_segments
 
 
 class tv_licence_discount(Variable):
@@ -17,24 +16,14 @@ class tv_licence_discount(Variable):
     def formula(household, period, parameters):
         person = household.members
         tv_licence = parameters(period).gov.dcms.bbc.tv_licence
-
-        # Aged discount
-        claims_pc = add(household, period, ["pension_credit"]) > 0
-        aged_discount = 0
-        for aged_rules, share in fiscal_year_segments(
-            parameters.gov.dcms.bbc.tv_licence.discount.aged,
-            period.start.year,
-        ):
-            aged = person("age", period) >= aged_rules.min_age
-            has_aged = household.any(aged)
-            meets_pc_requirement = not_(aged_rules.must_claim_pc) | claims_pc
-            aged_discount += (
-                has_aged * meets_pc_requirement * aged_rules.discount * share
-            )
+        free_licence_share = household(
+            "tv_licence_free_licence_share",
+            period,
+        )
 
         # Blind discount
         is_blind = person("is_blind", period)
         has_blind = household.any(is_blind)
         blind_discount = has_blind * tv_licence.discount.blind.discount
 
-        return max_(aged_discount, blind_discount)
+        return free_licence_share + (1 - free_licence_share) * blind_discount

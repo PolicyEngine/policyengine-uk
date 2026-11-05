@@ -1,0 +1,13 @@
+description: The England Council Tax Reduction scheme for pensioners deducts this share of pension contributions when it calculates an applicant's net earnings and a self-employed earner's net profit.
+values:
+  2013-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: England Council Tax Reduction pensioner pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 19(2)(b) and (c) and (5)(c) (employed earners)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/19
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 29(1)(b)(ii), (2)(c) and (8)(b) (self-employed earners)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/29

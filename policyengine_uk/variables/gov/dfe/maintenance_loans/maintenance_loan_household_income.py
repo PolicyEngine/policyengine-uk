@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.supplied_inputs import supplied_by
 import numpy as np
 
 
@@ -10,7 +11,7 @@ class maintenance_loan_household_income(Variable):
         "Student Finance England-style household income for maintenance loan assessment. "
         "This can be set explicitly in simulations. By default, the model uses a proxy: "
         "dependent students use sponsor income from a selected older household benefit unit, "
-        "plus their own benefit-unit income; otherwise the model uses benefit-unit adjusted net income. "
+        "plus their own benefit-unit income; otherwise the model uses benefit-unit net income before Gift Aid adjustments. "
         "A student is dependent only if none of the independence tests the model can see applies "
         "(Education (Student Support) Regulations 2011 Sch 4 para 2(1)): aged under 25 on the first "
         "day of the academic year (para 2(1)(a)), not in a couple (a proxy for para 2(1)(b)), and "
@@ -31,18 +32,16 @@ class maintenance_loan_household_income(Variable):
         is_couple = person.benunit("is_couple", period)
         is_household_head = person("is_resolved_household_head", period)
         is_parent = person("is_parent", period)
-        tenure_holder = person.household.get_holder("tenure_type")
-        has_explicit_tenure = (
-            tenure_holder.get_array(period) is not None
-            or tenure_holder.get_array(period.last_year) is not None
-        )
+        # Only a supplied tenure (for this year or carried forward from an
+        # earlier one) shows renting; the default tenure is not evidence.
+        has_explicit_tenure = supplied_by(person.household, "tenure_type", period)
         is_renting = (
             person.benunit("benunit_is_renting", period)
             if has_explicit_tenure
             else np.zeros_like(has_sponsor, dtype=bool)
         )
         benunit_income = person.benunit.sum(
-            person.benunit.members("adjusted_net_income", period)
+            person.benunit.members("net_income", period)
         )
         dependent_student_proxy = (
             in_higher_education

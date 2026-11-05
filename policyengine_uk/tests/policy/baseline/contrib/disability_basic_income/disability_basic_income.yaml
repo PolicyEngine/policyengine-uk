@@ -70,3 +70,21 @@
     is_disabled_for_benefits: true
   output:
     disability_basic_income: 5_200
+
+- name: Disability basic income excludes a child's LCWRA flag, the LCWRA element being a claimant's
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 10
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    disability_basic_income: [0, 0]

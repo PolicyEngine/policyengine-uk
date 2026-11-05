@@ -1,0 +1,83 @@
+# SI 2017/387 regs 1 and 4(b): strict responsible-child DOB condition.
+# Existing 2024 child element 3455; family element 545; zero-income continuing claims.
+- name: A child born on the family cutoff receives no family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1
+      child:
+        age: 7
+        date_of_birth: 20170406
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+    households:
+      household:
+        members:
+        - parent
+        - child
+  output:
+    child_tax_credit: 3455
+    tax_credits: 3455
+    CTC_family_element: 0
+    CTC_child_element: 3455
+- name: A child born the day before the family cutoff retains one family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1
+      child:
+        age: 7
+        date_of_birth: 20170405
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+    households:
+      household:
+        members:
+        - parent
+        - child
+  output:
+    child_tax_credit: 4000
+    tax_credits: 4000
+    CTC_family_element: 545
+    CTC_child_element: 3455
+- name: A child born after the family cutoff receives no family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1
+      child:
+        age: 7
+        date_of_birth: 20170407
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+    households:
+      household:
+        members:
+        - parent
+        - child
+  output:
+    child_tax_credit: 3455
+    tax_credits: 3455
+    CTC_family_element: 0
+    CTC_child_element: 3455

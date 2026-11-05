@@ -20,9 +20,13 @@ The law:
 
 Universal Credit needs a claimant or partner under the qualifying age (UC
 Regs 2013 reg 3(2)(a)). Claimant and partner are is_claimant_or_partner, which
-presumes a member under 20 and at least 16 years younger than the claimant to
-be their child, so a pensioner's qualifying young person is a dependant
-whether or not is_parent is set; the draws cover both. "On Universal Credit"
+the families supply: the drawn adults are the claimant and partner, and the
+qualifying young person and children are not. Left to the age presumption, a
+partner 20 or more years younger would be read as the claimant's child, and
+a mixed-age couple as a single pensioner. (So these draws no longer exercise
+the presumption that reads a pensioner's 18-year-old as a dependant, with or
+without is_parent; this change leaves that rule as it was, and
+benefit_unit_structure.yaml covers it.) "On Universal Credit"
 below means an award before the cap with a claimant or partner under State
 Pension age. Legacy income-related benefit is set as an input.
 
@@ -32,15 +36,18 @@ P1  Both new tests hold exactly when a claimant or partner is over State
     Pension age and the family is neither on Universal Credit nor on a legacy
     income-related benefit.
 P2  Every Universal Credit award is capped unless a non-age exception applies:
-    such a family has a finite benefit cap.
+    such a family has a finite Universal Credit benefit cap.
 P3  Differential against the formulas before this change. A family with no
     member over State Pension age, or one over it with neither Universal
-    Credit nor a legacy income-related benefit, gets exactly the same benefit
-    cap, Universal Credit, Housing Benefit, Council Tax Reduction and household
-    net income.
-P4  The change only removes exemptions: exempt now implies exempt before, the
-    cap is never higher, and Universal Credit and Housing Benefit never rise.
-    A CTR pensioner now was a CTR pensioner before.
+    Credit nor a legacy income-related benefit, gets exactly the same Housing
+    Benefit cap, Universal Credit, Housing Benefit, Council Tax Reduction and
+    household net income. A family with no member over State Pension age also
+    gets the same Universal Credit cap; one with such a member and no
+    Universal Credit award has no award for that cap to reduce.
+P4  The change only removes exemptions: for each scheme, exempt now implies
+    exempt before and the cap is never higher, and Universal Credit and
+    Housing Benefit never rise. A CTR pensioner now was a CTR pensioner
+    before.
 P5  The Welsh and Scottish CTR schemes do not depend on pensioner status,
     but they count Universal Credit as income. So with the CTR pensioner test
     held as it is now (it also sets the pension-age applicable amount and
@@ -93,19 +100,42 @@ PLACES = [
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 
 
-# The two formulas as they were before this change, kept as the reference for
-# the differential invariants.
-class is_benefit_cap_exempt_other(Variable):
+# The formulas as they were before this change, kept as the reference for
+# the differential invariants. Before it, any member over State Pension age
+# lifted the cap. Each scheme's cap exceptions now have their own variable,
+# so the reference adds that age test to each scheme's non-age exceptions.
+def has_pensioner(benunit, period):
+    return benunit.any(benunit.members("is_SP_age", period))
+
+
+class is_uc_benefit_cap_exempt(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Benefit cap exemption before this change"
+    label = "Universal Credit benefit cap exemption before this change"
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        has_pensioner = benunit.any(benunit.members("is_SP_age", period))
-        afcs = benunit("afcs", period) > 0
-        esa_support_component = benunit("esa_contrib", period) > 0
-        return has_pensioner | afcs | esa_support_component
+        return (
+            has_pensioner(benunit, period)
+            | benunit("is_uc_benefit_cap_exempt_earnings", period)
+            | benunit("is_uc_benefit_cap_exempt_specified_benefit", period)
+        )
+
+
+class is_housing_benefit_benefit_cap_exempt(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = "Housing Benefit benefit cap exemption before this change"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return (
+            has_pensioner(benunit, period)
+            | benunit(
+                "is_housing_benefit_benefit_cap_exempt_working_tax_credit", period
+            )
+            | benunit("is_housing_benefit_benefit_cap_exempt_specified_benefit", period)
+        )
 
 
 class council_tax_reduction_pensioner(Variable):
@@ -125,7 +155,8 @@ class council_tax_reduction_pensioner(Variable):
 
 class before_this_change(Reform):
     def apply(self):
-        self.update_variable(is_benefit_cap_exempt_other)
+        self.update_variable(is_uc_benefit_cap_exempt)
+        self.update_variable(is_housing_benefit_benefit_cap_exempt)
         self.update_variable(council_tax_reduction_pensioner)
 
 
@@ -135,7 +166,8 @@ class before_this_change(Reform):
 # through Universal Credit.
 class before_the_cap_change(Reform):
     def apply(self):
-        self.update_variable(is_benefit_cap_exempt_other)
+        self.update_variable(is_uc_benefit_cap_exempt)
+        self.update_variable(is_housing_benefit_benefit_cap_exempt)
 
 
 @st.composite
@@ -171,7 +203,10 @@ def situation(units):
         has_young_person = any(role == "young" for role, _ in unit["members"])
         for j, (role, age) in enumerate(unit["members"]):
             name = f"p{i}_{j}"
-            person = {"age": {PERIOD: age}}
+            person = {
+                "age": {PERIOD: age},
+                "is_claimant_or_partner": {PERIOD: role == "adult"},
+            }
             if role == "young":
                 person["current_education"] = {PERIOD: "UPPER_SECONDARY"}
             elif age >= 67:
@@ -187,13 +222,14 @@ def situation(units):
             names.append(name)
         for k in range(unit["children"]):
             name = f"p{i}_c{k}"
-            people[name] = {"age": {PERIOD: 2 + 3 * k}}
+            people[name] = {
+                "age": {PERIOD: 2 + 3 * k},
+                "is_claimant_or_partner": {PERIOD: False},
+            }
             names.append(name)
         benunit = {
             "members": names,
             "would_claim_uc": {PERIOD: unit["would_claim_uc"]},
-            # claims_all_entitled_benefits sums reported benefits across the
-            # whole simulation, so it is set per family.
             "claims_all_entitled_benefits": {
                 PERIOD: unit["hb_reported"] == 0 and unit["ctb_reported"] == 0
             },
@@ -215,14 +251,16 @@ def situation(units):
 
 
 BENUNIT = [
+    "relation_type",
     "is_uc_entitled",
     "housing_benefit_pension_age_regulations_apply",
     "council_tax_reduction_pensioner",
-    "is_benefit_cap_exempt",
-    "is_benefit_cap_exempt_health_disability",
-    "is_benefit_cap_exempt_earnings",
-    "is_benefit_cap_exempt_other",
-    "benefit_cap",
+    "is_uc_benefit_cap_exempt",
+    "is_uc_benefit_cap_exempt_specified_benefit",
+    "is_uc_benefit_cap_exempt_earnings",
+    "uc_benefit_cap",
+    "is_housing_benefit_benefit_cap_exempt",
+    "housing_benefit_benefit_cap",
     "universal_credit",
     "housing_benefit",
     "council_tax_benefit",
@@ -231,8 +269,10 @@ BENUNIT = [
 ]
 HOUSEHOLD = ["household_net_income"]
 BEFORE = [
-    "is_benefit_cap_exempt",
-    "benefit_cap",
+    "is_uc_benefit_cap_exempt",
+    "uc_benefit_cap",
+    "is_housing_benefit_benefit_cap_exempt",
+    "housing_benefit_benefit_cap",
     "universal_credit",
     "housing_benefit",
     "council_tax_benefit",
@@ -250,7 +290,13 @@ def calculate(units, before=False):
         names = BEFORE
     else:
         names = BENUNIT + HOUSEHOLD
-    return {name: np.asarray(simulation.calculate(name, PERIOD)) for name in names}
+    values = {name: simulation.calculate(name, PERIOD) for name in names}
+    return {
+        name: np.asarray(
+            value.decode_to_str() if hasattr(value, "decode_to_str") else value
+        )
+        for name, value in values.items()
+    }
 
 
 def has_pension_age_claimant(unit):
@@ -272,6 +318,9 @@ def test_benefit_cap_and_ctr_pension_age_invariants(units):
     before = calculate(units, before=True)
     cap_only = calculate(units, before="cap")
     for i, unit in enumerate(units):
+        # The drawn couples stay couples, however far apart their ages.
+        adults = sum(role == "adult" for role, _ in unit["members"])
+        assert now["relation_type"][i] == ("COUPLE" if adults == 2 else "SINGLE")
         on_uc = bool(now["is_uc_entitled"][i]) and has_working_age_claimant(unit)
         legacy = unit["legacy"] > 0
         # P1
@@ -280,22 +329,33 @@ def test_benefit_cap_and_ctr_pension_age_invariants(units):
         assert now["council_tax_reduction_pensioner"][i] == expected, unit
         # P2
         other_exception = (
-            now["is_benefit_cap_exempt_health_disability"][i]
-            or now["is_benefit_cap_exempt_earnings"][i]
+            now["is_uc_benefit_cap_exempt_specified_benefit"][i]
+            or now["is_uc_benefit_cap_exempt_earnings"][i]
             or now["afcs"][i] > 0
             or now["esa_contrib"][i] > 0
         )
         if on_uc and not other_exception:
-            assert not now["is_benefit_cap_exempt"][i], unit
-            assert np.isfinite(now["benefit_cap"][i]), unit
+            assert not now["is_uc_benefit_cap_exempt"][i], unit
+            assert np.isfinite(now["uc_benefit_cap"][i]), unit
         # P3
         if not has_pension_age_claimant(unit) or not (on_uc or legacy):
+            uc_cap = ["is_uc_benefit_cap_exempt", "uc_benefit_cap"]
             for name in BEFORE:
+                if name in uc_cap and has_pension_age_claimant(unit):
+                    # Before this change the age test lifted the Universal
+                    # Credit cap too, but such a family has no award for it
+                    # to reduce.
+                    assert close(now["universal_credit"][i], 0), unit
+                    continue
                 assert close(now[name][i], before[name][i]), (name, unit)
         # P4
-        if now["is_benefit_cap_exempt"][i]:
-            assert before["is_benefit_cap_exempt"][i], unit
-        assert now["benefit_cap"][i] <= before["benefit_cap"][i], unit
+        for exempt, cap in [
+            ("is_uc_benefit_cap_exempt", "uc_benefit_cap"),
+            ("is_housing_benefit_benefit_cap_exempt", "housing_benefit_benefit_cap"),
+        ]:
+            if now[exempt][i]:
+                assert before[exempt][i], (exempt, unit)
+            assert now[cap][i] <= before[cap][i], (cap, unit)
         assert now["universal_credit"][i] <= before["universal_credit"][i] + 0.01
         assert now["housing_benefit"][i] <= before["housing_benefit"][i] + 0.01
         if now["council_tax_reduction_pensioner"][i]:
@@ -339,8 +399,11 @@ def test_a_pension_age_partner_never_exempts_a_uc_award(couples):
             names = [f"p{i}_a", f"p{i}_b"] + [
                 f"p{i}_c{k}" for k in range(c["children"])
             ]
-            people[names[0]] = {"age": {PERIOD: older}}
-            people[names[1]] = {"age": {PERIOD: c["working_age"]}}
+            # The two adults are the couple whatever their age gap, so the
+            # roles are supplied rather than left to the age presumption.
+            couple = {"is_claimant_or_partner": {PERIOD: True}}
+            people[names[0]] = {"age": {PERIOD: older}, **couple}
+            people[names[1]] = {"age": {PERIOD: c["working_age"]}, **couple}
             for k, name in enumerate(names[2:]):
                 people[name] = {"age": {PERIOD: 2 + 3 * k}}
             benunits[f"b{i}"] = {
@@ -358,12 +421,15 @@ def test_a_pension_age_partner_never_exempts_a_uc_award(couples):
         )
         return {
             name: np.asarray(simulation.calculate(name, PERIOD))
-            for name in ["is_benefit_cap_exempt", "benefit_cap_reduction"]
+            for name in ["is_uc_benefit_cap_exempt", "benefit_cap_reduction"]
         }
 
     working, mixed = run(False), run(True)
     for i, c in enumerate(couples):
-        assert mixed["is_benefit_cap_exempt"][i] == working["is_benefit_cap_exempt"][i]
+        assert (
+            mixed["is_uc_benefit_cap_exempt"][i]
+            == working["is_uc_benefit_cap_exempt"][i]
+        )
         assert close(
             mixed["benefit_cap_reduction"][i], working["benefit_cap_reduction"][i]
         ), c

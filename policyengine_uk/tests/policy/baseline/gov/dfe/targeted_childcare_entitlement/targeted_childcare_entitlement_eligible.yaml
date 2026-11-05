@@ -10,7 +10,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_working_tax_credit_criteria_for_targeted_childcare_entitlement: true
         extended_childcare_entitlement_eligible: false
   output:
@@ -28,7 +28,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_working_tax_credit_criteria_for_targeted_childcare_entitlement: true
         meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
         extended_childcare_entitlement_eligible: false
@@ -47,7 +47,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
         working_tax_credit_run_on: true
         extended_childcare_entitlement_eligible: false
@@ -66,7 +66,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
         meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
         extended_childcare_entitlement_eligible: false
@@ -85,7 +85,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
         meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
         extended_childcare_entitlement_eligible: false
@@ -104,7 +104,7 @@
         income_support: 0
         jsa_income: 0
         esa_income: 0
-        guarantee_credit: 0
+        in_receipt_of_guarantee_credit: false
         meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
         extended_childcare_entitlement_eligible: false
   output:

@@ -1,20 +1,42 @@
 import datetime
+from typing import NamedTuple
 
 from policyengine_core.model_api import *
 from policyengine_core import periods
+
+from policyengine_uk.utils.ni_parameter_scales import (
+    add_ni_scale_compatibility,
+    canonicalize_ni_parameter_path,
+    canonical_descendants,
+)
+
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
 
 
 def str_to_instant(s):
     return periods.Instant(tuple(map(lambda s: int(s), s.split("-"))))
 
 
+# Parameter metadata a dated reform records (``write_assignment``) when its
+# change starts on or before the parameter's first stated value: that value,
+# which backdating then extends instead of the change's. Recording it rather
+# than writing it at the backdating date keeps the generation steps, which run
+# before backdating and read a parameter's first year, seeing the parameter as
+# current law does.
+BACKDATED_VALUE = "backdated_value"
+
+
 def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> Reform:
     first_instant = str_to_instant(first_instant)
     node = root
-    for param in node.get_descendants():
+    for param in canonical_descendants(node):
         if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
+            if param.metadata and BACKDATED_VALUE in param.metadata:
+                earliest_value = param.metadata.pop(BACKDATED_VALUE)
             earliest_instant = str_to_instant(earliest.instant_str)
             if first_instant < earliest_instant:
                 num_days = (earliest_instant.date - first_instant.date).days
@@ -75,16 +97,41 @@ def uk_fiscal_year_period(time_period):
     return periods.Period(("day", start, days))
 
 
-def convert_to_fiscal_year_parameters(parameters):
+def _fiscal_year_conversion_years(param):
+    """Finite annual steps needed by this leaf's stated timeline.
+
+    Keep the 26 legacy annual records and the first following boundary. A
+    stated change then adds the annual labels it can affect, without filling
+    an arbitrary projection horizon. Raw keys before 2015, including year 0000,
+    remain opaque and are retained by Parameter.update.
     """
-    Convert parameters to use UK fiscal year values.
+    years = set(range(2015, 2042))
+    blend = (param.metadata or {}).get("fiscal_year_blend", False)
+    for point in param.values_list:
+        year = int(point.instant_str[:4])
+        if year < 2015:
+            continue
+        month_day = point.instant_str[5:]
+        if blend:
+            fiscal_year = year if month_day >= "04-06" else year - 1
+            years.update((fiscal_year, fiscal_year + 1))
+        else:
+            years.add(year if month_day <= "04-30" else year + 1)
+    last_representable = 9998 if blend else 9999
+    if max(years) > last_representable:
+        raise ValueError(
+            f"Cannot annualise {param.name}: its fiscal conversion needs a "
+            "date beyond the supported Gregorian year 9999"
+        )
+    return sorted(year for year in years if year >= 2015)
 
-    The UK fiscal year runs April 6 to April 5. When querying a parameter
-    for a year (e.g., param("2026")), we want the value at April 30 of
-    that year (which represents the fiscal year starting April 6).
 
-    This function samples each parameter at April 30 of each year and
-    sets that as the value for the entire year period.
+def convert_to_fiscal_year_parameters(parameters):
+    """Give each calendar-labelled year its UK fiscal parameter value.
+
+    Ordinary leaves take their 30 April value. Opt-in ``fiscal_year_blend``
+    leaves retain the existing day-weighted average from 6 April to 5 April
+    and its single-date fallback. ``preserve_calendar_dates`` leaves are untouched.
 
     Sampling a single date drops any change taking effect later in the fiscal
     year. Parameters carrying `fiscal_year_blend: true` in their metadata are
@@ -93,30 +140,41 @@ def convert_to_fiscal_year_parameters(parameters):
     flag off where the value at a point in time is what applies, as for a tax
     charged on a transaction at the rate in force on its date.
 
-    Parameters with ``preserve_calendar_dates: true`` retain statutory dates.
-    Their formulas must explicitly annualise the underlying transactions.
+    Ordinary Parameter histories retain all 2015–2040 annual records, an
+    explicit 2041 boundary and finite later steps induced by stated changes.
+    Dates within a calendar label therefore read the same annual value even
+    beyond 2040. This annualises known values; it does not project new values.
 
-    Values are computed for every year before any are written, so that
-    rewriting one year cannot affect the reading of another.
+    Domain checks and snapshot sampling finish before any live write.
+    Start-only writes remove intervening raw dates and retain the original
+    entries before 2015.
     """
-    # Cover years from 2015 through 2040 for long-term projections
-    YEARS = list(range(2015, 2041))
-    for param in parameters.get_descendants():
-        if isinstance(param, Parameter):
-            if (param.metadata or {}).get("preserve_calendar_dates", False):
-                continue
-            blend = (param.metadata or {}).get("fiscal_year_blend", False)
-            values = {}
-            for year in YEARS:
-                value = fiscal_year_average(param, year) if blend else None
-                if value is None:
-                    value = param(f"{year}-04-30")
-                values[year] = value
-            for year, value in values.items():
-                param.update(
-                    period=f"{year}",
-                    value=value,
-                )
+    planned = []
+    for param in canonical_descendants(parameters):
+        if not isinstance(param, Parameter):
+            continue
+        if (param.metadata or {}).get("preserve_calendar_dates", False):
+            continue
+        planned.append((param, _fiscal_year_conversion_years(param)))
+
+    # No live Parameter, list or root cache is changed during preflight or
+    # snapshot sampling. In particular a late invalid leaf cannot follow an
+    # already-rewritten earlier one.
+    sampled = []
+    for param, years in planned:
+        snapshot = param.clone()
+        blend = (snapshot.metadata or {}).get("fiscal_year_blend", False)
+        values = []
+        for year in years:
+            value = fiscal_year_average(snapshot, year) if blend else None
+            if value is None:
+                value = snapshot(f"{year}-04-30")
+            values.append((year, value))
+        sampled.append((param, values))
+
+    for param, values in sampled:
+        for year, value in values:
+            param.update(start=f"{year}-01-01", value=value)
     return parameters
 
 
@@ -132,20 +190,83 @@ _STATE_PENSION_AGE_REPLACEMENT = (
     "variables."
 )
 
-# Parameters removed from the tree, with what replaces them, so a reform or
-# saved policy that still names one fails with directions instead of a bare
-# lookup error.
+_OBR_ELASTICITIES_REPLACEMENT = (
+    "Nothing read it, so setting it never changed any output. The OBR's labour "
+    "supply elasticities are applied by Simulation.apply_dynamics, called on a "
+    "simulation with a baseline, when gov.dynamic.obr_labour_supply_assumptions "
+    "is true, which it is by default."
+)
+
+
+class RemovedParameter(NamedTuple):
+    label: str
+    replacement: str
+
+
+# Parameters removed from the tree, with the label of the node left at each
+# path and what replaces the parameter, so a reform or saved policy that still
+# names one fails with directions instead of a bare lookup error.
 REMOVED_PARAMETERS = {
-    "gov.dwp.state_pension.age.male": _STATE_PENSION_AGE_REPLACEMENT,
-    "gov.dwp.state_pension.age.female": _STATE_PENSION_AGE_REPLACEMENT,
+    "gov.dwp.state_pension.age.male": RemovedParameter(
+        "removed male State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.state_pension.age.female": RemovedParameter(
+        "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.carer_premium.couple": RemovedParameter(
+        "removed couple carer premium parameter",
+        "The carer premium is calculated per qualifying claimant or partner. "
+        "Change gov.dwp.carer_premium.single (the per-person weekly amount) instead.",
+    ),
+    "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
+        "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
+    ),
+    "gov.dwp.pension_credit.income.savings_credit_excluded_sources": RemovedParameter(
+        "removed duplicate Savings Credit excluded-income list",
+        "The model never read it. Change "
+        "gov.dwp.pension_credit.savings_credit.excluded_income, the list of "
+        "income that is not qualifying income for Savings Credit (SPC Regs "
+        "2002 reg 9), instead.",
+    ),
+    "gov.dft.bus.reference_year": RemovedParameter(
+        "removed bus fare reference year",
+        "Bus fares now follow gov.dft.bus.local_bus_fares_index from the "
+        "benchmark year gov.dft.bus.benchmark_year, and the cap term compares "
+        "gov.dft.bus.fares.cap with gov.dft.bus.reference_fares.cap in the same "
+        "year. Change gov.dft.bus.fares.cap to model a cap.",
+    ),
+    "gov.dft.bus.uncapped_single_fare": RemovedParameter(
+        "removed single uncapped bus fare",
+        "Cap changes are priced from a table of uncapped single fares, "
+        "gov.dft.bus.uncapped_single_fares, with the share of single tickets "
+        "and the mean fare of each band (LOW, MIDDLE, HIGH). To price every "
+        "single ticket at one fare, set that band's share to 1 and the others "
+        "to 0, or supply local_bus_uncapped_single_fare for each person.",
+    ),
+    "gov.dwp.ESA.exempt_work.higher_earnings_limit": RemovedParameter(
+        "removed ESA exempt work higher earnings limit",
+        "From 11 April 2011 the limit is 16 x the national living wage, "
+        "rounded up to the next 50p (ESA Regs 2008 reg 45(4) and (9A)), "
+        "calculated by esa_exempt_work_higher_earnings_limit. Change "
+        "gov.hmrc.minimum_wage.non_apprentice (the national living wage is "
+        "its top rate) or "
+        "gov.dwp.ESA.exempt_work.higher_earnings_limit_minimum_wage_hours "
+        "(the 16), or gov.dwp.ESA.exempt_work.fixed_higher_earnings_limit "
+        "for dates before 11 April 2011.",
+    ),
 }
 
 
 def check_parameter_not_removed(path: str) -> None:
-    """Raise a ValueError naming the replacement if path was removed."""
-    if path in REMOVED_PARAMETERS:
+    """Raise a ValueError naming the replacement if path was removed.
+
+    A legacy ``labor_supply_responses`` path is checked as its
+    ``labour_supply_responses`` equivalent.
+    """
+    removed = REMOVED_PARAMETERS.get(canonicalize_lsr_parameter_path(path))
+    if removed is not None:
         raise ValueError(
-            f"The parameter {path} has been removed. {REMOVED_PARAMETERS[path]}"
+            f"The parameter {path} has been removed. {removed.replacement}"
         )
 
 
@@ -155,6 +276,8 @@ class RemovedParameterNode(ParameterNode):
     Male State Pension age still has valid children, so the compatibility
     node must support normal tree traversal and cloning. API reform code
     reads values_list before updating; both operations give migration help.
+    Read at an instant, the node is an empty node rather than an error, so
+    that its parent can still be read at an instant.
     """
 
     @property
@@ -170,7 +293,7 @@ class RemovedParameterRoot(ParameterNode):
 
     def get_child(self, path: str):
         check_parameter_not_removed(path)
-        return super().get_child(path)
+        return super().get_child(canonicalize_ni_parameter_path(path))
 
 
 def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
@@ -180,25 +303,34 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         for child in root.children.values():
             child.parent = root
         parameters = root
-    age = parameters.gov.dwp.state_pension.age
-    for path, replacement in REMOVED_PARAMETERS.items():
-        name = path.rsplit(".", 1)[1]
-        previous = age.children.get(name)
+    for path, removed in REMOVED_PARAMETERS.items():
+        parent_path, name = path.rsplit(".", 1)
+        parent = parameters
+        for part in parent_path.split("."):
+            parent = parent.children[part]
+        previous = parent.children.get(name)
         if isinstance(previous, RemovedParameterNode):
             continue
+        if previous is not None and not isinstance(previous, ParameterNode):
+            raise ValueError(
+                f"{path} is listed in REMOVED_PARAMETERS but the parameter still "
+                "exists. Delete its YAML file, or remove it from REMOVED_PARAMETERS."
+            )
         alias = RemovedParameterNode(path, data={})
         if previous is not None:
             alias.metadata.update(previous.metadata)
             for child_name, child in previous.children.items():
                 alias.add_child(child_name, child)
-        alias.description = f"The parameter {path} has been removed. {replacement}"
+        alias.description = (
+            f"The parameter {path} has been removed. {removed.replacement}"
+        )
         alias.metadata.update(
-            label=f"removed {name} State Pension age parameter",
+            label=removed.label,
             removed=True,
             economy=False,
             household=False,
         )
-        age.children[name] = alias
-        setattr(age, name, alias)
-        alias.parent = age
-    return parameters
+        parent.children[name] = alias
+        setattr(parent, name, alias)
+        alias.parent = parent
+    return add_ni_scale_compatibility(parameters)

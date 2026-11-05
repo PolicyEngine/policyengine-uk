@@ -1,23 +1,23 @@
-- name: Income tax, based on adjusted net income
+- name: Income tax, based on net income
   period: 2024
   absolute_error_margin: 4
   input:
-    adjusted_net_income: 40000
+    net_income: 40000
   output:
     income_tax: 5484.2
 
-- name: Income tax, increasing adjusted net income
+- name: Income tax, increasing net income
   period: 2024
   absolute_error_margin: 4
   input:
-   adjusted_net_income: 50000
+   net_income: 50000
   output:
    income_tax: 7484.2
 
-- name: Income tax, continously increasing adjusted net income
+- name: Income tax, continuously increasing net income
   period: 2024
   absolute_error_margin: 4
   input:
-    adjusted_net_income: 60000
+    net_income: 60000
   output:
     income_tax: 11428.4

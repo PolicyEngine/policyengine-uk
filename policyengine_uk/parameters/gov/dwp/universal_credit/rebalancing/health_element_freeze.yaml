@@ -1,0 +1,24 @@
+description: >-
+  While this parameter is true, the Universal Credit limited capability for work and work-related activity (LCWRA) element keeps its amount from the previous tax year instead of being uprated, unless an amount is stated for the year (as Universal Credit Act 2025 s. 2 states £217.26 for 2026-27). Universal Credit Act 2025 s. 3(1) disapplies the annual up-rating review and order in Social Security Administration Act 1992 s. 150(1) and (2) for the element in the tax years ending 5 April 2026 to 5 April 2029. An up-rating order changes rates from the tax year after the one in which it is made (s. 150(10)), so the frozen rates are those for 2026-27 to 2029-30, the years named in the section's heading. A year here is the tax year whose rates it governs, from 6 April. The freeze applies only while the rebalancing reforms are active.
+values:
+  2015-01-01: false
+  2026-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: Universal Credit Act 2025 s. 3(1)
+          href: https://www.legislation.gov.uk/ukpga/2025/22/section/3
+  2030-04-06:
+    value: false
+    metadata:
+      reference:
+        - title: Universal Credit Act 2025 s. 3(1) (disapplication ends with the tax year ending 5 April 2029)
+          href: https://www.legislation.gov.uk/ukpga/2025/22/section/3
+metadata:
+  unit: bool
+  label: Universal Credit health element uprating freeze
+  reference:
+    - title: Universal Credit Act 2025 s. 3
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/3
+    - title: Social Security Administration Act 1992 s. 150(1), (2) and (10)
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150

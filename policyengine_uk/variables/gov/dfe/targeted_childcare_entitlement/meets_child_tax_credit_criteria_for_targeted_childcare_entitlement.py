@@ -15,10 +15,13 @@ class meets_child_tax_credit_criteria_for_targeted_childcare_entitlement(Variabl
         p = parameters(period).gov.dfe.targeted_childcare_entitlement
         child_tax_credit = benunit("child_tax_credit", period) > 0
         working_tax_credit = benunit("working_tax_credit", period) > 0
-        applicable_income = benunit("tax_credits_applicable_income", period)
+        # "an annual gross income not exceeding £16,190" (SI 2014/2147 reg
+        # 1(2), "eligible child"): the income before TCA 2002 s.7(2) lifts the
+        # tax credit income test, not the nil income the test then applies to.
+        gross_income = benunit("tax_credits_current_year_income", period)
 
         return (
             child_tax_credit
             & ~working_tax_credit
-            & (applicable_income <= p.income_limit.tax_credits)
+            & (gross_income <= p.income_limit.tax_credits)
         )

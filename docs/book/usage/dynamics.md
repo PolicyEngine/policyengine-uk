@@ -10,7 +10,11 @@ PolicyEngine UK implements the Office for Budget Responsibility's labour supply 
 
 **Extensive margin (participation)** - Whether people choose to work at all. Changes in the financial reward from working affect decisions to enter or leave employment.
 
-Both responses depend on elasticities that vary by demographic group, following empirical evidence on how different populations respond to policy changes.
+Both responses depend on elasticities that vary by demographic group. The
+current `apply_dynamics` coordinator runs progression only: it leaves
+participation disabled and returns `participation=None`. The separate
+participation function remains available for controlled development work; the
+coordinator does not combine its response with progression.
 
 ## Basic dynamics calculation
 
@@ -46,7 +50,10 @@ print(
     f"Substitution effect FTEs: {dynamics.fte_impacts.substitution_response_ftes:,.0f}"
 )
 print(f"Income effect FTEs: {dynamics.fte_impacts.income_response_ftes:,.0f}")
-print(f"Participation FTEs: {dynamics.fte_impacts.participation_response_ftes:,.0f}")
+if dynamics.fte_impacts.participation_response_ftes is not None:
+    print(
+        f"Participation FTEs: {dynamics.fte_impacts.participation_response_ftes:,.0f}"
+    )
 print(f"Total FTE change: {dynamics.fte_impacts.ftes:,.0f}")
 ```
 
@@ -64,14 +71,37 @@ print(f"Average hours change: {progression['total_response_ftes'].mean():.3f} FT
 
 # Access participation responses (extensive margin)
 participation = dynamics.participation
-print(f"Employment change: {participation['participation_change'].sum():,.0f}")
+if participation is not None:
+    print(f"Employment change: {participation['participation_change'].sum():,.0f}")
 
 # FTE impacts provide summary statistics
 fte = dynamics.fte_impacts
 print(f"Total labour supply response: {fte.ftes:,.0f} FTEs")
 ```
 
-The progression DataFrame contains individual-level responses including wage changes, elasticities applied, and resulting employment income adjustments. The participation DataFrame shows employment status changes and associated FTE impacts.
+The progression DataFrame contains individual-level responses including wage
+changes, elasticities applied and resulting employment income adjustments.
+Participation results are absent from the current coordinator.
+
+### Separate participation calls
+
+`policyengine_uk.dynamics.participation.apply_participation_responses` accepts
+an explicit year for demographics, gain-to-work counterfactuals and earnings/hours
+writeback. `calculate_participation_elasticities` also accepts a year; omitting it
+uses the simulation default. These calls use the weighted `Microsimulation`
+interface, including situations supplied without a population dataset.
+
+Partnership groups include cohabiting couples, as corrected in
+[PR #2445](https://github.com/PolicyEngine/policyengine-uk/pull/2445). Spillover
+bins use eligible response candidates only. The existing coefficients, 20 bins,
+unweighted within-bin averages and spillover assumptions remain unchanged.
+
+A local `numpy.random.RandomState` preserves the seeded MT19937 draw order:
+ascending worker rows, then ascending non-worker rows, including zero-probability
+and nonpositive-wage candidates. It leaves NumPy's global random state unchanged.
+Entrants' weekly hours use `WEEKS_IN_YEAR` to produce annual hours. The current
+coordinator still returns no participation results; cost and performance work
+remains open in [issue #1836](https://github.com/PolicyEngine/policyengine-uk/issues/1836).
 
 ## Analysing distributional effects
 
@@ -123,7 +153,7 @@ print("\nElasticities by parental status:")
 print(by_parent)
 ```
 
-Substitution elasticities range from 0.094 to 0.439 depending on demographics, while income elasticities range from -0.185 to 0; lone fathers are assigned neither. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and adults beyond the two oldest in each household. Their employment income is left unchanged.
+Substitution elasticities range from 0.094 to 0.439 depending on demographics, while income elasticities range from -0.185 to 0. Lone fathers and lone mothers use the same youngest-child age groups and coefficients from [OBR Table A2](https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf#page=9). The participation coefficient helper also assigns both sexes to the lone-parent rows in [OBR Table A1](https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note.pdf#page=8); `apply_dynamics` currently applies only progression responses. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and adults beyond the two oldest in each household. Their employment income is left unchanged.
 
 ## Validating against OBR estimates
 
@@ -155,7 +185,71 @@ print(f"OBR estimate: 94,000")
 print(f"Difference: {(dynamics.fte_impacts.ftes - 94_000):+,.0f}")
 ```
 
-Small differences from OBR estimates can arise from data vintage, population projections, or minor methodological variations.
+This example runs the current progression-only coordinator. It is not a
+validation of the disabled participation route or a promise of agreement with
+the OBR total. Data, grouping, imputation and calibration choices also affect
+the comparison.
+
+## Elasticity-based responses
+
+Separately from `apply_dynamics`, a reform can set
+`gov.simulation.labour_supply_responses.substitution_elasticity` and
+`gov.simulation.labour_supply_responses.income_elasticity`. Each person's
+`employment_income_behavioral_response` is then their employment income before
+responses times the substitution elasticity times `relative_wage_change`, plus
+the income elasticity times `relative_income_change`. Both changes compare the
+reform with its baseline (`simulation.baseline`), each measured with every
+behavioural response switched off and at the reform's earnings and capital
+gains before responses: `relative_wage_change` is the relative change in one minus
+the marginal tax rate, and `relative_income_change` the relative change in
+household net income. The changes are capped at
+`gov.simulation.labour_supply_responses.bounds`. The response is part of
+`employment_income`, so it feeds into every result that depends on it.
+
+Two things follow from measuring against `simulation.baseline`:
+
+- **The baseline is current law.** `simulation.baseline` is built without the
+  reform, whatever policy a comparison treats as its baseline. When two
+  simulations are compared and the elasticities are set on the reform side
+  only, the reform's response also answers the comparison's baseline policy.
+  For a single earner on £30,000 in 2026, the response to a 22% basic rate is
+  about -£187, and to that rate plus a £13,000 personal allowance about -£193.
+  Compared with the 22% rate costed without responses, the second reform shows
+  the whole -£193, not the -£6 or so the allowance adds. Setting the
+  elasticities on both sides of the comparison isolates the reform's own
+  response.
+- **Only earnings and gains are held.** Both measurements take the reform's
+  earnings and capital gains before responses. Any other input the reform's
+  scenario changes (a data modifier, say, or removing economic assumptions)
+  keeps each simulation's own value, so the difference counts as policy in
+  `relative_income_change`.
+
+```python
+from policyengine_uk import Simulation
+
+situation = {
+    "people": {"person": {"age": {2025: 30}, "employment_income": {2025: 40_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+reformed = Simulation(
+    situation=situation,
+    reform={
+        "gov.hmrc.income_tax.rates.uk[0].rate": {"2025": 0.30},
+        "gov.simulation.labour_supply_responses.substitution_elasticity": {
+            "2025": 0.25
+        },
+        "gov.simulation.labour_supply_responses.income_elasticity": {"2025": -0.05},
+    },
+)
+# The marginal rate rises from 28% to 38%, so the wage after tax falls by 5/36,
+# and net income falls by £2,743 of £32,145: a response of about -£1,218.
+print(reformed.calculate("employment_income_behavioral_response", 2025))
+```
+
+Unlike these labour supply elasticities, which are zero unless a reform sets
+them, capital gains respond to reforms by default: see the
+[capital gains realisation response](../assumptions/capital-gains-responses.md).
 
 ## Technical implementation details
 
@@ -177,4 +271,6 @@ When using dynamics, be aware of these limitations:
 - Self-employed workers are excluded as their labour supply is harder to model
 - The model doesn't capture long-term effects like human capital accumulation
 
-For most tax and benefit reforms, these limitations don't significantly affect the results. The framework provides robust estimates aligned with fiscal policy analysis standards.
+The size of these limitations has not been established for every reform.
+Participation calibration and broader performance work remain outside these
+implementation corrections.

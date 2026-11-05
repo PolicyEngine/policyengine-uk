@@ -19,7 +19,13 @@ description: >
   reads from `self_employment_income`. Whether other letting can be a trade is
   unsettled: DWP staff guidance treats a self-employed landlord's rent as
   self-employed income, while letting is not a trade for tax, and the model
-  does not identify such landlords.
+  does not identify such landlords. Incapacity Benefit and Severe Disablement
+  Allowance count from 16 June 2014 under the GB transitional regulations;
+  the NI transitional counterpart supports them in commenced NI claims.
+  The 2013 list is preserved. Annual parameters from 2015 use the value at
+  30 April: the June entry does not resolve the part-year 2014 award or date
+  Northern Ireland commencement. SDA uses the existing maximum-rate proxy,
+  and Carer's Allowance counts after its overlapping-benefit adjustment.
 metadata:
   economy: false
   label: Universal Credit unearned income sources
@@ -29,11 +35,21 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 66(1)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit (Transitional Provisions) Regulations 2014 reg. 25(1) (Incapacity Benefit and Severe Disablement Allowance)
+      href: https://www.legislation.gov.uk/uksi/2014/1230/regulation/25
+    - title: S.I. 2014/1230 reg. 1 as made (commencement on 16 June 2014)
+      href: https://www.legislation.gov.uk/uksi/2014/1230/regulation/1/made
+    - title: The Universal Credit (Transitional Provisions) Regulations (Northern Ireland) 2016 reg. 26(1)
+      href: https://www.legislation.gov.uk/nisr/2016/226/regulation/26
     - title: The Universal Credit Regulations 2013 reg. 67 (retirement pension income)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/67
     - title: State Pension Credit Act 2002 s. 16(1)(za), (a) (State Pension counts as retirement pension income)
       href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
     - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(ii), (viii) and (ix) (contributory ESA, maternity allowance, industrial injuries benefit)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(vi) (widowed parent's allowance; bereavement support payment is not listed)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 66(1)(d) (maintenance from a spouse, civil partner, former spouse or former civil partner; child maintenance is not listed)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 2 (employment and support allowance and jobseeker's allowance mean the contributory allowances; industrial injuries benefit means benefit under SSCBA 1992 Part 5)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
@@ -63,6 +79,21 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
+  - spousal_maintenance_income
+  - widowed_parents_allowance
+  2014-06-16:
+  - carers_allowance
+  - jsa_contrib
+  - esa_contrib
+  - maternity_allowance
+  - iidb
+  - private_pension_income
+  - state_pension
+  - uc_tariff_income
+  - spousal_maintenance_income
+  - widowed_parents_allowance
+  - incapacity_benefit
+  - sda
   2023-11-19:
   - carers_allowance
   - uc_unearned_carer_support_payment
@@ -73,3 +104,7 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
+  - spousal_maintenance_income
+  - widowed_parents_allowance
+  - incapacity_benefit
+  - sda

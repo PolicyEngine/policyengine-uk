@@ -21,4 +21,8 @@ class uc_is_in_gainful_self_employment(Variable):
     def formula(person, period, parameters):
         # A trade carried on in expectation of profit (reg. 64(c)), so a
         # trading loss counts (ADM H4503).
-        return person("self_employment_income", period) != 0
+        # A person whose main employment is the trade of a company they stand
+        # as sole owner or partner of is treated as if in gainful
+        # self-employment (reg. 77(3)(c)).
+        company = person("uc_company_gainful_self_employment", period)
+        return (person("self_employment_income", period) != 0) | company

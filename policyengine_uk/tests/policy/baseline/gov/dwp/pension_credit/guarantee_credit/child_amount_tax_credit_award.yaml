@@ -1,0 +1,496 @@
+# No Schedule IIA child amount for a tax credit award.
+#
+# SPC Regs 2002 reg 6(6)(d) adds Schedule IIA's amount for a child or
+# qualifying young person "except where paragraph (11) applies". Reg 6(11):
+# "This paragraph applies in the case of a person who is awarded, or who is
+# treated as having an award of, a tax credit under the Tax Credits Act." Reg
+# 6(17): "a tax credit" includes a child tax credit and a working tax credit.
+# Reg 6(6)(d), (11)-(17) and Schedule IIA came into force on 1 February 2019
+# (SI 2018/676 reg 2); the model takes a year's rules at the start of the
+# fiscal year, so they apply from 2019-20.
+#
+# An award need not be positive: HMRC may award a tax credit at a nil rate
+# (TCA 2002 s.14(3)). The model treats a family as awarded a tax credit when
+# it claims one and meets its conditions other than the income test. Tax
+# credits ended on 5 April 2025.
+#
+# Rates (DWP, Benefit and pension rates):
+# - 2024-25: standard minimum guarantee £332.95 a week for a couple; Schedule
+#   IIA £76.79 for the eldest child born before 6 April 2017 (para 10).
+# - 2025-26: £346.60 couple; £78.10 eldest child born before 6 April 2017.
+# - 2019-20: £255.25 couple; £63.84 eldest child. 2018-19: £248.80 couple.
+# - WTC 2024-25: basic element £2,435, couple element £2,500; threshold
+#   £7,955; withdrawal rate 41%. CTC child element £3,455; family element £545
+#   (entered when the model uprated it; since #1925 the model's own value is
+#   the same).
+# - Savings credit 2024-25: threshold £301.22 a week for a couple, so the
+#   maximum is 0.6 x (332.95 - 301.22) x 52 = £989.98 (SPCA 2002 s.3(7)).
+#   The model works in annual amounts and does not round the weekly
+#   maximum; DWP publishes it rounded, £19.04 a week (£990.08 over 52
+#   weeks).
+# - Capital: Pension Credit and pension-age Housing Benefit count £1 a week
+#   for each £500 over £10,000 (SPC Regs 2002 reg 15(6); SI 2006/214
+#   reg 29(2)); pension-age Housing Benefit's capital limit is £16,000 (SI
+#   2006/214 reg 43).
+# WEEKS_IN_YEAR is 52.
+#
+# The couples in the 2024-25 and 2025-26 cases are aged 70 in 2024-25, so
+# both reached pensionable age after 6 April 2016 and there is no savings
+# credit (SPCA 2002 s.3(1)(a)). The 2018-19 and 2019-20 couples have no
+# income, so no savings credit either. The Housing Benefit cases' couple is
+# aged 80, so savings credit applies to it. The grandchild is 10 (11 in
+# 2025-26), born before 6 April 2017. Employment income is gross: the model
+# applies the SPC Regs Sch VI para 5 disregard (£10 a week for a couple)
+# once. £10,000 of savings gives no Pension Credit tariff income, and £300
+# of interest uses up the £300 step-one disregard of tax credit income
+# (SI 2002/2006 reg 3). No one pays income tax or National Insurance.
+
+- name: A Pension Credit couple awarded CTC and WTC gets no child amount
+  # Tax credit income: State Pension 8,000 + interest (300 - 300) + earnings
+  # 2,600 = £10,600. The older partner is over 60 and works 20 hours, which
+  # meets the WTC hours condition (WTC Regs 2002 reg 4(1), second condition).
+  # The family claims both credits, so it is awarded a tax credit and reg
+  # 6(11) removes the Schedule IIA amount. Minimum guarantee: 332.95 x 52 =
+  # £17,313.40.
+  # With the income test lifted (SI 2002/2008 reg 4(1)(d)): WTC 2,435 + 2,500
+  # = £4,935, CTC 545 + 3,455 = £4,000. Pension Credit income: 8,000 + 2,080
+  # + 4,935 = £15,015 (CTC is not Pension Credit income), so Guarantee Credit
+  # is 17,313.40 - 15,015 = £2,298.40 and the passport holds.
+  # (Paying the child amount as well would give 2,298.40 + 76.79 x 52 =
+  # £6,291.48.)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+        child_tax_credit_reported: 1
+        working_tax_credit_reported: 1
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 4_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # Gross wages are 2,600; Sch VI deducts 10 x 52, leaving 2,080.
+        CTC_family_element: 545
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    has_tax_credit_award: true
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 17_313.40
+    tax_credits_applicable_income: 0
+    working_tax_credit: 4_935
+    child_tax_credit: 4_000
+    guarantee_credit: 2_298.40
+    pension_credit: 2_298.40
+
+- name: The same couple with no tax credit claim gets the child amount
+  # Schedule IIA para 10: 76.79 x 52 = £3,993.08. Minimum guarantee:
+  # 17,313.40 + 3,993.08 = £21,306.48. Pension Credit income: 8,000 + 2,080 =
+  # £10,080, so Guarantee Credit is £11,226.48.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 4_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # Gross wages are 2,600; Sch VI deducts 520, leaving 2,080 once.
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    has_tax_credit_award: false
+    child_minimum_guarantee_addition: 3_993.08
+    minimum_guarantee: 21_306.48
+    working_tax_credit: 0
+    child_tax_credit: 0
+    guarantee_credit: 11_226.48
+    pension_credit: 11_226.48
+
+- name: A WTC award alone also removes the child amount
+  # Reg 6(17): "a tax credit" includes a working tax credit. The first case's
+  # couple claiming WTC but not CTC: no Schedule IIA amount; the passported
+  # WTC of £4,935 leaves Guarantee Credit of £2,298.40, as before.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 4_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # As in the first case, gross wages 2,600 become 2,080 after Sch VI.
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    has_tax_credit_award: true
+    child_minimum_guarantee_addition: 0
+    tax_credits_applicable_income: 0
+    working_tax_credit: 4_935
+    child_tax_credit: 0
+    pension_credit: 2_298.40
+
+- name: An award at a nil rate is still an award
+  # Tax credit income: 9,000 + 8,000 + (300 - 300) + 3,500 = £20,500. WTC on
+  # the income test: 4,935 - 0.41 x (20,500 - 7,955) < 0, so nil.
+  # Pension Credit income: 17,000 + (3,500 - 520) = £19,980, above the
+  # £17,313.40 guarantee, so no Pension Credit, and with the passported WTC
+  # (£4,935) still none: the income test applies.
+  # The family has claimed WTC and meets its conditions, so it holds an award
+  # at a nil rate (TCA 2002 s.14(3)) and gets no Schedule IIA amount. Had the
+  # award followed a positive amount, the child amount would give Guarantee
+  # Credit of 21,306.48 - 19,980 = £1,326.48 with the income test still
+  # applied, though that Pension Credit would lift it.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 3_500
+        weekly_hours: 20
+        state_pension: 9_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 8_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # Gross wages 3,500 become 2,980 after Sch VI, even with no PC paid.
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    has_tax_credit_award: true
+    tax_credits_applicable_income: 20_500
+    working_tax_credit: 0
+    child_minimum_guarantee_addition: 0
+    pension_credit: 0
+
+- name: An award entered directly removes the child amount
+  # The award follows reported tax credits, so an award the reported amounts
+  # do not show (one reported as nil, or one treated as continuing under reg
+  # 6(12) and (13)) is entered as has_tax_credit_award. The second case's
+  # couple with an award entered: no Schedule IIA amount, so the minimum
+  # guarantee is £17,313.40 and Guarantee Credit 17,313.40 - 10,080 =
+  # £7,233.40. No tax credit is claimed, so none is paid.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 4_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # Gross wages 2,600 less one Sch VI disregard of 520 give 2,080.
+        has_tax_credit_award: true
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 17_313.40
+    working_tax_credit: 0
+    child_tax_credit: 0
+    guarantee_credit: 7_233.40
+    pension_credit: 7_233.40
+
+- name: Without the child amount, a CTC award can end the Housing Benefit passport
+  # A couple aged 80 with a grandchild, claiming CTC, with State Pension of
+  # £9,000 each, £18,000 of savings and £12,000 a year of council rent.
+  # Pension Credit income: 18,000 + tariff income (18,000 - 10,000) / 500 =
+  # £16 a week, 16 x 52 = £832, so £18,832.
+  # With the CTC award there is no Schedule IIA amount: the minimum guarantee
+  # is £17,313.40, below income, so no Guarantee Credit. Savings credit
+  # (SPCA 2002 s.3(2)-(4)): A is the maximum, £989.98 (60% of qualifying
+  # income over the threshold, 0.6 x (18,832 - 301.22 x 52) = £1,901.14, is
+  # more); B = 0.4 x (18,832 - 17,313.40) = £607.44; so 989.98 - 607.44 =
+  # £382.54. CTC: 545 + 3,455 = £4,000, the income test lifted by the savings
+  # credit (SI 2002/2008 reg 4(1)(d)).
+  # Housing Benefit: with no Guarantee Credit there is no passport (SI
+  # 2006/214 reg 26), and capital of £18,000 is over the £16,000 limit, so
+  # none. The case enters the Housing Benefit claim: the model infers
+  # take-up from reported benefits, so a reported tax credit alone would
+  # leave Housing Benefit unclaimed and nil whatever the passport.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+        child_tax_credit_reported: 1
+      grandparent_2:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 18_000
+        rent: 12_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_tax_credit_award: true
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 17_313.40
+    pension_credit_income: 18_832
+    guarantee_credit: 0
+    savings_credit: 382.54
+    pension_credit: 382.54
+    child_tax_credit: 4_000
+    housing_benefit_assessable_capital: 18_000
+    housing_benefit: 0
+
+- name: The same household with no tax credit claim keeps the passport
+  # Schedule IIA para 10: 76.79 x 52 = £3,993.08, so the minimum guarantee is
+  # 17,313.40 + 3,993.08 = £21,306.48 and Guarantee Credit 21,306.48 - 18,832
+  # = £2,474.48. Savings credit: income is below the minimum guarantee, so B
+  # is nil and the credit is the maximum, £989.98. Pension Credit £3,464.46.
+  # Housing Benefit: the Guarantee Credit passport disregards all capital and
+  # income (SI 2006/214 reg 26), so the full eligible rent, £12,000. The
+  # Housing Benefit claim is entered as in the previous case.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+      grandparent_2:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 18_000
+        rent: 12_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_tax_credit_award: false
+    child_minimum_guarantee_addition: 3_993.08
+    minimum_guarantee: 21_306.48
+    guarantee_credit: 2_474.48
+    savings_credit: 989.98
+    pension_credit: 3_464.46
+    child_tax_credit: 0
+    housing_benefit_assessable_capital: 0
+    housing_benefit: 12_000
+
+- name: With tax credits ended, a reported award no longer removes the child amount
+  # Tax credits ended on 5 April 2025, so there is no award in 2025-26.
+  # Schedule IIA: 78.10 x 52 = £4,061.20. Minimum guarantee: 346.60 x 52 +
+  # 4,061.20 = 18,023.20 + 4,061.20 = £22,084.40. Guarantee Credit:
+  # 22,084.40 - 10,080 = £12,004.40. The standard minimum guarantee is
+  # entered at its statutory amount: it was entered when the model projected
+  # 2025-26 by CPI, and since #1925 the model's own value is the same.
+  # The couple cannot claim Universal Credit when its tax credits close: both
+  # are over the qualifying age for Pension Credit (WRA 2012 s.4(1)(b)), and
+  # SI 2014/1230 reg 60A waives that only for a Working Tax Credit claimant
+  # who "is not entitled to an award of state pension credit"
+  # (reg 60A(1)(a)(iii)), which this couple is (the first case). The model's
+  # closure routing reads reported Pension Credit, not the award (see
+  # is_uc_eligible), and this couple reports none, so the case enters that the
+  # couple does not claim Universal Credit then.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 71
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+        child_tax_credit_reported: 1
+        working_tax_credit_reported: 1
+      grandparent_2:
+        age: 71
+        is_claimant_or_partner: true
+        state_pension: 4_000
+      grandchild:
+        age: 11
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        # Tax-credit closure does not alter gross wages 2,600 less Sch VI 520.
+        standard_minimum_guarantee: 18_023.20  # 346.60 x 52
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    has_tax_credit_award: false
+    working_tax_credit: 0
+    child_tax_credit: 0
+    child_minimum_guarantee_addition: 4_061.20
+    minimum_guarantee: 22_084.40
+    guarantee_credit: 12_004.40
+
+- name: In 2019-20 the child amount applies, except with a tax credit award
+  # Schedule IIA from 1 February 2019. 2019-20: 63.84 x 52 = £3,319.68;
+  # couple guarantee 255.25 x 52 = £13,273. The first couple has a CTC award,
+  # the second none.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      awarded_1:
+        age: 70
+        is_claimant_or_partner: true
+        child_tax_credit_reported: 1
+      awarded_2:
+        age: 70
+        is_claimant_or_partner: true
+      awarded_grandchild:
+        age: 10
+        is_claimant_or_partner: false
+      not_awarded_1:
+        age: 70
+        is_claimant_or_partner: true
+      not_awarded_2:
+        age: 70
+        is_claimant_or_partner: true
+      not_awarded_grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      awarded:
+        members: [awarded_1, awarded_2, awarded_grandchild]
+        would_claim_uc: false
+      not_awarded:
+        members: [not_awarded_1, not_awarded_2, not_awarded_grandchild]
+        would_claim_uc: false
+    households:
+      awarded:
+        members: [awarded_1, awarded_2, awarded_grandchild]
+      not_awarded:
+        members: [not_awarded_1, not_awarded_2, not_awarded_grandchild]
+  output:
+    has_tax_credit_award: [true, false]
+    child_minimum_guarantee_addition: [0, 3_319.68]
+    minimum_guarantee: [13_273, 16_592.68]
+
+- name: Before February 2019 there was no Schedule IIA amount
+  # 2018-19 starts on 6 April 2018, before SI 2018/676 added Schedule IIA.
+  # The couple guarantee is 248.80 x 52 = £12,937.60, with nothing for the
+  # grandchild, whom Child Tax Credit supported instead.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_claimant_or_partner: true
+      grandparent_2:
+        age: 70
+        is_claimant_or_partner: true
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+  output:
+    has_tax_credit_award: false
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 12_937.60

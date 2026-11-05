@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.childcare import (
+    universal_childcare_terms,
+    uses_legacy_childcare_inputs,
+)
 
 
 class universal_childcare_entitlement_eligible(Variable):
@@ -6,7 +10,21 @@ class universal_childcare_entitlement_eligible(Variable):
     entity = Person
     label = "eligible for universal childcare entitlement"
     definition_period = YEAR
-    defined_for = "would_claim_universal_childcare"
+    documentation = (
+        "Legal eligibility, independent of standalone take-up, in at least "
+        "one of the year's terms. A child in a reception class gets no "
+        "universal hours: its school place meets the entitlement "
+        "(early_years_term_share_before_school). Native eligibility starts "
+        "with the term after the minimum-age birthday. Supplied legacy "
+        "annual shares or amounts retain snapshot-age eligibility."
+    )
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2006/21/section/7",
+        "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/4",
+        "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026",
+    )
 
     def formula(person, period, parameters):
         country = person.household("country", period)
@@ -18,19 +36,27 @@ class universal_childcare_entitlement_eligible(Variable):
         age = person("age", period)
         p = parameters(period).gov.dfe.universal_childcare_entitlement
         meets_age_condition = (age >= p.age.min) & (age < p.age.max)
+        if not uses_legacy_childcare_inputs(person, period):
+            meets_age_condition = (age < p.age.max) & np.logical_or.reduce(
+                universal_childcare_terms(person, period, parameters)
+            )
         not_compulsory_age = ~person("is_of_compulsory_school_age", period)
 
-        # Check if person has extended childcare. If so, they are not eligible. Combining extended childcare and universal childcare is not allowed.
-        # https://www.childcarechoices.gov.uk/combining-schemes
-        has_extended_childcare = person.benunit(
-            "extended_childcare_entitlement_eligible", period
-        )
+        # Eligibility for the working parent entitlement does not remove the
+        # universal hours: Childcare Act 2016 s.1(6)(a) counts them towards
+        # the working parent's 30 hours, which extended_childcare_entitlement
+        # then tops up.
 
         # Section 7 of the Childcare Act 2006
         # The regulation above limits free early years provision to children under compulsory school age.
+
+        # The duty lasts until compulsory school age, but a council meets it
+        # for a child in a state-funded or council-funded reception class
+        # through the school place: DfE's statutory guidance (April 2026,
+        # footnotes 7 and 17, paras A4.8 and C.6) gives such a child no free
+        # hours outside it. A child starting reception in September keeps
+        # the summer term.
+        before_school = person("early_years_term_share_before_school", period)
         return (
-            in_england
-            & meets_age_condition
-            & not_compulsory_age
-            & ~has_extended_childcare
+            in_england & meets_age_condition & not_compulsory_age & (before_school > 0)
         )

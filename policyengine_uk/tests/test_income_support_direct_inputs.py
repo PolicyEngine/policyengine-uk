@@ -1,9 +1,10 @@
 """A jsa_income that differs from the reported award is the couple's award.
 
 income_support_eligible reads income-based JSA (SSCBA 1992 s.124(1)(f)) from
-the claimant's and partner's reported awards after the jsa_income capital
-screen. Where jsa_income holds a different award from the one all the
-reported amounts give, that award is used instead and taken to be the
+claimant_or_partner_jsa_income: the claimant's and partner's reported awards
+after the jsa_income capital screen, or the raw total of their reports where
+jsa_income holds the raw total of everyone's. Where jsa_income holds a
+different award from either, that award is used instead and taken to be the
 claimant's or partner's. That covers an award entered directly (when the
 simulation is built or later, or on a branch) and a reform that changes or
 removes jsa_income. An award entered for one year says nothing about another.
@@ -53,7 +54,15 @@ PARTNER_WITH_JSA = {
 
 
 def eligible(simulation, year=YEAR):
-    simulation.delete_arrays("income_support_eligible")
+    # The gate reads the claimant-or-partner awards, which are calculated and
+    # cached like any other variable. Recalculate them too after changing an
+    # input they depend on.
+    for variable in (
+        "income_support_eligible",
+        "claimant_or_partner_esa_income",
+        "claimant_or_partner_jsa_income",
+    ):
+        simulation.delete_arrays(variable)
     return bool(simulation.calculate("income_support_eligible", year)[0])
 
 
@@ -115,13 +124,17 @@ def test_a_reform_that_removes_income_based_jsa_lifts_the_bar():
 
 
 def test_the_raw_reported_total_is_read_through_the_reports():
-    """disable_simulated_benefits sets jsa_income to the raw total of every
-    member's report. Here the partner reports £200 and an adult outside the
-    couple £3,000, with capital of £10,000. Tariff income of
-    ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes the partner's
-    award, so the claimant and partner have no income-based JSA. The raw
-    total, £3,200, differs from the screened award, £3,200 - £832 = £2,368,
-    but is still what the reports give, so the reports decide whose it is."""
+    """A jsa_income equal to the raw total of every member's report, before
+    the capital test, is read as reported amounts paid in full (as
+    disable_simulated_benefits pays them): the claimant's and partner's
+    award is the raw total of their own reports. Here the partner reports
+    £200 and an adult outside the couple £3,000, with capital of £10,000.
+    Tariff income of ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes
+    the partner's award on the formula's reading, so the formula's £2,168
+    (max(0, £200 - £832) + max(0, £3,000 - £832)) does not bar the claim.
+    The raw total, £3,200, pays the
+    partner's £200 unscreened, so it does. The excluded adult's £3,000 is
+    theirs on either reading."""
     members = ["carer", "partner", "other_adult"]
     simulation = Simulation(
         situation={
@@ -153,10 +166,11 @@ def test_the_raw_reported_total_is_read_through_the_reports():
             "households": {"home": {"members": members}},
         }
     )
-    assert simulation.calculate("jsa_income", YEAR)[0] == 2_368
+    assert simulation.calculate("jsa_income", YEAR)[0] == 2_168
     assert eligible(simulation)
     simulation.set_input("jsa_income", YEAR, [3_200])
-    assert eligible(simulation)
+    assert not eligible(simulation)
+    assert simulation.calculate("claimant_or_partner_jsa_income", YEAR)[0] == 200
     # A different award entered directly is the couple's.
     simulation.set_input("jsa_income", YEAR, [4_000])
     assert not eligible(simulation)
@@ -220,10 +234,12 @@ def test_an_excluded_adults_report_can_explain_a_direct_award():
 
 
 def test_a_claimants_report_can_explain_a_direct_award():
-    # Intended: a direct £200 with £10,000 of capital and no reports is the
-    # claimant's, and bars the claim. If the claimant reports exactly £200,
-    # the raw total explains it, and the claimant's £200 is extinguished by
-    # tariff income of £832 a year, so it no longer bars the claim.
+    # Intended: with £10,000 of capital, the formula's reading of the
+    # claimant's own £200 report leaves nothing after tariff income of £832 a
+    # year, so it does not bar the claim. A direct £200 with no report is the
+    # claimant's, and bars it. A direct £200 equal to the claimant's report is
+    # the raw total of the reports, read as the claimant's £200 paid in full
+    # (as disable_simulated_benefits pays it), so it bars the claim too.
     claimant_reports = {
         "age": {YEAR: 40},
         "is_claimant_or_partner": {YEAR: True},
@@ -231,25 +247,26 @@ def test_a_claimants_report_can_explain_a_direct_award():
         "income_support_reported": {YEAR: 1_000},
     }
 
-    def single(report):
+    def single(report, entered=None):
         person = {**claimant_reports, "jsa_income_reported": {YEAR: report}}
+        benunit = {
+            "members": ["carer"],
+            "income_support_assessable_capital": {YEAR: 10_000},
+            "jsa_income_assessable_capital": {YEAR: 10_000},
+        }
+        if entered is not None:
+            benunit["jsa_income"] = {YEAR: entered}
         return Simulation(
             situation={
                 "people": {"carer": person},
-                "benunits": {
-                    "family": {
-                        "members": ["carer"],
-                        "income_support_assessable_capital": {YEAR: 10_000},
-                        "jsa_income_assessable_capital": {YEAR: 10_000},
-                        "jsa_income": {YEAR: 200},
-                    }
-                },
+                "benunits": {"family": benunit},
                 "households": {"home": {"members": ["carer"]}},
             }
         )
 
-    assert not eligible(single(0))
     assert eligible(single(200))
+    assert not eligible(single(0, entered=200))
+    assert not eligible(single(200, entered=200))
 
 
 def test_the_half_penny_tolerance_endpoints():
@@ -367,12 +384,12 @@ def test_an_entered_amount_within_half_a_penny_of_zero_is_no_award():
 
 
 def test_the_couples_residual_is_no_award_beside_another_members_report():
-    # An excluded adult's £3,000 makes jsa_income a real award, but on the
+    # An excluded adult's £3,000 less £52 tariff makes jsa_income a real award, but on the
     # couple's own reports (£10.01 + £41.99 against £52 of tariff income) the
     # award is only a float residual, so it does not bar the claim. A real
     # penny of award (£52.01 against £52) still does.
     residual = reporting_family(10.01, 41.99, other_adults=[3_000])
-    assert residual.calculate("jsa_income", YEAR)[0] > 2_999
+    assert residual.calculate("jsa_income", YEAR)[0] > 2_947
     assert eligible(residual)
     penny = reporting_family(52.01)
     assert 0.005 < penny.calculate("jsa_income", YEAR)[0] < 0.015
@@ -380,7 +397,7 @@ def test_the_couples_residual_is_no_award_beside_another_members_report():
 
 
 def test_the_couples_award_tolerance_is_half_a_penny():
-    # Beside an excluded adult's £3,000, jsa_income is a real award that the
+    # Beside an excluded adult's net £2,948, jsa_income is a real award that the
     # reports explain, so the couple's own award decides. £52.004 against
     # £52 of tariff income leaves them £0.004, which is no award; £52.006
     # leaves £0.006, which bars the claim.
@@ -388,7 +405,7 @@ def test_the_couples_award_tolerance_is_half_a_penny():
         return reporting_family(report, other_adults=[3_000])
 
     below, above = couple_award(52.004), couple_award(52.006)
-    assert below.calculate("jsa_income", YEAR)[0] > 2_999
+    assert below.calculate("jsa_income", YEAR)[0] > 2_947
     assert eligible(below)
-    assert above.calculate("jsa_income", YEAR)[0] > 2_999
+    assert above.calculate("jsa_income", YEAR)[0] > 2_947
     assert not eligible(above)

@@ -196,7 +196,11 @@ class TestScenarioOverrides:
                 "households": {"household": {"members": ["person"]}},
             },
             scenario=Scenario(
-                parameter_changes={"gov.hmrc.cgt.basic_rate": {"2025": 0.5}}
+                parameter_changes={
+                    "gov.hmrc.cgt.basic_rate": {"2025": 0.5},
+                    # The tax on the gains as given, without the response.
+                    "gov.simulation.capital_gains_responses.elasticity": {"2025": 0},
+                }
             ),
         )
 
@@ -234,3 +238,355 @@ class TestFiscalYearCoverage:
         pa = params.gov.hmrc.income_tax.allowances.personal_allowance.amount
         assert pa is not None
         assert pa > 0
+
+
+# #1436: synthetic engineering histories, not proposed statutory rates.
+def _future_1436_tree(*, blend=False, preserve=False, values=None):
+    from policyengine_core.parameters import ParameterNode
+
+    timeline = values or {
+        "2010-01-01": 50,
+        "2041-01-01": 100,
+        "2041-04-06": 200,
+        "2041-10-01": 300,
+    }
+    leaf = {
+        "description": "Synthetic fiscal conversion fixture",
+        "metadata": {
+            "label": "synthetic fixture",
+            "fiscal_year_blend": blend,
+            "preserve_calendar_dates": preserve,
+            "unit": "currency-GBP",
+        },
+        "values": timeline,
+    }
+    return ParameterNode("", data={"gov": {"future": leaf}, "market": leaf})
+
+
+def _future_1436_records(parameter):
+    import copy
+
+    return [
+        (
+            entry.name,
+            entry.instant_str,
+            copy.deepcopy(entry.value),
+            copy.deepcopy(entry.metadata),
+            entry.file_path,
+        )
+        for entry in parameter.values_list
+    ]
+
+
+def _future_1436_eager_reference(root, blend):
+    """Retain the old26 writes, with an independent daily sampling oracle."""
+    import datetime
+
+    leaf = root.gov.future
+    entries = [(entry.instant_str, entry.value) for entry in leaf.values_list]
+
+    def stated(day):
+        eligible = [(key, value) for key, value in entries if key <= str(day)]
+        return max(eligible, key=lambda item: item[0])[1] if eligible else None
+
+    values = {}
+    for year in range(2015, 2041):
+        if blend:
+            day = first = datetime.date(year, 4, 6)
+            end = datetime.date(year + 1, 4, 6)
+            total = 0
+            while day < end:
+                total += stated(day)
+                day += datetime.timedelta(days=1)
+            values[year] = total / (end - first).days
+        else:
+            values[year] = stated(datetime.date(year, 4, 30))
+    for year, value in values.items():
+        leaf.update(period=str(year), value=value)
+    return root
+
+
+def test_future_1436_ordinary_all_dates_and_direct_lookup_share_the_annual_value():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree()
+    leaf = root.gov.future
+    convert_to_fiscal_year_parameters(root.gov)
+    days = ("01-01", "04-05", "04-06", "04-30", "10-01", "12-31")
+    for year, expected in ((2041, 200), (2042, 300)):
+        for suffix in (*days, *reversed(days)):
+            day = f"{year}-{suffix}"
+            assert leaf(day) == expected
+            assert root.get_child("gov.future")(day) == expected
+            assert root(day).gov.future == expected
+
+
+@pytest.mark.parametrize("year,after,total", [(2041, 187, 365), (2043, 188, 366)])
+def test_future_1436_blend_uses_independent_day_counts(year, after, total):
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(
+        blend=True,
+        values={"2010-01-01": 50, f"{year}-04-06": 200, f"{year}-10-01": 300},
+    )
+    convert_to_fiscal_year_parameters(root.gov)
+    expected = (178 * 200 + after * 300) / total
+    for suffix in ("12-31", "01-01", "04-06", "10-01"):
+        assert root.gov.future(f"{year}-{suffix}") == pytest.approx(expected)
+    assert root.gov.future(f"{year + 1}-01-01") == 300
+
+
+def test_future_1436_sampling_collisions_keep_april30_not_the_last_raw_event():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(
+        values={
+            "2010-01-01": 50,
+            "2041-04-05": 120,
+            "2041-04-06": 200,
+            "2041-04-30": 220,
+            "2041-05-01": 230,
+            "2041-10-01": 300,
+        }
+    )
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future("2041-01-01") == 220
+    assert root.gov.future("2041-12-31") == 220
+    assert root.gov.future("2042-01-01") == 300
+
+
+def test_future_1436_preserve_calendar_and_non_gov_histories_keep_raw_dates():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(preserve=True)
+    saved = (root.gov.future.values_list, root.market.values_list)
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future.values_list is saved[0]
+    assert root.market.values_list is saved[1]
+    for day, expected in (
+        ("2041-01-01", 100),
+        ("2041-04-06", 200),
+        ("2041-10-01", 300),
+    ):
+        assert root.gov.future(day) == expected
+        assert root.market(day) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [0, False, None, ["employment_income"]],
+    ids=["zero", "false", "null", "list"],
+)
+def test_future_1436_non_numeric_blend_fallback_preserves_the_exact_value(value):
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(blend=True, values={"2010-01-01": 11, "2041-04-06": value})
+    convert_to_fiscal_year_parameters(root.gov)
+    # Numeric zero takes the existing float averaging path; bool False is
+    # excluded from that path and retains the exact 30 April fallback type.
+    expected = 0.0 if type(value) is int else value
+    for day in ("2041-01-01", "2041-12-31", "2042-01-01"):
+        actual = root.gov.future(day)
+        assert actual == expected
+        assert type(actual) is type(expected)
+
+
+def test_future_1436_raw_year_zero_is_preserved_and_keeps_existing_blend_fallback():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(
+        blend=True,
+        values={
+            "0000-01-01": 7,
+            "2041-04-06": 200,
+            "2041-10-01": 300,
+        },
+    )
+    original = root.gov.future.values_list[-1]
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future.values_list[-1] is original
+    assert original.instant_str == "0000-01-01"
+    assert root.gov.future("2041-01-01") == 200
+    assert root.gov.future("2042-01-01") == 300
+
+
+def test_future_1436_string_values_remain_constructor_errors():
+    from policyengine_core.errors import ParameterParsingError
+    from policyengine_core.parameters import Parameter
+
+    with pytest.raises(ParameterParsingError):
+        Parameter(
+            "engineering_string_rejection", data={"2041-04-06": {"value": "not-a-rate"}}
+        )
+
+
+@pytest.mark.parametrize("blend", [False, True], ids=["sample", "blend"])
+def test_future_1436_all_26_legacy_export_records_and_leaf_metadata_match_eager_reference(
+    blend,
+):
+    import copy
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    actual = _future_1436_tree(
+        blend=blend,
+        values={
+            "2010-01-01": {"value": 50, "metadata": {"note": "retained raw entry"}},
+            "2022-04-06": 75,
+            "2024-10-30": 100,
+            "2041-04-06": 200,
+        },
+    )
+    actual.gov.future.file_path = "engineering-fixture.yaml"
+    actual.gov.future.documentation = "Keep leaf documentation and metadata."
+    raw_entry = actual.gov.future.values_list[-1]
+    metadata = copy.deepcopy(actual.gov.future.metadata)
+    reference = _future_1436_eager_reference(actual.clone(), blend)
+    convert_to_fiscal_year_parameters(actual.gov)
+    observed = [
+        row
+        for row in _future_1436_records(actual.gov.future)
+        if "2015-01-01" <= row[1] < "2041-01-01"
+    ]
+    expected = [
+        row
+        for row in _future_1436_records(reference.gov.future)
+        if "2015-01-01" <= row[1] < "2041-01-01"
+    ]
+    assert len(observed) == len(expected) == 26
+    assert observed == expected
+    assert actual.gov.future.metadata == metadata
+    assert actual.gov.future.documentation == reference.gov.future.documentation
+    assert actual.gov.future.file_path == reference.gov.future.file_path
+    assert actual.gov.future.values_list[-1] is raw_entry
+
+
+def test_future_1436_conversion_invalidates_views_but_does_not_mutate_clones():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree()
+    baseline = root.clone()
+    saved_list = root.gov.future.values_list
+    cached = root("2041-01-01")
+    assert cached.gov.future == 100
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future.values_list is not saved_list
+    assert root("2041-01-01") is not cached
+    assert root("2041-01-01").gov.future == 200
+    assert baseline.gov.future("2041-01-01") == 100
+    baseline.gov.future.update(start="2041-01-01", value=999)
+    assert root.gov.future("2041-01-01") == 200
+
+
+def test_future_1436_scale_brackets_and_ni_aliases_read_the_canonical_history(
+    uk_system,
+):
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = uk_system.parameters.clone()
+    path = "gov.hmrc.national_insurance.class_1.employee_scale[1].rate"
+    canonical = root.get_child(path)
+    alias = root.gov.hmrc.national_insurance.class_1.rates.employee.main
+    canonical.update(start="2041-01-01", value=0.1)
+    canonical.update(start="2041-04-06", value=0.2)
+    canonical.update(start="2041-10-01", value=0.3)
+    untouched = uk_system.parameters.get_child(path).values_list
+    convert_to_fiscal_year_parameters(root.gov.hmrc.national_insurance)
+    assert alias.values_list is canonical.values_list
+    for day, expected in (
+        ("2041-01-01", 0.2),
+        ("2041-12-31", 0.2),
+        ("2042-01-01", 0.3),
+    ):
+        assert canonical(day) == expected
+        assert alias(day) == expected
+        assert root.get_child(path)(day) == expected
+        assert (
+            root.gov.hmrc.national_insurance.class_1.employee_scale.brackets[1].rate(
+                day
+            )
+            == expected
+        )
+    assert uk_system.parameters.get_child(path).values_list is untouched
+
+
+def test_future_1436_representable_ordinary_terminal_year_is_not_arbitrarily_capped():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree(values={"2010-01-01": 100, "9999-04-30": 200})
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future("9999-01-01") == 200
+    assert root.gov.future("9999-12-31") == 200
+    assert all(
+        not entry.instant_str.startswith("10000")
+        for entry in root.gov.future.values_list
+    )
+
+
+@pytest.mark.parametrize(
+    "blend,date",
+    [(False, "9999-05-01"), (True, "9999-04-06")],
+    ids=["next-label-10000", "full-fy-9999"],
+)
+def test_future_1436_unrepresentable_late_leaf_refuses_before_any_live_tree_change(
+    blend, date
+):
+    import copy
+    from policyengine_core.parameters import ParameterNode
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree()
+    root.gov.add_child(
+        "last_invalid",
+        ParameterNode(
+            "last_invalid",
+            data={
+                "value": {
+                    "metadata": {"fiscal_year_blend": blend},
+                    "values": {"2010-01-01": 50, date: 200},
+                }
+            },
+        ),
+    )
+    good = root.gov.future
+    bad = root.gov.last_invalid.value
+    nodes = [root, root.gov, good, root.gov.last_invalid, bad]
+    for node in nodes:
+        node.modified = False
+    cached = root("2020-01-01")
+    lists = [leaf.values_list for leaf in (good, bad)]
+    records = [_future_1436_records(leaf) for leaf in (good, bad)]
+    metadata = [copy.deepcopy(leaf.metadata) for leaf in (good, bad)]
+    with pytest.raises(ValueError):
+        convert_to_fiscal_year_parameters(root.gov)
+    assert all(leaf.values_list is saved for leaf, saved in zip((good, bad), lists))
+    assert [_future_1436_records(leaf) for leaf in (good, bad)] == records
+    assert [leaf.metadata for leaf in (good, bad)] == metadata
+    assert not any(node.modified for node in nodes)
+    assert root("2020-01-01") is cached
+
+
+def test_future_1436_calendar_year_series_metadata_is_not_a_conversion_exemption():
+    from policyengine_uk.utils.parameters import convert_to_fiscal_year_parameters
+
+    root = _future_1436_tree()
+    root.gov.metadata["calendar_year_series"] = True
+    convert_to_fiscal_year_parameters(root.gov)
+    assert root.gov.future("2041-01-01") == 200
+    assert root.gov.future("2041-10-01") == 200
+    assert root.gov.metadata["calendar_year_series"] is True
+
+
+def test_future_1436_last_complete_gregorian_fiscal_interval_has_a_hand_oracle():
+    from policyengine_uk.utils.parameters import fiscal_year_average
+
+    root = _future_1436_tree(
+        blend=True,
+        values={
+            "2010-01-01": 100,
+            "9998-04-06": 200,
+            "9998-10-01": 300,
+        },
+    )
+    assert fiscal_year_average(root.gov.future, 9998) == pytest.approx(
+        (178 * 200 + 187 * 300) / 365
+    )

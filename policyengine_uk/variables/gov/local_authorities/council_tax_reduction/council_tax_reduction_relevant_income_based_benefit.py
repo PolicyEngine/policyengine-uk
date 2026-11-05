@@ -11,13 +11,17 @@ class council_tax_reduction_relevant_income_based_benefit(Variable):
         "tax reduction schemes to their maximum reduction. Only the "
         "applicant's and partner's awards count: another member of the "
         "benefit unit, such as a non-dependent adult, who has an award of "
-        "their own claims in their own right."
+        "their own claims in their own right. Where the household head "
+        "applies alone (council_tax_reduction_head_applies_alone), the "
+        "benefit unit's awards belong to its claimant and partner, not to the "
+        "head, so they do not passport her."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2012/2886/schedule"
 
     def formula(benunit, period, parameters):
-        return (
+        head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
+        return ~head_applies_alone & (
             add(
                 benunit,
                 period,

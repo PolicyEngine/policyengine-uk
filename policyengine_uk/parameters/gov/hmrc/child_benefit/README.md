@@ -29,11 +29,15 @@ data in a release; updating model code alone does not repair existing data.
 
 `gov.hmrc.child_benefit.opt_out_charge_share` is a behavioural assumption, not
 a statutory eligibility rule. It defaults to one: a flagged family continues
-to opt out only while the charge would recover the full benefit. The charge
-share is calculated independently of payment and clipped to [0, 1]. A reform
-that reduces the share below the threshold, removes the charge or neutralises
-`CB_HITC` restores payment. A zero charge never sustains an opt-out, even if
-the assumed threshold is zero. Genuine nonclaimants remain outside payment.
+to opt out only while the continuous charge share is one, that is while the
+higher adjusted net income in the family is at or above the end of the
+phase-out band. The share is the unrounded fraction of the band crossed, calculated independently of
+payment and clipped to [0, 1]. A reform that reduces the share below the
+threshold, removes the charge or neutralises `CB_HITC` restores payment. A zero
+continuous charge share never sustains an opt-out, even if the assumed
+threshold is zero. The statutory charge (`CB_HITC`) is different: ITEPA 2003
+s. 681C(3) rounds its percentage and amount down, so it can be nil while the
+share is small but positive. Genuine nonclaimants remain outside payment.
 
 Microcosm selects fully charged families first and can draw from partly charged
 families if needed to meet its target. The model's default threshold is an

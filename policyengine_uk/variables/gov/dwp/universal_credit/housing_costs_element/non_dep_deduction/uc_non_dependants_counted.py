@@ -28,7 +28,7 @@ class uc_non_dependants_counted(Variable):
         claims = (
             liable_family
             & benunit("is_uc_eligible", period)
-            & benunit("would_claim_uc", period)
+            & benunit("claims_universal_credit", period)
         )
         head_family = benunit("benunit_contains_household_head", period)
         # Order the claims: the household head's family first, then the

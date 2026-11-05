@@ -1,0 +1,12 @@
+description: Share of VAT liabilities that falls on household final consumption. The rest falls on government, charities, VAT-exempt businesses and new housing. Household VAT is grossed up by this share so that total VAT matches receipts.
+metadata:
+  unit: /1
+  period: year
+  economy: false
+  reference:
+    - title: HMRC, Second estimate of the VAT gap (tax year 2024 to 2025), 3 March 2026 (household consumption is around 70% of the VAT total theoretical liability)
+      href: https://www.gov.uk/government/statistics/vat-gap-estimates/second-estimate-of-the-vat-gap-tax-year-2023-to-2024
+    - title: HMRC, Measuring tax gaps methodological annex, VAT (components of the VAT total theoretical liability)
+      href: https://www.gov.uk/government/statistics/measuring-tax-gaps-methodological-annex/2-tax-gaps-value-added-tax
+values:
+  2010-01-01: 0.7

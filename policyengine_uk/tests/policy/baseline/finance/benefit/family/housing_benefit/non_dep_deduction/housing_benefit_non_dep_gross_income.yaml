@@ -1,0 +1,604 @@
+# HB Regs 2006 reg 74(2), (9); pension-age HB Regs 2006 reg 55(2), (10).
+# England CTR SI 2012/2885 Sch 1 para 8(2), (9); Scotland SSI 2021/249
+# reg 90(2), (9) and SSI 2012/319 reg 48(2), (9); Wales WSI 2013/3029
+# Sch 1 para 3 and Sch 6 para 5. Gross income includes statutory pay and
+# maintenance; the listed disability payments are disregarded.
+# Hand arithmetic: wages 9,000 + statutory pay 520 = 9,520, just above
+# 183/week. The existing national consumers use the HB scale (45.15/week
+# at this income in 2025); correcting CTR rates is separate (#2007).
+# Annual wages and statutory pay can relate to different parts of the year;
+# leave days themselves are not remunerative work (HB reg 6(7)).
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with ENGLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with ENGLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with ENGLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with ENGLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with ENGLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with ENGLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with SCOTLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with SCOTLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with SCOTLAND claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with SCOTLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with SCOTLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with SCOTLAND claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with WALES claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with WALES claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with WALES claimant aged 40
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_sick_pay with WALES claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_sick_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_maternity_pay with WALES claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_maternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income includes statutory_paternity_pay with WALES claimant aged 70
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        social_security_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      non_dependant:
+        age: 30
+        social_security_income: 0
+        employment_income: 9_000
+        hours_worked: 832 # 16 hours a week
+        statutory_paternity_pay: 520
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: WALES
+  output:
+    housing_benefit_non_dep_gross_income: [0, 9_520]
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80]
+    housing_benefit_non_dep_deductions: [2_347.80, 0]
+
+- name: housing_benefit_non_dep_gross_income counts tax-exempt maintenance and periodic benefits
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 1_000
+    maintenance_income: 100
+    spousal_maintenance_income: 200
+    maternity_allowance: 300
+    iidb: 400
+    sda: 500
+    war_widows_pension: 600
+  output:
+    housing_benefit_non_dep_gross_income: 3_100
+
+- name: housing_benefit_non_dep_gross_income disregards disability payments
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 1_000
+    attendance_allowance: 100
+    dla: 200
+    pip: 300
+  output:
+    housing_benefit_non_dep_gross_income: 1_000
+
+- name: housing_benefit_non_dep_gross_income ignores negative maintenance and miscellaneous losses
+  period: 2025
+  input:
+    social_security_income: 0
+    employment_income: 1_000
+    maintenance_income: -100
+    spousal_maintenance_income: -200
+    miscellaneous_income: -300
+  output:
+    housing_benefit_non_dep_gross_income: 1_000

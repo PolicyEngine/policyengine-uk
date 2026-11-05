@@ -1,4 +1,4 @@
-description: Elasticity of capital gains realisations with respect to the marginal tax rate itself. This is the auxiliary convention some analyses report alongside the retention-rate elasticity and is typically negative.
+description: Elasticity of capital gains realisations with respect to the marginal tax rate itself, an auxiliary convention some analyses report alongside the retention-rate elasticity, typically negative. A reform scales realised gains by (t1 / t0) to the power of this elasticity. The two conventions differ across finite rate changes, so a value here is not a restatement of a retention-rate elasticity; for a rise from 24% to 45%, -0.7 here scales gains by 0.644, while a retention-rate elasticity of 1.0 scales them by 0.724. In a period where this is nonzero the retention-rate elasticities must be zero. Where they keep their defaults they count as zero for that period, with a warning; set gov.simulation.capital_gains_responses.elasticity to 0 to avoid it. Retention-rate elasticities changed to nonzero values raise an error.
 values:
   2000-01-01: 0
 metadata:

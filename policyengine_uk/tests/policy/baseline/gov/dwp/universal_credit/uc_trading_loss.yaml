@@ -1,0 +1,171 @@
+# UC Regs 2013 reg 57(2): Steps 1-2 add the profit or loss of each trade and
+# Step 3 makes a negative total nil, so one trade's loss reduces another
+# trade's profits but never employed earnings.
+
+- name: A loss in one trade reduces another trade's profits for UC
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    self_employment_income: 30_000
+    trading_loss: 10_000
+    uc_is_in_startup_period: true
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+  output:
+    uc_individual_earned_income_before_mif: 20_000
+
+- name: A loss never reduces employed earnings for UC
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 20_000
+    trading_loss: 10_000
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+  output:
+    uc_individual_earned_income_before_mif: 20_000
+
+- name: Self-employed earnings for UC are never below nil
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 20_000
+    self_employment_income: 5_000
+    trading_loss: 10_000
+    uc_is_in_startup_period: true
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+  output:
+    uc_individual_earned_income_before_mif: 20_000
+
+- name: The benefit cap earnings test nets trades too (reg 82 with reg 57(2))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        self_employment_income: 12_000
+        trading_loss: 5_000
+        uc_is_in_startup_period: true
+        uc_income_tax_on_earnings: 0
+        uc_national_insurance_on_earnings: 0
+        income_tax_before_winter_fuel_payment_charge: 0
+        national_insurance: 0
+      child_1:
+        age: 1
+      child_2:
+        age: 4
+      child_3:
+        age: 7
+      child_4:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3, child_4]
+        region: LONDON
+        rent: 24_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    uc_trading_losses_set_against_profits: [5_000, 0, 0, 0, 0]
+    # £7,000 of earnings, below the reg 82 threshold, so the cap applies,
+    # exactly as for £7,000 of profits and no loss.
+    is_uc_benefit_cap_exempt_earnings: false
+    universal_credit: 21_124
+
+# Reg. 77(3)(b) sends the owner's company trade to reg. 57; reg. 57(2)
+# nets all concurrent trade results before taking trade-only tax/NI and the
+# nil floor. Reg. 82(1)(a) uses those actual earnings, before the MIF.
+# Expected values below are direct arithmetic from those provisions.
+
+- name: A sole trader loss reduces company earnings before the cap earnings test
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    owned_company_income_share: 12_000
+    trading_loss: 5_000
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+    uc_income_tax_on_trade: 0
+    uc_national_insurance_on_trade: 0
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_company_self_employed_earnings: 12_000
+    uc_trading_losses_set_against_profits: 5_000
+    uc_individual_earned_income_before_mif: 7_000
+    uc_individual_earned_income: 20_000
+    # Actual £7,000 is below £10,572, even though the MIF is £20,000.
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: Company earnings without the loss exceed the cap threshold with the same deductions
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    owned_company_income_share: 12_000
+    trading_loss: 0
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+    uc_income_tax_on_trade: 0
+    uc_national_insurance_on_trade: 0
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_trading_losses_set_against_profits: 0
+    uc_individual_earned_income_before_mif: 12_000
+    uc_individual_earned_income: 20_000
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: A company loss and sole trader loss never reduce employed earnings
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 12_000
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_income_share: -10_000
+    trading_loss: 5_000
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+    uc_income_tax_on_trade: 0
+    uc_national_insurance_on_trade: 0
+  output:
+    uc_company_self_employed_earnings: -10_000
+    uc_trading_losses_set_against_profits: 0
+    uc_individual_earned_income_before_mif: 12_000
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: Tax and NI on trades cancelled by losses never reduce employed earnings
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 13_000
+    self_employment_income: 20_000
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_income_share: -19_000
+    trading_loss: 1_000
+    # £1,000 employment tax and £500 employment NI are deducted from pay.
+    # The other £1,000 tax and £500 NI are deducted only inside the nil trade.
+    uc_income_tax_on_earnings: 2_000
+    uc_national_insurance_on_earnings: 1_000
+    uc_income_tax_on_trade: 1_000
+    uc_national_insurance_on_trade: 500
+  output:
+    uc_trading_losses_set_against_profits: 1_000
+    uc_individual_earned_income_before_mif: 11_500
+    is_uc_benefit_cap_exempt_earnings: true

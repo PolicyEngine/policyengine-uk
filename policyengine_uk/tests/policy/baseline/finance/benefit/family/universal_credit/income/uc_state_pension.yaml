@@ -184,8 +184,8 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 6_240
   output:
-    # Couple standard allowance 596.58 a month (with the 2020 uplift):
-    # 7,158.96 + 6,240 = 13,398.96; less 9,000 of State Pension.
-    uc_maximum_amount: 13_398.96
+    # Couple standard allowance 594.04 a month in 2020-21 (with the 2020
+    # uplift): 7,128.48 + 6,240 = 13,368.48; less 9,000 of State Pension.
+    uc_maximum_amount: 13_368.48
     uc_unearned_income: 9_000
-    universal_credit: 4_398.96
+    universal_credit: 4_368.48

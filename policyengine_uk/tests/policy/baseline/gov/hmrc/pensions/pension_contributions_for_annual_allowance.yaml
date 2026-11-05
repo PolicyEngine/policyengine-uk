@@ -76,5 +76,5 @@
     pension_contributions_via_salary_sacrifice: 0
   output:
     # Total: 10_000 + 5_000 + 50_000 = 65_000
-    # This exceeds the 2024 AA of 40_000 (verified separately by AA tax charge test)
+    # This exceeds the 2024 AA of 60_000 (verified separately by AA tax charge test)
     pension_contributions_for_annual_allowance: 65_000

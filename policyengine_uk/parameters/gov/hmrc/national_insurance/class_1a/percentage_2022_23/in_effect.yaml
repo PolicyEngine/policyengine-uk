@@ -1,0 +1,12 @@
+description: Whether the Class 1A percentage is the fixed rate the Health and Social Care Levy (Repeal) Act 2022 sets for 2022-23, rather than the secondary Class 1 percentage it equals in other tax years.
+values:
+  0000-01-01: false
+  2022-04-06: true
+  2023-04-06: false
+metadata:
+  unit: bool
+  period: year
+  label: Fixed Class 1A percentage for 2022-23
+  reference:
+    - title: Health and Social Care Levy (Repeal) Act 2022 Schedule paragraph 1
+      href: https://www.legislation.gov.uk/ukpga/2022/43/schedule/paragraph/1/enacted

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.trading_allowance import trading_allowance_reliefs
 
 
 class trading_allowance_deduction(Variable):
@@ -17,7 +18,24 @@ class trading_allowance_deduction(Variable):
         "it, and a larger profit as already reflecting the better of actual "
         "expenses and the allowance, so taxable profit jumps from nil to the "
         "full profit just above the allowance. Receipts below profit are "
-        "inconsistent and treated as unknown."
+        "inconsistent and treated as unknown. For people the input data mark "
+        "as claimants or non-claimants (trading_allowance_claim_status), see "
+        "policyengine_uk/utils/trading_allowance.py. The model compares the "
+        "raw loss "
+        "supplied for this tax year, before net-income and relief-cap limits, "
+        "with the allowance's effective saving after other deductions, "
+        "including its relief on miscellaneous income. "
+        "Ordinary expenses with a loss claim win when that raw loss is "
+        "larger; allowance treatment otherwise, including ties. Comparing "
+        "the raw loss can preserve an unused carry-forward even when both "
+        "choices give nil current net income. Earlier inputs carried and "
+        "uprated by the engine do not affect this election. It covers all "
+        "the individual's relevant trades "
+        "for the tax year. Allowance treatment makes their current losses "
+        "nil for Income Tax and Class 4. It does not optimise future loss use "
+        "or benefits. The same allowance relieves income not otherwise "
+        "charged (miscellaneous_income_trading_allowance_deduction), which "
+        "gets only what the trade receipts leave of it."
     )
     definition_period = YEAR
     reference = [
@@ -33,24 +51,17 @@ class trading_allowance_deduction(Variable):
             title="HMRC Business Income Manual BIM86050",
             href="https://www.gov.uk/hmrc-internal-manuals/business-income-manual/bim86050",
         ),
+        dict(
+            title="Income Tax (Trading and Other Income) Act 2005, s. 783AL (election)",
+            href="https://www.legislation.gov.uk/ukpga/2005/5/section/783AL",
+        ),
+        dict(
+            title="HMRC Business Income Manual BIM86076 (loss election)",
+            href="https://www.gov.uk/hmrc-internal-manuals/business-income-manual/bim86076",
+        ),
     ]
     unit = GBP
 
     def formula(person, period, parameters):
-        allowance = parameters(period).gov.hmrc.income_tax.allowances.trading_allowance
-        profit = person("self_employment_income", period)
-        receipts = person("self_employment_gross_receipts", period)
-        capital_allowances = person("capital_allowances", period)
-        # Receipts below profit (including the default zero) mean unknown.
-        receipts_known = (receipts > 0) & (receipts >= profit)
-        expenses = max_(receipts - profit, 0)
-        # Full relief (receipts within the allowance, s. 783AE-783AF) makes
-        # the profit nil; partial relief (s. 783AI) replaces expenses and
-        # capital allowances with the allowance. Both come to the allowance's
-        # excess over actual deductions, capped at profit.
-        relief_with_receipts = min_(profit, allowance - expenses) - capital_allowances
-        relief_without_receipts = where(
-            profit <= allowance, profit - capital_allowances, 0
-        )
-        relief = where(receipts_known, relief_with_receipts, relief_without_receipts)
-        return max_(relief, 0)
+        trade_relief, _, _ = trading_allowance_reliefs(person, period, parameters)
+        return trade_relief

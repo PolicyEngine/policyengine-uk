@@ -1,3 +1,12 @@
+# Childcare Grant, Education (Student Support) Regulations 2011 regs 45 and 47:
+# https://www.legislation.gov.uk/uksi/2011/1986/regulation/45
+# https://www.legislation.gov.uk/uksi/2011/1986/regulation/47
+# SFE 2025-26 rates: 85% of eligible children's costs, capped at GBP199.62
+# weekly for one child and GBP342.24 for two or more children.
+# https://www.gov.uk/childcare-grant/what-youll-get
+# These annual-model tests use 52 weeks: GBP10,380.24 and GBP17,796.48.
+# Expense inputs belong to the children receiving the care, not the student.
+
 - name: Childcare Grant reimburses 85 percent below one-child cap
   period: 2025
   input:
@@ -7,9 +16,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 5_000
       child:
         age: 4
+        childcare_expenses: 5_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -31,9 +40,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 20_000
       child:
         age: 3
+        childcare_expenses: 20_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -44,6 +53,8 @@
   output:
     childcare_grant: [10_380.24, 0]
 
+# One combined family cap applies to asymmetric child costs (20,000 + 5,000),
+# rather than a separate one-child cap for each child.
 - name: Childcare Grant uses the two-or-more-children cap
   period: 2025
   absolute_error_margin: 0.01
@@ -54,11 +65,12 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 25_000
       child_1:
         age: 6
+        childcare_expenses: 20_000
       child_2:
         age: 8
+        childcare_expenses: 5_000
     benunits:
       benunit:
         members: ["student", "child_1", "child_2"]
@@ -78,10 +90,10 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 5_000
         childcare_grant_household_income: 20_107.23
       child:
         age: 2
+        childcare_expenses: 5_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -102,9 +114,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 4_000
       child:
         age: 16
+        childcare_expenses: 4_000
         childcare_grant_child_has_special_educational_needs: true
     benunits:
       benunit:
@@ -126,9 +138,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 4_000
       child:
         age: 16
+        childcare_expenses: 4_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -148,9 +160,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 4_000
       child:
         age: 16
+        childcare_expenses: 4_000
         is_disabled_for_benefits: true
     benunits:
       benunit:
@@ -172,9 +184,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
       child:
         age: 4
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -197,10 +209,10 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
         childcare_grant_receives_postgraduate_loan: true
       child:
         age: 5
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -221,10 +233,10 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
         childcare_grant_receives_nhs_childcare_support: true
       child:
         age: 5
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -244,9 +256,9 @@
         age: 22
         is_parent: true
         current_education: TERTIARY
-        childcare_expenses: 6_000
       child:
         age: 5
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -267,9 +279,9 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
       child:
         age: 5
+        childcare_expenses: 6_000
         tax_free_childcare: 1_000
     benunits:
       benunit:
@@ -291,10 +303,10 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
         childcare_grant_provider_is_nanny: true
       child:
         age: 5
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
@@ -315,15 +327,17 @@
         is_parent: true
         current_education: TERTIARY
         childcare_grant_full_time_student: true
-        childcare_expenses: 6_000
         employment_income: 10_000
         hours_worked: 1_040
         working_tax_credit_reported: 1
       child:
         age: 5
+        childcare_expenses: 6_000
     benunits:
       benunit:
         members: ["student", "child"]
+        # Tax credits closed in 2025; keep the award to test the overlap.
+        legacy_benefits_closed: false
     households:
       household:
         members: ["student", "child"]
@@ -332,3 +346,204 @@
     WTC_childcare_element: [4_200]
     childcare_grant_eligible: [false, false]
     childcare_grant: [0, 0]
+
+# Reg. 45 funds eligible dependent children's care. Adult costs and a child's
+# costs outside the age/SEN rule do not enlarge the grant.
+- name: Case 15, only eligible child costs enter the grant.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 7_000
+      person2:
+        age: 4
+        childcare_expenses: 5_000
+      person3:
+        age: 16
+        childcare_expenses: 9_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    childcare_grant_child_eligible: [false, true, false]
+    childcare_grant_eligible_children: 1
+    childcare_grant: [4_250, 0, 0] # 0.85 * 5,000
+
+# Reg. 47(5) prevents two full awards for the same children. The annual model
+# assigns the family total to the eldest eligible student; that recipient
+# selection is a convention, not a statutory eldest-parent rule.
+- name: Case 16, two eligible students receive one family grant.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person2:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person3:
+        age: 4
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [true, true, false]
+    childcare_grant: [4_250, 0, 0]
+
+- name: Case 17, reordered members preserve the one-payment convention.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person2:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person3:
+        age: 4
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [person3, person2, person1]
+    households:
+      household:
+        members: [person3, person2, person1]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [true, true, false]
+    childcare_grant: [0, 4_250, 0]
+
+- name: Case 18, only the younger student is eligible to receive the grant.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 26
+        is_parent: true
+        current_education: NOT_IN_EDUCATION
+      person2:
+        age: 22
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person3:
+        age: 4
+        childcare_expenses: 6_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [false, true, false]
+    childcare_grant: [0, 5_100, 0] # 0.85 * 6,000
+
+- name: Case 19, adult-only costs do not create a grant for a child without costs.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+        childcare_expenses: 5_000
+      person2:
+        age: 4
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [true, false]
+    childcare_grant: [0, 0]
+
+- name: Case 20, child costs remain within each benefit unit in one household.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person2:
+        age: 4
+        childcare_expenses: 5_000
+      person3:
+        age: 21
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person4:
+        age: 6
+        childcare_expenses: 2_000
+    benunits:
+      benunit1:
+        members: [person1, person2]
+      benunit2:
+        members: [person3, person4]
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible: [true, false, true, false]
+    childcare_grant_eligible_children: [1, 1]
+    childcare_grant: [4_250, 0, 1_700, 0]
+
+# A negative input does not represent eligible spending and cannot offset
+# another child's positive childcare costs. This is an input-domain floor.
+- name: Case 21, negative costs cannot reduce another child's eligible costs.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 24
+        is_parent: true
+        current_education: TERTIARY
+        childcare_grant_full_time_student: true
+      person2:
+        age: 4
+        childcare_expenses: 5_000
+      person3:
+        age: 6
+        childcare_expenses: -1_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    childcare_grant_eligible_children: 2
+    childcare_grant: [4_250, 0, 0]

@@ -38,7 +38,7 @@ import numpy as np
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+from policyengine_uk import Simulation, parameters
 
 YEAR = 2025
 PROPERTY_SETTINGS = settings(
@@ -144,12 +144,9 @@ def calculate(units, with_dependants=True):
     }
 
 
-def min_care_hours():
-    sim = Simulation(situation={"people": {"p": {"age": {YEAR: 30}}}})
-    return sim.tax_benefit_system.parameters(YEAR).gov.dwp.carers_allowance.min_hours
-
-
-MIN_CARE_HOURS = min_care_hours()
+# Read from the package's parameters, not a Simulation's: a system built and
+# dropped while the tests are collected would be frozen by conftest.py.
+MIN_CARE_HOURS = parameters(YEAR).gov.dwp.carers_allowance.min_hours
 
 
 def meets_claimant_limb(member):
