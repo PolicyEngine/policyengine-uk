@@ -10,14 +10,19 @@
 # rate and omit AFIP (Merton's Local Council Tax Support Scheme Rules 2026 and
 # Kingston upon Thames's Council Tax Reduction Scheme 2026 - 2027, Sch 3 para
 # 12(1)). Newham counts DLA care highest, PIP daily living at either rate and
-# AFIP (Newham's Council Tax Reduction Scheme 2026, Sch 3 para 12(1)). The
-# three London councils keep the qualifying age for State Pension Credit as
-# the age limit. The model applies each council's list from the first scheme
-# year whose text supports it: Merton's from 2023-24 (the 2023 rules), and
-# Kingston upon Thames's and Newham's in every model year, since their texts
-# support them from 2013-14 (Newham's with AFIP from 2014-15). It applies the
-# Housing Benefit condition in Merton before 2023 and in Westminster, and
-# reads each year's rules at 30 April.
+# AFIP (Newham's Council Tax Reduction Scheme 2026, Sch 3 para 12(1)). In
+# Westminster the model applies the Default Scheme's list (S.I. 2012/2886 Sch
+# 3 para 12(1)): DLA care highest and PIP daily living at either rate, without
+# AFIP. The four London councils keep the qualifying age for State Pension
+# Credit as the age limit. Each council's list starts on or before 1 April
+# 2013, so the model applies it in every model year, and reads each year's
+# rules at 30 April.
+# Unless a case sets `is_disabled_for_benefits`, it keeps its default, false,
+# and the model pays no disability premium, although the schemes give one to
+# a claimant under the qualifying age who receives these awards (for example
+# HB Regs 2006 Sch 3 paras 12(a) and 13(1)(a)(i); Merton's rules Sch 3 paras
+# 9(a) and 10(1)(a)(i)). In those cases the totals from
+# `council_tax_reduction_premiums` down follow that default, not the schemes.
 # 2026-27 amounts: enhanced disability premium £22.00 single, £31.40 couple;
 # severe disability premium £86.05 single.
 
@@ -288,7 +293,7 @@
     # 1,800 - 20% of (12,000 - 9,443.20) = 1,800 - 511.36 = 1,288.64.
     simulated_council_tax_reduction_benunit: 1_288.64
 
-- name: Case 10, AFIP meets Newham's and Westminster's conditions but not Merton's or Kingston upon Thames's.
+- name: Case 10, AFIP meets Newham's condition but not Merton's, Kingston upon Thames's or Westminster's.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -332,12 +337,12 @@
         country: ENGLAND
         local_authority: WESTMINSTER
   output:
-    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, true, true]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, true, false]
     # 22.00 * 52 = 1,144.00.
-    council_tax_reduction_enhanced_disability_premium: [0, 0, 1_144, 1_144]
+    council_tax_reduction_enhanced_disability_premium: [0, 0, 1_144, 0]
     enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
 
-- name: Case 11, standard PIP daily living meets the Merton, Kingston upon Thames and Newham conditions but not Westminster's.
+- name: Case 11, standard PIP daily living meets the Merton, Kingston upon Thames, Newham and Westminster conditions.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -381,8 +386,8 @@
         country: ENGLAND
         local_authority: WESTMINSTER
   output:
-    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true, false]
-    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144, 0]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true, true]
+    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
     # Under HB para 15(1)(c), claimants qualify only at the enhanced rate.
     enhanced_disability_premium: [0, 0, 0, 0]
 
@@ -427,21 +432,26 @@
     meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, false, false]
     council_tax_reduction_enhanced_disability_premium: [0, 0]
 
-- name: Case 13, Merton applies the Housing Benefit condition in 2022, before its own list starts.
-  # The 2023 rules are the earliest Merton scheme text the model cites, so in
-  # 2022 the model applies the Housing Benefit condition (HB Regs 2006 Sch 3
-  # para 15(1)(c): the enhanced rate only). The case pins the 2022-23 energy
+- name: Case 13, Merton's own list counts standard PIP daily living in 2022.
+  # Merton's scheme rules for 2022-23, Sch 3 para 12(1)(c), count the PIP
+  # daily living component at either rate. The case pins the 2022-23 energy
   # and cost of living payments at zero, so household net income moves only
   # with the reduction. 2022-23 rates: PIP daily living standard 61.85,
-  # personal allowance (25 or over) 77.00, severe disability premium 69.40.
+  # personal allowance (25 or over) 77.00, severe disability premium 69.40,
+  # disability premium 36.20, enhanced disability premium 17.75.
   period: 2022
   absolute_error_margin: 0.01
+  # The claimant receives PIP, so the case sets is_disabled_for_benefits for
+  # the disability premium (HB Regs 2006 Sch 3 paras 12(a) and 13(1)(a)(i);
+  # Merton's rules Sch 3 paras 9(a) and 10(1)(a)(i)). A pension of 12,500,
+  # below the 12,570 personal allowance, keeps the reduction on the taper.
   input:
     people:
       person1:
         age: 30
         pip_dl_category: STANDARD
-        private_pension_income: 11_000
+        is_disabled_for_benefits: true
+        private_pension_income: 12_500
     benunits:
       benunit:
         members: [person1]
@@ -460,34 +470,42 @@
         energy_bills_rebate: 0
         cost_of_living_support_payment: 0
   output:
+    # The legacy premium counts the enhanced rate only.
     enhanced_disability_premium: 0
-    meets_council_tax_reduction_enhanced_disability_premium_condition: false
-    council_tax_reduction_enhanced_disability_premium: 0
-    # The severe disability premium alone: 69.40 * 52 = 3,608.80.
-    council_tax_reduction_premiums: 3_608.80
-    # Personal allowance 77.00 * 52 = 4,004.00, plus 3,608.80: 7,612.80.
-    council_tax_reduction_applicable_amount: 7_612.80
-    # 1,800 - 20% of (11,000 - 7,612.80) = 1,800 - 677.44 = 1,122.56.
-    council_tax_reduction: 1_122.56
-    # Pension 11,000 + PIP 61.85 * 52 = 3,216.20 + reduction 1,122.56 -
-    # council tax 1,800 = 13,538.76. The pension falls below the 12,570
-    # personal allowance, so the model charges no income tax.
-    household_net_income: 13_538.76
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+    # Merton's list counts the standard PIP daily living rate: 17.75 * 52 = 923.00.
+    council_tax_reduction_enhanced_disability_premium: 923
+    # Severe disability premium 69.40 * 52 = 3,608.80, disability premium
+    # 36.20 * 52 = 1,882.40 and the enhanced disability premium 923.00: 6,414.20.
+    council_tax_reduction_premiums: 6_414.20
+    # Personal allowance 77.00 * 52 = 4,004.00, plus 6,414.20: 10,418.20.
+    council_tax_reduction_applicable_amount: 10_418.20
+    # 1,800 - 20% of (12,500 - 10,418.20) = 1,800 - 416.36 = 1,383.64.
+    council_tax_reduction: 1_383.64
+    # Pension 12,500 + PIP 61.85 * 52 = 3,216.20 + reduction 1,383.64 -
+    # council tax 1,800 = 15,299.84.
+    household_net_income: 15_299.84
 
-- name: Case 14, Merton's own list counts standard PIP daily living from 2023, the year of its 2023 rules.
+- name: Case 14, Merton's own list counts standard PIP daily living in 2023.
   # Merton's Local Council Tax Support Scheme Rules 2023, Sch 3 para 12(1)(c):
   # PIP daily living "payable at either rate". The case pins the 2023-24 energy
   # and cost of living payments at zero. 2023-24 rates: PIP daily living
   # standard 68.10, personal allowance (25 or over) 84.80, severe disability
-  # premium 76.40, enhanced disability premium 19.55.
+  # premium 76.40, disability premium 39.85, enhanced disability premium
+  # 19.55.
   period: 2023
   absolute_error_margin: 0.01
+  # The claimant receives PIP, so the case sets is_disabled_for_benefits for
+  # the disability premium (HB Regs 2006 Sch 3 paras 12(a) and 13(1)(a)(i);
+  # Merton's rules Sch 3 paras 9(a) and 10(1)(a)(i)). A pension of 12,500,
+  # below the 12,570 personal allowance, keeps the reduction on the taper.
   input:
     people:
       person1:
         age: 30
         pip_dl_category: STANDARD
-        private_pension_income: 11_000
+        is_disabled_for_benefits: true
+        private_pension_income: 12_500
     benunits:
       benunit:
         members: [person1]
@@ -511,14 +529,229 @@
     meets_council_tax_reduction_enhanced_disability_premium_condition: true
     # 19.55 * 52 = 1,016.60.
     council_tax_reduction_enhanced_disability_premium: 1_016.60
-    # Severe disability premium 76.40 * 52 = 3,972.80, plus 1,016.60:
-    # 4,989.40.
-    council_tax_reduction_premiums: 4_989.40
-    # Personal allowance 84.80 * 52 = 4,409.60, plus 4,989.40: 9,399.00.
-    council_tax_reduction_applicable_amount: 9_399
-    # 1,800 - 20% of (11,000 - 9,399.00) = 1,800 - 320.20 = 1,479.80.
-    council_tax_reduction: 1_479.80
-    # Pension 11,000 + PIP 68.10 * 52 = 3,541.20 + reduction 1,479.80 -
-    # council tax 1,800 = 14,221.00. The pension falls below the 12,570
-    # personal allowance, so the model charges no income tax.
-    household_net_income: 14_221
+    # Severe disability premium 76.40 * 52 = 3,972.80, disability premium
+    # 39.85 * 52 = 2,072.20 and the enhanced disability premium 1,016.60:
+    # 7,061.60.
+    council_tax_reduction_premiums: 7_061.60
+    # Personal allowance 84.80 * 52 = 4,409.60, plus 7,061.60: 11,471.20.
+    council_tax_reduction_applicable_amount: 11_471.20
+    # 1,800 - 20% of (12,500 - 11,471.20) = 1,800 - 205.76 = 1,594.24.
+    council_tax_reduction: 1_594.24
+    # Pension 12,500 + PIP 68.10 * 52 = 3,541.20 + reduction 1,594.24 -
+    # council tax 1,800 = 15,835.44.
+    household_net_income: 15_835.44
+
+- name: Case 15, Merton's own list counts standard PIP daily living and omits AFIP in 2015.
+  # Merton's scheme rules for 2015-16, Sch 3 para 12(1)(b), (c), count the DLA
+  # care component at the highest rate and the PIP daily living component at
+  # either rate, and name no armed forces payment. 2015-16 rates: PIP daily
+  # living standard 55.10, personal allowance (25 or over) 73.10, severe
+  # disability premium 61.85, disability premium 32.25, enhanced disability
+  # premium 15.75. Each claimant receives PIP or AFIP, so the case sets
+  # is_disabled_for_benefits for the disability premium. A pension of 10,500,
+  # below the 10,600 personal allowance, keeps each reduction on the taper.
+  # The case pins the cost of living and energy payments at zero.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pip:
+        age: 30
+        pip_dl_category: STANDARD
+        is_disabled_for_benefits: true
+        private_pension_income: 10_500
+      afip:
+        age: 30
+        armed_forces_independence_payment: 2_000
+        is_disabled_for_benefits: true
+        private_pension_income: 10_500
+    benunits:
+      pip:
+        members: [pip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+      afip:
+        members: [afip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      pip:
+        members: [pip]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+      afip:
+        members: [afip]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+  output:
+    # The legacy premium counts AFIP (HB para 15(1)(d)) but not the standard
+    # PIP rate: 15.75 * 52 = 819.00.
+    enhanced_disability_premium: [0, 819]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false]
+    council_tax_reduction_enhanced_disability_premium: [819, 0]
+    # Severe disability premium 61.85 * 52 = 3,216.20 and disability premium
+    # 32.25 * 52 = 1,677.00: 4,893.20, plus 819.00 for PIP: 5,712.20.
+    council_tax_reduction_premiums: [5_712.20, 4_893.20]
+    # Personal allowance 73.10 * 52 = 3,801.20: 9,513.40 and 8,694.40.
+    council_tax_reduction_applicable_amount: [9_513.40, 8_694.40]
+    # 1,800 - 20% of (10,500 - 9,513.40) = 1,800 - 197.32 = 1,602.68;
+    # 1,800 - 20% of (10,500 - 8,694.40) = 1,800 - 361.12 = 1,438.88.
+    council_tax_reduction: [1_602.68, 1_438.88]
+    # Pension 10,500 + PIP 55.10 * 52 = 2,865.20 + 1,602.68 - 1,800 =
+    # 13,167.88. The model leaves AFIP out of household benefits
+    # (HOUSEHOLD_BENEFIT_VARIABLES), so 10,500 + 1,438.88 - 1,800 = 10,138.88.
+    household_net_income: [13_167.88, 10_138.88]
+
+- name: Case 16, Westminster's list counts standard PIP daily living and omits AFIP in 2015.
+  # The model applies the Default Scheme's list (S.I. 2012/2886 Sch 3 para
+  # 12(1)(b), (c)) in Westminster. 2015-16 rates as in Case 15; Westminster's
+  # maximum reduction (100%) and withdrawal rate (20%) match Merton's.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pip:
+        age: 30
+        pip_dl_category: STANDARD
+        is_disabled_for_benefits: true
+        private_pension_income: 10_500
+      afip:
+        age: 30
+        armed_forces_independence_payment: 2_000
+        is_disabled_for_benefits: true
+        private_pension_income: 10_500
+    benunits:
+      pip:
+        members: [pip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+      afip:
+        members: [afip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      pip:
+        members: [pip]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+      afip:
+        members: [afip]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+  output:
+    # 15.75 * 52 = 819.00.
+    enhanced_disability_premium: [0, 819]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false]
+    council_tax_reduction_enhanced_disability_premium: [819, 0]
+    # 3,216.20 + 1,677.00 = 4,893.20, plus 819.00 for PIP: 5,712.20.
+    council_tax_reduction_premiums: [5_712.20, 4_893.20]
+    # Plus the personal allowance 3,801.20: 9,513.40 and 8,694.40.
+    council_tax_reduction_applicable_amount: [9_513.40, 8_694.40]
+    # 1,800 - 20% of (10,500 - 9,513.40) = 1,602.68;
+    # 1,800 - 20% of (10,500 - 8,694.40) = 1,438.88.
+    council_tax_reduction: [1_602.68, 1_438.88]
+    # 10,500 + 2,865.20 + 1,602.68 - 1,800 = 13,167.88;
+    # 10,500 + 1,438.88 - 1,800 = 10,138.88, without AFIP as in Case 15.
+    household_net_income: [13_167.88, 10_138.88]
+
+- name: Case 17, Westminster's list counts standard PIP daily living and omits AFIP in 2026.
+  # 2026-27 rates: PIP daily living standard 76.70, personal allowance (under
+  # 25) 75.65, severe disability premium 86.05, disability premium 44.85,
+  # enhanced disability premium 22.00. Each claimant is aged 24, so the lower
+  # personal allowance keeps each applicable amount below a pension of 12,500,
+  # under the 12,570 personal allowance, and each reduction on the taper.
+  # The case pins the 2026-27 household energy payment and the earlier
+  # payments at zero.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pip:
+        age: 24
+        pip_dl_category: STANDARD
+        is_disabled_for_benefits: true
+        private_pension_income: 12_500
+      afip:
+        age: 24
+        armed_forces_independence_payment: 2_000
+        is_disabled_for_benefits: true
+        private_pension_income: 12_500
+    benunits:
+      pip:
+        members: [pip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+      afip:
+        members: [afip]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      pip:
+        members: [pip]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+        household_energy_payment: 0
+      afip:
+        members: [afip]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+        tv_licence: 0
+        energy_bills_rebate: 0
+        cost_of_living_support_payment: 0
+        household_energy_payment: 0
+  output:
+    # 22.00 * 52 = 1,144.00.
+    enhanced_disability_premium: [0, 1_144]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false]
+    council_tax_reduction_enhanced_disability_premium: [1_144, 0]
+    # Severe disability premium 86.05 * 52 = 4,474.60 and disability premium
+    # 44.85 * 52 = 2,332.20: 6,806.80, plus 1,144.00 for PIP: 7,950.80.
+    council_tax_reduction_premiums: [7_950.80, 6_806.80]
+    # Personal allowance 75.65 * 52 = 3,933.80: 11,884.60 and 10,740.60.
+    council_tax_reduction_applicable_amount: [11_884.60, 10_740.60]
+    # 1,800 - 20% of (12,500 - 11,884.60) = 1,800 - 123.08 = 1,676.92;
+    # 1,800 - 20% of (12,500 - 10,740.60) = 1,800 - 351.88 = 1,448.12.
+    council_tax_reduction: [1_676.92, 1_448.12]
+    # Pension 12,500 + PIP 76.70 * 52 = 3,988.40 + 1,676.92 - 1,800 =
+    # 16,365.32; pension 12,500 + 1,448.12 - 1,800 = 12,148.12, without AFIP
+    # as in Case 15.
+    household_net_income: [16_365.32, 12_148.12]

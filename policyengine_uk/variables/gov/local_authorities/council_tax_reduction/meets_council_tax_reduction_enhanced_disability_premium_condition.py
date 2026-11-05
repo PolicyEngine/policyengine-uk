@@ -4,6 +4,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_merton_area,
     is_newham_area,
     is_scotland_scheme,
+    is_westminster_area,
 )
 
 
@@ -20,36 +21,28 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "2022. Merton and Kingston upon Thames count the PIP daily living "
         "component at either rate and omit armed forces independence payment; "
         "Newham counts the PIP daily living component at either rate and "
-        "armed forces independence payment. Those three councils count an "
-        "award only for a person under the qualifying age for State Pension "
-        "Credit. The model applies each council's own list from the first "
-        "scheme year whose text supports it (qualifying_benefits_in_effect): "
-        "Merton's from 2023-24, and Kingston upon Thames's and Newham's in "
-        "every model year, since their texts support them from 2013-14. "
-        "Before Merton's first year, and in every other scheme, it applies "
-        "the Housing Benefit condition "
+        "armed forces independence payment. In Westminster the model applies "
+        "the Default Scheme's list (S.I. 2012/2886 Sch 3 para 12), which "
+        "counts the PIP daily living component at either rate and omits armed "
+        "forces independence payment: the council has approved the same "
+        "scheme, based on the Default Scheme Regulations, since 2013/14, and "
+        "its Cabinet says from December 2020 that its local scheme mirrors "
+        "those Regulations, though the model cites no full Westminster scheme "
+        "text. Those four councils count an award only for a person under the "
+        "qualifying age for State Pension Credit, and each list starts on or "
+        "before 1 April 2013, so the model applies it in every model year. In "
+        "every other scheme the model applies the Housing Benefit condition "
         "(receives_enhanced_disability_premium_qualifying_benefit, under the "
         "same age limit). Welsh councils apply that condition under W.S.I. "
-        "2013/3029 Sch 7 para 12. Westminster City Council publishes a "
-        "2026-27 summary of its working-age scheme without the premium's "
-        "qualifying awards. Its Council's annual resolutions describe the "
-        "scheme as based on the Default Scheme Regulations, with war pensions "
-        "and Armed Forces Compensation Scheme payments disregarded in full "
-        "and, from 2020, updated for the amendments to the Prescribed "
-        "Requirements Regulations, and its budget reports since 2022 say it "
-        "mirrors the original Default Scheme Regulations; the council has also "
-        "changed provisions those descriptions leave out. No scheme text "
-        "states the qualifying awards, so the model assumes the Housing "
-        "Benefit condition there. "
-        "Oxford City Council sets "
-        "its working-age award from income bands, so the premium does not "
-        "reach it."
+        "2013/3029 Sch 7 para 12. Oxford City Council sets its working-age "
+        "award from income bands, so the premium does not reach it."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/12/2021-04-01",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/12",
+        "https://web.archive.org/web/20150530202253id_/http://www.merton.gov.uk/council_tax_reduction_scheme_l_b_merton_april_2013_with_uprated_amounts_final_310113-2.pdf",
         "https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202023-24_0.pdf",
         "https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf",
         "https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744",
@@ -57,6 +50,7 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf",
         "https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf",
         "https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026",
+        "https://web.archive.org/web/20240621074656id_/https://committees.westminster.gov.uk/documents/s40219/Report%20of%20the%20Cabinet%2014%20December%202020%20-Council%20Tax%20Discounts.pdf",
         "https://committees.westminster.gov.uk/mgAi.aspx?ID=22982",
         "https://www.westminster.gov.uk/sites/default/files/media/documents/business-and-financial-planning-2026-27-to-2028-29.pdf",
         "https://committees.westminster.gov.uk/ieDecisionDetails.aspx?ID=1181",
@@ -79,10 +73,7 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
 
         def council_condition(council):
             p = council.council_tax_reduction.enhanced_disability_premium
-            own_list = receives(p.qualifying_benefits) & under_age
-            # Before the first scheme year whose text supports the council's
-            # own list, the model applies the Housing Benefit condition.
-            return where(p.qualifying_benefits_in_effect, own_list, housing_benefit)
+            return receives(p.qualifying_benefits) & under_age
 
         p = la.scotland.council_tax_reduction.working_age.enhanced_disability_premium
         scottish = receives(p.qualifying_benefits) & (
@@ -94,12 +85,14 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
                 is_merton_area(local_authority, country),
                 is_kingston_upon_thames_area(local_authority, country),
                 is_newham_area(local_authority, country),
+                is_westminster_area(local_authority, country),
             ],
             [
                 scottish,
                 council_condition(la.merton),
                 council_condition(la.kingston_upon_thames),
                 council_condition(la.newham),
+                council_condition(la.westminster),
             ],
             default=housing_benefit,
         )

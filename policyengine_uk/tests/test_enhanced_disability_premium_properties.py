@@ -19,10 +19,11 @@ Scottish councils count attendance allowance at either rate from 1 April 2023
 from 20 June 2022, which the model reads from 2023. Merton and Kingston upon
 Thames (Sch 3 para 12) count the PIP daily living component at either rate
 and omit AFIP; Newham counts the PIP daily living component at either rate
-and AFIP. Each council's list applies from the first scheme year whose text
-supports it (COUNCIL_LISTS). The model applies the Housing Benefit condition
-in each of those councils before that year, and in Wales, Westminster and
-every other scheme.
+and AFIP. In Westminster the model applies the Default Scheme's list (S.I.
+2012/2886 Sch 3 para 12), which counts the PIP daily living component at
+either rate and omits AFIP. Each council's list starts on or before 1 April
+2013 (COUNCIL_LISTS), so it applies in every model year. The model applies
+the Housing Benefit condition in Wales and every other scheme.
 
 The test generates single people, couples and lone parents in the places and
 age range below, with the listed awards, and adds a family in each council
@@ -42,19 +43,17 @@ It checks these invariants in every year from 2015 to 2030:
    exceeds two single rates; the couple rate never exceeds two single rates
    in any year.
 5. The Council Tax Reduction premium equals the legacy premium in Wales,
-   Northern Ireland and English councils without their own list, and in
-   Scotland before 2023. It never falls below the legacy premium in Scotland
-   from 2023, or in a council whose own list counts AFIP (Newham's). Where a
-   council's own list omits AFIP (Merton's and Kingston upon Thames's), it
-   never falls below the legacy premium unless that premium rests on AFIP
-   alone, and then the model pays none unless an under-age member has a PIP
-   daily living award.
+   Northern Ireland, Oxford and the default English council, and in Scotland
+   before 2023. It never falls below the legacy premium in Scotland from
+   2023, or where a council's own list counts AFIP (Newham's). Where a
+   council's own list omits AFIP (Merton's, Kingston upon Thames's and
+   Westminster's), it never falls below the legacy premium unless that
+   premium rests on AFIP alone, and then the model pays none unless an
+   under-age claimant or partner has a PIP daily living award.
 6. For a child or young person in Great Britain, the qualifying flag matches
    the test's own calculation. The model pays the child's enhanced rate in the
    Housing Benefit child premiums (housing_benefit_child_disability_premiums)
    when the flag holds and pays none when it does not.
-7. In each year before a council's own list starts, its Council Tax
-   Reduction premium equals the legacy premium.
 """
 
 import numpy as np
@@ -76,9 +75,9 @@ WEEKS_IN_YEAR = 52
 TOLERANCE = 1
 # Each example builds one simulation with inputs for every year from 2015 to
 # 2030, so every example tests both sides of the Northern Ireland PIP date
-# (2017), the Scottish changes (2023) and Merton's first year (2023).
-# Kingston upon Thames's and Newham's lists start in 2013-14, before the
-# model's first year, so the test checks them in every year.
+# (2017) and the Scottish changes (2023). Every council's own list starts in
+# 2013-14, before the model's first year, so the test checks each list in
+# every year.
 YEARS = list(range(2015, 2031))
 # (country, local authority): None keeps the default local authority.
 PLACES = [
@@ -118,14 +117,13 @@ AWARDS = {
 }
 QUALIFYING_AWARDS = ["dla_care_highest", "pip_daily_living_enhanced", "afip"]
 ADULT_AGES = [20, 30, 45, 60, 64, 66, 67, 70, 85]
-# Each council's own list (Sch 3 para 12 of its scheme), by the first scheme
-# year whose text supports it: "dla_highest" is the DLA care component at the
-# highest rate, "any_pip" the PIP daily living component at either rate and
-# "afip" armed forces independence payment. Before a council's first year the
-# model applies the Housing Benefit condition there.
+# Each council's own list (Sch 3 para 12 of its scheme), by the scheme year
+# it starts: "dla_highest" is the DLA care component at the highest rate,
+# "any_pip" the PIP daily living component at either rate and "afip" armed
+# forces independence payment.
 COUNCIL_LISTS = {
-    # The 2023 rules.
-    "MERTON": {2023: ("dla_highest", "any_pip")},
+    # The 2013 rules.
+    "MERTON": {2013: ("dla_highest", "any_pip")},
     # The Default Scheme, adopted for 2013-14.
     "KINGSTON_UPON_THAMES": {2013: ("dla_highest", "any_pip")},
     # The 2013 scheme, and the 2014 scheme with AFIP.
@@ -133,6 +131,9 @@ COUNCIL_LISTS = {
         2013: ("dla_highest", "any_pip"),
         2014: ("dla_highest", "any_pip", "afip"),
     },
+    # The Default Scheme: the council has approved the same scheme since
+    # 2013-14, and its Cabinet says the council's scheme mirrors it.
+    "WESTMINSTER": {2013: ("dla_highest", "any_pip")},
 }
 
 system = CountryTaxBenefitSystem()
@@ -191,8 +192,8 @@ def qualifies(inputs, country, year):
 
 
 def council_list(council, year):
-    """Return the awards on a council's own list in a year, or None before
-    the first scheme year whose text supports the list."""
+    """Return the awards on a council's own list in a year, or None for a
+    council without one."""
     starts = [start for start in COUNCIL_LISTS.get(council, {}) if start <= year]
     return COUNCIL_LISTS[council][max(starts)] if starts else None
 
@@ -351,9 +352,6 @@ def check_scheme_against_legacy(f, year, attained, edp, ctr):
             assert np.isclose(ctr, edp, atol=0.01)
         else:
             assert ctr >= edp - 0.01
-    elif council in COUNCIL_LISTS and listed is None:
-        # Invariant 7 covers a council before its own list starts.
-        return
     elif listed is None:
         assert np.isclose(ctr, edp, atol=0.01)
     elif "afip" in listed:
@@ -373,14 +371,6 @@ def check_scheme_against_legacy(f, year, attained, edp, ctr):
         elif not any(amount(x, "pip_dl", year) > 0 for x in under_age):
             # The list omits AFIP.
             assert ctr == 0
-
-
-def check_before_list_starts(f, year, edp, ctr):
-    """Check invariant 7: before a council's own list starts, its premium
-    equals the legacy premium."""
-    council = f["place"][1]
-    if council in COUNCIL_LISTS and council_list(council, year) is None:
-        assert np.isclose(ctr, edp, atol=0.01), (f, year, ctr, edp)
 
 
 def check_families(sim, person, benunit, families, year):
@@ -419,7 +409,6 @@ def check_families(sim, person, benunit, families, year):
             )
             assert annual <= 2 * single_annual + 0.01
         check_scheme_against_legacy(f, year, member_attained, edp[b], ctr[b])
-        check_before_list_starts(f, year, edp[b], ctr[b])
     # 3. Monotone: the test pairs each family in the first half with its twin
     # in the second half, which has a qualifying benefit added.
     assert all(t >= s - 0.01 for s, t in zip(family_edp[:n], family_edp[n:]))
