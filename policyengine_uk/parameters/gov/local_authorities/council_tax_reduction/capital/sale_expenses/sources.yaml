@@ -2,11 +2,18 @@ description: >
   Council tax reduction capital sources whose sale would incur expenses, so
   that they are valued at 90% of market value. Real property always has costs
   of sale (R(IS) 21/93, as DMG 29622 applies it to the identically worded
-  Income Support rule), so `owned_land`, `other_residential_property_value`
-  and `non_residential_property_value` are listed. `savings` is not: a bank or
+  Income Support rule), so `owned_land`, `other_residential_property_value`,
+  `non_residential_property_value`, `overseas_property_value` and
+  `other_property_value` are listed. `savings` is not: a bank or
   building society account is valued at its balance, and the costs of
   withdrawing money, such as travel to a building society, are not costs of
-  sale (DMG 29623, on the identically worded Income Support rule).
+  sale (DMG 29623, on the identically worded Income Support rule). Under each
+  scheme's rule for capital outside the United Kingdom, councils take the same
+  10%, where there would be expenses attributable to sale, and any encumbrance
+  secured on the capital off its value under either limb: each rule puts both
+  deductions after its two limbs, and SSI 2021/249 applies regulation 70(1) to
+  the value regulation 70(2) gives. The data hold no secured debt for overseas
+  or other property, so the formula takes only the 10% off them.
 metadata:
   label: Council tax reduction capital sources with sale expenses
   period: year
@@ -14,9 +21,23 @@ metadata:
   reference:
     - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 32(a)
       href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/32
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 33 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/33
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule para. 66 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/66
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 27 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/27
     - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 28(a)
       href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/28
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 29 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/29
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 43 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/43
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 47 (capital outside the United Kingdom; persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/47/2022-03-31
     - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70(1)(a)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70(2) (capital outside the United Kingdom, valued under reg. 70(1))
       href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70
     - title: Decision Makers' Guide chapter 29, para. 29622 (real property, R(IS) 21/93)
       href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=124
@@ -27,3 +48,5 @@ values:
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
+    - overseas_property_value
+    - other_property_value
