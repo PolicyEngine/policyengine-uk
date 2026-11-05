@@ -27,6 +27,8 @@ Invariants, for any generated population of households:
    boarder's or lodger's family has no Universal Credit or Housing Benefit
    deductions; no sharer, boarder or lodger is a Council Tax Reduction
    non-dependant.
+   (The generated families have no non-dependants within their own
+   benefit unit, which test_benefit_unit_non_dependant_properties covers.)
 5. Category: the Universal Credit LHA category does not depend on the
    household input is_shared_accommodation; the Housing Benefit category is
    the shared rate for any family entitled to one bedroom that lacks
