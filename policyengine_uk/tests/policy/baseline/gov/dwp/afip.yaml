@@ -271,3 +271,58 @@
     hbai_household_net_income: 2_400
     gov_spending: 2_400
     gov_balance: -2_400
+
+# DWP 2024/25 single claimant aged 25 or over: 393.45 monthly * 12 = 4,721.40.
+# AFIP is not taken into account as UC income (DWP Other benefits, page 5).
+# https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+# https://data.parliament.uk/DepositedPapers/Files/DEP2024-0442/123._Other_benefits_V26.0.pdf#page=5
+- name: Case 8, AFIP increases cash income without reducing a computed Universal Credit award.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 0
+      person2:
+        age: 40
+        armed_forces_independence_payment: 2_400
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: true
+        uc_deduction_rate: 0
+      benunit2:
+        members: [person2]
+        would_claim_uc: true
+        uc_deduction_rate: 0
+    households:
+      household1:
+        members: [person1]
+        region: NORTH_EAST
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+      household2:
+        members: [person2]
+        region: NORTH_EAST
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: [0, 2_400]
+    uc_standard_allowance: [4_721.4, 4_721.4]
+    uc_unearned_income: [0, 0]
+    uc_income_reduction: [0, 0]
+    universal_credit: [4_721.4, 4_721.4]
+    # The second household receives the same UC plus 2,400 of AFIP cash.
+    household_benefits: [4_721.4, 7_121.4]
+    hbai_benefits: [4_721.4, 7_121.4]
+    household_net_income: [4_721.4, 7_121.4]
+    hbai_household_net_income: [4_721.4, 7_121.4]
