@@ -50,6 +50,7 @@ DATA_BUILD_SURFACE = (
     "simulation.py",
     "system.py",
     "tax_benefit_system.py",
+    "programs.py",
     "programs.yaml",
 )
 

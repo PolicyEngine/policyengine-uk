@@ -59,8 +59,11 @@ def hb_income_before_deductions(benunit, period, parameters):
     INCOME_COMPONENTS = [
         "employment_income",
         "self_employment_income",
-        "property_income_after_finance_costs",
         "private_pension_income",
+        # Rent for letting part of the home, less the sub-tenant disregard.
+        # Other income derived from capital is capital (HB Regs 2006 reg
+        # 46(4), Sch 5 para 17; HB (SPC) Regs 2006 Sch 5 para 22).
+        "legacy_benefits_home_letting_income",
     ]
     bi = parameters(period).gov.contrib.ubi_center.basic_income
     # Add personal benefits, credits and total benefits to income
@@ -101,11 +104,18 @@ def hb_income_before_deductions(benunit, period, parameters):
         add_for_members(benunit, period, ["pension_contributions"], members)
         * p.pension_contribution_deduction_rate
     )
-    TAX_COMPONENTS = [
-        "income_tax_before_winter_fuel_payment_charge",
-        "national_insurance",
-    ]
-    tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
+    # Tax only on the income taken into account (HB Regs 2006 Sch 5 para 1;
+    # HB (SPC) Regs 2006 reg 33(12)), before the winter fuel payment charge,
+    # with earnings carrying the extra tax they cause.
+    # The deduction can be negative for one person, where another
+    # member's earnings move a Step 7 charge off them; the test deducts the
+    # counted members' sum, floored at nil, so it never adds tax to income.
+    tax = max_(
+        0,
+        add_for_members(
+            benunit, period, ["legacy_means_test_deducted_income_tax"], members
+        ),
+    ) + add_for_members(benunit, period, ["national_insurance"], members)
     increased_income_reduced_by_tax_and_pensions = (
         increased_income - tax - pension_contributions
     )
@@ -128,7 +138,17 @@ class housing_benefit_applicable_income(Variable):
         "assessment of income plus the savings credit payable, less childcare "
         "charges and the earnings disregards. Otherwise it is the family's "
         "income under the Housing Benefit rules, including the separate "
-        "Working Tax Credit disregard before childcare."
+        "Working Tax Credit disregard before childcare. Income derived from "
+        "capital, such as rent from property, interest and dividends, is not "
+        "income: for working-age claimants regulation 46(4) treats it as "
+        "capital and Schedule 5 paragraph 17 disregards it, and for claimants "
+        "over the qualifying age for State Pension Credit Schedule 5 paragraph "
+        "22 of the pension-age regulations disregards any actual income from "
+        "capital. The capital counts through the capital limit and tariff "
+        "income. Tax on that income is not deducted. Rent for letting part of "
+        "the home stays income, less the sub-tenant disregard. Rent from other "
+        "premises whose value is disregarded also stays income, but the model "
+        "cannot identify those premises."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
@@ -153,6 +173,9 @@ class housing_benefit_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/24",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/25",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/46",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/5",
     )
     definition_period = YEAR
     unit = GBP

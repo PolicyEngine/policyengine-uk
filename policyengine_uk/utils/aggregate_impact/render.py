@@ -6,6 +6,7 @@ import math
 from typing import Mapping, Optional
 
 from . import COMMENT_MARKER
+from .guard import not_held_note, problem_text
 from .privacy import withheld_text
 from .spec import Spec, fiscal_year_label
 
@@ -312,15 +313,22 @@ def _guard(summary) -> str:
     failed = [c for c in tested if c["status"] == "fail"]
     skipped = [c for c in components if c["status"] == "skipped"]
     lines = [
-        f"Each of {len(tested)} components was raised by £1 per unit in "
-        f"{fiscal_year_label(guard['year'])}, and every head of its totals was "
-        "read household by household: its own head must rise by exactly £1, no "
-        "other tax head may move, no other benefit may rise, and the model's own "
-        "total must move by what its heads moved. A head that breaks a rule is "
-        "measured again twice: with every other head held at its baseline value, "
-        "and with every other head held at its value after the first £1 while the "
-        "component rises again. It fails where either still shows the response. "
-        f"{len(failed)} failed; {len(skipped)} were skipped."
+        f"The check raised each of {len(tested)} components by £1 per unit in "
+        f"{fiscal_year_label(guard['year'])} and read every head of its totals "
+        "household by household: its own head must rise by exactly £1, no other "
+        "tax head may move, no other benefit may rise, and the model's own total "
+        "must move by what its heads moved. A response that is not finite breaks "
+        "every rule. The check measures a head that breaks a rule twice more: "
+        "once holding every other head at its baseline value, and once holding "
+        "every other head at its value after the first £1 while the component "
+        "rises again. The head fails where either measurement still shows the "
+        "response. The check cannot hold a head at a value that is not finite. "
+        "In each unit where another head is not finite after the first £1, it "
+        "holds that head at its baseline value, and the second measurement "
+        "judges no household the unit belongs to. There a head fails wherever it "
+        "first broke a rule, or wherever the check could not confirm whether its "
+        f"response contains the component. {len(failed)} failed and the check "
+        f"skipped {len(skipped)}."
     ]
     for c in failed:
         problems = c.get("problems") or [{"message": c.get("detail", "")}]
@@ -329,20 +337,38 @@ def _guard(summary) -> str:
         )
     for c in skipped:
         lines.append(f"- `{c['variable']}` skipped: {c.get('detail', '')}")
+    code = "`{}`".format
+    for c in tested:
+        counts = c.get("households_not_held") or {}
+        for head, heads in (c.get("heads_not_held") or {}).items():
+            note = not_held_note(c["variable"], head, heads, counts.get(head), code)
+            lines.append(f"- `{c['variable']}`: {note}")
     for c in tested:
         for m in c.get("mediated") or []:
-            moved = ", ".join(f"`{v}`" for v in m["via"]) or "none"
-            where = (
-                f"{m['households']:,} households"
-                if m.get("households") is not None
-                else "fewer than 10 households"
+            moved = ", ".join(code(v) for v in m["via"]) or "none"
+            # The guard's own wording, so a first reading that is not finite
+            # reads as it does in a problem.
+            text = problem_text(
+                "mediated",
+                code(m["head"]),
+                code(c["variable"]),
+                m.get("households"),
+                m.get("not_finite", False),
+                m.get("not_finite_weighted", True),
             )
             lines.append(
-                f"- `{c['variable']}`: `{m['head']}` responds only through other "
-                f"heads in {where} (other heads that moved there: {moved}; "
-                f"{m['total']}; not a failure)"
+                f"- `{c['variable']}`: {text} (other heads that moved there: "
+                f"{moved}; {m['total']}; not a failure)"
             )
     for dc in guard.get("double_counts", []):
+        if dc.get("not_finite"):
+            lines.append(
+                f"- declared double count `{dc['variable']}`: `{dc['contained_in']}` "
+                f"is NOT FINITE when `{dc['variable']}` rises, so the check cannot "
+                f"show that `{dc['contained_in']}` still contains `{dc['variable']}` "
+                f"({dc['issue']})"
+            )
+            continue
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"
         # The published guard drops the coefficient of a double count from
         # fewer than 10 units (measure.publishable_guard).
@@ -418,6 +444,7 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         return f"{COMMENT_MARKER}\n## Aggregate impact on certified data: skipped\n\n{notes}\n"
     years = summary.get("years") or spec.years
     regressions = [c for c in summary["checks"] if c["classification"] == "regression"]
+    unconfirmed = [c for c in regressions if c.get("base_unconfirmed")]
     pre_existing = [
         c for c in summary["checks"] if c["classification"] == "pre_existing"
     ]
@@ -491,7 +518,13 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         intro,
         "",
         (
-            f"**Checks:** {len(regressions)} broken by this change, {len(pre_existing)} failing on "
+            f"**Checks:** {len(regressions) - len(unconfirmed)} broken by this change, "
+            + (
+                f"{len(unconfirmed)} failing that the base could not confirm, "
+                if unconfirmed
+                else ""
+            )
+            + f"{len(pre_existing)} failing on "
             f"both sides, {len(fixed)} fixed. **Moves flagged for review:** {flag_count} "
             "(thresholds in `report_spec.yaml`; a flag does not fail the job)."
         ),
