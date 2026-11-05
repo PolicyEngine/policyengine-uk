@@ -8,7 +8,8 @@ class council_tax_reduction_working_age_passported(Variable):
     documentation = (
         "Whether the applicant or partner is on Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
-        "Allowance and not on Universal Credit. In Scotland such an applicant "
+        "Allowance and has no award of Universal Credit "
+        "(council_tax_reduction_universal_credit_award). In Scotland such an applicant "
         "gets the maximum reduction (SSI 2021/249 reg 13(11)); in Wales the "
         "whole of their income and capital is disregarded (WSI 2013/3029 "
         "Sch 9 para 8, Sch 10 para 8)."
@@ -24,7 +25,7 @@ class council_tax_reduction_working_age_passported(Variable):
         income_related_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit", period
         )
-        has_universal_credit = benunit(
-            "council_tax_reduction_working_age_has_universal_credit", period
+        universal_credit_award = benunit(
+            "council_tax_reduction_universal_credit_award", period
         )
-        return income_related_benefit & ~has_universal_credit
+        return income_related_benefit & ~universal_credit_award

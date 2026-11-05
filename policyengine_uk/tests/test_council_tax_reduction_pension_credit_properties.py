@@ -63,7 +63,7 @@ working-age route instead, where these hold:
 10. No Pension Credit route: a working-age claim is never in receipt of a
     guarantee credit or of savings credit only.
 11. Taper on the route's own measures: CTR is max(0, L - 0.2 x max(0, I_wa -
-    A_wa) - ND) when the working-age capital is within 16,000, and nothing
+    A_wa) - ND) when the assessable capital is within 16,000, and nothing
     otherwise, where I_wa and A_wa are the working-age income and applicable
     amount.
 12. Passport: a claimant on Income Support, income-based JSA or
@@ -300,7 +300,7 @@ BENUNIT_VARIABLES = [
     "council_tax_reduction_devolved_working_age",
     "council_tax_reduction_working_age_applicable_amount",
     "council_tax_reduction_working_age_applicable_income",
-    "council_tax_reduction_working_age_capital",
+    "council_tax_reduction_assessable_capital",
     "council_tax_reduction_working_age_passported",
     "council_tax_reduction_working_age_has_universal_credit",
     "council_tax_reduction_working_age_earned_income",
@@ -569,7 +569,7 @@ def check_devolved_route(unit, values, i):
         ), unit
         assert abs(amount - values["uc_maximum_amount"][i]) < 0.01, unit
     expected_ctr = tapered(liability, income, amount, non_dep) * (
-        values["council_tax_reduction_working_age_capital"][i] <= CAPITAL_LIMIT
+        values["council_tax_reduction_assessable_capital"][i] <= CAPITAL_LIMIT
     )
     assert abs(ctr - expected_ctr) < 0.01, (unit, ctr, expected_ctr)
 

@@ -238,7 +238,7 @@
   output:
     council_tax_reduction_working_age_passported: true
     council_tax_reduction_working_age_applicable_income: 0
-    council_tax_reduction_working_age_capital: 0
+    council_tax_reduction_assessable_capital: 0
     simulated_council_tax_reduction_benunit: 1_800
 
 - name: Scotland, income-related ESA passports to the maximum reduction
@@ -314,7 +314,7 @@
         council_tax: 1_800
         savings: 10_100
   output:
-    council_tax_reduction_working_age_tariff_income: 884
+    council_tax_reduction_tariff_income: 884
 
 - name: Wales, a mixed-age couple on Universal Credit claims under the working-age rules
   # WSI 2013/3029 reg 3(1)(b)(ii): a person over the qualifying age whose
@@ -1508,3 +1508,59 @@
     council_tax_reduction_working_age_applicable_income: 9_700
     council_tax_reduction: 1_800
     household_net_income: 19_780.27
+
+- name: Wales, rent from a sub-tenant counts less £20 a week on the working-age route
+  # WSI 2013/3029 Sch 9 para 26 disregards £20 a week of the rent a
+  # sub-tenant pays (council_tax_reduction_home_letting_income): (200 - 20) x
+  # 52 = 9,360. No earnings. Applicable amount 101.85 x 52 = 5,296.20; award
+  # 1,800 - 0.2 x (9,360 - 5,296.20) = 987.24.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        sublet_income: 10_400
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_home_letting_income: 9_360
+    council_tax_reduction_working_age_applicable_amount: 5_296.20
+    council_tax_reduction_working_age_applicable_income: 9_360
+    council_tax_reduction: 987.24
+
+- name: Scotland, rent from a sub-tenant does not count on the working-age route from April 2022
+  # SSI 2021/249 reg 57(1) has no head for it. Applicable amount 95.55 x 52 =
+  # 4,968.60 exceeds the nil income, so the award is the full 1,800.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        sublet_income: 10_400
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction: 1_800

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_scotland_scheme,
     is_wales_scheme,
 )
 
@@ -18,8 +19,11 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         "income figure (earnings before the work allowance, plus Universal "
         "Credit unearned income) plus the Universal Credit award. Everyone "
         "else counts net earnings less disregards, unearned income (in "
-        "Wales, less tax on it), tariff income from capital and, in Scotland, "
-        "the relevant Universal Credit payments, less relevant childcare "
+        "Wales, less tax on it), tariff income from capital "
+        "(council_tax_reduction_tariff_income), rent for letting part of the "
+        "home (council_tax_reduction_home_letting_income) where the scheme "
+        "counts it and, in Scotland, the relevant Universal Credit payments, "
+        "less relevant childcare "
         "charges. Wales deducts the charges from earnings, so they never take "
         "earnings below zero or reduce other income (WSI 2013/3029 Sch 6 para "
         "20(1)(c)). Scotland deducts them from the total of earned and "
@@ -37,7 +41,9 @@ class council_tax_reduction_working_age_applicable_income(Variable):
     )
 
     def formula(benunit, period, parameters):
-        wales = is_wales_scheme(benunit.household("country", period))
+        country = benunit.household("country", period)
+        wales = is_wales_scheme(country)
+        scotland = is_scotland_scheme(country)
         has_universal_credit = benunit(
             "council_tax_reduction_working_age_has_universal_credit", period
         )
@@ -77,15 +83,31 @@ class council_tax_reduction_working_age_applicable_income(Variable):
             ),
             0,
         )
+        # Rent for letting part of the home counts without Universal Credit,
+        # in Wales and in Scotland before SSI 2021/249 (whose reg 57(1) list
+        # has no head for it); the Universal Credit routes take income from
+        # the Secretary of State's assessment, which does not count it.
+        p_scotland = parameters(
+            period
+        ).gov.local_authorities.scotland.council_tax_reduction.means_test
+        counts_home_letting = ~has_universal_credit & (
+            wales | (scotland & p_scotland.working_age_counts_home_letting_income)
+        )
+        home_letting = where(
+            counts_home_letting,
+            benunit("council_tax_reduction_home_letting_income", period),
+            0,
+        )
         own_rules_income = (
             earnings_after_deductions
             + unearned
             - unearned_tax
+            + home_letting
             + add(
                 benunit,
                 period,
                 [
-                    "council_tax_reduction_working_age_tariff_income",
+                    "council_tax_reduction_tariff_income",
                     "council_tax_reduction_relevant_universal_credit_payments",
                 ],
             )
