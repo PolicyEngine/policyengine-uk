@@ -185,8 +185,8 @@ def couple_on_pension_credit(couple):
     """Para 6(1)(c) and (d), for a couple with no Pension Credit or Housing
     Benefit reports in 2025 or 2026: a couple every member of which has
     reached the qualifying age, each of whom has also reached pensionable
-    age and so has no claim under s.1(3)(c), whether or not Pension Credit
-    pays."""
+    age and so has no claim under s.1(3)(c), whether or not DWP pays the
+    couple Pension Credit."""
     assert not any(
         adult.get("pension_credit_reported", 0)
         or adult.get("housing_benefit_reported", 0)

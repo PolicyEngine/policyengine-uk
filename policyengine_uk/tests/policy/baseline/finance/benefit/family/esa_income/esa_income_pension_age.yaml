@@ -709,11 +709,12 @@
     # working tax credit in the savings credit's qualifying income (SPC Regs
     # 2002 reg 9(a); savings_credit_income): 10_000 - 1_040 = 8_960, 172.31 a
     # week, under the £212.97 couple threshold: nil.
-    # B(0): Pension Credit on 3_970 would be nil too, so it gives no
-    # passport. The income test applies: 41% of income over £6,420 comes off,
-    # 3_970 - 0.41 x (10_000 - 6_420) = 2_502.20. Then 10_000 + 2_502.20 -
-    # 520 = 11_982.20, so 12_352.60 - 11_982.20 = 370.40. B(0) exceeds nil, so
-    # the younger member fails para 6(1)(d), and the couple gets B(0).
+    # B(0): the couple would get no Pension Credit on 3_970 either, so it has
+    # no passport, and HMRC applies the income test: 41% of income over £6,420
+    # comes off, 3_970 - 0.41 x (10_000 - 6_420) = 2_502.20. Then 10_000 +
+    # 2_502.20 - 520 = 11_982.20, so 12_352.60 - 11_982.20 = 370.40. B(0)
+    # exceeds nil, so the younger member fails para 6(1)(d), and the couple
+    # gets B(0).
     esa_income_eligible: false
     esa_income: 0
     claimant_or_partner_esa_income: 0
@@ -848,8 +849,8 @@
         members: [person1]
   output:
     meets_pension_credit_age_conditions: false
-    # Without the award his income is nil, so the guarantee credit pays the
-    # minimum guarantee, 52 x 155.60 = 8_091.20 (SPC Regs 2002 reg
+    # Without the award his income is nil, so his guarantee credit comes to
+    # the minimum guarantee, 52 x 155.60 = 8_091.20 (SPC Regs 2002 reg
     # 6(1)(b)). Under 65 he gets no savings credit.
     guarantee_credit: 8_091.20
     pension_credit: 8_091.20

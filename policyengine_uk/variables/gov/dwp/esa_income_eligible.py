@@ -104,8 +104,10 @@ def pension_credit_without_income_related_esa(benunit, period):
     those, the model's result agrees with the reading of para 4(2)(a) under
     which "£20 was disregarded" means the £20 disregard of Sch 7 paras 6 and
     7(1): the family would lose its Pension Credit and get the award back.
-    On the reading under which any disregard of at least £20 meets para
-    4(2)(a), DWP could keep that family on Pension Credit with no award.
+    On the reading under which para 4(2)(a) holds wherever DWP disregarded
+    at least £20 of earnings in the award, DWP could keep such a family on
+    Pension Credit with no award where it disregarded at least £20 of those
+    earnings and the earner stays in employment (para 4(2)(b)).
     pension_credit_earnings_disregard does not apply para 4(2), and the
     model holds no record of how an award started, so the model also pays
     the award and no Pension Credit to a couple in whose award DWP
