@@ -19,16 +19,21 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 # Benefit as nil (UC Regs 2013 reg. 80(2A)): uc_benefit_cap_reduction takes it
 # out. Universal Credit before the cap is in the total too; a family receiving
 # it is outside the Housing Benefit cap (HB Regs 2006 reg. 75F(1)(g)). With
-# those two adjustments one total serves both schemes. Reg. 75C(2)(a) counts
-# Housing Benefit for specified accommodation as nil; the model's input
-# in_specified_or_temporary_accommodation does not separate specified from
-# temporary accommodation, so that Housing Benefit is counted at its amount
-# before the cap.
+# those two adjustments one total serves both schemes. A family in specified
+# or temporary accommodation can receive both awards (housing_benefit_eligible),
+# and DWP then counts its Housing Benefit as nil in the Universal Credit cap.
+# Where the Housing Benefit cap applies, to a family without Universal Credit,
+# the council counts Housing Benefit for specified accommodation as nil (reg.
+# 75C(2)(a)); the model's input in_specified_or_temporary_accommodation does not separate
+# specified from temporary accommodation, so the formula counts that Housing
+# Benefit at its amount before the cap.
 CLAIMANT_OR_PARTNER_BENEFITS = [
     "jsa_contrib",
     "esa_contrib",
     "incapacity_benefit",
     "sda",
+    # s. 96(10)(i).
+    "maternity_allowance",
     # s. 96(10)(n).
     "widowed_parents_allowance",
 ]
@@ -60,9 +65,11 @@ class benefit_cap_welfare_benefits(Variable):
         "housing_benefit_pre_benefit_cap). Universal Credit counts Housing "
         "Benefit as nil (UC Regs 2013 reg. 80(2A)), so "
         "uc_benefit_cap_reduction subtracts it; an entered total should "
-        "include it. Widowed parent's allowance counts; maternity allowance "
-        "and the other bereavement benefits, also welfare benefits, are not "
-        "modelled here."
+        "include it. The total includes Maternity Allowance and widowed "
+        "parent's allowance. The model has no variable for three other "
+        "welfare benefits Parliament lists in Welfare Reform Act 2012 s. "
+        "96(10): bereavement allowance, widow's pension and widowed mother's "
+        "allowance."
     )
     definition_period = YEAR
     unit = GBP

@@ -7,7 +7,8 @@
         "claimant": {
           "age": 30,
           "is_claimant_or_partner": true,
-          "esa_income_reported": 5000
+          "esa_income_reported": 5000,
+          "esa_income_appointee_saving": true
         },
         "partner": {
           "age": 30,
