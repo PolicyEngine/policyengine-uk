@@ -17,18 +17,25 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "State lists the existing benefits in reg. 2(1): income-based "
         "Jobseeker's Allowance, income-related Employment and Support "
         "Allowance, Income Support, Housing Benefit, Child Tax Credit and "
-        "Working Tax Credit. It applies reg. 28 as "
-        "is_qualifying_young_person_for_universal_credit does, except for a "
-        "claimant or partner whose own income-related ESA, Housing Benefit or "
-        "Child Tax Credit award the family's Universal Credit claim ends. "
-        "The Secretary of State excludes a claimant while they hold an "
-        "existing award (reg. 28), and one who receives Universal Credit "
-        "(Universal Credit Regulations 2013 reg. 5(5)), which the model's "
-        "reg. 5 test reads only from reported Universal Credit. So for such a "
-        "claimant the formula reads reg. 28 against the awards they held when "
-        "they claimed, and leaves out the claim limbs that "
-        "is_qualifying_young_person_for_universal_credit follows. A person "
-        "outside the definition under reg. 28 takes the ordinary "
+        "Working Tax Credit. It reads "
+        "is_qualifying_young_person_for_universal_credit, which applies reg. "
+        "28, but for a claimant or partner it reads the status on the first "
+        "day of their Universal Credit award. A claim ends a tax credit award "
+        "the day before the award starts (reg. 8(2)(a)), but a Housing "
+        "Benefit award only two weeks after (reg. 8(2A)), and the model's "
+        "esa_income_report_closed describes the same run-on for "
+        "income-related ESA. So the Secretary of State still excludes a "
+        "claimant on such an award that day (reg. 28), and once they receive "
+        "Universal Credit, as a person receiving it (Universal Credit "
+        "Regulations 2013 reg. 5(5)), which the model's reg. 5 test reads "
+        "only from reported Universal Credit. The formula therefore leaves "
+        "out the Housing Benefit and income-related ESA claim limbs that "
+        "is_qualifying_young_person_for_universal_credit follows, and keeps "
+        "the Child Tax Credit one, the year gates and the legacy closures. A "
+        "claimant whose Universal Credit comes to nil receives none, so after "
+        "the run-on the law counts them as a qualifying young person again; "
+        "the annual model keeps them outside the definition all year. A "
+        "person outside the definition under reg. 28 takes the ordinary "
         "route under the Universal Credit Regulations 2013 reg. 12(2). For "
         "the reg. 60(1) protection the model reads the status on the "
         "migration day instead (is_qualifying_young_person_on_uc_migration_day). "
@@ -50,7 +57,15 @@ class is_qualifying_young_person_for_uc_education(Variable):
     )
 
     def formula(person, period, parameters):
-        # The Secretary of State keeps such a claimant outside the
-        # definition: through reg. 28 while the award their claim ends
-        # runs, and through reg. 5(5) once they receive Universal Credit.
-        return qualifying_young_person(person, period, parameters, claim_limbs=False)
+        # Those whom the Housing Benefit and income-related ESA claim limbs
+        # readmit: on the first day of their award the Secretary of State
+        # still excludes them through reg. 28, and once they receive
+        # Universal Credit through reg. 5(5). Removing only them keeps any
+        # input or reform that sets the predicate.
+        readmitted = qualifying_young_person(
+            person, period, parameters
+        ) & ~qualifying_young_person(person, period, parameters, at_claim_start=True)
+        return (
+            person("is_qualifying_young_person_for_universal_credit", period)
+            & ~readmitted
+        )

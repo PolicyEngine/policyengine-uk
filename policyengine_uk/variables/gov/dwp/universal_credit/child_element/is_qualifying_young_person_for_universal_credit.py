@@ -83,13 +83,17 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         return qualifying_young_person(person, period, parameters)
 
 
-def qualifying_young_person(person, period, parameters, claim_limbs=True):
+def qualifying_young_person(person, period, parameters, at_claim_start=False):
     """The UC qualifying young person test with SI 2014/1230 reg. 28
     applied, as is_qualifying_young_person_for_universal_credit documents
-    it. With claim_limbs false it leaves out the limbs that end a
-    claimant's or partner's own award on the family's Universal Credit
-    claim, so it reads reg. 28 against the awards they held when they
-    claimed (is_qualifying_young_person_for_uc_education reads that)."""
+    it. With at_claim_start it gives a claimant's or partner's status on the
+    first day of their Universal Credit award
+    (is_qualifying_young_person_for_uc_education reads it). A Housing
+    Benefit or income-related ESA award the claim ends still runs that day
+    (reg. 8(2A); esa_income_report_closed's run-on), so the formula leaves
+    out those two claim limbs. The claim has already ended a tax credit
+    award (reg. 8(2)(a)), so the formula keeps the Child Tax Credit limb.
+    The year gates and the legacy closures apply either way."""
     # The Secretary of State excludes a person entitled to an existing
     # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
     # reports, the model's legacy closure proxy and the family's Universal
@@ -135,13 +139,16 @@ def qualifying_young_person(person, period, parameters, claim_limbs=True):
     # closure alone.
     claimant_or_partner = person("is_claimant_or_partner", period)
     esa_income_open = ~person("esa_income_report_closed", period) | (
-        own_award_open & (paid_as_reported or not claim_limbs)
+        own_award_open & (paid_as_reported or at_claim_start)
     )
     claim_ends_own_award = (
         claimant_or_partner
         & person.benunit("claims_universal_credit", period)
-        & (claim_limbs and not paid_as_reported)
+        & (not paid_as_reported)
     )
+    # On the first day of the award a Housing Benefit award the claim ends
+    # still runs (reg. 8(2A)).
+    claim_has_ended_housing_benefit = claim_ends_own_award & (not at_claim_start)
     # The model pays Housing Benefit and tax credits to the family, on
     # every member's reports, and ends them when the claimant's and
     # partner's legacy awards close (housing_benefit_eligible,
@@ -158,7 +165,7 @@ def qualifying_young_person(person, period, parameters, claim_limbs=True):
     family_award_open = ~family_closed
     housing_benefit_open = person.benunit(
         "meets_pension_credit_age_conditions", period
-    ) | (~family_closed & ~claim_ends_own_award)
+    ) | (~family_closed & ~claim_has_ended_housing_benefit)
 
     income_support_paying = (
         paying(dwp.income_support.active, "income_support") & own_award_open

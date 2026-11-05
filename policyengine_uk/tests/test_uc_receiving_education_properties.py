@@ -302,7 +302,12 @@ VARIABLES = OUTPUTS + [
     "meets_pension_credit_age_conditions",
     "uc_assessable_capital",
     "is_qualifying_young_person_for_universal_credit",
+    "is_qualifying_young_person_under_universal_credit_regulation_5",
     "is_qualifying_young_person_for_uc_education",
+    "is_claimant_or_partner",
+    "person_legacy_benefits_closed",
+    "legacy_benefits_closed",
+    "claims_universal_credit",
     "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
     "has_attained_state_pension_credit_qualifying_age",
     "is_mixed_age_couple",
@@ -335,6 +340,60 @@ def paying_reports(simulation, year):
         ):
             paying.append(report)
     return paying
+
+
+# Reports whose award the model ends on the person's own legacy closure
+# (person_legacy_benefits_closed); it ends the family's Housing Benefit,
+# outside the Pension Credit age conditions, and tax credits on the family's
+# (legacy_benefits_closed).
+OWN_CLOSURE = ["jsa_income_reported", "esa_income_reported", "income_support_reported"]
+
+
+def excluded_on_first_day(case, result):
+    """Per person, whether reg. 28 keeps them out of the definition for the
+    condition: an own report, or for a claimant or partner the couple's tax
+    credit report, that the model pays that year, no reform neutralises and
+    the model's legacy closure leaves open, on the first day of the
+    Universal Credit award. That day a Housing Benefit or income-related ESA
+    award the claim ends still runs (SI 2014/1230 reg. 8(2A)), but the claim
+    has already ended a claimant's or partner's Child Tax Credit (reg.
+    8(2)(a))."""
+    flags = []
+    index = 0
+    for f, fam in enumerate(case["families"]):
+        members = range(index, index + len(fam["people"]))
+        family_closed = bool(result["legacy_benefits_closed"][f])
+        pension_age = bool(result["meets_pension_credit_age_conditions"][f])
+        claims = bool(result["claims_universal_credit"][f])
+
+        def is_open(i, name):
+            if fam["people"][i - index].get(name, 0) <= 0:
+                return False
+            if name not in result["paying"]:
+                return False
+            if name in OWN_CLOSURE:
+                return not result["person_legacy_benefits_closed"][i]
+            if name == "housing_benefit_reported":
+                return pension_age or not family_closed
+            if family_closed:
+                return False
+            return not (
+                name == "child_tax_credit_reported"
+                and claims
+                and result["is_claimant_or_partner"][i]
+            )
+
+        couple = [i for i in members if result["is_uc_assessed_claimant"][i]]
+        couple_tax_credits = any(
+            is_open(j, name) for j in couple for name in TAX_CREDITS
+        )
+        for i in members:
+            flags.append(
+                any(is_open(i, name) for name in EXISTING_BENEFITS)
+                or (i in couple and couple_tax_credits)
+            )
+        index += len(fam["people"])
+    return np.array(flags, dtype=bool)
 
 
 def run(case, variants=(DRAWN,)):
@@ -377,10 +436,12 @@ def reference(case, result):
     person for the condition, and per family, eligibility with the education
     condition and without it. Reads from the model only the roles (who is a
     claimant), the age conditions, qualifying young person status before reg.
-    28, the Pension Credit route, capital, responsibility for a child, limited
+    28 (the reg. 5 variable), the legacy closures, the family's claim, the
+    Pension Credit route, capital, responsibility for a child, limited
     capability for work and the disability benefit amounts, which other rules
     settle.
     """
+    excluded = excluded_on_first_day(case, result)
     receiving, excepted, qyp_for_education = [], [], []
     eligible, eligible_before = [], []
     index = 0
@@ -389,21 +450,18 @@ def reference(case, result):
         members = range(start, start + len(fam["people"]))
         person_of = dict(zip(members, fam["people"]))
         couple = [i for i in members if result["is_uc_assessed_claimant"][i]]
-        tax_credits = [name for name in TAX_CREDITS if name in result["paying"]]
-        couple_tax_credits = any(
-            person_of[j].get(name, 0) > 0 for j in couple for name in tax_credits
-        )
         couple_tax_credits_on_migration_day = any(
             person_of[j].get(name, 0) > 0 for j in couple for name in TAX_CREDITS
         )
         qyp, qyp_on_migration_day, recv = {}, {}, {}
         for i, person in person_of.items():
-            existing_benefit = any(
-                person.get(name, 0) > 0 for name in result["paying"]
-            ) or (i in couple and couple_tax_credits)
             qyp[i] = (
-                bool(result["is_qualifying_young_person_for_universal_credit"][i])
-                and not existing_benefit
+                bool(
+                    result[
+                        "is_qualifying_young_person_under_universal_credit_regulation_5"
+                    ][i]
+                )
+                and not excluded[i]
             )
             # Reg. 28 on the migration day, when the award the closure claim
             # ended still existed.
@@ -712,17 +770,52 @@ def check(case):
             atol=0.005,
             err_msg=f"{name}: {context}",
         )
-    # 8. Reg. 28: no one who reports an existing benefit the model pays that
-    # year, and no reform neutralises, counts as a qualifying young person
-    # for the condition.
-    reports = np.array(
-        [
-            any(p.get(name, 0) > 0 for name in drawn["paying"])
-            for fam in case["families"]
-            for p in fam["people"]
-        ]
-    )
-    assert not np.any(drawn["is_qualifying_young_person_for_uc_education"][reports])
+    # 8. Reg. 28: no one whose existing benefit report the model pays that
+    # year, no reform neutralises and the legacy closure leaves open, on the
+    # first day of the Universal Credit award, counts as a qualifying young
+    # person for the condition.
+    excluded = excluded_on_first_day(case, drawn)
+    assert not np.any(drawn["is_qualifying_young_person_for_uc_education"][excluded])
+
+
+# An 18-year-old on a non-advanced full-time course who claims Universal
+# Credit: in 2026, after the family's legacy awards closed on their tax
+# credit report, which ended their Housing Benefit; and in 2024, reporting
+# their own Child Tax Credit, which the claim ends the day before the award,
+# with no child to except them.
+CLAIM_EXAMPLES = [
+    dict(
+        year=2026,
+        families=[
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        housing_benefit_reported=6_000,
+                        working_tax_credit_reported=1_000,
+                    )
+                ]
+            )
+        ],
+    ),
+    dict(
+        year=2024,
+        families=[
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        child_tax_credit_reported=2_000,
+                    )
+                ]
+            )
+        ],
+    ),
+]
 
 
 @PROPERTY_SETTINGS
@@ -730,6 +823,8 @@ def check(case):
 @example(EXAMPLES[1])
 @example(EXAMPLES[2])
 @example(EXAMPLES[3])
+@example(CLAIM_EXAMPLES[0])
+@example(CLAIM_EXAMPLES[1])
 @given(cases())
 def test_education_condition_invariants(case):
     check(case)
@@ -759,9 +854,11 @@ def test_examples_reach_the_cases():
         [True, False, True, False],
     )
     # People 9 and 10: the young Housing Benefit claimants. Each claims
-    # Universal Credit, which ends their own Housing Benefit (SI 2014/1230
-    # reg. 8(2A)), so the UC predicate follows that claim limb; the condition
-    # reads reg. 28 against the award they held when they claimed.
+    # Universal Credit, which ends their own Housing Benefit two weeks after
+    # the award starts (SI 2014/1230 reg. 8(2A)). The UC predicate follows
+    # that claim limb and reads reg. 5(5) only from reported Universal
+    # Credit, so it gives true; the condition reads the status on the first
+    # day of the award, when the Housing Benefit still runs.
     young = slice(9, 11)
     np.testing.assert_array_equal(
         drawn["is_qualifying_young_person_for_universal_credit"][young], [True, True]

@@ -816,9 +816,12 @@
   # for the Universal Credit Regulations. With no maintenance funding, reg.
   # 12(2) doesn't apply either, so the claimant doesn't receive education.
   # The claimant claims Universal Credit, which ends their own Housing
-  # Benefit (reg. 8(2A)), so is_qualifying_young_person_for_universal_credit
-  # follows that claim limb. The condition reads reg. 28 against the award
-  # they held when they claimed (is_qualifying_young_person_for_uc_education).
+  # Benefit two weeks after the award starts (reg. 8(2A)).
+  # is_qualifying_young_person_for_universal_credit follows that claim limb
+  # and reads reg. 5(5) only from reported Universal Credit, so it gives true
+  # for this claimant. The condition reads the status on the first day of the
+  # award, when the Housing Benefit still runs
+  # (is_qualifying_young_person_for_uc_education).
   period: 2026
   input:
     people:
@@ -896,11 +899,15 @@
 
 - name: Case 34, the 18-year-old of case 32 claims when DWP moves them off legacy benefits and keeps the award.
   # The claimant reports Housing Benefit, so under SI 2014/1230 reg. 28 they
-  # don't count as a qualifying young person, and they receive education
+  # don't count as a qualifying young person for the condition
+  # (is_qualifying_young_person_for_uc_education), and they receive education
   # under reg. 12(2)(b), not reg. 12(1A). They fail the condition on the
   # migration day "because the person is undertaking a full-time course (see
   # regulation 12(2) and 13 ...)", so under reg. 60(1) it doesn't apply to
-  # them while they continue the course.
+  # them while they continue the course. Their claim ends their own Housing
+  # Benefit, so is_qualifying_young_person_for_universal_credit, which
+  # follows that claim limb and reads reg. 5(5) only from reported
+  # Universal Credit, gives true.
   period: 2026
   input:
     people:
