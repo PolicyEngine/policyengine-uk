@@ -29,6 +29,8 @@ CLAIMANT_OR_PARTNER_BENEFITS = [
     "esa_contrib",
     "incapacity_benefit",
     "sda",
+    # s. 96(10)(i).
+    "maternity_allowance",
     # s. 96(10)(n).
     "widowed_parents_allowance",
 ]
@@ -67,10 +69,11 @@ class benefit_cap_welfare_benefits(Variable):
         "benefit unit; otherwise the model raises ValueError when it "
         "calculates Universal Credit's cap. A reform of this variable changes "
         "the Housing Benefit cap. To change the Universal Credit cap's basket, "
-        "replace uc_benefit_cap_welfare_benefits. Widowed parent's allowance "
-        "counts. The model has no variable for maternity allowance or the "
-        "other bereavement benefits, which Parliament also lists as welfare "
-        "benefits (Welfare Reform Act 2012 s. 96(10))."
+        "replace uc_benefit_cap_welfare_benefits. The total includes Maternity "
+        "Allowance and widowed parent's allowance. The model has no variable "
+        "for three other welfare benefits Parliament lists in Welfare Reform "
+        "Act 2012 s. 96(10): bereavement allowance, widow's pension and "
+        "widowed mother's allowance."
     )
     definition_period = YEAR
     unit = GBP

@@ -1,3 +1,32 @@
+## [2.175.2] - 2026-11-05
+
+### Fixed
+
+- PolicyEngine now includes the claimant's and partner's Maternity Allowance when it calculates the benefit cap on Universal Credit and Housing Benefit. It leaves a non-dependent adult's allowance out (#2784). Parliament lists the allowance among the welfare benefits whose total the Secretary of State may cap (Welfare Reform Act 2012 s.96(10)(i)).
+
+
+## [2.175.1] - 2026-11-05
+
+### Fixed
+
+- The model now opens the reg 60A Universal Credit route on a legacy closure claim only when the claimant or partner reports Working Tax Credit, and the formula for the pension-age Council Tax Reduction test reads the same reports; a report by a child or another adult in the benefit unit no longer opens the route or makes the award a reg 60A award.
+
+
+## [2.175.0] - 2026-11-05
+
+### Added
+
+- The budget totals `household_tax` and `household_benefits` now read their terms from the `budget` fields in `programs.yaml`, and `policyengine_uk.programs.budget_programs()` returns each term with its label, tax or benefit flag and group. Calculated values do not change.
+
+
+## [2.174.8] - 2026-11-05
+
+### Fixed
+
+- Apply the £10,000 capital tariff threshold to Income Support, income-based JSA and income-related ESA claimants who live permanently in prescribed accommodation. Callers mark them with the new legacy_prescribed_accommodation_capital_exception input, which defaults to false.
+- Assess a working-age Oxford Council Tax Reduction applicant who receives Universal Credit on the Appendix 3 income Oxford City Council sets from April 2026. The council adds DWP's net earned income, from which DWP deducts pension contributions in full, to the award before deductions for debts and other unearned income. It ignores £48.15 a week of each carer element and £84.46 a week of each disabled child element. The model counts as other income Child Benefit, child maintenance, the Scottish Carer Supplement and the other regular receipts the council does not ignore in Appendix 3. It leaves out interest, dividends, rent, Universal Credit's assumed yield from capital and the miscellaneous income it already counts in DWP's net earned income. The model had assessed these applicants on the income for applicants without Universal Credit, on which the council deducts only half of pension contributions and leaves out Child Benefit and child maintenance. Some of their reductions rise and some fall, a reform of Oxford's pension contribution share no longer moves them, and model years before 2026 keep their earlier results.
+
+
 ## [2.174.7] - 2026-11-04
 
 ### Changed
