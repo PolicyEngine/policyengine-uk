@@ -1955,7 +1955,7 @@ def restatements(draw):
         "gov.dwp.universal_credit.means_test.capital.person_sources",
         datetime.date(2013, 4, 29),
         datetime.date(2013, 4, 29),
-        [],
+        ["cash_isa_countable_capital", "stocks_and_shares_isa_countable_capital"],
         "reform_dict",
     )
 )
