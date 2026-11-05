@@ -1,7 +1,7 @@
 # DLA and Severe Disablement Allowance
 
 PolicyEngine UK models two **legacy** DWP disability benefits alongside
-the current PIP (covered in [its own page](./PIP.ipynb)):
+the current PIP (see [PIP point system](./pip-points-plan.md)):
 
 - **Disability Living Allowance (DLA)** — closed to new working-age
   claims in April 2013 but still paid to existing recipients and to
