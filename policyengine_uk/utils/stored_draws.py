@@ -109,8 +109,6 @@ def _describe(name: str, period, branch_name: Optional[str], tier=None) -> str:
 
 
 def _check_schema(variable, name: str, schema: DrawSchema, which: str) -> None:
-    if variable is None:
-        raise StoredDrawError(f"{name} has no {which}.")
     kept = (
         variable.entity.key == schema.entity
         and variable.value_type is schema.value_type

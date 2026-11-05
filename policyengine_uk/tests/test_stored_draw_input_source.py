@@ -695,3 +695,25 @@ def test_a_reform_formula_reads_the_draw_through_the_check():
     np.testing.assert_array_equal(
         missing.calculate("doubles_the_draw", 2026), [2, 2, 2]
     )
+
+
+def test_an_unregistered_variable_has_no_draw_source():
+    sim = built({2025: VALUES})
+    with pytest.raises(StoredDrawError, match="not a registered stored draw"):
+        input_source(sim.get_variable_population("age"), "age", 2025)
+
+
+def test_a_source_replaced_while_core_reads_it_raises(monkeypatch):
+    sim = built({2025: VALUES})
+    real = CoreSimulation.calculate
+
+    def replaces_the_source(self, name, *args, **kwargs):
+        result = real(self, name, *args, **kwargs)
+        if name == DRAW:
+            # The same values, stored again: a new sequence number.
+            self.get_holder(DRAW).set_input(period(2025), VALUES)
+        return result
+
+    monkeypatch.setattr(CoreSimulation, "calculate", replaces_the_source)
+    with pytest.raises(StoredDrawError, match="changed while"):
+        sim.calculate(DRAW, 2025)
