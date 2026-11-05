@@ -295,6 +295,44 @@ def test_financial_reports_preserve_separately_valued_property(
     )
 
 
+@pytest.mark.parametrize(
+    "variable", ["overseas_property_value", "other_property_value"]
+)
+@PROPERTY_SETTINGS
+@given(
+    value=MONEY,
+    savings=MONEY,
+    region=st.sampled_from(("LONDON", "WALES", "SCOTLAND")),
+    age=st.sampled_from((40, 70)),
+)
+@example(value=100_000, savings=0, region="SCOTLAND", age=40)
+def test_council_tax_reduction_household_route_counts_each_input_less_sale_expenses(
+    _property_metadata_system, variable, value, savings, region, age
+):
+    # An applicant on neither Universal Credit nor Pension Credit takes council
+    # tax reduction's household route in England, Wales and Scotland. Each
+    # scheme takes 10% off land and property inside or outside the United
+    # Kingdom where there would be expenses of sale, and the data hold no
+    # secured debt for either input, so each pound adds 90p to capital.
+    def capital(amount):
+        situation = _situation({"savings": savings, variable: amount}, region)
+        situation["people"]["person"]["age"] = {BASE_YEAR: age}
+        situation["benunits"]["benunit"]["would_claim_uc"] = {BASE_YEAR: False}
+        situation["benunits"]["benunit"]["would_claim_pc"] = {BASE_YEAR: False}
+        simulation = CoreSimulation(
+            tax_benefit_system=_property_metadata_system, situation=situation
+        )
+        return _value(simulation, "council_tax_reduction_assessable_capital")
+
+    without = capital(0)
+    counted = capital(value)
+    # The formula sums in float32, so allow its rounding of the total.
+    tolerance = 1e-6 * (savings + value) + 0.01
+    assert without == pytest.approx(savings, abs=tolerance)
+    assert counted >= without
+    assert counted - without == pytest.approx(0.9 * value, abs=tolerance)
+
+
 @pytest.mark.parametrize("source,variable", SOURCE_INPUTS)
 def test_each_was_source_enters_gross_and_total_property_once(source, variable):
     components = _saved_components({source: 100_000})
