@@ -12,7 +12,9 @@ class person_legacy_benefits_closed(Variable):
         "The existing annual legacy-closure proxy, scoped to the award owner. "
         "The claimant and partner share legacy_benefits_closed. Other members "
         "claiming in their own right use only their own reports and Pension "
-        "Credit qualifying age. Their reports neither close nor shield the "
+        "Credit qualifying age, and their income-related ESA closes with "
+        "their own claim's share (esa_income_payable_share). Their reports "
+        "neither close nor shield the "
         "couple's award, and the couple's reports do not close theirs. No new "
         "notice, deadline, run-on or legal relationship inference is made."
     )
@@ -27,8 +29,15 @@ class person_legacy_benefits_closed(Variable):
             return sum(person(name, period) for name in variables) > 0
 
         pension_age = person("has_attained_state_pension_credit_qualifying_age", period)
+        esa_income_abolished = (person("esa_income_reported", period) > 0) & (
+            person("esa_income_payable_share", period) <= 0
+        )
         own_closed = legacy_award_is_closed(
-            reports, pension_age, pension_age & False, parameters(period).gov.dwp
+            reports,
+            pension_age,
+            pension_age & False,
+            parameters(period).gov.dwp,
+            esa_income_abolished,
         )
         return where(
             person("is_claimant_or_partner", period),
