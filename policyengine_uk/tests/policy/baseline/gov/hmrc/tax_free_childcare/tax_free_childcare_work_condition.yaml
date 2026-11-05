@@ -253,6 +253,11 @@
   output:
     tax_free_childcare_work_condition: true
 
+# The work condition applies to the person applying and their partner
+# (Childcare Payments Act 2014 s.3(1), s.6, s.9; SI 2015/448 regs 3 and 9).
+# In the next three fixtures, the working 17-year-old child does not count
+# as the parent's partner, and each 17-year-old lone applicant with a baby
+# forms a single-applicant benefit unit. The work test follows those roles.
 - name: A working 17-year-old child does not meet a lone parent's work condition
   period: 2025
   input:

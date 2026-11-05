@@ -15,7 +15,7 @@
     tax_free_childcare_treated_as_in_work: true
     tax_free_childcare_meets_income_requirements: true
 
-- name: Person on adoption leave is treated as in work
+- name: Person on adoption leave with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
@@ -24,7 +24,7 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person on shared parental leave is treated as in work
+- name: Person on shared parental leave with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
@@ -33,7 +33,7 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory sick pay is treated as in work
+- name: Person receiving statutory sick pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
@@ -42,7 +42,7 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving maternity allowance is treated as in work
+- name: Person receiving maternity allowance with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
@@ -51,7 +51,7 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory maternity pay is treated as in work
+- name: Person receiving statutory maternity pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
@@ -60,7 +60,7 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory paternity pay is treated as in work
+- name: Person receiving statutory paternity pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
