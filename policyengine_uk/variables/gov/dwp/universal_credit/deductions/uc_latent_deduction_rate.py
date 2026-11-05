@@ -24,7 +24,9 @@ class uc_latent_deduction_rate(Variable):
         "same distribution under the higher caps then in force. Demand is "
         "held fixed as the cap moves, so cuts below the 15% cap overstate "
         "the constrained population while cap increases toward 25% stay "
-        "inside the observed window."
+        "inside the observed window. The rate is conditional on "
+        "uc_has_deduction: uc_deduction_rate counts it only where that flag "
+        "is true, so a supplied rate follows the same rule as this formula."
     )
     entity = BenUnit
     definition_period = YEAR

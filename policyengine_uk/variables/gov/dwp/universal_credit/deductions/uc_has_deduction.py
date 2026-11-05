@@ -7,7 +7,15 @@ class uc_has_deduction(Variable):
         "Whether this benefit unit has money deducted from its Universal "
         "Credit award to repay debts (advances, government debt or third "
         "party deductions). Assigned from the DWP-published incidence of "
-        "deductions among UC households, adjusted by region."
+        "deductions among UC households, adjusted by region, to a unit "
+        "claiming UC with an award left after the benefit cap. A protected "
+        "floor reform limits what the cap and deductions together take to "
+        "the floor allowance, so a family the cap takes to nil under current "
+        "law can keep an award there. A "
+        "latent deduction rate counts only where this is true, including a "
+        "rate a dataset or situation supplies: to give a household situation "
+        "deductions, set this to true with the rate. Explicitly supplied "
+        "advance amounts and deduction rates apply whatever this says."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -34,9 +42,18 @@ class uc_has_deduction(Variable):
         )
         region = benunit.household("region", period)
         adjusted_incidence = clip(incidence * p.region_incidence_factor[region], 0, 1)
+        # The award deductions can come from: what the benefit cap leaves,
+        # where a protected floor limits the cap to the floor allowance
+        # (uc_maximum_reduction). Under current law the floor is zero, the
+        # allowance infinite, and this is the award after the gross cap. A
+        # family the gross cap takes to nil keeps an award under a binding
+        # floor, and allocate_uc_reductions meets deductions from it first.
+        cap_reduction = min_(
+            benunit("uc_benefit_cap_reduction", period),
+            benunit("uc_maximum_reduction", period),
+        )
         award = max_(
-            benunit("universal_credit_pre_benefit_cap", period)
-            - benunit("uc_benefit_cap_reduction", period),
+            benunit("universal_credit_pre_benefit_cap", period) - cap_reduction,
             0,
         )
         on_uc = (

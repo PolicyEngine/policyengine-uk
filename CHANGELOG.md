@@ -1,3 +1,53 @@
+## [2.175.1] - 2026-11-05
+
+### Fixed
+
+- The model now opens the reg 60A Universal Credit route on a legacy closure claim only when the claimant or partner reports Working Tax Credit, and the formula for the pension-age Council Tax Reduction test reads the same reports; a report by a child or another adult in the benefit unit no longer opens the route or makes the award a reg 60A award.
+
+
+## [2.175.0] - 2026-11-05
+
+### Added
+
+- The budget totals `household_tax` and `household_benefits` now read their terms from the `budget` fields in `programs.yaml`, and `policyengine_uk.programs.budget_programs()` returns each term with its label, tax or benefit flag and group. Calculated values do not change.
+
+
+## [2.174.8] - 2026-11-05
+
+### Fixed
+
+- Apply the £10,000 capital tariff threshold to Income Support, income-based JSA and income-related ESA claimants who live permanently in prescribed accommodation. Callers mark them with the new legacy_prescribed_accommodation_capital_exception input, which defaults to false.
+- Assess a working-age Oxford Council Tax Reduction applicant who receives Universal Credit on the Appendix 3 income Oxford City Council sets from April 2026. The council adds DWP's net earned income, from which DWP deducts pension contributions in full, to the award before deductions for debts and other unearned income. It ignores £48.15 a week of each carer element and £84.46 a week of each disabled child element. The model counts as other income Child Benefit, child maintenance, the Scottish Carer Supplement and the other regular receipts the council does not ignore in Appendix 3. It leaves out interest, dividends, rent, Universal Credit's assumed yield from capital and the miscellaneous income it already counts in DWP's net earned income. The model had assessed these applicants on the income for applicants without Universal Credit, on which the council deducts only half of pension contributions and leaves out Child Benefit and child maintenance. Some of their reductions rise and some fall, a reform of Oxford's pension contribution share no longer moves them, and model years before 2026 keep their earlier results.
+
+
+## [2.174.7] - 2026-11-04
+
+### Changed
+
+- Document why the model leaves out Great Britain's £200 Alternative Fuel Payment.
+
+### Fixed
+
+- The model applies the 2020–21 residential SDLT relief dates that Parliament set in the SDLT (Temporary Relief) Act 2020 and Finance Act 2021 s87. It uses a £500,000 nil band without first-time buyers' relief from 8 July 2020 to 30 June 2021, then a £250,000 nil band from 1 July to 30 September 2021. In model year 2021 it charges no SDLT on a main-home purchase up to £500,000. The model also dates the residential lease rent table to those periods and adds its £250,000 nil band from 23 September 2022 to 31 March 2025.
+- Classified the Budget 2026 helper variables in the fiscal partition.
+- Pay the 2022 £150 to Council Tax Reduction recipients in any council tax band in Scotland and Wales, as Scottish and Welsh councils did.
+- The aggregate impact tool's `calibrate` command now refuses a reform when any result lacks a finite target change for a year, and names the reform and the year. It stopped with a bare `TypeError` on a withheld year, read past NaN and infinity in a later year, and ignored a year in the horizon that a result lacked.
+
+
+## [2.174.6] - 2026-11-04
+
+### Fixed
+
+- Universal Credit deductions count a supplied latent deduction rate only where `uc_has_deduction` is true, as the rate's own formula does. Under a protected floor reform, the flag reads the award left after the benefit cap as the floor limits it.
+
+
+## [2.174.5] - 2026-11-04
+
+### Fixed
+
+- Fix evidence reads a period after a quoted reproducer id as the end of the sentence, and its hint says to put an id in backticks when its name contains a comma or semicolon.
+
+
 ## [2.174.4] - 2026-11-04
 
 ### Fixed
