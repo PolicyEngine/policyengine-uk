@@ -685,9 +685,10 @@
 - name: Case 17, Westminster's list counts standard PIP daily living and omits AFIP in 2026.
   # 2026-27 rates: PIP daily living standard 76.70, personal allowance (under
   # 25) 75.65, severe disability premium 86.05, disability premium 44.85,
-  # enhanced disability premium 22.00. Each claimant is aged 24, so the lower
-  # personal allowance keeps each applicable amount below a pension of 12,500,
-  # under the 12,570 personal allowance, and each reduction on the taper.
+  # enhanced disability premium 22.00. Each claimant, aged 24, takes the lower
+  # personal allowance, which keeps each applicable amount below a pension of
+  # 12,500, under the 12,570 personal allowance, and each reduction on the
+  # taper.
   # The case pins the 2026-27 household energy payment and the earlier
   # payments at zero.
   period: 2026
