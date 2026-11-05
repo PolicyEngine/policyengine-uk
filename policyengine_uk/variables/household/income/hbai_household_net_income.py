@@ -81,6 +81,11 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     # one-off support to the same council tax bands, so it counts too.
     "household_energy_payment",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
+    # HBAI includes all benefits in state support. MOD identifies AFIP as a
+    # benefit paid by DWP, so its reported cash belongs in this aggregate:
+    # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#income-definition
+    # https://questions-statements.parliament.uk/written-questions/detail/2025-06-30/63965
+    "armed_forces_independence_payment",
 ]
 
 HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [

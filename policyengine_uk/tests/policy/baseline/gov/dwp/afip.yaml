@@ -1,0 +1,273 @@
+# AFIP is an existing annual cash input. These synthetic reported amounts
+# test aggregation, not entitlement or statutory rates. MOD identifies AFIP
+# as a benefit paid by DWP; DWP HBAI includes all benefits and tax credits.
+# https://questions-statements.parliament.uk/written-questions/detail/2025-06-30/63965
+# https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#income-definition
+# Tax totals are fixed at zero to isolate cash aggregation. PIP in cases 3
+# and 4 belongs to a different person from the AFIP recipient.
+
+- name: Case 1, reported AFIP reaches household income and government spending once.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 2_400
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+        rent: 600
+        tenure_type: RENT_PRIVATELY
+  output:
+    armed_forces_independence_payment: 2_400
+    household_benefits: 2_400
+    hbai_benefits: 2_400
+    household_market_income: 0
+    household_gross_income: 2_400
+    household_net_income: 2_400
+    # 2,400 less rent of 600.
+    household_net_income_ahc: 1_800
+    hbai_household_net_income_before_reset_to_zero: 2_400
+    hbai_household_net_income: 2_400
+    hbai_household_net_income_ahc: 1_800
+    gov_spending: 2_400
+    gov_balance: -2_400
+
+- name: Case 2, AFIP sums across benefit units without reaching another household.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 1_200
+      person2:
+        age: 38
+        armed_forces_independence_payment: 800
+      person3:
+        age: 35
+        armed_forces_independence_payment: 0
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: false
+      benunit2:
+        members: [person2]
+        would_claim_uc: false
+      benunit3:
+        members: [person3]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1, person2]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+      household2:
+        members: [person3]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: [1_200, 800, 0]
+    # 1,200 + 800 in the first household; zero in the second.
+    household_benefits: [2_000, 0]
+    hbai_benefits: [2_000, 0]
+    household_gross_income: [2_000, 0]
+    household_net_income: [2_000, 0]
+    household_net_income_ahc: [2_000, 0]
+    hbai_household_net_income_before_reset_to_zero: [2_000, 0]
+    hbai_household_net_income: [2_000, 0]
+    hbai_household_net_income_ahc: [2_000, 0]
+    gov_spending: [2_000, 0]
+    gov_balance: [-2_000, 0]
+
+- name: Case 3, AFIP and reported AFCS remain separate beside another person's PIP.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 2_400
+        afcs_reported: 3_600
+      person2:
+        age: 38
+        pip: 1_800
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1, person2]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: [2_400, 0]
+    afcs: [3_600, 0]
+    pip: [0, 1_800]
+    # 2,400 + 3,600 + 1,800, each supplied cash stream once.
+    household_benefits: 7_800
+    hbai_benefits: 7_800
+    household_gross_income: 7_800
+    household_net_income: 7_800
+    hbai_household_net_income_before_reset_to_zero: 7_800
+    hbai_household_net_income: 7_800
+    gov_spending: 7_800
+    gov_balance: -7_800
+
+- name: Case 4, zero AFIP leaves reported AFCS and another person's PIP unchanged.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 0
+        afcs_reported: 3_600
+      person2:
+        age: 38
+        pip: 1_800
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1, person2]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: [0, 0]
+    afcs: [3_600, 0]
+    pip: [0, 1_800]
+    # 3,600 + 1,800, with no AFIP cash.
+    household_benefits: 5_400
+    hbai_benefits: 5_400
+    household_gross_income: 5_400
+    household_net_income: 5_400
+    hbai_household_net_income_before_reset_to_zero: 5_400
+    hbai_household_net_income: 5_400
+    gov_spending: 5_400
+    gov_balance: -5_400
+
+- name: Case 5, AFIP enters HBAI before its existing zero floor and housing deduction.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 2_400
+        maintenance_expenses: 3_000
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+        rent: 600
+        tenure_type: RENT_PRIVATELY
+  output:
+    household_benefits: 2_400
+    hbai_benefits: 2_400
+    household_gross_income: 2_400
+    household_net_income: 2_400
+    household_net_income_ahc: 1_800
+    # HBAI deducts maintenance: 2,400 - 3,000 = -600, reset to zero.
+    hbai_household_net_income_before_reset_to_zero: -600
+    hbai_household_net_income: 0
+    # Rent comes off the reset BHC figure: 0 - 600.
+    hbai_household_net_income_ahc: -600
+    gov_spending: 2_400
+    gov_balance: -2_400
+
+- name: Case 6, both existing benefit uprating rates apply to AFIP once.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.benefit_uprating.all: 0.1
+    gov.contrib.benefit_uprating.non_sp: 0.2
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 2_400
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household1:
+        members: [person1]
+        council_tax: 0
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: 2_400
+    # 2,400 + 0.1 * 2,400 + 0.2 * 2,400.
+    household_benefits: 3_120
+    hbai_benefits: 2_400
+    household_gross_income: 3_120
+    household_net_income: 3_120
+    # Existing spending and HBAI contracts sum the raw cash receipt.
+    hbai_household_net_income_before_reset_to_zero: 2_400
+    hbai_household_net_income: 2_400
+    gov_spending: 2_400
+    gov_balance: -2_400
+
+- name: Case 7, council tax abolition retains AFIP while dropping Council Tax Reduction.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.abolish_council_tax: true
+    people:
+      person1:
+        age: 40
+        armed_forces_independence_payment: 2_400
+    benunits:
+      benunit1:
+        members: [person1]
+        would_claim_uc: false
+        council_tax_benefit: 300
+    households:
+      household1:
+        members: [person1]
+        council_tax: 1_500
+        household_tax: 0
+        gov_tax: 0
+        household_energy_payment: 0
+  output:
+    armed_forces_independence_payment: 2_400
+    council_tax_benefit: 300
+    # The reform drops Council Tax Reduction from both benefit totals.
+    household_benefits: 2_400
+    hbai_benefits: 2_400
+    household_gross_income: 2_400
+    household_net_income: 2_400
+    # HBAI also drops Council Tax from its deductions.
+    hbai_household_net_income_before_reset_to_zero: 2_400
+    hbai_household_net_income: 2_400
+    gov_spending: 2_400
+    gov_balance: -2_400
