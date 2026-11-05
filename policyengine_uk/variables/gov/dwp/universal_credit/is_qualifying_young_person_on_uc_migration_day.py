@@ -34,7 +34,7 @@ class is_qualifying_young_person_on_uc_migration_day(Variable):
         "credits, which a couple claims jointly. "
         "uc_is_excepted_from_education_condition reads this status for the "
         "reg. 60(1) protection. In Northern Ireland the decision maker applies "
-        "the same rules under regs. 29 and 50 of the Universal Credit "
+        "the same rules under regs. 6(2), 29 and 50 of the Universal Credit "
         "(Transitional Provisions) Regulations (Northern Ireland) 2016."
     )
     definition_period = YEAR
@@ -44,6 +44,7 @@ class is_qualifying_young_person_on_uc_migration_day(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/49",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/50",
     )

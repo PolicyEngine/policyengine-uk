@@ -46,8 +46,9 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "legacy_benefits_closed holds and the family doesn't meet the Pension "
         "Credit age conditions. The formula follows both closures. A claim for "
         "Universal Credit ends the claimant's and partner's own awards (SI "
-        "2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and the model ends "
-        "the family's continuing Housing Benefit award "
+        "2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4; in Northern Ireland, "
+        "SR 2016/226 reg. 6(2) and (2A) and SR 2017/190 art. 6), and the model "
+        "ends the family's continuing Housing Benefit award "
         "(housing_benefit_eligible) and its Child Tax Credit (is_CTC_eligible),"
         " and the claimant's and partner's income-related ESA "
         "(esa_income_report_closed), when the family claims "
@@ -60,7 +61,12 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "left_pension_route_at_legacy_closure, which reads this variable "
         "through is_uc_entitled and the child element. So the formula keeps a "
         "Housing Benefit report while the family meets the Pension Credit age "
-        "conditions. The formula checks each report against its own variable: "
+        "conditions. It also keeps the report while the family lives in "
+        "specified or temporary accommodation "
+        "(in_specified_or_temporary_accommodation), since neither the claim nor "
+        "the closure ends that award (SI 2014/1230 regs. 8(3) and 46(2); SR "
+        "2016/226 regs. 6(3) and 47(2)). The formula checks each report against "
+        "its own variable: "
         "income_support, jsa_income, esa_income, housing_benefit, "
         "child_tax_credit or tax_credits for Child Tax Credit, and "
         "working_tax_credit or tax_credits for Working Tax Credit. A reform "
@@ -75,9 +81,19 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/2",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/46",
         "https://www.legislation.gov.uk/uksi/2013/983/article/4",
+        "https://www.legislation.gov.uk/uksi/2019/1152/regulation/5",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/2",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/47",
+        "https://www.legislation.gov.uk/nisr/2017/190/article/6",
+        "https://www.legislation.gov.uk/nisr/2019/152/regulation/4",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/13",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/13",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
     ]
 
@@ -95,7 +111,11 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     (reg. 8(2A); esa_income_report_closed's run-on), so the formula leaves
     out those two claim limbs. The claim has already ended a tax credit
     award (reg. 8(2)(a)), so the formula keeps the Child Tax Credit limb.
-    The year gates and the legacy closures apply either way."""
+    In Northern Ireland the claim has also already ended a rate rebate (SR
+    2016/226 reg. 6(2)), and only a rent rebate or allowance runs on (reg.
+    6(2A)), so there the formula keeps the Housing Benefit limb for a family
+    that doesn't rent. The year gates and the legacy closures apply either
+    way."""
     # The Secretary of State excludes a person entitled to an existing
     # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
     # reports, the model's legacy closure proxy and the family's Universal
@@ -129,8 +149,9 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     # Credit variable.
     own_award_open = ~person("person_legacy_benefits_closed", period)
     # A claim for Universal Credit ends the claimant's and partner's own
-    # awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and
-    # nobody else's. The model ends the claimant's and partner's
+    # awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4; in
+    # Northern Ireland, SR 2016/226 reg. 6(2) and (2A) and SR 2017/190 art.
+    # 6), and nobody else's. The model ends the claimant's and partner's
     # income-related ESA when the family claims (esa_income_report_closed),
     # and the formula follows it. claims_universal_credit reads
     # would_claim_uc, would_claim_uc_at_legacy_closure and
@@ -154,8 +175,21 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
         & (not paid_as_reported)
     )
     # On the first day of the award a Housing Benefit award the claim ends
-    # still runs (reg. 8(2A)).
-    claim_has_ended_housing_benefit = claim_ends_own_award & (not at_claim_start)
+    # still runs (reg. 8(2A)). In Northern Ireland only a rent rebate or
+    # allowance still runs (SR 2016/226 reg. 6(2A)): the claim has already
+    # ended a rate rebate (reg. 6(2)). The report doesn't show the form. A
+    # rent rebate or allowance needs rent or a similar payment (Housing
+    # Benefit Regulations (Northern Ireland) 2006 reg. 13(1)), so the formula
+    # reads a report in a family that doesn't rent as a rate rebate (reg. 12).
+    if at_claim_start:
+        country = person.household("country", period)
+        claim_has_ended_housing_benefit = (
+            claim_ends_own_award
+            & (country == country.possible_values.NORTHERN_IRELAND)
+            & ~person.benunit("benunit_is_renting", period)
+        )
+    else:
+        claim_has_ended_housing_benefit = claim_ends_own_award
     # The model pays Housing Benefit and tax credits to the family, on
     # every member's reports, and ends them when the claimant's and
     # partner's legacy awards close (housing_benefit_eligible,
@@ -167,12 +201,17 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     # unless it claims Universal Credit at the closure and is entitled to
     # it (left_pension_route_at_legacy_closure). That variable reads this
     # one through is_uc_entitled and the child element, so the formula
-    # keeps the Housing Benefit report for such a family.
+    # keeps the Housing Benefit report for such a family. Neither the claim nor
+    # the closure ends an award for specified or temporary accommodation (SI
+    # 2014/1230 regs. 8(3) and 46(2); SR 2016/226 regs. 6(3) and 47(2)), so the
+    # formula keeps that report too, as housing_benefit_eligible keeps the award.
     family_closed = person.benunit("legacy_benefits_closed", period)
     family_award_open = ~family_closed
-    housing_benefit_open = person.benunit(
-        "meets_pension_credit_age_conditions", period
-    ) | (~family_closed & ~claim_has_ended_housing_benefit)
+    housing_benefit_open = (
+        person.benunit("meets_pension_credit_age_conditions", period)
+        | person.benunit("in_specified_or_temporary_accommodation", period)
+        | (~family_closed & ~claim_has_ended_housing_benefit)
+    )
 
     income_support_paying = (
         paying(dwp.income_support.active, "income_support") & own_award_open

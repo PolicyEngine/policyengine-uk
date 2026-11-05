@@ -13,12 +13,12 @@
 # 6 April 2025). The predicate excludes nobody on those reports, as each
 # benefit's year gate has closed.
 #
-# Cases 1 to 6 and the last use one household: a parent aged 45 and a
+# Cases 1 to 6 and 10 use one household: a parent aged 45 and a
 # 17-year-old on a non-advanced course in the parent's benefit unit, North
-# East, owned outright, no income. Cases 7 and 8 use the same family renting
+# East, owned outright, no income. Cases 7, 8 and 11 use the same family renting
 # from the council at £6,000 a year and claiming no Universal Credit, so only
 # the closure can end its Housing Benefit. Case 9 has a parent aged 70. In
-# every case but 7 and 8 the parent claims Universal Credit as a single
+# every case but 7, 8 and 11 the parent claims Universal Credit as a single
 # claimant over 25 (universal_credit/standard_allowance/amount.yaml
 # SINGLE_OLD: £400.14 a month in 2025-26, £424.90 in 2026-27) and gets the
 # first child higher amount for a qualifying young person
@@ -389,3 +389,44 @@
     legacy_benefits_closed: false
     is_qualifying_young_person_for_universal_credit: [false, false]
     universal_credit: 5_098.80
+
+- name: A young person's own Housing Benefit report in temporary accommodation still excludes them after the parent's legacy awards close.
+  # The family of case 7 in temporary accommodation. The parent's own Income
+  # Support report closes the family's legacy awards, but the move off legacy
+  # benefits doesn't end a Housing Benefit award for specified or temporary
+  # accommodation (SI 2014/1230 reg. 46(2)). The model keeps the award
+  # (housing_benefit_eligible) and the predicate keeps the young person's
+  # report, so the family gets no child element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 3_000
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    housing_benefit_eligible: true
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    uc_child_element: 0
+    universal_credit: 0

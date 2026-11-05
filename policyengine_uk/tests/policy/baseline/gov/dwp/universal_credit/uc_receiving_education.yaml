@@ -1274,3 +1274,113 @@
     meets_uc_education_condition: [true]
     is_uc_eligible: true
     universal_credit: 4_062.96
+
+- name: Case 43, the 18-year-old of case 31 in Northern Ireland, whose family rents, keeps the ordinary route.
+  # SR 2016/226 reg. 6(2A): a claim ends a rent rebate or allowance two weeks
+  # after the award starts, so on the first day the claimant keeps an existing
+  # benefit and reg. 29 keeps them out of the definition, as in case 31.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: RENT_PRIVATELY
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 44, the same 18-year-old in Northern Ireland in a home the family owns receives education.
+  # A rent rebate or allowance needs rent or a similar payment (Housing Benefit
+  # Regulations (Northern Ireland) 2006 reg. 13(1)), so the model reads the report
+  # as a rate rebate (reg. 12). SR 2016/226 reg. 6(2): the claim ends it the day
+  # before the award starts. On the first day the claimant has no existing
+  # benefit, so they count as a qualifying young person and receive education
+  # (Universal Credit Regulations (Northern Ireland) 2016 reg. 12(1)). No
+  # exception applies, so they get no Universal Credit.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 45, the same 18-year-old in England in a home the family owns keeps the ordinary route.
+  # SI 2014/1230 reg. 8(2A) runs on an award of Housing Benefit whatever its
+  # form, so reg. 28 keeps the claimant out of the definition on the first day.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 46, the 18-year-old of case 31 in temporary accommodation stays outside the definition all year.
+  # SI 2014/1230 reg. 8(3): a claim doesn't end a Housing Benefit award for
+  # specified or temporary accommodation, so reg. 28 keeps the claimant out of
+  # the definition after the first day as well, and they take the ordinary
+  # route, as in case 31.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+        tenure_type: RENT_PRIVATELY
+  output:
+    is_qualifying_young_person_for_universal_credit: [false]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true

@@ -357,7 +357,9 @@ def excluded_on_first_day(case, result):
     Universal Credit award. That day a Housing Benefit or income-related ESA
     award the claim ends still runs (SI 2014/1230 reg. 8(2A)), but the claim
     has already ended a claimant's or partner's Child Tax Credit (reg.
-    8(2)(a))."""
+    8(2)(a)) and, in Northern Ireland, their rate rebate (SR 2016/226 reg.
+    6(2)), which the model reads from a report in a family that doesn't
+    rent."""
     flags = []
     index = 0
     for f, fam in enumerate(case["families"]):
@@ -374,7 +376,13 @@ def excluded_on_first_day(case, result):
             if name in OWN_CLOSURE:
                 return not result["person_legacy_benefits_closed"][i]
             if name == "housing_benefit_reported":
-                return pension_age or not family_closed
+                rate_rebate_ended = (
+                    fam["household"]["region"] == "NORTHERN_IRELAND"
+                    and fam["household"]["tenure_type"] == "OWNED_OUTRIGHT"
+                    and claims
+                    and result["is_claimant_or_partner"][i]
+                )
+                return pension_age or not (family_closed or rate_rebate_ended)
             if family_closed:
                 return False
             return not (
@@ -782,7 +790,10 @@ def check(case):
 # Credit: in 2026, after the family's legacy awards closed on their tax
 # credit report, which ended their Housing Benefit; and in 2024, reporting
 # their own Child Tax Credit, which the claim ends the day before the award,
-# with no child to except them.
+# with no child to except them. In Northern Ireland in 2026, an owner reports
+# what the model reads as a rate rebate, which the claim ends the day before
+# the award (SR 2016/226 reg. 6(2)), and a tenant reports a rent rebate or
+# allowance, which runs on (reg. 6(2A)).
 CLAIM_EXAMPLES = [
     dict(
         year=2026,
@@ -815,6 +826,35 @@ CLAIM_EXAMPLES = [
             )
         ],
     ),
+    dict(
+        year=2026,
+        families=[
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        housing_benefit_reported=6_000,
+                    )
+                ],
+                region="NORTHERN_IRELAND",
+            ),
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        housing_benefit_reported=6_000,
+                    )
+                ],
+                region="NORTHERN_IRELAND",
+                tenure_type="RENT_FROM_COUNCIL",
+                rent=6_000,
+            ),
+        ],
+    ),
 ]
 
 
@@ -825,6 +865,7 @@ CLAIM_EXAMPLES = [
 @example(EXAMPLES[3])
 @example(CLAIM_EXAMPLES[0])
 @example(CLAIM_EXAMPLES[1])
+@example(CLAIM_EXAMPLES[2])
 @given(cases())
 def test_education_condition_invariants(case):
     check(case)

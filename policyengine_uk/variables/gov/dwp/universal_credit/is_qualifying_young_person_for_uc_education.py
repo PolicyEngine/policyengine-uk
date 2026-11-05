@@ -47,17 +47,38 @@ class is_qualifying_young_person_for_uc_education(Variable):
         "reg. 29 of the Universal Credit (Transitional Provisions) Regulations "
         "(Northern Ireland) 2016, with reg. 6 of the Universal Credit "
         "Regulations (Northern Ireland) 2016 in place of the Universal Credit "
-        "Regulations 2013 reg. 5."
+        "Regulations 2013 reg. 5. SR 2016/226 reg. 6 ends awards on the same "
+        "days as reg. 8, and SR 2019/152 reg. 4 gives the income-related ESA "
+        "run-on to claims made from 22 July 2020, with one difference: a claim "
+        "ends a rate rebate the day before the award starts (reg. 6(2)), and "
+        "only a rent rebate or allowance runs on (reg. 6(2A)). The report "
+        "doesn't show the form. A rent rebate or allowance needs rent or a "
+        "similar payment (Housing Benefit Regulations (Northern Ireland) 2006 "
+        "reg. 13(1)), so the formula reads a report in a family that doesn't "
+        "rent as a rate rebate (reg. 12), and a claimant with no other "
+        "existing benefit counts as a qualifying young person on the first "
+        "day. The model can't see someone who owns a caravan or houseboat and "
+        "pays site or mooring charges (reg. 13(1)(f) and (g)), so it reads "
+        "their rent allowance as a rate rebate."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/2",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2013/983/article/4",
+        "https://www.legislation.gov.uk/uksi/2019/1152/regulation/5",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2017/190/article/6",
+        "https://www.legislation.gov.uk/nisr/2019/152/regulation/4",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/13",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/13",
     )
 
     def formula(person, period, parameters):

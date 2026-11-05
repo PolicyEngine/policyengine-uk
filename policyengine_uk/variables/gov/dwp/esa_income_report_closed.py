@@ -21,7 +21,8 @@ class esa_income_report_closed(Variable):
         "in Northern Ireland, Welfare Reform (Northern Ireland) Order 2015 "
         "art. 39(1)(b) and SR 2017/190 art. 6(1) to (3) and (6)). For claims "
         "from 22 July 2020 the award runs on for two weeks after that day (SI "
-        "2019/1152 reg. 5), which this annual model does not represent. A "
+        "2019/1152 reg. 5; in Northern Ireland, SR 2019/152 reg. 4), which this "
+        "annual model does not represent. A "
         "contributory allowance in the award continues as new style ESA "
         "(esa_contrib). A member who is neither the claimant nor the partner, "
         "such as a non-dependent adult, claims in their own right and is not "
@@ -48,6 +49,7 @@ class esa_income_report_closed(Variable):
         "https://www.legislation.gov.uk/uksi/2025/1148/article/3A",
         "https://www.legislation.gov.uk/nisi/2015/2006/article/39",
         "https://www.legislation.gov.uk/nisr/2017/190/article/6",
+        "https://www.legislation.gov.uk/nisr/2019/152/regulation/4",
         "https://www.legislation.gov.uk/nisr/2025/176/article/3A",
     )
 
