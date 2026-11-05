@@ -831,7 +831,7 @@
         members: [person1]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_universal_credit: [false]
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [false]
     is_uc_eligible: true
@@ -886,7 +886,7 @@
         members: [person1, person2]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [true, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_uc_education: [false, false]
     uc_receiving_education: [false, false]
 
@@ -915,7 +915,7 @@
         members: [person1]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_universal_credit: [false]
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [true]
     uc_is_excepted_from_education_condition: [true]
@@ -1256,7 +1256,8 @@
   output:
     legacy_benefits_closed: true
     claims_uc_at_legacy_closure: true
-    is_qualifying_young_person_for_uc_education: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    is_qualifying_young_person_on_uc_migration_day: [false]
     uc_receiving_education: [true]
     uc_is_excepted_from_education_condition: [true]
     meets_uc_education_condition: [true]

@@ -101,16 +101,34 @@ PROPERTY_SETTINGS = settings(
 YEARS = [2019, 2021, 2024, 2026]
 REGIONS = ["NORTH_EAST", "LONDON", "SCOTLAND", "NORTHERN_IRELAND"]
 EDUCATION = ["TERTIARY", "POST_SECONDARY", "NOT_IN_EDUCATION"]
-# SI 2014/1230 reg. 2(1), as reported receipt.
+TAX_CREDITS = ["child_tax_credit_reported", "working_tax_credit_reported"]
+# SI 2014/1230 reg. 2(1), as reported receipt, for the migration day: the
+# report stands for the award the closure claim ended.
 EXISTING_BENEFITS = [
     "jsa_income_reported",
     "esa_income_reported",
     "income_support_reported",
     "housing_benefit_reported",
-    "child_tax_credit_reported",
-    "working_tax_credit_reported",
+    *TAX_CREDITS,
 ]
-TAX_CREDITS = ["child_tax_credit_reported", "working_tax_credit_reported"]
+# Reg. 28 turns on entitlement,
+# so a report counts only in a year the model pays that benefit (the
+# parameter, or None where the model has no closure date) and only if no
+# reform neutralises one of its variables.
+REPORT_BENEFITS = {
+    "jsa_income_reported": ("JSA.income.active", ["jsa_income"]),
+    "esa_income_reported": (None, ["esa_income"]),
+    "income_support_reported": ("income_support.active", ["income_support"]),
+    "housing_benefit_reported": (None, ["housing_benefit"]),
+    "child_tax_credit_reported": (
+        "tax_credits.active",
+        ["child_tax_credit", "tax_credits"],
+    ),
+    "working_tax_credit_reported": (
+        "tax_credits.active",
+        ["working_tax_credit", "tax_credits"],
+    ),
+}
 # Compare eligibility, maximum entitlement, income reduction and Universal
 # Credit awards.
 OUTPUTS = [
@@ -302,6 +320,23 @@ DRAWN = (None, False)
 BEFORE = (None, True)
 
 
+def paying_reports(simulation, year):
+    """The existing benefit reports reg. 28 reads in the year: those of
+    benefits the model pays then and no reform neutralises."""
+    system = simulation.tax_benefit_system
+    dwp = system.parameters(f"{year}-01-01").gov.dwp
+    paying = []
+    for report, (active, variables) in REPORT_BENEFITS.items():
+        node = dwp
+        for key in active.split(".") if active else []:
+            node = getattr(node, key)
+        if (active is None or bool(node)) and not any(
+            system.get_variable(v).is_neutralized for v in variables
+        ):
+            paying.append(report)
+    return paying
+
+
 def run(case, variants=(DRAWN,)):
     """One simulation of every variant; returns one result per variant."""
     simulation = Simulation(situation=situation(case, variants))
@@ -314,6 +349,7 @@ def run(case, variants=(DRAWN,)):
         np.array([uses_main for _, uses_main in variants for _ in case["families"]]),
     )
     values = {name: simulation.calculate(name, year) for name in VARIABLES}
+    paying = paying_reports(simulation, year)
     limit = simulation.tax_benefit_system.parameters(
         f"{year}-01-01"
     ).gov.dwp.universal_credit.means_test.capital.limit
@@ -324,7 +360,7 @@ def run(case, variants=(DRAWN,)):
     }
     results = []
     for v in range(len(variants)):
-        result = {"capital_limit": limit}
+        result = {"capital_limit": limit, "paying": paying}
         for name, array in values.items():
             entity = simulation.tax_benefit_system.variables[name].entity.key
             size = sizes[entity]
@@ -353,17 +389,30 @@ def reference(case, result):
         members = range(start, start + len(fam["people"]))
         person_of = dict(zip(members, fam["people"]))
         couple = [i for i in members if result["is_uc_assessed_claimant"][i]]
+        tax_credits = [name for name in TAX_CREDITS if name in result["paying"]]
         couple_tax_credits = any(
+            person_of[j].get(name, 0) > 0 for j in couple for name in tax_credits
+        )
+        couple_tax_credits_on_migration_day = any(
             person_of[j].get(name, 0) > 0 for j in couple for name in TAX_CREDITS
         )
-        qyp, recv = {}, {}
+        qyp, qyp_on_migration_day, recv = {}, {}, {}
         for i, person in person_of.items():
             existing_benefit = any(
-                person.get(name, 0) > 0 for name in EXISTING_BENEFITS
+                person.get(name, 0) > 0 for name in result["paying"]
             ) or (i in couple and couple_tax_credits)
             qyp[i] = (
                 bool(result["is_qualifying_young_person_for_universal_credit"][i])
                 and not existing_benefit
+            )
+            # Reg. 28 on the migration day, when the award the closure claim
+            # ended still existed.
+            existing_benefit_on_migration_day = any(
+                person.get(name, 0) > 0 for name in EXISTING_BENEFITS
+            ) or (i in couple and couple_tax_credits_on_migration_day)
+            qyp_on_migration_day[i] = (
+                bool(result["is_qualifying_young_person_for_universal_credit"][i])
+                and not existing_benefit_on_migration_day
             )
             advanced = person["current_education"] == "TERTIARY" or person.get(
                 "in_HE", False
@@ -410,7 +459,7 @@ def reference(case, result):
             reg_60 = (
                 in_couple_role
                 and fam["benunit"]["claims_uc_at_legacy_closure"]
-                and not qyp[i]
+                and not qyp_on_migration_day[i]
             )
             exc[i] = limb_b or limb_c or limb_d or limb_e or limb_f or reg_60
         claimants = [i for i in members if result["is_uc_single_or_joint_claimant"][i]]
@@ -663,11 +712,12 @@ def check(case):
             atol=0.005,
             err_msg=f"{name}: {context}",
         )
-    # 8. Reg. 28: no one who reports an existing benefit counts as a
-    # qualifying young person for the condition.
+    # 8. Reg. 28: no one who reports an existing benefit the model pays that
+    # year, and no reform neutralises, counts as a qualifying young person
+    # for the condition.
     reports = np.array(
         [
-            any(p.get(name, 0) > 0 for name in EXISTING_BENEFITS)
+            any(p.get(name, 0) > 0 for name in drawn["paying"])
             for fam in case["families"]
             for p in fam["people"]
         ]
@@ -711,7 +761,7 @@ def test_examples_reach_the_cases():
     # People 9 and 10: the young Housing Benefit claimants.
     young = slice(9, 11)
     np.testing.assert_array_equal(
-        drawn["is_qualifying_young_person_for_universal_credit"][young], [True, True]
+        drawn["is_qualifying_young_person_for_universal_credit"][young], [False, False]
     )
     np.testing.assert_array_equal(
         drawn["is_qualifying_young_person_for_uc_education"][young], [False, False]
