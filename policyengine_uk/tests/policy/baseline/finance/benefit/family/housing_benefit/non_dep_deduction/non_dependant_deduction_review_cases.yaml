@@ -321,6 +321,9 @@
         esa_income: 2600
         pension_credit: 0
         would_claim_uc: false
+        # The couple doesn't move to Universal Credit when income-related ESA
+        # closes, so no award joins the band income.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant, recipient, partner]
@@ -646,6 +649,9 @@
         members: [recipient, partner]
         benunit_is_rent_liable: false
         would_claim_uc: false
+        # The couple doesn't move to Universal Credit when income-related ESA
+        # closes, so no award joins the band income.
+        would_claim_uc_at_legacy_closure: false
         child_tax_credit: 0
         working_tax_credit: 0
         child_benefit: 0
