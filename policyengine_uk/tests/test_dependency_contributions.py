@@ -8,10 +8,11 @@ read. The trace shows which variables the target read, over which periods and
 on which branch, in the latest calculation that gave the value the simulation
 holds. A dependency already zero wherever the target read it contributes zero,
 also to a formula that asks supplied_input or stored_as_input about what it
-read. A formula that read no variables has no contributions. Where no
-calculation in the trace gave the value (a stock over a period of another unit,
-or a value calculated before tracing began), the reads come from running the
-formula again, if it gives that value. Two cases always raise: a target set as
+read. A formula that read no variables has no contributions, and a value a
+formula reads with no node in the trace (through supplied_input, say) gets none.
+Where no calculation in the trace gave the value (a stock over a period of
+another unit, or a value calculated before tracing began), the reads come from
+running the formula again, if it gives that value. Two cases always raise: a target set as
 an input (which reads nothing), unless the system neutralizes it, and values
 neither the trace nor the formula gives. Two raise where a float dependency
 needs a recalculation: a target that reads its own value within the year
@@ -33,9 +34,11 @@ For any household drawn below:
    from what the helper's own calculation of the target stores or drops, which
    the tests calculate first. So a second call returns the same contributions.
 4. Non-float dependencies contribute zero.
-5. What the simulation calculated first doesn't change the contributions: core
-   can store a value with no calculation over that period, and running the
-   formula again gives what the calculation it came from read.
+5. What the simulation calculated first doesn't change the contributions, for
+   the toy shapes drawn: core can store a value with no calculation over that
+   period, and running the formula again gives what the calculation it came
+   from read. A formula that asks what the simulation stores can read otherwise
+   (test_a_formula_that_asks_what_the_simulation_stores).
 
 Monthly variables are the case that broke: restoring a monthly dependency over
 a year raised "Inconsistent input", because the months already held the zeros
@@ -2141,6 +2144,88 @@ def test_a_constant_equal_to_what_the_formula_it_replaced_gave():
     contributions = calculate_dependency_contributions(branch, name, 2026)
 
     assert contributions.to_dict() == {"core_leaf": 0}
+
+
+def test_a_supplied_value_a_formula_reads_with_no_node_in_the_trace():
+    # A limitation the docstring lists: supplied_input reads the stored value
+    # with no node in the trace, so a supplied adjusted net income gets no
+    # contribution, and the contributions don't sum to net_income. With
+    # earnings, the trace shows each read, and they do.
+    supplied = Simulation(
+        situation={"age": {2026: 40}, "adjusted_net_income": {2026: 50_000}},
+        trace=True,
+    )
+    assert supplied.calculate("net_income", 2026) == pytest.approx(50_000)
+    assert calculate_dependency_contributions(
+        supplied, "net_income", 2026
+    ).to_dict() == {"gift_aid_grossed_up": 0, "pension_contributions_relief": 0}
+
+    earner = Simulation(
+        situation={"age": {2026: 40}, "employment_income": {2026: 48_000}},
+        trace=True,
+    )
+    assert earner.calculate("net_income", 2026) == pytest.approx(48_000)
+    assert calculate_dependency_contributions(
+        earner, "net_income", 2026
+    ).sum() == pytest.approx(48_000)
+
+
+def test_a_formula_that_asks_what_the_simulation_stores():
+    # A limitation the docstring lists: uses_property_allowance compares income
+    # tax before the winter fuel payment charge until the simulation holds
+    # income_tax. Run again after income_tax, it takes the other route to the
+    # same election.
+    name = "uses_property_allowance"
+    situation = {
+        "age": {2026: 40},
+        "employment_income": {2026: 30_000},
+        "property_rental_income": {2026: 2_000},
+        "property_income": {2026: 2_000},
+        "property_finance_costs": {2026: 100},
+    }
+
+    def branch_reads(sim):
+        value = sim.calculate(name, 2026)
+        assert value.all()
+        return {
+            read
+            for branch, read in get_direct_reads(name, sim, 2026, value)
+            if branch == "property_allowance_used"
+        }
+
+    traced = Simulation(situation=situation, trace=True)
+    traced.calculate(name, 2026)
+    traced.calculate("income_tax", 2026)
+    assert branch_reads(traced) == {
+        "income_tax_before_winter_fuel_payment_charge",
+        "winter_fuel_payment_charge_ceiling",
+    }
+
+    untraced = Simulation(situation=situation)
+    untraced.calculate(name, 2026)
+    untraced.calculate("income_tax", 2026)
+    assert branch_reads(untraced.clone(trace=True)) == {"income_tax"}
+
+
+@pytest.mark.filterwarnings("ignore:invalid value encountered in subtract")
+def test_an_infinite_target_gives_contributions_that_are_not_finite():
+    # A limitation the docstring lists: an exempt household's uc_benefit_cap
+    # holds infinity, and subtracting it from itself gives NaN, also for the
+    # non-float variables it reads, which otherwise contribute zero.
+    sim = Simulation(
+        situation={"age": {2026: 40}, "employment_income": {2026: 40_000}},
+        trace=True,
+    )
+    assert np.isinf(sim.calculate("uc_benefit_cap", 2026)).all()
+
+    contributions = calculate_dependency_contributions(sim, "uc_benefit_cap", 2026)
+
+    assert set(contributions.index) == {
+        "is_uc_benefit_cap_single_claimant_rate",
+        "region",
+        "is_uc_benefit_cap_exempt",
+    }
+    assert contributions.isna().all()
 
 
 class core_raises(CoreVariable):

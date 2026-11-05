@@ -125,10 +125,12 @@ def calculation_again(sim, variable_name, period, value=None):
     #   the variable over that period;
     # - the simulation can calculate values before tracing began.
     # Core rejects a formula that references randomness when it builds the
-    # variable (check_formula_determinism), so where this run gives the values
-    # sim holds, its reads explain them. It runs on a branch with a tracer of
-    # its own, so sim and its trace stay as they were. An error the formula
-    # raises on this run reaches the caller.
+    # variable (check_formula_determinism). This run can still read otherwise
+    # than the calculation that gave the values: what the formula reads can
+    # have changed since, and a formula can ask what the simulation stores (see
+    # the limitations of calculate_dependency_contributions). It runs on a
+    # branch with a tracer of its own, so sim and its trace stay as they were.
+    # An error the formula raises on this run reaches the caller.
     with branch_without(sim, variable_name, period, trace=True) as branch:
         result = branch.calculate(variable_name, period)
         node = next(node for node in branch.tracer.trees if node.name == variable_name)
@@ -582,14 +584,15 @@ def calculate_dependency_contributions(
     variable_name recalculated with that variable zero wherever it read it,
     and every other variable read held (see calculate_with_dependency_zeroed),
     after mapping to map_to and selecting filter if given. So where a target
-    only adds and subtracts float variables it reads, the contributions sum
-    to its mean, unless top_n drops some. Other variables contribute zero,
-    and a formula that read no variables, or a neutralized variable, has no
-    contributions. Apart from what its own calculation of variable_name over
-    year stores or drops in sim, as any Simulation.calculate does, sim's
-    values stay as they were. The tax-benefit system needs parameters, as
-    every PE-UK system has: the recalculation runs on a branch with a clone
-    of it.
+    only adds and subtracts float variables it reads, the trace shows those
+    reads and the target's values stay finite, the contributions sum to its
+    mean, unless top_n drops some. Other variables contribute zero where the
+    target's values stay finite, and a formula that read no variables, or a
+    neutralized variable, has no contributions. Apart from what its own
+    calculation of variable_name over year stores or drops in sim, as any
+    Simulation.calculate does, sim's values stay as they were. The tax-benefit
+    system needs parameters, as every PE-UK system has: the recalculation runs
+    on a branch with a clone of it.
 
     Where no calculation in the trace gave the values sim holds (a stock over
     a period of another unit, or values calculated before tracing began, say),
@@ -638,6 +641,21 @@ def calculate_dependency_contributions(
       date_of_birth, gets an age of zero with the date of birth the real age
       gave, and birth_instant (utils/dates.py) rejects them. LHA_category has
       no category for no bedrooms.
+    - A formula can read a stored value with no calculation, through
+      supplied_input or a holder, and the trace shows no such read. That value
+      gets no contribution, and the function doesn't hold it. net_income adds
+      a supplied adjusted_net_income to Gift Aid and pension relief, so with
+      one supplied it shows only those two reads, and the contributions don't
+      sum to it.
+    - A formula that asks what the simulation stores can take another route
+      when it runs again. uses_property_allowance compares income tax before
+      the winter fuel payment charge until the simulation holds income_tax, so
+      running it again reads income_tax where the calculation read the tax
+      before the charge.
+    - A target with an infinite or NaN value can have contributions that
+      aren't finite: subtracting infinity from itself gives NaN, also for a
+      variable that otherwise contributes zero. uc_benefit_cap holds infinity
+      for an exempt household.
     - A bool or enum target that reads a variable raises TypeError, since the
       function subtracts its values.
     """
