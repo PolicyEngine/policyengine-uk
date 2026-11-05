@@ -628,6 +628,26 @@ def test_where_capital_gains_inputs_came_from_is_kept():
     )
 
 
+def test_a_neutralised_capital_gains_input_still_reads_as_its_default():
+    data = dataset()
+    data.person["capital_gains"] = np.arange(len(data.person)) * 1_000.0
+    simulation = Microsimulation(dataset=data)
+
+    class NeutraliseGains(Reform):
+        def apply(self):
+            self.neutralize_variable("capital_gains_before_response")
+
+    simulation.apply_reform(NeutraliseGains)
+    simulation.calculate("capital_gains_before_response", 2026)
+    before = simulation.capital_gains_projection_metadata["application"]
+    by_variable = before["by_variable"]["capital_gains_before_response"]
+    assert by_variable["2026"]["status"] == "default"
+
+    simulation.subsample(n=3, seed=1)
+
+    assert simulation.capital_gains_projection_metadata["application"] == before
+
+
 def test_how_the_dataset_says_its_amounts_grow_is_kept():
     """The dataset's ISA income contract, savings income series and energy
     price basis describe every household, so the sample keeps them."""
