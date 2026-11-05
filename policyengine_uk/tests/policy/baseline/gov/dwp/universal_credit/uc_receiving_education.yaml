@@ -815,6 +815,10 @@
   # Housing Benefit (reg. 2(1)), doesn't count as a qualifying young person
   # for the Universal Credit Regulations. With no maintenance funding, reg.
   # 12(2) doesn't apply either, so the claimant doesn't receive education.
+  # The claimant claims Universal Credit, which ends their own Housing
+  # Benefit (reg. 8(2A)), so is_qualifying_young_person_for_universal_credit
+  # follows that claim limb. The condition reads reg. 28 against the award
+  # they held when they claimed (is_qualifying_young_person_for_uc_education).
   period: 2026
   input:
     people:
@@ -831,7 +835,7 @@
         members: [person1]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [false]
+    is_qualifying_young_person_for_universal_credit: [true]
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [false]
     is_uc_eligible: true
@@ -915,7 +919,7 @@
         members: [person1]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [false]
+    is_qualifying_young_person_for_universal_credit: [true]
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [true]
     uc_is_excepted_from_education_condition: [true]

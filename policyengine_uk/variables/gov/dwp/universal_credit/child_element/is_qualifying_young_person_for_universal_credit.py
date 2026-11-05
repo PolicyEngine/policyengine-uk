@@ -80,117 +80,124 @@ class is_qualifying_young_person_for_universal_credit(Variable):
     ]
 
     def formula(person, period, parameters):
-        # The Secretary of State excludes a person entitled to an existing
-        # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
-        # reports, the model's legacy closure proxy and the family's Universal
-        # Credit claim, so it calculates no family benefit that depends on QYP
-        # status.
-        p = parameters(period).gov
-        dwp = p.dwp
-        # The reform pays each listed benefit at its dataset-year report in
-        # that year and the nine after it, closure dates included, and holds
-        # both legacy closures false in those years. The formula reads the
-        # switch, not those years, so in a later year it still reads a tax
-        # credit report that the model no longer pays, and still leaves out
-        # the claim limbs below.
-        paid_as_reported = bool(p.contrib.policyengine.disable_simulated_benefits)
-        system = person.simulation.tax_benefit_system
+        return qualifying_young_person(person, period, parameters)
 
-        def paying(active, *names):
-            # Nobody is entitled to a benefit the model no longer pays, or one
-            # a reform neutralises.
-            return bool(active or paid_as_reported) and not any(
-                system.get_variable(name).is_neutralized for name in names
-            )
 
-        # The model ends a person's Income Support, income-based JSA and
-        # income-related ESA when their legacy awards close: the claimant's
-        # and partner's together (legacy_benefits_closed, read through
-        # income_support), and anyone else's on their own reports
-        # (jsa_income, esa_income). person_legacy_benefits_closed and
-        # legacy_benefits_closed read reports, is_claimant_or_partner, the
-        # Pension Credit age conditions and parameters, and no Universal
-        # Credit variable.
-        own_award_open = ~person("person_legacy_benefits_closed", period)
-        # A claim for Universal Credit ends the claimant's and partner's own
-        # awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and
-        # nobody else's. The model ends the claimant's and partner's
-        # income-related ESA when the family claims (esa_income_report_closed),
-        # and the formula follows it. claims_universal_credit reads
-        # would_claim_uc, would_claim_uc_at_legacy_closure and
-        # legacy_benefits_closed, not this variable. In its years the reform
-        # behind disable_simulated_benefits pays each report as reported
-        # whether or not the family claims, and holds the legacy closures
-        # false, so while the switch is on the formula keeps the person's own
-        # closure alone.
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        esa_income_open = ~person("esa_income_report_closed", period) | (
-            own_award_open & paid_as_reported
-        )
-        claim_ends_own_award = (
-            claimant_or_partner
-            & person.benunit("claims_universal_credit", period)
-            & (not paid_as_reported)
-        )
-        # The model pays Housing Benefit and tax credits to the family, on
-        # every member's reports, and ends them when the claimant's and
-        # partner's legacy awards close (housing_benefit_eligible,
-        # is_CTC_eligible, is_WTC_eligible). It also ends the family's
-        # continuing Housing Benefit award and its Child Tax Credit when the
-        # family claims Universal Credit, and the formula follows that limb
-        # for a claimant or partner, whose own award the claim ends. A family
-        # that meets the Pension Credit age conditions keeps Housing Benefit
-        # unless it claims Universal Credit at the closure and is entitled to
-        # it (left_pension_route_at_legacy_closure). That variable reads this
-        # one through is_uc_entitled and the child element, so the formula
-        # keeps the Housing Benefit report for such a family.
-        family_closed = person.benunit("legacy_benefits_closed", period)
-        family_award_open = ~family_closed
-        housing_benefit_open = person.benunit(
-            "meets_pension_credit_age_conditions", period
-        ) | (~family_closed & ~claim_ends_own_award)
+def qualifying_young_person(person, period, parameters, claim_limbs=True):
+    """The UC qualifying young person test with SI 2014/1230 reg. 28
+    applied, as is_qualifying_young_person_for_universal_credit documents
+    it. With claim_limbs false it leaves out the limbs that end a
+    claimant's or partner's own award on the family's Universal Credit
+    claim, so it reads reg. 28 against the awards they held when they
+    claimed (is_qualifying_young_person_for_uc_education reads that)."""
+    # The Secretary of State excludes a person entitled to an existing
+    # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
+    # reports, the model's legacy closure proxy and the family's Universal
+    # Credit claim, so it calculates no family benefit that depends on QYP
+    # status.
+    p = parameters(period).gov
+    dwp = p.dwp
+    # The reform pays each listed benefit at its dataset-year report in
+    # that year and the nine after it, closure dates included, and holds
+    # both legacy closures false in those years. The formula reads the
+    # switch, not those years, so in a later year it still reads a tax
+    # credit report that the model no longer pays, and still leaves out
+    # the claim limbs below.
+    paid_as_reported = bool(p.contrib.policyengine.disable_simulated_benefits)
+    system = person.simulation.tax_benefit_system
 
-        income_support_paying = (
-            paying(dwp.income_support.active, "income_support") & own_award_open
+    def paying(active, *names):
+        # Nobody is entitled to a benefit the model no longer pays, or one
+        # a reform neutralises.
+        return bool(active or paid_as_reported) and not any(
+            system.get_variable(name).is_neutralized for name in names
         )
-        jsa_income_paying = paying(dwp.JSA.income.active, "jsa_income") & own_award_open
-        esa_income_paying = paying(True, "esa_income") & esa_income_open
-        housing_benefit_paying = paying(True, "housing_benefit") & housing_benefit_open
-        child_tax_credit_paying = (
-            paying(dwp.tax_credits.active, "child_tax_credit", "tax_credits")
-            & family_award_open
-            & ~claim_ends_own_award
+
+    # The model ends a person's Income Support, income-based JSA and
+    # income-related ESA when their legacy awards close: the claimant's
+    # and partner's together (legacy_benefits_closed, read through
+    # income_support), and anyone else's on their own reports
+    # (jsa_income, esa_income). person_legacy_benefits_closed and
+    # legacy_benefits_closed read reports, is_claimant_or_partner, the
+    # Pension Credit age conditions and parameters, and no Universal
+    # Credit variable.
+    own_award_open = ~person("person_legacy_benefits_closed", period)
+    # A claim for Universal Credit ends the claimant's and partner's own
+    # awards (SI 2014/1230 reg. 8(2) and (2A); SI 2013/983 art. 4), and
+    # nobody else's. The model ends the claimant's and partner's
+    # income-related ESA when the family claims (esa_income_report_closed),
+    # and the formula follows it. claims_universal_credit reads
+    # would_claim_uc, would_claim_uc_at_legacy_closure and
+    # legacy_benefits_closed, not this variable. In its years the reform
+    # behind disable_simulated_benefits pays each report as reported
+    # whether or not the family claims, and holds the legacy closures
+    # false, so while the switch is on the formula keeps the person's own
+    # closure alone.
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    esa_income_open = ~person("esa_income_report_closed", period) | (
+        own_award_open & (paid_as_reported or not claim_limbs)
+    )
+    claim_ends_own_award = (
+        claimant_or_partner
+        & person.benunit("claims_universal_credit", period)
+        & (claim_limbs and not paid_as_reported)
+    )
+    # The model pays Housing Benefit and tax credits to the family, on
+    # every member's reports, and ends them when the claimant's and
+    # partner's legacy awards close (housing_benefit_eligible,
+    # is_CTC_eligible, is_WTC_eligible). It also ends the family's
+    # continuing Housing Benefit award and its Child Tax Credit when the
+    # family claims Universal Credit, and the formula follows that limb
+    # for a claimant or partner, whose own award the claim ends. A family
+    # that meets the Pension Credit age conditions keeps Housing Benefit
+    # unless it claims Universal Credit at the closure and is entitled to
+    # it (left_pension_route_at_legacy_closure). That variable reads this
+    # one through is_uc_entitled and the child element, so the formula
+    # keeps the Housing Benefit report for such a family.
+    family_closed = person.benunit("legacy_benefits_closed", period)
+    family_award_open = ~family_closed
+    housing_benefit_open = person.benunit(
+        "meets_pension_credit_age_conditions", period
+    ) | (~family_closed & ~claim_ends_own_award)
+
+    income_support_paying = (
+        paying(dwp.income_support.active, "income_support") & own_award_open
+    )
+    jsa_income_paying = paying(dwp.JSA.income.active, "jsa_income") & own_award_open
+    esa_income_paying = paying(True, "esa_income") & esa_income_open
+    housing_benefit_paying = paying(True, "housing_benefit") & housing_benefit_open
+    child_tax_credit_paying = (
+        paying(dwp.tax_credits.active, "child_tax_credit", "tax_credits")
+        & family_award_open
+        & ~claim_ends_own_award
+    )
+    working_tax_credit_paying = (
+        paying(dwp.tax_credits.active, "working_tax_credit", "tax_credits")
+        & family_award_open
+    )
+    tax_credits_reported = child_tax_credit_paying * person(
+        "child_tax_credit_reported", period
+    ) + working_tax_credit_paying * person("working_tax_credit_reported", period)
+    # Tax Credits Act 2002 s.3(3): the members of a couple claim jointly,
+    # so the couple's award belongs to the claimant and the partner. A
+    # dependant claims as a single person, so their award stays theirs.
+    couple_tax_credits_reported = person.benunit.sum(
+        where(claimant_or_partner, tax_credits_reported, 0)
+    )
+    receives_tax_credits = (tax_credits_reported > 0) | (
+        claimant_or_partner & (couple_tax_credits_reported > 0)
+    )
+    entitled_to_existing_benefit = (
+        (esa_income_paying & (person("esa_income_reported", period) > 0))
+        | (jsa_income_paying & (person("jsa_income_reported", period) > 0))
+        | (income_support_paying & (person("income_support_reported", period) > 0))
+        | (housing_benefit_paying & (person("housing_benefit_reported", period) > 0))
+        | receives_tax_credits
+    )
+    return (
+        person(
+            "is_qualifying_young_person_under_universal_credit_regulation_5",
+            period,
         )
-        working_tax_credit_paying = (
-            paying(dwp.tax_credits.active, "working_tax_credit", "tax_credits")
-            & family_award_open
-        )
-        tax_credits_reported = child_tax_credit_paying * person(
-            "child_tax_credit_reported", period
-        ) + working_tax_credit_paying * person("working_tax_credit_reported", period)
-        # Tax Credits Act 2002 s.3(3): the members of a couple claim jointly,
-        # so the couple's award belongs to the claimant and the partner. A
-        # dependant claims as a single person, so their award stays theirs.
-        couple_tax_credits_reported = person.benunit.sum(
-            where(claimant_or_partner, tax_credits_reported, 0)
-        )
-        receives_tax_credits = (tax_credits_reported > 0) | (
-            claimant_or_partner & (couple_tax_credits_reported > 0)
-        )
-        entitled_to_existing_benefit = (
-            (esa_income_paying & (person("esa_income_reported", period) > 0))
-            | (jsa_income_paying & (person("jsa_income_reported", period) > 0))
-            | (income_support_paying & (person("income_support_reported", period) > 0))
-            | (
-                housing_benefit_paying
-                & (person("housing_benefit_reported", period) > 0)
-            )
-            | receives_tax_credits
-        )
-        return (
-            person(
-                "is_qualifying_young_person_under_universal_credit_regulation_5",
-                period,
-            )
-            & ~entitled_to_existing_benefit
-        )
+        & ~entitled_to_existing_benefit
+    )

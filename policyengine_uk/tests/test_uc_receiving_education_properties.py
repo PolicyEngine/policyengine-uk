@@ -758,10 +758,13 @@ def test_examples_reach_the_cases():
         drawn["uc_is_excepted_from_education_condition"][1:5],
         [True, False, True, False],
     )
-    # People 9 and 10: the young Housing Benefit claimants.
+    # People 9 and 10: the young Housing Benefit claimants. Each claims
+    # Universal Credit, which ends their own Housing Benefit (SI 2014/1230
+    # reg. 8(2A)), so the UC predicate follows that claim limb; the condition
+    # reads reg. 28 against the award they held when they claimed.
     young = slice(9, 11)
     np.testing.assert_array_equal(
-        drawn["is_qualifying_young_person_for_universal_credit"][young], [False, False]
+        drawn["is_qualifying_young_person_for_universal_credit"][young], [True, True]
     )
     np.testing.assert_array_equal(
         drawn["is_qualifying_young_person_for_uc_education"][young], [False, False]
