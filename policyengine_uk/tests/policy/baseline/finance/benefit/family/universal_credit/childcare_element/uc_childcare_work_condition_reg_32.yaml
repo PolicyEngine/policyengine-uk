@@ -128,7 +128,8 @@
     # allowance, so is a "severely disabled person" (SSCBA 1992 s. 70(2)).
     # Sara meets the Carer's Allowance conditions that reg. 30(1)(a)
     # imports, so "both Ben and Sara satisfy the paid work test" (ADM F7013).
-    # The model's is_carer_for_benefits reads only Sara's 40 care hours; it
+    # The model's is_carer_for_benefits reads Sara's 40 care hours and her
+    # cares_for_severely_disabled_person, left at its default of true; it
     # does not check her mother's attendance allowance.
     is_carer_for_benefits: [false, true, false, false]
     uc_childcare_work_condition: [true, false]
