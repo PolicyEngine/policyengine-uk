@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.pence import stored_pence
 
 
 class carers_allowance_weekly_earnings_above_limit(Variable):
@@ -7,13 +8,20 @@ class carers_allowance_weekly_earnings_above_limit(Variable):
     label = "weekly earnings above the Carer's Allowance earnings limit"
     documentation = (
         "How far the person's weekly net earnings exceed the Carer's Allowance "
-        "earnings limit, or zero at or below it. The regulation tests the "
-        "earnings of the preceding week; annual earnings are spread evenly "
-        "over 52 weeks. The model disregards a fraction of a penny, as regulation 5 "
-        "of the Computation of Earnings Regulations requires when that favours "
-        "the claimant. Any excess means the person is gainfully employed; "
-        "where the Budget 2026 earnings taper applies, the allowance tapers "
-        "away on it instead of stopping."
+        "earnings limit, in whole pence for a limit in whole pence, or zero at "
+        "or below it. The formula spreads annual earnings evenly over 52 weeks "
+        "to stand for the earnings of the preceding week (ICA Regulations reg. "
+        "8(1)), for an employed earner's yearly pay (reg. 8(1)(b)(iii)) and a "
+        "self-employed earner's average weekly earnings over a year (reg. "
+        "11(1)(a)). It disregards a fraction of a "
+        "penny, as regulation 5 of the Computation of Earnings Regulations "
+        "requires when that favours the claimant. Net earnings are whole "
+        "pence, since carers_allowance_earnings applies regulation 5 to each "
+        "step, and the formula reads the whole pence back exactly, although "
+        "the model stores amounts in single precision, which holds most sums "
+        "of money only to within a fraction of a penny. Any excess means the "
+        "person is gainfully employed; where the Budget 2026 earnings taper "
+        "applies, the allowance tapers away on it instead of stopping."
     )
     definition_period = YEAR
     unit = GBP
@@ -26,12 +34,31 @@ class carers_allowance_weekly_earnings_above_limit(Variable):
             title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 5",
             href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/5",
         ),
+        dict(
+            title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 8(1)(b)(iii)",
+            href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/8",
+        ),
+        dict(
+            title="Social Security Benefit (Computation of Earnings) Regulations 1996 reg. 11(1)(a)",
+            href="https://www.legislation.gov.uk/uksi/1996/2745/regulation/11",
+        ),
     ]
 
     def formula(person, period, parameters):
         limit = parameters(period).gov.dwp.carers_allowance.earnings_limit
-        weekly = person("carers_allowance_earnings", period) / WEEKS_IN_YEAR
-        # Disregard a fraction of a penny; the tolerance keeps an exact
-        # number of pence safe from floating-point error.
-        weekly_in_pence = np.floor(weekly * 100 + 1e-6) / 100
-        return max_(0, weekly_in_pence - limit)
+        earnings = person("carers_allowance_earnings", period)
+        # carers_allowance_earnings is whole pence, which float32 holds to
+        # within half a step (£10,608.52 as 10,608.51953125); stored_pence
+        # recovers them exactly below £131,072 a year. An amount entered
+        # directly with a fraction of a penny has the fraction disregarded
+        # (reg. 5).
+        annual_pence = np.floor(stored_pence(earnings))
+        # Spread over 52 weeks (regs. 8(1)(b)(iii) and 11(1)(a)), disregarding
+        # the fraction of a penny that leaves (reg. 5). Both steps are exact in
+        # float64, so no floating-point rounding decides whether, or by how
+        # much, earnings have exceeded the limit (ICA Regulations reg. 8(1)).
+        weekly_pence = np.floor(annual_pence / WEEKS_IN_YEAR)
+        # Rounding to a millionth of a penny keeps a limit such as £204.10
+        # from being read as 20,409.999... pence.
+        limit_pence = np.round(limit * 100, 6)
+        return max_(0, weekly_pence - limit_pence) / 100

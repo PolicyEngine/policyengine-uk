@@ -32,6 +32,7 @@ from policyengine_core.commons.formulas import WEEKS_IN_YEAR
 from policyengine_uk.utils.benefit_unit import HALF_PENNY
 from policyengine_uk.utils.couple_carer_award import limit_carer_benefit_to_one_partner
 from policyengine_uk.utils.formula_origin import calculated_by
+from policyengine_uk.utils.pence import stored_pence
 from policyengine_uk.utils.supplied_inputs import supplied_input
 
 
@@ -62,7 +63,14 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
     # weekly earnings above the limit.
     taper = ca.earnings_taper
     country = person.household("country", period).decode_to_str()
-    excess = person("carers_allowance_weekly_earnings_above_limit", period)
+    # For a limit in whole pence the excess is whole pence, which float32 holds
+    # only to within half a step (1p as 0.0099999998); stored_pence reads them
+    # back exactly, in float64, so the formula subtracts them from the rate in
+    # float64.
+    excess = (
+        stored_pence(person("carers_allowance_weekly_earnings_above_limit", period))
+        / 100
+    )
     tapered = np.isin(country, list(taper.countries)) * np.maximum(
         0, ca.rate - taper.rate * excess
     )
