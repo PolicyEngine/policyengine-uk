@@ -40,6 +40,9 @@ the pieces to the invariants the Test job relies on:
     the least loaded shard, whatever order the table lists them in, so no
     shard's listed load exceeds another's by more than the longest test; the
     table parses and each entry names a test function that exists.
+13. The tests of a file in ``SHARED_FIXTURE_FILES`` all run in one shard, listed
+    or not, at any number of shards. The deal gives the file the weight of its
+    longest test, and the bound in 12 holds with that weight.
 """
 
 import ast
@@ -243,6 +246,69 @@ def test_the_checked_in_shard_durations_name_tests_that_exist(conftest):
 
 def test_a_missing_table_leaves_every_test_to_the_hash(conftest, tmp_path):
     assert conftest.read_shard_durations(tmp_path / "absent.toml") == {}
+
+
+# Invariant 13: a file with a costly module fixture runs in one shard.
+
+CERTIFIED = "policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py"
+
+_certified_ids = st.builds(
+    lambda name, params: f"{CERTIFIED}::{name}{params}", _identifier, _params
+)
+
+
+def test_the_certified_aggregate_tests_share_one_shard(conftest):
+    source = (REPO_ROOT / CERTIFIED).read_text(encoding="utf-8")
+    names = [
+        node.name
+        for node in ast.parse(source).body
+        if isinstance(node, ast.FunctionDef) and node.name.startswith("test_")
+    ]
+    assert len(names) > 1
+    for shards in (1, 3, 5, 7):
+        placed = {conftest.shard_of(f"{CERTIFIED}::{name}", shards) for name in names}
+        assert len(placed) == 1, (shards, placed)
+
+
+@PROPERTY_SETTINGS
+@given(nodeid=_certified_ids, shards=st.integers(1, 8))
+def test_any_test_in_a_shared_fixture_file_joins_the_others(conftest, nodeid, shards):
+    assert conftest.shard_of(nodeid, shards) == conftest.shard_of(
+        f"{CERTIFIED}::test_anything", shards
+    )
+
+
+def test_a_shared_fixture_file_hashes_as_one_without_a_table(conftest, monkeypatch):
+    monkeypatch.setattr(conftest, "_BALANCED", {7: {}})
+    assert len({conftest.shard_of(f"{CERTIFIED}::test_{k}", 7) for k in range(20)}) == 1
+
+
+@PROPERTY_SETTINGS
+@given(
+    certified=st.dictionaries(
+        _certified_ids, st.floats(0, 3_000, allow_nan=False), max_size=8
+    ),
+    others=_durations,
+    shards=st.integers(1, 8),
+    data=st.data(),
+)
+def test_the_deal_moves_a_shared_fixture_file_as_one(
+    conftest, certified, others, shards, data
+):
+    durations = {**others, **certified}
+    placed = conftest.balanced_shards(durations, shards)
+    assert placed.keys() == durations.keys()
+    assert all(1 <= shard <= shards for shard in placed.values())
+    assert len({placed[nodeid] for nodeid in certified}) <= 1
+    load = [0.0] * shards
+    for nodeid, seconds in others.items():
+        load[placed[nodeid] - 1] += seconds
+    if certified:
+        load[placed[next(iter(certified))] - 1] += max(certified.values())
+    assert max(load) - min(load) <= max(durations.values(), default=0) + 1e-6
+    # The same placement whatever order the table lists the tests in.
+    reordered = dict(data.draw(st.permutations(list(durations.items()))))
+    assert conftest.balanced_shards(reordered, shards) == placed
 
 
 # Invariant 4: the collection listing.
