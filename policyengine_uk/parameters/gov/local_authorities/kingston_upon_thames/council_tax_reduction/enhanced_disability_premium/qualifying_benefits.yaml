@@ -20,9 +20,10 @@ description: >
   registers for 2017 to 2026 (though it leaves some Council resolutions out
   of them); and in its 2023-24 budget report it says the scheme "remains
   unchanged". The model applies the list in 2013-14 to 2017-18 and from
-  2023-24. It keeps the Housing Benefit list in 2018-19 to 2022-23 because
-  no complete scheme text for those years survives. The model reads the
-  list as at 30 April of each year.
+  2023-24. No complete scheme text for 2018-19 to 2022-23 survives, so for
+  those years the model assumes the Housing Benefit list, as it does for
+  councils without a list of their own. The model reads the list as at 30
+  April of each year.
 metadata:
   label: Kingston upon Thames Council Tax Reduction enhanced disability premium qualifying benefits
   period: year

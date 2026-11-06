@@ -15,9 +15,9 @@
 # 3 para 12(1)): DLA care highest and PIP daily living at either rate, without
 # AFIP. The four London councils keep the qualifying age for State Pension
 # Credit as the age limit. The model applies Kingston's list in 2013-14 to
-# 2017-18 and from 2023-24, and keeps the Housing Benefit list in 2018-19 to
-# 2022-23 because no complete scheme text for those years survives. The
-# other councils' lists apply in every model year. The model reads each
+# 2017-18 and from 2023-24. No complete scheme text for 2018-19 to 2022-23
+# survives, so for those years the model assumes the Housing Benefit list.
+# The other councils' lists apply in every model year. The model reads each
 # year's rules at 30 April.
 # Unless a case sets `is_disabled_for_benefits`, it keeps its default, false,
 # and the model pays no disability premium, although the schemes give one to
@@ -854,3 +854,67 @@
   output:
     # Merton's list still counts only highest DLA care or PIP daily living.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
+
+- name: Case 24, Kingston's first Housing Benefit year counts AFIP (2018).
+  period: 2018
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # The switch is false from 1 April 2018; the GB Housing Benefit list counts AFIP.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+
+- name: Case 25, Kingston's own list omits AFIP again from 2023.
+  period: 2023
+  input:
+    people:
+      person1:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # The switch is true again from 1 April 2023; Kingston's list omits AFIP.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+
+- name: Case 26, Kingston's first Housing Benefit year omits standard PIP daily living (2018).
+  period: 2018
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: STANDARD
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # The GB Housing Benefit list counts only the enhanced PIP daily living rate.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+
+- name: Case 27, Kingston's own list counts standard PIP daily living again from 2023.
+  period: 2023
+  input:
+    people:
+      person1:
+        age: 30
+        pip_dl_category: STANDARD
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+  output:
+    # Kingston's list counts the PIP daily living component at either rate.
+    meets_council_tax_reduction_enhanced_disability_premium_condition: true

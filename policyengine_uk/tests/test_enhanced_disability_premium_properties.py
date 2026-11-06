@@ -23,7 +23,7 @@ and AFIP. In Westminster the model applies the Default Scheme's list (S.I.
 2012/2886 Sch 3 para 12), which counts the PIP daily living component at
 either rate and omits AFIP. Each council's list starts on or before 1 April
 2013 (COUNCIL_LISTS) and applies in every model year, except that for
-Kingston upon Thames the model applies the Housing Benefit condition in
+Kingston upon Thames the model assumes the Housing Benefit condition in
 2018-19 to 2022-23, for which no complete scheme text survives. The model
 also applies the Housing Benefit condition in Wales and every other scheme.
 
@@ -129,7 +129,7 @@ COUNCIL_LISTS = {
     # The 2013 rules.
     "MERTON": {2013: ("dla_highest", "any_pip")},
     # The Default Scheme, adopted for 2013-14. No complete scheme text for
-    # 2018-19 to 2022-23 survives, so the model applies the Housing Benefit
+    # 2018-19 to 2022-23 survives, so the model assumes the Housing Benefit
     # condition in those years.
     "KINGSTON_UPON_THAMES": {
         2013: ("dla_highest", "any_pip"),
