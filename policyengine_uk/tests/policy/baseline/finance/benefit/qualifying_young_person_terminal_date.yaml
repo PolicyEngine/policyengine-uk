@@ -349,7 +349,8 @@
     child_minimum_guarantee_addition: 0
 
 - name: Case 15, a pensioner gets no Pension Credit child addition for a 19-year-old at school before the date who reports their own Income Support.
-  # SPC reg. 4A(5) lists income support; UC reg. 5(5) does not. The model
+  # SPC reg. 4A(5) lists income support. UC reg. 5(5) does not, but SI
+  # 2014/1230 reg. 28 excludes a person entitled to it. The model
   # pays Income Support until 2026-04-01 (gov.dwp.income_support.active), so
   # the case runs in 2025-26. The student is not a claimant or partner, so
   # is_on_income_support reads their own report. Without it, the first-child
@@ -373,6 +374,6 @@
   output:
     is_before_first_september_following_19th_birthday: [false, true]
     is_on_income_support: [false, true]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, false]
     child_minimum_guarantee_addition: 0

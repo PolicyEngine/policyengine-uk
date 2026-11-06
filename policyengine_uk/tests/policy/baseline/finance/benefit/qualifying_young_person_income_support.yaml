@@ -3,7 +3,9 @@
 # Benefit (General) Regulations 2006 reg. 8(2)(a)) and Child Tax Credit (CTC
 # Regs 2002 reg. 5(4)(c)). Universal Credit's list (UC Regs 2013 reg. 5(5))
 # names Universal Credit, Employment and Support Allowance and Jobseeker's
-# Allowance only.
+# Allowance only, but the Secretary of State also excludes a person entitled to
+# an existing benefit, Income Support among them (SI 2014/1230 regs. 2(1) and
+# 28), so the report ends Universal Credit status too while Income Support pays.
 #
 # Pension Credit and Child Tax Credit read is_on_income_support: the benefit
 # unit's calculated award, for whichever of the claimant and partner receives
@@ -44,7 +46,7 @@
     # 26.05 * 52.
     child_benefit_entitlement: 1_354.60
 
-- name: Case 2, reported Income Support of their own ends it for Pension Credit and Child Benefit, not Universal Credit.
+- name: Case 2, reported Income Support of their own ends it for Pension Credit, Child Benefit and Universal Credit.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -64,7 +66,7 @@
     receives_income_support_in_own_right: [false, true]
     is_qualifying_young_person_for_pension_credit: [false, false]
     is_qualifying_young_person_for_child_benefit: [false, false]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
     child_minimum_guarantee_addition: 0
     child_benefit_entitlement: 0
     is_child_or_young_person_for_legacy_benefits: [false, false]
@@ -134,7 +136,7 @@
   output:
     is_qualifying_young_person_for_pension_credit: [false, false]
     is_qualifying_young_person_for_child_benefit: [false, false]
-    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
 
 - name: Case 6, a report of Income Support after it stopped paying does not count.
   period: 2026

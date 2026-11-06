@@ -1,6 +1,6 @@
 # Each Council Tax Reduction scheme's own "young person". Scotland's
-# working-age scheme, from 1 April 2022, uses the Universal Credit qualifying
-# young person (SSI 2021/249 reg. 6(1); UC Regs 2013 reg. 5). England, Wales
+# working-age scheme, from 1 April 2022, uses the qualifying young person of
+# UC Regs 2013 reg. 5 (SSI 2021/249 reg. 6(1)). England, Wales
 # and Scotland's pension-age scheme use the Child Benefit qualifying young
 # person (SI 2012/2885 reg. 2; WSI 2013/3029 reg. 2; SSI 2012/319 reg. 4), as
 # did Scotland's working-age scheme until 31 March 2022 (SSI 2012/303 reg. 4).
@@ -353,3 +353,103 @@
     is_council_tax_reduction_applicant_or_partner: [true, false, false]
     is_child_or_young_person_for_council_tax_reduction: [true, false, false]
     council_tax_reduction_applicable_income: 10_000
+
+- name: Case 11, Scotland working age, a 19-year-old's own Housing Benefit leaves them a young person.
+  # The Secretary of State excludes a person entitled to an existing benefit
+  # from the qualifying young person only for the purposes of the UC
+  # Regulations and WRA 2012 Part 1 (SI 2014/1230 reg. 28). The Scottish
+  # Ministers define the young person by UC Regs reg. 5 (SSI 2021/249 reg.
+  # 6(1)), so the 19-year-old stays in the family.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_under_universal_credit_regulation_5: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    # Lone parent aged 18 or over: 95.55 * 52.
+    council_tax_reduction_applicable_amount: 4_968.60
+
+- name: Case 12, Scotland working age, a 17-year-old's own Income Support, income-based JSA or income-related ESA leaves them a young person, and contribution-based JSA does not.
+  period: 2025
+  input:
+    age: [17, 17, 17, 17]
+    current_education: [UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY, UPPER_SECONDARY]
+    is_claimant_or_partner: [false, false, false, false]
+    income_support_reported: [3_000, 0, 0, 0]
+    jsa_income_reported: [0, 3_000, 0, 0]
+    esa_income_reported: [0, 0, 3_000, 0]
+    jsa_contrib_reported: [0, 0, 0, 3_000]
+    country: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false, false, false]
+    # The Secretary of State excludes a person receiving contribution-based
+    # JSA (reg. 5(5)), so only that report removes the young person.
+    is_qualifying_young_person_under_universal_credit_regulation_5: [true, true, true, false]
+    is_child_or_young_person_for_council_tax_reduction: [true, true, true, false]
+
+- name: Case 13, Scotland working age, a 19-year-old's own income-related ESA leaves the earning applicant a lone parent and raises the award.
+  # The Scottish Ministers define the young person by UC Regs reg. 5 (SSI
+  # 2021/249 reg. 6(1)), so the 19-year-old stays in the family and the
+  # 22-year-old applicant is a lone parent: 95.55 * 52 = 4,968.60. The
+  # 19-year-old's own income-related ESA ends the family's Child Benefit (Child
+  # Benefit (General) Regs 2006 reg. 8(2)(e)), so applicable income is the
+  # applicant's earnings, 5,000. The shared formula would withdraw 20% of the
+  # excess, 0.2 * (5,000 - 4,968.60) = 6.28, but Scotland's working-age route
+  # sets the award: (95.55 + 109.85) * 52 = 10,680.80 exceeds the income, 5,000
+  # less 25 a week = 3,700, so the award is the full 1,800.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        employment_income: 5_000
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    child_benefit: 0
+    council_tax_reduction_applicable_amount: 4_968.60
+    council_tax_reduction_applicable_income: 5_000
+    council_tax_reduction: 1_800

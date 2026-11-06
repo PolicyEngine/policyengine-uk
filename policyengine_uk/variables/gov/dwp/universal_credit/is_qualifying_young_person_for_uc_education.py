@@ -1,15 +1,7 @@
 from policyengine_uk.model_api import *
-
-# Universal Credit (Transitional Provisions) Regulations 2014 reg. 2(1).
-EXISTING_BENEFITS = [
-    "jsa_income_reported",
-    "esa_income_reported",
-    "income_support_reported",
-    "housing_benefit_reported",
-    "child_tax_credit_reported",
-    "working_tax_credit_reported",
-]
-TAX_CREDITS = ["child_tax_credit_reported", "working_tax_credit_reported"]
+from policyengine_uk.variables.gov.dwp.universal_credit.child_element.is_qualifying_young_person_for_universal_credit import (
+    qualifying_young_person,
+)
 
 
 class is_qualifying_young_person_for_uc_education(Variable):
@@ -19,50 +11,83 @@ class is_qualifying_young_person_for_uc_education(Variable):
     documentation = (
         "Whether this person counts as a qualifying young person for the "
         "Universal Credit condition that a claimant is not receiving "
-        "education: they meet is_qualifying_young_person_for_universal_credit "
-        "and have no entitlement to an existing benefit. Under the Universal "
-        "Credit (Transitional Provisions) Regulations 2014 reg. 28, a person "
-        "entitled to an existing benefit doesn't count as a qualifying young "
-        "person, and the Secretary of State lists the existing benefits in "
-        "reg. 2(1): income-based Jobseeker's Allowance, income-related "
-        "Employment and Support Allowance, Income Support, Housing Benefit, "
-        "Child Tax Credit and Working Tax Credit. The model reads entitlement "
-        "from the year's reported receipt: the person's own report of any of "
-        "them, or, for a claimant or partner, either member's report of tax "
-        "credits, which a couple claims jointly. A person outside the "
-        "definition under reg. 28 takes the ordinary route under the Universal "
-        "Credit Regulations 2013 reg. 12(2). The model's other rules read "
-        "is_qualifying_young_person_for_universal_credit, which leaves reg. 28 "
-        "out. In Northern Ireland the decision maker applies the same rule "
-        "under reg. 29 of the Universal Credit (Transitional Provisions) "
-        "Regulations (Northern Ireland) 2016, with reg. 6 of the Universal "
-        "Credit Regulations (Northern Ireland) 2016 in place of the Universal "
-        "Credit Regulations 2013 reg. 5."
+        "education. Under the Universal Credit (Transitional Provisions) "
+        "Regulations 2014 reg. 28, a person entitled to an existing benefit "
+        "doesn't count as a qualifying young person, and the Secretary of "
+        "State lists the existing benefits in reg. 2(1): income-based "
+        "Jobseeker's Allowance, income-related Employment and Support "
+        "Allowance, Income Support, Housing Benefit, Child Tax Credit and "
+        "Working Tax Credit. It reads "
+        "is_qualifying_young_person_for_universal_credit, which applies reg. "
+        "28, but for a claimant or partner it reads the status on the first "
+        "day of their Universal Credit award. A claim ends a tax credit award "
+        "the day before the award starts (reg. 8(2)(a)), but a Housing "
+        "Benefit award only two weeks after (reg. 8(2A)), and the model's "
+        "esa_income_report_closed describes the same run-on for "
+        "income-related ESA. The Secretary of State inserted reg. 8(2A) from "
+        "11 April 2018 (SI 2018/65), and SI 2019/1152 reg. 5 gives the "
+        "income-related ESA run-on only to claims made from 22 July 2020; "
+        "the annual model applies both run-ons in earlier years too. So the "
+        "Secretary of State still excludes a "
+        "claimant on such an award that day (reg. 28), and once they receive "
+        "Universal Credit, as a person receiving it (Universal Credit "
+        "Regulations 2013 reg. 5(5)), which the model's reg. 5 test reads "
+        "only from reported Universal Credit. The formula therefore leaves "
+        "out the Housing Benefit and income-related ESA claim limbs that "
+        "is_qualifying_young_person_for_universal_credit follows, and keeps "
+        "the Child Tax Credit one, the year gates and the legacy closures. A "
+        "claimant whose Universal Credit comes to nil receives none, so after "
+        "the run-on the law counts them as a qualifying young person again; "
+        "the annual model keeps them outside the definition all year. A "
+        "person outside the definition under reg. 28 takes the ordinary "
+        "route under the Universal Credit Regulations 2013 reg. 12(2). For "
+        "the reg. 60(1) protection the model reads the status on the "
+        "migration day instead (is_qualifying_young_person_on_uc_migration_day). "
+        "In Northern Ireland the decision maker applies the same rule under "
+        "reg. 29 of the Universal Credit (Transitional Provisions) Regulations "
+        "(Northern Ireland) 2016, with reg. 6 of the Universal Credit "
+        "Regulations (Northern Ireland) 2016 in place of the Universal Credit "
+        "Regulations 2013 reg. 5. SR 2016/226 reg. 6 ends awards on the same "
+        "days as reg. 8, and SR 2019/152 reg. 4 gives the income-related ESA "
+        "run-on to claims made from 22 July 2020, with one difference: a claim "
+        "ends a rate rebate the day before the award starts (reg. 6(2)), and "
+        "only a rent rebate or allowance runs on (reg. 6(2A)). "
+        "housing_benefit_reported doesn't show the form, so the formula reads "
+        "housing_benefit_report_is_rate_rebate_only: a claimant with that "
+        "status and no other existing benefit counts as a qualifying young "
+        "person on the first day. It defaults to False, so the formula reads "
+        "any other report as a rent rebate or allowance."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2013/983/article/4",
+        "https://www.legislation.gov.uk/uksi/2019/1152/regulation/5",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/ukpga/2002/21/section/3",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2017/190/article/6",
+        "https://www.legislation.gov.uk/nisr/2019/152/regulation/4",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/13",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/13",
     )
 
     def formula(person, period, parameters):
-        qualifying_young_person = person(
-            "is_qualifying_young_person_for_universal_credit", period
+        # Those whom the Housing Benefit and income-related ESA claim limbs
+        # readmit: on the first day of their award the Secretary of State
+        # still excludes them through reg. 28, and once they receive
+        # Universal Credit through reg. 5(5). Removing only them keeps any
+        # input or reform that sets the predicate.
+        readmitted = qualifying_young_person(
+            person, period, parameters
+        ) & ~qualifying_young_person(person, period, parameters, at_claim_start=True)
+        return (
+            person("is_qualifying_young_person_for_universal_credit", period)
+            & ~readmitted
         )
-        # SI 2014/1230 reg. 28: where a person who would be a qualifying
-        # young person "is entitled to an existing benefit", "that person is
-        # not a qualifying young person for the purposes of the Universal
-        # Credit Regulations".
-        own_award = add(person, period, EXISTING_BENEFITS) > 0
-        # Tax Credits Act 2002 s. 3(3)(a): the members of a couple claim a
-        # tax credit jointly, so the award belongs to both.
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        joint_tax_credits = claimant_or_partner & (
-            person.benunit.sum(claimant_or_partner * add(person, period, TAX_CREDITS))
-            > 0
-        )
-        return qualifying_young_person & ~(own_award | joint_tax_credits)
