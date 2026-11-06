@@ -8,15 +8,18 @@ class housing_benefit_child_disability_premiums(Variable):
     unit = GBP
     label = "Housing Benefit child disability premiums"
     documentation = (
-        "Disabled-child and enhanced-child premiums for legally dependent "
-        "children and young persons. Uses actual DLA or PIP receipt, AFIP, "
-        "and the existing blindness indicator; enhanced rates additionally "
-        "require highest DLA care or enhanced PIP daily living receipt, or "
-        "AFIP. Scottish replacement awards must be represented in the existing "
-        "benefit fields: separate replacement-award fields are not available. "
-        "Hospital suspension, blindness run-on and bereavement continuation "
-        "are not reconstructed. A generic disability flag is insufficient. "
-        "These child amounts are separate from the shared adult premiums."
+        "The model pays the disabled-child and enhanced-child premiums for "
+        "legally dependent children and young persons. A child qualifies for "
+        "the disabled-child rate through a positive DLA or PIP amount (either "
+        "component), AFIP or the blindness indicator, and for the enhanced "
+        "rate through an award that meets the adult condition: the highest "
+        "DLA care rate (has_highest_dla_sc_award), the enhanced PIP daily "
+        "living rate (has_enhanced_pip_dl_award) or AFIP. The model has no "
+        "separate fields for Scottish replacement awards, so callers enter "
+        "them in the DLA and PIP fields. The model omits hospital suspension, "
+        "the blindness run-on and bereavement continuation, and a generic "
+        "disability flag does not qualify. The model computes these child "
+        "premiums separately from the adult premiums."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/15",
@@ -40,8 +43,8 @@ class housing_benefit_child_disability_premiums(Variable):
         afip = person("armed_forces_independence_payment", period) > 0
         disabled = dla | pip | afip | person("is_blind", period)
         enhanced = (
-            (dla_care & person("receives_highest_dla_sc", period))
-            | (pip_daily & person("receives_enhanced_pip_dl", period))
+            person("has_highest_dla_sc_award", period)
+            | person("has_enhanced_pip_dl_award", period)
             | afip
         )
         weekly = p.disabled_child * disabled + p.enhanced_disabled_child * enhanced
