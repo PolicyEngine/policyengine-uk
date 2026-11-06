@@ -188,13 +188,13 @@ jobs:
     # dataset, with one worker, so only one simulation of the dataset runs at
     # a time, and the other seven run none of them. In merge queue run
     # 42212587066 the five shards that built the fixture in
-    # test_aggregate_impact_certified.py peaked at 14.2 to 15.3 GB, and the two
-    # without it at 10.9 and 12.6 GB. On a merge of 28 pull requests with those
-    # tests on all seven shards, runs 42218280596 and 42218280615 lost eight of
-    # their 14 shard jobs within minutes at 15.4 to 15.7 GB, and shard 6/7 of
-    # the first lost its runner at 15.6 GB 51 minutes in, with
+    # test_aggregate_impact_certified.py peaked at 14.2 to 15.3 GiB, and the
+    # two without it at 10.9 and 12.6 GiB. On a merge of 28 pull requests with
+    # those tests on all seven shards, runs 42218280596 and 42218280615 lost
+    # eight of their 14 shard jobs within minutes at 15.1 to 15.4 GiB, and
+    # shard 6/7 of the first lost its runner at 15.2 GiB 51 minutes in, with
     # test_latest_data_smoke.py running. With the certified tests on one shard
-    # of seven, run 42231098419 lost that shard at 15.6 GB.
+    # of seven, run 42231098419 lost that shard at 15.2 GiB.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -252,9 +252,10 @@ jobs:
             export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
           fi
           # Log memory each minute, so a runner lost to memory pressure
-          # ("The runner has received a shutdown signal") shows it.
+          # ("The runner has received a shutdown signal") shows it. free -m
+          # counts MiB.
           (while sleep 60; do
-            free -m | awk 'NR == 2 { print "memory: " $3 " MB used, " $7 " MB available" }'
+            free -m | awk 'NR == 2 { print "memory: " $3 " MiB used, " $7 " MiB available" }'
           done) &
           trap 'kill $! 2>/dev/null' EXIT
           coverage=()
@@ -266,8 +267,8 @@ jobs:
           # when its test passes, so a fixed bug cannot hide behind it.
           # Four pytest-xdist workers, one per core, and one on the last shard.
           # Their memory grows with each test they run (#2330): with three
-          # shards they peaked at 15.6 GB of the runner's 16 GB (run
-          # 38156967136).
+          # shards they peaked at 15.3 GiB of the 15.6 GiB the runner reports
+          # as used and available (run 38156967136).
           PYTHONPATH="$GITHUB_WORKSPACE/.github" pytest "$TESTS" \
             --rootdir "$ROOTDIR" -c pyproject.toml -p no:cacheprovider \
             -p pytest_outcome_log --outcome-log="$OUTCOMES" \
