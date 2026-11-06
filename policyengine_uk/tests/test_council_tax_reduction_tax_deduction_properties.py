@@ -451,10 +451,10 @@ def test_scottish_working_age_reduction_never_rises_with_pay(households, rise, p
     still. Option (a) passes each of them through to the deduction, and each
     can raise the tax the earnings add by more than the rise in pay:
     - Marriage Allowance: an earner who enters the higher band loses the
-      allowance, which the model takes off taxable income. A Scottish couple,
-      one partner with no income and council tax of 15,000, whose pay rises
-      from 43,661 to 43,663 loses 1,260 of it: the deduction rises by 265.39
-      and the reduction by 52.68 (the YAML cases pin both).
+      allowance, which the model takes off the tax at Step 6. A Scottish
+      couple, one partner with no income and council tax of 15,000, whose pay
+      rises from 43,661 to 43,663 loses 1,260 of it: the deduction rises by
+      252.79 and the reduction by 50.16 (the YAML cases pin both).
     - The personal savings allowance: it falls from 1,000 to 500 as a person
       enters the higher band, and to nil in the additional band, so a pound
       of pay can bring 500 of savings income into tax at 40%, adding 200.

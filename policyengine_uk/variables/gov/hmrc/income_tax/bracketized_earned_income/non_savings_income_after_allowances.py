@@ -14,11 +14,14 @@ class non_savings_income_after_allowances(Variable):
         "(ITA 2007 s. 16) after Steps 2 and 3. The taxpayer sets the reliefs "
         "and allowances against it in the way that gives the least tax (ITA "
         "2007 s. 25(2)), and from 2027-28 against the rest of it before "
-        "property income (s. 25(3A)). The allocation computes it from its own "
-        "share, without the float32 rounding of a sum that adds the relief "
-        "back. property_income_tax, taxable_property_income_after_allowances "
-        "and earned_taxable_income read it, and non_savings_taxable_income "
-        "reads it through the last two."
+        "property income (s. 25(3A)). Parliament raises the rate limits by "
+        "the grossed-up Gift Aid gift (s. 414(2)(b)). The allocation computes "
+        "it from its own share, without the float32 rounding of a sum that "
+        "adds the relief back. property_income_tax, "
+        "taxable_property_income_after_allowances, earned_taxable_income, the "
+        "Marriage Allowance rate test and, for Scottish taxpayers, tax_band "
+        "read it, and non_savings_taxable_income reads it through "
+        "taxable_property_income_after_allowances and earned_taxable_income."
     )
     definition_period = YEAR
     reference = [

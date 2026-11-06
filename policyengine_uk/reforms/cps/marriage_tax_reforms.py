@@ -1,6 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.income_tax import net_income_from_adjusted_net_income
 from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.variables.gov.hmrc.income_tax.allowances.meets_marriage_allowance_income_conditions import (
+    liable_only_at_marriage_allowance_rates,
+)
 from typing import Union, Optional
 
 
@@ -34,23 +37,22 @@ def create_expanded_ma_reform(
 
     class meets_marriage_allowance_income_conditions(Variable):
         label = "Meets Marriage Allowance income conditions"
-        documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"
+        documentation = (
+            "Whether this person meets the statutory Marriage Allowance income "
+            "conditions or this reform's expansion conditions."
+        )
         entity = Person
         definition_period = YEAR
         value_type = bool
         reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
         def formula(person, period, parameters):
-            band = person("tax_band", period)
-            eligible_bands = parameters(
-                period
-            ).gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands
-            base_eligible = np.isin(band.decode_to_str(), eligible_bands)
-            # Expand to higher bands if the reform's expansion conditions are met.
-            bands = band.possible_values
-            expansion = person("meets_expanded_ma_conditions", period) & (
-                (band == bands.HIGHER) | (band == bands.ADDITIONAL)
+            base_eligible = liable_only_at_marriage_allowance_rates(
+                person, period, parameters
             )
+            # Expand to people liable above those rates who meet the reform's
+            # expansion conditions.
+            expansion = person("meets_expanded_ma_conditions", period) & ~base_eligible
             return base_eligible | expansion
 
     class marriage_allowance(Variable):

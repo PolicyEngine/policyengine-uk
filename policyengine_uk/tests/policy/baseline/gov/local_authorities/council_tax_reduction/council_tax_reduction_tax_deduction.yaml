@@ -794,17 +794,17 @@
   output:
     # Taxable non-savings income 43,661 - 12,570 = 31,091, within the
     # intermediate band, so the earner takes the partner's 1,260 of Marriage
-    # Allowance, which the model takes off taxable income: 29,831 taxable;
-    # 3,967 x 19% = 753.73, 12,989 x 20% = 2,597.80 and 12,875 x 21% =
-    # 2,703.75, so 6,055.28. Without the pay, nil. Class 1 (43,661 -
-    # 12,569.96) x 8% = 2,487.28. 6,055.28 + 2,487.28 = 8,542.56.
+    # Allowance, which takes 20% of it, 252, off the tax at Step 6. 3,967 x
+    # 19% = 753.73, 12,989 x 20% = 2,597.80 and 14,135 x 21% = 2,968.35, so
+    # 6,319.88 less 252 = 6,067.88. Without the pay, nil. Class 1 (43,661 -
+    # 12,569.96) x 8% = 2,487.28. 6,067.88 + 2,487.28 = 8,555.16.
     marriage_allowance: [1_260, 0]
-    council_tax_reduction_tax_deduction: 8_542.56
-    # 43,661 - 8,542.56.
-    council_tax_reduction_applicable_income: 35_118.44
-    # 15,000 - 20% x (35,118.44 - the couple's allowance 150.15 x 52 =
+    council_tax_reduction_tax_deduction: 8_555.16
+    # 43,661 - 8,555.16.
+    council_tax_reduction_applicable_income: 35_105.84
+    # 15,000 - 20% x (35,105.84 - the couple's allowance 150.15 x 52 =
     # 7,807.80).
-    council_tax_reduction: 9_537.87
+    council_tax_reduction: 9_540.39
 
 - name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,663
   period: 2026
@@ -832,12 +832,12 @@
     # Allowance: 753.73 + 2,597.80 + 14,136 x 21% = 2,968.56 + 1 x 42% =
     # 0.42, so 6,320.51. Class 1 (43,663 - 12,569.96) x 8% = 2,487.44.
     # 6,320.51 + 2,487.44 = 8,807.95: two pounds of pay raise the deduction
-    # by 265.39.
+    # by 252.79.
     marriage_allowance: [0, 0]
     council_tax_reduction_tax_deduction: 8_807.95
     # 43,663 - 8,807.95.
     council_tax_reduction_applicable_income: 34_855.05
-    # 15,000 - 20% x (34,855.05 - 7,807.80): the reduction rises by 52.68.
+    # 15,000 - 20% x (34,855.05 - 7,807.80): the reduction rises by 50.16.
     council_tax_reduction: 9_590.55
 
 - name: Scotland's working-age scheme passes a Child Benefit charge step through at pay of 64,999
