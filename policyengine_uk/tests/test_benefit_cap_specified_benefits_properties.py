@@ -31,7 +31,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
 Each scheme applies its own exceptions. UC reg 83(1)(f) names a "child or
 qualifying young person"; HB reg 75F(1)(e) names a "child or young person".
 UC includes a 16-year-old school leaver (reg 5(1)(a)) who does not receive
-benefits in their own right (reg 5(5)) and is not looked after (reg 4(6)).
+benefits in their own right (reg 5(5); SI 2014/1230 reg. 28) and is not
+looked after (reg 4(6)).
 HB young persons follow Child Benefit (reg 19), so only the education-based
 young-person role counts for Housing Benefit below. UC reg 83(1)(c) names
 "a claimant" for attendance allowance, which includes armed forces
@@ -86,6 +87,7 @@ from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
 from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
+from policyengine_uk.tax_benefit_system import system as baseline_system
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 YEAR = 2025
@@ -277,9 +279,20 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
-def own_benefits(m):
-    # UC reg 5(5): a personal report identifies an award in the person's own right.
-    return any(m.get(report, 0) > 0 for report in OWN_RIGHT_REPORTS)
+def own_benefits(m, year=YEAR):
+    # UC reg. 5(5) (UC, contributory ESA, contribution-based JSA) and SI
+    # 2014/1230 reg. 28 (income-related ESA, and income-based JSA while it
+    # pays, as in 2025): a personal report identifies an award in the
+    # person's own right. The Secretary of State ties reg. 28's exclusion to
+    # entitlement, so the oracle counts an income-based JSA report only in a
+    # year the model pays it.
+    dwp = baseline_system.parameters(f"{year}-01-01").gov.dwp
+    reports = [
+        report
+        for report in OWN_RIGHT_REPORTS
+        if report != "jsa_income_reported" or dwp.JSA.income.active
+    ]
+    return any(m.get(report, 0) > 0 for report in reports)
 
 
 def reference_specified_benefit(members, benunit_inputs, scheme):

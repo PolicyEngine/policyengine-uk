@@ -1,8 +1,11 @@
 """Each Council Tax Reduction scheme's own young person.
 
-Scotland's working-age scheme, from 1 April 2022, defines a young person as a
-Universal Credit qualifying young person (Council Tax Reduction (Scotland)
-Regulations 2021 reg. 6(1); UC Regs 2013 reg. 5). England, Wales and
+Scotland's working-age scheme, from 1 April 2022, defines a young person by
+the qualifying young person of UC Regs 2013 reg. 5 (Council Tax Reduction
+(Scotland) Regulations 2021 reg. 6(1)). The Secretary of State excludes a
+person entitled to an existing benefit only for the purposes of the UC
+Regulations and WRA 2012 Part 1 (SI 2014/1230 reg. 28), so that exclusion
+stays out. England, Wales and
 Scotland's pension-age scheme use the Child Benefit qualifying young person
 (SI 2012/2885 reg. 2; WSI 2013/3029 reg. 2; SSI 2012/319 reg. 4), as Scotland's
 working-age scheme did until 31 March 2022 (SSI 2012/303 reg. 4). Every scheme
@@ -158,7 +161,9 @@ def assert_scheme_selection(units, year):
     universal_credit = (
         (
             under_16
-            | sim.calculate("is_qualifying_young_person_for_universal_credit", year)
+            | sim.calculate(
+                "is_qualifying_young_person_under_universal_credit_regulation_5", year
+            )
         )
         & ~looked_after
         & ~claimant_or_partner
@@ -255,7 +260,9 @@ def test_scheme_selection_over_every_combination():
         # Not vacuous: some of those lone claimants are qualifying young
         # persons by status, in Scotland's working-age scheme too.
         sim = simulate(alone, year)
-        status = sim.calculate("is_qualifying_young_person_for_universal_credit", year)
+        status = sim.calculate(
+            "is_qualifying_young_person_under_universal_credit_regulation_5", year
+        )
         scottish_alone = np.array(
             [follows_universal_credit(unit, year) for unit in alone]
         )
@@ -280,7 +287,7 @@ def test_schemes_differ_only_where_the_two_definitions_differ(units):
         sim = simulate(variants, year)
         flag = sim.calculate("is_child_or_young_person_for_council_tax_reduction", year)
         agree = sim.calculate(
-            "is_qualifying_young_person_for_universal_credit", year
+            "is_qualifying_young_person_under_universal_credit_regulation_5", year
         ) == sim.calculate("is_qualifying_young_person_for_child_benefit", year)
         offset = 0
         for unit in units:
