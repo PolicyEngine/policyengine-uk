@@ -33,12 +33,19 @@ Invariants, for any people and incomes:
    means tests deduct) and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
-   2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
-   award equal the same family with those profits cut by the loss. The
-   model's means tests use annual tax deductions, so otherwise the loss
-   reaches them through those deductions. UC's own deductions for tax and
-   NI on earnings and Pension Credit's tax attribution to employed and
-   self-employed earnings are held alongside them, including the actual
+   2013 reg 57(2) step 2), so UC, its benefit cap earnings test and the
+   capped award equal the same family with those profits cut by the loss
+   and every tax and NI deduction the UC formula reads held at its
+   with-loss value: the totals on earnings and the parts of them in respect
+   of the trade (reg 57(2) step 3), whose remainder is in respect of the
+   employment (reg 55(5)(b)). Those deductions are what the person pays with
+   the loss, and the parts are the model's split of that payment between the
+   employment and the trade, not a loss rule. Recomputing the trade's part
+   for the cut profit would move tax from the trade, where the step 3 nil
+   floor can absorb it, to the employment, where nothing does. The model's
+   means tests use annual tax deductions, so otherwise the loss reaches them
+   through those deductions. Pension Credit's tax attribution to employed
+   and self-employed earnings is held alongside them, including the actual
    Class 2/4 components replaced by notional PC deductions. The personal
    reliefs used for PC's notional tax are held too: the loss can change
    entitlement to those reliefs without offsetting PC earnings.
@@ -908,6 +915,41 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
         ),
     ]
 )
+@example(
+    [
+        # A loss larger than the profit, beside a private pension (#2832).
+        # Relief of 16,000 leaves net income 53,000 and taxable income
+        # 40,430: tax 37,700 x 20% + 2,730 x 40% = 8,632. Earnings are the
+        # lowest slice, so the relief comes off the pension above them:
+        # other income 53,000 - 49,000 = 4,000 and tax on earnings
+        # (40,430 - 4,000) x 20% = 7,286. Without the trade, other income is
+        # 13,000 and the tax 27,430 x 20% = 5,486, so the trade bears 1,800.
+        # Class 1 is 27,430 x 8% = 2,194.40 and there is no Class 4. With
+        # the loss, self-employed earnings are max(0, 9,000 - 9,000 - 1,800)
+        # = 0 and employed earnings 40,000 - 5,486 - 2,194.40 = 32,319.60.
+        # With the profit cut to nil and only the totals held, the trade's
+        # part is recomputed as nil, all 7,286 comes off employed earnings
+        # and they fall to 30,519.60. Holding the trade's part keeps 32,319.60.
+        (
+            [
+                adult(
+                    age=18,
+                    employment_income=40_000.0,
+                    self_employment_income=9_000.0,
+                    private_pension_income=20_000.0,
+                    trading_loss=16_000.0,
+                    hours_worked=0.0,
+                )
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 0.0,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "LONDON",
+            },
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -967,6 +1009,16 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     uc = values(with_loss, "universal_credit")
     uc_pre_cap = values(with_loss, "universal_credit_pre_benefit_cap")
     hb = values(with_loss, "housing_benefit")
+    # The parts of UC's tax and NI deductions in respect of the trade (reg
+    # 57(2) step 3). The UC formula takes them off the trade total and the
+    # rest of the totals off employed earnings (reg 55(5)(b)), so the netted
+    # world holds them with the totals: they split what the person pays with
+    # the loss, and recomputing them for the cut profit would move tax
+    # between the employment and the trade.
+    uc_trade_deductions = {
+        v: values(with_loss, v)
+        for v in ["uc_income_tax_on_trade", "uc_national_insurance_on_trade"]
+    }
 
     def held(k, **extra):
         return {
@@ -1004,6 +1056,9 @@ def test_means_tests_see_the_loss_only_through_tax(units):
                     k,
                     self_employment_income=float(profits[k] - min(loss[k], profits[k])),
                     uc_mif_applies=bool(mif[k]),
+                    **{
+                        v: float(uc_trade_deductions[v][k]) for v in uc_trade_deductions
+                    },
                 )
                 for k, name in enumerate(names)
             },

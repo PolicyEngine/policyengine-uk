@@ -85,6 +85,76 @@ def test_receipts_and_spending_are_separate(shipped):
         assert not set(head.totals) & {"gov_tax", "household_tax"}
 
 
+def test_spending_exclusions_name_known_variables_and_spending_heads(raw, system):
+    spending_heads = {head["id"] for head in raw["spending_heads"]}
+    head_variables = {
+        head["variable"] for head in raw["tax_heads"] + raw["spending_heads"]
+    }
+    exclusions = raw["exclusions"] + raw["spending_exclusions"]
+    excluded_variables = [entry["variable"] for entry in exclusions]
+    assert len(excluded_variables) == len(set(excluded_variables))
+    assert not head_variables & set(excluded_variables)
+    for entry in raw["spending_exclusions"]:
+        assert entry["variable"] in system.variables, entry
+        assert entry["head"] in spending_heads, entry
+        assert entry["kind"] in {"component", "assessment"}, entry
+        assert entry["note"], entry
+
+
+def test_the_reader_loads_the_spending_exclusions(raw, shipped):
+    assert [entry.variable for entry in shipped.spending_exclusions] == [
+        entry["variable"] for entry in raw["spending_exclusions"]
+    ]
+
+
+@pytest.mark.parametrize("head", ["no_such_head", "income_tax"])
+def test_a_spending_exclusion_must_name_a_spending_head(raw, head):
+    partition = copy.deepcopy(raw)
+    partition["spending_exclusions"][0]["head"] = head
+    with pytest.raises(PartitionError, match="needs a spending head"):
+        parse_partition(partition)
+
+
+def test_a_spending_exclusion_cannot_name_a_head_variable(raw):
+    partition = copy.deepcopy(raw)
+    partition["spending_exclusions"][0]["variable"] = raw["spending_heads"][0][
+        "variable"
+    ]
+    with pytest.raises(PartitionError, match="also a head variable"):
+        parse_partition(partition)
+
+
+def test_budget_and_energy_support_variables_have_fiscal_classifications(raw):
+    # These tax, earnings and payment helpers must have an explicit owner;
+    # adding a head for a component would count the same receipt twice.
+    variables = {
+        "carers_allowance_weekly_earnings_above_limit",
+        "pension_tax_allowance",
+        "household_energy_payment",
+        "miscellaneous_income_trading_allowance_deduction",
+        "uses_trading_allowance",
+        "miscellaneous_income_before_trading_allowance",
+        "income_not_otherwise_charged",
+        "income_tax_charges",
+        "income_tax_reductions",
+        "machine_games_standard_rate_higher_stake_net_takings",
+        "ebr_alternative_fuel_payment",
+        "monthly_ebr_alternative_fuel_payment",
+    }
+    classified = [
+        entry["variable"]
+        for section in (
+            "tax_heads",
+            "spending_heads",
+            "exclusions",
+            "spending_exclusions",
+        )
+        for entry in raw[section]
+    ]
+    assert variables <= set(classified)
+    assert all(classified.count(variable) == 1 for variable in variables)
+
+
 def test_dropped_when_matches_the_council_tax_abolition_formulas(shipped):
     switch = "gov.contrib.abolish_council_tax"
     assert shipped.dropped("gov_tax", [switch]) == {
@@ -114,11 +184,12 @@ def _remove_head(raw, head_id):
         for head in out[key]:
             if head.get("reads"):
                 head["reads"] = [r for r in head["reads"] if r.get("head") != head_id]
-    out["exclusions"] = [
-        e
-        for e in out.get("exclusions") or []
-        if e.get("head") != head_id and head_id not in (e.get("spans") or [])
-    ]
+    for key in ("exclusions", "spending_exclusions"):
+        out[key] = [
+            e
+            for e in out.get(key) or []
+            if e.get("head") != head_id and head_id not in (e.get("spans") or [])
+        ]
     out["model_double_counts"] = [
         d
         for d in out.get("model_double_counts") or []
@@ -219,3 +290,70 @@ def test_a_geographic_guard_must_name_two_known_heads(raw):
         ]
         with pytest.raises(PartitionError):
             parse_partition(mutated)
+
+
+def _small_partition(
+    total="gov_tax",
+    head_id="tax_h",
+    variable="tax_h",
+    double_count="tax_b",
+    guard_id="g",
+):
+    """One total with two tax heads, a declared double count and a guard."""
+    return {
+        "schema_version": 1,
+        "totals": {
+            total: {"kind": "tax", "module": "policyengine_uk", "list": "TAXES"}
+        },
+        "tax_heads": [
+            {"id": head_id, "label": "H", "variable": variable, "totals": [total]},
+            {"id": "tax_k", "label": "K", "variable": "tax_k", "totals": [total]},
+        ],
+        "model_double_counts": [
+            {"variable": double_count, "contained_in": variable, "totals": [total]}
+        ],
+        "overlap_guards": [
+            {
+                "id": guard_id,
+                "kind": "geographic_exclusivity",
+                "heads": [head_id, "tax_k"],
+            }
+        ],
+    }
+
+
+def test_the_small_partition_loads():
+    assert parse_partition(_small_partition()).components("gov_tax") == [
+        "tax_h",
+        "tax_k",
+        "tax_b",
+    ]
+
+
+@pytest.mark.parametrize(
+    "field, name",
+    [
+        ("total", "gov:tax"),
+        ("head_id", "tax:h"),
+        ("variable", "tax:h"),
+        ("double_count", "tax:b"),
+        ("guard_id", "g:1"),
+    ],
+)
+def test_a_name_with_a_colon_is_rejected(field, name):
+    """The report writes each of these names into a check id or a scope, and
+    splits those at their colons."""
+    with pytest.raises(PartitionError, match=f"{name!r} contains a colon"):
+        parse_partition(_small_partition(**{field: name}))
+
+
+@pytest.mark.parametrize(
+    "total, head",
+    [("gov:tax", "tax_h"), ("gov", "tax:tax_h")],
+    ids=["base", "head"],
+)
+def test_neither_side_of_a_colon_collision_loads(total, head):
+    """Both pairs would write the counted-once scope gov:tax:tax_h:contains."""
+    assert f"{total}:{head}" == "gov:tax:tax_h"
+    with pytest.raises(PartitionError, match="contains a colon"):
+        parse_partition(_small_partition(total=total, head_id=head, variable=head))

@@ -20,7 +20,16 @@ class uc_non_dep_receives_pension_credit(Variable):
         "Pension Credit can differ from the family's own. The branch avoids "
         "evaluating a renter's own Pension Credit while calculating their "
         "Universal Credit housing element. The formula ignores the branch "
-        "result for a rent-liable family, which is not a non-dependant."
+        "result for a family liable for the household's rent "
+        "(benunit_is_liable_for_household_rent), none of whose members is a "
+        "non-dependant. A boarder's or lodger's family is not ruled out: its "
+        "non-paying adult members can be non-dependants, and keep the "
+        "exemption when the family receives Pension Credit. For that family "
+        "the branch fixes the family's Universal Credit housing element, "
+        "which may cover the rent it pays the householder, at nil, and "
+        "computes its Pension Credit there. A family whose members are all "
+        "over the qualifying age claims no Universal Credit, so the branch "
+        "gives its actual Pension Credit."
     )
     definition_period = YEAR
     reference = (
@@ -55,4 +64,9 @@ class uc_non_dep_receives_pension_credit(Variable):
         finally:
             # A later period or changed input must start from current inputs.
             del simulation.branches[name]
-        return (pension_credit > 0) & ~benunit("benunit_is_rent_liable", period)
+        # A boarder's or lodger's family still has a non-paying member who can
+        # be a non-dependant, so only liability for the household's rent
+        # rules the family out here.
+        return (pension_credit > 0) & ~benunit(
+            "benunit_is_liable_for_household_rent", period
+        )

@@ -390,7 +390,24 @@ def test_every_programme_reads_one_head(population):
     # Non-dependants (pin).
     non_dependant = calc(sim, "is_non_dependant_of_household_head")
     rent_liable = calc(sim, "benunit_is_rent_liable")
-    assert np.array_equal(non_dependant, ~person_head_family & ~rent_liable[benunit_of])
+    # Liability to the householder is person by person: the payer, and a
+    # claimant or partner whose family's claimant or partner pays. A family
+    # whose only rent is that payment is not liable for the household's rent,
+    # so its other members can be non-dependants.
+    pays = paid_to_householder > 0
+    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    partner_pays = any_in_benunit(pays & claimant_or_partner, facts)[benunit_of]
+    liable_to_householder = ~person_head_family & (
+        pays | (claimant_or_partner & partner_pays)
+    )
+    family_pays_householder = any_in_benunit(liable_to_householder, facts)
+    liable_for_household_rent = rent_liable & ~family_pays_householder
+    assert np.array_equal(
+        non_dependant,
+        ~person_head_family
+        & ~liable_for_household_rent[benunit_of]
+        & ~liable_to_householder,
+    )
     # Universal Credit non-dependant deductions fall on the one claim that
     # counts the household's non-dependants: the head's family's wherever it
     # is liable for the rent and claims.
