@@ -1,6 +1,11 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+    valued_person_capital,
+)
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
-    counted_person_sources,
     pooled_person_capital,
 )
 
@@ -10,7 +15,12 @@ class pension_credit_assessable_capital(Variable):
     entity = BenUnit
     label = "Pension Credit assessable capital"
     documentation = (
-        "Pension Credit capital counted from the configured capital sources. The "
+        "Pension Credit capital counted from the configured capital sources. "
+        "The formula values each household source, less the ISA balances it "
+        "counts in their holders' own benunits, at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 19), and values each "
+        "such ISA balance as it values that household source. "
+        "The "
         "formula allocates the household remainder only across the household's "
         "pension-age adults, so unrelated working-age adults leave a pensioner "
         "couple's share undiluted. The formula counts person-level sources, such as a "
@@ -31,15 +41,16 @@ class pension_credit_assessable_capital(Variable):
         household = benunit.household
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
-        household_capital = sum(
-            household(source, period)
-            - pooled_person_capital(benunit, source, period, p)
-            for source in p.sources
+        household_capital = valued_capital(
+            lambda source: (
+                household(source, period)
+                - pooled_person_capital(benunit, source, period, p)
+            ),
+            p,
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
-        person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
-            for source in counted_person_sources(p)
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
         any_pension_age = benunit.any(
             person("has_attained_state_pension_credit_qualifying_age", period)
@@ -58,10 +69,15 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        reported_capital = benunit("pension_credit_reported_capital", period)
+        reported_capital = exact_amount(
+            benunit("pension_credit_reported_capital", period)
+        )
         assessed_capital = where(
             reported_capital >= 0,
             reported_capital,
             household_capital_proxy + person_capital,
         )
-        return where(any_pension_age, max_(0, assessed_capital), 0)
+        # A fraction of a penny is disregarded at the last stage (reg. 24A).
+        return round_to_penny(
+            where(any_pension_age, max_(0, assessed_capital), 0), p.round_down
+        )

@@ -27,8 +27,9 @@ Invariants, for any generated benefit units:
    not report their capital, the household's capital less every owner's
    holding (up to its corporate wealth) is shared between the units in
    proportion to their claimants, and each unit adds its own claimants'
-   company capital; so the units' capital sums to that pool plus the owners'
-   company capital.
+   company capital. Each valuation, owner's company capital and unit's final
+   capital is rounded to the nearest penny, and the household total sums the
+   rounded units (reg. 6(1)).
 4. Earnings identity: earned income before the floor is pay less the
    person's own income tax and NI on the employment, plus the trading total
    floored at zero, less their relievable pension contributions, floored at
@@ -66,13 +67,22 @@ every run reach each reg. 77 earnings and floor branch and a shared-household
 holding, whatever the generated examples reach.
 """
 
+from decimal import Decimal, ROUND_HALF_UP
+
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.capital_valuation import exact_amount
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
+# corporate_wealth (shares) is valued at 90% for the expenses of sale (UC Regs
+# 2013 reg. 49(1)(a)), so a disregarded holding inside it comes off at 90%.
+SHARE_VALUE = 0.9
 PROPERTY_SETTINGS = settings(
     max_examples=10,
     deadline=None,
@@ -119,6 +129,20 @@ small_capital = st.one_of(st.just(0.0), st.floats(0, 8_000))
 def close(a, b):
     # Simulation outputs are float32: allow for its rounding at these sizes.
     return abs(a - b) <= 1e-2 + 1e-6 * abs(b)
+
+
+def stored_amount(value):
+    """Use the same float32 input precision as the simulation."""
+    return float(exact_amount(np.float32(value)))
+
+
+def penny(value):
+    # UC Regs 2013 reg. 6(1): half a penny is rounded up, for every amount
+    # calculated (https://www.legislation.gov.uk/uksi/2013/376/regulation/6).
+    # Remove binary arithmetic noise below a millionth of a penny before
+    # applying the legal rule, independently of the model rounding helper.
+    amount = Decimal(str(value)).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
+    return float(amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 @st.composite
@@ -265,17 +289,19 @@ def applies(company):
 
 
 def company_capital_of(company):
-    """Capital treated as possessed under reg. 77(2), net of 77(3)(a)."""
+    """Reg. 77(2) capital, net of 77(3)(a), rounded per person (reg. 6(1))."""
     engaged = (
         company["is_engaged_in_owned_company_trade"]
         or company["owned_company_is_main_employment"]
     )
     disregarded = (
-        company["owned_company_trade_assets"]
+        stored_amount(company["owned_company_trade_assets"])
         if company["owned_company_carries_on_trade"] and engaged
         else 0.0
     )
-    return max(0.0, company["owned_company_capital"] - disregarded)
+    return penny(
+        max(0.0, stored_amount(company["owned_company_capital"]) - disregarded)
+    )
 
 
 def pinned_company(**facts):
@@ -488,7 +514,7 @@ def test_capital_and_earnings_identities(unit_list):
                     assert close(earned, max(before, floor))
             else:
                 assert close(earned, before)
-        disregarded = min(holdings, unit["corporate_wealth"])
+        disregarded = SHARE_VALUE * min(holdings, unit["corporate_wealth"])
         expected = base["uc_assessable_capital"][i] - disregarded + company_capital
         assert close(got["uc_assessable_capital"][i], expected)
 
@@ -612,6 +638,34 @@ def test_property_company_gives_no_earnings(unit_list, share):
         )
     ]
 )
+@example(
+    [
+        (
+            pinned_unit(
+                pinned_adult(),
+                pinned_adult(),
+                corporate_wealth=6392.862111833667,
+            ),
+            pinned_unit(
+                pinned_adult(
+                    pinned_company(owned_company_holding_value=6336.697665836761)
+                ),
+                pinned_adult(),
+            ),
+        )
+    ]
+)
+@example(
+    [
+        (
+            pinned_unit(
+                pinned_adult(pinned_company(owned_company_holding_value=0.40)),
+                corporate_wealth=0.65,
+            ),
+            pinned_unit(pinned_adult(pinned_company(owned_company_holding_value=0.40))),
+        )
+    ]
+)
 def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs):
     # Each household holds two benefit units: the first unit's adults and the
     # second's, with the first unit's savings and corporate wealth. No unit
@@ -621,7 +675,7 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
     people, benunits, households = {}, {}, {}
     expected_units, expected_households = [], []
     for h, (first, second) in enumerate(pairs):
-        names, holdings, unit_company_capital = [], 0.0, []
+        names, holdings, unit_company_capital = [], [], []
         for b, unit in enumerate((first, second)):
             members, company_capital = [], 0.0
             for j, adult in enumerate(unit["adults"]):
@@ -634,7 +688,7 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
                     **{k: {YEAR: v} for k, v in c.items()},
                 }
                 if applies(c):
-                    holdings += c["owned_company_holding_value"]
+                    holdings.append(c["owned_company_holding_value"])
                     company_capital += company_capital_of(c)
                 members.append(name)
             benunits[f"h{h}_b{b}"] = {"members": members}
@@ -645,12 +699,38 @@ def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs
             "savings": {YEAR: first["savings"]},
             "corporate_wealth": {YEAR: first["corporate_wealth"]},
         }
-        disregarded = min(holdings, first["corporate_wealth"])
-        pool = first["savings"] + first["corporate_wealth"] - disregarded
+        shares = stored_amount(first["corporate_wealth"])
+        # The holdings budget uses raw stored inputs and stores its scale as
+        # float32. Apply that scale to the recovered monetary amounts before
+        # valuation; an ideal min(total holdings, shares) loses this rounding
+        # boundary when holdings exceed the budget.
+        raw_shares = np.float32(first["corporate_wealth"])
+        raw_holdings = sum(
+            float(np.clip(np.float32(holding), np.float32(0), raw_shares))
+            for holding in holdings
+        )
+        scale = float(
+            np.float32(min(1.0, float(raw_shares) / raw_holdings))
+            if raw_holdings > 0
+            else np.float32(1.0)
+        )
+        disregarded = sum(
+            min(stored_amount(holding), shares) * scale for holding in holdings
+        )
+        # Reg. 49(1)(a) values the shares and the removed holdings separately;
+        # reg. 6(1) rounds each valuation, then each unit's final capital.
+        pool = max(
+            0.0,
+            stored_amount(first["savings"])
+            + penny(SHARE_VALUE * shares)
+            - penny(SHARE_VALUE * disregarded),
+        )
         claimants = [len(first["adults"]), len(second["adults"])]
         for n, company_capital in zip(claimants, unit_company_capital):
-            expected_units.append(pool * n / sum(claimants) + company_capital)
-        expected_households.append(pool + sum(unit_company_capital))
+            expected_units.append(penny(pool * n / sum(claimants) + company_capital))
+        # Allocation rounding belongs to each benefit unit. Summing the
+        # unrounded household pool would lose up to half a penny per unit.
+        expected_households.append(sum(expected_units[-2:]))
     sim = Simulation(
         situation={"people": people, "benunits": benunits, "households": households}
     )

@@ -20,6 +20,9 @@ from policyengine_uk import Simulation
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
+# corporate_wealth is valued at 90% for the expenses of sale (UC Regs 2013
+# reg. 49(1)(a)); disregarded holdings inside it leave the pool at that value.
+SHARE_VALUE = 0.9
 LAYOUTS = {
     "one-owner": ((10_000,), (), ()),
     "two-owners-one-unit": ((4_000, 6_000), (), ()),
@@ -53,7 +56,7 @@ def _company_person(holding=0, dependant=False):
 
 
 def _grid(layout):
-    """Combine 960 independent three-unit households in one simulation."""
+    """Combine 1,280 independent three-unit households in one simulation."""
     people, units, households, cases = {}, {}, {}, []
     first_holdings, dependant_holdings, second_holdings = LAYOUTS[layout]
     claimant_holdings = (sum(first_holdings), sum(second_holdings), 0)
@@ -67,7 +70,7 @@ def _grid(layout):
     ) in enumerate(
         product(
             (0, 4_000, 10_000, 20_000),
-            (None, -1, 10_000),
+            (None, -1, 4_000, 10_000),
             (0, 4_000, 10_000, 20_000),
             (6_000, 20_000),
             OTHER_REPORTS,
@@ -132,14 +135,15 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
     for row, (specs, adults, holdings, dependants, corporate, savings) in zip(
         assessed, cases
     ):
-        pool = corporate + savings
+        # The pool counts corporate_wealth at 90% (reg. 49(1)(a)), and holdings
+        # inside it leave the pool at that value.
+        pool = SHARE_VALUE * corporate + savings
         missing = [
             "override" not in spec and spec.get("financial", -1) < 0 for spec in specs
         ]
         explicit = [
             spec.get("override", max(0, spec.get("financial", -1))) for spec in specs
         ]
-        explicit_consumption = sum(explicit)
         # Invalid holdings are bounded per person, before grouping into units.
         # Allocate one budget by those ownership shares; never recap a route.
         bounded_holdings = [
@@ -150,8 +154,22 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         total_holdings = sum(bounded_holdings) + bounded_dependants
         budget = min(corporate, total_holdings)
         scale = budget / total_holdings if total_holdings else 0
-        effective_holdings = [holding * scale for holding in bounded_holdings]
-        extra_holding_draw = bounded_dependants * scale + sum(
+        market_holdings = [holding * scale for holding in bounded_holdings]
+        effective_holdings = [SHARE_VALUE * holding for holding in market_holdings]
+        # A recorded financial total holds its owners' holdings at full value;
+        # the pool counts them at 90% (reg. 49(1)(a)), so the report consumes
+        # its part beyond the holdings in full and the holdings at 90%. Like an
+        # override, a report below the holdings still consumes them: a report
+        # of 4,000 against a 10,000 holding consumes 9,000.
+        explicit_consumption = sum(
+            spec["override"]
+            if "override" in spec
+            else max(0, spec["financial"] - market) + SHARE_VALUE * market
+            if spec.get("financial", -1) >= 0
+            else 0
+            for spec, market in zip(specs, market_holdings)
+        )
+        extra_holding_draw = SHARE_VALUE * bounded_dependants * scale + sum(
             holding
             if absent
             else max(0, holding - spec["override"])
@@ -181,9 +199,20 @@ def test_company_overrides_conserve_capital_and_keep_holdings_out_of_other_units
         # Account for what regulation 77 actually removes from reporting
         # owners, without scaling that substitution. This identity also
         # covers inconsistent observations and exhausted residual pools.
+        # A complete override is a countable figure, so the holding comes off
+        # it at 90%. A recorded financial total is used unvalued, so the owner
+        # loses the holding in full while the pool gives up only its 90%
+        # value: what the report removes from the pool beyond the owner's own
+        # remaining capital is its consumption less that capital.
         owner_substitution = sum(
-            min(holding, reported)
-            for holding, reported, absent in zip(holdings, explicit, missing)
+            min(SHARE_VALUE * holding, reported)
+            if "override" in spec
+            else max(0, reported - market)
+            + SHARE_VALUE * market
+            - max(0, reported - holding)
+            for holding, market, reported, absent, spec in zip(
+                holdings, market_holdings, explicit, missing, specs
+            )
             if not absent
         )
         assert row.sum() + owner_substitution + extra_holding_draw == pytest.approx(
@@ -303,7 +332,8 @@ def test_regrouping_holdings_between_holders_and_units_preserves_residual_pool()
                     savings,
                 )
             )
-            expected.append(savings + max(0, corporate - total))
+            # Shares left after the holdings count at 90% (reg. 49(1)(a)).
+            expected.append(savings + SHARE_VALUE * max(0, corporate - total))
     situation, residual_rows = _pool_property_situation(cases)
     capital = np.asarray(
         Simulation(situation=situation).calculate("uc_assessable_capital", YEAR)
