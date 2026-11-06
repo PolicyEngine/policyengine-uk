@@ -5,20 +5,17 @@
 # Sch 7 para 12(1)). Scottish councils count the same benefits for the
 # applicant or partner (CTR (Scotland) Regs 2021 Sch 1 para 14(1)), with no
 # age limit from 20 June 2022 (S.S.I. 2022/161), and attendance allowance at
-# either rate from 1 April 2023 (para 14(1)(g), S.S.I. 2023/38). Merton and
-# Kingston upon Thames count DLA care highest and PIP daily living at either
-# rate and omit AFIP (Merton's Local Council Tax Support Scheme Rules 2026 and
-# Kingston upon Thames's Council Tax Reduction Scheme 2026 - 2027, Sch 3 para
-# 12(1)). Newham counts DLA care highest, PIP daily living at either rate and
-# AFIP (Newham's Council Tax Reduction Scheme 2026, Sch 3 para 12(1)). In
-# Westminster the model applies the Default Scheme's list (S.I. 2012/2886 Sch
-# 3 para 12(1)): DLA care highest and PIP daily living at either rate, without
-# AFIP. The four London councils keep the qualifying age for State Pension
-# Credit as the age limit. The model applies Kingston's list in 2013-14 to
-# 2017-18 and from 2023-24. It cites no complete Kingston scheme text for
-# 2018-19 to 2022-23, so for those years it assumes the Housing Benefit list.
-# The other councils' lists apply in every model year. The model reads each
-# year's rules at 30 April.
+# either rate from 1 April 2023 (para 14(1)(g), S.S.I. 2023/38). Merton counts
+# DLA care highest and PIP daily living at either rate and omits AFIP (Merton's
+# Local Council Tax Support Scheme Rules 2026, Sch 3 para 12(1)). Newham counts
+# DLA care highest, PIP daily living at either rate and AFIP (Newham's Council
+# Tax Reduction Scheme 2026, Sch 3 para 12(1)). In Westminster the model applies
+# the Default Scheme's list (S.I. 2012/2886 Sch 3 para 12(1)): DLA care highest
+# and PIP daily living at either rate, without AFIP. Those three councils keep
+# the qualifying age for State Pension Credit as the age limit, and their lists
+# apply in every model year. In Kingston upon Thames the model counts DLA care
+# highest alone, with no age limit (issue #2881). The model reads each year's
+# rules at 30 April.
 # Unless a case sets `is_disabled_for_benefits`, it keeps its default, false,
 # and the model pays no disability premium, although the schemes give one to
 # a claimant under the qualifying age who receives these awards (for example
@@ -295,15 +292,12 @@
     # 1,800 - 20% of (12,000 - 9,443.20) = 1,800 - 511.36 = 1,288.64.
     simulated_council_tax_reduction_benunit: 1_288.64
 
-- name: Case 10, AFIP meets Newham's condition but not Merton's, Kingston upon Thames's or Westminster's.
+- name: Case 10, AFIP meets Newham's condition but not Merton's or Westminster's.
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       merton:
-        age: 30
-        armed_forces_independence_payment: 2_000
-      kingston:
         age: 30
         armed_forces_independence_payment: 2_000
       newham:
@@ -315,8 +309,6 @@
     benunits:
       merton:
         members: [merton]
-      kingston:
-        members: [kingston]
       newham:
         members: [newham]
       westminster:
@@ -326,10 +318,6 @@
         members: [merton]
         country: ENGLAND
         local_authority: MERTON
-      kingston:
-        members: [kingston]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
       newham:
         members: [newham]
         country: ENGLAND
@@ -339,20 +327,17 @@
         country: ENGLAND
         local_authority: WESTMINSTER
   output:
-    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, false, true, false]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, true, false]
     # 22.00 * 52 = 1,144.00.
-    council_tax_reduction_enhanced_disability_premium: [0, 0, 1_144, 0]
-    enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
+    council_tax_reduction_enhanced_disability_premium: [0, 1_144, 0]
+    enhanced_disability_premium: [1_144, 1_144, 1_144]
 
-- name: Case 11, standard PIP daily living meets the Merton, Kingston upon Thames, Newham and Westminster conditions.
+- name: Case 11, standard PIP daily living meets the Merton, Newham and Westminster conditions.
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       merton:
-        age: 30
-        pip_dl_category: STANDARD
-      kingston:
         age: 30
         pip_dl_category: STANDARD
       newham:
@@ -364,8 +349,6 @@
     benunits:
       merton:
         members: [merton]
-      kingston:
-        members: [kingston]
       newham:
         members: [newham]
       westminster:
@@ -375,10 +358,6 @@
         members: [merton]
         country: ENGLAND
         local_authority: MERTON
-      kingston:
-        members: [kingston]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
       newham:
         members: [newham]
         country: ENGLAND
@@ -388,10 +367,10 @@
         country: ENGLAND
         local_authority: WESTMINSTER
   output:
-    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true, true]
-    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144, 1_144]
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, true, true]
+    council_tax_reduction_enhanced_disability_premium: [1_144, 1_144, 1_144]
     # Under HB para 15(1)(c), claimants qualify only at the enhanced rate.
-    enhanced_disability_premium: [0, 0, 0, 0]
+    enhanced_disability_premium: [0, 0, 0]
 
 - name: Case 12, the Merton and Newham schemes keep the age limit for an over-age partner.
   period: 2026
@@ -759,87 +738,7 @@
     # as in Case 15.
     household_net_income: [16_365.32, 12_148.12]
 
-- name: Case 18, in Kingston the model assumes the Housing Benefit condition and counts AFIP in 2020.
-  period: 2020
-  input:
-    people:
-      person1:
-        age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # Kingston's list does not apply; the GB Housing Benefit list counts AFIP.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: true
-
-- name: Case 19, in Kingston the model assumes the Housing Benefit condition and counts AFIP in 2022.
-  period: 2022
-  input:
-    people:
-      person1:
-        age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # Kingston's list does not apply; the GB Housing Benefit list counts AFIP.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: true
-
-- name: Case 20, Kingston's own list omits AFIP in 2017.
-  period: 2017
-  input:
-    people:
-      person1:
-        age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # Kingston's list applies and counts only highest DLA care or PIP daily living.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: false
-
-- name: Case 21, Kingston's own list omits AFIP in 2024.
-  period: 2024
-  input:
-    people:
-      person1:
-        age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # Kingston's list applies and counts only highest DLA care or PIP daily living.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: false
-
-- name: Case 22, in Kingston the model assumes the Housing Benefit condition and counts highest DLA care in 2020.
-  period: 2020
-  input:
-    people:
-      person1:
-        age: 30
-        dla_sc_category: HIGHER
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # The GB Housing Benefit list counts has_highest_dla_sc_award.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: true
-
-- name: Case 23, Merton's own list still omits AFIP in 2020.
+- name: Case 18, Merton's own list omits AFIP in 2020.
   period: 2020
   input:
     people:
@@ -852,69 +751,93 @@
         country: ENGLAND
         local_authority: MERTON
   output:
-    # Merton's list still counts only highest DLA care or PIP daily living.
+    # Merton's list counts only highest DLA care or PIP daily living.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
 
-- name: Case 24, in Kingston the model assumes the Housing Benefit condition from 2018 and counts AFIP.
-  period: 2018
+- name: Case 19, in Kingston upon Thames the model counts only highest-rate DLA care.
+  # The council's texts from 2023-24 print a wider list with an age limit (Sch 3
+  # para 12), and issue #2881 lists what the model needs to apply it.
+  period: 2026
+  absolute_error_margin: 0.01
   input:
     people:
-      person1:
+      dla:
         age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # The switch is false from 1 April 2018; the GB Housing Benefit list counts AFIP.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: true
-
-- name: Case 25, Kingston's own list omits AFIP again from 2023.
-  period: 2023
-  input:
-    people:
-      person1:
+        dla_sc_category: HIGHER
+      enhanced_pip:
         age: 30
-        armed_forces_independence_payment: 2_000
-    households:
-      household:
-        members: [person1]
-        country: ENGLAND
-        local_authority: KINGSTON_UPON_THAMES
-  output:
-    # The switch is true again from 1 April 2023; Kingston's list omits AFIP.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: false
-
-- name: Case 26, in Kingston the model assumes the Housing Benefit condition from 2018 and omits standard PIP daily living.
-  period: 2018
-  input:
-    people:
-      person1:
+        pip_dl_category: ENHANCED
+      standard_pip:
         age: 30
         pip_dl_category: STANDARD
+      afip:
+        age: 30
+        armed_forces_independence_payment: 2_000
+    benunits:
+      dla:
+        members: [dla]
+      enhanced_pip:
+        members: [enhanced_pip]
+      standard_pip:
+        members: [standard_pip]
+      afip:
+        members: [afip]
     households:
-      household:
-        members: [person1]
+      dla:
+        members: [dla]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      enhanced_pip:
+        members: [enhanced_pip]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      standard_pip:
+        members: [standard_pip]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+      afip:
+        members: [afip]
         country: ENGLAND
         local_authority: KINGSTON_UPON_THAMES
   output:
-    # The GB Housing Benefit list counts only the enhanced PIP daily living rate.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: false
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false, false, false]
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: [1_144, 0, 0, 0]
+    # The legacy premium also counts enhanced PIP daily living and AFIP.
+    enhanced_disability_premium: [1_144, 1_144, 0, 1_144]
+    # Every award here also gives the severe disability premium, 86.05 * 52 =
+    # 4,474.60, and the first adds 1,144.00: 5,618.60.
+    council_tax_reduction_premiums: [5_618.60, 4_474.60, 4_474.60, 4_474.60]
 
-- name: Case 27, Kingston's own list counts standard PIP daily living again from 2023.
-  period: 2023
+- name: Case 20, in Kingston upon Thames the model sets no age limit for an over-age partner.
+  period: 2026
+  absolute_error_margin: 0.01
   input:
     people:
       person1:
-        age: 30
-        pip_dl_category: STANDARD
+        age: 60
+      person2:
+        age: 70
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        jsa_income: 3_000
     households:
       household:
-        members: [person1]
+        members: [person1, person2]
         country: ENGLAND
         local_authority: KINGSTON_UPON_THAMES
   output:
-    # Kingston's list counts the PIP daily living component at either rate.
-    meets_council_tax_reduction_enhanced_disability_premium_condition: true
+    is_couple: true
+    # Because the couple receives income-based Jobseeker's Allowance, the
+    # model applies the working-age scheme.
+    council_tax_reduction_pensioner: false
+    # The model's legacy premium applies the age limit.
+    enhanced_disability_premium: 0
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [false, true]
+    # The couple rate, 31.40 * 52 = 1,632.80, with no age limit in Kingston.
+    council_tax_reduction_enhanced_disability_premium: 1_632.80
+    # The model pays no other premium, because only one partner has a severe
+    # disability premium qualifying benefit.
+    council_tax_reduction_premiums: 1_632.80

@@ -18,22 +18,23 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "Council Tax Reduction scheme that covers their household. Scottish "
         "councils count attendance allowance at either rate from 1 April "
         "2023, and the Scottish Ministers removed the age limit from 20 June "
-        "2022. Merton and Kingston upon Thames count the PIP daily living "
-        "component at either rate and omit armed forces independence payment; "
-        "Newham counts the PIP daily living component at either rate and "
-        "armed forces independence payment. In Westminster the model applies "
+        "2022. Merton counts the PIP daily living component at either rate "
+        "and omits armed forces independence payment; Newham counts the PIP "
+        "daily living component at either rate and armed forces independence "
+        "payment. In Westminster the model applies "
         "the Default Scheme's list (S.I. 2012/2886 Sch 3 para 12), which "
         "counts the PIP daily living component at either rate and omits armed "
         "forces independence payment: the council has approved the same "
         "scheme, based on the Default Scheme Regulations, since 2013/14, and "
         "its Cabinet says from December 2020 that its local scheme mirrors "
         "those Regulations, though the model cites no full Westminster scheme "
-        "text. Those four councils count an award only for a person under the "
-        "qualifying age for State Pension Credit. The model applies Kingston's "
-        "list in 2013-14 to 2017-18 and from 2023-24. It cites no complete "
-        "Kingston scheme text for 2018-19 to 2022-23, so for those years it "
-        "assumes the Housing Benefit list. The other three councils' lists "
-        "start on or before 1 April 2013 and apply in every model year. In "
+        "text. Those three councils count an award only for a person under the "
+        "qualifying age for State Pension Credit, and their lists start on or "
+        "before 1 April 2013 and apply in every model year. In Kingston upon "
+        "Thames the model counts highest-rate DLA care alone, with no age "
+        "limit; the council's texts from 2023-24 print a wider list with an "
+        "age limit (Sch 3 para 12), and issue #2881 lists what the model needs "
+        "to apply it. In "
         "every other scheme the model applies the Housing Benefit condition "
         "(receives_enhanced_disability_premium_qualifying_benefit, under the "
         "same age limit). Welsh councils apply that condition under W.S.I. "
@@ -48,7 +49,6 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "https://web.archive.org/web/20150530202253id_/http://www.merton.gov.uk/council_tax_reduction_scheme_l_b_merton_april_2013_with_uprated_amounts_final_310113-2.pdf",
         "https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202023-24_0.pdf",
         "https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf",
-        "https://moderngov.kingston.gov.uk/mgAi.aspx?ID=20744",
         "https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/regulation/12/made",
         "https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf",
         "https://mgov.newham.gov.uk/documents/s74450/Appendix%201%20-%20LB%20Newham%20Local%20CTR%20Scheme_16_01_13.pdf",
@@ -86,15 +86,14 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
             [
                 is_scotland_scheme(country),
                 is_merton_area(local_authority, country),
-                is_kingston_upon_thames_area(local_authority, country)
-                & la.kingston_upon_thames.council_tax_reduction.enhanced_disability_premium.qualifying_benefits_apply,
+                is_kingston_upon_thames_area(local_authority, country),
                 is_newham_area(local_authority, country),
                 is_westminster_area(local_authority, country),
             ],
             [
                 scottish,
                 council_condition(la.merton),
-                council_condition(la.kingston_upon_thames),
+                person("has_highest_dla_sc_award", period),
                 council_condition(la.newham),
                 council_condition(la.westminster),
             ],
