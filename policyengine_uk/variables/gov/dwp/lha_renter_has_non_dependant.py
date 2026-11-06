@@ -11,8 +11,9 @@ class lha_renter_has_non_dependant(Variable):
         "that counts the household's non-dependants (see "
         "uc_non_dependants_counted), anyone in another family who is a "
         "Universal Credit non-dependant of the renter "
-        "(is_uc_non_dependant_of_household_head), such as a lodger's adult "
-        "son who pays nothing. Joint tenants and other sharers of the rent, "
+        "(is_uc_non_dependant_of_household_head), such as the adult son, who "
+        "pays nothing, of a lodger whose family makes no claim of its own. "
+        "Joint tenants and other sharers of the rent, "
         "boarders and lodgers are not non-dependants, and the flag leaves "
         "out a boarder's or lodger's child or qualifying young person (UC "
         "Regs 2013 Sch 4 para 9(2)(g)). The model does not identify foster "
@@ -38,8 +39,9 @@ class lha_renter_has_non_dependant(Variable):
         within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_qyp)
         # UC Regs 2013 Sch 4 para 9(1)(c) and 9(2): the non-dependants of
         # other families, whoever in the family they are. A boarder's or
-        # lodger's non-paying adult son counts; their child or qualifying
-        # young person does not (para 9(2)(g)).
+        # lodger's non-paying adult son counts unless their own family's claim
+        # does (para 9(2)(f)); their child or qualifying young person does not
+        # (para 9(2)(g)).
         other_family_non_dependant = person(
             "is_uc_non_dependant_of_household_head", period
         )

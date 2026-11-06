@@ -7,7 +7,10 @@
 # all five Python shards of nine runs on 24 October 2026, each test's mean
 # over the runs: merge queue runs 40050881130, 40059344467, 40063244949,
 # 40067189795, 40071060766, 40079467297, 40083761750 and 40087883891, and
-# pull request run 40095846881. A slow test not here is placed by the hash.
+# pull request run 40095846881. The entries for
+# test_non_dependant_deduction_properties.py come from pull request run
+# 41294689067 alone, below 20 seconds included. A slow test not here is
+# placed by the hash.
 # test_ci_test_shards.py fails if an entry names a test that no longer
 # exists, so a pull request that renames or removes a listed test should
 # rename or delete its line here. Regenerate when a shard drifts well above
@@ -167,6 +170,7 @@
 "policyengine_uk/tests/test_uc_state_pension_properties.py::test_uc_falls_pound_for_pound_in_state_pension" = 96
 "policyengine_uk/tests/test_uc_work_related_groups_properties.py::test_qualifying_age_route_moves_only_claimants_past_it" = 96
 "policyengine_uk/tests/test_uc_earned_income_before_work_allowance_properties.py::test_more_pay_never_turns_the_childcare_criterion_on" = 96
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_non_dependant_deduction_invariants" = 96
 "policyengine_uk/tests/test_legacy_award_work_properties.py::test_screens_match_a_family_by_family_reading" = 95
 "policyengine_uk/tests/test_dated_reform_routes.py::test_a_schedule_of_two_changes_matches_the_oracle" = 95
 "policyengine_uk/tests/test_uc_state_pension_properties.py::test_state_pension_counts_like_private_pension" = 95
@@ -262,6 +266,7 @@
 "policyengine_uk/tests/test_rent_of_sharers_boarders_and_lodgers_properties.py::test_no_op_without_sharers_boarders_or_lodgers" = 72
 "policyengine_uk/tests/test_state_pension_age.py::test_status_matches_statute_for_every_birth_date[2017]" = 72
 "policyengine_uk/tests/test_pawhp_household_income_properties.py::test_switching_pawhp_off_lowers_household_income_by_pawhp" = 72
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_capped_universal_credit_matches_the_model" = 72
 "policyengine_uk/tests/test_process_time_reforms.py::test_a_triple_lock_rate_set_by_reform_uprates_the_state_pension[via_parameter_changes-generated-bare-year]" = 71
 "policyengine_uk/tests/test_state_pension_age.py::test_status_matches_statute_for_every_birth_date[2019]" = 71
 "policyengine_uk/tests/test_labour_supply_response_baseline.py::test_basic_rate_rise_gives_responses_of_the_implied_sign" = 71
@@ -371,6 +376,7 @@
 "policyengine_uk/tests/test_uc_statutory_pay_properties.py::test_uc_does_not_increase_as_statutory_paternity_pay_rises" = 48
 "policyengine_uk/tests/test_salary_sacrifice_ni_only.py::test_explicit_actual_return_matches_actual_pay_and_member_inputs[personal_allowance]" = 48
 "policyengine_uk/tests/test_income_support_eligibility_properties.py::test_more_work_or_jsa_never_makes_a_family_eligible" = 48
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_earned_income_exemption_reads_universal_credit" = 48
 "policyengine_uk/tests/test_housing_benefit_earnings_disregard_properties.py::test_disregard_is_non_decreasing_in_earnings" = 47
 "policyengine_uk/tests/test_benefit_cap_uc_and_hb_properties.py::test_a_family_with_both_awards_is_capped_once_through_universal_credit" = 47
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_esa_never_changes_non_dependant_exemption" = 47
@@ -578,6 +584,10 @@
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_a_household_that_moves_is_paid_under_each_years_scheme[LONDON-SCOTLAND]" = 20
 "policyengine_uk/tests/test_capital_gains_responses.py::test_revenue_falls_short_of_the_static_estimate" = 20
 "policyengine_uk/tests/test_capital_gains_response_default.py::test_employer_cost_branches_hold_the_realisation_response" = 20
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[WALES]" = 15
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[SCOTLAND]" = 12
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[HOUSING_BENEFIT]" = 10
+"policyengine_uk/tests/test_non_dependant_deduction_properties.py::test_band_edges_are_inclusive[ENGLAND]" = 9
 # test_person_isa_capital.py (#2729): local timings on 1 November 2026, one
 # test at a time at load 40 to 90, and the threshold and first Pension Credit
 # nodes in one run of the file at load 90 to 165, until CI logs replace them.

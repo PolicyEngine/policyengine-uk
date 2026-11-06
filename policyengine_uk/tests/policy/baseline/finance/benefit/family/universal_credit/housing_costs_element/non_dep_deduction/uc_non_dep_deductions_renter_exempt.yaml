@@ -1,0 +1,319 @@
+- name: UC Sch 4 para 15, a partner whom reg 3(3) excludes from the claim brings no exemption by being blind
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        is_blind: true
+        is_claimant_or_partner: true
+        # Reg 3(3)(e): subject to immigration control, so the claimant
+        # claims as a single person.
+        uc_is_ineligible_partner: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # Para 1(2) makes the claimant the renter. The blind partner is no claimant,
+    # so para 15 gives no exemption.
+    uc_non_dep_deductions_renter_exempt: false
+    # The son, aged 22, owes 96.55 x 12 = 1,158.60 (para 13).
+    uc_non_dep_deductions: 1_158.60
+    # 10,400.00 - 1,158.60 = 9,241.40.
+    uc_housing_costs_element: 9_241.40
+    # Single rate aged 25 or over: 424.90 x 12 = 5,098.80. Under reg 3(3)
+    # the claimant claims as a single person.
+    uc_standard_allowance: 5_098.80
+    # 5,098.80 + 9,241.40 = 14,340.20, with no income to taper.
+    universal_credit: 14_340.20
+    # 14,340.20 + 100 (Household Energy Payment) - 90 (the TV Licence, which the model halves
+    # for a household with a blind member) = 14,350.20.
+    household_net_income: 14_350.20
+
+- name: UC Sch 4 para 15, a blind single claimant whose partner reg 3(3) excludes is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_blind: true
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        is_claimant_or_partner: true
+        # Reg 3(3)(e): subject to immigration control, so the claimant
+        # claims as a single person.
+        uc_is_ineligible_partner: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # The renter is blind (para 15(1)(a), (2)(a)): no contribution for anyone.
+    uc_non_dep_deductions_renter_exempt: true
+    uc_non_dep_deductions: 0
+    # The rent less no contribution: 10,400.00.
+    uc_housing_costs_element: 10_400.00
+    # Single rate aged 25 or over: 424.90 x 12 = 5,098.80. Under reg 3(3)
+    # the claimant claims as a single person.
+    uc_standard_allowance: 5_098.80
+    # 5,098.80 + 10,400.00 = 15,498.80, with no income to taper.
+    universal_credit: 15_498.80
+    # 15,498.80 + 100 (Household Energy Payment) - 90 (the TV Licence, which the model halves
+    # for a household with a blind member) = 15,508.80.
+    household_net_income: 15_508.80
+
+- name: UC Sch 4 para 15, a joint claim where the blind partner is a joint renter is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        is_blind: true
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: false
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, true, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # Both members claim jointly, so the blind partner is a joint renter
+    # (para 15(1)(b), (2)(a)).
+    uc_non_dep_deductions_renter_exempt: true
+    uc_non_dep_deductions: 0
+    # The rent less no contribution: 10,400.00.
+    uc_housing_costs_element: 10_400.00
+    # Couple rate, both aged 25 or over: 666.97 x 12 = 8,003.64.
+    uc_standard_allowance: 8_003.64
+    # 8,003.64 + 10,400.00 = 18,403.64, with no income to taper.
+    universal_credit: 18_403.64
+    # 18,403.64 + 100 (Household Energy Payment) - 90 (the TV Licence, which the model halves
+    # for a household with a blind member) = 18,413.64.
+    household_net_income: 18_413.64
+
+- name: UC Sch 4 paras 13 and 15, nobody blind, the son's contribution applies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        is_claimant_or_partner: true
+        # Reg 3(3)(e): subject to immigration control, so the claimant
+        # claims as a single person.
+        uc_is_ineligible_partner: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # No claimant meets para 15(2).
+    uc_non_dep_deductions_renter_exempt: false
+    # The son, aged 22, owes 96.55 x 12 = 1,158.60 (para 13).
+    uc_non_dep_deductions: 1_158.60
+    # 10,400.00 - 1,158.60 = 9,241.40.
+    uc_housing_costs_element: 9_241.40
+    # Single rate aged 25 or over: 424.90 x 12 = 5,098.80. Under reg 3(3)
+    # the claimant claims as a single person.
+    uc_standard_allowance: 5_098.80
+    # 5,098.80 + 9,241.40 = 14,340.20, with no income to taper.
+    universal_credit: 14_340.20
+    # 14,340.20 + 100 (Household Energy Payment) - 180 (the TV Licence) = 14,260.20.
+    household_net_income: 14_260.20
+
+- name: UC Sch 4 para 15(2)(c), a single claimant on armed forces independence payment is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        armed_forces_independence_payment: 5000
+        attendance_allowance: 0
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        is_claimant_or_partner: true
+        # Reg 3(3)(e): subject to immigration control, so the claimant
+        # claims as a single person.
+        uc_is_ineligible_partner: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # Reg 2's attendance allowance includes armed forces independence payment
+    # (head (f)), so the claimant is in receipt of attendance allowance
+    # (para 15(2)(c)) without Attendance Allowance itself.
+    uc_non_dep_deductions_renter_exempt: true
+    uc_non_dep_deductions: 0
+    # The rent less no contribution: 10,400.00.
+    uc_housing_costs_element: 10_400.00
+    # Single rate aged 25 or over: 424.90 x 12 = 5,098.80. Under reg 3(3)
+    # the claimant claims as a single person.
+    uc_standard_allowance: 5_098.80
+    # 5,098.80 + 10,400.00 = 15,498.80, with no income to taper;
+    # the formula takes no armed forces independence payment as unearned income.
+    universal_credit: 15_498.80
+    # 15,498.80 + 100 (Household Energy Payment) - 180 (the TV Licence) = 15,418.80.
+    # household_benefits lists afcs but not armed_forces_independence_payment,
+    # so household net income leaves out the £5,000 payment.
+    household_net_income: 15_418.80
+
+- name: UC Sch 4 para 15(2)(c), armed forces independence payment to a partner whom reg 3(3) excludes brings no exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 43
+        armed_forces_independence_payment: 5000
+        attendance_allowance: 0
+        is_claimant_or_partner: true
+        # Reg 3(3)(e): subject to immigration control, so the claimant
+        # claims as a single person.
+        uc_is_ineligible_partner: true
+      son:
+        age: 22
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, son]
+    households:
+      home:
+        members: [claimant, partner, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_uc_single_or_joint_claimant: [true, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    # The claimant, the partner who shares her room, and the son, a
+    # non-dependant who is not a child (Sch 4 para 10(1)(a), (c)): 2
+    # bedrooms, category C, whose £208.85 weekly rate (£10,860.20 a year)
+    # exceeds the £10,400 rent, so the formula takes the rent.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # The partner who receives it is no claimant, so para 15 gives no exemption.
+    uc_non_dep_deductions_renter_exempt: false
+    # The son, aged 22, owes 96.55 x 12 = 1,158.60 (para 13).
+    uc_non_dep_deductions: 1_158.60
+    # 10,400.00 - 1,158.60 = 9,241.40.
+    uc_housing_costs_element: 9_241.40
+    # Single rate aged 25 or over: 424.90 x 12 = 5,098.80. Under reg 3(3)
+    # the claimant claims as a single person.
+    uc_standard_allowance: 5_098.80
+    # 5,098.80 + 9,241.40 = 14,340.20, with no income to taper;
+    # the formula takes no armed forces independence payment as unearned income.
+    universal_credit: 14_340.20
+    # 14,340.20 + 100 (Household Energy Payment) - 180 (the TV Licence) = 14,260.20.
+    # household_benefits lists afcs but not armed_forces_independence_payment,
+    # so household net income leaves out the £5,000 payment.
+    household_net_income: 14_260.20
