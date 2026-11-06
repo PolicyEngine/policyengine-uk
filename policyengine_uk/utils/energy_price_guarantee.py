@@ -31,7 +31,7 @@ def ni_epg_calculation(household, period, parameters):
     vat = parameters(period).gov.hmrc.vat
     relief = electricity * p.electricity_discount * (
         1 + vat.domestic_electricity_rate.northern_ireland
-    ) + gas * p.gas_discount * (1 + vat.reduced_rate)
+    ) + gas * p.gas_discount * (1 + vat.domestic_gas_rate.northern_ireland)
     supported = (
         in_northern_ireland
         & known_use

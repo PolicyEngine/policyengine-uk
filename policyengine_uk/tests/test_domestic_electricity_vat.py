@@ -199,11 +199,74 @@ def test_zero_rate_for_half_of_fy2027_is_day_weighted():
     )
 
 
-def test_reduced_rate_reform_reaches_gas_not_electricity():
+def test_reduced_rate_reform_reaches_neither_fuel():
+    # Gas has its own rate (gov.hmrc.vat.domestic_gas_rate), so a change to
+    # the shared reduced rate leaves both bills at 5%: £50 + £50.
     scenario = Scenario(parameter_changes={"gov.hmrc.vat.reduced_rate": {"2025": 0.0}})
     assert calc(
         "domestic_energy_vat", year=2025, scenario=scenario, gas=1_050
+    ) == pytest.approx(100)
+
+
+def test_gas_rate_reform_leaves_electricity_and_other_goods_alone():
+    # £1,050 of electricity and £1,050 of gas; zero-rating gas removes its
+    # £50 and leaves electricity's £50 and the reduced rate itself alone.
+    scenario = Scenario(
+        parameter_changes={"gov.hmrc.vat.domestic_gas_rate.great_britain": 0.0}
+    )
+    sim = Simulation(situation=household(year=2025, gas=1_050), scenario=scenario)
+    assert float(sim.calculate("domestic_energy_vat", 2025)[0]) == pytest.approx(50)
+    assert float(
+        sim.calculate("baseline_domestic_energy_vat", 2025)[0]
+    ) == pytest.approx(100)
+    reduced = sim.tax_benefit_system.parameters.gov.hmrc.vat.reduced_rate
+    assert reduced("2025") == pytest.approx(0.05)
+
+
+def test_great_britain_gas_rate_does_not_reach_northern_ireland():
+    scenario = Scenario(
+        parameter_changes={"gov.hmrc.vat.domestic_gas_rate.great_britain": 0.0}
+    )
+    assert calc(
+        "domestic_energy_vat",
+        year=2025,
+        scenario=scenario,
+        region="NORTHERN_IRELAND",
+        electricity=0,
+        gas=1_050,
     ) == pytest.approx(50)
+
+
+@pytest.mark.parametrize("date", ["1994-04-01", "1997-08-31"])
+def test_gas_rate_was_8_percent_from_april_1994(date):
+    rates = raw_parameters().gov.hmrc.vat.domestic_gas_rate
+    assert rates.great_britain(date) == pytest.approx(0.08)
+    assert rates.northern_ireland(date) == pytest.approx(0.08)
+
+
+def test_gas_rate_follows_the_reduced_rate_in_current_law():
+    raw = raw_parameters().gov.hmrc.vat
+    for date in ("1997-09-01", "2010-01-01", "2026-10-01", "2030-01-01"):
+        assert raw.domestic_gas_rate.great_britain(date) == raw.reduced_rate(date)
+        assert raw.domestic_gas_rate.northern_ireland(date) == raw.reduced_rate(date)
+
+
+def test_gas_zero_rate_for_half_of_fy2027_is_day_weighted():
+    # Model year 2027 has 366 days; a zero rate for the first 183 leaves
+    # half the year at 5%: 1,000 x 0.05 x 183 / 366 = £25.
+    reform = Reform.from_dict(
+        {
+            "gov.hmrc.vat.domestic_gas_rate.great_britain": {
+                "2027-04-06.2027-10-05": 0.0
+            }
+        },
+        country_id="uk",
+    )
+    sim = Simulation(
+        situation=household(year=2027, electricity=0, gas=1_050), reform=reform
+    )
+    assert sim.calculate("domestic_energy_vat", 2027)[0] == pytest.approx(25)
+    assert sim.calculate("baseline_domestic_energy_vat", 2027)[0] == pytest.approx(50)
 
 
 # Price basis of the energy inputs (#2189 review, finding C1). The inputs are
@@ -212,7 +275,7 @@ def test_reduced_rate_reform_reaches_gas_not_electricity():
 # the baseline-tree reduced rate, which a Scenario reform also changed (#2188),
 # so a 20% gas rate treated 5%-priced bills as if they included 20%.
 HER_CASE = dict(region="LONDON", electricity=1_050, gas=1_050, year=2025)
-GAS_RATE = "gov.hmrc.vat.reduced_rate"
+GAS_RATE = "gov.hmrc.vat.domestic_gas_rate.great_britain"
 
 
 def test_price_basis_rate_is_5_percent():
@@ -253,7 +316,7 @@ def test_gas_rate_reform_scenario_and_reform_agree_at_250():
 
 def test_scalar_zero_gas_rate_leaves_electricity_vat_alone():
     # £1,050 of electricity only: 1,050 / 1.05 x 5% = £50. A scalar Scenario
-    # setting the reduced rate to 0 used to give 1,050 / 1.00 x 5% = £52.50.
+    # setting the gas rate to 0 used to give 1,050 / 1.00 x 5% = £52.50.
     scenario = Scenario(parameter_changes={GAS_RATE: 0.0})
     assert calc(
         "domestic_energy_vat", year=2025, gas=0, scenario=scenario
