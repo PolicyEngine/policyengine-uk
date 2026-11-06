@@ -36,7 +36,7 @@ It checks these invariants in every year from 2015 to 2030:
 1. The test computes the statutory amount from the award inputs and the
    parameter rates. enhanced_disability_premium equals that amount, and
    council_tax_reduction_enhanced_disability_premium equals the amount under
-   the scheme's own list.
+   the list the model applies to the scheme in that year.
 2. The model pays no premium to a family in which no claimant or partner has
    a qualifying award.
 3. Giving a claimant or partner a qualifying benefit on top of their awards
@@ -129,8 +129,9 @@ ADULT_AGES = [20, 30, 45, 60, 64, 66, 67, 70, 85]
 COUNCIL_LISTS = {
     # The 2013 rules.
     "MERTON": {2013: ("dla_highest", "any_pip")},
-    # The Default Scheme, adopted for 2013-14, and the council's own texts
-    # from 2023-24. The model cites no complete scheme text for 2018-19 to
+    # The Council adopted the Default Scheme for 2013-14 and kept its list
+    # through 2017-18, and the council prints the same list in its texts from
+    # 2023-24. The model cites no complete scheme text for 2018-19 to
     # 2022-23, so it assumes the Housing Benefit condition in those years.
     "KINGSTON_UPON_THAMES": {
         2013: ("dla_highest", "any_pip"),
@@ -210,7 +211,8 @@ def council_list(council, year):
 
 
 def qualifies_for_scheme(inputs, place, year):
-    """Check for the scheme's own awards, before its age limit."""
+    """Check for the awards on the list the model applies to the scheme in
+    that year, before the scheme's age limit."""
     country, council = place
     if country == "SCOTLAND":
         # SSI 2021/249 Sch 1 para 14(1), with head (g) from 2023.
@@ -335,9 +337,10 @@ def build(families, children):
 
 
 def oracle(f, year, attained):
-    """Compute the two annual premiums under the law for one family.
-    attained[j] holds when adult j has attained the qualifying age for State
-    Pension Credit."""
+    """Compute the two annual premiums for one family from the Regulations
+    and COUNCIL_LISTS, with the model's Housing Benefit assumption for
+    Kingston upon Thames in 2018 to 2022. attained[j] holds when adult j has
+    attained the qualifying age for State Pension Credit."""
     p = system.parameters(year).gov.dwp.disability_premia
     rate = p.enhanced_couple if f["shape"] == "couple" else p.enhanced_single
     country = f["place"][0]

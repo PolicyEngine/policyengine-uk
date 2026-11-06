@@ -759,7 +759,7 @@
     # as in Case 15.
     household_net_income: [16_365.32, 12_148.12]
 
-- name: Case 18, Kingston keeps the Housing Benefit condition for AFIP in 2020.
+- name: Case 18, in Kingston the model assumes the Housing Benefit condition and counts AFIP in 2020.
   period: 2020
   input:
     people:
@@ -775,7 +775,7 @@
     # Kingston's list does not apply; the GB Housing Benefit list counts AFIP.
     meets_council_tax_reduction_enhanced_disability_premium_condition: true
 
-- name: Case 19, Kingston keeps the Housing Benefit condition for AFIP in 2022.
+- name: Case 19, in Kingston the model assumes the Housing Benefit condition and counts AFIP in 2022.
   period: 2022
   input:
     people:
@@ -823,7 +823,7 @@
     # Kingston's list applies and counts only highest DLA care or PIP daily living.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
 
-- name: Case 22, Kingston keeps the Housing Benefit condition for highest DLA care in 2020.
+- name: Case 22, in Kingston the model assumes the Housing Benefit condition and counts highest DLA care in 2020.
   period: 2020
   input:
     people:
@@ -855,7 +855,7 @@
     # Merton's list still counts only highest DLA care or PIP daily living.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
 
-- name: Case 24, Kingston's first Housing Benefit year counts AFIP (2018).
+- name: Case 24, in Kingston the model assumes the Housing Benefit condition from 2018 and counts AFIP.
   period: 2018
   input:
     people:
@@ -887,7 +887,7 @@
     # The switch is true again from 1 April 2023; Kingston's list omits AFIP.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
 
-- name: Case 26, Kingston's first Housing Benefit year omits standard PIP daily living (2018).
+- name: Case 26, in Kingston the model assumes the Housing Benefit condition from 2018 and omits standard PIP daily living.
   period: 2018
   input:
     people:
