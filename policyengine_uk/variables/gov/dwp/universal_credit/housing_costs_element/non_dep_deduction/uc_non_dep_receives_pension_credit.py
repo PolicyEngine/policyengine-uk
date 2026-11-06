@@ -10,22 +10,26 @@ class uc_non_dep_receives_pension_credit(Variable):
     documentation = (
         "Whether a family not liable for rent receives Pension Credit, for the "
         "Universal Credit non-dependant housing contribution exemption. Such "
-        "a family's own Universal Credit housing element is zero. Calculating "
-        "its Pension Credit in a branch with that element fixed at zero "
-        "therefore preserves its entitlement, including legacy-closure "
-        "routing, take-up, explicit inputs and frozen Pension Credit reforms. "
-        "It avoids evaluating a renter's own Pension Credit while calculating "
-        "their Universal Credit housing element. Results for families liable "
-        "for the household's rent (benunit_is_liable_for_household_rent) are "
-        "disregarded because none of their members is a non-dependant. A "
-        "boarder's or lodger's family is not ruled out: its non-paying adult "
-        "members can be non-dependants, and keep the exemption when the "
-        "family receives Pension Credit. For that family the branch fixes "
-        "the family's Universal Credit housing element, which may cover the "
-        "rent it pays the householder, at nil, and computes its Pension "
-        "Credit there. A family whose members are all over the qualifying "
-        "age claims no Universal "
-        "Credit, so the branch gives its actual Pension Credit."
+        "a family's own Universal Credit housing element is zero. The formula "
+        "calculates its Pension Credit in a branch with every family's "
+        "housing costs element set to nil, which keeps the family's "
+        "legacy-closure routing, take-up, explicit inputs and frozen Pension "
+        "Credit reforms. Where the family's severe disability addition reads "
+        "a renter's Universal Credit award that includes the carer element, "
+        "the branch reads that award without housing costs, so the branch's "
+        "Pension Credit can differ from the family's own. The branch avoids "
+        "evaluating a renter's own Pension Credit while calculating their "
+        "Universal Credit housing element. The formula ignores the branch "
+        "result for a family liable for the household's rent "
+        "(benunit_is_liable_for_household_rent), none of whose members is a "
+        "non-dependant. A boarder's or lodger's family is not ruled out: its "
+        "non-paying adult members can be non-dependants, and keep the "
+        "exemption when the family receives Pension Credit. For that family "
+        "the branch fixes the family's Universal Credit housing element, "
+        "which may cover the rent it pays the householder, at nil, and "
+        "computes its Pension Credit there. A family whose members are all "
+        "over the qualifying age claims no Universal Credit, so the branch "
+        "gives its actual Pension Credit."
     )
     definition_period = YEAR
     reference = (
@@ -35,9 +39,11 @@ class uc_non_dep_receives_pension_credit(Variable):
 
     def formula(benunit, period, parameters):
         # A non-dependant is not liable for the rent (Sch 4 para 9(2)(d)),
-        # so their own housing element is already zero. This branch keeps
-        # their actual Pension Credit calculation while breaking the cycle
-        # through the renter's UC entitlement and pension-age route.
+        # so their own housing element is already zero. The branch keeps
+        # their Pension Credit calculation and breaks the cycle through the
+        # renter's UC entitlement and pension-age route. Where their severe
+        # disability addition reads a renter's carer element, the branch
+        # reads the renter's award without housing costs.
         simulation = benunit.simulation
         # Income tax is independent of the UC housing element. Calculate
         # the earnings counterfactuals on the parent so this branch and
