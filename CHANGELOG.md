@@ -1,3 +1,10 @@
+## [2.176.0] - 2026-11-06
+
+### Added
+
+- Model rent from boarders, lodgers and sub-tenants for the householder: rent-a-room relief in income tax, the £20 and board-and-lodging disregards in the legacy means tests (not Universal Credit), and no non-dependant deductions for a boarder or lodger and their partner, while a non-paying adult in their family stays a non-dependant. For Universal Credit, the model also leaves a boarder's or lodger's child or qualifying young person out of the householder's extended benefit unit, so they add no bedroom.
+
+
 ## [2.175.8] - 2026-11-06
 
 ### Fixed
