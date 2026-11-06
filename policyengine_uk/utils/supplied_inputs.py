@@ -33,6 +33,7 @@ populations that do not hold it, and a clone or branch gets its own copy of
 the record.
 """
 
+from functools import cache
 from typing import List, Optional
 
 import numpy as np
@@ -64,6 +65,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "extended_childcare_entitlement_term_share",
         "extended_childcare_entitlement_total_per_child",
         "gas_consumption_kwh",
+        "guarantee_credit",
         "housing_benefit_applicable_income",
         "housing_benefit_applicable_income_childcare_element",
         "housing_benefit_applicable_income_disregard",
@@ -71,7 +73,10 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "housing_benefit_specified_or_temporary_accommodation_disregard",
         "housing_benefit_wtc_disregard",
         "in_HE",
+        "is_pension_credit_eligible",
         "other_local_bus_trips",
+        "pension_credit",
+        "pension_credit_entitlement",
         "pip_dl_category",
         "pip_dl_points",
         "pip_m_category",
@@ -83,6 +88,7 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "ni_epg_full_rate_applies",
+        "savings_credit",
         "tenure_type",
         "targeted_childcare_entitlement",
         "trading_allowance_deduction",
@@ -202,6 +208,65 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
         holder._is_input(period, branch_name)
         for branch_name in _visible_branch_names(population.simulation)
     )
+
+
+# Variable attributes that describe a variable without changing what Core
+# calculates for it.
+DESCRIPTIVE_ATTRIBUTES = frozenset(
+    {
+        "_explicit_attribute_names",
+        "baseline_variable",
+        "category",
+        "cerfa_field",
+        "documentation",
+        "hidden_input",
+        "index_in_module",
+        "label",
+        "metadata",
+        "module_name",
+        "reference",
+        "unit",
+    }
+)
+
+
+def calculation_definition(variable, period: Period) -> dict:
+    """Every attribute Core calculates ``variable`` from for ``period``: all
+    but the descriptive ones, with the formula for the period, by its code,
+    in place of the formulas, and the entity by its key."""
+    definition = {
+        name: value
+        for name, value in vars(variable).items()
+        if name not in DESCRIPTIVE_ATTRIBUTES | {"entity", "formulas"}
+    }
+    formula = variable.get_formula(period)
+    definition["formula"] = None if formula is None else formula.__code__
+    definition["entity"] = variable.entity.key
+    return definition
+
+
+@cache
+def _model_variable(variable_class):
+    return variable_class()
+
+
+def replaces_definition(population, variable_class, period: Period) -> bool:
+    """Whether the simulation can give the variable that ``variable_class``
+    defines a value for ``period`` other than the one that definition
+    calculates. A reform can change anything Core calculates it from:
+    neutralize it, give it another formula for the period or none, or change
+    its default, its defined_for, what it sums or its period. A caller can
+    also set an input for the period (``stored_as_input``), as a scenario
+    does with its own value (``set_model_value``). A cached formula result is
+    not an input, even in populations taken from another simulation or in
+    their clones and branches."""
+    name = variable_class.__name__
+    variable = population.simulation.tax_benefit_system.get_variable(name)
+    if calculation_definition(variable, period) != calculation_definition(
+        _model_variable(variable_class), period
+    ):
+        return True
+    return stored_as_input(population, name, period)
 
 
 def supplied_input(
