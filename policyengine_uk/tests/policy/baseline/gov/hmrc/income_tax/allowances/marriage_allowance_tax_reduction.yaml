@@ -1,0 +1,376 @@
+# The Marriage Allowance as a tax reduction at Step 6 (ITA 2007 s. 55A(2)):
+# the appropriate percentage of the transferable amount (s. 55B(1)), the basic
+# rate or, for a Scottish taxpayer, the Scottish basic rate (s. 55B(3)),
+# deducted only so far as Step 5 tax remains after earlier reductions
+# (s. 29(2) and (3)).
+#
+# Worked by hand from the parameter files. 2025-26: personal allowance
+# £12,570, transferable amount 10% x 12,570 = 1,257 rounded up to £1,260
+# (s. 55B(4)(b) and (5)), basic rate 20% on the first £37,700, dividend
+# allowance £500 and dividend ordinary rate 8.75%, Personal Savings Allowance
+# £1,000 for a basic-rate taxpayer, starting rate limit for savings £5,000.
+# Scottish rates for 2025-26 (S6M-16531): 19% up to £2,827, 20% to £14,921,
+# 21% to £31,092, 42% above. Employee NI: 8% above £12,570. Each household
+# also pays the £174.50 colour TV licence (gov.dcms.bbc.tv_licence.colour).
+
+- name: A Scottish intermediate-rate recipient with dividends gets 20% of the transferable amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    # The spouse's £5,000 leaves 12,570 - 5,000 = 7,570 of allowance unused,
+    # so the earner gets the full £1,260.
+    marriage_allowance: [1_260, 0]
+    marriage_allowance_appropriate_percentage: [0.2, 0.2]
+    # 20% x 1,260 = 252.
+    marriage_allowance_tax_reduction: [252, 0]
+    # Non-savings taxable income 40,000 - 12,570 = 27,430:
+    # 2,827 x 19% + (14,921 - 2,827) x 20% + (27,430 - 14,921) x 21%
+    # = 537.13 + 2,418.80 + 2,626.89 = 5,582.82.
+    # Dividends: 27,430 + 5,000 = 32,430 stays within £37,700 (ss. 11D(6) and
+    # 13(5)), so (5,000 - 500) x 8.75% = 393.75. Step 5: 5,976.57.
+    # Step 6: 5,976.57 - 252 = 5,724.57.
+    income_tax: [5_724.57, 0]
+    # 50,000 - 5,724.57 - (40,000 - 12,570) x 8% - 174.50
+    # = 50,000 - 5,724.57 - 2,194.40 - 174.50 = 41,906.53.
+    household_net_income: 41_906.53
+
+- name: A Scottish intermediate-rate recipient with savings gets 20% of the transferable amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 40_000
+        savings_interest_income: 5_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    marriage_allowance: [1_260, 0]
+    marriage_allowance_tax_reduction: [252, 0]
+    # Non-savings tax 5,582.82 as above. Taxable income 32,430 stays within the
+    # rest-of-UK basic rate limit, so the Personal Savings Allowance is £1,000
+    # (s. 12B); non-savings income of 27,430 leaves no starting-rate band.
+    # Savings: (5,000 - 1,000) x 20% = 800. Step 5: 6,382.82.
+    # Step 6: 6,382.82 - 252 = 6,130.82.
+    income_tax: [6_130.82, 0]
+    # 50,000 - 6,130.82 - 2,194.40 - 174.50 = 41,500.28.
+    household_net_income: 41_500.28
+
+- name: A Scottish recipient with pay only gets 20% of the transferable amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 40_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    marriage_allowance_tax_reduction: [252, 0]
+    # 5,582.82 - 252 = 5,330.82.
+    income_tax: [5_330.82, 0]
+    # Universal Credit deducts the tax on earnings after the Step 6
+    # reductions: 5,582.82 - 252 = 5,330.82.
+    uc_income_tax_on_earnings: [5_330.82, 0]
+
+- name: A Scottish starter-rate recipient gets 20% of the transferable amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: SCOTLAND
+  output:
+    marriage_allowance_tax_reduction: [252, 0]
+    # (14,000 - 12,570) x 19% = 271.70; 271.70 - 252 = 19.70.
+    income_tax: [19.70, 0]
+
+- name: A recipient's starting rate for savings does not grow with the Marriage Allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 17_570
+        savings_interest_income: 3_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    marriage_allowance_tax_reduction: [252, 0]
+    # Non-savings taxable income 17,570 - 12,570 = 5,000 uses up the £5,000
+    # starting rate limit for savings (s. 12), so no savings bear the starting
+    # rate. Pay: 5,000 x 20% = 1,000. Savings: (3,000 - 1,000) x 20% = 400.
+    # Step 5: 1,400. Step 6: 1,400 - 252 = 1,148.
+    income_tax: [1_148, 0]
+
+- name: A recipient whose tax comes only from dividends gets the full reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 12_570
+        dividend_income: 5_000
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    marriage_allowance: [1_260, 0]
+    marriage_allowance_tax_reduction: [252, 0]
+    # 2026-27: the personal allowance of £12,570 covers the pay. Dividends:
+    # (5,000 - 500) x 10.75% = 483.75. Step 6: 483.75 - 252 = 231.75.
+    income_tax: [231.75, 0]
+
+- name: A basic-rate recipient in England keeps the same tax under the reduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      spouse:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    marriage_allowance_tax_reduction: [252, 0]
+    # (30,000 - 12,570) x 20% - 1,260 x 20% = 3,486 - 252 = 3,234, as when the
+    # model took 1,260 off the 20% band.
+    income_tax: [3_234, 0]
+    uc_income_tax_on_earnings: [3_234, 0]
+
+- name: The reduction stops at the recipient's Step 5 tax
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 13_500
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    marriage_allowance: [1_260, 0]
+    # Step 5: (13,500 - 12,570) x 20% = 186, less than 252 (s. 29(2)).
+    marriage_allowance_tax_reduction: [186, 0]
+    income_tax: [0, 0]
+
+- name: The reduction takes only the tax that earlier reductions leave
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 14_000
+        other_tax_credits: 100
+      spouse:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    # Step 5: (14,000 - 12,570) x 20% = 286. The earlier reductions take 100,
+    # leaving 186 (s. 29(3)), less than 252.
+    marriage_allowance_tax_reduction: [186, 0]
+    income_tax_reductions: [286, 0]
+    income_tax: [0, 0]
+
+# The appropriate percentage (s. 55B(3)) for a Scottish and an English
+# taxpayer. The model's Scottish basic rate is 20% in each year; the Scottish
+# rates of s. 11A start in 2016-17, so in 2015-16 both take the basic rate.
+
+- name: Appropriate percentage in 2015-16
+  period: 2015
+  input:
+    people:
+      scot:
+        age: 40
+      english:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+      english_household:
+        members: [english]
+        region: LONDON
+  output:
+    marriage_allowance_appropriate_percentage: [0.2, 0.2]
+
+- name: Appropriate percentage in 2017-18
+  period: 2017
+  input:
+    people:
+      scot:
+        age: 40
+      english:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+      english_household:
+        members: [english]
+        region: LONDON
+  output:
+    marriage_allowance_appropriate_percentage: [0.2, 0.2]
+
+- name: Appropriate percentage in 2018-19
+  period: 2018
+  input:
+    people:
+      scot:
+        age: 40
+      english:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+      english_household:
+        members: [english]
+        region: LONDON
+  output:
+    marriage_allowance_appropriate_percentage: [0.2, 0.2]
+
+- name: Appropriate percentage in 2025-26
+  period: 2025
+  input:
+    people:
+      scot:
+        age: 40
+      english:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+      english_household:
+        members: [english]
+        region: LONDON
+  output:
+    marriage_allowance_appropriate_percentage: [0.2, 0.2]
+
+- name: A reformed Scottish basic rate sets a Scottish taxpayer's appropriate percentage
+  period: 2025
+  input:
+    gov.hmrc.income_tax.rates.scotland.rates[1].rate: 0.22
+    people:
+      scot:
+        age: 40
+      english:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+      english_household:
+        members: [english]
+        region: LONDON
+  output:
+    marriage_allowance_appropriate_percentage: [0.22, 0.2]
+
+- name: Before 2016-17 a Scottish taxpayer's appropriate percentage stays the basic rate
+  period: 2015
+  input:
+    gov.hmrc.income_tax.rates.scotland.rates[1].rate: 0.22
+    people:
+      scot:
+        age: 40
+    households:
+      scottish_household:
+        members: [scot]
+        region: SCOTLAND
+  output:
+    marriage_allowance_appropriate_percentage: 0.2
+
+- name: A reformed basic rate sets the reduction outside Scotland
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.rates.uk[0].rate: 0.21
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      spouse:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+  output:
+    marriage_allowance_appropriate_percentage: [0.21, 0.21]
+    # 21% x 1,260 = 264.60.
+    marriage_allowance_tax_reduction: [264.60, 0]
