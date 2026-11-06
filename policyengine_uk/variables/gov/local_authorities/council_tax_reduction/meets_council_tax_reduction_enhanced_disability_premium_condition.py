@@ -31,10 +31,10 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
         "text. Those three councils count an award only for a person under the "
         "qualifying age for State Pension Credit, and their lists start on or "
         "before 1 April 2013 and apply in every model year. In Kingston upon "
-        "Thames the model counts highest-rate DLA care alone, with no age "
-        "limit; the council's texts from 2023-24 print a wider list with an "
-        "age limit (Sch 3 para 12), and issue #2881 lists what the model needs "
-        "to apply it. In "
+        "Thames the model reads is_enhanced_disabled_for_benefits, with no age "
+        "limit; that variable's documentation says what sets it. The council's "
+        "texts from 2023-24 print a wider list with an age limit (Sch 3 para "
+        "12), and issue #2881 lists what the model needs to apply it. In "
         "every other scheme the model applies the Housing Benefit condition "
         "(receives_enhanced_disability_premium_qualifying_benefit, under the "
         "same age limit). Welsh councils apply that condition under W.S.I. "
@@ -93,7 +93,7 @@ class meets_council_tax_reduction_enhanced_disability_premium_condition(Variable
             [
                 scottish,
                 council_condition(la.merton),
-                person("has_highest_dla_sc_award", period),
+                person("is_enhanced_disabled_for_benefits", period),
                 council_condition(la.newham),
                 council_condition(la.westminster),
             ],

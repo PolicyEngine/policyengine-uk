@@ -13,9 +13,11 @@
 # the Default Scheme's list (S.I. 2012/2886 Sch 3 para 12(1)): DLA care highest
 # and PIP daily living at either rate, without AFIP. Those three councils keep
 # the qualifying age for State Pension Credit as the age limit, and their lists
-# apply in every model year. In Kingston upon Thames the model counts DLA care
-# highest alone, with no age limit (issue #2881). The model reads each year's
-# rules at 30 April.
+# apply in every model year. In Kingston upon Thames the model reads
+# is_enhanced_disabled_for_benefits, with no age limit (issue #2881): the value
+# a case supplies, or else the flag's formula, which counts DLA care of at
+# least 52 times the highest weekly rate. The model reads each year's rules at
+# 30 April.
 # Unless a case sets `is_disabled_for_benefits`, it keeps its default, false,
 # and the model pays no disability premium, although the schemes give one to
 # a claimant under the qualifying age who receives these awards (for example
@@ -754,7 +756,9 @@
     # Merton's list counts only highest DLA care or PIP daily living.
     meets_council_tax_reduction_enhanced_disability_premium_condition: false
 
-- name: Case 19, in Kingston upon Thames the model counts only highest-rate DLA care.
+- name: Case 19, in Kingston upon Thames the flag's formula counts only highest-rate DLA care.
+  # The case supplies no is_enhanced_disabled_for_benefits, so the model applies
+  # the flag's formula: DLA care of at least 52 times the highest weekly rate.
   # The council's texts from 2023-24 print a wider list with an age limit (Sch 3
   # para 12), and issue #2881 lists what the model needs to apply it.
   period: 2026
@@ -949,3 +953,70 @@
     council_tax_reduction_devolved_working_age: true
     # The head's own conditions: (22.00 + 86.05) * 52.
     council_tax_reduction_working_age_adult_premiums: 5_618.60
+
+- name: Case 25, in Kingston upon Thames a supplied is_enhanced_disabled_for_benefits gives the premium.
+  # Two applicants aged 40 with enhanced PIP daily living. The first carries
+  # the flag, as policyengine-uk-data sets it for that award; the second
+  # doesn't. A pension of 15,000 keeps both reductions on the taper. 2026-27
+  # rates: personal allowance (25 or over) 95.55, severe disability premium
+  # 86.05, disability premium 44.85, enhanced disability premium 22.00;
+  # Kingston's withdrawal rate 20%.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      flag:
+        age: 40
+        pip_dl_category: ENHANCED
+        is_disabled_for_benefits: true
+        is_enhanced_disabled_for_benefits: true
+        private_pension_income: 15_000
+      no_flag:
+        age: 40
+        pip_dl_category: ENHANCED
+        is_disabled_for_benefits: true
+        is_enhanced_disabled_for_benefits: false
+        private_pension_income: 15_000
+    benunits:
+      flag:
+        members: [flag]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+      no_flag:
+        members: [no_flag]
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        claims_all_entitled_benefits: true
+    households:
+      flag:
+        members: [flag]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 1_800
+        savings: 0
+      no_flag:
+        members: [no_flag]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Without the flag, the model reads its formula, which counts DLA care
+    # alone, though the council's texts list PIP daily living (issue #2881).
+    meets_council_tax_reduction_enhanced_disability_premium_condition: [true, false]
+    # The legacy premium counts enhanced PIP daily living in both.
+    enhanced_disability_premium: [1_144, 1_144]
+    # 22.00 * 52 = 1,144.00.
+    council_tax_reduction_enhanced_disability_premium: [1_144, 0]
+    # Severe disability premium 86.05 * 52 = 4,474.60 and disability premium
+    # 44.85 * 52 = 2,332.20, plus 1,144.00 with the flag: 7,950.80 and 6,806.80.
+    council_tax_reduction_premiums: [7_950.80, 6_806.80]
+    # Personal allowance 95.55 * 52 = 4,968.60, plus the premiums.
+    council_tax_reduction_applicable_amount: [12_919.40, 11_775.40]
+    # Income tax of 20% of (15,000 - 12,570) = 486 leaves income of 14,514.
+    # 1,800 - 20% of (14,514 - 12,919.40) = 1,481.08, and 1,800 - 20% of
+    # (14,514 - 11,775.40) = 1,252.28.
+    council_tax_reduction: [1_481.08, 1_252.28]

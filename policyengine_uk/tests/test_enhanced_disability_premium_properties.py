@@ -22,8 +22,10 @@ counts the PIP daily living component at either rate and AFIP. In Westminster
 the model applies the Default Scheme's list (S.I. 2012/2886 Sch 3 para 12),
 which counts the PIP daily living component at either rate and omits AFIP.
 Each of those lists starts on or before 1 April 2013 (COUNCIL_LISTS) and
-applies in every model year. In Kingston upon Thames the model counts
-highest-rate DLA care alone, with no age limit (issue #2881). The model also
+applies in every model year. In Kingston upon Thames the model reads
+is_enhanced_disabled_for_benefits, with no age limit (issue #2881). The test
+supplies no value for that flag, so the model applies its formula: DLA care of
+at least 52 times the highest weekly rate, with no tolerance. The model also
 applies the Housing Benefit condition in Wales and every other scheme.
 
 The test generates single people, couples and lone parents in the places and
@@ -51,7 +53,8 @@ It checks these invariants in every year from 2015 to 2030:
    legacy premium unless that premium rests on AFIP alone, and then the model
    pays none unless an under-age claimant or partner has a PIP daily living
    award. In Kingston upon Thames it never falls below the legacy premium where
-   an under-age claimant or partner has highest-rate DLA care.
+   a claimant or partner of any age has DLA care of at least 52 times the
+   highest weekly rate.
 6. For a child or young person in Great Britain, the qualifying flag matches
    the test's own calculation. The model pays the child's enhanced rate in the
    Housing Benefit child premiums (housing_benefit_child_disability_premiums)
@@ -122,13 +125,14 @@ ADULT_AGES = [20, 30, 45, 60, 64, 66, 67, 70, 85]
 # Each council's own list (Sch 3 para 12 of its scheme), by the scheme year
 # it starts: "dla_highest" is the DLA care component at the highest rate,
 # "any_pip" the PIP daily living component at either rate and "afip" armed
-# forces independence payment.
+# forces independence payment. "enhanced_disabled_flag" is the formula of
+# is_enhanced_disabled_for_benefits, which the model reads in place of a list.
 COUNCIL_LISTS = {
     # The 2013 rules.
     "MERTON": {2013: ("dla_highest", "any_pip")},
     # The model's condition: the council's texts from 2023-24 print a wider
     # list with an age limit, which the model doesn't yet apply (issue #2881).
-    "KINGSTON_UPON_THAMES": {2013: ("dla_highest",)},
+    "KINGSTON_UPON_THAMES": {2013: ("enhanced_disabled_flag",)},
     # The 2013 scheme, and the 2014 scheme with AFIP.
     "NEWHAM": {
         2013: ("dla_highest", "any_pip"),
@@ -184,6 +188,14 @@ def afip(inputs):
     return inputs.get("armed_forces_independence_payment", 0) > 0
 
 
+def enhanced_disabled_flag(inputs, year):
+    """Compute the formula of is_enhanced_disabled_for_benefits, which the
+    model reads in Kingston upon Thames: DLA care of at least 52 times the
+    highest weekly rate, entered or computed from the category."""
+    higher = system.parameters(year).gov.dwp.dla.self_care.higher
+    return amount(inputs, "dla_sc", year) >= higher * WEEKS_IN_YEAR
+
+
 def qualifies(inputs, country, year):
     """Check for the legacy premium's qualifying awards under the
     Regulations."""
@@ -219,6 +231,7 @@ def qualifies_for_scheme(inputs, place, year):
         dla_highest=top_rate_award(inputs, "dla_sc", year),
         any_pip=amount(inputs, "pip_dl", year) > 0,
         afip=afip(inputs),
+        enhanced_disabled_flag=enhanced_disabled_flag(inputs, year),
     )
     return any(held[award] for award in listed)
 
@@ -366,9 +379,12 @@ def check_scheme_against_legacy(f, year, attained, edp, ctr):
     elif "afip" in listed:
         assert ctr >= edp - 0.01
     elif council == "KINGSTON_UPON_THAMES":
-        # The legacy premium also counts PIP daily living and AFIP, which the
-        # model's Kingston condition leaves out.
-        if any(top_rate_award(x, "dla_sc", year) for x in under_age):
+        # The legacy premium also counts PIP daily living, AFIP, highest-rate
+        # DLA care entered with a smaller amount, and DLA care amounts within
+        # £1 a week of the top rate, all of which the flag's formula leaves
+        # out. The flag sets no age limit.
+        claimants = [award_inputs(a["awards"]) for a in adults_of(f)]
+        if any(enhanced_disabled_flag(x, year) for x in claimants):
             assert ctr >= edp - 0.01
     else:
         rests_on_afip = edp > 0 and not any(
