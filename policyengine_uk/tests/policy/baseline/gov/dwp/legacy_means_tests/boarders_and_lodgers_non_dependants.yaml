@@ -122,14 +122,17 @@
     housing_benefit: [7_053.80, 0]
 
 - name: A lodger's non-paying adult son is the householder's non-dependant for Universal Credit and CTR
-  # The same household, with the household head claiming Universal Credit.
+  # The same household, with the household head claiming Universal Credit
+  # and the lodger's family making no claim of its own.
   # The son is a non-dependant (Sch 4 para 9(2)(d) excludes only a person
   # liable to pay on a commercial basis), aged 21 or over and not exempt, so
   # the housing cost contribution is 96.55 a month in 2026-27
   # (elements/housing/non_dep_deduction/amount.yaml): 96.55 x 12 = 1,158.60.
   # The housing element is 10,400 - 1,158.60 = 9,241.40. Council tax
-  # reduction takes the same non-dependant flag and, in the model, the
-  # Housing Benefit scale: 64.35 x 52 = 3,346.20.
+  # reduction takes the same non-dependant flag and Scotland's own scale (SSI
+  # 2021/249 reg 90): 300 a week lies in the band from 286, whose 2026-27
+  # deduction is 10.95 a week (scotland/council_tax_reduction/non_dep_deduction/
+  # amount.yaml): 10.95 x 52 = 569.40.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -155,6 +158,7 @@
         would_claim_uc: true
       lodger_unit:
         members: [lodger, son]
+        would_claim_uc: false
     households:
       household:
         members: [householder, lodger, son]
@@ -166,7 +170,52 @@
     uc_non_dep_deductions: [1_158.60, 0]
     uc_housing_costs_element: [9_241.40, 5_200]
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
-    council_tax_reduction_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [569.40, 0]
+
+- name: A claiming lodger's non-paying adult son counts in the lodger's own Universal Credit claim
+  # The same household, with the lodger's family claiming too. The son lives
+  # with both renters, and only one claim treats him as a non-dependant (Sch 4
+  # para 9(2)(f)). The model gives him to his own family's claim, which has his
+  # bedroom and bears the contribution of 1,158.60. The lodger's housing
+  # element comes to 5,200 - 1,158.60 = 4,041.40, and the head's stays 10,400.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+        would_claim_uc: true
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    is_uc_non_dependant_of_household_head: [false, false, false]
+    uc_individual_non_dep_deduction_eligible: [false, false, true]
+    uc_non_dep_deductions: [0, 1_158.60]
+    uc_housing_costs_element: [10_400, 4_041.40]
+    LHA_allowed_bedrooms: [1, 2]
 
 - name: A working-age lodger couple where one pays is one family for the disregard and neither is a non-dependant
   # England, 2026-27. One partner pays 6,240 a year (120 a week); the other
@@ -331,17 +380,17 @@
     is_non_dependant_of_household_head: [false, false]
     rent_from_boarders_and_lodgers: [0, 0]
 
-- name: A lodger's son keeps the Pension Credit exemption from the UC housing cost contribution
+- name: A lodger's Pension Credit does not exempt the lodger's son from the UC housing cost contribution
   # England, 2026-27. The household head (40) claims Universal Credit. The
   # lodger (75) pays 5,200 a year and has a State Pension of 6,000 a year;
   # her son (40), in her benefit unit, pays nothing and earns 15,600 over 20
-  # hours. He is a non-dependant, but no housing cost contribution applies
-  # where the non-dependant's family receives Pension Credit (UC Regs 2013
-  # Sch 4 para 16). Her guarantee credit is the 238 a week standard minimum
-  # guarantee less her income: 238 x 52 - 6,000 = 6,376 (her son's earnings
-  # are not hers). uc_non_dep_receives_pension_credit computes it with her
-  # family's UC housing element at nil; a family over the qualifying age
-  # claims no UC, so that is her actual award.
+  # hours. He is a non-dependant, and UC Regs 2013 Sch 4 para 16(2)(b) exempts
+  # only a non-dependant who receives Pension Credit. The award is hers: the
+  # 238 a week standard minimum guarantee less her income, 238 x 52 - 6,000 =
+  # 6,376 (her son's earnings are not hers). uc_non_dep_receives_pension_credit
+  # computes it with her family's UC housing element at nil; a family over the
+  # qualifying age claims no UC, so that is her actual award, and the head's
+  # claim counts him: 96.55 x 12 = 1,158.60.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -378,8 +427,8 @@
     is_non_dependant_of_household_head: [false, false, true]
     pension_credit: [0, 6_376]
     uc_non_dep_receives_pension_credit: [false, true]
-    uc_individual_non_dep_deduction_eligible: [false, false, false]
-    uc_non_dep_deductions: [0, 0]
+    uc_individual_non_dep_deduction_eligible: [false, false, true]
+    uc_non_dep_deductions: [1_158.60, 0]
 
 # Universal Credit's extended benefit unit (UC Regs 2013 Sch 4 paras 8 to
 # 10). Under para 9(2)(g), DWP leaves out of the renter's non-dependants "a
@@ -462,9 +511,10 @@
   # unrelated lodger (50) paying 5,200 a year, and the lodger's son (30),
   # who pays nothing and earns 15,600 over 20 hours a week. The formula
   # applies para 9(2)(g) only to a child or qualifying young person. The
-  # son, at 30, is neither, so he stays the head's non-dependant for
-  # Universal Credit too. The council keeps his Housing Benefit deduction
-  # of 64.35 x 52 = 3,346.20 and pays 10,400 - 3,346.20 = 7,053.80.
+  # son, at 30, is neither, and the lodger's family makes no claim of its
+  # own, so he stays the head's non-dependant for Universal Credit too. The
+  # council keeps his Housing Benefit deduction of 64.35 x 52 = 3,346.20 and
+  # pays 10,400 - 3,346.20 = 7,053.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -491,6 +541,7 @@
         would_claim_uc: false
       lodger_unit:
         members: [lodger, son]
+        would_claim_uc: false
     households:
       household:
         members: [householder, lodger, son]
@@ -563,7 +614,8 @@
   # rents privately for 18,000 a year, earns 15,000 and claims Universal
   # Credit. An unrelated lodger (50) pays 5,200 a year; the lodger's son
   # (30), in the lodger's benefit unit, pays nothing and earns 15,600 over
-  # 20 hours a week. The son is the head's non-dependant, so the model does
+  # 20 hours a week. The lodger's family makes no claim of its own, so the
+  # son is the head's non-dependant, and the model does
   # not treat the head, single and under 35, as a specified renter: the
   # head gets two bedrooms, whose rate of 18,600 exceeds the rent. The son
   # brings a housing cost contribution of 96.55 x 12 = 1,158.60, so the
@@ -596,6 +648,7 @@
         would_claim_uc: true
       lodger_unit:
         members: [lodger, son]
+        would_claim_uc: false
     households:
       household:
         members: [householder, lodger, son]
