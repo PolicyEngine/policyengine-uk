@@ -2,11 +2,10 @@ description: >
   If this is true, the model applies Kingston upon Thames's own qualifying
   benefit list for the enhanced disability premium in its working-age
   Council Tax Reduction scheme. The model applies that list in 2013-14 to
-  2017-18 and from 2023-24. No complete scheme text for 2018-19 to 2022-23
-  survives, so for those years the model assumes the Housing Benefit list, as
-  it does for councils without a list of their own. The model reads this
-  parameter as at 30 April of each year, like the qualifying
-  benefit list.
+  2017-18 and from 2023-24. It cites no complete Kingston scheme text for
+  2018-19 to 2022-23. For those years it assumes the Housing Benefit list,
+  as it does for councils without a list of their own. The model reads this
+  parameter as at 30 April of each year, like the qualifying benefit list.
 metadata:
   label: Kingston upon Thames Council Tax Reduction enhanced disability premium qualifying benefits apply
   period: year
