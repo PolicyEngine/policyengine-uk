@@ -76,9 +76,7 @@
   # Counted home-letting income: one lodger family at working age,
   # (100 - 20) x 52 = 4,160 a year. The applicable amount, 95.55 x 52 =
   # 4,968.60, exceeds it, so Housing Benefit is the eligible rent less the
-  # deduction: 10,400 - 3,346.20 = 7,053.80. The son normally resides with the
-  # lodger too (reg 3(1)), so the lodger's family shows the same deduction,
-  # with no award here for it to reduce.
+  # deduction: 10,400 - 3,346.20 = 7,053.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -118,7 +116,7 @@
     benunit_is_liable_for_household_rent: [true, false]
     is_non_dependant_of_household_head: [false, false, true]
     housing_benefit_individual_non_dep_deduction_eligible: [false, false, true]
-    housing_benefit_non_dep_deductions: [3_346.20, 3_346.20]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
     legacy_benefits_home_letting_income: [4_160, 0]
     housing_benefit_applicable_income: [4_160, 0]
     housing_benefit: [7_053.80, 0]
@@ -516,8 +514,7 @@
   # son, at 30, is neither, and the lodger's family makes no claim of its
   # own, so he stays the head's non-dependant for Universal Credit too. The
   # council keeps his Housing Benefit deduction of 64.35 x 52 = 3,346.20 and
-  # pays 10,400 - 3,346.20 = 7,053.80. The lodger's family shows the same
-  # deduction, with no award here for it to reduce.
+  # pays 10,400 - 3,346.20 = 7,053.80.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -554,7 +551,7 @@
   output:
     is_non_dependant_of_household_head: [false, false, true]
     is_uc_non_dependant_of_household_head: [false, false, true]
-    housing_benefit_non_dep_deductions: [3_346.20, 3_346.20]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
     housing_benefit: [7_053.80, 0]
 
 - name: A non-paying daughter's qualifying young person stays the householder's non-dependant for Universal Credit

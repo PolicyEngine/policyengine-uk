@@ -14,29 +14,19 @@ class housing_benefit_non_dep_deductions(Variable):
         "rent, and members of a family liable for the rent who are not its "
         "claimant, partner or a child or young person. One deduction for "
         "each non-dependant couple, the higher of the two members' amounts, "
-        "and one for each other non-dependant. Each is apportioned between "
-        "joint occupiers by their shares of the rent, whichever family they "
-        "are in; a boarder or lodger also bears the whole deduction for a "
-        "non-dependant in its own benefit unit. None if the claimant or "
-        "partner is exempt. The model reads a boarder or lodger as outside "
-        "the joint occupiers of reg 74(5), which apportions a deduction by "
-        "the number of joint occupiers and their shares of the payments, the "
-        "factors reg 12(5) uses for rent. DWP's Housing Benefit guidance "
-        "describes joint occupiers as people in one home who are each liable "
-        "for their occupation and divides the rent between them (A4 paras "
-        "4.1920-4.1921), applies reg 74(5) to joint tenants (LHA guidance "
-        "para 2.110), keeps joint occupiers, sub-tenants and boarders apart "
-        "(C1 paras 1.185 and 1.203) and counts a sub-tenant's payments as the "
-        "claimant's income (C1 para 1.205), so the householder's rent and the "
-        "lodger's charge have no common total to divide. The 1987 regulations "
-        "also put joint occupiers and people liable to pay the claimant in "
-        "separate limbs of reg 3(2). No regulation defines a joint occupier "
-        "and we know of no decision on the point, so the reading is a "
-        "qualified one. Under it, a non-dependant in a claiming lodger's own "
-        "benefit unit costs the householder and the lodger one whole "
-        "deduction each. Apportioning it between them, or excluding the "
-        "lodger's household from the householder's non-dependants as C1 para "
-        "1.185 does, would charge it once."
+        "and one for each other non-dependant. The council apportions each "
+        "between the joint occupiers by their shares of the rent, whichever "
+        "family the non-dependant is in. None if the claimant or partner is "
+        "exempt. A boarder or lodger bears none, even for a non-dependant in "
+        "its own benefit unit, such as an adult son who pays nothing. He "
+        "normally resides with the lodger as well as the householder, and we "
+        "know of no regulation or decision that settles whether reg 74(5) "
+        "would split his deduction between them, or whether the lodger alone "
+        "would bear it, since HBGM C1 para 1.185 leaves the household of a "
+        "commercial payer out of the householder's non-dependants. The model "
+        "charges the householder, as it does when the survey puts him in a "
+        "benefit unit of his own. PolicyEngine UK issue 2894 tracks the "
+        "question."
     )
     definition_period = YEAR
     unit = GBP
@@ -94,12 +84,9 @@ class housing_benefit_non_dep_deductions(Variable):
         counted = person("is_benunit_head", period) * benunit.project(family_amount)
         share = benunit("share_of_household_rent", period)
         from_joint_occupiers = share * benunit.max(person.household.sum(counted))
-        # A boarder or lodger is not a joint occupier with the householder,
-        # so it also bears the whole deduction for a non-dependant in its own
-        # benefit unit. The model charges it for no one else.
-        joint_occupier = share > 0
-        from_own_family = where(joint_occupier, 0, benunit.sum(deductions * own_family))
+        # A boarder or lodger, with no share of the rent, bears none, even
+        # for a non-dependant in its own benefit unit (see the documentation).
         claimant_exempt = benunit(
             "housing_benefit_non_dep_deductions_claimant_exempt", period
         )
-        return where(claimant_exempt, 0, from_joint_occupiers + from_own_family)
+        return where(claimant_exempt, 0, from_joint_occupiers)
