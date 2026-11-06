@@ -216,10 +216,26 @@ def test_stored_household_totals_grow_past_the_projection_horizon():
             assert totals[year][0] == pytest.approx(
                 totals[PROJECTION_END_YEAR][0] * growth, rel=1e-6
             )
-    # Savings, the cash ISA and the stocks-and-shares ISA (through
-    # share_like_capital) make up the capital, each grown alike.
+    # Savings, the cash ISA and the stocks-and-shares ISA make up the capital.
+    # Savings and the cash ISA count at their value. The stocks-and-shares ISA
+    # reaches the capital through share_like_capital, which uc_assessable_capital
+    # values less the sale-expense rate (Universal Credit Regulations 2013
+    # reg. 49(1)(a)). The parts grow alike, so capital keeps the same ratio to
+    # savings in every year: 5.8 for this household.
+    cash_isa = _values(simulation, "cash_isa")
+    shares_isa = _values(simulation, "stocks_and_shares_isa")
+    ratio = capital[DATA_YEAR][0] / savings[DATA_YEAR][0]
     for year in YEARS:
-        assert capital[year][0] == pytest.approx(6 * savings[year][0], rel=1e-5)
+        rate = simulation.tax_benefit_system.parameters(
+            period(year).start
+        ).gov.dwp.universal_credit.means_test.capital.sale_expenses.rate
+        expected = (
+            savings[year][0] + cash_isa[year][0] + shares_isa[year][0] * (1 - rate)
+        )
+        assert capital[year][0] == pytest.approx(expected, rel=1e-5), year
+        face_value = savings[year][0] + cash_isa[year][0] + shares_isa[year][0]
+        assert capital[year][0] < face_value - 0.01, year
+        assert capital[year][0] == pytest.approx(ratio * savings[year][0], rel=1e-5)
 
 
 @pytest.mark.parametrize(

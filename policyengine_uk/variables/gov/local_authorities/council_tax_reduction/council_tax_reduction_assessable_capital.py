@@ -7,10 +7,11 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
 # The debt input secured on each capital source. The schemes deduct "the
 # amount of any encumbrance secured on it" from that asset after the sale
 # expenses, so a source is never valued below nil and negative equity in one
-# source does not reduce another. Land has no secured-debt input.
+# source does not reduce another.
 SECURED_DEBT = {
     "other_residential_property_value": "other_residential_property_secured_debt",
     "non_residential_property_value": "non_residential_property_secured_debt",
+    "owned_land": "owned_land_secured_debt",
 }
 
 
@@ -39,8 +40,8 @@ class council_tax_reduction_assessable_capital(Variable):
         "the applicant's: savings, land and property other than the home "
         "(gov.local_authorities.council_tax_reduction.capital.sources), with "
         "land and property valued at market value less 10% for the expenses "
-        "of sale, then less any debt secured on that property (which defaults "
-        "to nil because the survey does not record it). The schemes also "
+        "of sale, then less any debt secured on that land or property (which "
+        "defaults to nil because the survey does not record it). The schemes also "
         "count shares and other investments, which in the data are mixed "
         "with pension wealth the schemes disregard, so they are left out for "
         "now. The recalculation when capital rises above the limit during an "

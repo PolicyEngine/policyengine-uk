@@ -89,7 +89,7 @@
 
 - name: Housing Benefit counts direct land holdings as capital
   period: 2025
-  absolute_error_margin: 0
+  absolute_error_margin: 0.01
   input:
     people:
       person:
@@ -103,10 +103,35 @@
     households:
       household:
         members: person
+        # 90% of 17,780 is 16,002, over the 16,000 limit after the 10%
+        # deduction for the expenses of sale (HB Regs 2006 reg. 47(a)).
+        owned_land: 17_780
+  output:
+    housing_benefit_assessable_capital: 16_002
+    housing_benefit_eligible: false
+
+- name: Housing Benefit values land less 10% for the expenses of sale
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # Land worth 16,001 is valued at 14,400.90 (HB Regs 2006 reg. 47(a)),
+        # within the limit.
         owned_land: 16_001
   output:
-    housing_benefit_assessable_capital: 16_001
-    housing_benefit_eligible: false
+    housing_benefit_assessable_capital: 14_400.9
+    housing_benefit_eligible: true
 
 - name: Housing Benefit counts corporate wealth as a broad financial-capital proxy
   period: 2025
@@ -126,7 +151,9 @@
         members: person
         corporate_wealth: 50_000
   output:
-    housing_benefit_assessable_capital: 50_000
+    # Market value less 10% for the expenses of sale (HB Regs 2006
+    # reg. 47(a)).
+    housing_benefit_assessable_capital: 45_000
     housing_benefit_eligible: false
 
 - name: Mixed benunits split household Housing Benefit capital by claimant and partner share
@@ -277,3 +304,123 @@
   output:
     housing_benefit_assessable_capital: 5_000
     housing_benefit_eligible: true
+
+- name: Housing Benefit values overseas land and property less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: false
+    overseas_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    housing_benefit_assessable_capital: 9_000
+
+- name: Housing Benefit preserves household allocation for overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+        housing_benefit_on_passporting_benefit: false
+      couple:
+        members: [second, partner]
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    housing_benefit_assessable_capital: [5_400, 10_800]
+
+- name: Housing Benefit passport disregards overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: true
+    overseas_property_value: 18_000
+  output:
+    housing_benefit_assessable_capital: 0
+
+- name: Housing Benefit values unclassified other real estate less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: false
+    other_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    housing_benefit_assessable_capital: 9_000
+
+- name: Housing Benefit preserves household allocation for unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+        housing_benefit_on_passporting_benefit: false
+      couple:
+        members: [second, partner]
+        housing_benefit_on_passporting_benefit: false
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    housing_benefit_assessable_capital: [5_400, 10_800]
+
+- name: Housing Benefit passport disregards unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: true
+    other_property_value: 18_000
+  output:
+    housing_benefit_assessable_capital: 0
+
+- name: Housing Benefit deducts sale expenses before combined secured debt for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: false
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 80_000
+  output:
+    # max(0, 90% of 120,000 - 80,000); no separate buy-to-let input.
+    housing_benefit_assessable_capital: 28_000
+
+- name: Housing Benefit floors combined property equity at zero for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    housing_benefit_on_passporting_benefit: false
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 120_000
+  output:
+    # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
+    housing_benefit_assessable_capital: 0
