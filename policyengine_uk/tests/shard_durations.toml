@@ -285,7 +285,7 @@
 "policyengine_uk/tests/test_trading_loss_properties.py::test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award[tax_credits-2024]" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_for_young_singles" = 65
 "policyengine_uk/tests/test_carer_overlapping_benefits_properties.py::test_claiming_a_carer_benefit_reduced_to_nil_increases_pension_credit" = 65
-"policyengine_uk/tests/test_property_income_band_base_properties.py::test_more_property_income_never_lowers_savings_or_dividend_tax" = 65
+"policyengine_uk/tests/test_property_income_band_base_properties.py::test_more_property_income_never_lowers_income_tax" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_claimant_or_partner_awards_bounded_by_benefit_unit_awards" = 65
 "policyengine_uk/tests/test_labour_supply_response_baseline.py::test_no_policy_change_gives_no_response" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_for_working_parents" = 64
@@ -450,7 +450,7 @@
 "policyengine_uk/tests/test_housing_benefit_guarantee_credit_passport_properties.py::test_receipt_means_a_paid_guarantee_credit_and_passports" = 39
 "policyengine_uk/tests/test_labour_supply_response_baseline.py::test_each_response_is_measured_before_the_other" = 39
 "policyengine_uk/tests/test_pension_annual_allowance_taper.py::test_allowance_bounds_and_statutory_two_gate_reference" = 39
-"policyengine_uk/tests/test_trading_loss_properties.py::test_relief_taxes_like_income_cut_in_section_25_order" = 38
+"policyengine_uk/tests/test_trading_loss_properties.py::test_relief_never_taxes_more_than_income_cut_in_the_old_order" = 38
 "policyengine_uk/tests/test_salary_sacrifice_needs_pay_properties.py::test_ni_excess_never_falls_with_sacrifice_or_pay" = 38
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_trade_losses_do_not_leak_nics_reclassification_into_aa[DC-2030]" = 38
 "policyengine_uk/tests/test_severe_disability_afcs_properties.py::test_severe_disability_matches_the_tax_credit_condition" = 38
