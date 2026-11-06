@@ -206,6 +206,17 @@ def cloned_uk_tax_benefit_system():
 # slowest on CI, are instead dealt out by duration, longest first, each to the
 # shard with the least so far. A test missing from the table, or the table
 # missing, falls back to the hash.
+#
+# The tests of a file in SHARED_FIXTURE_FILES all run in one shard, because each
+# shard that holds one of them builds that file's module fixture. In merge queue
+# run 42212587066 the fixture in test_aggregate_impact_certified.py held one
+# worker for 8 to 9 minutes at the start of five shards, which peaked at 14.2 to
+# 15.3 GB on 16 GB runners, against 10.9 and 12.6 GB for the two without it. Runs
+# 42218280596 and 42218280615 had those tests on all seven shards and lost eight
+# of their 14 shard jobs at 15.4 to 15.7 GB.
+SHARED_FIXTURE_FILES = frozenset(
+    {"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py"}
+)
 SHARD_DURATIONS = (
     Path(importlib.util.find_spec("policyengine_uk").origin).parent
     / "tests"
@@ -225,19 +236,36 @@ def read_shard_durations(path: Path = SHARD_DURATIONS) -> dict[str, float]:
     }
 
 
-def balanced_shards(durations: Mapping[str, float], shards: int) -> dict[str, int]:
-    """Deal tests to shards, longest first, each to the least loaded shard.
+def placement_unit(nodeid: str) -> str:
+    """What the deal and the hash place: a shared-fixture file, or else the test."""
+    path = nodeid.split("::", 1)[0]
+    return path if path in SHARED_FIXTURE_FILES else nodeid
 
-    Ties go to the lower node id and the lower shard, so every process gives
-    the same answer.
+
+def deal_units(durations: Mapping[str, float], shards: int) -> dict[str, int]:
+    """Deal placement units to shards, longest first, each to the least loaded.
+
+    A shared-fixture file weighs as much as its longest test, since the file's
+    long entries each measured the same fixture. Ties go to the lower name and
+    the lower shard, so every process gives the same answer.
     """
+    weights: dict[str, float] = {}
+    for nodeid, seconds in durations.items():
+        unit = placement_unit(nodeid)
+        weights[unit] = max(seconds, weights.get(unit, seconds))
     load = [0.0] * shards
-    placed = {}
-    for nodeid, seconds in sorted(durations.items(), key=lambda kv: (-kv[1], kv[0])):
+    dealt = {}
+    for unit, seconds in sorted(weights.items(), key=lambda kv: (-kv[1], kv[0])):
         shard = min(range(shards), key=lambda k: (load[k], k))
         load[shard] += seconds
-        placed[nodeid] = shard + 1
-    return placed
+        dealt[unit] = shard + 1
+    return dealt
+
+
+def balanced_shards(durations: Mapping[str, float], shards: int) -> dict[str, int]:
+    """The shard the deal gives each test in ``durations``."""
+    dealt = deal_units(durations, shards)
+    return {nodeid: dealt[placement_unit(nodeid)] for nodeid in durations}
 
 
 _BALANCED: dict[int, dict[str, int]] = {}
@@ -250,10 +278,11 @@ def shard_of(nodeid: str, shards: int) -> int:
     runner and every pytest-xdist worker must give the same answer.
     """
     if shards not in _BALANCED:
-        _BALANCED[shards] = balanced_shards(read_shard_durations(), shards)
-    if nodeid in _BALANCED[shards]:
-        return _BALANCED[shards][nodeid]
-    digest = hashlib.sha256(nodeid.encode("utf-8")).digest()
+        _BALANCED[shards] = deal_units(read_shard_durations(), shards)
+    unit = placement_unit(nodeid)
+    if unit in _BALANCED[shards]:
+        return _BALANCED[shards][unit]
+    digest = hashlib.sha256(unit.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") % shards + 1
 
 
