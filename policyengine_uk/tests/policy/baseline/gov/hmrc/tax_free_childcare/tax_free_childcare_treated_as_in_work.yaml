@@ -5,59 +5,67 @@
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person on qualifying leave is treated as in work
+- name: Employed person on paid annual leave meets the ordinary work and income tests
   period: 2025
   input:
-    in_work: false
     tax_free_childcare_on_qualifying_leave: true
+    age: 40
+    employment_income: 20000
   output:
     tax_free_childcare_treated_as_in_work: true
+    tax_free_childcare_meets_income_requirements: true
 
-- name: Person on adoption leave is treated as in work
+- name: Person on adoption leave with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     tax_free_childcare_on_adoption_leave: true
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person on shared parental leave is treated as in work
+- name: Person on shared parental leave with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     tax_free_childcare_on_shared_parental_leave: true
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory sick pay is treated as in work
+- name: Person receiving statutory sick pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     statutory_sick_pay: 100
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving maternity allowance is treated as in work
+- name: Person receiving maternity allowance with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     maternity_allowance: 100
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory maternity pay is treated as in work
+- name: Person receiving statutory maternity pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     statutory_maternity_pay: 100
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
-- name: Person receiving statutory paternity pay is treated as in work
+- name: Person receiving statutory paternity pay with qualified regulation 12 status is treated as in work
   period: 2025
   input:
     in_work: false
     statutory_paternity_pay: 100
+    tax_free_childcare_qualifying_temporary_absence: true
   output:
     tax_free_childcare_treated_as_in_work: true
 
@@ -70,3 +78,79 @@
     tax_free_childcare_on_shared_parental_leave: false
   output:
     tax_free_childcare_treated_as_in_work: false
+
+# Reg12(2)(a)/(b) both require the prior-work and account qualifications in
+# Reg12(3)/(4). These old signals alone do not establish the explicit status.
+# Reg14 deems only the Act2 childcare connection, not Act9/Reg9 paid work.
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/12
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/14
+- name: Reg12 consistency - adoption alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    tax_free_childcare_on_adoption_leave: true
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - shared parental alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    tax_free_childcare_on_shared_parental_leave: true
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - statutory sick pay alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    statutory_sick_pay: 1500
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - maternity allowance alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    maternity_allowance: 3000
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - statutory maternity pay alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    statutory_maternity_pay: 3000
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - statutory paternity pay alone does not establish qualified status
+  period: 2024
+  input:
+    age: 32
+    statutory_paternity_pay: 1000
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
+- name: Reg12 consistency - broad leave signal alone does not establish paid work
+  period: 2024
+  input:
+    age: 32
+    tax_free_childcare_on_qualifying_leave: true
+    tax_free_childcare_qualifying_temporary_absence: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+    tax_free_childcare_work_condition: false
+    tax_free_childcare_meets_income_requirements: false
