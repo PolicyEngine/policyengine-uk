@@ -9,4 +9,7 @@ class receives_enhanced_pip_dl(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        return person("pip_dl_category", period) == PIPCategory.ENHANCED
+        # As in pip_dl, no award is paid below the minimum age.
+        old_enough = person("age", period) >= parameters(period).gov.dwp.pip.min_age
+        enhanced = person("pip_dl_category", period) == PIPCategory.ENHANCED
+        return enhanced & old_enough
