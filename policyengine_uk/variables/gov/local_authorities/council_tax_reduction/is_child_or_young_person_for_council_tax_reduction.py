@@ -9,8 +9,13 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
     young person:
 
     - Scotland's working-age scheme, from 1 April 2022, uses the Universal
-      Credit qualifying young person (Council Tax Reduction (Scotland)
-      Regulations 2021 reg. 6(1); UC Regs 2013 reg. 5). The applicant is
+      Credit child and the qualifying young person of UC Regs 2013 reg. 5
+      (Council Tax Reduction (Scotland) Regulations 2021 reg. 6(1)). The
+      Secretary of State excludes a person entitled to an existing benefit
+      only for the purposes of the UC Regulations and WRA 2012 Part 1 (SI
+      2014/1230 reg. 28), so the formula reads reg. 5 alone and keeps a
+      young person who receives Income Support, Housing Benefit, a tax
+      credit, income-related ESA or income-based JSA. The applicant is
       responsible for one who normally lives with them, never for one they
       live with as a couple, and no one is responsible for one placed with a
       foster carer (reg. 7).
@@ -34,6 +39,8 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/4",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/6",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/7",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/4",
@@ -50,10 +57,18 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
             & ~person.benunit("council_tax_reduction_pensioner", period)
             & p.young_person_follows_universal_credit
         )
-        # SSI 2021/249 regs 4, 6 and 7. The Universal Credit flag already
-        # leaves out a child or young person looked after by a local authority.
-        universal_credit = person(
-            "is_child_or_qualifying_young_person_for_universal_credit", period
-        ) & ~person("is_claimant_or_partner", period)
+        # SSI 2021/249 regs 4, 6 and 7: a child under UC Regs reg. 4, or a
+        # qualifying young person under reg. 5 without TP reg. 28.
+        universal_credit = (
+            (
+                person("is_child_for_universal_credit", period)
+                | person(
+                    "is_qualifying_young_person_under_universal_credit_regulation_5",
+                    period,
+                )
+            )
+            & ~person("is_looked_after_by_local_authority", period)
+            & ~person("is_claimant_or_partner", period)
+        )
         child_benefit = person("is_child_or_young_person_for_legacy_benefits", period)
         return where(scottish_working_age, universal_credit, child_benefit)
