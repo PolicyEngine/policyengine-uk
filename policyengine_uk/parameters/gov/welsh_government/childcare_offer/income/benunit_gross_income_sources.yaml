@@ -13,8 +13,12 @@ values:
   # credits or Housing Benefit, so as a modelling convention (not a legal
   # reading) each is shared equally between the claimant and any partner; the
   # legacy income-related benefits are shared the same way for consistency.
-  # A lone parent counts all of it. None of them reads the Childcare Offer, so
-  # counting them creates no dependency cycle.
+  # A lone parent counts all of it. Income-related ESA and income-based JSA
+  # are the claimant's and partner's awards (claimant_or_partner_esa_income
+  # and claimant_or_partner_jsa_income): another member of the benefit unit
+  # who claims either in their own right receives that income, not a parent.
+  # None of them reads the Childcare Offer, so counting them creates no
+  # dependency cycle.
   2019-08-01:
     - child_benefit
     - universal_credit
@@ -23,5 +27,5 @@ values:
     - housing_benefit
     - income_support
     - pension_credit
-    - esa_income
-    - jsa_income
+    - claimant_or_partner_esa_income
+    - claimant_or_partner_jsa_income

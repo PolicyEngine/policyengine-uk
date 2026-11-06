@@ -95,8 +95,8 @@ REVIEWED = {
         "housing_benefit",
         "income_support",
         "pension_credit",
-        "esa_income",
-        "jsa_income",
+        "claimant_or_partner_esa_income",
+        "claimant_or_partner_jsa_income",
     },
 }
 
