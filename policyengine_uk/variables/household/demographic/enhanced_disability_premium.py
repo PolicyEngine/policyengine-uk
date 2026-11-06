@@ -6,15 +6,22 @@ class enhanced_disability_premium(Variable):
     entity = BenUnit
     label = "Enhanced disability premium"
     documentation = (
-        "Legacy benefit enhanced disability premium for the claimant or "
-        "partner, using the model's existing enhanced-disability indicator. "
-        "The separate Housing Benefit enhanced rate for children and young "
-        "persons is not modelled here."
+        "The model pays the legacy benefit enhanced disability premium for "
+        "the claimant or partner at the single rate, or at the couple rate "
+        "where either or both members of a couple meet the condition "
+        "(num_enhanced_disabled_claimants_or_partners_for_legacy_benefits). "
+        "The model's Housing Benefit, Income Support and Council Tax "
+        "Reduction applicable amounts read it, and Council Tax Reduction "
+        "replaces it with its own scheme's premium "
+        "(council_tax_reduction_enhanced_disability_premium). "
+        "housing_benefit_child_disability_premiums computes Housing Benefit's "
+        "separate enhanced rate for children and young persons."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13A",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/15",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/4",
     )
     unit = GBP
 
