@@ -33,6 +33,9 @@ the child's parent, or the person themselves:
   11A(1)(e), 14(4)(b) and 15(4).
 - The higher Pension Credit earnings disregard for a claimant or partner on
   employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
+- The Childcare Offer for Wales gross income limit for each parent: Welsh
+  Government guidance for local authorities, version 8.3 (April 2026),
+  paragraphs 57 and 69.
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -141,6 +144,7 @@ MEMBER_READERS = [
     "is_on_income_based_jsa",
     "is_on_income_support",
     "extended_childcare_entitlement_limited_capability_or_specified_benefit",
+    "wales_childcare_offer_parent_condition",
 ]
 # Readers built from the members' own ESA and JSA reports, their work and the
 # household's capital alone, which the severe disability premium cannot reach.
@@ -505,14 +509,16 @@ def test_adult_non_dependant_ends_the_severe_disability_premium():
 # --- Further family shapes (begin) ---
 # Some readers only bite for a claimant over state pension age (the Housing
 # Benefit regulations that apply, the mixed-age couple saving), for a single
-# applicant under 25, or for parents of a young child of whom only one works
-# (the extended childcare partner condition). The families above rarely take
-# those shapes, so three more properties check every family and member reader
-# on them. The claimant and partner seldom report an award themselves, and on
-# the savings drawn below the £16,000 capital limit the added member's award
-# survives tariff income, so a reader that wrongly counts it changes (£20,000
-# of savings screens income-related ESA and income-based JSA to nil). The
-# shapes pay no rent, so Universal Credit stays far below the benefit cap.
+# applicant under 25, for parents of a young child of whom only one works
+# (the extended childcare partner condition), or for a parent in Wales with
+# gross income just under £100,000 (the Childcare Offer for Wales income
+# limit). The families above rarely take those shapes, so four more
+# properties check every family and member reader on them. The claimant and
+# partner seldom report an award themselves, and on the savings drawn below
+# the £16,000 capital limit the added member's award survives tariff income,
+# so a reader that wrongly counts it changes (£20,000 of savings screens
+# income-related ESA and income-based JSA to nil). The shapes pay no rent, so
+# Universal Credit stays far below the benefit cap.
 # The cap reads only the couple's own awards and the family's
 # (benefit_cap_reduction), not another member's; the first property checks
 # that on JSA_COUPLE_WITH_LODGER, a family that an added member's £3,000 of
@@ -630,6 +636,43 @@ def working_parent_families(draw):
     return [working, not_working], [{"age": draw(st.integers(1, 4))}], household
 
 
+@st.composite
+def high_earning_welsh_parent_families(draw):
+    """Parents of a child aged three or four in Wales, one of whom works and
+    has gross income just under the Childcare Offer for Wales limit of
+    £100,000 (guidance paras 57 and 69). The limit counts the benefit unit's
+    benefits, shared equally between the claimant and any partner, so an
+    added member's own award of £3,000 or more would take that parent over it
+    if it counted: the wages leave room for one child's Child Benefit
+    (£1,354.60 in 2025-26, half each in a couple) but not for the award, even
+    after tariff income on £7,000 of savings (£208)."""
+    couple = draw(st.booleans())
+    earner = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "employment_income": 99_000 if couple else 98_000,
+        **draw(couple_award_reports()),
+    }
+    adults = [earner]
+    if couple:
+        adults.append(
+            {
+                "age": draw(st.integers(25, 45)),
+                "is_parent": True,
+                "employment_income": draw(st.sampled_from([0, 20_000])),
+                "current_education": draw(
+                    st.sampled_from(["NOT_IN_EDUCATION", "TERTIARY"])
+                ),
+                **draw(couple_award_reports()),
+            }
+        )
+    household = {
+        "country": "WALES",
+        "savings": draw(st.sampled_from([0, 7_000])),
+    }
+    return adults, [{"age": draw(st.integers(3, 4))}], household
+
+
 def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
     without = [(*family, None) for family, _ in drawn]
     with_other = [(*family, other) for family, other in drawn]
@@ -740,6 +783,20 @@ def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report
     )
 )
 def test_other_members_awards_never_change_the_readers_for_working_parents(drawn):
+    _family_readers_never_change(drawn)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(high_earning_welsh_parent_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_for_welsh_high_earners(
+    drawn,
+):
     _family_readers_never_change(drawn)
 
 
