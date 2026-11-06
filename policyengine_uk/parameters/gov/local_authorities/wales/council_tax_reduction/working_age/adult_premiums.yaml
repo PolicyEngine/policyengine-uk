@@ -1,0 +1,551 @@
+description: Weekly adult premiums in the applicable amount of a working-age applicant under the Wales
+  council tax reduction rules.
+disability_premium:
+  description: Wales working-age CTR disability premium.
+  single:
+    description: Weekly disability premium for a single applicant or lone parent.
+    values:
+      2013-04-01:
+        value: 31.0
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(i)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 31.85
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 32.25
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 32.55
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(aa)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 33.55
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(i)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 34.35
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(i)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 34.95
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(i)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 35.1
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(i)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 36.2
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 39.85
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 42.5
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 43.2
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 44.85
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(i)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+  couple:
+    description: Weekly disability premium for a couple.
+    values:
+      2013-04-01:
+        value: 44.2
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 45.4
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 45.95
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 46.4
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(aa) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 47.8
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 48.95
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 49.8
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 50.05
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 51.6
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 56.8
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 60.6
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 61.65
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 64.0
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(i) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+severe_disability_premium:
+  description: Wales working-age CTR severe disability premium.
+  single:
+    description: Weekly severe disability premium where one person qualifies, or where someone is paid
+      a carer benefit for caring for a member of the couple.
+    values:
+      2013-04-01:
+        value: 59.5
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(ii)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 61.1
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 61.85
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 62.45
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(bb)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 64.3
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(ii)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 65.85
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(ii)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 66.95
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(ii)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 67.3
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(ii)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 69.4
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 76.4
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 81.5
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 82.9
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 86.05
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(ii)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR severe disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+  couple:
+    description: Weekly severe disability premium for a couple who both qualify and for whom no one is
+      paid a carer benefit.
+    values:
+      2013-04-01:
+        value: 119.0
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 122.2
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 123.7
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 124.9
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(bb) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 128.6
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 131.7
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 133.9
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 134.6
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 138.8
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 152.8
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 163.0
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 165.8
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 172.1
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(ii) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR severe disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+enhanced_disability_premium:
+  description: Wales working-age CTR enhanced disability premium.
+  single:
+    description: Weekly enhanced disability premium for a single applicant or lone parent.
+    values:
+      2013-04-01:
+        value: 15.15
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 15.55
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 15.75
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 15.9
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(ee) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 16.4
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 16.8
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 17.1
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 17.2
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 17.75
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 19.55
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 20.85
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 21.2
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 22.0
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(v) (figure 2)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR enhanced disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+  couple:
+    description: Weekly enhanced disability premium for a couple.
+    values:
+      2013-04-01:
+        value: 21.75
+        reference:
+        - title: W.S.I. 2013/112 reg 10(c)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+      2014-04-01:
+        value: 22.35
+        reference:
+        - title: W.S.I. 2014/66 reg 10(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+      2015-04-01:
+        value: 22.6
+        reference:
+        - title: W.S.I. 2015/44 reg 11(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+      2017-04-01:
+        value: 22.85
+        reference:
+        - title: W.S.I. 2017/46 reg 6(c)(ii)(ee) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+      2018-04-01:
+        value: 23.55
+        reference:
+        - title: W.S.I. 2018/14 reg 10(c)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+      2019-04-01:
+        value: 24.1
+        reference:
+        - title: W.S.I. 2019/11 reg 7(b)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+      2020-04-01:
+        value: 24.5
+        reference:
+        - title: W.S.I. 2020/16 reg 10(b)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+      2021-04-01:
+        value: 24.6
+        reference:
+        - title: W.S.I. 2021/34 reg 8(b)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+      2022-04-01:
+        value: 25.35
+        reference:
+        - title: W.S.I. 2022/51 reg 8(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+      2023-04-01:
+        value: 27.9
+        reference:
+        - title: W.S.I. 2023/47 reg 9(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+      2024-04-01:
+        value: 29.75
+        reference:
+        - title: W.S.I. 2024/56 reg 8(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+      2025-04-01:
+        value: 30.25
+        reference:
+        - title: W.S.I. 2025/59 reg 9(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+      2026-04-01:
+        value: 31.4
+        reference:
+        - title: W.S.I. 2026/13 reg 11(d)(v) (figure 3)
+          href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+    metadata:
+      label: Wales working-age CTR enhanced disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013
+          Sch. 7 paras. 9-17
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+carer_premium:
+  description: Weekly carer premium for each claimant or partner who qualifies.
+  values:
+    2013-04-01:
+      value: 33.3
+      reference:
+      - title: W.S.I. 2013/112 reg 10(c)(iv)
+        href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+    2014-04-01:
+      value: 34.2
+      reference:
+      - title: W.S.I. 2014/66 reg 10(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+    2015-04-01:
+      value: 34.6
+      reference:
+      - title: W.S.I. 2015/44 reg 11(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+    2017-04-01:
+      value: 34.95
+      reference:
+      - title: W.S.I. 2017/46 reg 6(c)(ii)(dd)
+        href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+    2018-04-01:
+      value: 36.0
+      reference:
+      - title: W.S.I. 2018/14 reg 10(c)(iv)
+        href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+    2019-04-01:
+      value: 36.85
+      reference:
+      - title: W.S.I. 2019/11 reg 7(b)(iv)
+        href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+    2020-04-01:
+      value: 37.5
+      reference:
+      - title: W.S.I. 2020/16 reg 10(b)(iv)
+        href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+    2021-04-01:
+      value: 37.7
+      reference:
+      - title: W.S.I. 2021/34 reg 8(b)(iv)
+        href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+    2022-04-01:
+      value: 38.85
+      reference:
+      - title: W.S.I. 2022/51 reg 8(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+    2023-04-01:
+      value: 42.75
+      reference:
+      - title: W.S.I. 2023/47 reg 9(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+    2024-04-01:
+      value: 45.6
+      reference:
+      - title: W.S.I. 2024/56 reg 8(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+    2025-04-01:
+      value: 46.4
+      reference:
+      - title: W.S.I. 2025/59 reg 9(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+    2026-04-01:
+      value: 48.15
+      reference:
+      - title: W.S.I. 2026/13 reg 11(d)(iv)
+        href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+  metadata:
+    label: Wales working-age CTR carer premium
+    unit: currency-GBP
+    period: week
+    uprating: gov.benefit_uprating_cpi
+    reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+        7 paras. 9-17
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+metadata:
+  label: Wales working-age CTR adult premiums

@@ -5,15 +5,55 @@ from policyengine_uk.utils.supplied_inputs import stored_as_input
 
 
 def hb_uses_annual_override(benunit, period, variable_name, default_formula):
-    """Keep annual inputs and replacement formulas out of recalculation."""
-    simulation = benunit.simulation
-    variable = simulation.tax_benefit_system.get_variable(variable_name)
+    """Keep annual inputs, replacement formulas and computed aggregates out of
+    recalculation. A defined_for condition on the model's own formula takes
+    no annual route: each segment helper applies it (hb_apply_defined_for)."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
     formula = variable.get_formula(period)
-    if (
-        variable.is_neutralized
-        or formula is None
-        or formula.__code__ != default_formula.__code__
-    ):
+    if formula is None or formula.__code__ != default_formula.__code__:
+        return True
+    return hb_reads_no_other_variable(benunit, period, variable_name)
+
+
+def hb_apply_defined_for(benunit, period, variable_name, amount):
+    """Return the amount a segment helper rebuilt where the variable's
+    defined_for condition exceeds zero, and the variable's default
+    elsewhere, as Core masks the annual output (Simulation._calculate).
+    Calculate the condition for the helper's annual period and map it to
+    the variable's entity, as Core does. Read the condition from the
+    variable the simulation holds, so a condition a reform author adds
+    reaches each segment."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.defined_for is None:
+        return amount
+    condition = benunit.simulation.calculate(
+        variable.defined_for, period, map_to=variable.entity.key
+    )
+    return where(np.asarray(condition) > 0, amount, variable.default_value)
+
+
+def hb_can_read_other_variables(variable, period):
+    """Whether core, reading the variable for a period it holds no value
+    for, can read another variable. It first calculates any ``defined_for``
+    mask, then runs the formula for the period or, without one, computes
+    ``adds`` and ``subtracts``, each a list of variable and parameter names
+    or the path of a parameter that lists them. Otherwise it uprates or
+    carries over the variable's own earlier inputs, or returns its
+    default."""
+    return bool(
+        variable.defined_for is not None
+        or variable.get_formula(period) is not None
+        or variable.adds
+        or variable.subtracts
+    )
+
+
+def hb_reads_no_other_variable(benunit, period, variable_name):
+    """Whether reading the variable for this period reads no other variable:
+    a reform neutralized it, or left it with no formula, aggregate or
+    ``defined_for`` mask, or an input supplies it."""
+    variable = benunit.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.is_neutralized or not hb_can_read_other_variables(variable, period):
         return True
     # An input the caller set for this period overrides recalculation, and so
     # does a scenario's own value (set_model_value), which the variable then
@@ -25,7 +65,9 @@ def hb_uses_annual_override(benunit, period, variable_name, default_formula):
 
 
 def hb_accommodation_segments(benunit, period, parameters):
-    """Full annual-equivalent accommodation amounts and fiscal-year weights."""
+    """Yield full annual accommodation amounts and fiscal-year weights.
+    Preserve an annual override where present; otherwise apply the
+    disregard's defined_for condition to each amount."""
     name = "housing_benefit_specified_or_temporary_accommodation_disregard"
     if hb_uses_annual_override(
         benunit,
@@ -74,7 +116,8 @@ def hb_accommodation_segments(benunit, period, parameters):
             ],
             default=where(older, rates.single_older, rates.single_younger),
         )
-        yield where(applies, weekly * WEEKS_IN_YEAR, 0), share
+        amount = where(applies, weekly * WEEKS_IN_YEAR, 0)
+        yield hb_apply_defined_for(benunit, period, name, amount), share
 
 
 class housing_benefit_specified_or_temporary_accommodation_disregard(Variable):

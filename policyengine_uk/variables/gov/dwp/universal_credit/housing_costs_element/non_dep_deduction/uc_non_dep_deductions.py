@@ -17,10 +17,12 @@ class uc_non_dep_deductions(Variable):
         # the renter's extended benefit unit (UC Regs 2013 Sch 4 para 13).
         # Non-dependants are not liable for rent (para 9(2)(d)), and each
         # counts in one Universal Credit claim only (para 9(2)(f)): see
-        # uc_non_dependants_counted.
+        # uc_non_dependants_counted. The Universal Credit flag also leaves
+        # out a boarder's or lodger's child or qualifying young person (para
+        # 9(2)(g)).
         person = benunit.members
         deductions = person("uc_individual_non_dep_deduction", period) * person(
-            "is_non_dependant_of_household_head", period
+            "is_uc_non_dependant_of_household_head", period
         )
         counted = benunit("uc_non_dependants_counted", period)
         return counted * benunit.max(person.household.sum(deductions))

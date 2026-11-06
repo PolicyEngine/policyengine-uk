@@ -18,6 +18,39 @@ D4. Monotonicity: without the additional disregard, raising accommodation
 D5. Day count: 2026-27 has 182 days before 5 October and 183 from that
     date, totalling 365; inspect production segments, not just a calendar.
 
+Routing the rent of specified or temporary accommodation, for generated
+families with in_specified_or_temporary_accommodation (one or two adults, up
+to four children, any tenure, rent, capital, earnings, region and reported
+award, with or without a Universal Credit claim or a closed legacy benefit),
+in 2025-26 to 2027-28:
+
+R1. Universal Credit leaves the rent out: uc_housing_costs_element is nil
+    (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B; NI: SR 2016/216 Sch 1
+    paras 3(e), 3(ea), 4 and 4A).
+R2. Housing Benefit eligibility doesn't depend on whether the family claims
+    Universal Credit or DWP closed its legacy benefits (SI 2014/1230 regs
+    6A(2), 8(3) and 46(2); NI: SR 2016/226 regs 4A(2), 6(3) and 47(2)): it
+    equals the tenure and capital tests alone.
+R3. With both awards, the Universal Credit cap reads Housing Benefit as nil
+    (UC Regs 2013 reg 80(2A)): the reduction equals that of the same family
+    with its Housing Benefit set to nil. The Housing Benefit cap makes no
+    reduction (HB Regs 2006 reg 75F(1)(g)), so Housing Benefit equals its
+    amount before the cap.
+R5. Take-up: in a hand-entered situation, the status never changes
+    would_claim_housing_benefit. With the status true, false or unset,
+    take-up equals claims_all_entitled_benefits or a Housing Benefit report.
+R6. No lost help with the claim: a family with the status and
+    would_claim_housing_benefit that passes the tenure and capital tests
+    (housing_benefit_eligible) never ends up with neither Housing Benefit
+    nor a housing costs element, except where the Housing Benefit means test
+    takes its entitlement to nil (housing_benefit_entitlement). The Housing
+    Benefit cap can't take it to nil: it leaves the 50 pence weekly minimum.
+R7. No help without the claim: a hand-entered family with the status that
+    reports one of the seven means-tested benefits and no Housing Benefit,
+    with take-up left to the formula, gets neither Housing Benefit nor a
+    housing costs element, since it claims only what it reports and
+    Universal Credit leaves the rent out.
+
 Fixture-scale populations hold annual incomes, rent and circumstances
 constant. The direct oracle implements the earnings cap, residual childcare
 limit, additional earnings test, income floor, threshold and award floor
@@ -333,4 +366,230 @@ def test_d5_day_count(units):
         [52 * RATES[u["family"], u["age"]] for u in units],
         atol=TOLERANCE,
         rtol=0,
+    )
+
+
+ROUTE_SETTINGS = settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+ROUTE_YEARS = (2025, 2026, 2027)
+ROUTE_REGIONS = ["LONDON", "NORTH_WEST", "SCOTLAND", "WALES", "NORTHERN_IRELAND"]
+ROUTE_TENURES = [
+    "RENT_FROM_COUNCIL",
+    "RENT_FROM_HA",
+    "RENT_PRIVATELY",
+    "OWNED_OUTRIGHT",
+]
+
+
+@st.composite
+def accommodation_families(draw):
+    # The draws lean towards renting families on low incomes with children,
+    # so that most receive both awards and some reach the benefit cap.
+    return dict(
+        adults=draw(st.integers(1, 2)),
+        children=draw(st.sampled_from([0, 1, 3, 4, 4, 5])),
+        age=draw(st.sampled_from([22, 30, 30, 45, 63, 70])),
+        region=draw(st.sampled_from(ROUTE_REGIONS)),
+        tenure=draw(st.sampled_from(ROUTE_TENURES + ROUTE_TENURES[:2] * 2)),
+        rent=draw(st.sampled_from([0, 4_000, 12_000, 12_000, 30_000])),
+        capital=draw(st.sampled_from([0, 0, 0, 7_000, 15_999, 16_001, 30_000])),
+        earnings=draw(st.sampled_from([0, 0, 6_000, 20_000])),
+        hb_reported=draw(st.sampled_from([0, 5_000])),
+        esa_reported=draw(st.sampled_from([0, 5_000])),
+        wtc_reported=draw(st.sampled_from([0, 2_000])),
+        would_claim_uc=draw(st.booleans()),
+        claim_at_closure=draw(st.booleans()),
+        claims_all=draw(st.booleans()),
+    )
+
+
+ROUTE_POPULATIONS = st.lists(accommodation_families(), min_size=1, max_size=12)
+
+
+def accommodation_simulation(units, year, benunit_overrides=None, status=True):
+    """One household per family, each in specified or temporary accommodation
+    unless status is False. With status None, the situation leaves the input
+    unset.
+
+    benunit_overrides maps a benefit unit variable to a value every family
+    receives as an input, in place of the formula. A family whose
+    claims_all is None leaves claims_all_entitled_benefits to its formula.
+    """
+    people, benunits, households = {}, {}, {}
+    for i, unit in enumerate(units):
+        members = []
+        for j in range(unit["adults"] + unit["children"]):
+            name = f"r{i}_{j}"
+            adult = j < unit["adults"]
+            people[name] = {
+                "age": {year: unit["age"] if adult else 6 + j},
+                "employment_income": {year: unit["earnings"] if j == 0 else 0},
+                "housing_benefit_reported": {
+                    year: unit["hb_reported"] if j == 0 else 0
+                },
+                "esa_income_reported": {year: unit["esa_reported"] if j == 0 else 0},
+                "working_tax_credit_reported": {
+                    year: unit["wtc_reported"] if j == 0 else 0
+                },
+            }
+            members.append(name)
+        benunit = {
+            "members": members,
+            "would_claim_uc": {year: unit["would_claim_uc"]},
+            "would_claim_uc_at_legacy_closure": {year: unit["claim_at_closure"]},
+        }
+        if status is not None:
+            benunit["in_specified_or_temporary_accommodation"] = {year: status}
+        if unit["claims_all"] is not None:
+            benunit["claims_all_entitled_benefits"] = {year: unit["claims_all"]}
+        for variable, value in (benunit_overrides or {}).items():
+            benunit[variable] = {year: value}
+        benunits[f"b{i}"] = benunit
+        households[f"h{i}"] = {
+            "members": list(members),
+            "region": {year: unit["region"]},
+            "tenure_type": {year: unit["tenure"]},
+            "rent": {year: unit["rent"]},
+            "savings": {year: unit["capital"]},
+        }
+    return Simulation(
+        tax_benefit_system=system,
+        situation=dict(people=people, benunits=benunits, households=households),
+    )
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r1_universal_credit_leaves_the_rent_out(units, year):
+    sim = accommodation_simulation(units, year)
+    np.testing.assert_array_equal(
+        sim.calculate("uc_housing_costs_element", year), np.zeros(len(units))
+    )
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r2_eligibility_ignores_the_claim_and_the_closure(units, year):
+    natural = accommodation_simulation(units, year)
+    tenure_and_capital = natural.calculate("housing_benefit_eligible", year)
+    # The tenure and capital tests, read from the same simulation.
+    social = natural.populations["benunit"].any(
+        natural.calculate("in_social_housing", year)
+    )
+    lha = natural.calculate("LHA_eligible", year)
+    capital = natural.calculate("housing_benefit_assessable_capital", year)
+    pension_regulations = natural.calculate(
+        "housing_benefit_pension_age_regulations_apply", year
+    )
+    hb_capital = system.parameters(year).gov.dwp.housing_benefit.means_test.capital
+    limit = np.where(
+        pension_regulations,
+        hb_capital.pension_age.limit,
+        hb_capital.working_age.limit,
+    )
+    np.testing.assert_array_equal(
+        tenure_and_capital, (social | lha) & (capital <= limit)
+    )
+    for claims in (False, True):
+        for closed in (False, True):
+            forced = accommodation_simulation(
+                units,
+                year,
+                {
+                    "claims_universal_credit": claims,
+                    "legacy_benefits_closed": closed,
+                },
+            )
+            np.testing.assert_array_equal(
+                forced.calculate("housing_benefit_eligible", year),
+                tenure_and_capital,
+            )
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r3_with_both_awards_only_the_universal_credit_cap_applies(units, year):
+    sim = accommodation_simulation(units, year)
+    uc = sim.calculate("universal_credit_pre_benefit_cap", year)
+    hb = sim.calculate("housing_benefit_pre_benefit_cap", year)
+    both = (uc > 0) & (hb > 0)
+    without_hb = accommodation_simulation(
+        units, year, {"housing_benefit_pre_benefit_cap": 0.0}
+    )
+    np.testing.assert_allclose(
+        sim.calculate("uc_benefit_cap_reduction", year)[both],
+        without_hb.calculate("uc_benefit_cap_reduction", year)[both],
+        atol=TOLERANCE,
+        rtol=0,
+    )
+    np.testing.assert_array_equal(
+        sim.calculate("housing_benefit_benefit_cap_reduction", year)[both], 0
+    )
+    np.testing.assert_allclose(
+        sim.calculate("housing_benefit", year)[both], hb[both], atol=TOLERANCE, rtol=0
+    )
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r5_the_status_never_changes_take_up(units, year):
+    for status in (True, False, None):
+        sim = accommodation_simulation(units, year, status=status)
+        reported = (
+            sim.populations["benunit"].sum(
+                sim.calculate("housing_benefit_reported", year)
+            )
+            > 0
+        )
+        np.testing.assert_array_equal(
+            sim.calculate("would_claim_housing_benefit", year),
+            sim.calculate("claims_all_entitled_benefits", year) | reported,
+        )
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r6_an_eligible_family_that_claims_keeps_help_with_the_rent(units, year):
+    sim = accommodation_simulation(units, year, {"would_claim_housing_benefit": True})
+    eligible = sim.calculate("housing_benefit_eligible", year)
+    # The one exception: the means test takes Housing Benefit to nil.
+    means_tested = sim.calculate("housing_benefit_entitlement", year) > 0
+    helped = (sim.calculate("housing_benefit", year) > 0) | (
+        sim.calculate("uc_housing_costs_element", year) > 0
+    )
+    assert not np.any(eligible & means_tested & ~helped)
+
+
+@ROUTE_SETTINGS
+@given(units=ROUTE_POPULATIONS, year=st.sampled_from(ROUTE_YEARS))
+def test_r7_a_family_that_reports_another_benefit_gets_no_help_with_the_rent(
+    units, year
+):
+    # Each family reports income-related ESA or Working Tax Credit and no
+    # Housing Benefit, and claims_all_entitled_benefits and
+    # would_claim_housing_benefit follow their formulas.
+    units = [
+        {
+            **unit,
+            "hb_reported": 0,
+            "claims_all": None,
+            "esa_reported": unit["esa_reported"]
+            or (0 if unit["wtc_reported"] else 5_000),
+        }
+        for unit in units
+    ]
+    sim = accommodation_simulation(units, year)
+    np.testing.assert_array_equal(
+        sim.calculate("would_claim_housing_benefit", year),
+        np.zeros(len(units), dtype=bool),
+    )
+    np.testing.assert_array_equal(
+        sim.calculate("housing_benefit", year), np.zeros(len(units))
+    )
+    np.testing.assert_array_equal(
+        sim.calculate("uc_housing_costs_element", year), np.zeros(len(units))
     )

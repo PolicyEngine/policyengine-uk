@@ -1,0 +1,24 @@
+description: Number of children and young persons whose amounts the England Council Tax Reduction prescribed requirements include in a pensioner's applicable amount, unless a Child Tax Credit award includes more. The limit applied to schemes for the financial years 2018-19 to 2024-25.
+values:
+  2013-04-01:
+    value: .inf
+    reference:
+      - title: SI 2012/2885 Sch. 1 para. 6(1)(b) as made ("any child or young person")
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/6/made
+  2018-04-01:
+    value: 2
+    reference:
+      - title: The Council Tax Reduction Schemes (Amendment) (England) Regulations 2017 (SI 2017/1305) regs. 1(3) and 7, substituting Sch. 1 para. 6(1)(b) and inserting para. 6(1A) to (1C)
+        href: https://www.legislation.gov.uk/uksi/2017/1305/made
+  2025-04-01:
+    value: .inf
+    reference:
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) (Amendment) Regulations 2025 (SI 2025/39) regs. 1(3) and 5(2)
+        href: https://www.legislation.gov.uk/uksi/2025/39/made
+metadata:
+  unit: child
+  period: year
+  label: England Council Tax Reduction pensioner child limit
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 1 para. 6, as in force on 30 April 2024
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/6/2024-04-30

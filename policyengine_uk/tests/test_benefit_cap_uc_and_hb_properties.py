@@ -7,9 +7,10 @@ family paid Housing Benefit alongside Universal Credit (for specified or
 temporary accommodation) is therefore capped only through Universal Credit,
 on its other welfare benefits.
 
-The model's Housing Benefit eligibility rules out a family that claims
-Universal Credit (housing_benefit_eligible), so both awards are supplied here
-as inputs (universal_credit_pre_benefit_cap, housing_benefit_pre_benefit_cap).
+The model pays both awards to a family in specified or temporary accommodation
+(housing_benefit_eligible, uc_housing_costs_element). This file supplies both
+awards as inputs (universal_credit_pre_benefit_cap,
+housing_benefit_pre_benefit_cap) so that it can draw any pair of amounts.
 
 Invariants, for every family:
 
@@ -20,9 +21,11 @@ Invariants, for every family:
 2. Housing Benefit counts in the welfare benefits at its amount before the
    cap (HB Regs 2006 reg 75C(2)(b)): the total rises by exactly that amount.
 3. A family receiving Universal Credit has no Housing Benefit reduction, and
-   its benefit cap reduction is its Universal Credit reduction alone. If it
-   has Housing Benefit, it is exempt from the Housing Benefit cap (reg
-   75F(1)(g)).
+   its benefit cap reduction is its Universal Credit reduction alone, up to
+   the award. An award cannot be reduced below nil, and WRA 2012 s. 96(2)
+   allows a reduction smaller than the excess ("an amount up to or equalling
+   the excess"). If it has Housing Benefit, it is exempt from the Housing
+   Benefit cap (reg 75F(1)(g)).
 4. A family without Universal Credit has no Universal Credit reduction, and
    its Housing Benefit reduction is reg 75D's: the excess over the Housing
    Benefit cap, leaving at least 50 pence a week.
@@ -90,6 +93,7 @@ def test_a_family_with_both_awards_is_capped_once_through_universal_credit(
         return values[:n], values[n:]
 
     uc, uc_without_hb = calc("uc_benefit_cap_reduction")
+    uc_applied, _ = calc("uc_benefit_cap_reduction_after_floor")
     hb_reduction, _ = calc("housing_benefit_benefit_cap_reduction")
     total_reduction, _ = calc("benefit_cap_reduction")
     welfare, welfare_without_hb = calc("benefit_cap_welfare_benefits")
@@ -120,7 +124,11 @@ def test_a_family_with_both_awards_is_capped_once_through_universal_credit(
     # 3. Reg 75F(1)(g).
     assert hb_exempt[on_uc & (housing_benefit > 0)].all()
     assert (hb_reduction[on_uc] == 0).all()
-    np.testing.assert_allclose(total_reduction[on_uc], uc[on_uc], atol=0.01)
+    award = np.array([f["universal_credit"] for f in families], float)
+    np.testing.assert_allclose(
+        uc_applied[on_uc], np.minimum(uc, award)[on_uc], atol=0.01
+    )
+    np.testing.assert_allclose(total_reduction[on_uc], uc_applied[on_uc], atol=0.01)
 
     # 4. Reg 75D for a family on Housing Benefit alone.
     off = ~on_uc

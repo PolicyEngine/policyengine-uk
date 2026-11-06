@@ -1,5 +1,6 @@
 """The trading allowance (ITTOIA 2005 Part 6A Chapter 1), shared by
-trading_allowance_deduction and miscellaneous_income_trading_allowance_deduction.
+trading_allowance_deduction, miscellaneous_income_trading_allowance_deduction
+and uses_trading_allowance.
 
 One allowance covers an individual's "relevant income": the receipts of
 their relevant trades and their miscellaneous income, which s. 783AB defines
@@ -9,17 +10,81 @@ opt-out each apply to the relevant income as a whole, so the two deductions
 come from one decision.
 """
 
-from policyengine_core.model_api import max_, min_, where
+from policyengine_core.model_api import max_, min_, round_, where
 
-from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.utils.data_source import built_from_data
+from policyengine_uk.utils.supplied_inputs import (
+    stored_as_input,
+    supplied_input,
+    supplied_input_periods,
+)
+
+TRADE_DEDUCTION = "trading_allowance_deduction"
+MISCELLANEOUS_DEDUCTION = "miscellaneous_income_trading_allowance_deduction"
+
+
+def _applied_deduction(person, name, period):
+    """The value deduction ``name`` applies where its formula does not give
+    it: an input (supplied, or set by the model), or a neutralised
+    variable's default. None where the formula gives it.
+
+    SUPPLIED_INPUT_VARIABLES lists both deductions, as stored_as_input
+    requires."""
+    variable = person.simulation.tax_benefit_system.get_variable(name)
+    if variable.is_neutralized or stored_as_input(person, name, period):
+        return person(name, period)
+    return None
+
+
+def _data_year(person, period):
+    """The year the input self-employment profit was measured, whose
+    allowance a claimant's profit already deducts.
+
+    - A UK dataset: its first year, which the engine projects to later
+      years, as the State Pension variables read it. Its inputs are stored
+      for every projected year, so the years they were supplied for say
+      nothing here.
+    - Other data without years, such as a policyengine-core Dataset: the
+      earliest year self_employment_income was supplied for, for the same
+      reason.
+    - Anything else, such as a situation: the year simulated, as the State
+      Pension variables read a situation.
+
+    Not handled:
+    - data cannot declare the year their incomes were measured, so a file
+      saved from a later projected year is read as measured in its first
+      year;
+    - a situation's profit is read as measured in the year simulated, so a
+      profit given for an earlier year and carried forward is read as net
+      of the later year's allowance. A claimant's 2025-26 profit simulated
+      in 2027-28 then gains nothing from the raise to £3,000, where the
+      same record in a dataset measured in 2025 gains £2,000. Give a
+      situation's profit for the year simulated, net of that year's
+      allowance, or use a dataset. A simulation that takes a data-built
+      simulation's populations (build_from_populations) is read the same
+      way.
+    """
+    from policyengine_uk.data import UKMultiYearDataset
+
+    simulation = person.simulation
+    if not built_from_data(simulation):
+        return period.start.year
+    # Checked by type: a policyengine-core Dataset loads any attribute it is
+    # asked for as a table, so it cannot be asked for years.
+    dataset = getattr(simulation, "dataset", None)
+    if isinstance(dataset, UKMultiYearDataset):
+        return min(dataset.years)
+    supplied = supplied_input_periods(person, "self_employment_income")
+    return (supplied[0] if supplied else period).start.year
 
 
 def trading_allowance_reliefs(person, period, parameters):
     """The allowance's relief on trades and on miscellaneous income.
 
-    Returns ``(trade_relief, miscellaneous_relief)``: the deduction from
-    trading profits beyond the expenses and capital allowances already
-    deducted from them, and the deduction from income not otherwise charged.
+    Returns ``(trade_relief, miscellaneous_relief, claimant_takes_allowance)``:
+    the deduction from trading profits beyond the expenses and capital
+    allowances already deducted from them, the deduction from income not
+    otherwise charged, and whether a claimant (below) takes the allowance.
 
     - Full relief (s. 783AE(1)): when trade receipts and miscellaneous income
       together are within the allowance, trade profits or losses and the
@@ -60,6 +125,58 @@ def trading_allowance_reliefs(person, period, parameters):
     income. A larger profit is taken to reflect the better of actual
     expenses and the allowance already, which leaves none of it.
 
+    trading_allowance_claim_status says which receipts lie behind a positive
+    profit. A person with no profit has no trade receipts for it to
+    describe, and either status is then read as unknown.
+    - A claimant's profit is their receipts less the allowance legislated
+      for the year the profit was measured (the input allowance, see
+      _data_year), which reforms do not move. Their claim was an election
+      for partial relief (s. 783AM), which replaced their expenses and
+      capital allowances (s. 783AI): capital_allowances supplied for them
+      are not deducted, and their receipts, profit plus the input
+      allowance, take precedence over gross receipts. Their actual expenses
+      and capital allowances are below the input allowance but unknown:
+      gov.simulation.trading_allowance_claimant_expense_share of it, between
+      0 and 1 and by default all of it, in pennies, or the capital
+      allowances supplied for them where those are larger. Their options
+      are the allowance, which leaves receipts less the allowance (nil
+      within it), and ordinary treatment, which leaves receipts less those
+      expenses and lets a supplied current loss be claimed. They make the
+      same election as everyone else: the allowance, if it covers their
+      expenses and its saving over them is at least such a loss. (Covering
+      them matters where losses brought forward absorb both options: the
+      saving then ties at nil, and the allowance below their expenses would
+      charge Class 4, which does not see those losses, more.) So under the
+      default share a claimant with no loss keeps the allowance at or above
+      the input allowance, where the deduction is its excess over the input
+      allowance, capped at profit, and a cut leaves their profit as
+      reported, the lower bound of its yield. A claimant with a loss claims
+      it only where it is worth more than the allowance's saving, ties going
+      to the allowance, and the share sets that saving at any allowance, the
+      input allowance included. The election weighs the loss against the
+      saving in taxable trade profit and income not otherwise charged, so
+      other figures can step where it switches, under the convention every
+      status shares: Class 4, where losses brought forward absorb that
+      saving and any supplied current loss wins; and income tax itself
+      where a relief reads trade profit, such as pension relief limited by
+      relevant UK earnings or the s. 24A cap on loss relief. The deduction
+      is negative where it gives back capital allowances or charges what a
+      cut adds. Their receipts take up the allowance before income not
+      otherwise charged, as other receipts do. A deduction that does not
+      come from its formula (an input, supplied or set by the model, or a
+      neutralised variable) applies at its own value whichever treatment
+      they elect, so their election weighs it as the allowance's, and the
+      other deduction follows that election: a pin to the value the formula
+      gives changes nothing, and a positive one means the allowance
+      applies. For everyone else the election is as before this status
+      existed, from the formulas' values.
+    - A non-claimant does not elect for partial relief, which would be a
+      change in behaviour after a raise, so takes ordinary treatment unless
+      their relevant income is within the allowance: full relief needs no
+      election (s. 783AE). Their receipts exceed their profit plus the input
+      allowance and are unknown unless supplied, so only supplied receipts
+      can show that.
+
     The miscellaneous income is income_not_otherwise_charged, up to the
     person's miscellaneous_income when that is positive (it is part of it).
     The model holds no expenses against it. Not modelled: the exclusions in
@@ -67,10 +184,38 @@ def trading_allowance_reliefs(person, period, parameters):
     from the person's employer, firm or close company), and a loss created
     by capital allowances, which the model never sets against other income.
     """
-    allowance = parameters(period).gov.hmrc.income_tax.allowances.trading_allowance
+    p = parameters(period)
+    allowance = p.gov.hmrc.income_tax.allowances.trading_allowance
+    # The baseline tree is the legislated one, which reforms leave alone. It
+    # is not annualised, so it is read on 30 April, where the fiscal-year
+    # conversion samples the gov tree.
+    input_allowance = parameters(
+        f"{_data_year(person, period)}-04-30"
+    ).baseline.gov.hmrc.income_tax.allowances.trading_allowance
+    status = person("trading_allowance_claim_status", period)
     profit = person("self_employment_income", period)
     receipts = person("self_employment_gross_receipts", period)
     capital_allowances = person("capital_allowances", period)
+    # A claimant's actual expenses and capital allowances: the share of the
+    # input allowance, in pennies, or the capital allowances supplied for
+    # them where those are larger, but never above the allowance they chose
+    # instead.
+    expense_share = p.gov.simulation.trading_allowance_claimant_expense_share
+    # A claimant's figures are all in float64, so that the two options tie
+    # exactly where the allowance equals their expenses.
+    claimant_profit = profit.astype(float)
+    claimant_capital_allowances = capital_allowances.astype(float)
+    claimant_expenses = min_(
+        max_(
+            round_(min_(max_(expense_share, 0), 1) * input_allowance, 2),
+            round_(claimant_capital_allowances, 2),
+        ),
+        input_allowance,
+    )
+    trading = profit > 0
+    claimant = trading & (status == status.possible_values.CLAIMANT)
+    non_claimant = trading & (status == status.possible_values.NON_CLAIMANT)
+
     # Receipts below profit (including the default zero) mean unknown.
     receipts_known = (receipts > 0) & (receipts >= profit)
     expenses = max_(receipts - profit, 0)
@@ -82,7 +227,6 @@ def trading_allowance_reliefs(person, period, parameters):
     relief_without_receipts = where(profit <= allowance, profit - capital_allowances, 0)
     trade_relief = where(receipts_known, relief_with_receipts, relief_without_receipts)
     trade_relief = max_(trade_relief, 0)
-
     # The trade receipts that use the allowance first. Unknown receipts are
     # the profit within the allowance, and otherwise use all of it.
     trade_receipts = where(
@@ -90,6 +234,20 @@ def trading_allowance_reliefs(person, period, parameters):
         receipts,
         where(profit <= allowance, max_(profit, 0), allowance),
     )
+    # A claimant's receipts are their profit plus the input allowance. Their
+    # options are the allowance, which leaves receipts less the allowance,
+    # nil within it, and ordinary treatment, which leaves receipts less their
+    # expenses. Each deduction is from the profit and gives back the capital
+    # allowances deducted separately, which either option replaces.
+    claimant_allowance_relief = (
+        min_(claimant_profit, allowance - input_allowance) - claimant_capital_allowances
+    )
+    claimant_ordinary_relief = (
+        min_(claimant_profit, claimant_expenses - input_allowance)
+        - claimant_capital_allowances
+    )
+    trade_receipts = where(claimant, profit + input_allowance, trade_receipts)
+
     miscellaneous_income = min_(
         max_(person("income_not_otherwise_charged", period), 0),
         max_(person("miscellaneous_income", period), 0),
@@ -107,19 +265,77 @@ def trading_allowance_reliefs(person, period, parameters):
     # applying net-income and relief-cap limits, this also preserves an
     # unused loss if both choices give nil income. Prior s.83 losses remain
     # separate and may follow partial relief.
-    profit_after_other_deductions = max_(
-        0, profit - capital_allowances - person("loss_relief", period)
-    )
+    loss_relief = person("loss_relief", period)
+    profit_after_other_deductions = max_(0, profit - capital_allowances - loss_relief)
     allowance_saving = (
         min_(trade_relief, profit_after_other_deductions) + miscellaneous_relief
+    )
+    # A deduction that does not come from its formula (an input, or
+    # neutralised) applies at its own value whichever treatment the claimant
+    # elects. So their election weighs it as the allowance's, and the other
+    # deduction follows that election: a pin to the value the formula gives
+    # changes nothing. A positive one means the allowance applies.
+    applied_trade = _applied_deduction(person, TRADE_DEDUCTION, period)
+    applied_miscellaneous = _applied_deduction(person, MISCELLANEOUS_DEDUCTION, period)
+    elected_trade_relief = (
+        claimant_allowance_relief
+        if applied_trade is None
+        else applied_trade.astype(float)
+    )
+    elected_miscellaneous_relief = (
+        miscellaneous_relief if applied_miscellaneous is None else applied_miscellaneous
+    )
+    applied_positive = person.filled_array(False)
+    for applied in (applied_trade, applied_miscellaneous):
+        if applied is not None:
+            applied_positive = applied_positive | (applied > 0)
+    # A claimant's saving is the allowance's over their own ordinary
+    # treatment, after losses brought forward.
+    claimant_before_relief = (
+        claimant_profit - claimant_capital_allowances - loss_relief.astype(float)
+    )
+    claimant_saving = (
+        max_(claimant_before_relief - claimant_ordinary_relief, 0)
+        - max_(claimant_before_relief - elected_trade_relief, 0)
+        + elected_miscellaneous_relief
     )
     # An earlier input carried/uprated into this year is not a new loss
     # for the election, just as it is not a new Class 4 loss.
     current_loss = supplied_input(person, "trading_loss", period)
     if current_loss is None:
         current_loss = person.empty_array()
-    claim_current_loss = current_loss > allowance_saving
+    # A non-claimant gets the allowance only through full relief, where
+    # supplied receipts show relevant income within it.
+    within_allowance = receipts_known & (receipts + miscellaneous_income <= allowance)
+    ordinary = (non_claimant & ~within_allowance) | (current_loss > allowance_saving)
+    # A claimant makes the same election against their own options: the
+    # allowance unless it does worse than their expenses, or than a larger
+    # supplied current loss. Ties take the allowance.
+    # The allowance must also cover their expenses: where losses brought
+    # forward absorb both options the saving ties at nil, and the allowance
+    # would then charge Class 4, which does not see those losses, more.
+    claimant_takes_allowance = claimant & (
+        (
+            (allowance > 0)
+            & (allowance >= claimant_expenses)
+            & ~(current_loss > claimant_saving)
+        )
+        | applied_positive
+    )
     return (
-        where(claim_current_loss, 0, trade_relief),
-        where(claim_current_loss, 0, miscellaneous_relief),
+        where(
+            claimant,
+            where(
+                claimant_takes_allowance,
+                claimant_allowance_relief,
+                claimant_ordinary_relief,
+            ),
+            where(ordinary, 0, trade_relief),
+        ),
+        where(
+            claimant,
+            where(claimant_takes_allowance, miscellaneous_relief, 0),
+            where(ordinary, 0, miscellaneous_relief),
+        ),
+        claimant_takes_allowance,
     )

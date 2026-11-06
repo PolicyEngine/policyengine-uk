@@ -7,3 +7,6 @@ class spirits_litres(Variable):
     definition_period = YEAR
     label = "Annual litres of spirits"
     unit = "litre"
+    uprating = (
+        "gov.economic_assumptions.indices.obr.per_capita.alcohol_clearances.spirits"
+    )
