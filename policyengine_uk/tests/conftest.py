@@ -175,7 +175,7 @@ def pytest_report_header(config):
     ]
     shard = config.getoption("shard", default=None)
     if shard is not None:
-        lines.append(f"shard: {shard[0]} of {shard[1]}, chosen by node id")
+        lines.append(f"shard: {shard[0]} of {shard[1]}, by marker and node id")
     return lines
 
 
@@ -193,12 +193,17 @@ def cloned_uk_tax_benefit_system():
 
 
 # CI splits the suite over several runners with ``--shard K/N``. The shard of a
-# test is a function of its node id alone (and of the checked-in table below),
-# so the shards partition whatever is collected: every test runs in exactly
-# one of them, including a test added later. The Test job checks that on each
-# run (.github/check_test_shards.py).
+# test is a function of its marker and node id alone (and of the checked-in
+# table below), so the shards partition whatever is collected: every test runs
+# in exactly one of them, including a test added later. The Test job checks that
+# on each run (.github/check_test_shards.py).
 #
-# Most tests are placed by a hash of their node id. A hash spreads thousands
+# The last shard runs the tests that need the dataset, which build simulations
+# of all of it, and the other shards share the rest. CI gives the last shard
+# one worker, so only one of those simulations runs at a time
+# (.github/workflows/test-suite.yaml has the measurements).
+#
+# Most other tests are placed by a hash of their node id. A hash spreads thousands
 # of short tests evenly, but not a few long ones: on 24 October 2026 one
 # property test took 22 minutes, and by chance it and several others of 4 to
 # 7 minutes hashed to shard 2 of 5, which then took 57 minutes on average
@@ -206,17 +211,6 @@ def cloned_uk_tax_benefit_system():
 # slowest on CI, are instead dealt out by duration, longest first, each to the
 # shard with the least so far. A test missing from the table, or the table
 # missing, falls back to the hash.
-#
-# The tests of a file in SHARED_FIXTURE_FILES all run in one shard, because each
-# shard that holds one of them builds that file's module fixture. In merge queue
-# run 42212587066 the fixture in test_aggregate_impact_certified.py held one
-# worker for 8 to 9 minutes at the start of five shards, which peaked at 14.2 to
-# 15.3 GB on 16 GB runners, against 10.9 and 12.6 GB for the two without it. Runs
-# 42218280596 and 42218280615 had those tests on all seven shards and lost eight
-# of their 14 shard jobs at 15.4 to 15.7 GB.
-SHARED_FIXTURE_FILES = frozenset(
-    {"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py"}
-)
 SHARD_DURATIONS = (
     Path(importlib.util.find_spec("policyengine_uk").origin).parent
     / "tests"
@@ -236,36 +230,19 @@ def read_shard_durations(path: Path = SHARD_DURATIONS) -> dict[str, float]:
     }
 
 
-def placement_unit(nodeid: str) -> str:
-    """What the deal and the hash place: a shared-fixture file, or else the test."""
-    path = nodeid.split("::", 1)[0]
-    return path if path in SHARED_FIXTURE_FILES else nodeid
+def balanced_shards(durations: Mapping[str, float], shards: int) -> dict[str, int]:
+    """Deal tests to shards, longest first, each to the least loaded shard.
 
-
-def deal_units(durations: Mapping[str, float], shards: int) -> dict[str, int]:
-    """Deal placement units to shards, longest first, each to the least loaded.
-
-    A shared-fixture file weighs as much as its longest test, since the file's
-    long entries each measured the same fixture. Ties go to the lower name and
-    the lower shard, so every process gives the same answer.
+    Ties go to the lower node id and the lower shard, so every process gives
+    the same answer.
     """
-    weights: dict[str, float] = {}
-    for nodeid, seconds in durations.items():
-        unit = placement_unit(nodeid)
-        weights[unit] = max(seconds, weights.get(unit, seconds))
     load = [0.0] * shards
-    dealt = {}
-    for unit, seconds in sorted(weights.items(), key=lambda kv: (-kv[1], kv[0])):
+    placed = {}
+    for nodeid, seconds in sorted(durations.items(), key=lambda kv: (-kv[1], kv[0])):
         shard = min(range(shards), key=lambda k: (load[k], k))
         load[shard] += seconds
-        dealt[unit] = shard + 1
-    return dealt
-
-
-def balanced_shards(durations: Mapping[str, float], shards: int) -> dict[str, int]:
-    """The shard the deal gives each test in ``durations``."""
-    dealt = deal_units(durations, shards)
-    return {nodeid: dealt[placement_unit(nodeid)] for nodeid in durations}
+        placed[nodeid] = shard + 1
+    return placed
 
 
 _BALANCED: dict[int, dict[str, int]] = {}
@@ -278,12 +255,22 @@ def shard_of(nodeid: str, shards: int) -> int:
     runner and every pytest-xdist worker must give the same answer.
     """
     if shards not in _BALANCED:
-        _BALANCED[shards] = deal_units(read_shard_durations(), shards)
-    unit = placement_unit(nodeid)
-    if unit in _BALANCED[shards]:
-        return _BALANCED[shards][unit]
-    digest = hashlib.sha256(unit.encode("utf-8")).digest()
+        _BALANCED[shards] = balanced_shards(read_shard_durations(), shards)
+    if nodeid in _BALANCED[shards]:
+        return _BALANCED[shards][nodeid]
+    digest = hashlib.sha256(nodeid.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") % shards + 1
+
+
+def item_shard(item, shards: int) -> int:
+    """The shard, from 1 to ``shards``, that runs a collected test.
+
+    The last of two or more shards runs the tests that need the dataset, and
+    ``shard_of`` places the others on the remaining shards.
+    """
+    if shards == 1:
+        return 1
+    return shards if needs_data(item) else shard_of(item.nodeid, shards - 1)
 
 
 def parse_shard(value: str) -> tuple[int, int]:
@@ -315,7 +302,7 @@ def pytest_collection_modifyitems(config, items):
         this_shard, shards = shard
         selected, deselected = [], []
         for item in items:
-            if shard_of(item.nodeid, shards) == this_shard:
+            if item_shard(item, shards) == this_shard:
                 selected.append(item)
             else:
                 deselected.append(item)

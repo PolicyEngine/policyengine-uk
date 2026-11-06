@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over seven runners, and Result, which fails unless every listed
+# tests split over eight runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/7" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/8" and "Test / Result";
 # "Test / Result" is the one to require.
 #
 # Runners. These jobs, and the check jobs that pull requests, merge queue
@@ -143,7 +143,8 @@ jobs:
           retention-days: 7
 
   Python:
-    # Shard K of N runs the tests whose node id hashes to K (--shard in
+    # The last shard runs the tests that need the dataset. Each other shard K
+    # of N runs the remaining tests whose node id hashes to K (--shard in
     # policyengine_uk/tests/conftest.py), so each test is in exactly one
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
@@ -182,6 +183,18 @@ jobs:
     # cancelled shard 1/6 with its tests at 99% (run 41191216150, first
     # attempt). With seven, the listed slow tests come to about 115 minutes
     # of worker time per shard instead of 134.
+    #
+    # Eight, not seven, for memory: the eighth runs the tests that need the
+    # dataset, with one worker, so only one simulation of the dataset runs at
+    # a time, and the other seven run none of them. In merge queue run
+    # 42212587066 the five shards that built the fixture in
+    # test_aggregate_impact_certified.py peaked at 14.2 to 15.3 GB, and the two
+    # without it at 10.9 and 12.6 GB. On a merge of 28 pull requests with those
+    # tests on all seven shards, runs 42218280596 and 42218280615 lost eight of
+    # their 14 shard jobs within minutes at 15.4 to 15.7 GB, and shard 6/7 of
+    # the first lost its runner at 15.6 GB 51 minutes in, with
+    # test_latest_data_smoke.py running. With the certified tests on one shard
+    # of seven, run 42231098419 lost that shard at 15.6 GB.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -203,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -230,6 +243,7 @@ jobs:
           POLICYENGINE_UK_REQUIRE_TEST_DATA: ${{ inputs.require-data && '1' || '' }}
           SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
           OUTCOMES: outcomes-${{ matrix.shard }}.jsonl
+          WORKERS: ${{ matrix.shard == strategy.job-total && 1 || 4 }}
           # Measure coverage with sys.monitoring instead of the C trace
           # function: the same lines are reported, at less cost per line.
           COVERAGE_CORE: sysmon
@@ -250,14 +264,15 @@ jobs:
           # .github/pytest_outcome_log.py records each test's outcome for
           # Result. xfail_strict makes an xfail marker without strict= fail
           # when its test passes, so a fixed bug cannot hide behind it.
-          # Four pytest-xdist workers, one per core. Their memory grows with
-          # each test they run (#2330): with three shards they peaked at
-          # 15.6 GB of the runner's 16 GB (run 38156967136).
+          # Four pytest-xdist workers, one per core, and one on the last shard.
+          # Their memory grows with each test they run (#2330): with three
+          # shards they peaked at 15.6 GB of the runner's 16 GB (run
+          # 38156967136).
           PYTHONPATH="$GITHUB_WORKSPACE/.github" pytest "$TESTS" \
             --rootdir "$ROOTDIR" -c pyproject.toml -p no:cacheprovider \
             -p pytest_outcome_log --outcome-log="$OUTCOMES" \
             -o xfail_strict=true --maxfail=0 -v \
-            -n 4 --dist worksteal --shard "$SHARD" "${coverage[@]}"
+            -n "$WORKERS" --dist worksteal --shard "$SHARD" "${coverage[@]}"
       - name: Upload the test outcomes
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
