@@ -41,11 +41,13 @@ scheme, whose applicable amount can be lower.
    report no Child Tax Credit, so none has an award.
 3. A pensioner with no child and capital up to £10,000 gets no child amount,
    family premium or tariff income, and a working-age family gets no child
-   amount or family premium, so their applicable amount, applicable income
-   and award match main. An English working-age family also gets no tariff
-   income here, because its local scheme sets its own.
-   test_matches_origin_main_on_unchanged_households checks that against
-   values computed on main.
+   amount or family premium, so their applicable amount and applicable income
+   match main. Their awards match main too, except that Scottish and Welsh
+   working-age families take theirs from the working-age route
+   (council_tax_reduction_devolved_working_age). An English working-age family
+   also gets no tariff income here, because its local scheme sets its own.
+   test_matches_origin_main_on_unchanged_households checks that against values
+   computed on main and, for those awards, by hand.
 """
 
 import math
@@ -342,7 +344,12 @@ DIFFERENTIAL_OUTPUTS = (
 # applicable amount, applicable income and council_tax_benefit. In Scotland
 # and Wales the working-age families with savings of 12,000, 16,000 and 8,000
 # have working-age tariff income of 1 a week for each 250, or part, over
-# 6,000: 24 * 52 = 1,248, 40 * 52 = 2,080 and 8 * 52 = 416 a year.
+# 6,000: 24 * 52 = 1,248, 40 * 52 = 2,080 and 8 * 52 = 416 a year. Their awards
+# come from the working-age route, which sets its own amount and income: 2,000
+# less 20% of the excess of net earnings after the earnings disregard, plus that
+# tariff income, over the personal allowance and child amounts. For example, the
+# Welsh family with savings of 8,000 in 2026 has 9,000 - 5 * 52 + 416 = 9,156
+# against 101.85 * 52 = 5,296.20, so an award of 1,228.04.
 ORIGIN_MAIN = {
     2019: [
         (9_412, 12_000, 1_482.4),
@@ -354,15 +361,15 @@ ORIGIN_MAIN = {
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_170, 1_380.24),
         (9_412, 9_592.34, 1_963.93),
-        (3_801.2, 16_080.24, 0),
-        (5_972.2, 24_674.64, 0),
-        (3_801.2, 9_371.84, 885.87),
+        (3_801.2, 16_080.24, 889.22),
+        (5_972.2, 24_674.64, 460.78),
+        (3_801.2, 9_371.84, 937.87),
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_150, 1_384.24),
         (9_412, 9_592.34, 1_963.93),
-        (3_801.2, 16_060.24, 0),
-        (5_972.2, 24_654.64, 0),
-        (3_801.2, 9_371.84, 885.87),
+        (3_801.2, 16_060.24, 950.63),
+        (5_972.2, 24_654.64, 376.27),
+        (3_801.2, 9_371.84, 987.79),
         (3_801.2, 12_672.24, 225.79),
         (3_801.2, 12_672.24, 0),
         (3_801.2, 12_672.24, 0),
@@ -379,15 +386,15 @@ ORIGIN_MAIN = {
         (12_230.4, 12_000, 2_000),
         (18_304, 17_189.06, 2_000),
         (12_230.4, 0, 2_000),
-        (4_706, 16_921.86, 0),
-        (7_397, 26_087.26, 0),
-        (4_706, 9_416, 1_058),
+        (4_706, 16_921.86, 1_165.19),
+        (7_397, 26_087.26, 972.71),
+        (4_706, 9_416, 1_110),
         (12_230.4, 12_000, 2_000),
         (18_304, 17_166, 2_000),
         (12_230.4, 0, 2_000),
-        (4_706, 16_898.8, 0),
-        (7_397, 26_064.2, 0),
-        (4_706, 9_416, 1_058),
+        (4_706, 16_898.8, 1_214.42),
+        (7_397, 26_064.2, 839.31),
+        (4_706, 9_416, 1_171.88),
         (4_706, 13_331.2, 274.96),
         (4_706, 13_331.2, 0),
         (4_706, 13_331.2, 0),
@@ -404,15 +411,15 @@ ORIGIN_MAIN = {
         (13_312, 12_000, 2_000),
         (19_934.2, 17_205.67, 2_000),
         (13_312, 0, 2_000),
-        (4_968.6, 16_998.5, 0),
-        (7_807.8, 26_228.67, 0),
-        (4_968.6, 9_416, 1_110.52),
+        (4_968.6, 16_998.5, 1_277.78),
+        (7_807.8, 26_228.67, 1_172.19),
+        (4_968.6, 9_416, 1_162.52),
         (13_312, 12_000, 2_000),
         (19_934.2, 17_166, 2_000),
         (13_312, 0, 2_000),
-        (4_968.6, 16_974.2, 0),
-        (7_807.8, 26_189, 0),
-        (4_968.6, 9_416, 1_110.52),
+        (4_968.6, 16_974.2, 1_329.96),
+        (7_807.8, 26_189, 1_034.31),
+        (4_968.6, 9_416, 1_228.04),
         (4_968.6, 13_406.6, 312.4),
         (4_968.6, 13_406.6, 0),
         (4_968.6, 13_406.6, 0),
