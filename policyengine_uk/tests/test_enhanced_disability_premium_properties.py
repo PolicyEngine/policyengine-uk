@@ -48,8 +48,8 @@ It checks these invariants in every year from 2015 to 2030:
    Northern Ireland, Oxford and the default English council, in Scotland
    before 2023, and in Kingston upon Thames in 2018-19 to 2022-23. It never
    falls below the legacy premium in Scotland from 2023, or where a council's
-   own list counts AFIP (Newham's). Where a council's own list omits AFIP (Merton's, Kingston upon Thames's and
-   Westminster's), it never falls below the legacy premium unless that
+   own list counts AFIP (Newham's). Where a council's own list omits AFIP
+   (Merton's, Kingston upon Thames's and Westminster's), it never falls below the legacy premium unless that
    premium rests on AFIP alone, and then the model pays none unless an
    under-age claimant or partner has a PIP daily living award.
 6. For a child or young person in Great Britain, the qualifying flag matches
