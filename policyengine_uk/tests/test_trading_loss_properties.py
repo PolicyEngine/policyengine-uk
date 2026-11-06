@@ -51,7 +51,11 @@ Invariants, for any people and incomes:
    and self-employed earnings is held alongside them, including the actual
    Class 2/4 components replaced by notional PC deductions. The personal
    reliefs used for PC's notional tax are held too: the loss can change
-   entitlement to those reliefs without offsetting PC earnings.
+   entitlement to those reliefs without offsetting PC earnings. Scotland's
+   and Wales's working-age Council Tax Reduction takes a Universal Credit
+   claimant's earnings from the same assessment (SSI 2021/249 regs 49 and
+   51(2); WSI 2013/3029 Sch 6 para 9), so the comparison holds that figure
+   at its with-loss value too.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -1007,11 +1011,18 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
     # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
     # on both sides; the child's loss never enters the claimant's earnings.
+    # Council Tax Reduction reads income tax on branches that zero earnings,
+    # so holding the person's tax would also hold it on those branches. Hold
+    # the scheme's deduction from the with-loss side instead.
     pc_tax = {
         v: values(with_loss, v)
         for v in [
             "pension_credit_employment_income_tax",
             "pension_credit_self_employment_income_tax",
+            "council_tax_reduction_tax_deduction",
+            # The Welsh working-age route disregards the tax on pensions and
+            # benefits, which it reads from earned_income_tax, not a held tax.
+            "council_tax_reduction_working_age_unearned_income_tax",
         ]
     }
     loss = values(with_loss, "trading_loss")
@@ -1030,6 +1041,21 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         v: values(with_loss, v)
         for v in ["uc_income_tax_on_trade", "uc_national_insurance_on_trade"]
     }
+    # Scotland's and Wales's working-age schemes take a Universal Credit
+    # claimant's earnings from the Universal Credit assessment, so the loss
+    # reaches them through that figure as well as the tax. Hold it as the
+    # award is held. Without Universal Credit their earnings take the trade's
+    # part of the tax off the total (_pay_and_miscellaneous_tax).
+    uc_assessment = {
+        **uc_trade_deductions,
+        **{
+            v: values(with_loss, v)
+            for v in [
+                "uc_individual_earned_income",
+                "uc_individual_earned_income_before_mif",
+            ]
+        },
+    }
 
     def held(k, **extra):
         return {
@@ -1044,7 +1070,10 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     no_loss = Simulation(
         situation=family_situation(
             units,
-            {name: held(k) for k, name in enumerate(names)},
+            {
+                name: held(k, **{v: float(uc_assessment[v][k]) for v in uc_assessment})
+                for k, name in enumerate(names)
+            },
             {
                 b: {
                     "universal_credit": float(uc[k]),
