@@ -10,11 +10,14 @@
 # Neither counts the Scottish Carer Supplement, paid with CSP from 15 March
 # 2026: reg 57(1) does not list it and reg 27(1)(j)(xxib) excepts it. In law
 # the supplement's tax does not reach Council Tax Reduction either: at working
-# age SSI 2021/249 deducts tax only from earnings, and at pension age SSI
-# 2012/319 reg 31(12) disregards the tax payable on income taken into
-# account, which the supplement is not. The model deducts all income tax, so
-# the taxable supplement reaches the model's Council Tax Reduction income
-# through income tax and in no other way.
+# age the Scottish Ministers let the council deduct tax only from earnings (SSI
+# 2021/249), and at pension age the council disregards the tax payable on
+# income taken into account (SSI 2012/319 reg 31(12)), which the supplement is
+# not. The model deducts only the tax each scheme allows
+# (council_tax_reduction_tax_deduction). At working age that is the tax
+# earnings add, and at pension age the tax on the counted income with the
+# supplement above it, so without earnings the supplement does not reach the
+# model's Council Tax Reduction income.
 # Neither instrument disregards CSP above the CA amount.
 #
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
@@ -248,7 +251,7 @@
     # jumps to 2,000 when the carer moves to Carer Support Payment in 2025.
     council_tax_reduction: 2_000 - 0.2 * (7_000 + 81.90 * 52 - (90.50 + 45.60) * 52)
 
-- name: Pension-age Council Tax Reduction counts Carer Support Payment, and the supplement only through tax
+- name: Pension-age Council Tax Reduction counts Carer Support Payment and deducts no tax on the supplement
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -275,13 +278,19 @@
     # first 3,967 at the Scottish starter rate of 19% and 2,566.80 at 20%.
     # The supplement adds 608.40 x 20% = 121.68 of that tax.
     income_tax: 3_967 * 0.19 + 2_566.80 * 0.20
-    # 14,000 + 4,495.40 - 1,267.09: the supplement is not added.
-    council_tax_reduction_applicable_income: 14_000 + 86.45 * 52 - 1_267.09
+    # Under SSI 2012/319 reg 31(12), the council disregards only the tax on
+    # income taken into account. The supplement is not, so the formula leaves
+    # out its tax, as the highest part of income: 14,000 + 4,495.40 - 12,570 =
+    # 5,925.40 taxable, 3,967 x 19% = 753.73 and 1,958.40 x 20% = 391.68, so
+    # 1,145.41.
+    council_tax_reduction_tax_deduction: 3_967 * 0.19 + 1_958.40 * 0.20
+    # 14,000 + 4,495.40 - 1,145.41: neither the supplement nor its tax counts.
+    council_tax_reduction_applicable_income: 14_000 + 86.45 * 52 - 1_145.41
     council_tax_reduction_applicable_amount: (256 + 48.15) * 52
     # Income is above the minimum guarantee of (238 + 48.15) x 52 = 14,879.80.
     guarantee_credit: 0
-    # 2,000 - 0.2 x (17,228.31 - 15,815.80)
-    council_tax_reduction: 1_717.50
+    # 2,000 - 0.2 x (17,349.99 - 15,815.80)
+    council_tax_reduction: 1_693.16
 
 - name: A pension-age couple's Council Tax Reduction counts the partner's Carer Support Payment
   period: 2026

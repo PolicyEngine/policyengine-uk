@@ -996,11 +996,15 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
     # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
     # on both sides; the child's loss never enters the claimant's earnings.
+    # Council Tax Reduction reads income tax on branches that zero earnings,
+    # so holding the person's tax would also hold it on those branches. Hold
+    # the scheme's deduction from the with-loss side instead.
     pc_tax = {
         v: values(with_loss, v)
         for v in [
             "pension_credit_employment_income_tax",
             "pension_credit_self_employment_income_tax",
+            "council_tax_reduction_tax_deduction",
         ]
     }
     loss = values(with_loss, "trading_loss")
