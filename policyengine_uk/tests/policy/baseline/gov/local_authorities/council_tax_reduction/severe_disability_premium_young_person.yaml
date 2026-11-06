@@ -2,7 +2,13 @@
 # allowance95.55*52=4968.60; severe86.05*52=4474.60; withdrawal20%.
 # PIP qualifies SDP but generic disability flag is separately supplied/defaultfalse.
 # Pension12570:no tax; PIP disregarded; Child Benefit claim declined.
-# CTR=2000-20%*(12570-allowance):479.72 or1374.64.
+# CTR=2000-20%*(12570-allowance):479.72 under the shared formula. Where the
+# student is a UC qualifying young person, Scotland's working-age route
+# (council_tax_reduction_devolved_working_age) makes the applicant a lone
+# parent with a child premium: (95.55 + 109.85 + 86.05 severe disability
+# premium) * 52 = 15,155.40 (SSI 2026/56 reg 14), above the 12,570 income,
+# so the award is the full 2,000. The shared council_tax_reduction_applicable_
+# amount (9,443.20) has no child amounts and no longer sets the award.
 # Annual UC terminal-date input represents unavailable assessment-period detail.
 # Reverse case supplies CB family status: input-contract composition,
 # not a naturally derived eligibility pair or full statutory rate audit.
@@ -49,6 +55,8 @@
         savings: 0
   output:
     simulated_council_tax_reduction_benunit: 479.72
+    is_council_tax_reduction_lone_parent: false
+    council_tax_reduction_working_age_applicable_amount: 4968.6
     disability_premium: 0
     enhanced_disability_premium: 0
     severe_disability_premium: 4474.6
@@ -99,7 +107,12 @@
         council_tax: 2000
         savings: 0
   output:
-    simulated_council_tax_reduction_benunit: 1374.64
+    simulated_council_tax_reduction_benunit: 2000
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_working_age_child_amounts: 109.85 * 52
+    council_tax_reduction_working_age_adult_premiums: 4474.6
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 109.85 + 86.05) * 52
+    council_tax_reduction_working_age_applicable_income: 12570
     disability_premium: 0
     enhanced_disability_premium: 0
     severe_disability_premium: 4474.6
@@ -152,7 +165,12 @@
         council_tax: 2000
         savings: 0
   output:
-    simulated_council_tax_reduction_benunit: 1374.64
+    simulated_council_tax_reduction_benunit: 2000
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_working_age_child_amounts: 109.85 * 52
+    council_tax_reduction_working_age_adult_premiums: 4474.6
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 109.85 + 86.05) * 52
+    council_tax_reduction_working_age_applicable_income: 12570
     disability_premium: 0
     enhanced_disability_premium: 0
     severe_disability_premium: 0
