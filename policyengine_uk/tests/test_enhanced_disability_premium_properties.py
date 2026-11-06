@@ -22,8 +22,10 @@ and omit AFIP; Newham counts the PIP daily living component at either rate
 and AFIP. In Westminster the model applies the Default Scheme's list (S.I.
 2012/2886 Sch 3 para 12), which counts the PIP daily living component at
 either rate and omits AFIP. Each council's list starts on or before 1 April
-2013 (COUNCIL_LISTS), so it applies in every model year. The model applies
-the Housing Benefit condition in Wales and every other scheme.
+2013 (COUNCIL_LISTS) and applies in every model year, except that for
+Kingston upon Thames the model applies the Housing Benefit condition in
+2018-19 to 2022-23, for which no complete scheme text survives. The model
+also applies the Housing Benefit condition in Wales and every other scheme.
 
 The test generates single people, couples and lone parents in the places and
 age range below, with the listed awards, and adds a family in each council
@@ -43,10 +45,10 @@ It checks these invariants in every year from 2015 to 2030:
    exceeds two single rates; the couple rate never exceeds two single rates
    in any year.
 5. The Council Tax Reduction premium equals the legacy premium in Wales,
-   Northern Ireland, Oxford and the default English council, and in Scotland
-   before 2023. It never falls below the legacy premium in Scotland from
-   2023, or where a council's own list counts AFIP (Newham's). Where a
-   council's own list omits AFIP (Merton's, Kingston upon Thames's and
+   Northern Ireland, Oxford and the default English council, in Scotland
+   before 2023, and in Kingston upon Thames in 2018-19 to 2022-23. It never
+   falls below the legacy premium in Scotland from 2023, or where a council's
+   own list counts AFIP (Newham's). Where a council's own list omits AFIP (Merton's, Kingston upon Thames's and
    Westminster's), it never falls below the legacy premium unless that
    premium rests on AFIP alone, and then the model pays none unless an
    under-age claimant or partner has a PIP daily living award.
@@ -120,12 +122,19 @@ ADULT_AGES = [20, 30, 45, 60, 64, 66, 67, 70, 85]
 # Each council's own list (Sch 3 para 12 of its scheme), by the scheme year
 # it starts: "dla_highest" is the DLA care component at the highest rate,
 # "any_pip" the PIP daily living component at either rate and "afip" armed
-# forces independence payment.
+# forces independence payment. None marks years where the model applies the
+# Housing Benefit condition instead.
 COUNCIL_LISTS = {
     # The 2013 rules.
     "MERTON": {2013: ("dla_highest", "any_pip")},
-    # The Default Scheme, adopted for 2013-14.
-    "KINGSTON_UPON_THAMES": {2013: ("dla_highest", "any_pip")},
+    # The Default Scheme, adopted for 2013-14. No complete scheme text for
+    # 2018-19 to 2022-23 survives, so the model applies the Housing Benefit
+    # condition in those years.
+    "KINGSTON_UPON_THAMES": {
+        2013: ("dla_highest", "any_pip"),
+        2018: None,
+        2023: ("dla_highest", "any_pip"),
+    },
     # The 2013 scheme, and the 2014 scheme with AFIP.
     "NEWHAM": {
         2013: ("dla_highest", "any_pip"),
@@ -192,8 +201,8 @@ def qualifies(inputs, country, year):
 
 
 def council_list(council, year):
-    """Return the awards on a council's own list in a year, or None for a
-    council without one."""
+    """Return the awards on a council's own list in a year, or None where
+    the model applies the Housing Benefit condition."""
     starts = [start for start in COUNCIL_LISTS.get(council, {}) if start <= year]
     return COUNCIL_LISTS[council][max(starts)] if starts else None
 
