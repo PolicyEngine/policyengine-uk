@@ -279,7 +279,6 @@
 "policyengine_uk/tests/test_fuel_duty_schedule.py::test_annual_override_applies_at_full_strength_and_only_to_its_year" = 68
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_claimant_or_partner_awards_match_reference" = 66
 "policyengine_uk/tests/test_council_tax_reduction_prescribed_benefits_properties.py::test_each_benefit_counts_pound_for_pound_in_every_scheme" = 66
-"policyengine_uk/tests/test_carers_allowance_earnings_limit_properties.py::test_net_earnings_never_fall_as_pay_rises" = 66
 "policyengine_uk/tests/test_uc_statutory_pay_properties.py::test_a_dependants_statutory_pay_is_not_the_claimants_earned_income" = 66
 "policyengine_uk/tests/test_rent_of_sharers_boarders_and_lodgers_properties.py::test_lha_categories" = 66
 "policyengine_uk/tests/test_trading_loss_properties.py::test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award[tax_credits-2024]" = 65
