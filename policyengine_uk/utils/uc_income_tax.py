@@ -13,6 +13,29 @@ from policyengine_uk.utils.income_tax import (
 from policyengine_uk.utils.income_tax_allocation import default_order_deductions
 
 
+def earnings_tax_reductions(person, period, parameters):
+    """The Step 6 tax reductions that come off the tax on earnings first.
+
+    All of them except the finance-cost reduction, which comes off the tax on
+    property income first, so only the part larger than that tax counts here.
+    """
+    income_tax = parameters(period).gov.hmrc.income_tax
+    reductions = add(
+        person,
+        period,
+        [
+            variable
+            for variable in income_tax.step_6_tax_reductions
+            if variable != "property_finance_cost_relief"
+        ],
+    )
+    return reductions + max_(
+        0,
+        person("property_finance_cost_relief", period)
+        - person("property_income_tax", period),
+    )
+
+
 def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=True):
     """Income tax on the person's earnings taken as the lowest slice of income.
 
@@ -120,18 +143,4 @@ def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=Tr
     # the tax on property income first. Only a part larger than that tax
     # (possible where Scottish rates on property income are below the
     # reduction's rate) comes off the tax on earnings.
-    reductions = add(
-        person,
-        period,
-        [
-            variable
-            for variable in income_tax.step_6_tax_reductions
-            if variable != "property_finance_cost_relief"
-        ],
-    )
-    reductions += max_(
-        0,
-        person("property_finance_cost_relief", period)
-        - person("property_income_tax", period),
-    )
-    return max_(0, tax - reductions)
+    return max_(0, tax - earnings_tax_reductions(person, period, parameters))
