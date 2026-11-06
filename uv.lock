@@ -2259,7 +2259,7 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'" },
     { name = "jupyter-book", marker = "extra == 'dev'", specifier = ">=2.0.0a0" },
     { name = "microdf-python", specifier = ">=1.2.1" },
-    { name = "policyengine-core", specifier = ">=3.33.0" },
+    { name = "policyengine-core", specifier = ">=3.33.2" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "pytest-xdist", marker = "extra == 'dev'" },

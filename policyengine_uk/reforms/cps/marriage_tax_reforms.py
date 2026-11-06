@@ -7,6 +7,7 @@ from typing import Union, Optional
 def create_expanded_ma_reform(
     max_child_age: Optional[int] = None,
     child_education_levels: Optional[List[str]] = None,
+    _parameter_driven: bool = False,
 ) -> Reform:
     class meets_expanded_ma_conditions(Variable):
         label = "Qualifies for an expanded Marriage Allowance"
@@ -19,9 +20,15 @@ def create_expanded_ma_reform(
             # couple) under the age limit, or meeting the education condition.
             benunit = person.benunit
             is_couple_child = ~person("is_claimant_or_partner", period)
-            if max_child_age is not None:
+            child_age_limit = max_child_age
+            if _parameter_driven:
+                cap = person.simulation.tax_benefit_system.parameters(
+                    period
+                ).gov.contrib.cps.marriage_tax_reforms.expanded_ma.max_child_age
+                child_age_limit = cap if cap > 0 else None
+            if child_age_limit is not None:
                 child_meets_age_condition = is_couple_child & (
-                    person("age", period) < max_child_age
+                    person("age", period) < child_age_limit
                 )
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
@@ -105,6 +112,7 @@ def create_expanded_ma_reform(
 def create_marriage_neutral_income_tax_reform(
     max_child_age: Optional[int] = None,
     child_education_levels: Optional[List[str]] = None,
+    _parameter_driven: bool = False,
 ) -> Reform:
     class meets_ma_neutral_tax_conditions(Variable):
         label = "Qualifies for an expanded Marriage Allowance"
@@ -117,9 +125,15 @@ def create_marriage_neutral_income_tax_reform(
             # couple) under the age limit, or meeting the education condition.
             benunit = person.benunit
             is_couple_child = ~person("is_claimant_or_partner", period)
-            if max_child_age is not None:
+            child_age_limit = max_child_age
+            if _parameter_driven:
+                cap = person.simulation.tax_benefit_system.parameters(
+                    period
+                ).gov.contrib.cps.marriage_tax_reforms.marriage_neutral_it.max_child_age
+                child_age_limit = cap if cap > 0 else None
+            if child_age_limit is not None:
                 child_meets_age_condition = is_couple_child & (
-                    person("age", period) < max_child_age
+                    person("age", period) < child_age_limit
                 )
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
@@ -259,3 +273,71 @@ def create_marriage_tax_reform(parameters, period):
 # applies to every married couple regardless of child presence.
 expanded_ma_reform = create_expanded_ma_reform()
 marriage_neutral_it_reform = create_marriage_neutral_income_tax_reform()
+
+
+def create_period_aware_marriage_tax_reform(parameters, period):
+    """Install only families with a real activation in their finite history.
+
+    This constructor dispatch differs from the public period-only factory:
+    an available route still chooses its policy separately in each year.
+    """
+    from policyengine_uk.reforms.reforms import (
+        finite_parameter_activation,
+        apply_period_aware_reform,
+    )
+
+    prefix = "gov.contrib.cps.marriage_tax_reforms."
+    paths = (
+        "expanded_ma.remove_income_condition",
+        "expanded_ma.ma_rate",
+        "expanded_ma.max_child_age",
+        "marriage_neutral_it.neutralise_income_tax",
+        "marriage_neutral_it.max_child_age",
+    )
+    current = [parameters.get_child(prefix + path) for path in paths]
+    baseline = [parameters.baseline.get_child(prefix + path) for path in paths]
+    expanded = finite_parameter_activation(
+        current + baseline, lambda values: bool(values[0]) or values[1] != values[6]
+    )
+    neutral = finite_parameter_activation(
+        current + baseline, lambda values: bool(values[3])
+    )
+    if not expanded and not neutral:
+        return None
+
+    def expanded_active(root, year):
+        p = root(year).gov.contrib.cps.marriage_tax_reforms.expanded_ma
+        return (
+            p.remove_income_condition
+            or p.ma_rate
+            != root.baseline(
+                year
+            ).gov.contrib.cps.marriage_tax_reforms.expanded_ma.ma_rate
+        )
+
+    def neutral_active(root, year):
+        return root(
+            year
+        ).gov.contrib.cps.marriage_tax_reforms.marriage_neutral_it.neutralise_income_tax
+
+    class reform(Reform):
+        def apply(self):
+            if expanded:
+                apply_period_aware_reform(
+                    self,
+                    create_expanded_ma_reform(_parameter_driven=True),
+                    (
+                        "meets_marriage_allowance_income_conditions",
+                        "marriage_allowance",
+                    ),
+                    expanded_active,
+                )
+            if neutral:
+                apply_period_aware_reform(
+                    self,
+                    create_marriage_neutral_income_tax_reform(_parameter_driven=True),
+                    ("net_income",),
+                    neutral_active,
+                )
+
+    return reform
