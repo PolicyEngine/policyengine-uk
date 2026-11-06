@@ -3,8 +3,8 @@
 # 2013 reg.18) and Pension Credit (SPCA 2002 s.5) assess the claimant's and
 # partner's capital together. UC replaces financial proxies with this
 # observation and counts property separately; uc_reported_capital remains a
-# separate complete override. Pension Credit continues to use the observation
-# in place of its whole capital proxy unless its own variable is set.
+# separate complete override. Pension Credit also retains separately valued
+# property unless its own complete override is set directly.
 # Tariff income: UC Regulations 2013 reg.72, 4.35 pounds a month for each 250
 # pounds or part above 6,000.
 
@@ -24,7 +24,7 @@
         savings: 50_000
   output:
     uc_reported_capital: -1
-    pension_credit_reported_capital: 2_000
+    pension_credit_reported_capital: -1
     uc_assessable_capital: 2_000
     is_uc_eligible: true
 
@@ -65,7 +65,7 @@
         savings: 50_000
   output:
     uc_assessable_capital: 3_000
-    pension_credit_reported_capital: 20_000
+    pension_credit_reported_capital: -1
 
 - name: Recorded capital sets UC tariff income.
   period: 2025

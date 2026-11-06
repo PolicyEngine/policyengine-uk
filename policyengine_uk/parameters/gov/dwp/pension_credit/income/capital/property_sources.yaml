@@ -1,0 +1,19 @@
+description: >
+  Household real-property capital retained alongside the benefit unit's
+  reported financial capital. The financial-only observation excludes land
+  and property, so it replaces savings and investments while these sources
+  retain their regulation 19 valuation and pension-age-adult allocation.
+  Only sources also present in capital.sources are counted.
+metadata:
+  label: Pension Credit property capital sources
+  unit: list
+  reference:
+    - title: State Pension Credit Regulations 2002 reg. 19
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/19
+values:
+  2003-10-06:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - overseas_property_value
+    - other_property_value

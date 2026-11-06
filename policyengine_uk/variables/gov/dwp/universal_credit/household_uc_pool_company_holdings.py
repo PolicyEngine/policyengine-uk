@@ -1,4 +1,9 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import (
+    counted_share,
+    exact_amount,
+    round_to_penny,
+)
 from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
     HOLDINGS_SOURCE,
 )
@@ -26,8 +31,10 @@ class household_uc_pool_company_holdings(Variable):
         "All other holdings leave the pool here, including a dependant's "
         "holding even when their benunit supplies a report or override. "
         "When financial reports and holdings are compatible, no benunit counts "
-        "any part of a disregarded holding. An inconsistent financial report "
-        "that omits a known holding can leave it in the residual pool. A holding "
+        "any part of a disregarded holding. A financial report below its "
+        "holder's known holding still consumes the holding at its counted "
+        "value (household_uc_reported_financial_capital), so no report leaves "
+        "a holding in the residual pool. A holding "
         "is shares, held within the household's share_like_capital. Each "
         "person's holding is first clipped to [0, max(0, share_like_capital)], "
         "with positive infinity mapped to the upper bound and negative infinity "
@@ -39,7 +46,9 @@ class household_uc_pool_company_holdings(Variable):
         "rule for inconsistent inputs, not a statutory determination. The "
         "shared budget prevents holdings from removing ordinary savings or "
         "property. It does not change regulation 77 substitution in the "
-        "owner's own assessment."
+        "owner's own assessment. The holdings leave the pool at the value at "
+        "which the pool counts share_like_capital: 90% where regulation 49(1)(a) "
+        "deducts 10% for the expenses of selling shares."
     )
     definition_period = YEAR
     unit = GBP
@@ -54,8 +63,8 @@ class household_uc_pool_company_holdings(Variable):
         off_reported_capital = (
             has_financial_report | has_complete_override
         ) & claimant_or_partner
-        holding = person("uc_company_holding_disregard", period)
-        upper_bound = max_(0, person.household(HOLDINGS_SOURCE, period))
+        holding = exact_amount(person("uc_company_holding_disregard", period))
+        upper_bound = max_(0, exact_amount(person.household(HOLDINGS_SOURCE, period)))
         finite_holding = np.where(
             np.isfinite(holding), holding, np.where(holding > 0, upper_bound, 0)
         )
@@ -64,4 +73,10 @@ class household_uc_pool_company_holdings(Variable):
             * person.household("household_uc_company_holding_pool_scale", period)
             * ~off_reported_capital
         )
-        return holdings
+        # The holdings sit in share_like_capital, which the pool counts at the
+        # reg. 49(1) value, so they leave it at that value.
+        p = parameters(period).gov.dwp.universal_credit.means_test.capital
+        return round_to_penny(
+            holdings * counted_share(p.sale_expenses, HOLDINGS_SOURCE),
+            p.round_down,
+        )

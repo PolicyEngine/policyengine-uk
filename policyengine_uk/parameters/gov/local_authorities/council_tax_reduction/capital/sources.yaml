@@ -12,7 +12,16 @@ description: >
   because the home is disregarded. `corporate_wealth` is also left out for
   now: in the data it is mostly imputed pension wealth, which the schemes
   disregard, and it cannot yet be separated (issue 1936). Land and property
-  are valued less sale expenses (`sale_expenses`).
+  are valued less sale expenses (`sale_expenses`). Councils value land and
+  property outside the United Kingdom (`overseas_property_value`) at its market
+  value in that country or, where that country prohibits transferring that
+  value to the United Kingdom, at the price it would realise if sold in the
+  United Kingdom to a willing buyer (the English pensioner rules, Schedule 1
+  paragraph 33; the English default scheme, paragraph 66; the Welsh rules,
+  Schedule 1 paragraph 27 and Schedule 6 paragraph 29; the Scottish
+  pension-age scheme, regulation 43; SSI 2012/303 regulation 47 to 31 March
+  2022, then SSI 2021/249 regulation 70(2)). `other_property_value` holds
+  other real estate whose location and type the data don't record.
 metadata:
   label: Council tax reduction capital sources
   unit: list
@@ -20,25 +29,41 @@ metadata:
   reference:
     - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 reg. 11(2) and Schedule 1 para. 31
       href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/31
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 33 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/33
     - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule para. 63
       href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/63
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule para. 66 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/66
     - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 reg. 30
       href: https://www.legislation.gov.uk/wsi/2013/3029/regulation/30
     - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 25
       href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/25
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 27 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/27
     - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 26
       href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/26
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 29 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/29
     - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 regs. 40 and 41
       href: https://www.legislation.gov.uk/ssi/2012/319/regulation/41
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 43 (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/43
     - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 43 (persons under pension age, to 31 March 2022)
       href: https://www.legislation.gov.uk/ssi/2012/303/regulation/43
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 47 (capital outside the United Kingdom; persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/47/2022-03-31
     - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 67
       href: https://www.legislation.gov.uk/ssi/2021/249/regulation/67
     - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 69
       href: https://www.legislation.gov.uk/ssi/2021/249/regulation/69
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70(2) (capital outside the United Kingdom)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70
 values:
   2013-04-01:
     - savings
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
+    - overseas_property_value
+    - other_property_value

@@ -1,0 +1,165 @@
+# Second homes and buy-to-let are separate WAS source categories but share
+# the single saved other_residential_property_value input after data #501.
+- name: Main residence contributes once to residential property and total wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    main_residence_value: 100000
+  output:
+    residential_property_value: 100000
+    property_wealth: 100000
+    total_wealth: 100000
+
+- name: Second-home-only source is carried by the other-residential component
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    other_residential_property_value: 40000
+  output:
+    residential_property_value: 40000
+    property_wealth: 40000
+    total_wealth: 40000
+
+- name: Buy-to-let-only source is carried once by the other-residential component
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    other_residential_property_value: 60000
+  output:
+    residential_property_value: 60000
+    property_wealth: 60000
+    total_wealth: 60000
+
+- name: Second homes and buy-to-let use one combined other-residential component
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    other_residential_property_value: 100000
+  output:
+    residential_property_value: 100000
+    property_wealth: 100000
+    total_wealth: 100000
+
+- name: UK non-residential buildings contribute once to worldwide property wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    non_residential_property_value: 70000
+  output:
+    residential_property_value: 0
+    property_wealth: 70000
+    total_wealth: 70000
+
+- name: Direct UK land contributes once to worldwide property wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    owned_land: 20000
+  output:
+    residential_property_value: 0
+    property_wealth: 20000
+    total_wealth: 20000
+
+- name: Overseas land and buildings contribute once to worldwide property wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    overseas_property_value: 30000
+  output:
+    residential_property_value: 0
+    property_wealth: 30000
+    total_wealth: 30000
+
+- name: Other real estate contributes once without residential classification
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    other_property_value: 50000
+  output:
+    residential_property_value: 0
+    property_wealth: 50000
+    total_wealth: 50000
+
+- name: All six saved property components and other wealth categories count once
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    main_residence_value: 100000
+    other_residential_property_value: 100000
+    non_residential_property_value: 70000
+    owned_land: 20000
+    overseas_property_value: 30000
+    other_property_value: 50000
+    corporate_wealth: 11000
+    private_pension_wealth: 13000
+    savings: 17000
+  output:
+    residential_property_value: 200000
+    property_wealth: 370000
+    total_wealth: 411000
+
+- name: Overseas property never creates a UK dwelling or non-residential purchase
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    property_purchased: true
+    overseas_property_value: 500000
+  output:
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+
+- name: Unclassified other property never creates a UK property purchase
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    property_purchased: true
+    other_property_value: 500000
+  output:
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+
+- name: Second-home and buy-to-let stocks do not imply additional purchases
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    property_purchased: true
+    other_residential_property_value: 400000
+    non_residential_property_value: 500000
+  output:
+    residential_property_value: 400000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+
+# From 1 April 2025 a £300,000 additional-dwelling transaction pays
+# 5% x £125,000 + 7% x £125,000 + 10% x £50,000 = £20,000.
+# Finance Act 2025 sections 50-51 and Finance Act 2003 Schedule 4ZA.
+- name: An explicit additional-dwelling transaction enters SDLT once with overseas and other stocks
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    property_purchased: true
+    other_residential_property_value: 400000
+    overseas_property_value: 500000
+    other_property_value: 500000
+    additional_residential_property_purchased: 300000
+  output:
+    residential_property_value: 400000
+    property_wealth: 1400000
+    main_residential_property_purchased: 0
+    additional_residential_property_purchased: 300000
+    non_residential_property_purchased: 0
+    sdlt_on_residential_property_transactions: 20000
+    stamp_duty_land_tax: 20000
+    expected_sdlt: 20000
