@@ -49,9 +49,10 @@ It checks these invariants in every year from 2015 to 2030:
    before 2023, and in Kingston upon Thames in 2018-19 to 2022-23. It never
    falls below the legacy premium in Scotland from 2023, or where a council's
    own list counts AFIP (Newham's). Where a council's own list omits AFIP
-   (Merton's, Kingston upon Thames's and Westminster's), it never falls below the legacy premium unless that
-   premium rests on AFIP alone, and then the model pays none unless an
-   under-age claimant or partner has a PIP daily living award.
+   (Merton's, Kingston upon Thames's and Westminster's), it never falls
+   below the legacy premium unless that premium rests on AFIP alone, and then
+   the model pays none unless an under-age claimant or partner has a PIP
+   daily living award.
 6. For a child or young person in Great Britain, the qualifying flag matches
    the test's own calculation. The model pays the child's enhanced rate in the
    Housing Benefit child premiums (housing_benefit_child_disability_premiums)
