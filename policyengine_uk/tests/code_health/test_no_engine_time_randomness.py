@@ -148,8 +148,10 @@ helpers. It looks for draws, not for other reads that differ between runs,
 such as the clock (policyengine-uk#2875). A lookup that nests deeper than
 MAX_RESOLUTION_DEPTH fails the scan rather than passing unresolved.
 
-EXEMPT lists reviewed occurrences that are not draws; RATCHET lists today's
-engine-time draws that still have to move into the data. Both count exact
+EXEMPT lists reviewed occurrences that are not draws, and the sample a caller
+asks for with Simulation.subsample, which draws after the simulation is built
+and which no formula reads; RATCHET lists today's engine-time draws that still
+have to move into the data. Both count exact
 occurrences per (file, enclosing scope, kind): an extra occurrence fails, and
 so does an entry that no longer matches as many as it says, so entries are
 lowered and removed as sites go. RATCHET_CEILING only ever falls, and
@@ -296,6 +298,16 @@ EXEMPT = {
     "utils/build_lha_published_rates.py": {
         ("<module>", "hash library"): 1,
         ("fetch", "hash use"): 1,
+    },
+    # Simulation.subsample: a seeded draw of households when a caller asks for
+    # a sample. SHA-256 turns the seed into a number in every process, and the
+    # module-level random source is the return annotation of _random_state.
+    "utils/subsample.py": {
+        ("<module>", "hash library"): 1,
+        ("<module>", "random source"): 1,
+        ("_random_state", "hash use"): 1,
+        ("_random_state", "random source"): 1,
+        ("draw_household_counts", "sampling call"): 1,
     },
 }
 OFFLINE_MODULES = set()
