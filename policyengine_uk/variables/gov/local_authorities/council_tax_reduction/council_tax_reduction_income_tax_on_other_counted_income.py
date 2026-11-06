@@ -41,7 +41,7 @@ from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit_earnings_in
 # property income below the nil the branch leaves, so the formula keeps it.
 # Rent for letting part of the home (sublet_income) counts on the pensioner
 # route (council_tax_reduction_home_letting_income), so the formula keeps it
-# too; the model charges no income tax on it.
+# too, with the income tax the model charges on it above the rent-a-room limit.
 PENSIONER_UNCOUNTED_INCOME = [
     "scottish_carer_supplement",
     "miscellaneous_income",

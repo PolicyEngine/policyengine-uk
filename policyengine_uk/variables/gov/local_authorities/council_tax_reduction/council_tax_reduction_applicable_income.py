@@ -71,7 +71,9 @@ class council_tax_reduction_applicable_income(Variable):
         "for people under pension age add their own tariff income. "
         "Rent the applicant and partner receive for letting part of the home "
         "counts, less the sub-tenant disregard, on the schemes' own income "
-        "rules (council_tax_reduction_home_letting_income). It does not count "
+        "rules (council_tax_reduction_home_letting_income), with rent from "
+        "boarders and lodgers paid to an applicant or partner who heads the "
+        "household, less the board and lodging and lodger disregards. It does not count "
         "where a working-age applicant has an award of Universal Credit, "
         "whose income the schemes take from the Secretary of State's "
         "Universal Credit assessment (which does not count it), or in the "
@@ -81,7 +83,9 @@ class council_tax_reduction_applicable_income(Variable):
         "scheme allows (council_tax_reduction_tax_deduction): on earnings "
         "only in Scotland's working-age scheme, on income taken into account "
         "in the pensioner schemes, and in the other schemes the income tax "
-        "the legacy means tests deduct (legacy_means_test_deducted_income_tax)."
+        "the legacy means tests deduct (legacy_means_test_deducted_income_tax), "
+        "less, on the Universal Credit route, the tax uncounted rent would "
+        "bear without earnings (rent_a_room_income_tax_without_earnings)."
     )
     definition_period = YEAR
     unit = GBP
@@ -333,7 +337,11 @@ class council_tax_reduction_applicable_income(Variable):
         )
         # Rent the applicant and partner receive for letting part of the home
         # counts under the schemes' own income rules, less the sub-tenant
-        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10). Two exceptions:
+        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10),
+        # and so does rent from boarders and lodgers paid to an applicant or
+        # partner who heads the household, less the board and lodging and
+        # lodger disregards (Sch 1 para 16(1)(p), Sch 5 paras 9 and 10). Two
+        # exceptions:
         # - A working-age applicant with an award of Universal Credit: the
         #   schemes use the Secretary of State's assessment of income for the
         #   award (SI 2012/2886 Sch para 37(1); WSI 2013/3029 Sch 6 para 9(1);
