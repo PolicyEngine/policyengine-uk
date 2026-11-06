@@ -13,12 +13,15 @@ Invariants, for any people and incomes:
    is that less the pension contributions given relief once (own contributions
    up to the greater of £3,600 and pay plus profits, none from age 75).
 2. Differential: a person's Income Tax before the winter fuel payment
-   charge with a loss equals the same tax of the same person without the
-   loss and with their income cut by the relief, taken from non-savings
-   income first, then savings, then dividends: the model's fixed allowance
-   order (s.25(2) asks for the order giving the greatest reduction; #2106).
-   The charge itself can differ between the two: it tests total income,
-   which the relief, at Step 2, does not lower but the cut does.
+   charge with a loss never exceeds the same tax of the same person without
+   the loss and with their income cut by the relief, taken from non-savings
+   income first, then savings, then dividends. The model sets the relief and
+   allowances together where they give the least tax (s. 25(2)), and the
+   cut, with the allowances set against it, is one share the model weighs.
+   Where the person has no savings or dividend income, every share is that
+   cut, so the two taxes agree. The charge itself can differ between the
+   two: it tests total income, which the relief, at Step 2, does not lower
+   but the cut does.
 3. Income Tax before the winter fuel payment charge never rises with the
    loss and falls by at most the relief (for people without savings income:
    the personal savings allowance steps up by £500 when someone stops being
@@ -317,8 +320,10 @@ def portfolio_holders(draw):
 
 
 def reduced(person):
-    """The person's income cut by the relief, in the s.25 order the model
-    uses, computed outside the model."""
+    """The person's income cut by the relief in the order non-savings,
+    savings, dividends, which this test computes outside the model. The model
+    sets the relief and allowances where they give the least tax (ITA 2007
+    s. 25(2)), so it charges no more tax than on this cut."""
     pay = person["employment_income"]
     pension = person["private_pension_income"]
     savings = person["savings_interest_income"]
@@ -385,7 +390,7 @@ PINNED_PORTFOLIOS = [
     st.lists(portfolio_holders(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
 )
-def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
+def test_relief_never_taxes_more_than_income_cut_in_the_old_order(people, regions):
     twins = [reduced(p)[0] for p in people]
     # The winter fuel payment charge tests total income, before Step 2
     # reliefs (ITEPA 2003 s.681I(1)(b), ITA 2007 s.23), so a relief and an
@@ -399,9 +404,15 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
         assert abs(a["trade_loss_relief_against_general_income"][i] - relief) <= (
             tolerance(relief)
         ), person
-        assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+        assert a[tax][i] - b[tax][i] <= 0.5 + tolerance(
             a[tax][i], person["employment_income"]
         ), (person, a[tax][i], b[tax][i])
+        # With no savings or dividend income, the relief and allowances can
+        # come only off non-savings income, so every share is the cut.
+        if person["savings_interest_income"] == 0 and person["dividend_income"] == 0:
+            assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+                a[tax][i], person["employment_income"]
+            ), (person, a[tax][i], b[tax][i])
 
 
 # A pensioner with a tiny Pension Credit award: Pension Credit income
