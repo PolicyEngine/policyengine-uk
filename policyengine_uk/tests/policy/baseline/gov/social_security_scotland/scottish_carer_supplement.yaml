@@ -56,3 +56,167 @@
   output:
     scottish_carer_supplement: 0
     carer_support_payment: 0
+
+# Award weeks. SSI 2023/302 reg 14A: "An individual is entitled to Scottish
+# Carer Supplement for each award week in which Carer Support Payment is
+# payable to the individual." In reg 2, "award week" means "a period of 7
+# days beginning on a Sunday and ending on a Saturday". The Scottish Ministers
+# set the weekly rates in reg 16(1) and (1A): Carer Support Payment 86.45 and
+# Scottish Carer Supplement 11.70. Under reg 42(1) and (5), a carer who moves
+# to another part of the United Kingdom keeps Carer Support for 13 weeks from
+# the day they stop being ordinarily resident in Scotland (reg 42(4)). Under
+# reg 42(1A), where the cared-for person dies in that time, the carer keeps it
+# for 12 award weeks after the first day of the award week following the one
+# in which they died, up to 25 weeks and 6 days in all. The move cases below
+# put the move on a Sunday, so they count 13 and 25 complete award weeks, each
+# from a Sunday. A move on any other day spreads the 13 weeks over 14 award
+# weeks. The formula counts the weeks as the larger of
+# carer_support_payment_pre_overlap and carer_support_payment over the weekly
+# Carer Support Payment rate, up to 52, and pays the weekly supplement rate for
+# each where carer_support_payment is positive, and nothing where it is £0.
+#
+# The count differs from the law in these cases, among others; the variable's
+# documentation names each:
+# - an overlapping benefit or earnings that vary within the year;
+# - a supplied part-year payment for a person the model finds eligible in
+#   Scotland;
+# - a supplied payment that an overlapping benefit has reduced, with no amount
+#   before the reduction;
+# - the disable_simulated_benefits reform;
+# - a supplied part-year amount before the reduction, which the model nets
+#   against an overlapping benefit paid all year: 1,123.85 for 13 award weeks
+#   and 2,000 a year of State Pension net to 0, where Social Security
+#   Scotland nets them week by week and pays 623.85 of Carer Support
+#   Payment and 152.10 of supplement;
+# - part weeks, where Social Security Scotland pays a whole weekly supplement
+#   for each award week in which Carer Support Payment is payable.
+
+- name: Carer in England with 13 weeks of Carer Support Payment gets 13 weeks of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: ENGLAND
+    # Reg 42(1), (4) and (5): a move on a Sunday gives 13 complete award
+    # weeks, each from a Sunday, 13 x 86.45 = 1,123.85.
+    carer_support_payment: 1123.85
+  output:
+    carer_support_payment_pre_overlap: 0
+    # 1,123.85 / 86.45 = 13 award weeks; 13 x 11.70 = 152.10.
+    scottish_carer_supplement: 152.10
+
+- name: Carer in England whose cared-for person dies in week 13 after the move gets 25 weeks of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: ENGLAND
+    # Reg 42(1A): the move falls on a Sunday and the cared-for person dies in
+    # award week 13. The carer keeps Carer Support for the 12 award weeks from
+    # the start of award week 14, 25 complete award weeks in all, each from a
+    # Sunday. 25 x 86.45 = 2,161.25.
+    carer_support_payment: 2161.25
+  output:
+    carer_support_payment_pre_overlap: 0
+    # 2,161.25 / 86.45 = 25 award weeks; 25 x 11.70 = 292.50.
+    scottish_carer_supplement: 292.50
+
+- name: One week of Carer Support Payment gives one week of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: ENGLAND
+    carer_support_payment: 86.45
+  output:
+    # 86.45 / 86.45 = 1 award week; 1 x 11.70 = 11.70.
+    scottish_carer_supplement: 11.70
+
+- name: Carer Support Payment worth more than 52 weeks gives 52 weeks of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: ENGLAND
+    # 60 x 86.45 = 5,187.
+    carer_support_payment: 5187
+  output:
+    # The model counts 52 award weeks in a year: 52 x 11.70 = 608.40.
+    scottish_carer_supplement: 608.40
+
+- name: Carer in Scotland with no caring inputs and 13 weeks of Carer Support Payment gets 13 weeks of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: SCOTLAND
+    # No caring hours and no reported Carer's Allowance, so the inputs give
+    # no entitlement before the overlapping-benefit reduction.
+    carer_support_payment: 1123.85
+  output:
+    carer_support_payment_pre_overlap: 0
+    # 13 x 11.70 = 152.10.
+    scottish_carer_supplement: 152.10
+
+- name: Carer in Scotland the model finds eligible keeps 52 weeks of supplement with a supplied part-year payment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    care_hours: 40
+    country: SCOTLAND
+    carer_support_payment: 1123.85
+  output:
+    # Age 35 and 40 hours of care a week describe a carer entitled all year:
+    # 52 x 86.45 = 4,495.40 before the overlapping-benefit reduction.
+    carer_support_payment_pre_overlap: 4495.40
+    # The formula counts 52 award weeks from the larger amount: 52 x 11.70 =
+    # 608.40. For a carer with 13 weeks of Carer Support Payment, Social
+    # Security Scotland would pay 13 x 11.70 = 152.10; see the variable's
+    # documentation.
+    scottish_carer_supplement: 608.40
+
+- name: Carer whose State Pension reduces Carer Support Payment and leaves some keeps 52 weeks of supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 2_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    carer_support_payment_pre_overlap: 4495.40
+    # Reg 16(2)(a): 2,000 a year, 38.46 a week, falls short of the 86.45
+    # weekly rate, so Carer Support Payment stays payable in every award
+    # week: 4,495.40 - 2,000 = 2,495.40.
+    carer_support_payment: 2495.40
+    # Reg 14A: 52 x 11.70 = 608.40.
+    scottish_carer_supplement: 608.40
+
+- name: Carer with a supplied payment that State Pension reduced keeps 52 weeks of supplement with the amount before the reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    country: SCOTLAND
+    # A carer entitled all year, 52 x 86.45 = 4,495.40, whose State Pension
+    # of 2,000 a year leaves 2,495.40, with both amounts supplied.
+    carer_support_payment_pre_overlap: 4495.40
+    carer_support_payment: 2495.40
+  output:
+    # Reg 16(2)(a) leaves a payment in every award week: 52 x 11.70 = 608.40.
+    scottish_carer_supplement: 608.40
+
+- name: Carer in England with 13 weeks of Carer Support Payment gets 13 weeks of supplement in 2027
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    country: ENGLAND
+    # 13 complete award weeks from a Sunday move. 13 x 89.50 = 1,163.50, at
+    # the model's projected 2027 rates: Carer Support Payment 89.50 and
+    # Scottish Carer Supplement 12.10.
+    carer_support_payment: 1163.50
+  output:
+    # 1,163.50 / 89.50 = 13 award weeks; 13 x 12.10 = 157.30.
+    scottish_carer_supplement: 157.30
