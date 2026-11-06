@@ -461,7 +461,7 @@ def test_each_household_gets_its_results_alone(system, households):
 
 def test_computed_universal_credit_and_local_schemes(system):
     """With nothing supplied, Universal Credit's traced calculation reads no
-    Housing Benefit variable but the reported award, and the national and
+    Housing Benefit variable but the report of the award, and the national and
     local Council Tax Reduction schemes then read Universal Credit."""
     # Each local scheme's parameters start in 2026-27.
     year = 2026
@@ -501,7 +501,8 @@ def test_computed_universal_credit_and_local_schemes(system):
     assert not {
         name
         for name in names
-        if name.startswith("housing_benefit") and name != "housing_benefit_reported"
+        if name.startswith("housing_benefit")
+        and not name.startswith("housing_benefit_report")
     }
     for name in [
         "housing_benefit",

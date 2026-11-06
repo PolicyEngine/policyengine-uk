@@ -65,15 +65,17 @@ Invariants, for any generated population of households:
    claim, otherwise the one that counts the household's non-dependants)
    gains exactly that contribution, unless its renter is exempt (para 15),
    and one bedroom; no other family's contributions change.
-6. Coding: moving such an adult, not claiming, between a family and a
-   benefit unit of their own leaves every claiming family's Universal Credit
-   bedrooms, contributions and award unchanged.
+6. Coding: moving such an adult aged 20 or over, not claiming, between a
+   family and a benefit unit of their own leaves every claiming family's
+   Universal Credit bedrooms, contributions and award unchanged. Someone
+   younger can be a qualifying young person, and their family's Child Benefit
+   and child element then depend on them.
 """
 
 from itertools import combinations
 
 import numpy as np
-from hypothesis import HealthCheck, example, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -518,7 +520,9 @@ def with_claim_flags(situation, would_claim):
 
 def in_own_benefit_unit(population, target, person, would_claim):
     """The population with ``person`` in a benefit unit of their own, in the
-    household of family ``target``, not claiming Universal Credit."""
+    household of family ``target``, not claiming Universal Credit. Invariant 6
+    covers people aged 20 or over."""
+    assume(person["age"] >= 20)
     situation, keys = build(population)
     situation = with_claim_flags(situation, would_claim)
     h = target[0]
