@@ -78,9 +78,10 @@ WEEKS_IN_YEAR = 52
 TOLERANCE = 1
 # Each example builds one simulation with inputs for every year from 2015 to
 # 2030, so every example tests both sides of the Northern Ireland PIP date
-# (2017) and the Scottish changes (2023). Every council's own list starts in
-# 2013-14, before the model's first year, so the test checks each list in
-# every year.
+# (2017), the Scottish changes (2023) and Kingston upon Thames's Housing
+# Benefit years (2018 to 2022). Every council's own list starts in 2013-14,
+# before the model's first year, so the test checks each list in every year
+# the model applies it.
 YEARS = list(range(2015, 2031))
 # (country, local authority): None keeps the default local authority.
 PLACES = [
