@@ -359,6 +359,7 @@ def test_every_formula_that_reads_beyond_its_households_is_listed():
 REVIEWED_ANCESTOR_WALKS = {
     "simulation.py": {"set_input"},
     "utils/aggregate_impact/guard.py": {"_visible_branches"},
+    "utils/dependencies.py": {"branch_chain"},
     "utils/labour_supply_responses.py": {"response_source"},
     "utils/supplied_inputs.py": {"_visible_branch_names"},
 }

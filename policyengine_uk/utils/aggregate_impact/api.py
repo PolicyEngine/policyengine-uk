@@ -10,7 +10,8 @@ fiscal partition is read from the measured package, and its digest is
 
 To hold the definitions fixed across models, copy this package directory
 from one policyengine-uk commit and import the copy under another name: it
-imports only its own modules and policyengine_uk's public simulation API.
+imports its own modules and policyengine_uk's public simulation API, and reads
+a few names from the package it measures (see the README).
 """
 
 from __future__ import annotations

@@ -57,8 +57,11 @@ writes `result.json` (figures, checks, provenance) and
 
 To measure an older checkout with this version of the tool, copy this
 directory under another name and run it in that checkout's environment, as CI
-does. The tool imports only its own modules and `policyengine_uk`'s public
-`Microsimulation`:
+does for a pull request's base. Besides its own modules and `policyengine_uk`'s
+public `Microsimulation`, the tool reads names from the checkout it measures:
+`guard.py` from `utils/supplied_inputs.py`, and `measure.py` and `partition.py`
+the totals' component lists. A name a base may not have yet needs a fallback,
+as `guard.py` gives `CalculatedValue`, or the base measurement crashes:
 
 ```bash
 cp -R policyengine_uk/utils/aggregate_impact /tmp/tool/pe_uk_aggregate_impact

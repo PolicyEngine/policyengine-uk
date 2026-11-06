@@ -11,13 +11,31 @@ that simulation's records of the inputs they hold, so the two simulations do
 not share holders.
 """
 
+import sys
+from types import ModuleType
+
 import numpy as np
 import pytest
 from policyengine_core.experimental.memory_config import MemoryConfig
 from policyengine_core.periods import period
 
 from policyengine_uk import Simulation
-from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
+from policyengine_uk.utils.aggregate_impact.guard import (
+    _guard_snapshot,
+    _restore,
+    _set_guard_value,
+    snapshot_inputs,
+)
+from policyengine_uk.utils import supplied_inputs
+from policyengine_uk.utils.household_subset import household_subset
+from policyengine_uk.utils.supplied_inputs import (
+    CalculatedValue,
+    record_model_value,
+    same_array,
+    set_model_value,
+    stored_as_input,
+    supplied_input,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -176,3 +194,145 @@ def test_rebuilt_populations_forget_the_inputs_they_replace():
     holder.put_in_cache(np.array([123.0]), period(2026))
     person = sim.populations["person"]
     assert supplied_input(person, "adjusted_net_income", period(2026)) is None
+
+
+TWO_PEOPLE = {
+    "people": {
+        "first": {"age": {2026: 40}, "employment_income": {2026: 30_000}},
+        "second": {"age": {2026: 50}, "employment_income": {2026: 40_000}},
+    },
+    "benunits": {"b1": {"members": ["first"]}, "b2": {"members": ["second"]}},
+    "households": {
+        "h1": {"members": ["first"]},
+        "h2": {"members": ["second"]},
+    },
+}
+YEAR = period(2026)
+INCOME = "adjusted_net_income"
+
+
+def answers(simulation):
+    person = simulation.populations["person"]
+    return (
+        supplied_input(person, INCOME, YEAR),
+        stored_as_input(person, INCOME, YEAR),
+    )
+
+
+def assert_calculated(simulation):
+    supplied, stored = answers(simulation)
+    assert supplied is None
+    assert not stored
+
+
+def calculated(values):
+    # As utils/dependencies.py holds a value the simulation calculated: as an
+    # input, so that it stays put, with a model value that stands for a
+    # calculation. It writes to the holder directly, so a NaN gets through.
+    sim = Simulation(situation=TWO_PEOPLE)
+    sim.get_holder(INCOME)._set(YEAR, np.array(values), sim.branch_name, is_input=True)
+    record_model_value(sim, INCOME, YEAR, sim.branch_name, calculated=True)
+    return sim
+
+
+def test_a_value_recorded_as_calculated_is_neither_supplied_nor_an_input():
+    # utils/dependencies.py stores values the simulation calculated as
+    # inputs, so that they stay put, and records them as model values that
+    # stand for a calculation.
+    name, year = INCOME, YEAR
+    sim = Simulation(situation=TWO_PEOPLE)
+    sim.set_input(name, year, [1_000.0, 2_000.0])
+    record_model_value(sim, name, year, sim.branch_name, calculated=True)
+
+    # A simulation that takes sim's populations takes the record with them
+    # (keep_population_records).
+    rebuilt = Simulation(situation=TWO_PEOPLE)
+    rebuilt.build_from_populations(sim.populations)
+    for copy in (sim, sim.clone(), sim.get_branch("copy"), rebuilt):
+        assert answers(copy) == (None, False)
+    with household_subset(sim, "subset", np.array([False, True])) as subset:
+        assert subset.person is not None
+        assert subset.simulation.calculate(name, 2026).tolist() == [2_000]
+        assert answers(subset.simulation) == (None, False)
+    # The model's own value counts as an input, though no one supplied it.
+    set_model_value(sim, name, year, [1_000.0, 2_000.0])
+    assert answers(sim) == (None, True)
+    # A value the scenario sets for the period counts as supplied, even one
+    # equal to the model's.
+    sim.set_input(name, year, [1_000.0, 2_000.0])
+    supplied, stored = answers(sim)
+    assert supplied.tolist() == [1_000, 2_000]
+    assert stored
+
+
+def test_a_calculated_nan_is_neither_supplied_nor_an_input():
+    sim = calculated([np.nan, 2_000.0])
+    key = (INCOME, sim.branch_name, YEAR)
+    rebuilt = Simulation(situation=TWO_PEOPLE)
+    rebuilt.build_from_populations(sim.populations)
+
+    for copy in (sim, sim.clone(), sim.get_branch("copy"), rebuilt):
+        assert_calculated(copy)
+        assert type(copy._model_values[key]) is CalculatedValue
+        assert f"{INCOME}__{YEAR}" not in copy.to_input_dataframe().columns
+    with household_subset(sim, "subset", np.array([True, False])) as subset:
+        assert subset.person is not None
+        assert_calculated(subset.simulation)
+
+
+@pytest.mark.parametrize("values", [[1_000.0, 2_000.0], [np.nan, 2_000.0]])
+def test_the_aggregate_guard_restores_a_value_recorded_as_calculated(values):
+    sim = calculated(values)
+    key = (INCOME, sim.branch_name, YEAR)
+    snapshot = snapshot_inputs(sim, [INCOME])
+
+    _set_guard_value(sim, INCOME, YEAR, [1_100.0, 2_100.0])
+    assert answers(sim)[1]
+    sim.calculate("net_income", 2026)
+    _restore(sim, INCOME, snapshot)
+
+    assert_calculated(sim)
+    assert type(sim._model_values[key]) is CalculatedValue
+    stored = sim.get_holder(INCOME).get_array(YEAR, sim.branch_name)
+    assert same_array(stored, np.array(values, dtype=stored.dtype))
+    # What the simulation calculated from the synthetic value is gone.
+    assert sim.get_holder("net_income").get_array(YEAR, sim.branch_name) is None
+
+
+def test_the_aggregate_guard_runs_against_a_package_without_the_newer_helpers(
+    monkeypatch,
+):
+    # CI runs the pull request head's copy of the tool against the base's
+    # package too, so the guard can't assume the base has these names. The
+    # package's own functions keep them, as a base's keep what they use.
+    older = ModuleType(supplied_inputs.__name__)
+    newer = {"CalculatedValue", "record_model_value", "same_array"}
+    vars(older).update(
+        {
+            name: value
+            for name, value in vars(supplied_inputs).items()
+            if name not in newer
+        }
+    )
+    monkeypatch.setitem(sys.modules, supplied_inputs.__name__, older)
+    sim = Simulation(situation=TWO_PEOPLE)
+    set_model_value(sim, INCOME, YEAR, [1_000.0, 2_000.0])
+
+    snapshot = snapshot_inputs(sim, [INCOME])
+    _set_guard_value(sim, INCOME, YEAR, [1_100.0, 2_100.0])
+    _restore(sim, INCOME, snapshot)
+
+    assert sim.get_holder(INCOME).get_array(YEAR, sim.branch_name).tolist() == [
+        1_000,
+        2_000,
+    ]
+    assert answers(sim) == (None, True)
+    plain = {INCOME: [(YEAR, np.array([1_000.0, 2_000.0], dtype=np.float32))]}
+    assert _guard_snapshot(sim, plain, [INCOME]).origins[INCOME]
+
+
+def test_the_aggregate_guard_matches_a_plain_snapshot_that_holds_a_nan():
+    sim = calculated([np.nan, 2_000.0])
+    plain = {INCOME: [(YEAR, np.array([np.nan, 2_000.0], dtype=np.float32))]}
+
+    assert _guard_snapshot(sim, plain, [INCOME]).origins[INCOME]

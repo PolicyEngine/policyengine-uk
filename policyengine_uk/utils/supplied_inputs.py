@@ -31,6 +31,14 @@ input set for a longer or shorter period that stores nothing there leaves
 it), when ``delete_arrays`` removes it, and when a rebuild installs
 populations that do not hold it, and a clone or branch gets its own copy of
 the record.
+
+A tool that stores a value the simulation calculated as an input, so that it
+stays put while something else changes, records it as a model value that
+stands for a calculation (``record_model_value`` with ``calculated=True``).
+``supplied_input`` does not return it, as for any model value, and
+``stored_as_input`` does not count it as an input either, so a formula that
+asks about it takes the same path as for the calculated value.
+utils/dependencies.py holds the values a target read this way.
 """
 
 from typing import List, Optional
@@ -184,10 +192,11 @@ def supplied_by(population, variable_name: str, period: Period) -> bool:
 
 
 def stored_as_input(population, variable_name: str, period: Period) -> bool:
-    """Whether the value stored for ``variable_name`` and ``period``, on this
-    branch or one it was made from, was set as an input: supplied, or the
-    model's own (``set_model_value``). A value the engine carried over from
-    an earlier period, or cached after a calculation, is not.
+    """Whether a caller or the model (``set_model_value``) set the value stored
+    for ``variable_name`` and ``period`` as an input, on this branch or an
+    ancestor. A value the engine carried over from an earlier period, or cached
+    after a calculation, doesn't count, and nor does a model value that stands
+    for a calculation (``record_model_value`` with ``calculated=True``).
 
     The holder answers from the input record of the simulation bound to it,
     which also tells a tier's input from a cache in the other tier.
@@ -197,10 +206,12 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
     supplied there stays supplied, in this simulation and its clones and
     branches."""
     _check_registered(variable_name)
+    simulation = population.simulation
     holder = population.get_holder(variable_name)
     return any(
         holder._is_input(period, branch_name)
-        for branch_name in _visible_branch_names(population.simulation)
+        and not _is_calculated_value(simulation, holder, branch_name, period)
+        for branch_name in _visible_branch_names(simulation)
     )
 
 
@@ -240,10 +251,74 @@ def supplied_input(
     return None
 
 
+def same_array(a, b) -> bool:
+    """Whether two arrays hold the same values, where NaN equals NaN.
+
+    A calculation can give NaN (``set_input`` refuses it), and the record of a
+    value that holds NaN must still match the value it records. NaT equals NaT
+    too, as ``np.array_equal`` has it. An object array compares with ``==``, so
+    a NaN in one does not equal itself."""
+    try:
+        return np.array_equal(a, b, equal_nan=True)
+    except TypeError:
+        # equal_nan needs numbers.
+        return np.array_equal(a, b)
+
+
 def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
-    return written is not None and np.array_equal(written, value)
+    return written is not None and same_array(written, value)
+
+
+class CalculatedValue(np.ndarray):
+    """A model value (see ``record_model_value``) that stands for a value the
+    simulation calculated, not one a scenario set.
+
+    The record of model values holds it as an array of this type. Array
+    indexing and copying keep the type, so a clone, a branch, a household
+    subset (utils/household_subset.py) and a rebuild keep the mark with the
+    value."""
+
+
+def _is_calculated_value(simulation, holder, branch_name, period) -> bool:
+    """Whether the input stored for ``period`` under ``branch_name`` is a
+    model value that stands for a calculation."""
+    model_values = getattr(simulation, "_model_values", None) or {}
+    key = (holder.variable.name, branch_name, holder._storage_period(period))
+    written = model_values.get(key)
+    if not isinstance(written, CalculatedValue):
+        return False
+    stored = get_stored_input(holder, period, branch_name)
+    return stored is not None and same_array(written, stored)
+
+
+def record_model_value(
+    simulation, variable_name: str, period, branch_name: str, calculated=False
+) -> None:
+    """Record the input stored for ``variable_name`` and ``period`` under
+    ``branch_name`` as the model's own value, as ``set_model_value`` does
+    for the value it stores. With ``calculated``, record it as a value that
+    stands for a calculation (``CalculatedValue``), which ``stored_as_input``
+    does not count as an input. Records nothing if the holder stores no
+    value there.
+
+    The record lasts only while the value is the one stored, as for
+    ``set_model_value``."""
+    _check_registered(variable_name)
+    period = periods.period(period)
+    holder = simulation.get_holder(variable_name)
+    stored = holder._get_array_from_storage(period, branch_name)
+    if stored is None:
+        return
+    model_values = getattr(simulation, "_model_values", None)
+    if model_values is None:
+        model_values = {}
+        simulation._model_values = model_values
+    value = np.array(stored)
+    if calculated:
+        value = value.view(CalculatedValue)
+    model_values[(variable_name, branch_name, period)] = value
 
 
 def set_model_value(simulation, variable_name: str, period, value) -> None:
@@ -269,16 +344,7 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
     simulation.set_input(variable_name, period, value)
     if already_supplied:
         return
-    branch_name = simulation.branch_name
-    stored = population.get_holder(variable_name)._get_array_from_storage(
-        period, branch_name
-    )
-    if stored is not None:
-        model_values = getattr(simulation, "_model_values", None)
-        if model_values is None:
-            model_values = {}
-            simulation._model_values = model_values
-        model_values[(variable_name, branch_name, period)] = np.array(stored)
+    record_model_value(simulation, variable_name, period, simulation.branch_name)
 
 
 # ``Simulation`` keeps the record of model values in step with what it stores
