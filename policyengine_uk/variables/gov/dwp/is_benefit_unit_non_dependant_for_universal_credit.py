@@ -20,7 +20,9 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         "household head (is_resolved_household_head), a householder in whose "
         "name the accommodation is rented, is liable for it and so never a "
         "non-dependant (para 9(2)(d)), even where the benefit unit's "
-        "claimant and partner are someone else."
+        "claimant and partner are someone else. Nor is a member who pays the "
+        "household head as a boarder or lodger (pays_rent_to_householder), "
+        "who is liable for their own occupation."
     )
     definition_period = YEAR
     reference = (
@@ -37,11 +39,14 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         qualifying_young_person = person(
             "is_qualifying_young_person_for_universal_credit", period
         )
-        # Para 9(2)(d): the household head is liable for the accommodation.
+        # Para 9(2)(d): the household head is liable for the accommodation,
+        # and a member who pays the head for their occupation is liable too.
         household_head = person("is_resolved_household_head", period)
+        pays_householder = person("pays_rent_to_householder", period)
         return (
             not_a_child
             & ~claimant_or_partner
             & ~qualifying_young_person
             & ~household_head
+            & ~pays_householder
         )

@@ -26,6 +26,10 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
             "is_benefit_unit_non_dependant_for_legacy_benefits", period
         )
         age_eligible = person("age", period) >= p.age_threshold
-        # An exempt non-dependant attracts no deduction (reg 74(7)-(10)).
+        # A boarder or lodger, and their partner (reg 8(1)(b)), is liable to
+        # pay the claimant on a commercial basis for their occupation, so is
+        # not a non-dependant (reg 3(2)(e)(i)), and neither flag counts them.
+        # A member of their family who is not liable stays a non-dependant.
+        # An exempt non-dependant attracts no deduction (reg 74(7), (8) and (10)).
         exempt = person("housing_benefit_non_dep_deduction_exempt", period)
         return non_dependant & age_eligible & ~exempt

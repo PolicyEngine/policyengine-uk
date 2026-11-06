@@ -23,7 +23,10 @@ class is_benefit_unit_non_dependant_for_legacy_benefits(Variable):
         "(is_resolved_household_head), a householder in whose name the "
         "accommodation is rented, is liable for it and so never a "
         "non-dependant (HB reg 3(2)(d)-(e)), even where the benefit unit's "
-        "claimant and partner are someone else. Council Tax Reduction uses "
+        "claimant and partner are someone else. Nor is a member who pays the "
+        "household head as a boarder or lodger (pays_rent_to_householder), "
+        "who is liable for their own occupation (HB reg 3(2)(e)(i)). Council "
+        "Tax Reduction uses "
         "is_benefit_unit_non_dependant_for_council_tax_reduction, built on "
         "the CTR applicant."
     )
@@ -49,6 +52,13 @@ class is_benefit_unit_non_dependant_for_legacy_benefits(Variable):
         child_or_young_person = person(
             "is_child_or_qualifying_young_person_for_child_benefit", period
         )
-        # Reg 3(2)(d)-(e): the household head is liable for the dwelling.
+        # Reg 3(2)(d)-(e): the household head is liable for the dwelling, and
+        # a member who pays the head for their occupation is liable too.
         household_head = person("is_resolved_household_head", period)
-        return ~claimant_or_partner & ~child_or_young_person & ~household_head
+        pays_householder = person("pays_rent_to_householder", period)
+        return (
+            ~claimant_or_partner
+            & ~child_or_young_person
+            & ~household_head
+            & ~pays_householder
+        )

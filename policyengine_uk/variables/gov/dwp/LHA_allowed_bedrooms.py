@@ -60,7 +60,10 @@ class LHA_allowed_bedrooms(Variable):
         "this family or another. Joint tenants and other sharers of the rent, "
         "boarders and lodgers are not non-dependants, so they add no bedroom "
         "to anyone's entitlement; the household's non-dependants count in one "
-        "Universal Credit claim only (see uc_non_dependants_counted)."
+        "Universal Credit claim only (see uc_non_dependants_counted). A "
+        "boarder's or lodger's child or qualifying young person adds none "
+        "either: no one in the renter's extended benefit unit is responsible "
+        "for them (see is_uc_non_dependant_of_household_head)."
     )
     definition_period = YEAR
     reference = (
@@ -103,8 +106,11 @@ class LHA_allowed_bedrooms(Variable):
         )
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 10(1)(c): a non-dependant from another family who is not a
-        # child.
-        other_family = person("is_non_dependant_of_household_head", period)
+        # child. The Universal Credit flag applies para 9(2)(g), so a boarder's
+        # or lodger's qualifying young person gets no bedroom, and para 9(2)(f),
+        # so an adult whose own family's claim counts them has their bedroom in
+        # that claim.
+        other_family = person("is_uc_non_dependant_of_household_head", period)
         non_dependant = aged_16_or_over & ~no_one_responsible & other_family
         # An in-unit non-dependant whose own family makes no Universal Credit
         # claim counts in the claim that counts the household's other

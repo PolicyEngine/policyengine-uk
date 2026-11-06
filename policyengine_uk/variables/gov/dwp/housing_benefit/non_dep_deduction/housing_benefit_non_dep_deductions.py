@@ -50,11 +50,12 @@ class housing_benefit_non_dep_deductions(Variable):
             & ~in_joint_occupier_family
         )
         # A member of a rent-liable family who is not in its claimant's
-        # family under reg 3(2)(a) and (c) is a non-dependant too.
-        own_family = (
-            person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
-            & ~other_family
-        )
+        # family under reg 3(2)(a) and (c) is a non-dependant too. That takes
+        # in a boarder's or lodger's adult son, whom other_family also counts:
+        # what a family pays the householder makes it rent-liable here.
+        in_unit = person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
+        rent_liable = person.benunit("benunit_is_rent_liable", period)
+        own_family = in_unit & (~other_family | rent_liable)
         # A non-dependant normally resides with each joint occupier (reg 3(1)
         # and (4)), whichever family they belong to: another family's adult,
         # a joint occupier's own adult son, or a boarder's or lodger's (reg

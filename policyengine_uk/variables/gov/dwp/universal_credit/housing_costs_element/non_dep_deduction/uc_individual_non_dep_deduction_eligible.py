@@ -28,4 +28,9 @@ class uc_individual_non_dep_deduction_eligible(Variable):
         )
         age_eligible = person("age", period) >= p.age_threshold
         exempt = person("uc_non_dep_deduction_exempt", period)
+        # A boarder or lodger is liable to pay on a commercial basis for their
+        # occupation, so is not a non-dependant (Sch 4 para 9(2)(d)). The
+        # model treats their partner as liable too (pays_rent_to_householder),
+        # and neither flag counts them. Anyone else in their family who pays
+        # nothing stays a non-dependant.
         return non_dependant & age_eligible & ~exempt

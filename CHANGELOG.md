@@ -1,3 +1,33 @@
+## [2.176.0] - 2026-11-06
+
+### Added
+
+- Model rent from boarders, lodgers and sub-tenants for the householder: rent-a-room relief in income tax, the £20 and board-and-lodging disregards in the legacy means tests (not Universal Credit), and no non-dependant deductions for a boarder or lodger and their partner, while a non-paying adult in their family stays a non-dependant. For Universal Credit, the model also leaves a boarder's or lodger's child or qualifying young person out of the householder's extended benefit unit, so they add no bedroom.
+
+
+## [2.175.8] - 2026-11-06
+
+### Fixed
+
+- Give Scotland's working-age council tax reduction scheme and the Welsh rules for persons who are not pensioners their own route: Universal Credit claimants are means-tested under each country's Universal Credit rules (Wales against the Universal Credit maximum amount; Scotland counting only the child and childcare elements), Income Support, income-based JSA and income-related ESA passport to the maximum reduction, applicable amounts include each country's personal allowances, child amounts, family premium and disabled child premiums (2013-14 to 2026-27), and income follows the law (Child Benefit disregarded, earnings disregards, tariff income from capital, and childcare charges capped by the number of children with charges, which Scotland deducts after adding unearned income).
+
+
+## [2.175.7] - 2026-11-05
+
+### Fixed
+
+- The aggregate checker fails an infinite or NaN response on every counted-once check, says which failures rest on such a response or on a head it could not hold, judges as usual every household where the heads it holds stay finite, names two heads that turn NaN instead of stopping with an error, says when the base could not confirm a failure, and rejects a fiscal partition that puts a colon in a name it writes into a check id or scope.
+- The documentation site now publishes nine programme and validation notebooks it left out, among them Housing Benefit and the childcare entitlements, and lists the gambling duties page. Links on three pages reach their targets, and the model baseline page pins its parameter links to a commit so each line anchor stays on the value it cites. Twelve parameter labels now spell LBTT, LTT, LHA and TV in capitals. The residential SDLT lease rent rates take the unit /1, and the programme registry names HMRC as the agency for Scottish income tax. The childcare examples now state the birth dates and school status behind their amounts, the student loan page describes each plan from the regulations and says Plan 5 carries no liability before 6 April 2026, and the Housing Benefit page gives the 1 July 2026 abolition date with its exceptions.
+- The trading loss property test now holds Universal Credit's income tax and National Insurance deductions in respect of the trade at their with-loss values when it nets the loss off the profit. The test no longer fails when a loss exceeds the profit beside a private pension.
+
+
+## [2.175.6] - 2026-11-05
+
+### Fixed
+
+- Dataset projection grows alcohol and tobacco quantity inputs with the OBR's forecasts of clearances per person, using one index per product group. The model charges later duty rates on those projected quantities.
+
+
 ## [2.175.5] - 2026-11-05
 
 ### Fixed

@@ -57,12 +57,17 @@ class council_tax_reduction_applicable_income(Variable):
         "English local schemes for people under pension age add their own. "
         "Rent the applicant and partner receive for letting part of the home "
         "counts, less the sub-tenant disregard, on the schemes' own income "
-        "rules (council_tax_reduction_home_letting_income). It does not count "
+        "rules (council_tax_reduction_home_letting_income), with rent from "
+        "boarders and lodgers paid to an applicant or partner who heads the "
+        "household, less the board and lodging and lodger disregards. It does not count "
         "where a working-age applicant has an award of Universal Credit, "
         "whose income the schemes take from the Secretary of State's "
         "Universal Credit assessment (which does not count it), or in the "
         "Scottish scheme for people under pension age from April 2022, which "
-        "does not list it."
+        "does not list it. There the rent is uncounted income like income "
+        "from capital: the tax deducted leaves out the tax the rent would "
+        "bear without earnings (rent_a_room_income_tax_without_earnings) and "
+        "keeps the extra tax earnings cause on it."
     )
     definition_period = YEAR
     unit = GBP
@@ -311,7 +316,11 @@ class council_tax_reduction_applicable_income(Variable):
         )
         # Rent the applicant and partner receive for letting part of the home
         # counts under the schemes' own income rules, less the sub-tenant
-        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10). Two exceptions:
+        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10),
+        # and so does rent from boarders and lodgers paid to an applicant or
+        # partner who heads the household, less the board and lodging and
+        # lodger disregards (Sch 1 para 16(1)(p), Sch 5 paras 9 and 10). Two
+        # exceptions:
         # - A working-age applicant with an award of Universal Credit: the
         #   schemes use the Secretary of State's assessment of income for the
         #   award (SI 2012/2886 Sch para 37(1); WSI 2013/3029 Sch 6 para 9(1);
@@ -355,15 +364,25 @@ class council_tax_reduction_applicable_income(Variable):
         pension_contributions = add_for_members(
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
+        # Where the scheme does not count the rent, the formula treats it as
+        # uncounted income like income from capital: it leaves out of the
+        # deduction the tax the rent would bear without earnings, and keeps
+        # the extra tax earnings cause on it.
+        income_tax = add_for_members(
+            benunit, period, ["legacy_means_test_deducted_income_tax"], members
+        ) - where(
+            counts_home_letting,
+            0,
+            add_for_members(
+                benunit, period, ["rent_a_room_income_tax_without_earnings"], members
+            ),
+        )
         # The deduction can be negative for one person, where another
         # member's earnings move a Step 7 charge off them; the test deducts the
         # counted members' sum, floored at nil, so it never adds tax to income.
-        tax = max_(
-            0,
-            add_for_members(
-                benunit, period, ["legacy_means_test_deducted_income_tax"], members
-            ),
-        ) + add_for_members(benunit, period, ["national_insurance"], members)
+        tax = max_(0, income_tax) + add_for_members(
+            benunit, period, ["national_insurance"], members
+        )
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
         # earnings disregards, capped at net earnings. Zero for working-age
