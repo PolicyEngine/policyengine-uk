@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass, field
+from numbers import Real
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
 
@@ -125,6 +126,12 @@ def load_reforms(path=None) -> list:
         return parse_reforms(yaml.safe_load(f))
 
 
+def _finite_number(value) -> bool:
+    return (
+        isinstance(value, Real) and not isinstance(value, bool) and math.isfinite(value)
+    )
+
+
 def calibrate(
     reforms: Sequence[StandardReform], results: Sequence[Mapping], fraction: float
 ) -> dict:
@@ -132,15 +139,18 @@ def calibrate(
 
     ``results`` are measurement result.json mappings, typically one per model
     version of the pair being calibrated on. An effect counts in the
-    reform's declared direction, so a reform that moves the wrong way in any
-    year or measurement cannot be calibrated.
+    reform's declared direction. ``calibrate`` refuses a reform that moves the
+    wrong way in any year or measurement, and one that lacks a finite target
+    change in any result for a year some result records or declares in its
+    ``years``: ``measure`` withheld it (``None``), recorded NaN or infinity, or
+    never wrote that year.
     """
     out = {}
     for reform in reforms:
         if reform.responds is None:
             continue
         sign = 1.0 if reform.responds.direction == "up" else -1.0
-        effects = []
+        measured, years = [], set()
         for result in results:
             metric = next(
                 (
@@ -150,10 +160,25 @@ def calibrate(
                 ),
                 None,
             )
-            if metric is None:
-                raise ReformSpecError(f"{reform.id}: a result has no target change")
-            effects += [(sign * v, int(y)) for y, v in metric["values"].items()]
-        smallest, year = min(effects)
+            values = {int(y): v for y, v in (metric or {}).get("values", {}).items()}
+            measured.append(values)
+            years.update(values, map(int, result.get("years") or ()))
+        if not years:
+            raise ReformSpecError(f"{reform.id}: a result has no target change")
+        unusable = {
+            year
+            for year in years
+            for values in measured
+            if not _finite_number(values.get(year))
+        }
+        if unusable:
+            raise ReformSpecError(
+                f"{reform.id}: a result has no finite target change in "
+                f"{fiscal_year_label(min(unusable))}"
+            )
+        smallest, year = min(
+            (sign * values[year], year) for values in measured for year in years
+        )
         if not smallest > 0:
             raise ReformSpecError(
                 f"{reform.id}: moves {reform.responds.variable} the wrong way or "

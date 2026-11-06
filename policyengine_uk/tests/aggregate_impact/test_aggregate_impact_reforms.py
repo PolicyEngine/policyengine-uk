@@ -1,5 +1,6 @@
 """The standard reform set and the responsiveness rule."""
 
+import math
 from pathlib import Path
 
 import pytest
@@ -21,7 +22,7 @@ from policyengine_uk.utils.aggregate_impact.reforms import (
     reform_parameters,
     responsiveness,
 )
-from policyengine_uk.utils.aggregate_impact.spec import load_spec
+from policyengine_uk.utils.aggregate_impact.spec import fiscal_year_label, load_spec
 
 TESTS = Path(__file__).resolve().parents[1]
 YEARS = load_spec().years
@@ -248,13 +249,16 @@ def test_a_calibrated_file_refuses_a_minimum_edited_by_hand():
         parse_reforms(raw)
 
 
-def _result(changes):
-    return {
+def _result(changes, years=None):
+    result = {
         "metrics": [
             {"id": f"reform_targets.{rid}", "values": {str(y): v for y, v in c.items()}}
             for rid, c in changes.items()
         ]
     }
+    if years is not None:
+        result["years"] = years
+    return result
 
 
 def test_calibrate_takes_the_smallest_effect_across_years_and_measurements():
@@ -285,3 +289,157 @@ def test_calibrate_takes_the_smallest_effect_across_years_and_measurements():
     assert out["down"] == {"smallest_effect": 2e9, "year": 2026, "minimum": 4e8}
     with pytest.raises(ReformSpecError, match="wrong way"):
         calibrate(reforms, [_result({"up": {2025: -1.0}, "down": {2025: -1.0}})], 0.2)
+
+
+def _one_reform(direction):
+    return parse_reforms(
+        {
+            "reforms": [
+                {
+                    "id": "it",
+                    "name": "i",
+                    "parameters": {"a": 1},
+                    "responds": {
+                        "variable": "v",
+                        "direction": direction,
+                        "minimum": 1,
+                    },
+                }
+            ]
+        }
+    )
+
+
+@pytest.mark.parametrize("direction, sign", [("up", 1.0), ("down", -1.0)])
+@pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("bad_measurement", [0, 1])
+def test_calibrate_refuses_a_year_with_no_finite_target_change(
+    direction, sign, bad, bad_measurement
+):
+    results = [_result({"it": {2025: sign * 5e9}}) for _ in range(2)]
+    results[bad_measurement] = _result({"it": {2025: sign * 5e9, 2026: bad}})
+    with pytest.raises(ReformSpecError, match="it: .*2026-27"):
+        calibrate(_one_reform(direction), results, 0.2)
+
+
+def test_calibrate_refuses_a_year_one_measurement_lacks():
+    results = [_result({"it": {2025: 5e9, 2026: 4e9}}), _result({"it": {2025: 5e9}})]
+    with pytest.raises(ReformSpecError, match="it: .*2026-27"):
+        calibrate(_one_reform("up"), results, 0.2)
+
+
+@pytest.mark.parametrize("direction", ["up", "down"])
+def test_calibrate_refuses_a_declared_year_no_result_recorded(direction):
+    sign = 1 if direction == "up" else -1
+    results = [
+        _result({"it": {2025: sign * 5e9}}, [2025, 2026]),
+        _result({"it": {2025: sign * 4e9}}, [2025, 2026]),
+    ]
+    with pytest.raises(ReformSpecError, match="it: .*2026-27"):
+        calibrate(_one_reform(direction), results, 0.2)
+
+
+@pytest.mark.parametrize("order", [1, -1])
+def test_calibrate_reads_the_years_of_every_result(order):
+    results = [
+        _result({"it": {2025: 5e9}}),
+        _result({"it": {2025: 4e9}}, ["2025", "2026"]),
+    ]
+    with pytest.raises(ReformSpecError, match="it: .*2026-27"):
+        calibrate(_one_reform("up"), results[::order], 0.2)
+
+
+@pytest.mark.parametrize("order", [1, -1])
+def test_calibrate_names_the_earliest_year_beside_an_empty_target_map(order):
+    results = [_result({"it": {2026: 5e9, 2025: 4e9}}), _result({"it": {}})]
+    with pytest.raises(ReformSpecError, match="it: .*2025-26"):
+        calibrate(_one_reform("up"), results[::order], 0.2)
+
+
+def test_calibrate_names_the_earliest_declared_year_of_a_missing_target():
+    with pytest.raises(ReformSpecError, match="it: .*2025-26"):
+        calibrate(_one_reform("up"), [_result({}, [2026, 2025])], 0.2)
+
+
+@pytest.mark.parametrize("results", [[_result({"it": {}})], [_result({})], []])
+def test_calibrate_refuses_results_with_no_years(results):
+    with pytest.raises(ReformSpecError, match="it: a result has no target change"):
+        calibrate(_one_reform("up"), results, 0.2)
+
+
+@pytest.mark.parametrize("value", ["5e9", [5e9], True, False])
+def test_calibrate_refuses_a_value_that_is_not_a_number(value):
+    with pytest.raises(ReformSpecError, match="it: .*2025-26"):
+        calibrate(_one_reform("up"), [_result({"it": {2025: value}})], 0.2)
+    with pytest.raises(ReformSpecError, match="it: .*2025-26"):
+        calibrate(_one_reform("up"), [_result({"it": {2025: None, 2026: value}})], 0.2)
+    with pytest.raises(ReformSpecError, match="it: .*2025-26"):
+        calibrate(_one_reform("up"), [_result({"it": {2025: value, 2026: None}})], 0.2)
+
+
+def test_calibrate_skips_a_reform_with_no_target_whatever_its_years_hold():
+    reforms = parse_reforms(
+        {"reforms": [{"id": "any", "name": "a", "parameters": {"a": 1}}]}
+    )
+    assert calibrate(reforms, [_result({"any": {2025: None}})], 0.2) == {}
+
+
+@given(
+    direction=st.sampled_from(["up", "down"]),
+    measurements=st.lists(
+        st.tuples(
+            st.dictionaries(
+                st.integers(2025, 2027),
+                st.one_of(
+                    st.none(),
+                    st.sampled_from([float("nan"), float("inf"), float("-inf")]),
+                    st.floats(1e6, 1e12),
+                    st.floats(-1e12, -1e6),
+                ),
+            ),
+            st.sets(st.integers(2025, 2028)),
+        ),
+        min_size=1,
+        max_size=3,
+    ),
+)
+def test_calibrate_answers_only_from_finite_target_changes(direction, measurements):
+    """``calibrate`` refuses a reform that lacks a finite target change in any
+    measurement for a year some measurement records or declares, in either
+    direction, and names the earliest such year, even beside a wrong-way year.
+    It then refuses a wrong-way smallest effect, and otherwise returns the
+    smallest effect across every year and measurement. With no year to name,
+    it refuses without one."""
+    sign = 1.0 if direction == "up" else -1.0
+    results = [
+        _result(
+            {"it": {y: None if v is None else sign * v for y, v in m.items()}},
+            sorted(declared),
+        )
+        for m, declared in measurements
+    ]
+    years = set().union(*(set(m) | declared for m, declared in measurements))
+    if not years:
+        with pytest.raises(ReformSpecError, match="no target change"):
+            calibrate(_one_reform(direction), results, 0.2)
+        return
+    recorded = [m for m, _ in measurements]
+    unusable = [
+        y
+        for y in years
+        for m in recorded
+        if m.get(y) is None or not math.isfinite(m[y])
+    ]
+    if unusable:
+        with pytest.raises(ReformSpecError, match=fiscal_year_label(min(unusable))):
+            calibrate(_one_reform(direction), results, 0.2)
+        return
+    smallest, year = min((m[y], y) for m in recorded for y in years)
+    if smallest <= 0:
+        with pytest.raises(
+            ReformSpecError, match=f"wrong way .*{fiscal_year_label(year)}"
+        ):
+            calibrate(_one_reform(direction), results, 0.2)
+    else:
+        out = calibrate(_one_reform(direction), results, 0.2)
+        assert out["it"]["smallest_effect"] == smallest

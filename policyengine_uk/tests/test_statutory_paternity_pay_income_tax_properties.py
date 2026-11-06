@@ -44,11 +44,9 @@ statutory paternity pay:
    of s. Household net income is not compared: household_benefits counts
    statutory sick pay and not statutory paternity pay.
 4. Same as wages: statutory paternity pay of s on top of wages of e gives the
-   same income tax and National Insurance as wages of e + s, where the
-   recipient's wages and trading profit cover their pension contributions.
+   same income tax and National Insurance as wages of e + s.
    pension_contributions_relief caps relief at relevant UK earnings, which
-   include statutory pay as taxable employment income (utils/pensions.py),
-   so the restriction is conservative.
+   include statutory pay as taxable employment income (utils/pensions.py).
 5. Accounting: employment_benefits is statutory sick, maternity and
    paternity pay, and taxable_employment_income is wages plus those less
    employment deductions, floored at nil.
@@ -319,20 +317,11 @@ def test_statutory_paternity_pay_is_treated_as_statutory_sick_pay(population):
         )
 
 
-def covers_pension_contributions(family):
-    recipient = family["adults"][family["recipient"]]
-    return (
-        recipient["wages"] + recipient["profit"] >= recipient["pension_contributions"]
-    )
-
-
 @PROPERTY_SETTINGS
 @given(population=populations())
 def test_statutory_paternity_pay_is_taxed_as_wages(population):
     results = Results(population)
     for i, family in enumerate(population):
-        if not covers_pension_contributions(family):
-            continue
         # Invariant 4, for every member: the payment moves Marriage Allowance
         # and the High Income Child Benefit Charge as wages do.
         for variable in ["income_tax", "national_insurance", "adjusted_net_income"]:

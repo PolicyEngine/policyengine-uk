@@ -8,8 +8,11 @@ class stocks_and_shares_isa_balance(Variable):
         "Lifetime ISAs excluded (lifetime_isa_balance). The household's "
         "stocks_and_shares_isa sums it over its members, so a dataset that "
         "stores stocks_and_shares_isa itself keeps that stored total instead. "
-        "Like that total, it is part of corporate_wealth, so the two must "
-        "never be summed."
+        "corporate_wealth includes it, as it includes that total, so no "
+        "formula may add the two. A child owns their own junior stocks and shares "
+        "ISA. The means-test formulas count the balance in its holder's "
+        "benefit unit, for the claimant and partner only "
+        "(stocks_and_shares_isa_countable_capital)."
     )
     entity = Person
     definition_period = YEAR

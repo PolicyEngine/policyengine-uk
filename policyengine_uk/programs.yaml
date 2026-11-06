@@ -2,6 +2,41 @@
 # This is the single source of truth for program coverage information.
 # Served via the /uk/metadata API as modelled_policies.
 # Consumed by policyengine-model to render the model coverage page.
+#
+# The file also defines the budget totals. household_tax and
+# household_benefits add the variables flagged with `budget`, in the order
+# `budget_order` gives; policyengine_uk.programs reads them and
+# budget_programs() returns them with their labels.
+#
+# Budget fields, on `programs` and `budget_terms` entries:
+#   budget               tax or benefit: household_tax (tax) or
+#                        household_benefits (benefit) adds the entry's
+#                        `variable`. Leave it off entries outside the totals.
+#   group                optional key shared by terms that move together,
+#                        such as the childcare entitlements.
+#   budget_dropped_when  optional path of a boolean parameter; the total
+#                        leaves the term out while the parameter is true.
+#   budget_uprating      benefit terms only: which of
+#                        gov.contrib.benefit_uprating's `all` and `non_sp`
+#                        scale the term. A benefit term without it takes
+#                        both.
+#
+# `budget_terms` lists the terms that no `programs` entry carries. They stay
+# out of the coverage list, and each has a `kind`:
+#   programme_measure  the amount the totals count for the `programs` entry
+#                      that `program` names, or for one part of it
+#   programme          a programme the coverage list does not carry yet; it
+#                      has no coverage or verified-year fields until someone
+#                      confirms them and moves it into `programs`
+#   reform_measure     not a programme: a hypothetical tax or benefit, or a
+#                      change from baseline; it stays zero until a reform
+#                      sets it, and `program` may name the programme it
+#                      changes
+#   public_service     not a programme: public services in kind, at their
+#                      cost to government
+#
+# The loader refuses a misspelt field whose name starts with `budget`, and
+# any `budget_terms` field outside the ones above and `name` and `notes`.
 
 programs:
   # --- HMRC programs ---
@@ -25,6 +60,7 @@ programs:
     status: partial
     coverage: UK
     variable: isa_cash_interest_flat_rate_charge
+    budget: tax
     parameter_prefix: gov.hmrc.isa.cash_interest_charge
     verified_start_year: 2027
     notes: Separate final manager charge at the savings basic rate from 6 April 2027. Requires the cash-interest component as an input; subscription-limit compliance is not modelled.
@@ -48,6 +84,7 @@ programs:
     status: complete
     coverage: UK
     variable: income_tax
+    budget: tax
     parameter_prefix: gov.hmrc.income_tax
     verified_start_year: 2019
     notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge, from 2025-26 the winter fuel payment charge, and from 2020-21 the company car and car fuel benefits in kind (no other benefits in kind, and no vans)
@@ -60,6 +97,7 @@ programs:
     status: complete
     coverage: UK
     variable: national_insurance
+    budget: tax
     parameter_prefix: gov.hmrc.national_insurance
     verified_start_year: 2019
     notes: Classes 1, 2, 3, and 4, and Class 1A on the company car and car fuel benefits
@@ -72,6 +110,7 @@ programs:
     status: complete
     coverage: UK
     variable: capital_gains_tax
+    budget: tax
     parameter_prefix: gov.hmrc.cgt
     verified_start_year: 2022
 
@@ -83,6 +122,7 @@ programs:
     status: complete
     coverage: UK
     variable: child_benefit
+    budget: benefit
     parameter_prefix: gov.hmrc.child_benefit
     verified_start_year: 2019
     notes: Includes High Income Child Benefit Charge
@@ -117,6 +157,7 @@ programs:
     status: complete
     coverage: UK
     variable: fuel_duty
+    budget: tax
     parameter_prefix: gov.hmrc.fuel_duty
     verified_start_year: 2022
     notes: Petrol and diesel, plus supplied kilograms of LPG and natural road fuel gas. Gas consumption is not imputed.
@@ -129,6 +170,7 @@ programs:
     status: partial
     coverage: UK
     variable: alcohol_duty
+    budget: tax
     parameter_prefix: gov.hmrc.alcohol_duty
     verified_start_year: 2024
     verified_end_year: 2026
@@ -142,6 +184,7 @@ programs:
     status: partial
     coverage: UK
     variable: tobacco_duty
+    budget: tax
     parameter_prefix: gov.hmrc.tobacco_duty
     verified_start_year: 2024
     verified_end_year: 2026
@@ -155,6 +198,7 @@ programs:
     status: partial
     coverage: UK
     variable: vehicle_excise_duty
+    budget: tax
     parameter_prefix: gov.dft.vehicle_excise_duty
     verified_start_year: 2024
     verified_end_year: 2026
@@ -168,6 +212,7 @@ programs:
     status: partial
     coverage: UK
     variable: gambling_duty
+    budget: tax
     parameter_prefix: gov.hmrc.gambling_duty
     verified_start_year: 2024
     verified_end_year: 2027
@@ -192,6 +237,8 @@ programs:
     status: complete
     coverage: UK
     variable: tax_free_childcare
+    budget: benefit
+    group: childcare
     parameter_prefix: gov.hmrc.tax_free_childcare
     verified_start_year: 2022
 
@@ -213,6 +260,7 @@ programs:
     status: partial
     coverage: UK
     variable: business_rates
+    budget: tax
     parameter_prefix: gov.hmrc.business_rates
     verified_start_year: 2020
     verified_end_year: 2030
@@ -239,6 +287,7 @@ programs:
     status: complete
     coverage: UK
     variable: universal_credit
+    budget: benefit
     parameter_prefix: gov.dwp.universal_credit
     verified_start_year: 2019
     notes: Includes standard allowance, child element, housing costs, work allowances, and taper
@@ -251,6 +300,7 @@ programs:
     status: complete
     coverage: UK
     variable: pension_credit
+    budget: benefit
     parameter_prefix: gov.dwp.pension_credit
     verified_start_year: 2022
     notes: Guarantee Credit and Savings Credit
@@ -263,6 +313,8 @@ programs:
     status: complete
     coverage: UK
     variable: state_pension
+    budget: benefit
+    budget_uprating: [all]
     parameter_prefix: gov.dwp.state_pension
     verified_start_year: 2022
     notes: New State Pension and basic State Pension
@@ -275,6 +327,7 @@ programs:
     status: complete
     coverage: UK
     variable: housing_benefit
+    budget: benefit
     parameter_prefix: gov.dwp.housing_benefit
     verified_start_year: 2022
     notes: Legacy benefit being replaced by Universal Credit
@@ -287,6 +340,7 @@ programs:
     status: complete
     coverage: UK
     variable: income_support
+    budget: benefit
     parameter_prefix: gov.dwp.income_support
     verified_start_year: 2022
 
@@ -322,6 +376,7 @@ programs:
     status: complete
     coverage: UK
     variable: attendance_allowance
+    budget: benefit
     parameter_prefix: gov.dwp.attendance_allowance
     verified_start_year: 2022
 
@@ -333,6 +388,8 @@ programs:
     status: complete
     coverage: UK
     variable: carers_allowance
+    budget: benefit
+    group: carer_benefits
     parameter_prefix: gov.dwp.carers_allowance
     verified_start_year: 2022
     notes: Reduced by overlapping benefits such as State Pension and contributory ESA
@@ -345,6 +402,7 @@ programs:
     status: complete
     coverage: UK
     variable: dla
+    budget: benefit
     parameter_prefix: gov.dwp.dla
     verified_start_year: 2022
 
@@ -356,6 +414,7 @@ programs:
     status: complete
     coverage: UK
     variable: pip
+    budget: benefit
     parameter_prefix: gov.dwp.pip
     verified_start_year: 2022
 
@@ -369,19 +428,19 @@ programs:
     variable: benefit_cap_reduction
     parameter_prefix: gov.dwp.benefit_cap
     verified_start_year: 2022
-    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of their reductions
+    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of the reductions actually made to the awards (the UC reg. 81 amount up to the award), the amount DWP's benefit cap statistics measure
 
   - id: tax_credits
     name: Tax credits
     full_name: Tax Credits (Working Tax Credit and Child Tax Credit)
     category: Benefits
-    agency: DWP
+    agency: HMRC
     status: complete
     coverage: UK
     variable: tax_credits
     parameter_prefix: gov.dwp.tax_credits
     verified_start_year: 2022
-    notes: Legacy benefit being replaced by Universal Credit
+    notes: HMRC administered Working Tax Credit and Child Tax Credit until they ended on 5 April 2025
 
   - id: sda
     name: SDA
@@ -391,6 +450,7 @@ programs:
     status: complete
     coverage: UK
     variable: sda
+    budget: benefit
     parameter_prefix: gov.dwp.sda
     verified_start_year: 2022
 
@@ -400,11 +460,11 @@ programs:
     category: Benefits
     agency: DWP
     status: complete
-    coverage: UK
+    coverage: England, Wales and Northern Ireland
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
-    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. From winter 2025-26 paid to everyone of pensionable age and recovered by the winter fuel payment charge (income tax)
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. The Scottish Government replaced it with Pension Age Winter Heating Payment from winter 2024-25. From winter 2025-26 HMRC recovers payments from higher-income recipients through the winter fuel payment charge (income tax)
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -414,6 +474,7 @@ programs:
     status: complete
     coverage: UK
     variable: ssmg
+    budget: benefit
     parameter_prefix: gov.dwp.ssmg
     verified_start_year: 2022
 
@@ -425,6 +486,7 @@ programs:
     status: complete
     coverage: UK
     variable: maternity_allowance
+    budget: benefit
     verified_start_year: 2022
 
   # --- DfE programs ---
@@ -436,6 +498,8 @@ programs:
     status: complete
     coverage: England
     variable: universal_childcare_entitlement
+    budget: benefit
+    group: childcare
     parameter_prefix: gov.dfe.universal_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
@@ -449,6 +513,8 @@ programs:
     status: complete
     coverage: England
     variable: extended_childcare_entitlement
+    budget: benefit
+    group: childcare
     parameter_prefix: gov.dfe.extended_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
@@ -462,6 +528,8 @@ programs:
     status: complete
     coverage: England
     variable: targeted_childcare_entitlement
+    budget: benefit
+    group: childcare
     parameter_prefix: gov.dfe.targeted_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
@@ -475,6 +543,8 @@ programs:
     status: partial
     coverage: Wales
     variable: wales_childcare_offer
+    budget: benefit
+    group: childcare
     parameter_prefix: gov.welsh_government.childcare_offer
     verified_start_year: 2020
     verified_end_year: 2026
@@ -488,6 +558,8 @@ programs:
     status: partial
     coverage: England
     variable: childcare_grant
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.childcare_grant
     verified_start_year: 2025
     notes: First-pass full-time undergraduate England model using explicit full-time, SEN, and childcare-support inputs plus maintenance-loan proxies; eligible children's childcare_expenses are out-of-pocket spend net of free hours, aggregated and capped once per benefit unit. The model allocates the family award to the eldest eligible student parent; actual student partners can share it.
@@ -500,6 +572,8 @@ programs:
     status: partial
     coverage: England
     variable: parents_learning_allowance
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.parents_learning_allowance
     verified_start_year: 2025
     notes: First-pass England model using the published maximum amount and household-income cutoff, with higher-education evidence as the default course proxy and an explicit override for edge cases such as 120-credit or teacher-training routes
@@ -513,6 +587,8 @@ programs:
     status: partial
     coverage: England
     variable: adult_dependants_grant
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.adult_dependants_grant
     verified_start_year: 2025
     notes: First-pass England model using the published maximum amount and household-income tests, with automatic 25-plus couple detection and explicit inputs for under-25 spouse/civil-partner and non-partner adult dependant cases
@@ -525,6 +601,8 @@ programs:
     status: partial
     coverage: England
     variable: travel_grant
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.travel_grant
     verified_start_year: 2025
     notes: First-pass England model using the published initial contribution and household-income reduction formula, with explicit placement and eligible-expense inputs because the survey does not observe reimbursable travel costs
@@ -537,6 +615,8 @@ programs:
     status: partial
     coverage: England
     variable: disabled_students_allowance
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.disabled_students_allowance
     verified_start_year: 2025
     notes: First-pass England model using the published annual cap, higher-education evidence as the default course proxy, a narrow qualifying-condition proxy with explicit override, and explicit disability-related study support costs
@@ -549,6 +629,8 @@ programs:
     status: partial
     coverage: England
     variable: bursary_fund_16_to_19
+    budget: benefit
+    group: student_support
     parameter_prefix: gov.dfe.bursary_fund_16_to_19
     verified_start_year: 2025
     notes: First-pass model of the defined vulnerable-group bursary only, using explicit care, self-supporting, and participation-cost inputs plus person-level reported-benefit proxies
@@ -562,6 +644,7 @@ programs:
     status: complete
     coverage: UK
     variable: tv_licence
+    budget: tax
     parameter_prefix: gov.dcms.bbc
     verified_start_year: 2022
 
@@ -572,8 +655,11 @@ programs:
     category: Taxes
     agency: Local
     status: complete
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax
+    budget: tax
+    group: council_tax
+    budget_dropped_when: gov.contrib.abolish_council_tax
     verified_start_year: 2022
 
   - id: council_tax_reduction
@@ -582,7 +668,7 @@ programs:
     category: Benefits
     agency: Local
     status: partial
-    coverage: UK
+    coverage: Great Britain
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
@@ -596,10 +682,22 @@ programs:
     agency: Treasury
     status: complete
     coverage: UK
+    variable: cost_of_living_support_payment
     parameter_prefix: gov.treasury.cost_of_living_support
     verified_start_year: 2022
     verified_end_year: 2023
-    notes: Temporary program, ended 2023
+    notes: >-
+      Temporary programme, paid in 2022-23 and 2023-24. The model pays the
+      means-tested payment to each benefit unit on Universal Credit, Pension
+      Credit, income-based JSA, income-related ESA or Income Support, or on
+      Child Tax Credit or Working Tax Credit and none of those (in 2022-23,
+      at least £26 of either credit for the year), the disability payment to
+      each person on PIP, DLA, Attendance Allowance or Armed Forces
+      Independence Payment, and the pensioner payment to each household with
+      a Winter Fuel Payment. It tests receipt over the year, not in the month
+      ending with each qualifying day, and has no variables for constant
+      attendance allowance, Adult Disability Payment, Child Disability
+      Payment or the mobility supplement.
 
   - id: energy_bills_rebate
     name: Energy Bills Rebate
@@ -609,17 +707,22 @@ programs:
     status: partial
     coverage: UK
     variable: energy_bills_rebate
+    budget: benefit
     parameter_prefix: gov.treasury.energy_bills_rebate
     verified_start_year: 2022
     verified_end_year: 2023
     notes: >-
-      Temporary program, ended 2023. The £150 Council Tax Rebate in bands A to
-      D in Great Britain (none in Northern Ireland, which has domestic rates),
-      the £400 Energy Bills Support Scheme, and Northern Ireland's £200
-      Alternative Fuel Payment. Leaves out the Scottish and Welsh £150 for
-      Council Tax Reduction recipients in bands E and above, England's
-      discretionary fund, Great Britain's Alternative Fuel Payment and the
-      alternative funding schemes.
+      Temporary program, ended 2023. The model pays the £150 Council Tax Rebate
+      in bands A to D in Great Britain and to Council Tax Reduction recipients
+      in any band in Scotland and Wales (none in Northern Ireland, which has
+      domestic rates), the £400 Energy Bills Support Scheme, and Northern
+      Ireland's £200 Alternative Fuel Payment. It has no input for the
+      disabled band reduction, so it pays band E homes that councils charged
+      at band D only when they also receive Council Tax Reduction in Scotland
+      and Wales, and never in England. It leaves out Scotland's Council Tax
+      Reduction for bands E to H, Scotland's rules for exempt dwellings,
+      England's discretionary fund, Great Britain's Alternative Fuel Payment
+      and the alternative funding schemes.
 
   - id: household_energy_payment
     name: Household Energy Payment
@@ -629,6 +732,7 @@ programs:
     status: complete
     coverage: England
     variable: household_energy_payment
+    budget: benefit
     parameter_prefix: gov.treasury.household_energy_payment
     verified_start_year: 2026
     verified_end_year: 2026
@@ -639,7 +743,7 @@ programs:
     name: Energy Price Guarantee
     full_name: Energy Price Guarantee
     category: Benefits
-    agency: Ofgem
+    agency: DESNZ
     status: partial
     coverage: UK
     parameter_prefix: gov.ofgem
@@ -668,7 +772,7 @@ programs:
     name: Scottish income tax
     full_name: Scottish Income Tax Rates
     category: Taxes
-    agency: Revenue Scotland
+    agency: HMRC
     status: complete
     coverage: Scotland
     verified_start_year: 2019
@@ -693,6 +797,7 @@ programs:
     status: complete
     coverage: Scotland
     variable: scottish_child_payment
+    budget: benefit
     parameter_prefix: gov.social_security_scotland.scottish_child_payment
     verified_start_year: 2022
 
@@ -707,3 +812,418 @@ programs:
     parameter_prefix: gov.social_security_scotland.pawhp
     verified_start_year: 2024
     notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25. From winter 2025-26 recovered by the winter fuel payment charge (income tax) above £35,000 of total income
+
+# Budget terms that no programme entry above carries. The coverage list
+# (`programs`) leaves these out: some measure part of a listed programme,
+# some a programme the list doesn't carry yet, some no programme. `kind`
+# says which; see the header.
+budget_terms:
+  # --- Taxes ---
+  - variable: expected_sdlt
+    name: Stamp Duty Land Tax on household purchases
+    budget: tax
+    kind: programme_measure
+    program: stamp_duty_land_tax
+    group: property_transaction_taxes
+
+  - variable: expected_ltt
+    name: Land Transaction Tax on household purchases
+    budget: tax
+    kind: programme
+    group: property_transaction_taxes
+    notes: Welsh Revenue Authority's tax on property purchases in Wales. Not yet in the coverage list.
+
+  - variable: expected_lbtt
+    name: Land and Buildings Transaction Tax on household purchases
+    budget: tax
+    kind: programme_measure
+    program: lbtt
+    group: property_transaction_taxes
+
+  - variable: corporate_sdlt
+    name: Stamp Duty Land Tax paid by companies
+    budget: tax
+    kind: programme_measure
+    program: stamp_duty_land_tax
+    group: property_transaction_taxes
+    notes: Stamp Duty Land Tax that companies pay; the model shares it across households by shareholding.
+
+  - variable: high_value_council_tax_surcharge
+    name: High Value Council Tax Surcharge
+    budget: tax
+    kind: programme
+    group: council_tax
+    budget_dropped_when: gov.contrib.abolish_council_tax
+    notes: Not yet in the coverage list.
+
+  - variable: domestic_rates
+    name: Domestic rates
+    budget: tax
+    kind: programme
+    notes: Northern Ireland's domestic rates. Not yet in the coverage list.
+
+  - variable: wealth_tax
+    name: Wealth tax
+    budget: tax
+    kind: reform_measure
+    notes: A hypothetical tax, zero unless a reform sets its rates.
+
+  - variable: non_primary_residence_wealth_tax
+    name: Wealth tax excluding the main residence
+    budget: tax
+    kind: reform_measure
+    notes: A hypothetical tax, zero unless a reform sets its rates.
+
+  - variable: LVT
+    name: Land value tax
+    budget: tax
+    kind: reform_measure
+    notes: A hypothetical tax, zero unless a reform sets its rates.
+
+  - variable: carbon_tax
+    name: Carbon tax
+    budget: tax
+    kind: reform_measure
+    notes: A hypothetical tax, zero unless a reform sets its rates.
+
+  - variable: vat_change
+    name: Change in VAT
+    budget: tax
+    kind: reform_measure
+    program: vat
+    group: vat
+    notes: VAT less baseline VAT. The totals count this change, not the VAT level (`vat`).
+
+  - variable: private_school_vat_change
+    name: Change in private school VAT
+    budget: tax
+    kind: reform_measure
+    program: vat
+    group: vat
+    notes: Private school VAT less its baseline.
+
+  - variable: corporate_incident_tax_revenue_change
+    name: Unspecified tax change borne by capital
+    budget: tax
+    kind: reform_measure
+    notes: A lump-sum revenue change that a reform sets; the model shares it across households by shareholding.
+
+  - variable: consumer_incident_tax_revenue_change
+    name: Unspecified tax change borne by consumers
+    budget: tax
+    kind: reform_measure
+    notes: A lump-sum revenue change that a reform sets; the model shares it across households by consumption.
+
+  - variable: employer_ni_response_capital_incidence
+    name: Employer National Insurance change borne by capital
+    budget: tax
+    kind: reform_measure
+    group: employer_ni_incidence
+    notes: The share of a change in employer National Insurance that falls on capital. The totals count this change, not employer National Insurance (`ni_employer`).
+
+  - variable: employer_ni_response_consumer_incidence
+    name: Employer National Insurance change borne by consumers
+    budget: tax
+    kind: reform_measure
+    group: employer_ni_incidence
+    notes: The share of a change in employer National Insurance that falls on consumers through prices.
+
+  - variable: student_loan_repayments
+    name: Student loan repayments
+    budget: tax
+    kind: programme_measure
+    program: student_loans
+
+  # --- Benefits ---
+  - variable: council_tax_benefit
+    name: Council Tax Reduction
+    budget: benefit
+    kind: programme_measure
+    program: council_tax_reduction
+    budget_dropped_when: gov.contrib.abolish_council_tax
+
+  - variable: esa_income
+    name: ESA (income-related)
+    budget: benefit
+    kind: programme_measure
+    program: esa
+    group: esa
+
+  - variable: esa_contrib
+    name: ESA (contribution-based)
+    budget: benefit
+    kind: programme_measure
+    program: esa
+    group: esa
+
+  - variable: jsa_income
+    name: JSA (income-based)
+    budget: benefit
+    kind: programme_measure
+    program: jsa
+    group: jsa
+
+  - variable: jsa_contrib
+    name: JSA (contribution-based)
+    budget: benefit
+    kind: programme_measure
+    program: jsa
+    group: jsa
+
+  - variable: working_tax_credit
+    name: Working Tax Credit
+    budget: benefit
+    kind: programme_measure
+    program: tax_credits
+    group: tax_credits
+
+  - variable: child_tax_credit
+    name: Child Tax Credit
+    budget: benefit
+    kind: programme_measure
+    program: tax_credits
+    group: tax_credits
+
+  - variable: afcs
+    name: Armed Forces Compensation Scheme
+    budget: benefit
+    kind: programme
+    notes: Reported amounts. Not yet in the coverage list.
+
+  - variable: bsp
+    name: Bereavement Support Payment
+    budget: benefit
+    kind: programme
+    notes: Not yet in the coverage list.
+
+  - variable: war_widows_pension
+    name: War Widow's or Widower's Pension
+    budget: benefit
+    kind: programme
+    notes: Reported amounts. Not yet in the coverage list.
+
+  - variable: widowed_parents_allowance
+    name: Widowed Parent's Allowance
+    budget: benefit
+    kind: programme
+    notes: Not yet in the coverage list.
+
+  - variable: iidb
+    name: Industrial Injuries Disablement Benefit
+    budget: benefit
+    kind: programme
+    notes: Reported amounts. Not yet in the coverage list.
+
+  - variable: incapacity_benefit
+    name: Incapacity Benefit
+    budget: benefit
+    kind: programme
+    notes: Not yet in the coverage list.
+
+  - variable: statutory_sick_pay
+    name: Statutory Sick Pay
+    budget: benefit
+    kind: programme
+    group: statutory_pay
+    notes: Not yet in the coverage list.
+
+  - variable: statutory_maternity_pay
+    name: Statutory Maternity Pay
+    budget: benefit
+    kind: programme
+    group: statutory_pay
+    notes: Not yet in the coverage list.
+
+  - variable: statutory_paternity_pay
+    name: Statutory Paternity Pay
+    budget: benefit
+    kind: programme
+    group: statutory_pay
+    notes: Not yet in the coverage list.
+
+  - variable: basic_income
+    name: Basic income
+    budget: benefit
+    kind: reform_measure
+    budget_uprating: []
+    notes: A hypothetical benefit, zero unless a reform sets its amounts.
+
+  - variable: epg_subsidy
+    name: Energy Price Guarantee subsidy
+    budget: benefit
+    kind: programme_measure
+    program: energy_price_guarantee
+
+  - variable: cost_of_living_support_payment
+    name: Cost of Living Support payments
+    budget: benefit
+    kind: programme_measure
+    program: cost_of_living_support
+
+  - variable: winter_fuel_allowance
+    name: Winter Fuel Payment
+    budget: benefit
+    kind: programme_measure
+    program: winter_fuel_payment
+    group: winter_heating_payments
+
+  - variable: pawhp
+    name: Pension Age Winter Heating Payment
+    budget: benefit
+    kind: programme_measure
+    program: pawhp
+    group: winter_heating_payments
+
+  - variable: care_to_learn
+    name: Care to Learn
+    budget: benefit
+    kind: programme
+    group: student_support
+    notes: Not yet in the coverage list.
+
+  - variable: nhs_spending
+    name: NHS spending
+    budget: benefit
+    kind: public_service
+    group: public_services_in_kind
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
+
+  - variable: dfe_education_spending
+    name: State education spending
+    budget: benefit
+    kind: public_service
+    group: public_services_in_kind
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
+
+  - variable: dft_subsidy_spending
+    name: Transport subsidy spending
+    budget: benefit
+    kind: public_service
+    group: public_services_in_kind
+    notes: Public services the household uses, at their cost to government. Not a cash programme.
+
+  - variable: healthy_start_vouchers
+    name: Healthy Start vouchers
+    budget: benefit
+    kind: programme
+    notes: Not yet in the coverage list.
+
+  - variable: two_child_limit_payment
+    name: Two Child Limit Payment
+    budget: benefit
+    kind: reform_measure
+    notes: A proposed Scottish payment, whose regulations the Scottish Government confirmed on 3 December 2025 it will not lay. Zero unless a reform switches it on.
+
+  - variable: carer_support_payment
+    name: Carer Support Payment
+    budget: benefit
+    kind: programme
+    group: carer_benefits
+    notes: Scotland's replacement for Carer's Allowance. Not yet in the coverage list.
+
+  - variable: scottish_carer_supplement
+    name: Carer's Allowance Supplement
+    budget: benefit
+    kind: programme
+    group: carer_benefits
+    notes: Scotland's supplement to Carer's Allowance. Not yet in the coverage list.
+
+  - variable: disability_basic_income
+    name: Disability basic income
+    budget: benefit
+    kind: reform_measure
+    notes: A hypothetical benefit, zero unless a reform sets its amount.
+
+# The order in which household_tax and household_benefits add their terms.
+# Each list holds every variable whose entry above has that `budget` value,
+# once. Float sums depend on order, so append a new term at the end of its
+# list rather than reordering.
+budget_order:
+  tax:
+    - isa_cash_interest_flat_rate_charge
+    - expected_sdlt
+    - expected_ltt
+    - expected_lbtt
+    - corporate_sdlt
+    - business_rates
+    - council_tax
+    - high_value_council_tax_surcharge
+    - domestic_rates
+    - fuel_duty
+    - alcohol_duty
+    - tobacco_duty
+    - gambling_duty
+    - vehicle_excise_duty
+    - tv_licence
+    - wealth_tax
+    - non_primary_residence_wealth_tax
+    - income_tax
+    - national_insurance
+    - LVT
+    - carbon_tax
+    - vat_change
+    - capital_gains_tax
+    - private_school_vat_change
+    - corporate_incident_tax_revenue_change
+    - consumer_incident_tax_revenue_change
+    - employer_ni_response_capital_incidence
+    - employer_ni_response_consumer_incidence
+    - student_loan_repayments
+  benefit:
+    - child_benefit
+    - council_tax_benefit
+    - esa_income
+    - esa_contrib
+    - housing_benefit
+    - income_support
+    - jsa_income
+    - jsa_contrib
+    - pension_credit
+    - universal_credit
+    - working_tax_credit
+    - child_tax_credit
+    - attendance_allowance
+    - afcs
+    - bsp
+    - war_widows_pension
+    - widowed_parents_allowance
+    - carers_allowance
+    - dla
+    - iidb
+    - incapacity_benefit
+    - pip
+    - sda
+    - state_pension
+    - maternity_allowance
+    - statutory_sick_pay
+    - statutory_maternity_pay
+    - statutory_paternity_pay
+    - ssmg
+    - basic_income
+    - epg_subsidy
+    - cost_of_living_support_payment
+    - energy_bills_rebate
+    - household_energy_payment
+    - winter_fuel_allowance
+    - pawhp
+    - tax_free_childcare
+    - extended_childcare_entitlement
+    - universal_childcare_entitlement
+    - targeted_childcare_entitlement
+    - wales_childcare_offer
+    - care_to_learn
+    - childcare_grant
+    - parents_learning_allowance
+    - adult_dependants_grant
+    - travel_grant
+    - disabled_students_allowance
+    - bursary_fund_16_to_19
+    - nhs_spending
+    - dfe_education_spending
+    - dft_subsidy_spending
+    - healthy_start_vouchers
+    - two_child_limit_payment
+    - scottish_child_payment
+    - carer_support_payment
+    - scottish_carer_supplement
+    - disability_basic_income
