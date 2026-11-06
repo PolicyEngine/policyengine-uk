@@ -424,9 +424,11 @@ Competitiveness Scheme brings consumers outside energy-intensive industry
 | `consumption_shares` | Each calendar quarter's share of a year's domestic electricity and of domestic gas consumption, the mean over the complete years from 2015 | DESNZ Energy Trends ET 5.2 and ET 4.1 |
 | `embedded_electricity_vat` | The VAT rate on domestic electricity that the published prices and forecast include, in Great Britain and in Northern Ireland, and Northern Ireland's share of UK domestic electricity consumption (2.69% in 2024), which weights them | SI 2026/987, Budget 2026 and its policy costings, EFO paragraph 3.10, DESNZ subnational consumption statistics |
 | `held_flat` | Whether the annual indices hold the previous year's level | `no_economic_assumptions` sets it |
+| `fuel_growth.electricity`, `fuel_growth.gas` | A fuel's own year-on-year growth, by quarter, on the published basis, in place of `obr.utilities`; no quarter has a value in current law | A reform sets it, for example from an announced price cap |
 
 `policyengine_uk/utils/import_energy_prices.py` writes the first three;
-maintainers edit the last two by hand. `embedded_electricity_vat` describes the
+maintainers edit `embedded_electricity_vat` and `held_flat` by hand, and
+`fuel_growth` is empty unless a reform sets it. `embedded_electricity_vat` describes the
 source data, not policy: it follows the VAT the ONS prices include and the
 OBR assumed, which a reform to `gov.hmrc.vat` does not change.
 
@@ -449,7 +451,13 @@ policyengine-uk processes the parameters, builds three series for each of
   of the change in electricity VAT, `(1 + g) × u(q − 4) / u(q) − 1`, where
   `u` is the same factor for electricity's share of utilities,
   CJXA / (CJXA + CJXB), as the mean over the quarter's months. After the OBR's
-  last quarter (2032Q1), its last rate holds.
+  last quarter (2032Q1), its last rate holds. In a quarter where
+  `fuel_growth.electricity` or `fuel_growth.gas` has a value, that fuel grows
+  at it instead: electricity net of its own VAT change,
+  `(1 + g) × e(q − 4) / e(q) − 1` with `e` the electricity VAT factor as the
+  mean over the quarter's months, and gas as stated. The combined series then
+  grows at the two fuels' published-basis rates (each the OBR's where not
+  stated), weighted by CJXA / (CJXA + CJXB), net of the utilities VAT change.
 - `calendar_year`, January to December, and `fiscal_year`, April to March,
   2015 to 2041, each at 1 January of its first year. Each averages the
   year's four quarterly levels, weighting each by its share of the year's
@@ -477,8 +485,8 @@ the forecast levels, though not their growth.
 ### Limits
 
 - The OBR forecasts utilities only, so after the ONS outturn electricity and
-  gas grow at the same rate: each index is its fuel's own price to there and
-  a utilities proxy after it. The combined series includes solid fuels in its
+  gas grow at the same rate unless a reform sets `fuel_growth`: each index is
+  its fuel's own price to there and a utilities proxy after it. The combined series includes solid fuels in its
   outturn and not in its forecast.
 - The indices are prices, so a projection holds each household's consumption
   fixed.

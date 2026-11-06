@@ -776,3 +776,117 @@ def test_a_year_keyed_ons_reform_sets_each_month_of_the_year(raw, current, year)
             / quarter_level(current, "electricity", earlier),
             rel=1e-12,
         )
+
+
+# 9. A fuel's own growth in place of the OBR utilities rate.
+
+FUEL_GROWTH = f"{ENERGY_PRICES}.fuel_growth"
+
+
+def electricity_factor(raw, quarter):
+    """Published electricity price over its price at the basis rate."""
+    return np.mean(
+        [(1 + published_rate(raw, *m)) / (1 + BASIS) for m in indices._months(quarter)]
+    )
+
+
+def test_fuel_growth_has_no_value_in_current_law(raw):
+    node = prices_of(raw).fuel_growth
+    for fuel in ("electricity", "gas"):
+        for quarter in FORECAST:
+            assert node.get_child(fuel)(indices._start(quarter)) is None
+
+
+@settings(max_examples=20, deadline=None, derandomize=True)
+@given(
+    fuel=st.sampled_from(["electricity", "gas"]),
+    quarter=st.sampled_from(FORECAST),
+    rate=st.floats(-0.3, 0.6, allow_nan=False, allow_infinity=False),
+)
+def test_a_fuel_rate_moves_its_fuel_and_the_combined_series_only(
+    raw, current, fuel, quarter, rate
+):
+    def edit(tree):
+        prices_of(tree).fuel_growth.get_child(fuel).update(
+            period=f"month:{indices._start(quarter)[:7]}:3", value=rate
+        )
+
+    changed = build(raw, edit)
+    other = "gas" if fuel == "electricity" else "electricity"
+    # The other fuel keeps the OBR utilities path in every quarter.
+    assert levels(changed, "quarterly", other) == levels(current, "quarterly", other)
+    earlier = (quarter[0] - 1, quarter[1])
+    growth = quarter_level(changed, fuel, quarter) / quarter_level(
+        changed, fuel, earlier
+    )
+    if fuel == "electricity":
+        # Re-applying the published electricity VAT gives the stated rate.
+        growth *= electricity_factor(raw, quarter) / electricity_factor(raw, earlier)
+    assert growth - 1 == pytest.approx(rate, abs=1e-9)
+    # Quarters before it are unchanged.
+    for before in QUARTERS:
+        if before < quarter:
+            for key in SERIES:
+                assert quarter_level(changed, key, before) == quarter_level(
+                    current, key, before
+                )
+
+
+def test_combined_series_weights_the_two_fuel_rates(raw, current):
+    quarter = (2027, 1)
+    start = indices._start(quarter)
+    obr = prices_of(raw).obr.utilities(start)
+
+    def edit(tree):
+        fuel_growth = prices_of(tree).fuel_growth
+        fuel_growth.electricity.update(period="month:2027-01:3", value=0.05)
+        fuel_growth.gas.update(period="month:2027-01:3", value=0.20)
+
+    changed = build(raw, edit)
+    weights = prices_of(raw).ons.weights
+    share = weights.electricity("2027-01-01") / (
+        weights.electricity("2027-01-01") + weights.gas("2027-01-01")
+    )
+    blended = share * 0.05 + (1 - share) * 0.20
+    key = "electricity_gas_and_solid_fuels"
+    assert realised_obr_rate(
+        raw, lambda q: quarter_level(changed, key, q), quarter
+    ) == pytest.approx(blended, abs=1e-9)
+    assert blended != pytest.approx(obr)
+
+
+def test_stating_the_obr_rate_outside_the_vat_change_changes_nothing(raw, current):
+    # From 2029 the published electricity VAT is the same as a year earlier,
+    # so the utilities VAT adjustment is nil and stating the OBR rate for
+    # both fuels leaves every index where it was. (Inside the VAT change a
+    # stated gas rate is gas's own, with no electricity VAT taken out.)
+    window = indices._quarters((2029, 1), (2030, 4))
+
+    def edit(tree):
+        prices = prices_of(tree)
+        for quarter in window:
+            start = indices._start(quarter)
+            for fuel in ("electricity", "gas"):
+                prices.fuel_growth.get_child(fuel).update(
+                    period=f"month:{start[:7]}:3", value=prices.obr.utilities(start)
+                )
+
+    changed = build(raw, edit)
+    for key in SERIES:
+        for quarter in QUARTERS:
+            assert quarter_level(changed, key, quarter) == pytest.approx(
+                quarter_level(current, key, quarter), rel=1e-12
+            )
+
+
+def test_a_year_keyed_fuel_reform_builds_a_simulation():
+    reform = {f"{FUEL_GROWTH}.gas": {"2027": 0.5}}
+    reformed = Simulation(situation=situation(), reform=reform)
+    baseline = Simulation(situation=situation())
+    assert (
+        reformed.calculate("gas_consumption", 2027)[0]
+        > baseline.calculate("gas_consumption", 2027)[0]
+    )
+    assert reformed.calculate("electricity_consumption", 2027)[0] == pytest.approx(
+        baseline.calculate("electricity_consumption", 2027)[0]
+    )

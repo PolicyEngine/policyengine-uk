@@ -29,9 +29,18 @@ year) applies to each month or quarter of it, and one with no end, which
 removes the stated values after its start, to every month or quarter after
 it. A month or quarter with no value is an error.
 
-The OBR forecasts utilities only, so electricity and gas grow at the same
-rate after the ONS outturn: each index is the fuel's own price to there and a
-utilities proxy after it.
+The OBR forecasts utilities only, so by default electricity and gas grow at
+the same rate after the ONS outturn: each index is the fuel's own price to
+there and a utilities proxy after it. ``fuel_growth.electricity`` and
+``fuel_growth.gas`` replace the OBR rate for one fuel in any quarter they
+state, on the same published basis: electricity's with the change in its own
+VAT taken out, ``(1 + g) * e(q - 4) / e(q) - 1``, where ``e`` is the
+electricity VAT factor averaged over the quarter's months, and gas's as
+stated. In such a quarter the electricity, gas and solid fuels index grows at
+the two fuels' rates (each the OBR's where not stated), weighted by
+electricity's share of the utilities weight, with the utilities VAT change
+taken out as above. Where neither is stated, every index is as described
+above.
 
 Annual levels average a year's four quarters, each weighted by its share of
 the year's domestic consumption (``consumption_shares``; for electricity, gas
@@ -160,16 +169,55 @@ class EnergyPriceInputs:
         share = self.utilities_electricity_share(quarter[0])
         return 1 + share * (factor / 3 - 1)
 
-    def utilities_growth(self, quarter) -> float:
-        """OBR utilities inflation for a quarter, before the VAT change."""
+    def obr_utilities(self, quarter) -> float:
+        """The OBR's published utilities inflation for a quarter."""
         growth = self.prices.obr.utilities(_start(quarter))
         if growth is None:
             raise ValueError(
                 f"The OBR utilities forecast has no value for {_label(quarter)}."
             )
-        return (1 + growth) * self.utilities_vat_factor(
+        return growth
+
+    def utilities_growth(self, quarter, published=None) -> float:
+        """Utilities inflation for a quarter, before the VAT change.
+
+        ``published`` is the rate on the published basis; it defaults to
+        the OBR's.
+        """
+        if published is None:
+            published = self.obr_utilities(quarter)
+        return (1 + published) * self.utilities_vat_factor(
             _year_earlier(quarter)
         ) / self.utilities_vat_factor(quarter) - 1
+
+    def stated_fuel_growth(self, fuel: str, quarter):
+        """A fuel's own published-basis growth for a quarter, or None."""
+        return self.prices.fuel_growth.get_child(fuel)(_start(quarter))
+
+    def electricity_quarter_vat_factor(self, quarter) -> float:
+        months = _months(quarter)
+        return sum(self.electricity_vat_factor(*month) for month in months) / 3
+
+    def forecast_growth(self, key: str, quarter) -> float:
+        """A series' growth for a forecast quarter, before the VAT change."""
+        electricity = self.stated_fuel_growth("electricity", quarter)
+        gas = self.stated_fuel_growth("gas", quarter)
+        if electricity is None and gas is None:
+            return self.utilities_growth(quarter)
+        if key == "electricity":
+            if electricity is None:
+                return self.utilities_growth(quarter)
+            return (1 + electricity) * self.electricity_quarter_vat_factor(
+                _year_earlier(quarter)
+            ) / self.electricity_quarter_vat_factor(quarter) - 1
+        if key == "gas":
+            return self.utilities_growth(quarter) if gas is None else gas
+        obr = self.obr_utilities(quarter)
+        share = self.utilities_electricity_share(quarter[0])
+        blended = share * (obr if electricity is None else electricity) + (
+            1 - share
+        ) * (obr if gas is None else gas)
+        return self.utilities_growth(quarter, blended)
 
     def consumption_shares(self, key: str, year: int) -> list:
         """Each quarter's weight in a year's average, summing to one."""
@@ -209,7 +257,7 @@ def quarterly_levels(inputs: EnergyPriceInputs, key: str) -> dict:
             )
         else:
             levels[quarter] = levels[_year_earlier(quarter)] * (
-                1 + inputs.utilities_growth(quarter)
+                1 + inputs.forecast_growth(key, quarter)
             )
     return levels
 
