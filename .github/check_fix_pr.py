@@ -29,7 +29,9 @@ TEST_CLASS_BASES = frozenset({"object", "unittest.TestCase"})
 REPRODUCER_HINT = (
     'Use "Reproducer: policyengine_uk/tests/test_example.py::test_regression", '
     '"Reproducer: policyengine_uk/tests/policy/example.yaml::Case name", '
-    'or "Reproducer: n/a: <reason>" when model source and dependencies are unchanged.'
+    'or "Reproducer: n/a: <reason>" when model source and dependencies are unchanged. '
+    "Separate several ids with commas or semicolons, and put an id in backticks "
+    "when its name contains either."
 )
 
 
@@ -112,6 +114,11 @@ def _exemption(reproducer: str) -> re.Match | None:
 
 def _unquote_id(value: str) -> str:
     value = value.strip()
+    # A line can end its sentence after a quoted id: "`a.py::test_b`." The
+    # period is not part of the id. An unquoted id keeps it, since a YAML
+    # test's name can end with one.
+    if value.startswith("`") and value.endswith("`."):
+        value = value[:-1]
     return value[1:-1] if value.startswith("`") and value.endswith("`") else value
 
 

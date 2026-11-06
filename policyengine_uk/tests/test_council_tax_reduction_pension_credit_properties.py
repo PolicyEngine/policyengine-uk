@@ -7,8 +7,8 @@ Law:
   24). Capital for the 16,000 limit is calculated under the same Part (SI
   2012/2885 reg 11(3); WSI 2013/3029 reg 30(2)), so the limit cannot apply.
   The award is the maximum reduction less non-dependant deductions.
-- Savings credit only: the Secretary of State's assessment of income and
-  capital is used, adjusted for the savings credit payable (SI 2012/2885 Sch 1
+- Savings credit only: councils use the Secretary of State's assessment of
+  income and capital and add the savings credit payable (SI 2012/2885 Sch 1
   para 14; WSI 2013/3029 Sch 1 para 8; SSI 2012/319 reg 25).
 
 Invariants, for any generated population of families, where L is the eligible
@@ -21,12 +21,23 @@ liability, ND the non-dependant deductions and A the applicable amount:
 3. Savings-credit-only recipients get max(0, L - 0.2 x max(0, PC income + SC -
    A) - ND) when the Pension Credit assessment of capital is within 16,000, and
    nothing otherwise.
-4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
-   max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change less pensioners' Child Benefit
-   and the schemes' pensioner earnings disregard, recomputed here (income from its components,
-   the disregard from the statutory sums) rather than read from the variables
-   under test.
+4. Differential: everyone else keeps the general formula, max(0, L - 0.2 x
+   max(0, I - A) - ND) when capital C is within 16,000, where I is the general
+   income definition plus tariff income on C, both recomputed here from their
+   components and the regulations rather than read from the variables under
+   test, less pensioners' Child Benefit and the schemes' pensioner earnings
+   disregard (recomputed from the statutory sums). C is household savings plus
+   other property at 90% of its value (SI 2012/2885 Sch 1 para 32(a)), or, for
+   a Welsh Universal Credit recipient, the Universal Credit assessment of
+   capital (WSI 2013/3029 Sch 6 para 9(6)), or nil for a Welsh applicant on
+   Income Support or income-based JSA or ESA (Sch 10 para 8). A UC award
+   includes one the cap or deductions reduce to nil. Tariff income is 1 a week
+   per 500, or part, over 10,000 for pensioners (Sch 1 para 37), counting
+   capital up to 16,000 except in Scotland (SSI 2012/319 reg 27(2)); for people
+   under pension age in Wales and Scotland 1 a week per 250, or part, over
+   6,000 (WSI 2013/3029 Sch 6 para 33; SSI 2021/249 reg 63(1)(b)), or with
+   Universal Credit 4.35 a month (UC Regs 2013 reg 72; SSI 2021/249 reg
+   63(1)(a)), and nil on Income Support or income-based JSA or ESA.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
@@ -35,6 +46,33 @@ liability, ND the non-dependant deductions and A the applicable amount:
 8. Under the Pension Credit freeze, receipt and the savings credit payable
    follow the frozen (baseline) award, even where the reform alone would
    change which credit is received.
+
+Invariants 2 to 4 and 7's assessment under invariant 4 are the shared
+formula's, so they apply where council_tax_reduction_devolved_working_age is
+false. A Scottish or Welsh claim that is not a pensioner's takes the devolved
+working-age route instead, where these hold:
+
+9. Scheme: in Scotland and Wales a claim takes the working-age route exactly
+   when no applicant or partner has reached the qualifying age for State
+   Pension Credit, or one has but the family has an award of Universal Credit
+   with a member under that age, or is on Income Support, income-based JSA or
+   income-related ESA (WSI 2013/3029 reg 3; SSI 2021/249 reg 3). So a
+   mixed-age couple on Universal Credit takes it. Recomputed here from the
+   generated ages (67 or over, or 60 or under) and Universal Credit
+   entitlement.
+10. No Pension Credit route: a working-age claim is never in receipt of a
+    guarantee credit or of savings credit only.
+11. Taper on the route's own measures: CTR is max(0, L - 0.2 x max(0, I_wa -
+    A_wa) - ND) when the assessable capital is within 16,000, and nothing
+    otherwise, where I_wa and A_wa are the working-age income and applicable
+    amount.
+12. Passport: a claimant on Income Support, income-based JSA or
+    income-related ESA without Universal Credit has nil working-age income
+    (SSI 2021/249 reg 13(11); WSI 2013/3029 Sch 9 and 10 para 8).
+13. Welsh Universal Credit: a Welsh claim with Universal Credit counts the
+    Secretary of State's earned income plus Universal Credit unearned income
+    plus the award, against the Universal Credit maximum amount (WSI
+    2013/3029 Sch 6 paras 3 and 9).
 """
 
 import numpy as np
@@ -83,6 +121,7 @@ state_pension = st.one_of(
 guarantees = st.one_of(st.none(), st.floats(240, 450))
 CAPITAL_LIMIT = 16_000
 WITHDRAWAL_RATE = 0.2
+SALE_EXPENSES = 0.1
 
 
 @st.composite
@@ -258,16 +297,35 @@ BENUNIT_VARIABLES = [
     "pension_credit_income",
     "pension_credit_assessable_capital",
     "council_tax_reduction_pensioner",
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_assessable_capital",
+    "council_tax_reduction_working_age_passported",
+    "council_tax_reduction_working_age_has_universal_credit",
+    "council_tax_reduction_working_age_earned_income",
+    "council_tax_reduction_working_age_universal_credit_award",
+    "council_tax_reduction_relevant_income_based_benefit",
+    "is_uc_entitled",
+    "uc_unearned_income",
+    "uc_maximum_amount",
+    "universal_credit",
+    "uc_assessable_capital",
+    "claims_universal_credit",
+    "universal_credit_pre_benefit_cap",
+    "council_tax_reduction_head_applies_alone",
+    "legacy_benefits_home_letting_income",
 ]
-# council_tax_reduction_applicable_income on main before this change (1c5b4d04):
-# these incomes and benefits, less income tax, National Insurance and half of
-# pension contributions, floored at zero. Since #2033, a pensioner family's
-# earnings disregard also comes off before the floor. These GB families now
-# exclude Child Benefit on the pensioner general-rules route as well.
+# council_tax_reduction_applicable_income outside the Pension Credit routes:
+# these incomes and benefits, less the income tax on them, National Insurance,
+# half of pension contributions and, for pensioner families, Child Benefit and
+# the pensioner earnings disregard (since #2033), floored at zero. Rent from property,
+# interest and dividends are income from capital and do not count, and nor
+# does the tax on them; rent for part of the home counts less £20 a week.
 MAIN_INCOME_COMPONENTS = [
     "employment_income",
     "self_employment_income",
-    "property_income",
+    "legacy_benefits_home_letting_income",
     "private_pension_income",
     "carers_allowance",
     "esa_contrib",
@@ -284,10 +342,12 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-# The means tests deduct income tax before the winter fuel payment charge
-# (ITEPA 2003 s.681I), which recovers a payment rather than taxing the income
-# they assess. A pensioner over £35,000 of total income is charged it.
-MAIN_DEDUCTIONS = ["income_tax_before_winter_fuel_payment_charge", "national_insurance"]
+# The means tests deduct the income tax before the winter fuel payment charge
+# (ITEPA 2003 s.681I), less the tax on income they do not take into account
+# due without earnings (legacy_means_test_deducted_income_tax): the charge
+# recovers a payment rather than taxing the income they assess. A pensioner
+# over £35,000 of total income is charged it.
+MAIN_DEDUCTIONS = ["legacy_means_test_deducted_income_tax", "national_insurance"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
@@ -297,6 +357,7 @@ PENSIONER_ADDITIONAL_DISREGARD = 17.10
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
     "savings",
+    "other_residential_property_value",
 ]
 
 
@@ -383,6 +444,62 @@ def calculate(units, guarantee=None, **kwargs):
     return values
 
 
+def universal_credit_route(values, i):
+    """A working-age applicant with an award of Universal Credit: paid, or
+    claimed and entitled before the cap and deductions (UC Regs 2013 reg 81),
+    unless the household head applies alone."""
+    award = values["universal_credit"][i] > 0 or (
+        values["claims_universal_credit"][i]
+        and values["universal_credit_pre_benefit_cap"][i] > 0
+    )
+    return (
+        award
+        and not values["council_tax_reduction_head_applies_alone"][i]
+        and not values["council_tax_reduction_pensioner"][i]
+    )
+
+
+def passported(values, i):
+    # council_tax_reduction_relevant_income_based_benefit already leaves out a
+    # household head who applies alone (#2078).
+    return (
+        values["council_tax_reduction_relevant_income_based_benefit"][i]
+        and not values["council_tax_reduction_pensioner"][i]
+    )
+
+
+def expected_capital(unit, values, i):
+    # In 2026 Wales takes a UC award's capital from the Secretary of State
+    # (WSI 2013/3029 Sch 6 para 9(6)) and disregards a passported applicant's
+    # whole capital (Sch 10 para 8); Scotland does neither (SSI 2021/249).
+    if unit["country"] == "WALES" and universal_credit_route(values, i):
+        return values["uc_assessable_capital"][i]
+    if unit["country"] == "WALES" and passported(values, i):
+        return 0.0
+    return (
+        values["savings"][i]
+        + (1 - SALE_EXPENSES) * values["other_residential_property_value"][i]
+    )
+
+
+def expected_tariff_income(unit, values, i, capital):
+    def steps(threshold, step, limit=CAPITAL_LIMIT):
+        return np.ceil(max(0.0, min(capital, limit) - threshold) / step)
+
+    if values["council_tax_reduction_pensioner"][i]:
+        # SSI 2012/319 reg 27(2) sets no ceiling on a Scottish pensioner's
+        # counted capital.
+        limit = np.inf if unit["country"] == "SCOTLAND" else CAPITAL_LIMIT
+        return steps(10_000, 500, limit) * 52
+    if unit["country"] == "ENGLAND":
+        return 0.0
+    if universal_credit_route(values, i):
+        return steps(6_000, 250) * 4.35 * 12
+    if passported(values, i):
+        return 0.0
+    return steps(6_000, 250) * 52
+
+
 def tapered(liability, income, applicable_amount, non_dep):
     excess = max(0.0, income - applicable_amount)
     return max(0.0, liability - WITHDRAWAL_RATE * excess - non_dep)
@@ -417,11 +534,58 @@ def test_savings_credit_only_awards_use_the_pension_credit_assessment(units):
     check_routes(units, values)
 
 
+def check_devolved_route(unit, values, i):
+    """Invariants 9 to 13 for a Scottish or Welsh claim."""
+    pension_age = any(age >= 67 for age in unit["ages"])
+    working_age = any(age <= 60 for age in unit["ages"])
+    universal_credit = bool(values["is_uc_entitled"][i])
+    income_based = bool(
+        values["council_tax_reduction_relevant_income_based_benefit"][i]
+    )
+    expected = not pension_age or (universal_credit and working_age) or income_based
+    devolved = bool(values["council_tax_reduction_devolved_working_age"][i])
+    assert devolved == expected, (unit, devolved)
+    if not devolved:
+        return
+    assert not values["in_receipt_of_guarantee_credit"][i], unit
+    assert not values["in_receipt_of_savings_credit_only"][i], unit
+    ctr = values["simulated_council_tax_reduction_benunit"][i]
+    liability = values["council_tax_reduction_maximum_eligible_liability"][i]
+    non_dep = values["council_tax_reduction_non_dep_deductions"][i]
+    income = values["council_tax_reduction_working_age_applicable_income"][i]
+    amount = values["council_tax_reduction_working_age_applicable_amount"][i]
+    has_universal_credit = values[
+        "council_tax_reduction_working_age_has_universal_credit"
+    ][i]
+    if values["council_tax_reduction_working_age_passported"][i]:
+        assert not has_universal_credit, unit
+        assert income == 0, unit
+    if unit["country"] == "WALES" and has_universal_credit:
+        assert (
+            abs(
+                income
+                - values["council_tax_reduction_working_age_earned_income"][i]
+                - values["uc_unearned_income"][i]
+                - values["council_tax_reduction_working_age_universal_credit_award"][i]
+            )
+            < 0.01
+        ), unit
+        assert abs(amount - values["uc_maximum_amount"][i]) < 0.01, unit
+    expected_ctr = tapered(liability, income, amount, non_dep) * (
+        values["council_tax_reduction_assessable_capital"][i] <= CAPITAL_LIMIT
+    )
+    assert abs(ctr - expected_ctr) < 0.01, (unit, ctr, expected_ctr)
+
+
 def check_routes(units, values):
     check_structural(values)
     for i, unit in enumerate(units):
         if not values["national"][i]:
             continue
+        if unit["country"] != "ENGLAND":
+            check_devolved_route(unit, values, i)
+            if values["council_tax_reduction_devolved_working_age"][i]:
+                continue
         ctr = values["simulated_council_tax_reduction_benunit"][i]
         liability = values["council_tax_reduction_maximum_eligible_liability"][i]
         non_dep = values["council_tax_reduction_non_dep_deductions"][i]
@@ -439,13 +603,25 @@ def check_routes(units, values):
                 values["pension_credit_assessable_capital"][i] <= CAPITAL_LIMIT
             )
         else:
-            income = values["income_under_main_definition"][i]
+            capital = expected_capital(unit, values, i)
+            # A UC award's income is the Secretary of State's assessment, which
+            # has no head for rent from part of the home.
+            home_letting = (
+                values["legacy_benefits_home_letting_income"][i]
+                if universal_credit_route(values, i)
+                else 0.0
+            )
+            income = (
+                values["income_under_main_definition"][i]
+                - home_letting
+                + expected_tariff_income(unit, values, i, capital)
+            )
             assert (
                 abs(values["council_tax_reduction_applicable_income"][i] - income)
                 < 0.01
             ), unit
             expected = tapered(liability, income, applicable_amount, non_dep) * (
-                values["savings"][i] <= CAPITAL_LIMIT
+                capital <= CAPITAL_LIMIT
             )
         assert abs(ctr - expected) < 0.01, (unit, ctr, expected)
 
@@ -519,9 +695,10 @@ def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guaran
 
 
 def test_ctr_income_deducts_tax_before_the_winter_fuel_payment_charge():
-    """A pensioner with £39,500 of total income is charged the winter fuel
-    payment (ITEPA 2003 s.681I) through income tax. CTR deducts the tax
-    before the charge, so the routes agree with the main definition."""
+    """This pensioner's total income of £39,500 exceeds £35,000, so they owe
+    income tax equal to their Winter Fuel Payment (ITEPA 2003 s.681I(1) and
+    (3); winter_fuel_payment_charge). CTR deducts income tax before that
+    charge, so the routes agree with the main definition."""
     family = dict(
         shape="single_pension",
         ages=[70],

@@ -1,0 +1,735 @@
+# A boarder or lodger is liable to pay the householder on a commercial basis
+# for their occupation, so is not a non-dependant: UC Regs 2013 Sch 4 para
+# 9(2)(d); HB Regs 2006 reg 3(2)(e)(i); CTR (England) prescribed requirements
+# reg 9(2)(e). An unrelated adult in the household who pays nothing remains a
+# non-dependant.
+
+- name: An adult lodger is not a non-dependant
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 4_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        benunit_rent: 9_000
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        tenure_type: RENT_PRIVATELY
+  output:
+    pays_rent_to_householder: [false, true]
+    uc_individual_non_dep_deduction_eligible: [false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+
+- name: The same adult paying nothing is a non-dependant
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      adult:
+        age: 30
+        is_household_head: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        benunit_rent: 9_000
+      adult_unit:
+        members: [adult]
+    households:
+      household:
+        members: [householder, adult]
+        tenure_type: RENT_PRIVATELY
+  output:
+    pays_rent_to_householder: [false, false]
+    uc_individual_non_dep_deduction_eligible: [false, true]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+
+# Person-level liability. HB Regs 2006 reg 8(1)(b) treats the partner of a
+# liable person as liable; the model applies that rule to UC and CTR too, as
+# a stated assumption. Nobody else in a payer's benefit unit is liable, so a
+# lodger's adult son who pays nothing stays the householder's non-dependant.
+# The household head's own benefit unit never pays the householder.
+
+- name: A lodger's non-paying adult son is the householder's non-dependant for Housing Benefit
+  # Scotland, 2026-27. The household head (60) claims Housing Benefit on an
+  # eligible rent of 10,400 a year. An unrelated lodger (50) pays 5,200 a year
+  # (100 a week); her son (30), in her benefit unit, pays nothing and earns
+  # 15,600 a year (300 a week) over 20 hours a week, with no exemption.
+  # The lodger is liable on a commercial basis (reg 3(2)(e)(i)); her son is
+  # not, so he is a non-dependant. He works 20 hours, at least the 16-hour
+  # remunerative work threshold, so his deduction is banded: 300 a week lies
+  # in the band from 279 to 365, whose 2026-27 deduction is 64.35 a week
+  # (non_dep_deduction/amount.yaml): 64.35 x 52 = 3,346.20 a year.
+  # Counted home-letting income: one lodger family at working age,
+  # (100 - 20) x 52 = 4,160 a year. The applicable amount, 95.55 x 52 =
+  # 4,968.60, exceeds it, so Housing Benefit is the eligible rent less the
+  # deduction: 10,400 - 3,346.20 = 7,053.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        # The inference would make an adult of 30 the partner of a claimant
+        # of 50, so the roles are supplied.
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    pays_rent_to_householder: [false, true, false]
+    benunit_is_liable_for_household_rent: [true, false]
+    is_non_dependant_of_household_head: [false, false, true]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false, true]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    legacy_benefits_home_letting_income: [4_160, 0]
+    housing_benefit_applicable_income: [4_160, 0]
+    housing_benefit: [7_053.80, 0]
+
+- name: A lodger's non-paying adult son is the householder's non-dependant for Universal Credit and CTR
+  # The same household, with the household head claiming Universal Credit.
+  # The son is a non-dependant (Sch 4 para 9(2)(d) excludes only a person
+  # liable to pay on a commercial basis), aged 21 or over and not exempt, so
+  # the housing cost contribution is 96.55 a month in 2026-27
+  # (elements/housing/non_dep_deduction/amount.yaml): 96.55 x 12 = 1,158.60.
+  # The housing element is 10,400 - 1,158.60 = 9,241.40. Council tax
+  # reduction takes the same non-dependant flag and, in the model, the
+  # Housing Benefit scale: 64.35 x 52 = 3,346.20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    uc_individual_non_dep_deduction_eligible: [false, false, true]
+    uc_non_dep_deductions: [1_158.60, 0]
+    uc_housing_costs_element: [9_241.40, 5_200]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    council_tax_reduction_non_dep_deductions: [3_346.20, 0]
+
+- name: A working-age lodger couple where one pays is one family for the disregard and neither is a non-dependant
+  # England, 2026-27. One partner pays 6,240 a year (120 a week); the other
+  # pays nothing. Both are liable: the payer directly, the partner as the
+  # payer's partner (HB reg 8(1)(b), and the model's assumption for UC and
+  # CTR). At working age the disregard is 20 on the aggregate paid by the
+  # occupier and their family (HB Sch 5 para 22): (120 - 20) x 52 = 5,200.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      payer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 6_240
+      partner:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [payer, partner]
+    households:
+      household:
+        members: [householder, payer, partner]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, true, true]
+    is_non_dependant_of_household_head: [false, false, false]
+    uc_individual_non_dep_deduction_eligible: [false, false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
+    legacy_benefits_home_letting_income: [5_200, 0]
+
+- name: A lodger couple at pension age where one pays keeps the per-person disregard
+  # England, 2026-27, householder over State Pension age. The same couple:
+  # the pension-age rules disregard 20 of "the amount paid by that person"
+  # (HB (SPC) Sch 5 para 10; SPC Regs Sch IV para 9), so the payer's 120
+  # gives (120 - 20) x 52 = 5,200, and the partner, who pays nothing, adds
+  # no disregard. Neither is a non-dependant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      payer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 6_240
+      partner:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [payer, partner]
+    households:
+      household:
+        members: [householder, payer, partner]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, true, true]
+    is_non_dependant_of_household_head: [false, false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false, false]
+    legacy_benefits_home_letting_income: [5_200, 0]
+
+- name: A son who pays leaves the count and his non-paying claimant mother stays in it
+  # Scotland, 2026-27. In the lodger's benefit unit the claimant mother (50)
+  # pays nothing and earns 15,600 a year over 20 hours a week; her son (25),
+  # who is not a claimant or partner, pays 5,200 a year as a lodger. A payer
+  # who is not a claimant or partner makes nobody else liable, so the son
+  # leaves the count and his mother is a non-dependant: 64.35 x 52 =
+  # 3,346.20, as in the first case. Counted home-letting income is
+  # (100 - 20) x 52 = 4,160, and Housing Benefit 10,400 - 3,346.20 =
+  # 7,053.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      mother:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        employment_income: 15_600
+        weekly_hours: 20
+      son:
+        age: 25
+        is_household_head: false
+        is_claimant_or_partner: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [mother, son]
+    households:
+      household:
+        members: [householder, mother, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    pays_rent_to_householder: [false, false, true]
+    benunit_is_liable_for_household_rent: [true, false]
+    is_non_dependant_of_household_head: [false, true, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, true, false]
+    uc_individual_non_dep_deduction_eligible: [false, true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, false]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    legacy_benefits_home_letting_income: [4_160, 0]
+    housing_benefit: [7_053.80, 0]
+
+- name: Rent entered for a member of the household head's benefit unit is not paid to the householder
+  # The household head's partner has rent_paid_as_lodger set. The household
+  # head's benefit unit is never liable to the householder, so neither member
+  # pays rent to the householder and the head receives none.
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 45
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 4_000
+    benunits:
+      householder_unit:
+        members: [householder, partner]
+    households:
+      household:
+        members: [householder, partner]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    pays_rent_to_householder: [false, false]
+    is_non_dependant_of_household_head: [false, false]
+    rent_from_boarders_and_lodgers: [0, 0]
+
+- name: A lodger's son keeps the Pension Credit exemption from the UC housing cost contribution
+  # England, 2026-27. The household head (40) claims Universal Credit. The
+  # lodger (75) pays 5,200 a year and has a State Pension of 6,000 a year;
+  # her son (40), in her benefit unit, pays nothing and earns 15,600 over 20
+  # hours. He is a non-dependant, but no housing cost contribution applies
+  # where the non-dependant's family receives Pension Credit (UC Regs 2013
+  # Sch 4 para 16). Her guarantee credit is the 238 a week standard minimum
+  # guarantee less her income: 238 x 52 - 6,000 = 6,376 (her son's earnings
+  # are not hers). uc_non_dep_receives_pension_credit computes it with her
+  # family's UC housing element at nil; a family over the qualifying age
+  # claims no UC, so that is her actual award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 75
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+        state_pension: 6_000
+      son:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    is_non_dependant_of_household_head: [false, false, true]
+    pension_credit: [0, 6_376]
+    uc_non_dep_receives_pension_credit: [false, true]
+    uc_individual_non_dep_deduction_eligible: [false, false, false]
+    uc_non_dep_deductions: [0, 0]
+
+# Universal Credit's extended benefit unit (UC Regs 2013 Sch 4 paras 8 to
+# 10). Under para 9(2)(g), DWP leaves out of the renter's non-dependants "a
+# child or qualifying young person for whom no-one in the renter's extended
+# benefit unit is responsible". DWP leaves a boarder or lodger out of that
+# unit (para 9(2)(d)), and the model leaves out their partner too, so nobody
+# in it is responsible for their child or qualifying young person, who
+# supplies no bedroom under para 10. A non-paying parent belongs to the unit,
+# so their child stays a non-dependant. The Housing Benefit and council tax
+# reduction formulas keep their own definitions
+# (is_non_dependant_of_household_head).
+
+- name: A commercial lodger's qualifying young person gives the householder no Universal Credit bedroom
+  # London (Inner South East London), 2026-27. The household head (40)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (40) earns 20,000 and pays the head 5,200 a
+  # year on a commercial basis. The lodger's son (18), in the lodger's
+  # benefit unit, studies for A levels, so the model counts him as a
+  # qualifying young person. The lodger has main responsibility for him, and
+  # nobody in the head's extended benefit unit has any, so he is not the
+  # head's non-dependant for Universal Credit. The head gets one bedroom
+  # (para 10(1)(a)), and the one-bedroom rate of 15,546 a year caps the
+  # rent: housing element 15,546, with no housing cost contribution. The
+  # formula adds the standard allowance, 424.90 x 12 = 5,098.80, for a
+  # maximum amount of 20,644.80. Earned income: 15,000 less income tax of
+  # (15,000 - 12,570) x 20% = 486 and National Insurance of 8% above the
+  # primary threshold of 241.73 a week, 194.40, comes to 14,319.60, of which
+  # DWP takes 55%, 7,875.78. Universal Credit: 20,644.80 - 7,875.78 =
+  # 12,769.02. With the son as a non-dependant aged 16 or over, the head
+  # would get two bedrooms, whose rate of 18,600 exceeds the rent, a housing
+  # element of 18,000 and Universal Credit of 15,223.02.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 18
+        is_household_head: false
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    # Housing Benefit and council tax reduction read their own flag.
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, false]
+    benunits:
+      householder_unit:
+        LHA_allowed_bedrooms: 1
+        uc_non_dep_deductions: 0
+        uc_housing_costs_element: 15_546
+        universal_credit: 12_769.02
+
+- name: A lodger's non-paying adult son stays the householder's non-dependant for Universal Credit and Housing Benefit
+  # The household of the first Housing Benefit case above: Scotland,
+  # 2026-27, a household head (60) with an eligible rent of 10,400, an
+  # unrelated lodger (50) paying 5,200 a year, and the lodger's son (30),
+  # who pays nothing and earns 15,600 over 20 hours a week. The formula
+  # applies para 9(2)(g) only to a child or qualifying young person. The
+  # son, at 30, is neither, so he stays the head's non-dependant for
+  # Universal Credit too. The council keeps his Housing Benefit deduction
+  # of 64.35 x 52 = 3,346.20 and pays 10,400 - 3,346.20 = 7,053.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 10_400
+        tenure_type: RENT_FROM_COUNCIL
+        region: SCOTLAND
+  output:
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, true]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    housing_benefit: [7_053.80, 0]
+
+- name: A non-paying daughter's qualifying young person stays the householder's non-dependant for Universal Credit
+  # London (Inner South East London), 2026-27. The household head (62)
+  # rents privately for 20,000 a year, earns 15,000 and claims Universal
+  # Credit. The head's daughter (36), who pays nothing, lives there with her
+  # son (17), who studies for A levels, in her own benefit unit. The
+  # daughter is the head's non-dependant, so she belongs to the head's
+  # extended benefit unit (para 9(1)(c)), and she has responsibility for
+  # her son, so he stays a non-dependant too. Each is a non-dependant who is
+  # not a child, so the head gets three bedrooms (para 10(1)(a) and (c)),
+  # whose rate of 23,400 exceeds the rent. The daughter, 21 or over and not
+  # exempt, brings a housing cost contribution of 96.55 x 12 = 1,158.60, so
+  # the housing element comes to 20,000 - 1,158.60 = 18,841.40. Universal
+  # Credit: 5,098.80 + 18,841.40 - 7,875.78 = 16,064.42, with the earned
+  # income of the first Universal Credit case in this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 62
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      daughter:
+        age: 36
+        is_household_head: false
+        is_claimant_or_partner: true
+      grandson:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      daughter_unit:
+        members: [daughter, grandson]
+    households:
+      household:
+        members: [householder, daughter, grandson]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    pays_rent_to_householder: [false, false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, true, true]
+    benunits:
+      householder_unit:
+        LHA_allowed_bedrooms: 3
+        uc_non_dep_deductions: 1_158.60
+        uc_housing_costs_element: 18_841.40
+        universal_credit: 16_064.42
+
+- name: A lodger's non-paying adult son takes a householder under 35 off the Universal Credit shared accommodation rate
+  # London (Inner South East London), 2026-27. The household head (25)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (50) pays 5,200 a year; the lodger's son
+  # (30), in the lodger's benefit unit, pays nothing and earns 15,600 over
+  # 20 hours a week. The son is the head's non-dependant, so the model does
+  # not treat the head, single and under 35, as a specified renter: the
+  # head gets two bedrooms, whose rate of 18,600 exceeds the rent. The son
+  # brings a housing cost contribution of 96.55 x 12 = 1,158.60, so the
+  # housing element comes to 18,000 - 1,158.60 = 16,841.40. Universal
+  # Credit: 5,098.80 + 16,841.40 - 7,875.78 = 14,064.42, with the earned
+  # income of the first Universal Credit case in this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 25
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 20
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, son]
+    households:
+      household:
+        members: [householder, lodger, son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    is_uc_non_dependant_of_household_head: [false, false, true]
+    benunits:
+      householder_unit:
+        lha_renter_has_non_dependant: true
+        is_lha_shared_accommodation_rate_specified_renter: false
+        LHA_allowed_bedrooms: 2
+        uc_non_dep_deductions: 1_158.60
+        uc_housing_costs_element: 16_841.40
+        universal_credit: 14_064.42
+
+- name: A commercial lodger's child leaves a householder under 35 on the Universal Credit shared accommodation rate
+  # London (Inner South East London), 2026-27. The household head (25)
+  # rents privately for 18,000 a year, earns 15,000 and claims Universal
+  # Credit. An unrelated lodger (40) pays 5,200 a year and lives there with
+  # a child (10) in the lodger's benefit unit. Nobody in the head's extended
+  # benefit unit has responsibility for the child, so the child is not the
+  # head's non-dependant for Universal Credit. The head, single and under
+  # 35, has no non-dependant, so the shared accommodation rate of 7,800 a
+  # year caps the rent. Universal Credit: 5,098.80 + 7,800 - 7,875.78 =
+  # 5,023.02, with the earned income of the first Universal Credit case in
+  # this group.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 25
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      child:
+        age: 10
+        is_household_head: false
+        is_claimant_or_partner: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: true
+      lodger_unit:
+        members: [lodger, child]
+    households:
+      household:
+        members: [householder, lodger, child]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        region: LONDON
+  output:
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, false]
+    benunits:
+      householder_unit:
+        lha_renter_has_non_dependant: false
+        is_lha_shared_accommodation_rate_specified_renter: true
+        LHA_allowed_bedrooms: 1
+        uc_housing_costs_element: 7_800
+        universal_credit: 5_023.02
+
+# Council tax reduction for people over the qualifying age for State Pension
+# Credit in Scotland: SSI 2012/319 reg 3. In reg 3(1) the Scottish Ministers
+# define a non-dependant as "any person, except someone to whom paragraph (2)
+# applies, who normally resides with the applicant", and in reg 3(2)(e) they
+# except "any person who is liable to make payments on a commercial basis to
+# the applicant or any partner of the applicant in respect of the person's
+# occupation of the dwelling". The model treats the payer's partner as liable
+# too (pays_rent_to_householder); whether the partner is liable turns on the
+# agreement, which the data do not record.
+
+- name: Scottish pension-age council tax reduction leaves out a lodger and partner but not their son or child
+  # Edinburgh, 2026-27. The household head (70) has a State Pension of
+  # 10,000 and owns the home. An unrelated lodger (50) pays the head 5,200 a
+  # year; the lodger's partner (50) pays nothing; their son (30), who is
+  # neither claimant nor partner, pays nothing and earns 5,200 over 20 hours
+  # a week; their child (10) pays nothing. The head falls under the
+  # pension-age scheme. The lodger falls within reg 3(2)(e), and the model
+  # treats the partner as liable as well, so neither is a non-dependant. The
+  # son and the child sit in the lodger's benefit unit, not the head's (reg
+  # 3(2)(a)), and owe the head nothing, so both count as non-dependants under
+  # reg 3(1);
+  # the model flags the son, at 18 or over, for a deduction, and the child,
+  # under 18, for none.
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        state_pension: 10_000
+      lodger:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      partner:
+        age: 50
+        is_household_head: false
+        is_claimant_or_partner: true
+      son:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        employment_income: 5_200
+        weekly_hours: 20
+      child:
+        age: 10
+        is_household_head: false
+        is_claimant_or_partner: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        claims_all_entitled_benefits: true
+      lodger_unit:
+        members: [lodger, partner, son, child]
+    households:
+      household:
+        members: [householder, lodger, partner, son, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    council_tax_reduction_pensioner: [true, false]
+    pays_rent_to_householder: [false, true, true, false, false]
+    is_non_dependant_of_household_head: [false, false, false, true, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, true, false]
