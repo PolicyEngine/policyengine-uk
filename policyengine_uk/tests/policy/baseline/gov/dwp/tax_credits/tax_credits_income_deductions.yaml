@@ -1,0 +1,456 @@
+# SI 2002/2006 regs 3(7) and 10: gross member pensions and eligible Gift Aid
+# are deducted after the four-step income calculation; other investment
+# income belongs to Step One. Existing ISA income is already additional.
+# https://www.legislation.gov.uk/uksi/2002/2006/regulation/3
+# https://www.legislation.gov.uk/uksi/2002/2006/regulation/10
+# The WTC cases use HMRC 2024-25 basic 2435, threshold 7955 and taper 41%.
+# At 16 hours, a 60-year-old qualifies without a 30-hour or family element.
+# Gross contributions already include relief: never multiply them by 1.25.
+# Gift Aid is net, and the existing gross-up turns 80 into 100.
+
+- name: Other investment income counts above the shared Step One disregard
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        other_investment_income: 1000
+    benunits:
+      family:
+        members: &id001
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id001
+  output:
+    tax_credits_current_year_income: 20700
+    tax_credits_applicable_income: 20700
+- name: Personal pension contributions use their existing gross amount once
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        personal_pension_contributions: 1000
+    benunits:
+      family:
+        members: &id002
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id002
+  output:
+    tax_credits_current_year_income: 19000
+    tax_credits_applicable_income: 19000
+    pension_contributions: 1000
+- name: Reported employee member pension payments reduce Tax Credit income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        employee_pension_contributions_reported: 1000
+    benunits:
+      family:
+        members: &id003
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id003
+  output:
+    tax_credits_current_year_income: 19000
+    tax_credits_applicable_income: 19000
+    employee_pension_contributions: 1000
+    pension_contributions: 1000
+- name: Mixed member pension payments exclude the employer contribution
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        personal_pension_contributions: 600
+        employee_pension_contributions_reported: 400
+        employer_pension_contributions: 2000
+    benunits:
+      family:
+        members: &id004
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id004
+  output:
+    tax_credits_current_year_income: 19000
+    tax_credits_applicable_income: 19000
+    pension_contributions: 1000
+- name: Eligible net Gift Aid uses the existing grossed up donation once
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        gift_aid: 80
+    benunits:
+      family:
+        members: &id005
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id005
+  output:
+    tax_credits_current_year_income: 19900
+    tax_credits_applicable_income: 19900
+    gift_aid_grossed_up: 100
+- name: Investment disregard precedes the joint member deductions
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        savings_interest_income: 200
+        other_investment_income: 200
+        personal_pension_contributions: 1000
+        employee_pension_contributions_reported: 500
+        gift_aid: 80
+    benunits:
+      family:
+        members: &id006
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id006
+  output:
+    tax_credits_current_year_income: 18500
+    tax_credits_applicable_income: 18500
+    pension_contributions: 1500
+    gift_aid_grossed_up: 100
+- name: Other investment income of exactly three hundred is disregarded
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        other_investment_income: 300
+    benunits:
+      family:
+        members: &id007
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id007
+  output:
+    tax_credits_current_year_income: 20000
+    tax_credits_applicable_income: 20000
+- name: Only the excess over the three hundred investment disregard counts
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        other_investment_income: 301
+    benunits:
+      family:
+        members: &id008
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id008
+  output:
+    tax_credits_current_year_income: 20001
+    tax_credits_applicable_income: 20001
+- name: Joint claimants share one investment disregard
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 10000
+        other_investment_income: 200
+      partner:
+        age: 38
+        employment_income: 10000
+        other_investment_income: 200
+    benunits:
+      family:
+        members: &id009
+        - claimant
+        - partner
+        would_claim_uc: false
+    households:
+      home:
+        members: *id009
+  output:
+    tax_credits_current_year_income: 20100
+    tax_credits_applicable_income: 20100
+    is_claimant_or_partner:
+    - true
+    - true
+- name: Both joint claimants deduct their own gross pensions and eligible gifts
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        personal_pension_contributions: 1000
+        gift_aid: 80
+      partner:
+        age: 38
+        employment_income: 15000
+        personal_pension_contributions: 500
+        gift_aid: 40
+    benunits:
+      family:
+        members: &id010
+        - claimant
+        - partner
+        would_claim_uc: false
+    households:
+      home:
+        members: *id010
+  output:
+    tax_credits_current_year_income: 33350
+    tax_credits_applicable_income: 33350
+    pension_contributions:
+    - 1000
+    - 500
+    gift_aid_grossed_up:
+    - 100
+    - 50
+    is_claimant_or_partner:
+    - true
+    - true
+- name: A dependent childs income and pension do not alter the claimants assessment
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+      child:
+        age: 10
+        other_investment_income: 1000
+        personal_pension_contributions: 2000
+    benunits:
+      family:
+        members: &id011
+        - claimant
+        - child
+        would_claim_uc: false
+    households:
+      home:
+        members: *id011
+  output:
+    tax_credits_current_year_income: 20000
+    tax_credits_applicable_income: 20000
+    is_claimant_or_partner:
+    - true
+    - false
+    pension_contributions:
+    - 0
+    - 2000
+- name: Employer pension payments are not member deductions
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        employer_pension_contributions: 5000
+    benunits:
+      family:
+        members: &id012
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id012
+  output:
+    tax_credits_current_year_income: 20000
+    tax_credits_applicable_income: 20000
+    pension_contributions: 0
+- name: Registered member deductions cannot make assessed income negative
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 1000
+        personal_pension_contributions: 2000
+    benunits:
+      family:
+        members: &id013
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id013
+  output:
+    tax_credits_current_year_income: 0
+    tax_credits_applicable_income: 0
+    pension_contributions: 2000
+- name: Exempt ISA interest stays additional to ordinary savings interest
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20000
+        savings_interest_income: 1000
+        tax_free_savings_income: 500
+    benunits:
+      family:
+        members: &id014
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id014
+  output:
+    tax_credits_current_year_income: 20700
+    tax_credits_applicable_income: 20700
+    taxable_savings_interest_income: 1000
+- name: Income Support passport preserves the corrected current year assessment
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        employment_income: 2000
+        weekly_hours: 4
+        personal_pension_contributions: 1000
+        income_support_reported: 1000
+      child:
+        age: 3
+    benunits:
+      family:
+        members: &id015
+        - claimant
+        - child
+        would_claim_uc: false
+    households:
+      home:
+        members: *id015
+  output:
+    tax_credits_current_year_income: 1000
+    tax_credits_applicable_income: 0
+    income_support_eligible: true
+    is_on_income_support:
+    - true
+    - false
+- name: Other investment income reduces a genuine older workers WTC award
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        weekly_hours: 16
+        employment_income: 10000
+        working_tax_credit_reported: 1
+        other_investment_income: 1000
+    benunits:
+      family:
+        members: &id016
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id016
+  output:
+    working_tax_credit: 1309.55
+    tax_credits_current_year_income: 10700
+    tax_credits_applicable_income: 10700
+    WTC_maximum_rate: 2435
+    WTC_worker_element: 0
+    is_WTC_eligible: true
+    is_claimant_or_partner: true
+- name: Gross personal pension increases a genuine older workers WTC award
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        weekly_hours: 16
+        employment_income: 10000
+        working_tax_credit_reported: 1
+        personal_pension_contributions: 1000
+    benunits:
+      family:
+        members: &id017
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id017
+  output:
+    working_tax_credit: 2006.55
+    tax_credits_current_year_income: 9000
+    tax_credits_applicable_income: 9000
+    WTC_maximum_rate: 2435
+    WTC_worker_element: 0
+    is_WTC_eligible: true
+    is_claimant_or_partner: true
+    pension_contributions: 1000
+- name: Eligible Gift Aid increases a genuine older workers WTC award
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        weekly_hours: 16
+        employment_income: 13000
+        working_tax_credit_reported: 1
+        gift_aid: 80
+    benunits:
+      family:
+        members: &id018
+        - claimant
+        would_claim_uc: false
+    households:
+      home:
+        members: *id018
+  output:
+    working_tax_credit: 407.55
+    tax_credits_current_year_income: 12900
+    tax_credits_applicable_income: 12900
+    WTC_maximum_rate: 2435
+    WTC_worker_element: 0
+    is_WTC_eligible: true
+    is_claimant_or_partner: true
+    gift_aid_grossed_up: 100
+    income_tax: 86
