@@ -13,6 +13,10 @@ the child's parent, or the person themselves:
   ESA: HB Regs 2006 Sch 4 para 12, Sch 5 para 4 and Sch 6 para 5.
 - The working-age council tax reduction passport and non-dependant
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
+- The higher personal allowance for a single applicant under 25 entitled to
+  main phase employment and support allowance, in Scotland's and Wales's
+  working-age council tax reduction schemes: SSI 2021/249 Sch 1 para 1; WSI
+  2013/3029 Sch 7 para 1.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
 - The benefit cap exemption: HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg
@@ -38,7 +42,7 @@ adult) claims in their own right, so:
   member reports never changes any of these readers for the claimant's family
   or for its existing members;
 - adding such a member changes a reader only by ending the family's severe
-  disability premium, or, for the two Council Tax Reduction readers, by
+  disability premium, or, for the three Council Tax Reduction readers, by
   becoming the household head (these families flag none, so the eldest
   member is the head) who is liable and applies alone, so that the applicant
   changes (CTR_APPLICANT_READERS). A non-dependant aged 18 or over ends the
@@ -128,6 +132,7 @@ FAMILY_READERS = [
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
     "pension_credit_earnings_disregard",
+    "council_tax_reduction_working_age_personal_allowance",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -263,13 +268,14 @@ def other_members(draw):
 # added member older than the claimant and partner becomes the liable head,
 # who then applies alone (council_tax_reduction_head_applies_alone). Their
 # presence then changes the applicant, which is intended, so those families
-# are left out of the comparison with the family on its own for these two
+# are left out of the comparison with the family on its own for these
 # readers. What the added member reports still never changes them: the first
 # property compares a silent added member with the member as drawn for every
 # family.
 CTR_APPLICANT_READERS = [
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
+    "council_tax_reduction_working_age_personal_allowance",
 ]
 
 
