@@ -18,8 +18,11 @@ Invariants, for any working-age family in Scotland or Wales:
    elements of the award count (SSI 2021/249 reg 57(1)(p)), so income rises
    by at least 45p for each £1 as well.
 4. A claimant on income-related ESA and not on Universal Credit gets the
-   whole liability (SSI 2021/249 reg 13(11); WSI 2013/3029 Sch 9 para 8),
-   whatever their earnings.
+   maximum reduction whatever their earnings (SSI 2021/249 reg 13(11); WSI
+   2013/3029 Sch 9 para 8): the whole liability less any deductions for
+   non-dependants (reg 79(1); Sch 6 para 4(1)). The generated families have
+   explicit roles and no non-dependants, so the award is the whole
+   liability. The YAML cases cover a passported claimant's adult son.
 5. The childcare cap depends on how many children have relevant childcare
    charges paid in respect of them (WSI 2013/3029 Sch 6 para 20(3); SSI
    2021/249 regs 38(4) and 42(4)). So a family whose charges sit on one child
@@ -53,12 +56,16 @@ def families(draw):
     region = draw(st.sampled_from(REGIONS))
     couple = draw(st.booleans())
     children = draw(st.integers(0, 3))
+    # Roles are explicit. Without them, of two adults at least 20 years
+    # apart, the younger is presumed to be the elder's child
+    # (is_claimant_or_partner) and can become a non-dependant.
     people = [
         {
             "age": draw(st.integers(18, 60)),
             "employment_income": draw(st.floats(0, 40_000)),
             "weekly_hours": draw(st.sampled_from([0, 10, 20, 35])),
             "council_tax_benefit_reported": 100,
+            "is_claimant_or_partner": True,
         }
     ]
     if couple:
@@ -66,10 +73,13 @@ def families(draw):
             {
                 "age": draw(st.integers(18, 60)),
                 "employment_income": draw(st.floats(0, 20_000)),
+                "is_claimant_or_partner": True,
             }
         )
     for _ in range(children):
-        people.append({"age": draw(st.integers(0, 15))})
+        people.append(
+            {"age": draw(st.integers(0, 15)), "is_claimant_or_partner": False}
+        )
     return {
         "region": region,
         "people": people,
@@ -173,7 +183,11 @@ def test_income_related_esa_passports_to_the_full_liability(units):
         "council_tax_reduction_maximum_eligible_liability", YEAR, map_to="benunit"
     )
     flag = sim.calculate("council_tax_reduction_working_age_passported", YEAR)
+    # The maximum reduction is the liability less any non-dependant
+    # deductions (reg 79(1); Sch 6 para 4(1)), and these families have none.
+    deductions = sim.calculate("council_tax_reduction_non_dep_deductions", YEAR)
     assert flag.all()
+    assert np.allclose(deductions, 0)
     assert np.allclose(award, liability, atol=0.01)
 
 
