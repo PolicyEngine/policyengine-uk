@@ -71,8 +71,12 @@ test_child_tax_credit_school_leaver_routes_properties.py. The route to the 1
 September after the 16th birthday (UC, PC) or the 31 August before it (Child
 Benefit reg 4, CTC reg 4), which has no education condition, counts for a
 year that starts before that date (invariant 5). Nobody here is in
-remunerative work, which ends CTC's route. UC's terminal date is an input;
-PC's September terminal date is absent.
+remunerative work, which ends CTC's route. The tests here set UC's
+terminal-date input, false unless a test varies it; PC's terminal date
+follows the 19th-birthday date fact, which is true for everyone under 20 when
+only an age is given (test_qualifying_young_person_terminal_date_properties.py
+covers both dates). Nobody here reports Income Support, which SPC reg 4A(5)
+lists and UC reg 5(5) does not.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
