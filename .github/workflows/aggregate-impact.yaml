@@ -166,6 +166,8 @@ jobs:
             # A crash is recorded in result.json for the comparison to judge.
             (cd "$side" && PYTHONPATH="$tool" .venv/bin/python -m pe_uk_aggregate_impact measure \
               --label "$side" \
+              --profile-first-year \
+              --profile-first-guard-probe \
               --pin "$GITHUB_WORKSPACE/head/policyengine_uk/tests/certified_dataset.yaml" \
               --fallback-partition "$GITHUB_WORKSPACE/head/policyengine_uk/data/fiscal_partition.yaml" \
               --git-sha "$(git rev-parse HEAD)" \
@@ -245,7 +247,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aggregate-impact-report
-          path: report
+          path: |
+            report
+            measured/*/timing.jsonl
+            measured/*/infra-profile.json
           if-no-files-found: ignore
           retention-days: 30
 

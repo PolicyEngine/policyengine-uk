@@ -82,7 +82,7 @@ the baseline and requires it to match the first computation exactly.
 
 from __future__ import annotations
 
-from typing import Iterable, Mapping, Optional
+from typing import Callable, Iterable, Mapping, Optional
 
 import numpy as np
 
@@ -711,6 +711,7 @@ def counted_once(
     snapshot: Optional[Mapping] = None,
     active: Iterable[str] = (),
     variables_to_check: Optional[Iterable[str]] = None,
+    probe_profile: Optional[Callable] = None,
 ) -> dict:
     """Perturb each component (or those in ``variables_to_check``).
 
@@ -748,6 +749,7 @@ def counted_once(
     selected = None if variables_to_check is None else set(variables_to_check)
     results, double_count_results = [], []
     touched = set()
+    probe_pending = probe_profile is not None
     try:
         for variable in partition.component_variables():
             if selected is not None and variable not in selected:
@@ -809,13 +811,41 @@ def counted_once(
                 for total in in_totals
             }
 
-            _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
-            heads1 = _head_arrays(sim, year, needed)
-            model1 = {
-                t: _raw(sim, t, year).astype(np.float64)
-                for t in in_totals
-                if t in model0
-            }
+            profile_probe = probe_pending
+            probe_pending = False
+            probe_completed = False
+            financial_error = None
+            if profile_probe:
+                try:
+                    probe_profile("start", "first_counted_once_probe", year=year)
+                except Exception:  # noqa: BLE001 - diagnostics cannot stop finance
+                    pass
+            try:
+                _perturb(sim, variable, year, baseline, added, monthly, touched=touched)
+                heads1 = _head_arrays(sim, year, needed)
+                model1 = {
+                    t: _raw(sim, t, year).astype(np.float64)
+                    for t in in_totals
+                    if t in model0
+                }
+                probe_completed = True
+            except BaseException as error:
+                financial_error = error
+                raise
+            finally:
+                if profile_probe:
+                    try:
+                        probe_profile(
+                            "stop",
+                            "first_counted_once_probe",
+                            year=year,
+                            completed=probe_completed,
+                        )
+                    except Exception:  # noqa: BLE001 - no private diagnostic text
+                        pass
+                    except BaseException:
+                        if financial_error is None:
+                            raise
             # A head that may respond (a declared reader, or any benefit when the
             # component was zero for everyone) is checked for containment at a
             # second point, which tells a slope of 1 from a step.

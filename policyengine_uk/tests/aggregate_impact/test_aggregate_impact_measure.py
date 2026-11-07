@@ -1139,3 +1139,62 @@ def test_a_double_count_whose_container_is_not_finite_is_not_called_stale(units)
         "`expected_sdlt` still contains `corporate_sdlt` (#2159)"
     ) in text
     assert "NO LONGER contained" not in text and "fewer than 10 units" not in text
+
+
+def test_optional_guard_observer_preserves_selection_and_measurement(monkeypatch):
+    import importlib
+
+    module = importlib.import_module("policyengine_uk.utils.aggregate_impact.measure")
+    sim = YearSim({2026: 1})
+    sim.tax_benefit_system.parameters = object()
+    sim._invalidate_all_caches = lambda: None
+    part = SimpleNamespace(
+        heads=(),
+        double_counts=(),
+        component_variables=lambda: (),
+        as_dict=lambda: {},
+    )
+    spec = SimpleNamespace(years=[2026], guard_year=2026, counted_once_tolerance=0)
+    calls = []
+
+    def counted(*args, **kwargs):
+        calls.append((args, kwargs))
+        return {"status": "ran", "components": [], "double_counts": []}
+
+    def measure_year(sim, partition, spec, year, rec, households):
+        rec.metric("stub.total", "Stub total", "stub", "gbp", year, 1)
+        households[year] = {"stub": [1]}
+
+    replacements = {
+        "read_model_lists": lambda _: ({}, []),
+        "closure_problems": lambda *args: [],
+        "snapshot_inputs": lambda *args: "snapshot",
+        "measure_year": measure_year,
+        "weighted_total": lambda *args: 1,
+        "baseline_records": lambda *args: {},
+        "active_parameters": lambda *args: {},
+        "counted_once": counted,
+        "withheld_reasons": lambda *args, **kwargs: [],
+        "stable_runtime": lambda *args: {"stub": True},
+        "tool_digest": lambda: "tool",
+        "definitions_digest": lambda *args: "definitions",
+    }
+    for name, value in replacements.items():
+        monkeypatch.setattr(module, name, value)
+    options = dict(
+        label="head", guard_variables=("tax_a",), fingerprint_at_start="model"
+    )
+    expected, original_households = module.measure(
+        sim, lambda reform=None: sim, part, spec, **options
+    )
+    observer = object()
+    actual, households = module.measure(
+        sim, lambda reform=None: sim, part, spec, guard_profile=observer, **options
+    )
+    assert calls[0][0] == calls[1][0]
+    assert calls[0][1] == {"active": {}, "variables_to_check": ("tax_a",)}
+    assert calls[1][1] == {**calls[0][1], "probe_profile": observer}
+    assert {k: v for k, v in actual.items() if k != "timings"} == {
+        k: v for k, v in expected.items() if k != "timings"
+    }
+    assert households == original_households

@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.locations import BRMAName
 from policyengine_uk.variables.household.demographic.geography import Region
+from policyengine_uk.utils.geography import brma_from_region
 
 # The BRMA a household is placed in when none is input: the BRMA with the
 # most private-rented households in the region, from the 2021 (England, Wales,
@@ -41,60 +42,4 @@ class brma(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
-        # Everything here is read from values already stored, without
-        # calculating region or an earlier year's BRMA. Calculating region
-        # for a year can cache the wrong value for an earlier one (core's
-        # carry-over gives region's default for a year once a later year is
-        # known), and a BRMA stored only on another branch can't be read here.
-        branch_name = household.simulation.branch_name
-        region_holder = household.get_holder("region")
-        brma_holder = household.get_holder("brma")
-
-        def latest_readable(holder, condition):
-            known_periods = sorted(
-                (
-                    known_period
-                    for known_period in holder.get_known_periods()
-                    if condition(known_period)
-                ),
-                key=lambda known_period: known_period.start,
-                reverse=True,
-            )
-            for known_period in known_periods:
-                values = holder.get_array(known_period, branch_name)
-                if values is not None:
-                    return known_period, values
-            return None, None
-
-        def region_in(year):
-            # The last region known at or before the year, as region's own
-            # inputs carry forward, or region's default if none is.
-            _, values = latest_readable(
-                region_holder, lambda known: known.start <= year.start
-            )
-            return region_holder.default_array() if values is None else values
-
-        region = region_in(period)
-        region_default = select(
-            [region == region_value for region_value in REGION_DEFAULT_BRMA],
-            list(REGION_DEFAULT_BRMA.values()),
-            default=BRMAName.MAIDSTONE,
-        )
-        # An input keeps applying in later years, as policyengine-core's
-        # auto_carry_over_input_variables does for input-only variables,
-        # unless the household has changed region since.
-        latest, latest_brma = latest_readable(
-            brma_holder, lambda known: known.start < period.start
-        )
-        if latest is None:
-            return region_default
-        start_region = np.asarray(region_in(latest))
-        moved = np.zeros(household.count, dtype=bool)
-        for known_period in region_holder.get_known_periods():
-            if latest.start < known_period.start <= period.start:
-                values = region_holder.get_array(known_period, branch_name)
-                if values is not None:
-                    moved |= np.asarray(values) != start_region
-        if not moved.any():
-            return latest_brma
-        return where(moved, region_default, latest_brma.decode())
+        return brma_from_region(household, period, REGION_DEFAULT_BRMA)

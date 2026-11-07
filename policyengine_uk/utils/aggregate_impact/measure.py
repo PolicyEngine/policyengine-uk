@@ -1504,6 +1504,14 @@ def as_standard_reforms(reforms) -> list:
     return parse_reforms({"reforms": reforms})
 
 
+def _checkpoint(observer, event, phase, **scope):
+    if observer is not None:
+        try:
+            observer(event, phase, **scope)
+        except Exception:  # noqa: BLE001 - only the observational callback is caught
+            pass
+
+
 def measure_reforms(
     factory: Callable,
     baseline_parameters,
@@ -1514,6 +1522,8 @@ def measure_reforms(
     rec: Recorder,
     baseline: Optional[Mapping[int, Mapping]] = None,
     components: Sequence[str] = (),
+    *,
+    checkpoint: Optional[Callable] = None,
 ) -> list:
     """Cost each reform against the baseline run, and check it responds.
 
@@ -1536,9 +1546,13 @@ def measure_reforms(
     differences that no reform caused.
     """
     outcomes = []
+    _checkpoint(checkpoint, "start", "rebuilt_baseline")
     try:
+        _checkpoint(checkpoint, "start", "rebuilt_factory")
         fresh = factory(reform=None)
+        _checkpoint(checkpoint, "end", "rebuilt_factory")
         for year in years:
+            _checkpoint(checkpoint, "start", "rebuilt_year", year=year)
             again = weighted_total(fresh, "gov_balance", year)
             rec.check(
                 "determinism:rebuilt_baseline",
@@ -1551,8 +1565,11 @@ def measure_reforms(
                 section="determinism",
                 scope=str(year),
             )
+            _checkpoint(checkpoint, "end", "rebuilt_year", year=year)
         del fresh
+        _checkpoint(checkpoint, "end", "rebuilt_baseline")
     except Exception as error:  # noqa: BLE001
+        _checkpoint(checkpoint, "error", "rebuilt_baseline")
         rec.check(
             "determinism:rebuilt_baseline",
             "A rebuilt unreformed simulation reproduces the baseline gov_balance exactly",
@@ -1562,6 +1579,7 @@ def measure_reforms(
         )
     gc.collect()
     for reform in reforms:
+        _checkpoint(checkpoint, "start", "reform", reform=reform.id)
         outcome = {
             "id": reform.id,
             "name": reform.name,
@@ -1573,11 +1591,18 @@ def measure_reforms(
         # The reasons for each withheld year (withheld_reasons).
         hidden_years = {}
         try:
+            _checkpoint(checkpoint, "start", "reform_parameters", reform=reform.id)
             parameters = reform_parameters(reform, baseline_parameters, years)
+            _checkpoint(checkpoint, "end", "reform_parameters", reform=reform.id)
             outcome["parameters"] = parameters
+            _checkpoint(checkpoint, "start", "reform_factory", reform=reform.id)
             reformed = factory(reform=parameters)
+            _checkpoint(checkpoint, "end", "reform_factory", reform=reform.id)
             target = None if reform.responds is None else reform.responds.variable
             for year in years:
+                _checkpoint(
+                    checkpoint, "start", "reform_year", reform=reform.id, year=year
+                )
                 reasons = withheld_reasons(
                     reformed,
                     year,
@@ -1618,6 +1643,9 @@ def measure_reforms(
                     _record_reasons(
                         rec.metrics[f"reform_targets.{reform.id}"], year, reasons
                     )
+                _checkpoint(
+                    checkpoint, "end", "reform_year", reform=reform.id, year=year
+                )
             del reformed
         except Exception as error:  # noqa: BLE001 - one reform's failure is reported, not fatal
             outcome["error"] = f"{type(error).__name__}: {error}"
@@ -1665,6 +1693,12 @@ def measure_reforms(
                     )
         gc.collect()
         outcomes.append(outcome)
+        _checkpoint(
+            checkpoint,
+            "error" if outcome["error"] is not None else "end",
+            "reform",
+            reform=reform.id,
+        )
     return outcomes
 
 
@@ -1680,6 +1714,9 @@ def measure(
     provenance: Optional[Mapping] = None,
     guard_variables: Optional[Sequence[str]] = None,
     fingerprint_at_start: Optional[str] = None,
+    checkpoint: Optional[Callable] = None,
+    year_profile: Optional[Callable] = None,
+    guard_profile: Optional[Callable] = None,
 ) -> tuple:
     """Measure a simulation over the spec's horizon.
 
@@ -1722,27 +1759,52 @@ def measure(
     households = {}
     baseline_balance, baseline_targets, baseline = {}, {}, {}
     reset = getattr(sim, "_invalidate_all_caches", None)
+    profile_pending = year_profile is not None
     for year in spec.years:
-        t = time.time()
-        rec.scope = str(year)
-        measure_year(sim, partition, spec, year, rec, households)
-        rec.scope = ""
-        baseline_balance[year] = weighted_total(sim, "gov_balance", year)
-        baseline_targets[year] = {
-            variable: weighted_total(sim, variable, year)
-            for variable in target_variables
-        }
-        # So that reform figures from a small cell are withheld.
-        baseline[year] = baseline_records(sim, partition, rec, year, target_variables)
-        timings[f"year_{year}"] = round(time.time() - t, 2)
-        if reset is not None:
-            # Keep memory flat across the horizon; supplied inputs survive.
-            reset()
-            gc.collect()
+        _checkpoint(checkpoint, "start", "year", year=year)
+        profile_active = profile_pending
+        profile_pending = False
+        if profile_active:
+            _checkpoint(year_profile, "start", "first_ordinary_year", year=year)
+        profile_completed = False
+        try:
+            t = time.time()
+            rec.scope = str(year)
+            measure_year(sim, partition, spec, year, rec, households)
+            rec.scope = ""
+            baseline_balance[year] = weighted_total(sim, "gov_balance", year)
+            baseline_targets[year] = {
+                variable: weighted_total(sim, variable, year)
+                for variable in target_variables
+            }
+            # So that reform figures from a small cell are withheld.
+            baseline[year] = baseline_records(
+                sim, partition, rec, year, target_variables
+            )
+            timings[f"year_{year}"] = round(time.time() - t, 2)
+            if reset is not None:
+                # Keep memory flat across the horizon; supplied inputs survive.
+                reset()
+                gc.collect()
+            profile_completed = True
+        finally:
+            if profile_active:
+                _checkpoint(
+                    year_profile,
+                    "stop",
+                    "first_ordinary_year",
+                    year=year,
+                    completed=profile_completed,
+                )
+        _checkpoint(checkpoint, "end", "year", year=year)
 
     guard = {"status": "skipped", "reason": "not requested"}
     if run_guard:
+        _checkpoint(checkpoint, "start", "counted_once", year=spec.guard_year)
         t = time.time()
+        guard_options = {}
+        if guard_profile is not None:
+            guard_options["probe_profile"] = guard_profile
         guard = counted_once(
             sim,
             partition,
@@ -1751,7 +1813,9 @@ def measure(
             snapshot,
             active=active_parameters(sim, partition, spec.guard_year),
             variables_to_check=guard_variables,
+            **guard_options,
         )
+        _checkpoint(checkpoint, "end", "counted_once", year=spec.guard_year)
         timings["counted_once"] = round(time.time() - t, 2)
         record_guard_checks(rec, guard)
 
@@ -1766,6 +1830,7 @@ def measure(
         rec,
         baseline=baseline,
         components=partition.component_variables(),
+        checkpoint=checkpoint,
     )
     timings["reforms"] = round(time.time() - t, 2)
     for outcome in reform_outcomes:

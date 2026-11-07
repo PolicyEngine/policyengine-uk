@@ -1,0 +1,191 @@
+# ONS UK administrative lookups, 7 May 2026 and 31 December 2020 V2.
+# See issue #2800 source evidence; council labels are exact ONS matches.
+# Source: Office for National Statistics licensed under the Open Government Licence v.3.0
+- name: Case 1, Edinburgh council infers Scotland without a region input.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    region: SCOTLAND
+    country: SCOTLAND
+    pays_scottish_income_tax: true
+    sdlt_liable: false
+    lbtt_liable: true
+    ltt_liable: false
+
+- name: Case 2, Cardiff council infers Wales without a region input.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        local_authority: CARDIFF
+  output:
+    region: WALES
+    country: WALES
+    pays_scottish_income_tax: false
+    sdlt_liable: false
+    lbtt_liable: false
+    ltt_liable: true
+
+- name: Case 3, Oxford council infers the South East without a region input.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 50_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        local_authority: OXFORD
+  output:
+    region: SOUTH_EAST
+    country: ENGLAND
+    pays_scottish_income_tax: false
+    sdlt_liable: true
+    lbtt_liable: false
+    ltt_liable: false
+
+- name: Case 4, a supplied scotland country infers its region.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    region: SCOTLAND
+    country: SCOTLAND
+
+- name: Case 5, a supplied wales country infers its region.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    region: WALES
+    country: WALES
+
+- name: Case 6, a supplied northern ireland country infers its region.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: NORTHERN_IRELAND
+  output:
+    region: NORTHERN_IRELAND
+    country: NORTHERN_IRELAND
+
+- name: Case 7, absent geography keeps the documented defaults.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    region: LONDON
+    country: ENGLAND
+    local_authority: MAIDSTONE
+    brma: INNER_SOUTH_EAST_LONDON
+
+- name: Case 8, an explicit unknown region remains unknown.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: UNKNOWN
+  output:
+    region: UNKNOWN
+    country: UNKNOWN
+    brma: MAIDSTONE
+
+- name: Case 9, an explicit default-valued Maidstone council infers the South East.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        local_authority: MAIDSTONE
+  output:
+    region: SOUTH_EAST
+    country: ENGLAND
+    brma: SOUTHAMPTON
+
+- name: Case 10, an explicit London region remains authoritative.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: LONDON
+  output:
+    region: LONDON
+    country: ENGLAND
+    brma: INNER_SOUTH_EAST_LONDON
