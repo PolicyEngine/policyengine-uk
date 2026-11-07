@@ -82,6 +82,12 @@ from policyengine_uk.data.capital_gains_projection import (
     capital_gains_application_metadata,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.prepared_baseline import (
+    PreparedBaseline,
+    prepare_current_law_baseline,
+    reuse_prepared_baseline,
+    validate_prepared_baseline_request,
+)
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
@@ -300,6 +306,8 @@ class Simulation(CoreSimulation):
         trace: bool = False,
         reform: Dict | Type[Reform] | tuple = None,
         capital_gains_projection: CapitalGainsProjection | None = None,
+        *,
+        prepared_baseline: PreparedBaseline | None = None,
     ):
         """Initialize a UK simulation.
 
@@ -313,6 +321,16 @@ class Simulation(CoreSimulation):
             capital_gains_projection: Optional common baseline gains projection,
                 shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        if prepared_baseline is not None:
+            validate_prepared_baseline_request(
+                prepared_baseline,
+                dataset=dataset,
+                situation=situation,
+                has_scenario=scenario is not None or reform is not None,
+                trace=trace,
+                capital_gains_projection=capital_gains_projection,
+                baseline_class=Simulation,
+            )
         self._defer_uc_health_warning = True
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
@@ -447,13 +465,22 @@ class Simulation(CoreSimulation):
         self.input_variables = self.get_known_variables()
 
         if scenario is not None:
-            self.baseline = Simulation(
-                scenario=None,
-                situation=situation,
-                dataset=dataset,
-                trace=trace,
-                capital_gains_projection=capital_gains_projection,
-            )
+            if prepared_baseline is None:
+                self.baseline = Simulation(
+                    scenario=None,
+                    situation=situation,
+                    dataset=dataset,
+                    trace=trace,
+                    capital_gains_projection=capital_gains_projection,
+                )
+            else:
+                self.baseline = reuse_prepared_baseline(
+                    prepared_baseline,
+                    dataset=dataset,
+                    trace=trace,
+                    capital_gains_projection=capital_gains_projection,
+                    baseline_class=Simulation,
+                )
         else:
             # Finish framework input invalidation before copying the baseline.
             if self._external_input_change_pending:
@@ -491,6 +518,28 @@ class Simulation(CoreSimulation):
         self._building_dated_reforms = None
         self._construction_reform_state = None
         warn_shadowed_lcwra_reform(self)
+
+    @classmethod
+    def prepare_baseline(
+        cls,
+        *,
+        dataset: str | os.PathLike,
+        trace: bool = False,
+        capital_gains_projection: CapitalGainsProjection | None = None,
+    ) -> PreparedBaseline:
+        """Prepare a caller-owned current-law baseline for a local H5 source.
+
+        This factory always builds the canonical UK Simulation, including
+        when inherited by Microsimulation. Pass the result as
+        ``prepared_baseline`` to reformed Simulation or Microsimulation
+        consumers using the same file and construction options.
+        """
+        return prepare_current_law_baseline(
+            Simulation,
+            dataset=dataset,
+            trace=trace,
+            capital_gains_projection=capital_gains_projection,
+        )
 
     def _refresh_capital_gains_projection(self) -> None:
         projection = self.tax_benefit_system.capital_gains_projection
