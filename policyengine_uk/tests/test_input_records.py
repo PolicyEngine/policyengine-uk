@@ -191,15 +191,7 @@ def test_rebuilt_populations_forget_the_inputs_they_replace():
     "subsampled",
     [
         pytest.param(False, id="direct"),
-        pytest.param(
-            True,
-            id="subsampled",
-            marks=pytest.mark.xfail(
-                strict=True,
-                raises=AssertionError,
-                reason="needs policyengine-core holder resync",
-            ),
-        ),
+        pytest.param(True, id="subsampled"),
     ],
 )
 def test_restoring_reform_can_replace_a_neutralized_input(model, subsampled):
