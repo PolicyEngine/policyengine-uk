@@ -7,13 +7,19 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
     label = "eligible person for the Housing Benefit non-dependent deduction"
     definition_period = YEAR
     reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/74",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/55",
     )
 
     def formula(person, period, parameters):
-        rent_liable = person.benunit("benunit_is_rent_liable", period)
+        rent_liable = person.benunit("benunit_is_liable_for_household_rent", period)
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         age_eligible = person("age", period) >= p.age_threshold
+        # A boarder or lodger, and their partner (reg 8(1)(b)), is liable to
+        # pay the claimant on a commercial basis for their occupation, so is
+        # not a non-dependant (reg 3(2)(e)(i)). A member of their family who
+        # is not liable stays a non-dependant.
+        commercial = person("pays_rent_to_householder", period)
         exempt = person("housing_benefit_non_dep_deduction_exempt", period)
-        return age_eligible & ~rent_liable & ~exempt
+        return age_eligible & ~rent_liable & ~commercial & ~exempt
