@@ -100,7 +100,7 @@
   output:
     pension_credit_assessable_capital: [0, 5_000]
 
-- name: A person's cash ISA balance enters capital through the household total
+- name: A person's cash ISA balance counts as their own benefit unit's capital
   period: 2026
   absolute_error_margin: 0.01
   input:

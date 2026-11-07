@@ -102,7 +102,7 @@
     carer_support_payment: 86.45 * 52 - 3_000
     scottish_carer_supplement: 11.70 * 52
 
-- name: Case 6, the additional pension in an old State Pension does not overlap.
+- name: Case 6, the additional pension in an old State Pension does not overlap; at 80 its age addition does (SSI 2023/302 reg 16(6)).
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -112,7 +112,24 @@
     care_hours: 35
     country: SCOTLAND
   output:
+    state_pension_age_addition: 0.25 * 52
+    carer_support_payment_overlapping_state_pension: 2_000 + 0.25 * 52
+    # Carer's Allowance still leaves the age addition out (SI 1979/597 reg 4(3)).
     overlapping_state_pension: 2_000
+    carer_support_payment: 86.45 * 52 - 2_000 - 0.25 * 52
+
+- name: Case 6a, below 80 there is no age addition, so only the basic State Pension overlaps.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 79
+    basic_state_pension: 2_000
+    additional_state_pension: 5_000
+    care_hours: 35
+    country: SCOTLAND
+  output:
+    state_pension_age_addition: 0
+    carer_support_payment_overlapping_state_pension: 2_000
     carer_support_payment: 86.45 * 52 - 2_000
 
 - name: Case 7, a new State Pension overlaps in full, protected payment included.
@@ -125,7 +142,7 @@
     care_hours: 35
     country: SCOTLAND
   output:
-    overlapping_state_pension: 7_000
+    carer_support_payment_overlapping_state_pension: 7_000
     carer_support_payment: 0
     scottish_carer_supplement: 0
 

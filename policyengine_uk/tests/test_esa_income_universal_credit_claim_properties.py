@@ -9,16 +9,17 @@ and partner's. A member who is neither, such as a non-dependent adult, claims
 income-related ESA in their own right and is not part of it.
 
 Invariants, for any generated population of working-age families in 2025
-and 2027 (either side of income-related ESA's 1 July 2026 abolition date,
-which the model does not yet apply) with no other legacy benefit, so none is
-moved off legacy benefits:
+and 2027 (either side of income-related ESA's 1 July 2026 abolition date)
+with no other legacy benefit, so DWP moves none off legacy benefits. Every
+member has the appointee saving (SI 2025/1148 art. 3A(2)), so the abolition
+leaves it in place in 2027 and only the claim ends it (art. 3A(3)):
 
 1. Exclusive: a family that claims Universal Credit pays its claimant and
    partner no income-related ESA (claimant_or_partner_esa_income), and
    neither of them is on it (is_on_income_related_esa). So Universal Credit
    and the claimant's or partner's income-related ESA are never both paid.
-   Without a claim the gate is inert: esa_income_report_closed is
-   person_legacy_benefits_closed.
+   Without a claim the gate is inert: for each member who reports an award,
+   esa_income_report_closed is person_legacy_benefits_closed.
 2. Differential: claiming Universal Credit gives the same income-related ESA
    outcomes (esa_income, claimant_or_partner_esa_income, esa_income_eligible
    and each member's is_on_income_related_esa) as not claiming with the
@@ -125,6 +126,8 @@ def situation(units, would_claim_uc=None, drop_couple_reports=False):
                 "esa_income_reported": every_year(report),
                 "employment_income": every_year(member["employment_income"]),
                 "weekly_hours": every_year(member["weekly_hours"]),
+                # Under art. 3A(2), the award stays open after the abolition.
+                "esa_income_appointee_saving": every_year(True),
             }
             names.append(name)
         claims = unit["would_claim_uc"] if would_claim_uc is None else would_claim_uc
@@ -175,7 +178,11 @@ def test_a_universal_credit_claim_ends_the_couples_income_related_esa(units):
         ), year
         paid_uc = v["universal_credit"] > 0
         assert not np.any(paid_uc & (v["claimant_or_partner_esa_income"] > 0)), year
-        not_claiming = ~claims[benunit]
+        # A member who reports nothing has no award for the gate to end.
+        reports = np.array(
+            [m["esa_income_reported"] > 0 for unit in units for m in unit["members"]]
+        )
+        not_claiming = ~claims[benunit] & reports
         assert np.array_equal(
             v["esa_income_report_closed"][not_claiming],
             v["person_legacy_benefits_closed"][not_claiming],

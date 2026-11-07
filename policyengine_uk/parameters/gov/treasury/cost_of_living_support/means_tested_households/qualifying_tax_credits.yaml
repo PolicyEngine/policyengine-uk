@@ -1,0 +1,15 @@
+description: Tax credits that qualify a benefit unit for the means-tested Cost of Living Payment when it gets none of the qualifying benefits. Under section 1(2) of the Social Security (Additional Payments) Act 2022 and of the Social Security (Additional Payments) Act 2023, HMRC pays a person with a qualifying entitlement to Child Tax Credit or Working Tax Credit but not to a qualifying benefit.
+metadata:
+  economy: false
+  label: Qualifying tax credits for support for means-tested households
+  propagate_metadata_to_children: true
+  reference:
+  - href: https://www.legislation.gov.uk/ukpga/2022/38/section/1
+    title: Social Security (Additional Payments) Act 2022, section 1(2)
+  - href: https://www.legislation.gov.uk/ukpga/2023/7/section/1
+    title: Social Security (Additional Payments) Act 2023, section 1(2)
+  unit: variable
+values:
+  2022-01-01:
+  - child_tax_credit
+  - working_tax_credit

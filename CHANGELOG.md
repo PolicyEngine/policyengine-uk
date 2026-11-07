@@ -1,3 +1,265 @@
+## [2.176.1] - 2026-11-06
+
+### Fixed
+
+- Placed the 1 September following a qualifying young person's 19th birthday from their date of birth, for Universal Credit and Pension Credit (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002 reg. 4A(1)(b)). The model now counts a 19-year-old in education for Universal Credit by default in household calculations, as the microdata already did, and applies the date to Pension Credit, which had no terminal date.
+
+
+## [2.176.0] - 2026-11-06
+
+### Added
+
+- Model rent from boarders, lodgers and sub-tenants for the householder: rent-a-room relief in income tax, the £20 and board-and-lodging disregards in the legacy means tests (not Universal Credit), and no non-dependant deductions for a boarder or lodger and their partner, while a non-paying adult in their family stays a non-dependant. For Universal Credit, the model also leaves a boarder's or lodger's child or qualifying young person out of the householder's extended benefit unit, so they add no bedroom.
+
+
+## [2.175.8] - 2026-11-06
+
+### Fixed
+
+- Give Scotland's working-age council tax reduction scheme and the Welsh rules for persons who are not pensioners their own route: Universal Credit claimants are means-tested under each country's Universal Credit rules (Wales against the Universal Credit maximum amount; Scotland counting only the child and childcare elements), Income Support, income-based JSA and income-related ESA passport to the maximum reduction, applicable amounts include each country's personal allowances, child amounts, family premium and disabled child premiums (2013-14 to 2026-27), and income follows the law (Child Benefit disregarded, earnings disregards, tariff income from capital, and childcare charges capped by the number of children with charges, which Scotland deducts after adding unearned income).
+
+
+## [2.175.7] - 2026-11-05
+
+### Fixed
+
+- The aggregate checker fails an infinite or NaN response on every counted-once check, says which failures rest on such a response or on a head it could not hold, judges as usual every household where the heads it holds stay finite, names two heads that turn NaN instead of stopping with an error, says when the base could not confirm a failure, and rejects a fiscal partition that puts a colon in a name it writes into a check id or scope.
+- The documentation site now publishes nine programme and validation notebooks it left out, among them Housing Benefit and the childcare entitlements, and lists the gambling duties page. Links on three pages reach their targets, and the model baseline page pins its parameter links to a commit so each line anchor stays on the value it cites. Twelve parameter labels now spell LBTT, LTT, LHA and TV in capitals. The residential SDLT lease rent rates take the unit /1, and the programme registry names HMRC as the agency for Scottish income tax. The childcare examples now state the birth dates and school status behind their amounts, the student loan page describes each plan from the regulations and says Plan 5 carries no liability before 6 April 2026, and the Housing Benefit page gives the 1 July 2026 abolition date with its exceptions.
+- The trading loss property test now holds Universal Credit's income tax and National Insurance deductions in respect of the trade at their with-loss values when it nets the loss off the profit. The test no longer fails when a loss exceeds the profit beside a private pension.
+
+
+## [2.175.6] - 2026-11-05
+
+### Fixed
+
+- Dataset projection grows alcohol and tobacco quantity inputs with the OBR's forecasts of clearances per person, using one index per product group. The model charges later duty rates on those projected quantities.
+
+
+## [2.175.5] - 2026-11-05
+
+### Fixed
+
+- Add pensioner child amounts and family premiums to Council Tax Reduction in England, Scotland and Wales, and count a Scottish pensioner's whole capital over £10,000 in tariff income, as SSI 2012/319 reg 27(2) sets no ceiling.
+
+
+## [2.175.4] - 2026-11-05
+
+### Changed
+
+- The NICs salary sacrifice cap, childcare hours and childcare income limit property tests build fewer simulations, with the same strategies, example counts and assertions.
+
+
+## [2.175.3] - 2026-11-05
+
+### Fixed
+
+- Model income-related ESA payments up to the 2026 abolition dates and Universal Credit claims when a family's award starts to end. The model pays unsaved claims to 30 June 2026 in Great Britain and 30 September 2026 in Northern Ireland, using 86/365 and 178/365 of the 2026-27 year, and from 2027-28 moves each affected family off its legacy benefits. Users can preserve an award with the new appointee-saving input. A family in specified or temporary accommodation now keeps or can newly claim Housing Benefit for that rent beside a Universal Credit claim or DWP's move off legacy benefits, and Universal Credit leaves the rent out of its housing costs element.
+
+
+## [2.175.2] - 2026-11-05
+
+### Fixed
+
+- PolicyEngine now includes the claimant's and partner's Maternity Allowance when it calculates the benefit cap on Universal Credit and Housing Benefit. It leaves a non-dependent adult's allowance out (#2784). Parliament lists the allowance among the welfare benefits whose total the Secretary of State may cap (Welfare Reform Act 2012 s.96(10)(i)).
+
+
+## [2.175.1] - 2026-11-05
+
+### Fixed
+
+- The model now opens the reg 60A Universal Credit route on a legacy closure claim only when the claimant or partner reports Working Tax Credit, and the formula for the pension-age Council Tax Reduction test reads the same reports; a report by a child or another adult in the benefit unit no longer opens the route or makes the award a reg 60A award.
+
+
+## [2.175.0] - 2026-11-05
+
+### Added
+
+- The budget totals `household_tax` and `household_benefits` now read their terms from the `budget` fields in `programs.yaml`, and `policyengine_uk.programs.budget_programs()` returns each term with its label, tax or benefit flag and group. Calculated values do not change.
+
+
+## [2.174.8] - 2026-11-05
+
+### Fixed
+
+- Apply the £10,000 capital tariff threshold to Income Support, income-based JSA and income-related ESA claimants who live permanently in prescribed accommodation. Callers mark them with the new legacy_prescribed_accommodation_capital_exception input, which defaults to false.
+- Assess a working-age Oxford Council Tax Reduction applicant who receives Universal Credit on the Appendix 3 income Oxford City Council sets from April 2026. The council adds DWP's net earned income, from which DWP deducts pension contributions in full, to the award before deductions for debts and other unearned income. It ignores £48.15 a week of each carer element and £84.46 a week of each disabled child element. The model counts as other income Child Benefit, child maintenance, the Scottish Carer Supplement and the other regular receipts the council does not ignore in Appendix 3. It leaves out interest, dividends, rent, Universal Credit's assumed yield from capital and the miscellaneous income it already counts in DWP's net earned income. The model had assessed these applicants on the income for applicants without Universal Credit, on which the council deducts only half of pension contributions and leaves out Child Benefit and child maintenance. Some of their reductions rise and some fall, a reform of Oxford's pension contribution share no longer moves them, and model years before 2026 keep their earlier results.
+
+
+## [2.174.7] - 2026-11-04
+
+### Changed
+
+- Document why the model leaves out Great Britain's £200 Alternative Fuel Payment.
+
+### Fixed
+
+- The model applies the 2020–21 residential SDLT relief dates that Parliament set in the SDLT (Temporary Relief) Act 2020 and Finance Act 2021 s87. It uses a £500,000 nil band without first-time buyers' relief from 8 July 2020 to 30 June 2021, then a £250,000 nil band from 1 July to 30 September 2021. In model year 2021 it charges no SDLT on a main-home purchase up to £500,000. The model also dates the residential lease rent table to those periods and adds its £250,000 nil band from 23 September 2022 to 31 March 2025.
+- Classified the Budget 2026 helper variables in the fiscal partition.
+- Pay the 2022 £150 to Council Tax Reduction recipients in any council tax band in Scotland and Wales, as Scottish and Welsh councils did.
+- The aggregate impact tool's `calibrate` command now refuses a reform when any result lacks a finite target change for a year, and names the reform and the year. It stopped with a bare `TypeError` on a withheld year, read past NaN and infinity in a later year, and ignored a year in the horizon that a result lacked.
+
+
+## [2.174.6] - 2026-11-04
+
+### Fixed
+
+- Universal Credit deductions count a supplied latent deduction rate only where `uc_has_deduction` is true, as the rate's own formula does. Under a protected floor reform, the flag reads the award left after the benefit cap as the floor limits it.
+
+
+## [2.174.5] - 2026-11-04
+
+### Fixed
+
+- Fix evidence reads a period after a quoted reproducer id as the end of the sentence, and its hint says to put an id in backticks when its name contains a comma or semicolon.
+
+
+## [2.174.4] - 2026-11-04
+
+### Fixed
+
+- Benefit cap reduction now reports the amount the cap takes off the awards: the Universal Credit part is the regulation 81 amount up to the award (uc_benefit_cap_reduction_after_floor), not the gross regulation 81 amount, which can exceed it.
+
+
+## [2.174.3] - 2026-11-04
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
+## [2.174.2] - 2026-11-04
+
+### Fixed
+
+- Counted a 16-year-old outside education as a Universal Credit and Pension Credit qualifying young person until the 1 September following their 16th birthday (UC Regs 2013 reg. 5(1)(a); SPC Regs 2002 reg. 4A(1)(a)), in any year that starts before that date. Excluded young people reporting their own Universal Credit, income-related or contributory ESA, or income-based or contribution-based JSA from both statuses, and those receiving Income Support from Pension Credit's (UC Regs 2013 reg. 5(5); SPC Regs 2002 reg. 4A(5)).
+
+
+## [2.174.1] - 2026-11-04
+
+### Fixed
+
+- Use the Universal Credit award before debt deductions when calculating working-age Council Tax Reduction in Merton, Kingston upon Thames, Newham and Westminster.
+
+
+## [2.174.0] - 2026-11-04
+
+### Added
+
+- The OBR forecasts importer now writes national living wage growth from the EFO economy tables' national living wage table (Table 1.13). It reads the OBR's levels across the table's row of years, projects each estimate from the last national living wage rate in the minimum wage parameters as the model does, and writes growth that keeps each estimate's penny.
+
+### Changed
+
+- Bring the economic assumptions page into line with the uprating map, the rent and water projections and the October 2026 road fuel forecast.
+
+### Fixed
+
+- The model now counts each person's cash ISA and stocks and shares ISA balances in their own benefit unit for Universal Credit, Housing Benefit, Pension Credit, Income Support, income-based JSA and income-related ESA, so a lodger's or an adult child's ISA no longer adds to the main family's capital.
+- When a caller sets an input for an earlier year after a calculation, recalculate the later years the default branch had grown, carried over or calculated from earlier inputs, as a named branch and a new simulation do.
+- Count armed forces independence payment as attendance allowance in the Universal Credit housing cost contribution exemption, so the model deducts no contribution for a non-dependant who receives it.
+
+
+## [2.173.4] - 2026-11-04
+
+### Fixed
+
+- The aggregate impact report's `small_target_change` condition now reads only the reform's own target, so a reform that moves another reform's target in fewer than 10 records keeps its costing and target change unless another condition withholds them.
+
+
+## [2.173.3] - 2026-11-04
+
+### Fixed
+
+- Stop counting rent from property, and deducting tax on rent, interest and dividends, in the Income Support, Housing Benefit, Pension Credit and council tax reduction means tests, which treat income derived from capital as capital; count rent for letting part of the home less the £20 weekly sub-tenant disregard, except where a working-age council tax reduction applicant's income is the Universal Credit assessment. The residential finance-cost tax reduction now comes off the tax on property income. Council tax reduction now counts land and property other than the home as capital, at market value less 10% for the expenses of sale and less any debt secured on it; adds the national schemes' tariff income from capital (England for pensioners, Wales and Scotland); uses the Universal Credit assessment of capital for a working-age applicant with an award of Universal Credit, including one the benefit cap or deductions reduce to nil, where the scheme says so; and disregards the whole capital of an applicant on Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance in Wales, in Scotland before April 2022, and in the Kingston, Merton, Westminster and Oxford schemes. All four tests deduct the same income tax: the tax before the winter fuel payment charge, less the tax that rent, interest and dividends, and any Step 7 charge, would bear if nobody had earnings, so earnings carry the extra tax they cause. Council tax reduction counts the rent its own applicant and partner receive for letting part of the home: where a household head applies alone, it counts her rent and not the benefit unit's claimant's and partner's, and it counts her tariff income even when the claimant and partner receive Pension Credit. Each test floors at nil the sum of the deducted income tax over the members it counts, and Pension Credit first takes out the tax on self-employed profit that its notional tax replaces.
+
+
+## [2.173.2] - 2026-11-04
+
+### Fixed
+
+- The model now applies the Universal Credit condition that a claimant is not receiving education, with its exceptions, to people a user or dataset flags with the new `is_in_full_time_education` input, and reads maintenance funding for non-advanced courses from the new `has_education_maintenance_funding` input.
+
+
+## [2.173.1] - 2026-11-04
+
+### Fixed
+
+- The Cost of Living Payment amounts now read zero before 2022, so the model no longer pays them in 2015-16 to 2021-22. Following the Social Security (Additional Payments) Acts 2022 and 2023, the model now pays the means-tested payment to each benefit unit on Universal Credit, Pension Credit, income-based JSA, income-related ESA or Income Support, or on Child Tax Credit or Working Tax Credit alone (in 2022-23, with at least £26 of either credit), but not to one on Housing Benefit alone, and pays the £150 disability payment to each person on PIP, DLA, Attendance Allowance or Armed Forces Independence Payment.
+
+
+## [2.173.0] - 2026-11-03
+
+### Added
+
+- Add `soc2020_major_group` and `soc2020_sub_major_group`, person enum inputs for the SOC 2020 major group (9 groups) and sub-major group (26 groups) of the person's main job, or of their last job if they are not in work, with NONE for none or unknown, so that datasets can carry occupation. `SOC2020_MAJOR_GROUP_CODES` and `SOC2020_SUB_MAJOR_GROUP_CODES`, beside the enums, give each member's SOC code. The FRS codes the major group; the sub-major group has to be imputed within it from a survey that codes it.
+
+### Changed
+
+- `sic_industry_division`'s label and documentation now say the division is the main job's, or the last job's for a person not in work, since the FRS asks the employment questions of everyone who has ever worked.
+
+
+## [2.172.1] - 2026-11-03
+
+### Fixed
+
+- Housing Benefit reserves the Working Tax Credit income disregard before deducting childcare costs in historical tax-credit years, and settles it separately before and after the accommodation disregard starts under a reform that keeps tax credits.
+- Housing Benefit helpers apply reform conditions when they rebuild the earnings, Working Tax Credit and accommodation disregards, the childcare deduction, its limit and applicable income.
+
+
+## [2.172.0] - 2026-11-03
+
+### Added
+
+- Add `trading_allowance_claim_status`, a person input saying whether the input data's self-employment profit already deducts the trading allowance (claimant), deducts actual expenses above it (non-claimant), or is unknown (the default, which keeps the current treatment), so that changes to the allowance, such as the Budget 2026 raise to £3,000, reach the traders who already claim it. Add `gov.simulation.trading_allowance_claimant_expense_share`, which sets claimants' unknown expenses, by default so that a cut adds nothing to their taxable profit (a lower bound).
+
+### Changed
+
+- Raise the time limit of the Python test shards from 75 to 90 minutes: on 1 November shards took up to 75 minutes on slower runners and were cancelled with no test failing.
+
+
+## [2.171.1] - 2026-11-03
+
+### Fixed
+
+- Economic assumption indices now end where the growth series end (2074) instead of at 2039, so the State Pension, tax thresholds, benefit rates and every input grown by an index keep moving after 2039 rather than freezing at their 2039 level.
+
+
+## [2.171.0] - 2026-11-02
+
+### Added
+
+- The aggregate impact report now records why it withholds a standard reform's costing and target change in a year. For each withheld year, `withheld_because` names every condition that holds (`suppressed_component_changed`, `small_component_left`, `small_balance_change`, `small_target_change` or `no_baseline`) and the component or variable it holds for, in `result.json` and in the long-format report that qualification reads. The pull request comment lists the reasons under the reform costings. No reason gives a count or an amount.
+
+### Changed
+
+- Test statutory paternity pay as wages at every pension contribution level, and share the cloned tax-benefit system in the UC work-related groups property tests.
+- Spread the Python tests across seven shards to reduce the work per job.
+
+### Fixed
+
+- Keep the household ISA totals a dataset stores after the years it holds, grown like the person balances they sum, so means-tested capital no longer drops by those holdings from 2033.
+
+
+## [2.170.4] - 2026-11-02
+
+### Fixed
+
+- Projected the sixteen gambling duty inputs per person from HMRC's 2025-26 receipts and the OBR's October 2026 betting and gaming forecast (receipts Table 4.10), divided by the rates the model charges and by population growth. The inputs no longer stay at their 2024-25 cash level, their weighted totals follow each duty's base as household weights grow with population, and the 2026 and 2027 remote gambling rate rises and the 2027 higher-stake machine rate rise apply once.
+
+
+## [2.170.3] - 2026-11-02
+
+### Fixed
+
+- The aggregate checker detects movement in undeclared tax heads independently of their baseline levels, and counts an infinite or NaN response as movement.
+
+
+## [2.170.2] - 2026-11-02
+
+### Fixed
+
+- The programme registry identifies the correct responsible bodies and nations for Scottish income tax, tax credits, the Energy Price Guarantee, Council Tax, Council Tax Reduction and Winter Fuel Payment.
+
+
 ## [2.170.1] - 2026-11-02
 
 ### Fixed

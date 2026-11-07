@@ -79,7 +79,27 @@
   output:
     is_uc_work_allowance_eligible: false
 
-- name: Case 6, a nonqualifying 16-year-old does not create a work allowance.
+- name: Case 6, a 16-year-old outside education past the reg. 5(1)(a) route does not create a work allowance.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 16
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+        is_before_first_september_following_16th_birthday: false
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 6a, a 16-year-old outside education in the reg. 5(1)(a) route creates a work allowance.
   period: 2025
   input:
     people:
@@ -96,7 +116,7 @@
       benunit:
         members: [person1, person2]
   output:
-    is_uc_work_allowance_eligible: false
+    is_uc_work_allowance_eligible: true
 
 - name: Case 7, a looked-after child does not create a work allowance.
   period: 2025
