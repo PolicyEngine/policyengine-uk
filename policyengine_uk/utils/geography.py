@@ -754,10 +754,12 @@ def merge_geography_formula(simulation, variable, period, native, had_array):
         return native
     population = simulation.get_variable_population(variable.name)
     before_views = _mutation_stamp(simulation)
-    # Preserve the legacy first validation/view scan and release its temporary
-    # result before the requested field's second fresh codec read.
-    output_council_mask = [] if variable.name == "local_authority" else None
-    resolved_region(population, period, _local_authority_mask=output_council_mask)
+    # Only the local-authority overlay uses the cross-field decoded view.
+    # Other fields retain physical validation and read their requested codec.
+    output_council_mask = None
+    if variable.name == "local_authority":
+        output_council_mask = []
+        resolved_region(population, period, _local_authority_mask=output_council_mask)
     if variable.name == "country":
         # Country is exact-year and has no cross-field applicability mask.
         # The UK boundary has already checked physical facts. Reuse coverage

@@ -664,7 +664,9 @@ a valid historical query. Same-period London/Oxford remains an English
 geography warning with region selected for inference.
 
 Deliberate custom decoder views and nonstandard enum schemas retain their
-declared fallback, error and output behavior, like active custom formulas.
+declared fallback, error and output behavior when the requested result or its
+formula depends on them. A fully supplied region, country or BRMA reads its
+requested view without evaluating unrelated decoder views.
 Validation uses trusted standard labels only when the underlying native input
 association, shape and bounds prove its physical meaning. It does not guess a
 nation from an unprovable custom schema or promise consistency among arbitrary

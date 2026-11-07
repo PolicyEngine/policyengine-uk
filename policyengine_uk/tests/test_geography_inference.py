@@ -2329,12 +2329,9 @@ def test_newer_opaque_geography_does_not_revive_older_or_parent_facts(
         simulation = Simulation(situation=situation([first, second]))
     holder = simulation.get_holder(field)
     stored = get_stored_input(holder, core_period(2025), simulation.branch_name)
-    calls = []
 
     class CustomView(EnumArray):
-        def decode_to_str(self):
-            calls.append("decode")
-            return super().decode_to_str()
+        pass
 
     holder._set(
         core_period(2025),
@@ -2345,10 +2342,6 @@ def test_newer_opaque_geography_does_not_revive_older_or_parent_facts(
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
         assert labels(simulation, "country", 2025) == ["SCOTLAND", "WALES"]
-        # The physical guard cannot decode the custom view; the first public
-        # country overlay scans that view once. Its requested country reread
-        # is a different holder and must not trigger a second custom read.
-        assert calls == ["decode"]
         assert labels(simulation, field, 2025) == expected
         if older_other and field == "region":
             assert labels(simulation, "local_authority", 2025) == [

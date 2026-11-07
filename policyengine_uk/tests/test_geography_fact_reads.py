@@ -803,18 +803,16 @@ def test_public_whole_input_overlay_returns_fresh_encoded_storage(
 
 @pytest.mark.parametrize("kind", ["instance", "subclass", "rebound-native"])
 def test_public_overlay_preserves_custom_stored_decoder(monkeypatch, kind):
-    """Both validation and the requested-field read retain decoder dispatch."""
+    """The requested field retains its declared custom decoder output."""
     import warnings
     from policyengine_core.enums import EnumArray
 
     simulation = _native_overlay_world()
     holder = simulation.get_holder("country")
     stored = geography.get_stored_input(holder, period(2026), simulation.branch_name)
-    calls = []
     expected = ["WALES", "SCOTLAND"]
 
     def decode():
-        calls.append("decode")
         return np.array(expected)
 
     if kind == "instance":
@@ -838,8 +836,6 @@ def test_public_overlay_preserves_custom_stored_decoder(monkeypatch, kind):
         warnings.simplefilter("ignore", UserWarning)
         actual = simulation.calculate("country", 2026)
     np.testing.assert_array_equal(actual, expected)
-    if kind != "rebound-native":
-        assert calls == ["decode", "decode"]
 
 
 def test_public_overlay_retains_custom_encoder_exception_identity(monkeypatch):
@@ -939,12 +935,9 @@ def test_public_overlay_keeps_invalid_native_index_encode_error(bad_index):
 @pytest.mark.parametrize(
     "tier", ["partial", "parent-only", "older-only", "model-written", "older-child"]
 )
-def test_public_overlay_keeps_requested_field_fallback_for_noncurrent_tiers(
-    monkeypatch, tier
-):
-    """Observable reads and outputs retain sparse/parent/carried/model semantics."""
+def test_public_overlay_keeps_requested_field_fallback_for_noncurrent_tiers(tier):
+    """Public outputs retain sparse, parent, carried and model-value fallback."""
     import warnings
-    import policyengine_uk.simulation as simulation_module
 
     simulation = _native_overlay_world()
     if tier == "partial":
@@ -973,29 +966,9 @@ def test_public_overlay_keeps_requested_field_fallback_for_noncurrent_tiers(
         simulation._model_values = {
             ("country", simulation.branch_name, period(2026)): np.asarray(stored).copy()
         }
-    stack, reads = [], []
-    original_overlay = simulation_module.merge_geography_formula
-    original_facts = geography.input_facts
-
-    def observe_overlay(*args, **kwargs):
-        stack.append(args[1].name)
-        try:
-            return original_overlay(*args, **kwargs)
-        finally:
-            stack.pop()
-
-    def observe_facts(population, name, *args, **kwargs):
-        if stack and stack[-1] == "country" and name == "country":
-            reads.append(name)
-        return original_facts(population, name, *args, **kwargs)
-
-    monkeypatch.setattr(simulation_module, "merge_geography_formula", observe_overlay)
-    monkeypatch.setattr(geography, "input_facts", observe_facts)
     np.testing.assert_array_equal(
         simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
     )
-    assert reads == ["country", "country"]
-    assert not stack
 
 
 def test_public_overlay_keeps_larger_competing_period_selection():
@@ -1225,3 +1198,46 @@ def test_snapshot_table_country_uses_the_requested_year_and_default_horizon(
     np.testing.assert_array_equal(actual, [expected])
     pd.testing.assert_frame_equal(frame, before)
     assert frame.attrs == metadata
+
+
+@pytest.mark.parametrize("country_supplied", [True, False])
+def test_country_evaluates_a_custom_region_view_only_when_required(
+    monkeypatch, country_supplied
+):
+    """The same view is unused for supplied country and required by its formula."""
+    simulation = _native_overlay_world()
+    if not country_supplied:
+        simulation.delete_arrays("country", period(2026))
+    stored = geography.get_stored_input(
+        simulation.get_holder("region"), period(2026), simulation.branch_name
+    )
+    marker = RuntimeError("custom region view")
+
+    def decode():
+        raise marker
+
+    monkeypatch.setattr(stored, "decode_to_str", decode)
+    if country_supplied:
+        np.testing.assert_array_equal(
+            simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
+        )
+    else:
+        with pytest.raises(RuntimeError) as caught:
+            simulation.calculate("country", 2026)
+        assert caught.value is marker
+
+
+def test_requested_country_decoder_error_keeps_its_identity(monkeypatch):
+    simulation = _native_overlay_world()
+    stored = geography.get_stored_input(
+        simulation.get_holder("country"), period(2026), simulation.branch_name
+    )
+    marker = RuntimeError("requested country view")
+
+    def decode():
+        raise marker
+
+    monkeypatch.setattr(stored, "decode_to_str", decode)
+    with pytest.raises(RuntimeError) as caught:
+        simulation.calculate("country", 2026)
+    assert caught.value is marker
