@@ -192,6 +192,10 @@ reformed = Microsimulation(
 current_law_income = reformed.baseline.calculate("household_net_income", 2026)
 ```
 
+`reformed.baseline` is a plain `Simulation`, so `current_law_income` is an
+unweighted household array. Its sum is not a population total; apply the
+appropriate household weights for a population aggregate.
+
 The factory builds the same canonical `Simulation` baseline that ordinary
 scenario construction uses. The inherited
 `Microsimulation.prepare_baseline(...)` factory does the same thing; its token
@@ -211,6 +215,11 @@ trace, dataset metadata and population layout, including the baseline's inner
 current-law copy. Changing one consumer through `set_input`, a parameter reform
 or a branch does not change the preparation or another consumer. The token has
 no public mutation interface.
+
+Use a token serially: do not consume the same token concurrently from multiple
+threads. A spawn-based process pool must prepare a separate token in each
+worker. Holding a token keeps the full preparation simulation and its inner
+current-law copy alive, so include both in memory planning.
 
 This first API supports explicit local `.h5` paths. It does not accept a raw
 `Simulation` as the preparation, a situation, a DataFrame, an in-memory dataset,

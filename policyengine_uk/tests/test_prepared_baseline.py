@@ -1,7 +1,8 @@
 """Prepared baseline reuse must match fresh construction on synthetic local data.
 
-The public file deliberately stores every year queried by these tests. No
-certified dataset, remote source, or national performance measurement is used.
+The multi-year fixture deliberately stores every queried year; a separate
+2024-only file exercises projection. No certified dataset, remote source, or
+national performance measurement is used.
 """
 
 from pathlib import Path
@@ -40,8 +41,8 @@ OUTPUTS = (
 )
 
 
-def local_data(path: Path, families=None, *, gains=False) -> Path:
-    """Two independent parent-child families, five explicitly stored years."""
+def local_data(path: Path, families=None, *, gains=False, single_year=False) -> Path:
+    """Synthetic families in five stored years or a single stored 2024 year."""
     families = [(30_000, True), (18_000, True)] if families is None else families
     people, units, homes, ages, parent_flags, earnings = [], [], [], [], [], []
     for index, (income, child) in enumerate(families):
@@ -56,7 +57,7 @@ def local_data(path: Path, families=None, *, gains=False) -> Path:
     unit_ids = list(dict.fromkeys(units))
     home_ids = list(dict.fromkeys(homes))
     datasets = []
-    for year in range(2024, 2029):
+    for year in (2024,) if single_year else range(2024, 2029):
         person = pd.DataFrame(
             {
                 "person_id": people,
@@ -96,6 +97,10 @@ def local_data(path: Path, families=None, *, gains=False) -> Path:
                 fiscal_year=year,
             )
         )
+    if single_year:
+        datasets[0].save(str(path))
+        assert path.stat().st_size <= 2 * 1024 * 1024
+        return path
     multi = UKMultiYearDataset(datasets=datasets)
     # Fixed-format pandas groups are accepted by the same public loader and
     # avoid per-column index overhead on these tiny five-year tables.
@@ -128,7 +133,7 @@ def snapshot(simulation, years=YEARS):
 def assert_same_snapshot(actual, expected):
     assert actual.keys() == expected.keys()
     for key in actual:
-        np.testing.assert_allclose(actual[key], expected[key], rtol=1e-6, atol=0.01)
+        np.testing.assert_array_equal(actual[key], expected[key], strict=True)
 
 
 def test_fresh_reference_fixture_control(tmp_path):
@@ -299,10 +304,10 @@ def test_other_routes_match_fresh(tmp_path, name):
         assert events == [("before", False), ("after", True)]
     if is_micro:
         for year in YEARS:
-            np.testing.assert_allclose(
+            np.testing.assert_array_equal(
                 values(reused.baseline, "capital_gains_before_response", year),
                 fresh_gains[year],
-                atol=0.01,
+                strict=True,
             )
             assert values(reused.baseline, "capital_gains_before_response", year)[0] > 0
         assert reused.baseline.tracer is not fresh_tracer
@@ -394,9 +399,10 @@ def test_reuses_isolate_mutable_state(tmp_path, kind):
         np.testing.assert_array_equal(sibling.baseline.person.ids, original_ids)
         assert "owned-test" not in sibling.baseline.branches
     assert_same_snapshot(snapshot(sibling), expected)
-    np.testing.assert_allclose(
+    np.testing.assert_array_equal(
         values(sibling.baseline.baseline, "employment_income_before_lsr", 2026),
         inner_expected,
+        strict=True,
     )
     later = consume()
     assert_same_snapshot(snapshot(later), expected)
@@ -571,10 +577,49 @@ def test_prepared_differential_property(families, year, allowance):
         branch = reused.baseline.get_branch("property-input")
         wages = values(branch, "employment_income_before_lsr", year)
         branch.set_input("employment_income_before_lsr", year, wages + 100)
-        np.testing.assert_allclose(
+        np.testing.assert_array_equal(
             values(reused.baseline, "employment_income_before_lsr", year),
             reference_wages,
+            strict=True,
         )
         del branch, reused
         later = Simulation(dataset=path, scenario=scenario, prepared_baseline=prepared)
         assert_same_snapshot(snapshot(later, years=(year,)), expected)
+
+
+@pytest.mark.parametrize("name", ["ordinary_parameter", "uprating_change"])
+def test_single_year_projection_matches_fresh(tmp_path, name):
+    path = local_data(tmp_path / "single-year-2024.h5", single_year=True)
+    with pd.HDFStore(path, mode="r") as store:
+        assert set(store.keys()) == {
+            "/person",
+            "/benunit",
+            "/household",
+            "/time_period",
+        }
+        assert store["time_period"].tolist() == ["2024"]
+    assert UKSingleYearDataset.validate_file_path(str(path))
+    assert not UKMultiYearDataset.validate_file_path(str(path), False)
+
+    fresh = Simulation(dataset=path, scenario=route(name, []))
+    expected = snapshot(fresh, years=(2026,))
+    baseline_wages = values(fresh.baseline, "employment_income", 2026)
+    del fresh
+
+    prepared = Simulation.prepare_baseline(dataset=path)
+    reused = Simulation(
+        dataset=path,
+        scenario=route(name, []),
+        prepared_baseline=prepared,
+    )
+    assert_same_snapshot(snapshot(reused, years=(2026,)), expected)
+    np.testing.assert_array_equal(
+        values(reused.baseline, "employment_income", 2026),
+        baseline_wages,
+        strict=True,
+    )
+    if name == "uprating_change":
+        assert not np.array_equal(
+            values(reused, "employment_income", 2026),
+            values(reused.baseline, "employment_income", 2026),
+        )
