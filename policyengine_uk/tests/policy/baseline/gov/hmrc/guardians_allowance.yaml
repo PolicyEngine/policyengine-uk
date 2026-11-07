@@ -1,0 +1,167 @@
+# Cash rates: SI 2024/247, SI 2025/292 and SI 2026/232.
+# Legal entitlement and full-rate payable child-weeks are qualified inputs,
+# not conclusions drawn from a child's age or parents' circumstances.
+- name: Case 1, new Guardian's Allowance facts default to no payment.
+  period: 2026
+  input:
+    age: 40
+  output:
+    guardians_allowance: 0
+    is_entitled_to_guardians_allowance: false
+    guardians_allowance_full_rate_child_weeks: 0
+
+- name: Case 2, 52 qualified child-weeks in England at the 2024 rate.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: ENGLAND}
+  output:
+    # 52 full-rate child-weeks x £21.75, not a calendar-year payment count.
+    guardians_allowance: [1_131, 0]
+
+- name: Case 3, 52 qualified child-weeks in Scotland at the 2025 rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: SCOTLAND}
+  output:
+    # 52 x £22.10.
+    guardians_allowance: [1_149.20, 0]
+
+- name: Case 4, 52 qualified child-weeks in Northern Ireland at the 2026 rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: NORTHERN_IRELAND}
+  output:
+    # 52 x £22.95.
+    guardians_allowance: [1_193.40, 0]
+
+- name: Case 5, two children provide 104 qualified child-weeks to one guardian.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 104}
+      person2: {age: 8}
+      person3: {age: 10}
+    benunits:
+      family: {members: [person1, person2, person3]}
+    households:
+      home: {members: [person1, person2, person3], country: ENGLAND}
+  output:
+    guardians_allowance: [2_386.80, 0, 0]
+
+- name: Case 6, 13 qualified child-weeks in Wales use the same weekly rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 13}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: WALES}
+  output:
+    guardians_allowance: [298.35, 0]
+
+- name: Case 7, entitlement with no full-rate payable child-weeks gives no computed cash.
+  period: 2026
+  input:
+    is_entitled_to_guardians_allowance: true
+    guardians_allowance_full_rate_child_weeks: 0
+  output:
+    guardians_allowance: 0
+    is_entitled_to_guardians_allowance: true
+
+- name: Case 8, exposure alone does not assert legal entitlement.
+  period: 2026
+  input:
+    guardians_allowance_full_rate_child_weeks: 52
+  output:
+    guardians_allowance: 0
+    is_entitled_to_guardians_allowance: false
+
+- name: Case 9, a fully reported payment overrides the normal rate calculation.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52, guardians_allowance: 123.45}
+      person2: {age: 8, guardians_allowance: 0}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2]}
+  output:
+    # Both Person cells are reported; no omitted-cell formula mixing.
+    guardians_allowance: [123.45, 0]
+
+- name: Case 10, a fully reported zero remains authoritative despite positive exposure.
+  period: 2026
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52, guardians_allowance: 0}
+      person2: {age: 8, guardians_allowance: 0}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2]}
+  output:
+    guardians_allowance: [0, 0]
+    is_entitled_to_guardians_allowance: [true, false]
+
+
+# HMRC Budget 2026 OOTLAR, Annex A, Guardian's Allowance table:
+# https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances#child-benefit-and-guardians-allowance
+# The 2027–28 amount is announced, not an enacted uprating order.
+- name: Case 11, 52 qualified child-weeks use the announced 2027 weekly rate.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: ENGLAND}
+  output:
+    # 52 full-rate child-weeks × the announced £23.75 weekly amount.
+    guardians_allowance: [1_235, 0]
+
+- name: Case 12, a later explicit weekly-rate reform gives computed cash.
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    # A controlled scenario, not a forecast or a statement of future law.
+    gov.hmrc.guardians_allowance.weekly_rate: 30
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: ENGLAND}
+  output:
+    # 52 × the explicitly supplied £30 scenario weekly rate.
+    guardians_allowance: [1_560, 0]

@@ -1094,6 +1094,13 @@ spending_heads:
     report_group: child_and_family_benefits
     totals: [gov_spending, household_benefits]
     sign: nonnegative
+  - id: guardians_allowance
+    label: Guardian's Allowance
+    variable: guardians_allowance
+    entity: person
+    report_group: child_and_family_benefits
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
   - id: scottish_child_payment
     label: Scottish Child Payment
     variable: scottish_child_payment

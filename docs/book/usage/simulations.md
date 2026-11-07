@@ -628,3 +628,27 @@ This makes it easy to trace through exactly how a reform affects different compo
 ```
 
 The simulation system is designed to be flexible and powerful. Start with simple examples and gradually build up to more complex analyses as you become familiar with the structure and capabilities.
+
+## Guardian's Allowance inputs
+
+Guardian's Allowance uses three annual Person variables. Supply
+`is_entitled_to_guardians_allowance` only for the actual legal holder whose claim
+and statutory conditions have been established. Child Benefit entitlement is
+required in law; Child Benefit cash can be zero after a payment opt-out. The
+model does not determine orphan eligibility from household relationships.
+
+For an entitled holder who also receives full-rate cash, supply
+`guardians_allowance_full_rate_child_weeks`: 52 is a steady one-child 52-week
+reference, 104 is two such children. Computed cash is verified for UK tax years
+2024–2026. The ordinary annual parameter convention uses the statutory rate in
+force on 30 April; this is not an exact weekly payment ledger.
+
+An authoritative direct `guardians_allowance` input, including zero, overrides
+calculation for the whole Person array. It can record a distinct lawful payee,
+prison-adjusted, frozen-abroad or mixed-rate cash. Record entitlement separately
+on its legal holder. This does not introduce sparse per-person mixing of
+reported and calculated cash. Do not include the same payment in
+`miscellaneous_income` or another income report.
+
+See [Guardian's Allowance](../programs/gov/hmrc/guardians-allowance.md) for the
+qualified-fact, rate-window and historical interaction limits.

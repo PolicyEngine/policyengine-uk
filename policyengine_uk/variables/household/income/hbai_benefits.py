@@ -9,6 +9,7 @@ class hbai_benefits(Variable):
     unit = GBP
     adds = [
         "child_benefit",
+        "guardians_allowance",
         "esa_income",
         "esa_contrib",
         "housing_benefit",
