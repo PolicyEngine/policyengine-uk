@@ -1118,10 +1118,25 @@ def test_public_overlay_never_reinstates_a_region_superseded_by_a_newer_council(
     )
     first = simulation.calculate("region", 2026)
     np.testing.assert_array_equal(first, ["SCOTLAND", "WALES"])
-    first[0] = "WALES"
-    np.testing.assert_array_equal(
-        simulation.calculate("region", 2026), ["SCOTLAND", "WALES"]
-    )
+    # Inspect storage before a later read can replace any cached arrays.
+    cached_periods = simulation.get_known_periods("region")
+    assert cached_periods
+    assert period(2024) in cached_periods
+    for cached_period in cached_periods:
+        cached = simulation.get_array("region", cached_period)
+        assert cached is not None
+        assert not np.shares_memory(first, cached)
+    second = simulation.calculate("region", 2026)
+    np.testing.assert_array_equal(second, ["SCOTLAND", "WALES"])
+    assert not np.shares_memory(first, second)
+    cached_periods_after = simulation.get_known_periods("region")
+    assert cached_periods_after
+    assert period(2024) in cached_periods_after
+    for cached_period in cached_periods_after:
+        cached = simulation.get_array("region", cached_period)
+        assert cached is not None
+        assert not np.shares_memory(first, cached)
+        assert not np.shares_memory(second, cached)
     np.testing.assert_array_equal(
         simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
     )
