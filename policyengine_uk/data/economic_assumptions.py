@@ -714,7 +714,9 @@ def uprate_council_tax(
     # receipts growth counted the growth in households twice (#2067).
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
-    region = pd.Series(region_from_table(current_year.household))
+    region = pd.Series(
+        region_from_table(current_year.household, period=current_year.time_period)
+    )
     unrecognised = set(region) - set(_COUNCIL_TAX_GROWTH_SERIES)
     if unrecognised:
         raise ValueError(
@@ -765,7 +767,9 @@ def uprate_water_and_sewerage_charges(
 
     if "water_and_sewerage_charges" not in previous_year.household.columns:
         return current_year
-    region = pd.Series(region_from_table(current_year.household))
+    region = pd.Series(
+        region_from_table(current_year.household, period=current_year.time_period)
+    )
     unrecognised = set(region) - set(_WATER_GROWTH_SERIES)
     if unrecognised:
         raise ValueError(
@@ -797,7 +801,7 @@ def uprate_rent(
 ):
     # Uprate rent for a single year dataset.
     is_private_rented = current_year.household["tenure_type"] == "RENT_PRIVATELY"
-    region = region_from_table(current_year.household)
+    region = region_from_table(current_year.household, period=current_year.time_period)
     prev_rent = previous_year.household["rent"]
     growth = parameters.gov.economic_assumptions.yoy_growth
     year = int(current_year.time_period)
@@ -887,7 +891,9 @@ def uprate_student_loan_plans(
 
     person = current_year.person.copy()
     household = current_year.household[["household_id"]].copy()
-    household["region"] = region_from_table(current_year.household)
+    household["region"] = region_from_table(
+        current_year.household, period=current_year.time_period
+    )
 
     # Join region onto person via person_household_id.
     person = person.merge(

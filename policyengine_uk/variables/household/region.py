@@ -13,9 +13,10 @@ class region(Variable):
     entity = Household
     label = "region"
     documentation = (
-        "Area of the UK. A supplied region carries forward; otherwise a "
-        "supplied council or devolved country determines the region. With "
-        "none supplied, the default is London."
+        "Area of the UK. The later genuine region or council source wins "
+        "by source start and stop; equal periods prefer region, including "
+        "UNKNOWN. A country supplied for the requested year is a fallback "
+        "when neither applies. With none supplied, the default is London."
     )
     definition_period = YEAR
 

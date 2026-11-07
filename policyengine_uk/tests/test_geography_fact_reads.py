@@ -727,3 +727,501 @@ def test_read_only_native_target_releases_decoded_payload_before_error_handler(
         )
     assert "read-only" in str(caught.value)
     assert events == ["released"]
+
+
+def _native_overlay_world():
+    """Whole native Core inputs, one adult per coherent Scottish/Welsh home."""
+    inputs = {
+        "age": {2026: [40, 40]},
+        "would_claim_uc": {2026: [False, False]},
+        "region": {2026: ["SCOTLAND", "WALES"]},
+        "country": {2026: ["SCOTLAND", "WALES"]},
+        "local_authority": {2026: ["CITY_OF_EDINBURGH", "CARDIFF"]},
+        "brma": {2026: ["LOTHIAN", "CARDIFF"]},
+    }
+    simulation = Simulation(
+        situation={key: inputs[key] for key in ("age", "would_claim_uc")}
+    )
+    native = SimulationBuilder().build_from_variables(
+        simulation.tax_benefit_system, inputs
+    )
+    simulation.build_from_populations(native.populations)
+    return simulation
+
+
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("country", ["SCOTLAND", "WALES"]),
+        ("region", ["SCOTLAND", "WALES"]),
+        ("local_authority", ["CITY_OF_EDINBURGH", "CARDIFF"]),
+        ("brma", ["LOTHIAN", "CARDIFF"]),
+    ],
+)
+def test_public_whole_input_overlay_returns_fresh_encoded_storage(
+    monkeypatch, name, expected
+):
+    """The real overlay may copy native inputs, but must never return aliases."""
+    import policyengine_uk.simulation as simulation_module
+    from policyengine_core.enums import EnumArray
+
+    simulation = _native_overlay_world()
+    holder = simulation.get_holder(name)
+    stored = geography.get_stored_input(holder, period(2026), simulation.branch_name)
+    original_indices = np.asarray(stored).copy()
+    entered = []
+    original_overlay = simulation_module.merge_geography_formula
+
+    def forbidden_instance_copy(*args, **kwargs):
+        raise AssertionError("The overlay must not dispatch an input's copy override.")
+
+    def observe(*args, **kwargs):
+        result = original_overlay(*args, **kwargs)
+        if args[1].name == name:
+            entered.append((args[3], result))
+        return result
+
+    monkeypatch.setattr(stored, "copy", forbidden_instance_copy)
+    monkeypatch.setattr(simulation_module, "merge_geography_formula", observe)
+    first_public = simulation.calculate(name, 2026)
+    np.testing.assert_array_equal(first_public, expected)
+    assert len(entered) == 1
+    native, encoded = entered[0]
+    assert (
+        type(encoded) is EnumArray and encoded.possible_values is stored.possible_values
+    )
+    assert encoded.shape == stored.shape == (2,) and encoded.dtype == np.dtype("int16")
+    assert not np.shares_memory(encoded, stored)
+    assert not np.shares_memory(encoded, native)
+    encoded[0] = original_indices[1]
+    np.testing.assert_array_equal(np.asarray(stored), original_indices)
+    second_public = simulation.calculate(name, 2026)
+    np.testing.assert_array_equal(second_public, expected)
+    assert not np.shares_memory(entered[0][1], entered[1][1])
+    assert first_public.dtype == second_public.dtype
+
+
+@pytest.mark.parametrize("kind", ["instance", "subclass", "rebound-native"])
+def test_public_overlay_preserves_custom_stored_decoder(monkeypatch, kind):
+    """Both validation and the requested-field read retain decoder dispatch."""
+    import warnings
+    from policyengine_core.enums import EnumArray
+
+    simulation = _native_overlay_world()
+    holder = simulation.get_holder("country")
+    stored = geography.get_stored_input(holder, period(2026), simulation.branch_name)
+    calls = []
+    expected = ["WALES", "SCOTLAND"]
+
+    def decode():
+        calls.append("decode")
+        return np.array(expected)
+
+    if kind == "instance":
+        monkeypatch.setattr(stored, "decode_to_str", decode)
+    elif kind == "subclass":
+
+        class CustomDecodedInput(EnumArray):
+            def decode_to_str(self):
+                return decode()
+
+        holder._set(
+            period(2026),
+            stored.view(CustomDecodedInput),
+            branch_name=simulation.branch_name,
+            is_input=True,
+        )
+    else:
+        other = stored.possible_values.encode(np.array(expected))
+        monkeypatch.setattr(stored, "decode_to_str", other.decode_to_str)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        actual = simulation.calculate("country", 2026)
+    np.testing.assert_array_equal(actual, expected)
+    if kind != "rebound-native":
+        assert calls == ["decode", "decode"]
+
+
+def test_public_overlay_retains_custom_encoder_exception_identity(monkeypatch):
+    from policyengine_core.enums import EnumArray
+
+    simulation = _native_overlay_world()
+    possible = simulation.get_holder("country").variable.possible_values
+    original_encode = possible.encode
+    marker = RuntimeError("custom geography name encoder")
+    calls = []
+
+    def encode(cls, values):
+        if not isinstance(values, EnumArray) and np.asarray(values).dtype == object:
+            calls.append("encode names")
+            raise marker
+        return original_encode(values)
+
+    monkeypatch.setattr(possible, "encode", classmethod(encode))
+    with pytest.raises(RuntimeError) as caught:
+        simulation.calculate("country", 2026)
+    assert caught.value is marker
+    assert calls == ["encode names"]
+
+
+def test_public_overlay_retains_mutated_native_sorted_lookup():
+    """An unchanged method may return changed cached lookup array contents."""
+    simulation = _native_overlay_world()
+    possible = simulation.get_holder("country").variable.possible_values
+    names, indices = possible._get_sorted_lookup_arrays()
+    original_indices = indices.copy()
+    left = int(np.flatnonzero(names == "SCOTLAND")[0])
+    right = int(np.flatnonzero(names == "WALES")[0])
+    try:
+        indices[left], indices[right] = original_indices[right], original_indices[left]
+        # These are the native encoder's declared lookup results, not a
+        # proposed implementation helper or a second policy computation.
+        np.testing.assert_array_equal(
+            simulation.calculate("country", 2026), ["WALES", "SCOTLAND"]
+        )
+    finally:
+        indices[:] = original_indices
+
+
+@pytest.mark.parametrize("schema", ["dense", "sparse"])
+def test_public_overlay_respects_alternate_enum_schema(monkeypatch, schema):
+    import warnings
+    from policyengine_core.enums import Enum, EnumArray
+
+    class DenseGeography(Enum):
+        EAST = "east"
+        WEST = "west"
+
+    class SparseGeography(Enum):
+        def __init__(self, label, index):
+            self.index = index
+
+        EAST = ("east", 2)
+        WEST = ("west", 7)
+
+    possible = DenseGeography if schema == "dense" else SparseGeography
+    simulation = _native_overlay_world()
+    holder = simulation.get_holder("country")
+    monkeypatch.setattr(holder.variable, "possible_values", possible)
+    encoded = EnumArray(
+        np.array([item.index for item in possible], dtype="int16"), possible
+    )
+    holder._set(
+        period(2026), encoded, branch_name=simulation.branch_name, is_input=True
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        actual = simulation.calculate("country", 2026)
+    np.testing.assert_array_equal(actual, ["EAST", "WEST"])
+    assert actual.dtype == encoded.decode_to_str().dtype
+
+
+@pytest.mark.parametrize("bad_index", [-1, 30000])
+def test_public_overlay_keeps_invalid_native_index_encode_error(bad_index):
+    import warnings
+
+    simulation = _native_overlay_world()
+    holder = simulation.get_holder("country")
+    stored = geography.get_stored_input(holder, period(2026), simulation.branch_name)
+    stored[0] = bad_index
+    # Already encoded invalid indices decode as lowercase unknown in Core;
+    # the existing overlay's final native name encoding then rejects it.
+    names = stored.decode_to_str().astype(object)
+    with pytest.raises(ValueError) as expected:
+        holder.variable.possible_values.encode(names)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        with pytest.raises(ValueError) as actual:
+            simulation.calculate("country", 2026)
+    assert str(actual.value) == str(expected.value)
+
+
+@pytest.mark.parametrize(
+    "tier", ["partial", "parent-only", "older-only", "model-written", "older-child"]
+)
+def test_public_overlay_keeps_requested_field_fallback_for_noncurrent_tiers(
+    monkeypatch, tier
+):
+    """Observable reads and outputs retain sparse/parent/carried/model semantics."""
+    import warnings
+    import policyengine_uk.simulation as simulation_module
+
+    simulation = _native_overlay_world()
+    if tier == "partial":
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            simulation.set_input("country", 2026, ["SCOTLAND", "ENGLAND"])
+        geography.set_cell_mask(simulation, "country", period(2026), [True, False])
+    elif tier in {"parent-only", "older-child"}:
+        simulation = simulation.get_branch("overlay_fallback", clone_system=True)
+        if tier == "older-child":
+            simulation.set_input("country", 2024, ["ENGLAND", "ENGLAND"])
+    elif tier == "older-only":
+        simulation.get_holder("country").delete_arrays(
+            period(2026), simulation.branch_name
+        )
+        simulation.set_input("country", 2024, ["ENGLAND", "ENGLAND"])
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            simulation.set_input("country", 2026, ["ENGLAND", "ENGLAND"])
+        stored = geography.get_stored_input(
+            simulation.get_holder("country"), period(2026), simulation.branch_name
+        )
+        # The scenario/model-value storage record excludes this current
+        # array from genuine supplied inputs; preserve that read contract.
+        simulation._model_values = {
+            ("country", simulation.branch_name, period(2026)): np.asarray(stored).copy()
+        }
+    stack, reads = [], []
+    original_overlay = simulation_module.merge_geography_formula
+    original_facts = geography.input_facts
+
+    def observe_overlay(*args, **kwargs):
+        stack.append(args[1].name)
+        try:
+            return original_overlay(*args, **kwargs)
+        finally:
+            stack.pop()
+
+    def observe_facts(population, name, *args, **kwargs):
+        if stack and stack[-1] == "country" and name == "country":
+            reads.append(name)
+        return original_facts(population, name, *args, **kwargs)
+
+    monkeypatch.setattr(simulation_module, "merge_geography_formula", observe_overlay)
+    monkeypatch.setattr(geography, "input_facts", observe_facts)
+    np.testing.assert_array_equal(
+        simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
+    )
+    assert reads == ["country", "country"]
+    assert not stack
+
+
+def test_public_overlay_keeps_larger_competing_period_selection():
+    """A longer genuine region tier with the same start wins the old ordering."""
+    import warnings
+
+    simulation = _native_overlay_world()
+    # Omit the helper's country declaration to isolate region source ordering.
+    # Same-period known-nation conflicts have separate public regressions.
+    simulation.delete_arrays("country", period(2026))
+    assert "country__2026" not in simulation.to_input_dataframe()
+    holder = simulation.get_holder("region")
+    exact = geography.get_stored_input(holder, period(2026), simulation.branch_name)
+    before = np.asarray(exact).copy()
+    holder._set(
+        period("year:2026:2"),
+        holder.variable.possible_values.encode(np.array(["WALES", "SCOTLAND"])),
+        branch_name=simulation.branch_name,
+        is_input=True,
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        actual = simulation.calculate("region", 2026)
+    np.testing.assert_array_equal(actual, ["WALES", "SCOTLAND"])
+    np.testing.assert_array_equal(np.asarray(exact), before)
+
+
+@pytest.mark.parametrize("warm", [False, True], ids=["cold", "warm"])
+@pytest.mark.parametrize(
+    "mutation",
+    ["indices", "names", "replacement", "rebound_lookup", "rebound_encoder"],
+)
+def test_public_native_copy_metadata_observes_live_codec_changes(
+    monkeypatch, warm, mutation
+):
+    """A primed static reference never certifies mutable live codec tables."""
+    from policyengine_core.enums import Enum
+
+    simulation = _native_overlay_world()
+    holder = simulation.get_holder("country")
+    # Each row has a distinct dense schema, so cold does not depend on test order.
+    members = {
+        "ENGLAND": "England",
+        "NORTHERN_IRELAND": "Northern Ireland",
+        "SCOTLAND": "Scotland",
+        "WALES": "Wales",
+        "UNKNOWN": "Unknown",
+        f"SCHEMA_{mutation.upper()}_{'WARM' if warm else 'COLD'}": "Schema marker",
+    }
+    possible = Enum("RevisionCountry", members)
+    monkeypatch.setattr(holder.variable, "possible_values", possible)
+    simulation.set_input("country", 2026, ["SCOTLAND", "WALES"])
+    if warm:
+        np.testing.assert_array_equal(
+            simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
+        )
+
+    table_owner = possible
+    if mutation in {"rebound_lookup", "rebound_encoder"}:
+        table_owner = Enum("ReboundRevisionCountry", members)
+    names, indices = table_owner._get_sorted_lookup_arrays()
+    original_names, original_indices = names.copy(), indices.copy()
+    left = int(np.flatnonzero(names == "SCOTLAND")[0])
+    right = int(np.flatnonzero(names == "WALES")[0])
+    try:
+        with monkeypatch.context() as patch:
+            if mutation == "names":
+                names[left] = "SCOTLAND_CHANGED"
+            elif mutation == "replacement":
+                replacement_names = names.copy()
+                replacement_indices = indices.copy()
+                replacement_indices[left], replacement_indices[right] = (
+                    original_indices[right],
+                    original_indices[left],
+                )
+
+                def replacement(cls):
+                    return replacement_names, replacement_indices
+
+                patch.setattr(
+                    possible, "_get_sorted_lookup_arrays", classmethod(replacement)
+                )
+            else:
+                indices[left], indices[right] = (
+                    original_indices[right],
+                    original_indices[left],
+                )
+                if mutation == "rebound_lookup":
+                    patch.setattr(
+                        possible,
+                        "_get_sorted_lookup_arrays",
+                        table_owner._get_sorted_lookup_arrays,
+                    )
+                elif mutation == "rebound_encoder":
+                    patch.setattr(possible, "encode", table_owner.encode)
+            if mutation == "names":
+                # Core's native encoder supplies the public error contract.
+                with pytest.raises(ValueError) as expected:
+                    possible.encode(np.array(["SCOTLAND", "WALES"], dtype=object))
+                with pytest.raises(ValueError) as actual:
+                    simulation.calculate("country", 2026)
+                assert str(actual.value) == str(expected.value)
+            else:
+                np.testing.assert_array_equal(
+                    simulation.calculate("country", 2026), ["WALES", "SCOTLAND"]
+                )
+    finally:
+        names[:] = original_names
+        indices[:] = original_indices
+    np.testing.assert_array_equal(
+        simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
+    )
+
+
+@pytest.mark.parametrize("whole_native", [True, False])
+def test_public_overlay_never_reinstates_a_region_superseded_by_a_newer_council(
+    whole_native,
+):
+    if whole_native:
+        simulation = Simulation(
+            situation={
+                "age": {2024: [40, 40]},
+                "region": {2024: ["LONDON", "WALES"]},
+                "local_authority": {2026: ["CITY_OF_EDINBURGH", "CARDIFF"]},
+            }
+        )
+    else:
+        simulation = Simulation(
+            situation={
+                "people": {"a": {"age": {2024: 40}}, "b": {"age": {2024: 40}}},
+                "benunits": {"a": {"members": ["a"]}, "b": {"members": ["b"]}},
+                "households": {
+                    "a": {
+                        "members": ["a"],
+                        "region": {2024: "LONDON"},
+                        "local_authority": {2026: "CITY_OF_EDINBURGH"},
+                    },
+                    "b": {"members": ["b"], "region": {2024: "WALES"}},
+                },
+            }
+        )
+    before = simulation.to_input_dataframe()
+    possible = simulation.get_holder("region").variable.possible_values
+    np.testing.assert_array_equal(
+        before["region__2024"].to_numpy(),
+        np.asarray(possible.encode(np.array(["LONDON", "WALES"]))),
+    )
+    first = simulation.calculate("region", 2026)
+    np.testing.assert_array_equal(first, ["SCOTLAND", "WALES"])
+    first[0] = "WALES"
+    np.testing.assert_array_equal(
+        simulation.calculate("region", 2026), ["SCOTLAND", "WALES"]
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("country", 2026), ["SCOTLAND", "WALES"]
+    )
+    np.testing.assert_array_equal(
+        simulation.to_input_dataframe()["region__2024"].to_numpy(),
+        np.asarray(possible.encode(np.array(["LONDON", "WALES"]))),
+    )
+    assert "region__2026" not in simulation.to_input_dataframe()
+
+
+@pytest.mark.parametrize("queried", [2024, 2026])
+@pytest.mark.parametrize(
+    "longer_field,expected", [("local_authority", "SCOTLAND"), ("region", "LONDON")]
+)
+def test_public_cross_field_source_order_uses_the_source_stop_after_an_equal_start(
+    longer_field, expected, queried
+):
+    import warnings
+
+    simulation = Simulation(situation={"age": {2024: 40}})
+    sources = {
+        "region": "year:2024:3" if longer_field == "region" else 2024,
+        "local_authority": "year:2024:3" if longer_field == "local_authority" else 2024,
+    }
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        simulation.set_input("region", sources["region"], ["LONDON"])
+        simulation.set_input(
+            "local_authority", sources["local_authority"], ["CITY_OF_EDINBURGH"]
+        )
+    np.testing.assert_array_equal(simulation.calculate("region", queried), [expected])
+    np.testing.assert_array_equal(
+        simulation.calculate("country", queried),
+        ["SCOTLAND" if expected == "SCOTLAND" else "ENGLAND"],
+    )
+    if longer_field == "region":
+        with pytest.raises(ValueError, match="(?i)council|local_authority"):
+            simulation.calculate("local_authority", queried)
+    else:
+        np.testing.assert_array_equal(
+            simulation.calculate("local_authority", queried), ["CITY_OF_EDINBURGH"]
+        )
+    exported = simulation.to_input_dataframe()
+    for name, label in [("region", "LONDON"), ("local_authority", "CITY_OF_EDINBURGH")]:
+        possible = simulation.get_holder(name).variable.possible_values
+        column = name + "__" + str(period(sources[name]))
+        np.testing.assert_array_equal(
+            exported[column].to_numpy(), np.asarray(possible.encode(np.array([label])))
+        )
+
+
+@pytest.mark.parametrize(
+    "requested,expected", [(None, "SCOTLAND"), (2024, "SCOTLAND"), (2026, "LONDON")]
+)
+def test_snapshot_table_country_uses_the_requested_year_and_default_horizon(
+    requested, expected
+):
+    from copy import deepcopy
+    import pandas as pd
+
+    frame = pd.DataFrame({"household_id": [1001], "country": ["SCOTLAND"]})
+    frame.attrs["policyengine_uk.geography_input_masks"] = {
+        "rows": ((0, 1001),),
+        "masks": (("country", ((1001, True),)),),
+        "horizon": "2024",
+        "history": (),
+    }
+    before, metadata = frame.copy(deep=True), deepcopy(frame.attrs)
+    actual = (
+        geography.region_from_table(frame)
+        if requested is None
+        else geography.region_from_table(frame, period=requested)
+    )
+    np.testing.assert_array_equal(actual, [expected])
+    pd.testing.assert_frame_equal(frame, before)
+    assert frame.attrs == metadata

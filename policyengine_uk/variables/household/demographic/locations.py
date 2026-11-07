@@ -603,8 +603,10 @@ class local_authority(Variable):
     label = "Local Authority"
     documentation = (
         "The household's local authority, defaulting to Maidstone when it is "
-        "not provided. A supplied council determines the region when no "
-        "region was supplied. Local authorities and Broad Rental Market "
-        "Areas have different boundaries."
+        "not provided. A later supplied council can supersede an older "
+        "region. A council made incompatible by a newer region is stale: "
+        "reads needing that council require a new supplied council, while "
+        "historical inputs remain unchanged. Local authorities and Broad "
+        "Rental Market Areas have different boundaries."
     )
     definition_period = YEAR

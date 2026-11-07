@@ -22,6 +22,7 @@ from policyengine_core.simulations.simulation import (
 )
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
+from policyengine_core.variables import QuantityType
 
 from policyengine_uk.utils.dated_reforms import read_parameter_changes
 from policyengine_uk.utils.parameters import (
@@ -45,7 +46,10 @@ from policyengine_uk.data.economic_assumptions import (
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
-from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
+from policyengine_uk.data.energy_price_basis import (
+    core_dataset_energy_price_basis,
+    parse_energy_price_basis,
+)
 from policyengine_uk.data.savings_income_projection import (
     SAVINGS_INCOME_PROJECTION_KEY,
     core_dataset_savings_income_projection,
@@ -86,15 +90,21 @@ from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.geography import (
     GEOGRAPHY_FIELDS,
+    GEOGRAPHY_MASKS,
+    _install_input_frame_presence,
+    _mutation_stamp,
     attach_household_presence,
     attach_input_frame_presence,
     copy_table_presence,
+    geography_decision,
     install_situation_presence,
+    input_facts,
     install_table_presence,
     merge_geography_formula,
     restore_input_frame_presence,
     set_cell_mask,
     situation_presence,
+    source_periods,
     validate_geography,
 )
 from policyengine_uk.utils.measurement_branches import (
@@ -122,6 +132,161 @@ from .tax_benefit_system import (
     DEFAULT_DATASET_ENV_VAR,
     parameter_reads_calendar_years,
 )
+
+
+class _InputBackedUKDataset(UKMultiYearDataset):
+    """Complete supplied inputs; annual tables are a derived loading view.
+
+    This private in-memory source handles worlds for which an eager annual
+    snapshot would request an inapplicable council. Its canonical frame owns
+    all dated input columns, their replay order and detached presence/ISA/
+    savings metadata. It contains no calculated outputs. The existing frame
+    adapter handles frame/Core sources. Every situation source retains its
+    builder structure independently of any supplied numeric model ID inputs.
+    """
+
+    def __init__(
+        self,
+        frame,
+        system,
+        default_year,
+        *,
+        energy_price_basis=None,
+        population_structure=None,
+        geography_presence=(),
+    ):
+        self._input_frame = self._detach_frame(frame)
+        self._declared_energy_price_basis = parse_energy_price_basis(energy_price_basis)
+        self._population_structure = copy.deepcopy(population_structure)
+        self._geography_presence = copy.deepcopy(geography_presence)
+        if self._population_structure is None:
+            annual, _, _ = dataset_from_input_dataframe(
+                self._input_frame, system, default_year
+            )
+            restore_input_frame_presence(self._input_frame, annual)
+        else:
+            annual, _, _ = self._population_input_view(system, default_year)
+        # Price provenance must exist before normalization, reset or load.
+        for year in annual.years:
+            annual[year].energy_price_basis = self._declared_energy_price_basis
+        super().__init__(datasets=list(annual.datasets.values()))
+
+    def _population_input_view(self, system, default_year):
+        """Annual views in real builder order, without inventing model ID inputs."""
+        structure = self._population_structure
+        inputs, years, identifier_years = [], set(), set()
+        for column in self._input_frame:
+            name, _, text = str(column).partition("__")
+            variable = system.variables.get(name)
+            if variable is None:
+                continue
+            source = period_(text)
+            whole_year = (
+                source.unit == "year"
+                and source.size == 1
+                and source.start.month == 1
+                and source.start.day == 1
+            )
+            values = self._input_frame[column].to_numpy(copy=True)
+            entity = variable.entity.key
+            if entity != "person":
+                members = np.asarray(structure[entity]["members"])
+                first = [
+                    np.flatnonzero(members == index)[0]
+                    for index in range(len(structure[entity]["ids"]))
+                ]
+                values = values[first]
+            inputs.append(((name, text, values), whole_year))
+            if whole_year:
+                (identifier_years if name in ENTITY_ID_VARIABLES else years).add(
+                    source.start.year
+                )
+        years = sorted(years or identifier_years or {int(default_year)})
+        contracts = contracts_for_years(
+            self._input_frame.attrs.get(ISA_INCOME_CONTRACT_KEY, MISSING_CONTRACT),
+            years,
+        )
+        datasets = []
+        for year in years:
+            tables = {
+                entity: pd.DataFrame(index=range(len(data["ids"])))
+                for entity, data in structure.items()
+            }
+            for (name, text, values), whole_year in inputs:
+                if whole_year and period_(text).start.year == year:
+                    tables[system.variables[name].entity.key][name] = values
+            household = tables["household"]
+            # Match table_presence's supplied-ID/index association convention.
+            row_ids = (
+                tuple(household["household_id"].tolist())
+                if "household_id" in household
+                else structure["household"]["ids"]
+            )
+            household.attrs[GEOGRAPHY_MASKS] = {
+                "rows": tuple(zip(household.index, row_ids)),
+                "masks": tuple(
+                    (name, tuple(zip(row_ids, mask)))
+                    for name, text, mask in self._geography_presence
+                    if text == str(year)
+                ),
+            }
+            datasets.append(
+                UKSingleYearDataset(
+                    **tables,
+                    fiscal_year=year,
+                    energy_price_basis=self._declared_energy_price_basis,
+                    isa_income_contract=contracts[year],
+                    savings_income_projection=self._input_frame.attrs.get(
+                        SAVINGS_INCOME_PROJECTION_KEY
+                    ),
+                )
+            )
+        # The annual tables are a derived loading view. Replay every genuine
+        # canonical input after resets too, preserving explicit annual zeros.
+        replayed = [entry for entry, _ in inputs]
+        identifiers = [
+            entry
+            for entry, whole_year in inputs
+            if whole_year
+            and entry[0] in ENTITY_ID_VARIABLES
+            and period_(entry[1]).start.year not in years
+        ]
+        return UKMultiYearDataset(datasets=datasets), replayed, identifiers
+
+    @staticmethod
+    def _detach_frame(frame):
+        detached = frame.copy(deep=True)
+        detached.attrs = copy.deepcopy(frame.attrs)
+        return detached
+
+    def _copy_input_frame(self):
+        return self._detach_frame(self._input_frame)
+
+    def copy(self):
+        detached = object.__new__(type(self))
+        UKMultiYearDataset.__init__(
+            detached, datasets=[self[year].copy() for year in self.years]
+        )
+        detached._input_frame = self._copy_input_frame()
+        detached._declared_energy_price_basis = self._declared_energy_price_basis
+        detached._population_structure = copy.deepcopy(self._population_structure)
+        detached._geography_presence = copy.deepcopy(self._geography_presence)
+        return detached
+
+    def __copy__(self):
+        return self.copy()
+
+    def __deepcopy__(self, memo):
+        detached = self.copy()
+        memo[id(self)] = detached
+        return detached
+
+    def save(self, file_path):
+        # The inherited H5 writer drops nonannual/replay metadata and unlinks
+        # an existing target first. Reject before any filesystem operation.
+        raise NotImplementedError(
+            "Input-backed datasets do not support lossy annual H5 serialization."
+        )
 
 
 def _projects_data(situation, dataset) -> bool:
@@ -330,6 +495,7 @@ class Simulation(CoreSimulation):
         self._cgt_input_provenance = {}
         self._cgt_defaulted_periods = set()
         self._cgt_calculation_depth = 0
+        self._geography_read_context = None
         self._external_input_change_pending = False
         self._cgt_operation_inputs = set()
         self._cgt_warned_unused = False
@@ -722,6 +888,7 @@ class Simulation(CoreSimulation):
             getattr(self, "_cgt_input_provenance", {})
         )
         clone._cgt_calculation_depth = 0
+        clone._geography_read_context = None
         clone._cgt_operation_inputs = set()
         clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
         clone._isa_income_contracts = copy.deepcopy(
@@ -1235,13 +1402,75 @@ class Simulation(CoreSimulation):
 
         builder = SimulationBuilder()
         builder.default_period = self.default_input_period
-        builder.build_from_dict(self.tax_benefit_system, situation, self)
-        install_situation_presence(self, geography, builder)
+        previous_loading = getattr(self, "_geography_loading", False)
+        self._geography_loading = True
+        try:
+            builder.build_from_dict(self.tax_benefit_system, situation, self)
+            install_situation_presence(self, geography, builder)
+        finally:
+            self._geography_loading = previous_loading
+        if not previous_loading:
+            validate_geography(self)
         self.has_axes = builder.has_axes
         self._capture_cgt_supplied_inputs()
 
-        self.dataset = UKSingleYearDataset.from_simulation(
-            self, fiscal_year=self.default_input_period
+        if self._geography_needs_lossless_source():
+            frame = self.to_input_dataframe()
+            # These are builder IDs/memberships, not numeric model inputs.
+            structure = {
+                entity: {
+                    "ids": tuple(
+                        population.ids.tolist()
+                        if isinstance(population.ids, np.ndarray)
+                        else population.ids
+                    )
+                }
+                for entity, population in self.populations.items()
+            }
+            for entity in ("benunit", "household"):
+                population = self.populations[entity]
+                structure[entity].update(
+                    members=tuple(population.members_entity_id.tolist()),
+                    roles=tuple(role.key for role in population.members_role),
+                )
+            population = self.populations["household"]
+            presence = tuple(
+                (
+                    name,
+                    text,
+                    tuple(
+                        input_facts(
+                            population,
+                            name,
+                            period_(text),
+                            exact=True,
+                            with_sources=False,
+                        )[1]
+                    ),
+                )
+                for column in frame
+                for name, _, text in [str(column).partition("__")]
+                if name in GEOGRAPHY_FIELDS
+            )
+            self.dataset = _InputBackedUKDataset(
+                frame,
+                self.tax_benefit_system,
+                self.default_input_period,
+                population_structure=structure,
+                geography_presence=presence,
+            )
+        else:
+            self.dataset = UKSingleYearDataset.from_simulation(
+                self, fiscal_year=self.default_input_period
+            )
+
+    def _geography_needs_lossless_source(self):
+        population = self.populations["household"]
+        return any(
+            geography_decision(population, source, strict=False, warn=False)[
+                "stale_council"
+            ].any()
+            for source in source_periods(population)
         )
 
     def build_from_dataset_source(
@@ -1343,7 +1572,7 @@ class Simulation(CoreSimulation):
 
         self.build_from_file(dataset_file, cache_key=url)
 
-    def build_from_dataframe(self, df: pd.DataFrame) -> None:
+    def build_from_dataframe(self, df: pd.DataFrame, *, _input_source=None) -> None:
         """Build simulation from a pandas DataFrame.
 
         The frame has one row per person, in the format
@@ -1358,11 +1587,36 @@ class Simulation(CoreSimulation):
         Args:
             df: DataFrame with columns in format "variable_name__time_period"
         """
-        dataset, replayed, identifiers = dataset_from_input_dataframe(
-            df, self.tax_benefit_system, self.default_input_period
-        )
-        restore_input_frame_presence(df, dataset)
-        self.build_from_multi_year_dataset(dataset)
+        previous_loading = getattr(self, "_geography_loading", False)
+        self._geography_loading = True
+        try:
+            dataset, replayed, identifiers = dataset_from_input_dataframe(
+                df, self.tax_benefit_system, self.default_input_period
+            )
+            restore_input_frame_presence(df, dataset)
+            if _input_source is not None:
+                for year in dataset.years:
+                    dataset[
+                        year
+                    ].energy_price_basis = _input_source._declared_energy_price_basis
+            self.build_from_multi_year_dataset(dataset)
+            self._replay_input_frame(df, replayed, identifiers)
+
+            _install_input_frame_presence(self, df, dataset)
+        finally:
+            self._geography_loading = previous_loading
+        if not previous_loading:
+            validate_geography(self)
+        # Keep the complete canonical source after replay, not just the annual
+        # adapter view. Subsequent copies and reloads replay every input again.
+        if _input_source is not None:
+            self.dataset = _input_source.copy()
+        elif self._geography_needs_lossless_source():
+            self.dataset = _InputBackedUKDataset(
+                df, self.tax_benefit_system, self.default_input_period
+            )
+
+    def _replay_input_frame(self, df, replayed, identifiers):
         # Identifiers for the years the frame names them in that hold no
         # data, and so are not years of the dataset.
         for variable, time_period, values in identifiers:
@@ -1410,6 +1664,60 @@ class Simulation(CoreSimulation):
             gross_mode = incoming_gross
         if gross_mode:
             translate_stored_savings(to_gross=False)
+
+    def _build_from_population_source(self, source):
+        """Replay a situation's real structure and inputs without an annual snapshot."""
+        from policyengine_core.simulations.simulation_builder import SimulationBuilder
+
+        frame = source._copy_input_frame()
+        dataset, replayed, identifiers = source._population_input_view(
+            self.tax_benefit_system, self.default_input_period
+        )
+        if self.disable_economic_assumptions:
+            reset_growthfactor_uprating(dataset)
+        dataset = normalized_dataset(dataset)
+        self._start_new_population(built_from_dataset=False)
+        builder = SimulationBuilder()
+        builder.populations = self.tax_benefit_system.instantiate_entities()
+        structure = source._population_structure
+        builder.declare_person_entity("person", structure["person"]["ids"])
+        for entity in ("benunit", "household"):
+            data = structure[entity]
+            population = builder.declare_entity(entity, data["ids"])
+            assignments = np.asarray(data["ids"])[
+                np.asarray(data["members"], dtype=int)
+            ]
+            builder.join_with_persons(population, assignments, data["roles"])
+        self.build_from_populations(builder.populations)
+        self.has_axes = False  # Structure already contains every actual axis replica.
+        self._isa_income_contracts = {
+            year: copy.deepcopy(dataset[year].isa_income_contract)
+            for year in dataset.years
+        }
+        self._savings_income_projection = dataset.savings_income_projection
+        previous_loading = getattr(self, "_geography_loading", False)
+        self._geography_loading = True
+        try:
+            for year in dataset.years:
+                for entity, table in zip(
+                    dataset[year].table_names, dataset[year].tables
+                ):
+                    for name in table:
+                        self.set_input(name, year, table[name].to_numpy(copy=True))
+                    if entity == "household":
+                        install_table_presence(self, table, year)
+            self._replay_input_frame(frame, replayed, identifiers)
+            for name, text, mask in source._geography_presence:
+                if period_(text) in self.get_holder(name).get_input_periods(
+                    self.branch_name
+                ):
+                    set_cell_mask(self, name, text, mask)
+        finally:
+            self._geography_loading = previous_loading
+        if not previous_loading:
+            validate_geography(self)
+        self._capture_cgt_supplied_inputs()
+        self.dataset = source.copy()
 
     def to_input_dataframe(
         self, include_computed_variables: bool = False
@@ -1498,25 +1806,77 @@ class Simulation(CoreSimulation):
             for entity in ("benunit", "household")
         }
 
-        # Load all variable values
-        for variable in data:
-            for time_period in data[variable]:
-                if variable not in self.tax_benefit_system.variables:
-                    continue
-                values = data[variable][time_period]
-                entity = self.tax_benefit_system.variables[variable].entity.key
-                # Leave scalars for Core to normalize and validate against
-                # the population size; only arrays have a group row order.
-                if entity in group_orders and np.ndim(values) > 0:
-                    order = group_orders[entity].get(
-                        time_period, group_orders[entity][first_time_period]
-                    )
-                    values = np.asarray(values)[order]
-                self.set_input(variable, time_period, values)
+        previous_loading = getattr(self, "_geography_loading", False)
+        self._geography_loading = True
+        try:
+            # Load all variable values
+            for variable in data:
+                for time_period in data[variable]:
+                    if variable not in self.tax_benefit_system.variables:
+                        continue
+                    values = data[variable][time_period]
+                    entity = self.tax_benefit_system.variables[variable].entity.key
+                    # Leave scalars for Core to normalize and validate against
+                    # the population size; only arrays have a group row order.
+                    if entity in group_orders and np.ndim(values) > 0:
+                        order = group_orders[entity].get(
+                            time_period, group_orders[entity][first_time_period]
+                        )
+                        values = np.asarray(values)[order]
+                    self.set_input(variable, time_period, values)
+
+        finally:
+            self._geography_loading = previous_loading
+        if not previous_loading:
+            validate_geography(self)
 
         # Now convert to the new UKSingleYearDataset
         self.input_variables = self.get_known_variables()
         self.dataset = dataset
+        if self._geography_needs_lossless_source():
+            # Preserve the original entries and their order, including spans
+            # and identifier-only years the annual adapter cannot represent.
+            columns = {}
+            for name, entries in data.items():
+                variable = self.tax_benefit_system.variables.get(name)
+                if variable is None:
+                    continue
+                entity = variable.entity.key
+                for time_period, values in entries.items():
+                    values = np.asarray(values)
+                    if values.ndim == 0:
+                        values = np.full(self.populations[entity].count, values.item())
+                    if entity in group_orders:
+                        order = group_orders[entity].get(
+                            time_period, group_orders[entity][first_time_period]
+                        )
+                        values = values[order]
+                    columns[f"{name}__{time_period}"] = np.array(
+                        self.map_result(values, entity, "person"), copy=True
+                    )
+            frame = pd.DataFrame(columns)
+            frame.attrs[ISA_INCOME_CONTRACT_KEY] = contract_envelope(
+                resolve_contracts(
+                    read_object_contract(dataset),
+                    read_h5_contract(getattr(dataset, "file_path", None)),
+                    {
+                        period_(time_period).start.year
+                        for entries in data.values()
+                        for time_period in entries
+                    },
+                )
+            )
+            frame.attrs[SAVINGS_INCOME_PROJECTION_KEY] = savings_income_projection
+            source = _InputBackedUKDataset(
+                frame,
+                self.tax_benefit_system,
+                self.default_input_period,
+                energy_price_basis=energy_price_basis,
+            )
+            # Use the same annual normalization and nonannual savings replay
+            # as an input frame, then retain its complete canonical source.
+            self.build_from_multi_year_dataset(source)
+            return
 
         dataset = UKSingleYearDataset.from_simulation(
             self,
@@ -1549,6 +1909,14 @@ class Simulation(CoreSimulation):
         Args:
             dataset: UKMultiYearDataset containing multiple years of data
         """
+        if isinstance(dataset, _InputBackedUKDataset):
+            if dataset._population_structure is None:
+                self.build_from_dataframe(
+                    dataset._copy_input_frame(), _input_source=dataset
+                )
+            else:
+                self._build_from_population_source(dataset)
+            return
         if self.disable_economic_assumptions:
             dataset = dataset.copy()
             # The reset copies base-year values positionally. Align only the
@@ -1587,6 +1955,7 @@ class Simulation(CoreSimulation):
         self._savings_income_projection = dataset.savings_income_projection
 
         # Geography consistency is checked after the complete multi-field batch.
+        previous_loading = getattr(self, "_geography_loading", False)
         self._geography_loading = True
         try:
             for year in dataset.years:
@@ -1609,8 +1978,9 @@ class Simulation(CoreSimulation):
                     if entity == "household":
                         install_table_presence(self, table, year)
         finally:
-            self._geography_loading = False
-        validate_geography(self)
+            self._geography_loading = previous_loading
+        if not previous_loading:
+            validate_geography(self)
 
         # Retain the dataset actually loaded, including the copied base amounts
         # and price declaration when economic assumptions were disabled.
@@ -1742,6 +2112,15 @@ class Simulation(CoreSimulation):
                 holder.delete_arrays(known_period)
 
     def calculate_all(self, year: int) -> None:
+        # This operation explicitly includes local_authority. Diagnose an
+        # inapplicable supplied council at that public read, before unrelated
+        # fields are materialized; coarse-only operations do not do this.
+        requested = period_(year)
+        decision = geography_decision(
+            self.populations["household"], requested, warn=False
+        )
+        if decision["stale_council"].any():
+            self.calculate("local_authority", requested)
         person, benunit, household = (
             pd.DataFrame(),
             pd.DataFrame(),
@@ -1837,6 +2216,57 @@ class Simulation(CoreSimulation):
                         return self.calculate(variable_name, source)
         return super()._calculate(variable_name, period)
 
+    def _geography_periods_for_read(self, variable, period, *, returned=False):
+        """Use Core's accepted period routes; leave invalid requests to Core."""
+        if variable is None or period.unit == "eternity":
+            return ()
+        if variable.definition_period == "year":
+            if period.unit == "year" and period.size == 1:
+                return (period,)
+            if period.unit == "month" and period.size == 1:
+                return (period.this_year,)
+        elif variable.definition_period == "month":
+            if period.unit == "month" and period.size == 1:
+                return (period.this_year,)
+            if period.unit == "year":
+                months = period.get_subperiods("month")
+                if variable.quantity_type == QuantityType.STOCK:
+                    return (months[-1].this_year,)
+                return tuple(dict.fromkeys(month.this_year for month in months))
+        elif period.size == 1:
+            return (period.this_year,)
+        # Core may accept an actual stored result before consistency checks.
+        # Only after that succeeds do we check its contributing calendar years.
+        if returned:
+            return tuple(
+                period_(year) for year in range(period.start.year, period.stop.year + 1)
+            )
+        return ()
+
+    def _guard_geography_read(self, years, *, warn=True):
+        if getattr(self, "_geography_loading", False):
+            return
+        context = self._geography_read_context
+        for year in years:
+            stamp = _mutation_stamp(self)
+            if context["stamp"] != stamp:
+                context["checked"].clear()
+                context["stamp"] = stamp
+            key = str(year)
+            if key in context["checked"]:
+                continue
+            active = key in context["active"]
+            context["active"].add(key)
+            try:
+                geography_decision(
+                    self.populations["household"], year, warn=warn and not active
+                )
+                context["stamp"] = _mutation_stamp(self)
+                context["checked"].add(key)
+            finally:
+                if not active:
+                    context["active"].discard(key)
+
     def calculate(
         self,
         variable_name: str = None,
@@ -1898,9 +2328,40 @@ class Simulation(CoreSimulation):
             record = self._cgt_calculation_record(variable_name, period, neutralized)
         self._cgt_calculation_depth += 1
         try:
+            if outer_calculation:
+                self._geography_read_context = {
+                    "stamp": _mutation_stamp(self),
+                    "checked": set(),
+                    "active": set(),
+                }
+            variable = self.tax_benefit_system.variables.get(variable_name)
+            geography_years = self._geography_periods_for_read(variable, period)
+            self._guard_geography_read(geography_years)
+            # A warning callback may have made a genuine external edit before
+            # Core chooses its holder/fast result. Honor the existing refresh.
+            if self._external_input_change_pending:
+                self._external_input_change_pending = False
+                drop_calculated_values(self)
             result = super().calculate(
                 variable_name, period, map_to=map_to, decode_enums=decode_enums
             )
+            before_return_check = _mutation_stamp(self)
+            self._guard_geography_read(
+                self._geography_periods_for_read(variable, period, returned=True)
+            )
+            if _mutation_stamp(self) != before_return_check:
+                # The return-path warning changed facts after result selection.
+                # Recompute from that repaired state, never release old money.
+                if self._external_input_change_pending:
+                    self._external_input_change_pending = False
+                    drop_calculated_values(self)
+                result = super().calculate(
+                    variable_name, period, map_to=map_to, decode_enums=decode_enums
+                )
+                self._guard_geography_read(
+                    self._geography_periods_for_read(variable, period, returned=True),
+                    warn=False,
+                )
             if record is not None:
                 if neutralized:
                     self._cgt_defaulted_periods.add((variable_name, str(period)))
@@ -1911,6 +2372,8 @@ class Simulation(CoreSimulation):
                 self._cgt_operation_inputs.add((variable_name, str(period)))
         finally:
             self._cgt_calculation_depth -= 1
+            if outer_calculation:
+                self._geography_read_context = None
         if outer_calculation and self._cgt_operation_inputs:
             for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
                 self._warn_unused_cgt_projection(period_(input_period))
