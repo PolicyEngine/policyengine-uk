@@ -2,9 +2,11 @@
 
 Guardian's Allowance is a tax-free weekly payment for qualifying children or
 young people whose parental circumstances meet the statutory conditions. This
-model calculates full-rate cash for UK tax years 2024–2026 from explicit,
-source-qualified facts. It does not adjudicate orphan eligibility or infer it
-from household relationships.
+model calculates full-rate cash from explicit, source-qualified facts. Verified
+enacted rates and tax/benefit interactions cover UK tax years 2024–2026. The
+model also includes the announced 2027–28 rate and projects rates from 2028
+using CPI. It does not adjudicate orphan eligibility or infer it from household
+relationships.
 
 ## Entitlement, exposure and cash
 
@@ -64,12 +66,22 @@ and weekly maintenance or living-with conditions are also external facts.
 | 2025 | £22.10 | 7 April 2025 | [SI 2025/292](https://www.legislation.gov.uk/uksi/2025/292/made) |
 | 2026 | £22.95 | 6 April 2026 | [SI 2026/232](https://www.legislation.gov.uk/uksi/2026/232/made) |
 
-The parameter keeps these statutory dates. The existing annual tax-year
-processor selects the rate in force on 30 April and exposes it at the tax
-year's January label. It does not blend weeks at different rates. Positive
-computed exposure outside 2024–2026 raises an unsupported-window error; direct
-cash can still record an established payment. A historical cash entry alone
-makes no claim that historical programme interactions have been validated.
+The parameter keeps these enacted statutory dates. The existing annual tax-year
+processor selects the rate at 30 April and exposes it at the tax year's January
+label. It does not blend weeks at different rates.
+
+[HMRC's Budget 2026 Annex A](https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances#child-benefit-and-guardians-allowance)
+announces £23.75 a week for 2027–28: 52 child-weeks give £1,235. The parameter
+records this amount at 30 April 2027 as the model's annual reference date,
+not a statutory commencement date or an enacted 2027 uprating order. Rates
+from 2028 are projections using `gov.benefit_uprating_cpi`, which follows the
+previous September's CPI. They do not extend verified statutory coverage
+beyond 2026.
+
+Positive computed exposure before 2024 still requires authoritative direct
+cash. Direct cash, including zero, remains authoritative in every year. A
+historical cash entry alone makes no claim that historical programme
+interactions have been validated.
 
 ## Tax, benefits and ownership
 

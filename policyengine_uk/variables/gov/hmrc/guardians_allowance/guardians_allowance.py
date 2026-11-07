@@ -31,11 +31,11 @@ class guardians_allowance(Variable):
         payable_child_weeks = where(entitled, max_(child_weeks, 0), 0)
         if not np.any(payable_child_weeks > 0):
             return payable_child_weeks
-        # The explicit verification window is not a historical rate assumption.
-        if not 2024 <= period.start.year <= 2026:
+        # Earlier rates are not included in this implementation.
+        if period.start.year < 2024:
             raise ValueError(
-                "Guardian's Allowance computed cash is supported only for "
-                "2024–2026; supply authoritative direct cash for other years."
+                "Guardian's Allowance computed cash before 2024 requires "
+                "authoritative direct cash."
             )
         rate = parameters(period).gov.hmrc.guardians_allowance.weekly_rate
         return rate * payable_child_weeks

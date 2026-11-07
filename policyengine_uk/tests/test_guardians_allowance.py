@@ -331,8 +331,8 @@ def test_ga_does_not_reduce_a_positive_uncapped_means_tested_award(
         np.testing.assert_allclose(after[name], before[name], rtol=0, atol=0.01)
 
 
-@pytest.mark.parametrize("year", [2023, 2027])
-def test_positive_computed_exposure_outside_verified_window_requires_direct_cash(year):
+def test_positive_computed_exposure_before_2024_requires_direct_cash():
+    year = 2023
     situation = family(
         [guardian(guardians_allowance_full_rate_child_weeks=52), child()], year=year
     )
@@ -342,12 +342,12 @@ def test_positive_computed_exposure_outside_verified_window_requires_direct_cash
     with pytest.raises(ValueError) as error:
         simulation.calculate("guardians_allowance", year)
     message = str(error.value).lower()
-    assert "2024" in message and "2026" in message and "direct" in message
+    assert "2024" in message and "direct" in message
 
 
 @pytest.mark.parametrize("year", [2023, 2027])
 @pytest.mark.parametrize("payment", [123.45, 0], ids=["positive", "zero"])
-def test_direct_cash_outside_computed_window_remains_authoritative(year, payment):
+def test_direct_cash_remains_authoritative_with_positive_exposure(year, payment):
     values = snapshot(
         family(
             [
@@ -376,7 +376,7 @@ def test_no_payable_exposure_needs_no_unsupported_rate(year):
     assert values["guardians_allowance"].tolist() == [0, 0]
 
 
-def test_statutory_dates_and_annual_labels():
+def test_enacted_dates_announced_rate_and_annual_labels():
     rates = yaml.safe_load(
         (MODEL / "parameters/gov/hmrc/guardians_allowance/weekly_rate.yaml").read_text()
     )
@@ -384,7 +384,15 @@ def test_statutory_dates_and_annual_labels():
         str(date): value["value"] if isinstance(value, dict) else value
         for date, value in rates["values"].items()
     }
-    assert raw == {"2024-04-08": 21.75, "2025-04-07": 22.10, "2026-04-06": 22.95}
+    assert raw == {
+        "2024-04-08": 21.75,
+        "2025-04-07": 22.10,
+        "2026-04-06": 22.95,
+        # Annual model reference date for the announced 2027–28 rate,
+        # not a claimed statutory commencement date.
+        "2027-04-30": 23.75,
+    }
+    assert rates["metadata"]["uprating"] == "gov.benefit_uprating_cpi"
     cap = yaml.safe_load((MODEL / "parameters/gov/dwp/benefit_cap.yaml").read_text())
     values = {
         str(date): value["value"] if isinstance(value, dict) else value
@@ -396,7 +404,12 @@ def test_statutory_dates_and_annual_labels():
     assert values["2016-11-07"] is True
     assert any(date < "2016-11-07" and value is False for date, value in values.items())
     system = CountryTaxBenefitSystem()
-    for year, amount in [(2024, 21.75), (2025, 22.10), (2026, 22.95)]:
+    for year, amount in [
+        (2024, 21.75),
+        (2025, 22.10),
+        (2026, 22.95),
+        (2027, 23.75),
+    ]:
         assert (
             system.parameters(str(year)).gov.hmrc.guardians_allowance.weekly_rate
             == amount
@@ -520,3 +533,26 @@ def test_ga_cash_is_counted_once_with_additive_budget_uprating():
         )
     # Both selectors scale the original cash: 500 + 0.05 * 500 + 0.10 * 500.
     np.testing.assert_allclose(values[1] - values[0], [575], rtol=0, atol=0.01)
+
+
+@pytest.mark.parametrize("year", [2028, 2030])
+def test_future_computed_cash_projects_from_the_announced_2027_rate(year):
+    """Annex A announces £23.75 for 2027–28; later years use CPI ratios.
+
+    The index is the existing model projection, not a published future rate.
+    Its five-decimal storage precision uses the shared CPI tests' weekly
+    tolerance of one tenth of a penny; cash uses the existing penny tolerance.
+    """
+    situation = family(
+        [guardian(guardians_allowance_full_rate_child_weeks=52), child()], year=year
+    )
+    for person in situation["people"].values():
+        person.pop("guardians_allowance")
+    simulation = Simulation(situation=situation)
+    parameters = simulation.tax_benefit_system.parameters
+    index = parameters.gov.benefit_uprating_cpi
+    expected_weekly_rate = 23.75 * index(f"{year}-04-30") / index("2027-04-30")
+    weekly_rate = parameters.gov.hmrc.guardians_allowance.weekly_rate(f"{year}-04-30")
+    assert weekly_rate == pytest.approx(expected_weekly_rate, abs=1e-3)
+    cash = simulation.calculate("guardians_allowance", year)
+    np.testing.assert_allclose(cash, [52 * expected_weekly_rate, 0], rtol=0, atol=0.01)

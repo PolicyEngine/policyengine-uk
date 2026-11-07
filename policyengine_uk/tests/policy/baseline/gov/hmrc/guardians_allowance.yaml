@@ -129,3 +129,39 @@
   output:
     guardians_allowance: [0, 0]
     is_entitled_to_guardians_allowance: [true, false]
+
+
+# HMRC Budget 2026 OOTLAR, Annex A, Guardian's Allowance table:
+# https://www.gov.uk/government/publications/budget-2026-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances#child-benefit-and-guardians-allowance
+# The 2027–28 amount is announced, not an enacted uprating order.
+- name: Case 11, 52 qualified child-weeks use the announced 2027 weekly rate.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: ENGLAND}
+  output:
+    # 52 full-rate child-weeks × the announced £23.75 weekly amount.
+    guardians_allowance: [1_235, 0]
+
+- name: Case 12, a later explicit weekly-rate reform gives computed cash.
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    # A controlled scenario, not a forecast or a statement of future law.
+    gov.hmrc.guardians_allowance.weekly_rate: 30
+    people:
+      person1: {age: 40, is_entitled_to_guardians_allowance: true, guardians_allowance_full_rate_child_weeks: 52}
+      person2: {age: 8}
+    benunits:
+      family: {members: [person1, person2]}
+    households:
+      home: {members: [person1, person2], country: ENGLAND}
+  output:
+    # 52 × the explicitly supplied £30 scenario weekly rate.
+    guardians_allowance: [1_560, 0]
