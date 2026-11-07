@@ -128,8 +128,11 @@
   # the housing cost contribution is 96.55 a month in 2026-27
   # (elements/housing/non_dep_deduction/amount.yaml): 96.55 x 12 = 1,158.60.
   # The housing element is 10,400 - 1,158.60 = 9,241.40. Council tax
-  # reduction takes the same non-dependant flag and, in the model, the
-  # Housing Benefit scale: 64.35 x 52 = 3,346.20.
+  # reduction takes the same non-dependant flag and Scotland's own scale
+  # (SSI 2021/249 reg 90(2)(b)): his 300 a week lies in the band from 286 to
+  # 497, whose 2026-27 deduction is 10.95 a week
+  # (scotland/council_tax_reduction/non_dep_deduction/amount.yaml):
+  # 10.95 x 52 = 569.40.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -166,7 +169,7 @@
     uc_non_dep_deductions: [1_158.60, 0]
     uc_housing_costs_element: [9_241.40, 5_200]
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
-    council_tax_reduction_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [569.40, 0]
 
 - name: A working-age lodger couple where one pays is one family for the disregard and neither is a non-dependant
   # England, 2026-27. One partner pays 6,240 a year (120 a week); the other
