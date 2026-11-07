@@ -396,9 +396,36 @@ def load_partition(path) -> Partition:
     )
 
 
+def _colon_problems(partition: Partition) -> list:
+    """A colon in each name that the report writes into a check id or a scope.
+
+    The counted-once check records each failure under the scope
+    ``total:head:kind``, and the comparison splits that scope at its colons,
+    so a colon in a name would let two different (total, head) pairs write
+    the same scope.
+    """
+    names = (
+        [("total", name) for name in partition.totals]
+        + [("head id", h.id) for h in partition.heads]
+        + [("head variable", h.variable) for h in partition.heads]
+        + [("double count", d.variable) for d in partition.double_counts]
+        + [
+            ("overlap guard", str(g.get("id")))
+            for g in partition.overlap_guards
+            if isinstance(g, Mapping)
+        ]
+    )
+    return [
+        f"{what} {name!r} contains a colon, which the report uses to separate "
+        "the parts of a check id or scope"
+        for what, name in dict.fromkeys(names)
+        if ":" in name
+    ]
+
+
 def structural_problems(partition: Partition) -> list:
     """Inconsistencies visible from the partition alone, without the model."""
-    problems = []
+    problems = _colon_problems(partition)
     heads = partition.heads
     head_ids = {h.id for h in heads}
     for name, count in Counter(h.id for h in heads).items():

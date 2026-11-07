@@ -36,6 +36,8 @@ GDP and population assumptions remain supported.
 | `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 4.8 in October 2026 |
 | `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts, other taxes: Table 4.2 in October 2026 |
 | `per_capita.gambling_duty_bases.<duty>` | The base of each of the seven betting and gaming duties (receipts over the model's rate), per person | HMRC Betting and Gaming tables (2024-25, 2025-26), then EFO receipts, betting and gaming duties forecast breakdown: Table 4.10 in October 2026, over `ons.population` |
+| `per_capita.tobacco_clearances.<group>` | Cigarette, hand-rolled tobacco and other tobacco clearances per person | EFO receipts, tobacco clearances: Table 4.11 in October 2026 (3.11 in March 2026), over `ons.population` |
+| `per_capita.alcohol_clearances.<group>` | Beer and cider, wine and spirits clearances per person | EFO receipts, alcohol clearance forecasts: Table 4.12 in October 2026 (3.12 in March 2026), over `ons.population` |
 
 The four receipts series project the corporate SDLT and business rates
 statistics (`gov.hmrc.stamp_duty.statistics`,
@@ -65,6 +67,21 @@ base. See
 [gambling duties](../../../../docs/engineering/gambling-duties.md#projection)
 for each duty's rates, the higher-stake share Machine Games Duty's rate
 assumes, and the approximations.
+
+Dataset projection grows the alcohol and tobacco quantity inputs (#2596)
+by the six clearance series under `per_capita`:
+`tobacco_clearances.cigarettes`, `hand_rolling_tobacco` and
+`other_tobacco_products`, and `alcohol_clearances.beer_and_cider`, `wine`
+and `spirits`. From the OBR's clearances of each product group, the
+importer writes
+`(1 + aggregate clearance growth) / (1 + ons.population growth) - 1` to six
+decimals. Dataset projection grows household weights by `ons.population`,
+so the weighted quantities grow with the clearances. The importer links each
+series' outturn year to the previous EFO's outturn, as it does for the four
+receipts series, holds the clearances flat after the OBR's forecast, and
+reads `ons.population` from the `yoy_growth.yaml` it rewrites. See
+[household excise duties](../../../../docs/engineering/excise-duties.md#projecting-alcohol-and-tobacco-quantities)
+for the mapping of inputs to groups, the arithmetic and the sources.
 
 `national_living_wage` projects the minimum wage rates
 (`gov.hmrc.minimum_wage`) after the last rate set. The government sets each
@@ -511,8 +528,10 @@ the forecast levels, though not their growth.
    renumbering does not matter, and reads only that table's rows. It takes
    each workbook's release from its contents sheet, or else its file name or
    URL, and refuses receipts tables from another EFO or of unknown release.
-   Every selected table in both releases must declare `£ billion` in its
-   header (`£bn` and `£ bn` are also accepted, ignoring case and whitespace).
+   The importer requires `£ billion` in the header of every selected
+   receipts table in both releases, and also accepts `£bn` and `£ bn`,
+   ignoring case and whitespace. The OBR states each clearance line's unit
+   in a label or a note (below).
    Other units, including `£m`, and missing or ambiguous declarations stop
    the import before any file is written, so different cash magnitudes
    cannot be combined across releases.
@@ -530,6 +549,43 @@ the forecast levels, though not their growth.
    EFO's policy tables for any new measure in the betting and gaming lines.
    Then update the published levels in
    `policyengine_uk/tests/test_gambling_duty_base_projection.py`.
+   The same run also refreshes the six alcohol and tobacco clearance series
+   under `per_capita` from the new EFO's tobacco clearances and alcohol
+   clearance forecasts, and the previous EFO's for the outturn year's base.
+   From each table's title through its configured end, the importer compares
+   text cells with `CLEARANCE_TABLE_TEXTS`, in both EFOs. The end falls on
+   the row above a title `CLEARANCE_TABLE_ENDS` lists, or on the sheet's
+   last row. It skips the title cell, numbers and fiscal years. It also
+   needs the cell that states each line's unit: million sticks in the
+   cigarette label, thousand kilograms in the non-cigarette total's label
+   and thousand hectolitres of alcohol in Table 4.12's note. It stops before
+   writing on any other text and names the table and the cell. Read that
+   text, convert the table's figures to these units if it states another,
+   and add the text to the list. A table of listed texts can still put a
+   unit over the wrong lines, so the importer also stops on any text beside
+   the years in the fiscal-year row over a line. It stops when hand-rolled
+   or other tobacco does not sit under an "of which:" row directly below the
+   non-cigarette total's row, which holds its label and figures, with only
+   the total's other parts between, and on any cell beside a line's label
+   and values. When a sheet repeats a
+   clearance table's heading, the importer stops and names the rows. It
+   checks no cell above a table's title or below its end, so read any note
+   there yourself. The list holds each EFO's footnotes as the OBR wrote
+   them, and the importer does not compare the products one EFO's line
+   covers with another's. Check that each alcohol line covers the same
+   products in both EFOs: in March 2026 the OBR added "Includes other
+   fermented products" to the wine line. The importer writes
+   `(1 + aggregate clearance growth) / (1 + ons.population growth) - 1`,
+   using the population in `yoy_growth.yaml`, so rerun it whenever that
+   series changes. Until then the six clearance series and the seven
+   gambling bases keep the values the importer wrote for the old population,
+   and the byte-for-byte test fails. Then update the published levels in
+   `policyengine_uk/tests/test_excise_quantity_projection.py` (`CLEARANCES`)
+   and `policyengine_uk/tests/test_import_obr_forecasts.py`
+   (`OCTOBER_2026_CLEARANCES` and `MARCH_2026_CLEARANCES`, renamed for the
+   new EFOs), the values those tests check by hand, the index table in
+   `docs/engineering/excise-duties.md`, and the real-table fixtures in
+   `policyengine_uk/tests/fixtures/obr_receipts/` (see its README).
 7. The importer refreshes `national_living_wage` in the same run, from the
    new economy tables' national living wage table (Table 1.13 in October
    2026), with `average_earnings` after it. Then replace the cut-down table in
