@@ -11,6 +11,7 @@
 # ITA 2007 ss.12,12A,12B and16: savings nil rate is a positioned
 # slice above the starting-rate limit, not an addition to a zero-rate prefix.
 # The custom limits and phase-out are reform controls, not enacted amounts.
+# Custom phase-out reforms stack the nil slice after the actual starting slice.
 
 - name: nil rate starts at reformed limit 37500
   period: 2026
@@ -130,21 +131,23 @@
     higher_rate_savings_income: 2_301
     add_rate_savings_income: 0
 
-- name: custom zero phaseout uses union of overlapping reliefs
+- name: custom zero phaseout stacks nil rate after starting rate
   period: 2026
   absolute_error_margin: 0.01
   input:
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 5_000
     gov.hmrc.income_tax.rates.savings_starter_rate.phase_out: 0
+    # N=3,000: starter [3,000,8,000), nil [8,000,9,000).
+    # The full £6,000 interest is covered under the custom stacking convention.
     age: 40
     region: LONDON
     employment_income: 15_570
     savings_interest_income: 6_000
   output:
-    savings_income_tax: 200
+    savings_income_tax: 0
     savings_starter_rate_income: 5_000
     savings_allowance: 1_000
-    basic_rate_savings_income: 1_000
+    basic_rate_savings_income: 0
     higher_rate_savings_income: 0
     add_rate_savings_income: 0
 

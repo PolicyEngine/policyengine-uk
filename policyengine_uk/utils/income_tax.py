@@ -47,10 +47,13 @@ def taxable_savings_income_in_band(
 ) -> np.ndarray:
     """Allocate savings after the union of starting-rate and nil-rate slices.
 
-    ITA 2007 s.12A places the savings nil rate above the starting-rate limit,
-    independently of the starting-rate income calculated under a reform.
-    Only its part outside the starting-rate slice is subtracted, so the
-    slices can overlap or leave a taxable gap without moving income bands.
+    ITA 2007 s.12A places the savings nil rate above the starting-rate limit.
+    For custom phase-out reforms, stack the nil slice after the actual
+    starting-rate slice as well, preserving the full savings allowance.
+    This stacking is a model convention for hypothetical reforms; s.12
+    does not specify a phase-out. A higher reformed limit can still leave
+    a taxable gap, and each relief is subtracted only once.
+    https://www.legislation.gov.uk/ukpga/2007/3/section/12
     https://www.legislation.gov.uk/ukpga/2007/3/section/12A
     https://www.legislation.gov.uk/ukpga/2007/3/section/16
     """
@@ -66,7 +69,8 @@ def taxable_savings_income_in_band(
     starting_end = other_income + person("savings_starter_rate_income", period)
     starting_in_band = np.maximum(0, np.minimum(band_end, starting_end) - band_start)
     nil_start = np.maximum(
-        other_income, income_tax.rates.savings_starter_rate.allowance
+        np.maximum(other_income, income_tax.rates.savings_starter_rate.allowance),
+        starting_end,
     )
     nil_end = np.minimum(savings_end, nil_start + person("savings_allowance", period))
     nil_in_band = np.maximum(

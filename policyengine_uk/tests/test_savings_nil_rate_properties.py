@@ -1,9 +1,10 @@
 """Savings nil-rate position and disjoint band allocation under reforms.
 
-ITA 2007 ss.12,12A,12B and16 fix the income ordering and nil slice.
+ITA 2007 ss.12,12A,12B and16 fix current-law income ordering and nil rates.
 These unit-level inputs exercise the banding contract independently of
 personal-allowance/PSA selection, which the natural YAML cases keep live.
-Custom phase-out values preserve the existing model reform contract.
+Custom phase-out reforms stack the nil slice after the actual starting slice;
+this is a model convention, rather than a statutory phase-out rule.
 """
 
 import numpy as np
@@ -18,8 +19,6 @@ from policyengine_uk import CountryTaxBenefitSystem
 
 YEAR = 2026
 PEOPLE = 6
-BASIC_LIMIT = 37_700
-HIGHER_LIMIT = 125_140
 BANDS = (
     "basic_rate_savings_income",
     "higher_rate_savings_income",
@@ -33,14 +32,16 @@ row = st.tuples(
 rows = st.lists(row, min_size=PEOPLE, max_size=PEOPLE)
 
 
-def _reference(non_savings, savings, allowance, limit, phase_out):
+def _reference(
+    non_savings, savings, allowance, limit, phase_out, basic_limit, higher_limit
+):
     """Classify each pound once, rather than subtract overlapping reliefs."""
     starter = min(
         savings,
-        max(0, BASIC_LIMIT - non_savings),
+        max(0, basic_limit - non_savings),
         max(0, limit - non_savings * phase_out),
     )
-    nil_start = max(non_savings, limit)
+    nil_start = max(non_savings, limit, non_savings + starter)
     charged = [0, 0, 0]
     zero = 0
     for pound in range(savings):
@@ -50,9 +51,9 @@ def _reference(non_savings, savings, allowance, limit, phase_out):
             or nil_start <= position < nil_start + allowance
         ):
             zero += 1
-        elif position < BASIC_LIMIT:
+        elif position < basic_limit:
             charged[0] += 1
-        elif position < HIGHER_LIMIT:
+        elif position < higher_limit:
             charged[1] += 1
         else:
             charged[2] += 1
@@ -116,10 +117,39 @@ def _calculated(rows, limit, phase_out, baseline):
 @example(rows=[(37_500, 500, 500)] * PEOPLE, limit=37_500, phase_out=1)
 @example(rows=[(37_500, 500, 500)] * PEOPLE, limit=40_000, phase_out=1)
 @example(rows=[(3_000, 6_000, 1_000)] * PEOPLE, limit=5_000, phase_out=0)
+@example(
+    rows=[
+        (0, 5_999, 1_000),
+        (0, 6_000, 1_000),
+        (0, 6_001, 1_000),
+        (3_000, 5_999, 1_000),
+        (3_000, 6_000, 1_000),
+        (3_000, 6_001, 1_000),
+    ],
+    limit=5_000,
+    phase_out=0,
+)
+@example(
+    # Even taxable income keeps the per-pound oracle's half-open edges integral.
+    rows=[
+        (0, 6_000, 1_000),
+        (1_000, 5_500, 1_000),
+        (1_000, 5_501, 1_000),
+        (3_000, 4_500, 1_000),
+        (3_000, 4_501, 1_000),
+        (3_000, 6_000, 1_000),
+    ],
+    limit=5_000,
+    phase_out=0.5,
+)
 def test_savings_bands_equal_disjoint_statutory_slices(
     savings_tax_benefit_system, rows, limit, phase_out
 ):
-    expected = [_reference(*row, limit, phase_out) for row in rows]
+    scale = savings_tax_benefit_system.parameters(YEAR).gov.hmrc.income_tax.rates.uk
+    basic_limit, higher_limit = scale.thresholds[1:3]
+    expected = [
+        _reference(*row, limit, phase_out, basic_limit, higher_limit) for row in rows
+    ]
     expected_bands = np.asarray([charged for charged, _ in expected])
     expected_zero = np.asarray([zero for _, zero in expected])
     actual_bands, actual_tax = _calculated(
