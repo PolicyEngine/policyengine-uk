@@ -16,8 +16,8 @@ class council_tax_reduction_working_age_unearned_income(Variable):
         "pensions, contributory Jobseeker's Allowance and Employment and "
         "Support Allowance, carer's allowance, carer support payment (the "
         "Carer Support Payment component after any overlapping-benefit "
-        "reduction, as the pension-age route counts it; the Scottish Carer "
-        "Supplement is a separate variable that does not count), "
+        "reduction; the Scottish Carer Supplement is a separate variable "
+        "that does not count), "
         "maternity allowance, industrial injuries benefit, incapacity benefit, "
         "severe disablement allowance, Part 5 miscellaneous income and "
         "working and child tax credits count. Child Benefit, the "
@@ -34,6 +34,7 @@ class council_tax_reduction_working_age_unearned_income(Variable):
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
+        "https://www.legislation.gov.uk/asp/2018/9/section/24",
         "https://www.socialsecurity.gov.scot/publications/2017/07/carer-support-payment-decision-making-guide/pages/payment-of-carer-support-payment/effect-on-other-benefits-for-carer-support-payment-clients",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
@@ -52,10 +53,12 @@ class council_tax_reduction_working_age_unearned_income(Variable):
                 "esa_contrib",
                 "carers_allowance",
                 # Carer Support Payment after the CSP Regs (SSI 2023/302) reg
-                # 16(2) overlapping-benefit reduction. Reg 57(1)(b) counts the
-                # CSP the applicant is entitled to be given, and Social
-                # Security Scotland's guidance says Council Tax Reduction
-                # falls £1 for £1 with the CSP a carer receives.
+                # 16(2) overlapping-benefit reduction. Reg 57(1)(b) counts
+                # benefits "to which the applicant is entitled". We read that
+                # as the CSP the carer "is entitled to be given under a
+                # determination" (Social Security (Scotland) Act 2018 s. 24),
+                # the amount reg 16(2) reduces. Social Security Scotland's
+                # guidance also takes the CSP a carer receives into account.
                 "carer_support_payment",
                 "maternity_allowance",
                 "iidb",

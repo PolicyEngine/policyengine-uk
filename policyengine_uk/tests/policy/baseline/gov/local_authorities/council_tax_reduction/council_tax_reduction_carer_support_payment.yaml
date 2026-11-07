@@ -158,12 +158,15 @@
 - name: A working-age carer whose contributory ESA reduces Carer Support Payment to nil has none counted in Council Tax Reduction
   # Contributory ESA (96.15 a week here) is an overlapping benefit, so CSP
   # Regs (SSI 2023/302) reg 16(2)(b) reduces the CSP given to nil. SSI
-  # 2021/249 reg 57(1)(b) counts the CSP the applicant is entitled to be
-  # given, which is nil; counting the 86.45 x 52 before the reduction would
-  # count the ESA that replaces it twice. The carer premium still applies:
-  # Sch 1 para 6(1)(b) covers a carer who would be in receipt of CSP but for
-  # reg 16. The case fails if CTR income counts CSP before the reduction.
-  # Taxable income, 5,000, is below the personal allowance.
+  # 2021/249 reg 57(1)(b) counts benefits "to which the applicant is
+  # entitled". We read that as the CSP the carer "is entitled to be given
+  # under a determination" (Social Security (Scotland) Act 2018 s. 24),
+  # which reg 16(2) sets at nil here. Counting the 86.45 x 52 before the
+  # reduction would count both the ESA and the CSP it replaces. The carer
+  # premium still applies: Sch 1 para 6(1)(b) covers a carer who would be in
+  # receipt of CSP but for reg 16. The case fails if the working-age route
+  # counts CSP before the reduction. The personal allowance covers the
+  # taxable income of 5,000.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -190,15 +193,13 @@
     income_tax: 0
     # The ESA alone. Counting the CSP before the reduction would give
     # 5,000 + 4,495.40 = 9,495.40 and an award of
-    # 2,000 - 0.2 x (9,495.40 - 7,472.40) = 1,595.40.
-    council_tax_reduction_applicable_income: 5_000
-    council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
-    # The working-age route counts the same amount. Scotland's 2026-27
-    # amounts (SSI 2026/56 reg 14) equal these: 95.55 + 48.15 carer premium.
+    # 2,000 - 0.2 x (9,495.40 - 7,472.40) = 1,595.40. Scotland's 2026-27
+    # working-age amounts (SSI 2026/56 reg 14): 95.55 plus the 48.15 carer
+    # premium.
     council_tax_reduction_working_age_applicable_income: 5_000
     council_tax_reduction_working_age_applicable_amount: (95.55 + 48.15) * 52
-    # Income is below the applicable amount of 7,472.40, so the award is the
-    # whole bill.
+    # The applicable amount of 7,472.40 exceeds the income, so the award is
+    # the whole bill.
     council_tax_reduction: 2_000
 
 - name: Carer Support Payment counts in 2025, before the Scottish Carer Supplement
@@ -332,20 +333,21 @@
     # 2,000 - 0.2 x (22,995.40 - 22,438.00)
     council_tax_reduction: 1_888.52
 
-- name: A pension-age carer whose State Pension reduces Carer Support Payment to nil has none counted in Council Tax Reduction
+- name: A pension-age carer whose State Pension exceeds the Carer Support Payment rate has it counted in Council Tax Reduction
   # The partner's State Pension (142.31 a week) exceeds the CSP rate, so CSP
   # Regs (SSI 2023/302) reg 16(2)(b) reduces the CSP given to them to nil,
-  # and with it the supplement. SSI 2012/319 reg 27(3) counts a benefit
-  # before any deduction other than the reg 27(5) adjustments, and reg 27(5)
-  # lists the Overlapping Benefits Regulations 1979 but not reg 16(2), so the
-  # text could be read as counting the 86.45 x 52 before the reduction.
-  # Social Security Scotland's guidance reduces CTR by the CSP received, and
-  # that reading would count both the State Pension and the CSP it replaces,
-  # so CTR counts the CSP after the reduction: nil. The case fails if CTR
-  # income counts CSP before the reduction. The couple is unmarried, so no
-  # marriage allowance links the claimant's tax to the partner's income. The
-  # partner's taxable income is 7,400, below the personal allowance.
-  # Guarantee Credit is nil.
+  # and with it the supplement. Whether pension-age CTR should count CSP
+  # before or after that reduction is open: SSI 2012/319 reg 27(3) counts a
+  # benefit before any deduction other than the reg 27(5) adjustments, and
+  # reg 27(5) lists the Overlapping Benefits Regulations 1979 but not reg
+  # 16(2). Until it is decided CTR counts the 86.45 x 52 before the
+  # reduction (carer_support_payment_pre_overlap). Whoever settles it must
+  # update this case; it fails if CTR income silently drops the CSP. The
+  # couple is unmarried, so no marriage allowance links the claimant's tax to
+  # the partner's income. The partner's taxable income is 7,400, below the
+  # personal allowance, and would stay below it (7,400 + 4,495.40 + 608.40 =
+  # 12,503.80) if the CSP were paid, so the tax does not depend on the
+  # choice. Guarantee Credit is nil either way.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -378,14 +380,12 @@
     # Income is above the minimum guarantee of (363.25 + 48.15) x 52 =
     # 21,392.80 with or without the CSP: 15,000 + 7,400 - 461.70 = 21,938.30.
     guarantee_credit: 0
-    # 15,000 + 7,400 - 461.70 = 21,938.30. Counting the CSP before the
-    # reduction would give 26,433.70 and an award of
-    # 2,000 - 0.2 x (26,433.70 - 22,438.00) = 1,200.86.
-    council_tax_reduction_applicable_income: 15_000 + 7_400 - 461.70
+    # 15,000 + 7,400 + 86.45 x 52 - 461.70. Leaving the CSP out would give
+    # 21,938.30, below the applicable amount, and a full award of 2,000.
+    council_tax_reduction_applicable_income: 15_000 + 7_400 + 86.45 * 52 - 461.70
     council_tax_reduction_applicable_amount: (383.35 + 48.15) * 52
-    # Income is below the applicable amount of 22,438.00, so the award is the
-    # whole bill.
-    council_tax_reduction: 2_000
+    # 2,000 - 0.2 x (26,433.70 - 22,438.00)
+    council_tax_reduction: 1_200.86
 
 - name: A pension-age couple below the applicable amount keeps full Council Tax Reduction
   period: 2026

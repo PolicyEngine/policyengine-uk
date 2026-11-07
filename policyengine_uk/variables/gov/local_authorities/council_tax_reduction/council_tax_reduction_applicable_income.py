@@ -86,7 +86,8 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
         "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
-        "https://www.socialsecurity.gov.scot/publications/2017/07/carer-support-payment-decision-making-guide/pages/payment-of-carer-support-payment/effect-on-other-benefits-for-carer-support-payment-clients",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/15",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20",
         "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21",
@@ -164,18 +165,18 @@ class council_tax_reduction_applicable_income(Variable):
             # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
             # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
             # excepts it), so scottish_carer_supplement is not listed.
-            # Both count CSP after the CSP Regs (SSI 2023/302) reg 16(2)
-            # overlapping-benefit reduction, so a carer whose State Pension or
-            # contributory ESA reduces CSP to nil has none counted. Reg
-            # 57(1)(b) counts the CSP the applicant is entitled to be given.
-            # At pension age SSI 2012/319 reg 27(3) counts a benefit before
-            # any deduction other than the reg 27(5) adjustments, and reg
-            # 27(5) does not list reg 16(2), which could be read as counting
-            # CSP before the reduction. Social Security Scotland's guidance
-            # reduces CTR by the CSP received, and the before-reduction
-            # reading would count both the overlapping benefit and the CSP it
-            # replaces, so the agency's reading is taken.
-            "carer_support_payment",
+            # Scottish working-age claims follow the devolved route, which
+            # counts CSP after the CSP Regs (SSI 2023/302) reg 16(2)
+            # overlapping-benefit reduction
+            # (council_tax_reduction_working_age_unearned_income). For the
+            # pension-age scheme the question stays open: SSI 2012/319 reg
+            # 27(3) counts a benefit before any deduction other than the reg
+            # 27(5) adjustments, and reg 27(5) doesn't list reg 16(2), while
+            # the Pension Credit and pension-age Housing Benefit regulations
+            # do (SI 2002/1792 reg 15(4)(g); SI 2006/214 reg 29(4)(g)). Until
+            # a ruling settles it, this formula counts the amount before the
+            # reduction, as it did before the model applied the reduction.
+            "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
             "state_pension",

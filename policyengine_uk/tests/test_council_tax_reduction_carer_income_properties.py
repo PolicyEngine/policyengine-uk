@@ -30,14 +30,12 @@ over State Pension age:
 
 1. Counts the component: claiming Carer Support Payment raises Council Tax
    Reduction income, before income tax and National Insurance and apart from
-   the other benefits it counts, by exactly the Carer Support Payment paid
-   after any overlapping-benefit reduction (86.45 a week where nothing
-   overlaps; see below), not by the component plus the supplement. The
-   claim also brings the carer premium, even where an overlapping benefit
-   reduces the payment to nil. The reduction moves against the rise in
-   income less the rise in the applicable amount: it never rises where that
-   difference is positive, never falls where it is negative, and where both
-   awards are partial it falls by 20% of it.
+   the other benefits it counts, by exactly the Carer Support Payment
+   component (86.45 a week), not by the component plus the supplement, and
+   by that amount before any overlapping-benefit reduction (see below). The
+   reduction itself never rises, and where both awards are partial it falls
+   by 20% of the rise in income less the rise in the applicable amount (the
+   carer premium comes with the claim).
 2. Invariant to the supplement: setting the Scottish Carer Supplement to zero
    leaves Carer Support Payment and the other benefits counted in Council
    Tax Reduction income (Child Benefit, the income-related benefits,
@@ -48,10 +46,11 @@ over State Pension age:
 3. Differential: Council Tax Reduction and Housing Benefit assess the same
    carer income. Where Guarantee Credit does not passport Housing Benefit,
    Housing Benefit applicable income, before its disregard, childcare element
-   and tariff income, equals Council Tax Reduction income. Both count Carer
-   Support Payment after any overlapping-benefit reduction (HB (SPC) Regs
-   reg 29(4)(g)). This holds in Scotland, where the carer's benefit is Carer
-   Support Payment, and in England and Wales, where it is Carer's Allowance.
+   and tariff income, equals Council Tax Reduction income less the part of
+   Carer Support Payment that an overlapping benefit removes, which Housing
+   Benefit counts after the reduction (HB (SPC) Regs reg 29(4)(g)). This holds in
+   Scotland, where the carer's benefit is Carer Support Payment, and in
+   England and Wales, where it is Carer's Allowance.
 
 Invariants 1 to 3 concern Council Tax Reduction income under the general rules.
 A pension-age family in receipt of a guarantee credit has its whole income
@@ -80,9 +79,11 @@ where it is true:
    less the disregard (never more than the earnings), plus unearned income,
    plus tariff income, and the claim changes no capital. The working-age
    applicable amount rises by exactly one Scottish carer premium (Sch 1 para
-   6(1)). The reduction never rises, and where both awards are partial it
-   falls by 20% of the rise in working-age income less the rise in the
-   working-age applicable amount.
+   6(1)), even where an overlapping benefit reduces the payment to nil.
+   Where the claim is not passported, the reduction moves against the rise
+   in working-age income less the rise in the working-age applicable amount:
+   it never rises where that difference is positive, never falls where it is
+   negative, and where both awards are partial it falls by 20% of it.
 6. The supplement on the devolved route: setting the Scottish Carer
    Supplement to zero leaves the working-age unearned income, the working-age
    applicable amount, and the working-age income less net earnings after the
@@ -104,8 +105,11 @@ These compare the model's own income measures, so they hold whatever carer's
 benefit the model pays. The model reduces Carer Support Payment by
 overlapping benefits such as State Pension (the Carer's Assistance (Carer
 Support Payment) (Scotland) Regulations 2023 reg 16(2)), and the supplement
-with it. Council Tax Reduction counts the payment after that reduction, as
-Social Security Scotland's guidance does. It applies the Housing Benefit
+with it. The devolved working-age route counts the payment after that
+reduction (carer_support_payment). Whether the shared formula, which
+pension-age Scottish claims follow, counts it before or after stays open;
+until a ruling settles it, that formula counts
+carer_support_payment_pre_overlap. The model applies the Housing Benefit
 applicable amounts to every nation's Council Tax Reduction.
 """
 
@@ -198,13 +202,12 @@ SAVINGS_CREDIT_CARER = dict(
     country="SCOTLAND",
     council_tax=2_000.0,
 )
-
-# A Scottish pensioner carer whose State Pension (173.08 a week) reduces Carer
-# Support Payment to nil: the claim brings only the carer premium, so on the
-# general rules it raises the reduction.
-OVERLAP_CARER = dict(
-    pension_age=True,
-    adults=[dict(age=75, state_pension=9_000.0)],
+# A Scottish working-age carer whose contributory ESA (96.15 a week) reduces
+# Carer Support Payment to nil: on the devolved route the claim brings only
+# the carer premium, so it can raise the reduction.
+ESA_OVERLAP_CARER = dict(
+    pension_age=False,
+    adults=[dict(age=40, employment_income=0.0, esa_contrib_reported=5_000.0)],
     carer=0,
     by_hours=True,
     country="SCOTLAND",
@@ -264,6 +267,10 @@ def situation(families):
                         # All private pension goes to the first adult.
                         "private_pension_income": {YEAR: float(pension) * (j == 0)},
                     }
+                    if "esa_contrib_reported" in a:
+                        person["esa_contrib_reported"] = {
+                            YEAR: a["esa_contrib_reported"]
+                        }
                     if j == fam["carer"]:
                         # Keep the carer's pay within the Carer's Allowance
                         # earnings limit (£204 a week in 2026-27), so the
@@ -350,26 +357,24 @@ def check_devolved_carer_claim(g, i, fam):
     # The scheme follows the family's ages, not the claim.
     assert np.all(g["devolved"][i, :, 0] == g["devolved"][i, :, 1]), fam
     unearned = g["council_tax_reduction_working_age_unearned_income"][i]
+    paid = g["carer_support_payment"][i, :, 0]
+    pre_overlap = g["carer_support_payment_pre_overlap"][i, :, 0]
     assert np.allclose(
-        (unearned[:, 0] - unearned[:, 1])[devolved],
-        g["carer_support_payment"][i, :, 0][devolved],
-        atol=0.01,
+        (unearned[:, 0] - unearned[:, 1])[devolved], paid[devolved], atol=0.01
     ), (fam, unearned)
-    # These working-age families have no overlapping benefit, so the full
-    # 86.45 a week is paid.
-    assert np.allclose(
-        g["carer_support_payment"][i, :, 0][devolved],
-        CARER_SUPPORT_PAYMENT,
-        atol=0.01,
-    ), fam
+    # The claim is a full award before any overlapping-benefit reduction,
+    # which never adds to it.
+    assert np.allclose(pre_overlap[devolved], CARER_SUPPORT_PAYMENT, atol=0.01), fam
+    assert np.all((paid <= pre_overlap + 0.01)[devolved]), fam
     income = g["council_tax_reduction_working_age_applicable_income"][i]
     passported = g["council_tax_reduction_working_age_passported"][i].astype(bool)
     assessed = devolved & ~passported[:, 0] & ~passported[:, 1]
     other_income = income_other_than_earnings(g)[i]
     other_income_rise = other_income[:, 0] - other_income[:, 1]
-    assert np.allclose(other_income_rise[assessed], CARER_SUPPORT_PAYMENT, atol=0.05), (
+    assert np.allclose(other_income_rise[assessed], paid[assessed], atol=0.05), (
         fam,
         other_income_rise[assessed],
+        paid[assessed],
     )
     amount = g["council_tax_reduction_working_age_applicable_amount"][i]
     amount_rise = amount[:, 0] - amount[:, 1]
@@ -378,10 +383,14 @@ def check_devolved_carer_claim(g, i, fam):
         amount_rise[devolved],
     )
     award = g["council_tax_benefit"][i]
-    assert np.all((award[:, 0] <= award[:, 1] + 0.01)[devolved]), fam
-    both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & assessed
     excess_rise = (income[:, 0] - amount[:, 0]) - (income[:, 1] - amount[:, 1])
     fall = award[:, 1] - award[:, 0]
+    # The award moves against the excess of working-age income over the
+    # applicable amount. Where an overlapping benefit cuts the payment below
+    # the carer premium, claiming raises the reduction.
+    assert np.all((fall >= -0.01)[assessed & (excess_rise > 0)]), fam
+    assert np.all((fall <= 0.01)[assessed & (excess_rise < 0)]), fam
+    both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & assessed
     assert np.allclose(
         fall[both_partial], WITHDRAWAL_RATE * excess_rise[both_partial], atol=0.05
     ), (fam, fall[both_partial], excess_rise[both_partial])
@@ -390,7 +399,7 @@ def check_devolved_carer_claim(g, i, fam):
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=3))
 @example([SAVINGS_CREDIT_CARER])
-@example([OVERLAP_CARER])
+@example([ESA_OVERLAP_CARER])
 def test_council_tax_reduction_income_counts_the_carer_support_payment_component(
     families,
 ):
@@ -422,23 +431,19 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
         assert compared.any() or not shared.any(), fam
         check_devolved_carer_claim(g, i, fam)
         rise = g["income_before_tax"][i, :, 0] - g["income_before_tax"][i, :, 1]
-        csp_paid = g["carer_support_payment"][i, :, 0]
-        assert np.allclose(rise[compared], csp_paid[compared], atol=0.05), (
+        assert np.allclose(rise[compared], CARER_SUPPORT_PAYMENT, atol=0.05), (
             fam,
             rise[compared],
-            csp_paid[compared],
         )
+        # Claiming never raises the reduction: on the general rules income
+        # rises by more than the carer premium the claim brings.
+        assert np.all((award[i, :, 0] <= award[i, :, 1] + 0.01)[general]), fam
+        both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & general
         amount = g["council_tax_reduction_applicable_amount"][i]
         excess_rise = (income[i, :, 0] - amount[:, 0]) - (
             income[i, :, 1] - amount[:, 1]
         )
         fall = award[i, :, 1] - award[i, :, 0]
-        # The award moves against the excess of income over the applicable
-        # amount. Where an overlapping benefit cuts the payment below the
-        # carer premium, claiming raises the reduction.
-        assert np.all((fall >= -0.01)[general & (excess_rise > 0)]), fam
-        assert np.all((fall <= 0.01)[general & (excess_rise < 0)]), fam
-        both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & general
         assert np.allclose(
             fall[both_partial],
             WITHDRAWAL_RATE * excess_rise[both_partial],
@@ -535,7 +540,6 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(countries=tuple(REGIONS)), min_size=1, max_size=3))
-@example([OVERLAP_CARER])
 def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
     families,
 ):
@@ -546,6 +550,12 @@ def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
             + g["carer_support_payment_pre_overlap"][i]
         )
         assert np.all(carer_benefit[:, 0] > 0), fam
+        # Housing Benefit counts Carer Support Payment after any
+        # overlapping-benefit reduction; Council Tax Reduction, for now,
+        # before it.
+        removed_by_overlap = (
+            g["carer_support_payment_pre_overlap"][i] - g["carer_support_payment"][i]
+        )
         ctr_income = g["council_tax_reduction_applicable_income"][i]
         hb_income = g["housing_benefit_applicable_income"][i]
         # Guarantee Credit passports pension-age Housing Benefit to nil
@@ -561,9 +571,10 @@ def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
             + g["housing_benefit_applicable_income_childcare_element"][i]
             - g["housing_benefit_tariff_income"][i]
         )
+        ctr_less_overlap = ctr_income - removed_by_overlap
         assert np.allclose(
-            hb_before_adjustments[compared], ctr_income[compared], atol=0.05
-        ), (fam, hb_before_adjustments[compared], ctr_income[compared])
+            hb_before_adjustments[compared], ctr_less_overlap[compared], atol=0.05
+        ), (fam, hb_before_adjustments[compared], ctr_less_overlap[compared])
 
 
 @PROPERTY_SETTINGS
