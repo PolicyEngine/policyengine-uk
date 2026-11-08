@@ -268,6 +268,13 @@ def input_source(population, name: str, period) -> Optional[InputSource]:
             f"with an underscore ({CORE_DISK_KEY_ISSUE}). Read {name} from a "
             "simulation without memory_config."
         )
+    from policyengine_uk.utils.protected_inputs import (
+        check_draw_storage,
+        protects_draws,
+    )
+
+    if protects_draws(simulation):
+        check_draw_storage(simulation, holder, name)
     storing = holder._branch_storing(period, branch_name)
     if storing is not None:
         memory = holder._memory_storage

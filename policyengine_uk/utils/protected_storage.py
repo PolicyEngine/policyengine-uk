@@ -3,6 +3,7 @@
 import numpy as np
 from policyengine_core import periods
 from policyengine_core.data_storage import InMemoryStorage
+from policyengine_core.data_storage.store_history import _period_from_storage_key
 
 from policyengine_uk.utils.stored_draws import (
     StoredDrawError,
@@ -97,7 +98,8 @@ class ProtectedMemoryStorage(InMemoryStorage):
             for key in self._arrays
             if key.startswith(prefix)
             and (
-                period is None or period.contains(periods.period(key.split(":", 1)[1]))
+                period is None
+                or period.contains(_period_from_storage_key(key.split(":", 1)[1]))
             )
         }
         selected_inputs = selected.intersection(self._inputs)

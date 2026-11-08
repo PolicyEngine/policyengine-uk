@@ -113,6 +113,7 @@ from policyengine_uk.utils.stored_draws import (
     check_option_request,
     input_source,
 )
+from policyengine_uk.utils.protected_inputs import install_draw_storage, protects_draws
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_parameter_changes,
@@ -651,6 +652,7 @@ class Simulation(CoreSimulation):
         # the values the new populations hold, and only those: an equal value
         # a rebuild stores later (from a situation or a frame) is supplied.
         keep_population_records(self, adopted)
+        install_draw_storage(self)
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
         if variable_name in REGISTERED_DRAW_NAMES:
@@ -1833,7 +1835,9 @@ class Simulation(CoreSimulation):
             drop_missing_supplied_inputs(self, variable_name)
 
         draw_source = _UNCHECKED
-        if variable_name in REGISTERED_DRAW_NAMES and built_from_data(self):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
             # A stored draw: decide which supplied input core reads, after the
             # cleanups above and before core, and never answer from the fast
             # cache, which can outlive the value the check examined.
@@ -1889,7 +1893,9 @@ class Simulation(CoreSimulation):
         return raw
 
     def calculate_add(self, variable_name: str, period: Period = None, *args, **kwargs):
-        if variable_name in REGISTERED_DRAW_NAMES and built_from_data(self):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
             check_option_request(self, variable_name, "calculate_add")
         with calculation():
             return super().calculate_add(variable_name, period, *args, **kwargs)
@@ -1897,13 +1903,17 @@ class Simulation(CoreSimulation):
     def calculate_divide(
         self, variable_name: str, period: Period = None, *args, **kwargs
     ):
-        if variable_name in REGISTERED_DRAW_NAMES and built_from_data(self):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
             check_option_request(self, variable_name, "calculate_divide")
         with calculation():
             return super().calculate_divide(variable_name, period, *args, **kwargs)
 
     def calculate_output(self, variable_name: str, period: Period = None):
-        if variable_name in REGISTERED_DRAW_NAMES and built_from_data(self):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
             check_option_request(self, variable_name, "calculate_output")
         with calculation():
             return super().calculate_output(variable_name, period)

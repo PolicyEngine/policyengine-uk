@@ -160,7 +160,7 @@ def test_a_model_marked_value_over_an_older_supplied_input_raises():
 def test_a_value_cached_as_non_derived_over_an_input_raises():
     sim = built({2025: VALUES})
     sim.get_holder(DRAW).put_in_cache(OTHER, period(2025), "default", derived=False)
-    with pytest.raises(StoredDrawError, match="not a supplied one"):
+    with pytest.raises(StoredDrawError, match="holder's location record"):
         source_of(sim, 2025)
 
 
@@ -171,7 +171,7 @@ def test_a_non_input_carry_source_raises():
     np.testing.assert_array_equal(core_answer(sim, 2026), OTHER)
     sim._fast_cache.clear()
     sim.get_holder(DRAW).delete_arrays(period(2026))
-    with pytest.raises(StoredDrawError, match="not a supplied input"):
+    with pytest.raises(StoredDrawError, match="simulation's input record"):
         sim.calculate(DRAW, 2026)
 
 
@@ -710,10 +710,33 @@ def test_a_source_replaced_while_core_reads_it_raises(monkeypatch):
     def replaces_the_source(self, name, *args, **kwargs):
         result = real(self, name, *args, **kwargs)
         if name == DRAW:
-            # The same values, stored again: a new sequence number.
+            # The holder must refuse even an equal replacement.
             self.get_holder(DRAW).set_input(period(2025), VALUES)
         return result
 
     monkeypatch.setattr(CoreSimulation, "calculate", replaces_the_source)
+    source = source_of(sim, 2025)
+    input_keys = set(sim._user_input_keys)
+    locations = dict(sim.get_holder(DRAW)._user_input_storage)
+    with pytest.raises(StoredDrawError, match="during a calculation"):
+        sim.calculate(DRAW, 2025)
+    assert source_of(sim, 2025) == source
+    assert sim._user_input_keys == input_keys
+    assert sim.get_holder(DRAW)._user_input_storage == locations
+    np.testing.assert_array_equal(sim.get_holder(DRAW).get_array(period(2025)), VALUES)
+
+
+def test_the_answer_check_refuses_a_changed_source_sequence(monkeypatch):
+    sim = built({2025: VALUES})
+    real = CoreSimulation.calculate
+
+    def changes_the_sequence(self, name, *args, **kwargs):
+        result = real(self, name, *args, **kwargs)
+        if name == DRAW:
+            memory = self.get_holder(DRAW)._memory_storage
+            memory._sequence_numbers["default:2025"] += 1
+        return result
+
+    monkeypatch.setattr(CoreSimulation, "calculate", changes_the_sequence)
     with pytest.raises(StoredDrawError, match="changed while"):
         sim.calculate(DRAW, 2025)

@@ -49,6 +49,35 @@ def assert_immutable(value, expected):
             value.flat[0] = 0
 
 
+def test_an_early_year_input_delete_names_the_draw_and_branch():
+    memory = ProtectedMemoryStorage(False, NAME)
+    early = period("0001")
+    memory.put(VALUES[:1], early, sequence_number=31)
+    before = snapshot(memory)
+    with calculation():
+        with pytest.raises(StoredDrawError, match=f"{NAME} for 1.*default"):
+            memory.delete(early)
+    assert snapshot(memory) == before
+
+
+@pytest.mark.parametrize("requested", [period("0001"), period(2025)])
+def test_an_early_year_delete_outside_a_calculation_keeps_cores_parser_refusal(
+    requested,
+):
+    plain = InMemoryStorage(False)
+    memory = ProtectedMemoryStorage(False, NAME)
+    for target in (plain, memory):
+        target.put(VALUES[:1], period("0001"), sequence_number=31)
+    before = snapshot(memory)
+    with pytest.raises(ValueError) as core_error:
+        plain.delete(requested)
+    with pytest.raises(ValueError) as protected_error:
+        memory.delete(requested)
+    assert type(protected_error.value) is type(core_error.value) is ValueError
+    assert str(protected_error.value) == str(core_error.value)
+    assert snapshot(memory) == before
+
+
 @pytest.mark.parametrize("branch", ["default", "child", "ancestor"])
 @pytest.mark.parametrize("target", [2025, 2026, 2027])
 @pytest.mark.parametrize("values", [VALUES, OTHER])
