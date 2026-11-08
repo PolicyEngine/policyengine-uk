@@ -167,6 +167,9 @@ def test_root_clone_and_branch_keep_input_marks_values_and_sequence_numbers():
 def test_a_data_rebuild_adopts_plain_inputs_without_changing_their_provenance():
     source = Simulation(situation=situation())
     source_holder = source.get_holder(DRAW)
+    source_values = VALUES.copy()
+    source_holder.set_input(period(2025), source_values)
+    assert source_holder.get_array(period(2025)) is source_values
     before = snapshot(source)
     simulation = built()
     simulation.build_from_populations(source.populations)
@@ -174,7 +177,7 @@ def test_a_data_rebuild_adopts_plain_inputs_without_changing_their_provenance():
     assert snapshot(simulation) == before
     assert source_of(simulation, 2025).sequence_number == before[2]["default:2025"]
     assert_immutable(simulation.calculate(DRAW, 2025), VALUES)
-    source_holder.get_array(period(2025))[0] = 0
+    source_values[0] = 0
     assert_immutable(simulation.calculate(DRAW, 2025), VALUES)
     assert simulation.populations["person"] is not source.populations["person"]
     assert simulation.get_holder(DRAW) is not source_holder
