@@ -1,3 +1,64 @@
+## [2.176.3] - 2026-11-09
+
+### Fixed
+
+- `Simulation.subsample()` no longer raises `TypeError` about a missing `dataset` argument: it keeps a weighted sample of households with every supplied weight total unchanged, and replaces the baseline and `dataset` with copies holding the same households. It keeps the stored inputs and model values of neutralised variables for the sampled records.
+- `supplied_input` and `supplied_input_periods` no longer count a value cached over a supplied input as supplied, and read an input stored on disk from disk when a value is cached over it in memory (#2307).
+
+
+## [2.176.2] - 2026-11-09
+
+### Fixed
+
+- The model now calculates Housing Benefit and national Council Tax Reduction non-dependant deductions under each scheme's rules. Bands include their lower edge. For a non-exempt non-dependant outside remunerative work, including someone on Income Support, income-based JSA or income-related ESA, the council deducts the lowest amount whatever their income. The council bands a couple on its joint gross income plus the family's awards, counting Universal Credit after the benefit cap and before debt deductions, and normally makes one deduction, the higher. Under Wales's working-age scheme, it deducts both members' amounts when their own Universal Credit award assesses either member. It deducts separately for each other adult. The model counts other investment income, ISA interest and ISA dividends in gross income, and treats a self-employment or property loss as nil. Councils apply the claimant and non-dependant exemptions, and for the Universal Credit exemption the model reads Universal Credit's own calculation of earned income. The model gives the England pensioner, Scottish and Welsh Council Tax Reduction schemes their own scales from 2013-14, and follows each jointly liable applicant's own scheme. For the Universal Credit benefit cap, the model now totals welfare benefits without Housing Benefit (`uc_benefit_cap_welfare_benefits`). A caller who supplies the combined total, `benefit_cap_welfare_benefits`, must also supply `housing_benefit_pre_benefit_cap` or `uc_benefit_cap_welfare_benefits` for every benefit unit; otherwise the model raises `ValueError` when it calculates the Universal Credit cap.
+- Give each member of the benefit unit aged 16 or over who is not the claimant or partner a bedroom in the Universal Credit LHA size criteria (UC Regs 2013 Sch 4 para 10(1)(b) and (c)), except a qualifying young person no one is responsible for (para 9(2)(g)) and a household head who does not claim and is not a qualifying young person the renter is responsible for, whom the formula treats as liable for the rent (para 9(2)(d)). The bedroom reads the definition that the housing cost contribution uses (is_benefit_unit_non_dependant_for_universal_credit), and the claim that bears an in-unit non-dependant's contribution has their bedroom.
+- - Charge Universal Credit, Housing Benefit and national Council Tax Reduction non-dependant deductions for members of the claimant's own benefit unit who are not the claimant, partner or a child or young person, such as an adult son (UC Regs 2013 Sch 4 para 9; HB Regs 2006 and HB (SPC) Regs 2006 reg 3; SI 2012/2885 reg 9 and the Welsh and Scottish equivalents). Housing Benefit and Council Tax Reduction apportion every non-dependant between joint occupiers or jointly liable applicants, a lodger's adult son included, and a household head is never her own benefit unit's non-dependant. Apply the Universal Credit renter exemption from housing cost contributions (Sch 4 para 15) where a claimant, not a partner whom reg 3(3) leaves out of the claim, is blind or receives a listed benefit, armed forces independence payment included (reg 2's attendance allowance), and give the para 16(2)(b) Pension Credit exemption only to the claimant or partner who receives it, so a pensioner's adult son is no longer exempt by her award.
+
+
+## [2.176.1] - 2026-11-06
+
+### Fixed
+
+- Placed the 1 September following a qualifying young person's 19th birthday from their date of birth, for Universal Credit and Pension Credit (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002 reg. 4A(1)(b)). The model now counts a 19-year-old in education for Universal Credit by default in household calculations, as the microdata already did, and applies the date to Pension Credit, which had no terminal date.
+
+
+## [2.176.0] - 2026-11-06
+
+### Added
+
+- Model rent from boarders, lodgers and sub-tenants for the householder: rent-a-room relief in income tax, the £20 and board-and-lodging disregards in the legacy means tests (not Universal Credit), and no non-dependant deductions for a boarder or lodger and their partner, while a non-paying adult in their family stays a non-dependant. For Universal Credit, the model also leaves a boarder's or lodger's child or qualifying young person out of the householder's extended benefit unit, so they add no bedroom.
+
+
+## [2.175.8] - 2026-11-06
+
+### Fixed
+
+- Give Scotland's working-age council tax reduction scheme and the Welsh rules for persons who are not pensioners their own route: Universal Credit claimants are means-tested under each country's Universal Credit rules (Wales against the Universal Credit maximum amount; Scotland counting only the child and childcare elements), Income Support, income-based JSA and income-related ESA passport to the maximum reduction, applicable amounts include each country's personal allowances, child amounts, family premium and disabled child premiums (2013-14 to 2026-27), and income follows the law (Child Benefit disregarded, earnings disregards, tariff income from capital, and childcare charges capped by the number of children with charges, which Scotland deducts after adding unearned income).
+
+
+## [2.175.7] - 2026-11-05
+
+### Fixed
+
+- The aggregate checker fails an infinite or NaN response on every counted-once check, says which failures rest on such a response or on a head it could not hold, judges as usual every household where the heads it holds stay finite, names two heads that turn NaN instead of stopping with an error, says when the base could not confirm a failure, and rejects a fiscal partition that puts a colon in a name it writes into a check id or scope.
+- The documentation site now publishes nine programme and validation notebooks it left out, among them Housing Benefit and the childcare entitlements, and lists the gambling duties page. Links on three pages reach their targets, and the model baseline page pins its parameter links to a commit so each line anchor stays on the value it cites. Twelve parameter labels now spell LBTT, LTT, LHA and TV in capitals. The residential SDLT lease rent rates take the unit /1, and the programme registry names HMRC as the agency for Scottish income tax. The childcare examples now state the birth dates and school status behind their amounts, the student loan page describes each plan from the regulations and says Plan 5 carries no liability before 6 April 2026, and the Housing Benefit page gives the 1 July 2026 abolition date with its exceptions.
+- The trading loss property test now holds Universal Credit's income tax and National Insurance deductions in respect of the trade at their with-loss values when it nets the loss off the profit. The test no longer fails when a loss exceeds the profit beside a private pension.
+
+
+## [2.175.6] - 2026-11-05
+
+### Fixed
+
+- Dataset projection grows alcohol and tobacco quantity inputs with the OBR's forecasts of clearances per person, using one index per product group. The model charges later duty rates on those projected quantities.
+
+
+## [2.175.5] - 2026-11-05
+
+### Fixed
+
+- Add pensioner child amounts and family premiums to Council Tax Reduction in England, Scotland and Wales, and count a Scottish pensioner's whole capital over £10,000 in tariff income, as SSI 2012/319 reg 27(2) sets no ceiling.
+
+
 ## [2.175.4] - 2026-11-05
 
 ### Changed
