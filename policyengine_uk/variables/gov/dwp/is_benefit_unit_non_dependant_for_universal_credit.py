@@ -22,18 +22,21 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         "non-dependant (para 9(2)(d)), even where the benefit unit's "
         "claimant and partner are someone else. Nor is a member who pays the "
         "household head as a boarder or lodger (pays_rent_to_householder), "
-        "who is liable for their own occupation."
+        "who is liable for their own occupation. Where the renter claims as a "
+        "single person under reg 3(3) (uc_is_ineligible_partner), "
+        "para 9(2)(b) excludes the other member of the couple."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/4",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/40",
     )
 
     def formula(person, period, parameters):
-        # UC Regs 2013 Sch 4 para 9(1)(a)-(b) and (2)(a), (g); WRA 2012 s.40.
+        # UC Regs 2013 Sch 4 para 9(1)(a)-(b) and (2)(a), (b), (g); WRA 2012 s.40.
         not_a_child = ~person("is_child_for_universal_credit", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
         qualifying_young_person = person(
