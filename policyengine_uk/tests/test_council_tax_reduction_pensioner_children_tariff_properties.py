@@ -362,7 +362,12 @@ ORIGIN_MAIN = {
         (14_071.2, 17_170, 1_380.24),
         (9_412, 9_592.34, 1_963.93),
         (3_801.2, 16_080.24, 889.22),
-        (5_972.2, 24_674.64, 460.78),
+        # The Scottish couple on 25,000 of pay. The Marriage Allowance comes
+        # off the tax at Step 6, so taxable income stays 12,500 and its last
+        # 350 reach the 21% band from 12,150: 380 + 2,030 + 73.50 - 250 =
+        # 2,233.50 of tax. With the allowance off taxable income the tax was
+        # 2,230, so income falls by 3.50 and the award rises by 20% of that.
+        (5_972.2, 24_671.14, 461.48),
         (3_801.2, 9_371.84, 937.87),
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_150, 1_384.24),
