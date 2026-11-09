@@ -1,3 +1,11 @@
+## [2.177.3] - 2026-11-09
+
+### Fixed
+
+- Pay Carer's Allowance and Carer Support Payment, and count a carer for the Universal Credit carer element, on caring hours only where the new input `cares_for_severely_disabled_person` says the person cared for gets a qualifying disability benefit; it defaults to true, so results change only where a calculation sets it false.
+- The student loan repayment formula now charges Plan 5 borrowers nothing before 6 April 2026, as SI 2009/470 reg. 15(2BA) requires.
+
+
 ## [2.177.2] - 2026-11-09
 
 ### Fixed
