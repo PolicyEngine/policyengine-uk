@@ -1,3 +1,14 @@
+## [2.177.0] - 2026-11-09
+
+### Added
+
+- Added property tests for VAT grossing (the routing between the survey coverage and the deprecated combined factor, including the closeness band, and VAT as the statutory liability over the shipped product, times one minus private school fees' share of VAT receipts, on a vector of households), a test that the model grosses 2024 by the same product as later years, and a record of how the coverage of 0.67 performed on the Microcosm UK cuts `6cba5d71` and `a133f37a`, which followed `f9d1922c` (#2633).
+
+### Changed
+
+- Re-derived the survey VAT consumption coverage (`gov.simulation.vat.survey_consumption_coverage`) on the certified Microcosm UK 2024-25 national cut `a6299504` and moved it from 0.67 to 0.69: on that cut, 2024-25 total `vat` comes to £176.06bn at 0.67, 3.0% above OBR receipts of £170.994bn, and £171.02bn at 0.69, 0.02% above. Moved the deprecated combined factor `gov.simulation.microdata_vat_coverage` to the new product, 0.483.
+
+
 ## [2.176.3] - 2026-11-09
 
 ### Fixed
