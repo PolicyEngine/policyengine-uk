@@ -1,12 +1,12 @@
 brackets:
 - rate:
-    2018-03-15: 0
+    2017-11-22: 0
   threshold:
-    2018-03-15: 0
+    2017-11-22: 0
 - rate:
-    2018-03-15: 0.05
+    2017-11-22: 0.05
   threshold:
-    2018-03-15: 300000
+    2017-11-22: 300000
     2022-09-23: 425000
     2025-04-01: 300000
 description: Stamp Duty Land Tax progressive rates for residential property transfers.
@@ -18,6 +18,8 @@ metadata:
   reference:
   - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15
     title: Finance Act 2003 schedule 6ZA(4)
+  - href: https://www.legislation.gov.uk/ukpga/2018/3/section/41/enacted
+    title: Finance Act 2018 s. 41(8)
   - href: https://www.legislation.gov.uk/ukpga/2023/2/section/1/enacted
     title: Stamp Duty Land Tax (Temporary Relief) Act 2023 s. 1(5)
   threshold_unit: currency-GBP

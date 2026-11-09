@@ -3,7 +3,12 @@ from policyengine_uk.model_api import *
 
 class sdlt_on_residential_property_transactions(Variable):
     label = "Stamp Duty on residential property"
-    documentation = "Tax charge from purchase of residential property"
+    documentation = (
+        "Tax charge from purchase of residential property. HMRC charges a "
+        "purchase of an additional dwelling at the higher rates when "
+        "gov.hmrc.stamp_duty.residential.purchase.additional.higher_rates_apply "
+        "holds true, and at the main rates when it holds false."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -23,16 +28,16 @@ class sdlt_on_residential_property_transactions(Variable):
             stamp_duty.residential.purchase.main.first.rate.calc(price),
             stamp_duty.residential.purchase.main.subsequent.calc(price),
         )
-        # Tax on second-home purchases
+        # Tax on second-home purchases: the higher rates for additional
+        # dwellings once they apply, and the main rates before then.
+        additional = stamp_duty.residential.purchase.additional
         second_home_price = household(
             "additional_residential_property_purchased", period
         )
-        price = where(
-            second_home_price < stamp_duty.residential.purchase.additional.min,
-            0,
-            second_home_price,
-        )
-        additional_residential_purchase_tax = (
-            stamp_duty.residential.purchase.additional.rate.calc(price)
+        chargeable = where(second_home_price < additional.min, 0, second_home_price)
+        additional_residential_purchase_tax = where(
+            additional.higher_rates_apply,
+            additional.rate.calc(chargeable),
+            stamp_duty.residential.purchase.main.subsequent.calc(second_home_price),
         )
         return main_residential_purchase_tax + additional_residential_purchase_tax
