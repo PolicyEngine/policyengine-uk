@@ -766,9 +766,16 @@ def local_oracle(person_rows, family_rows, benefits, on_award, claims, ctr_share
         scheme = LOCAL_SCHEMES[row["local_authority"]]
         # Reg 9: a member of a family not liable for the rent, or an adult in
         # any family's benefit unit who is not its applicant, partner, child
-        # or young person; aged 18 or over.
+        # or young person; aged 18 or over. Only a lodger and partner are
+        # liable to pay the householder (reg 9(2)(e)), so the lodger's
+        # qualifying young person is a non-dependant too.
         eligible = row["age"] >= 18 and (
-            family_rows[f]["role"] == "non_dependant" or row["kind"] == "non_dependant"
+            family_rows[f]["role"] == "non_dependant"
+            or row["kind"] == "non_dependant"
+            or (
+                family_rows[f]["role"] == "lodger"
+                and row["kind"] in ("dependant", "looked_after")
+            )
         )
         if not eligible or row["student"]:
             continue
