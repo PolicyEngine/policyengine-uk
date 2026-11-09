@@ -8,7 +8,18 @@ brackets:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
-        2015-04-01: 0.075
+        2015-04-06:
+          value: 0.1
+          metadata:
+            reference:
+              - title: Income Tax Act 2007 s. 8(1), as at 6 April 2015
+                href: https://www.legislation.gov.uk/ukpga/2007/3/section/8/2015-04-06
+        2016-04-06:
+          value: 0.075
+          metadata:
+            reference:
+              - title: Finance Act 2016 s. 5(3)(c) and (10)
+                href: https://www.legislation.gov.uk/ukpga/2016/24/section/5/enacted
         2022-04-01:
           value: 0.0875
           metadata:
@@ -54,7 +65,12 @@ brackets:
       metadata:
         label: Dividends higher rate threshold
       values:
-        2015-04-01: 37_500
+        2015-04-06:
+          value: 31_785
+          metadata:
+            reference:
+              - title: Income Tax Act 2007 s. 13(2)(b), read with s. 10(5), as at 6 April 2015
+                href: https://www.legislation.gov.uk/ukpga/2007/3/section/13/2015-04-06
         2016-04-06:
           value: 32_000
           metadata:
@@ -99,7 +115,18 @@ brackets:
           - title: Finance Act 2022 s. 4
             href: https://www.legislation.gov.uk/ukpga/2022/3/section/4/enacted
       values:
-        2015-04-01: 0.381
+        2015-04-06:
+          value: 0.375
+          metadata:
+            reference:
+              - title: Income Tax Act 2007 s. 8(3), as at 6 April 2015
+                href: https://www.legislation.gov.uk/ukpga/2007/3/section/8/2015-04-06
+        2016-04-06:
+          value: 0.381
+          metadata:
+            reference:
+              - title: Finance Act 2016 s. 5(3)(d) and (10)
+                href: https://www.legislation.gov.uk/ukpga/2016/24/section/5/enacted
         2022-04-01:
           value: 0.3935
           metadata:
@@ -133,7 +160,19 @@ brackets:
         label: Extra dividend tax bracket rate
         unit: /1
       values:
-        2015-04-01: 0.381
+        # This optional technical bracket repeats the statutory additional rate.
+        2015-04-06:
+          value: 0.375
+          metadata:
+            reference:
+              - title: Income Tax Act 2007 s. 8(3), as at 6 April 2015
+                href: https://www.legislation.gov.uk/ukpga/2007/3/section/8/2015-04-06
+        2016-04-06:
+          value: 0.381
+          metadata:
+            reference:
+              - title: Finance Act 2016 s. 5(3)(d) and (10)
+                href: https://www.legislation.gov.uk/ukpga/2016/24/section/5/enacted
         2022-06-05: 0.3935
     threshold:
       description: The lower threshold for the extra dividend bracket rate.
