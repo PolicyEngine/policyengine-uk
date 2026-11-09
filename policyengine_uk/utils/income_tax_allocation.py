@@ -84,15 +84,39 @@ doesn't list, so the search can then miss the least tax. On 6,520 synthetic
 people with that threshold at £2,000, a 101 x 101 grid found less tax than
 the search for 32 in 2026-27 (by up to £181.70) and 38 in 2027-28 (by up to
 £214.75). The fast path sends everyone to the search under such a reform.
-The search keeps the order non-savings, savings, dividends unless another
-share gives less tax, so it never charges more than that order.
 
-The search ignores the Marriage Allowance. Parliament gives it as a tax
-reduction (s. 55B(1)), which the taxpayer deducts at Step 6, not as a
-deduction at Step 3, and whether a person qualifies for it (s. 55B(2)(b))
-depends on the share. The model deducts it at Step 6 too
-(``marriage_allowance_tax_reduction``), so the allowance never enters the
-Step 5 tax the search compares.
+The Marriage Allowance adds one term. Parliament gives it as a tax reduction
+at Step 6 (ss. 23 and 55B(1)), and only to a person liable at the rates it
+lists (s. 55B(2)(b)), with dividends tested as if the dividend nil rate were
+omitted (s. 55B(2)(ba)). The share decides those rates, so the share can win
+or lose the reduction. Section 25(2) asks for the greatest reduction in
+liability, and s. 23 fixes liability at Step 7, so the search compares ``f``:
+the Step 5 tax less the reduction ``M`` where the share meets the rate test.
+No share moves the other Step 6 reductions ``R``, and all the reductions
+together leave ``max(0, f - R)`` of Step 5 tax, so the share with the least
+``f`` leaves the least liability. Where ``R`` takes the tax to nil under more
+than one share, the search can still move the share for a saving no one
+receives.
+
+Where all the income left after the deductions exceeds the basic rate limit,
+the rate test allows no dividends left, so the share lies on the line where
+``w`` equals the Step 3 income, and the savings nil rate must cover any
+savings above the limit. Under current rates that holds only with savings
+left within the savings allowance (``w - x`` at most ``A``); a reform that
+sets the basic rate limit below the starting rate limit plus the allowance
+can make it hold all along that line. Otherwise only the limit on
+non-savings income binds. So ``_candidates`` adds one vertical line, at that
+limit, and the test's other edges already lie among the lines listed. On
+each side of those edges ``f`` differs from the Step 5 tax by a constant, so
+the least ``f`` again lies where two lines cross.
+
+The model stores its variables in float32, whose rounding can carry income at
+a limit over it. So the search counts a share as meeting the rate test only
+with room below each limit, under 4p on £38,000, and sets savings at the
+savings allowance, or dividends at nil, exactly where the test reads them.
+
+The search keeps the order non-savings, savings, dividends unless another
+share lowers ``f``, so it never leaves more liability than that order.
 
 Who cannot gain
 ---------------
@@ -129,15 +153,23 @@ first component, so that any other share leaves more of it (``x`` rises).
    rate on the first component.
 
 Where any test holds, the search would keep the old order too, since it
-changes the share only for a saving above ``TOLERANCE``. So both paths give
-the same result, and ``test_income_tax_allocation.py`` checks it.
+changes the share only for a saving above ``TOLERANCE``. A Marriage Allowance
+recipient the old order denies the reduction still goes to the search, unless
+even the least non-savings income any share leaves exceeds the limit in the
+rate test. So both paths give the same result, and
+``test_income_tax_allocation.py`` checks it.
 """
 
 from types import SimpleNamespace
 
 import numpy as np
+from policyengine_core import periods
 
 from policyengine_uk.utils.income_tax import first_extended_scottish_threshold
+from policyengine_uk.utils.marriage_allowance import (
+    marriage_allowance_rate_limits,
+    meets_marriage_allowance_rate_test,
+)
 
 # A share replaces the order non-savings, savings, dividends only where it
 # saves more than this (in pounds), so rounding never moves a deduction.
@@ -147,6 +179,11 @@ TOLERANCE = 1e-3
 TIE = 1e-6
 # Bound on people times candidates evaluated at once, to bound memory.
 CHUNK = 2_000_000
+# The search counts a share as meeting the Marriage Allowance rate test only
+# with this much room below each limit: pounds, plus a fraction of the amounts
+# involved, several times the float32 rounding of the variables the test reads.
+RATE_TEST_ROOM = 1e-3
+RATE_TEST_ROOM_FRACTION = 1e-6
 # The variables on earned_taxable_income_exclusions that the allocation sets
 # rather than reads.
 ALLOCATED_EXCLUSIONS = (
@@ -156,10 +193,9 @@ ALLOCATED_EXCLUSIONS = (
     "received_allowances_earned_income",
 )
 # The search leaves these exclusions out. Parliament gives the Marriage
-# Allowance as a tax reduction (s. 55B(1)), not a deduction at Step 3, and
-# whether a person qualifies (s. 55B(2)(b)) depends on the share, so the search
-# shares a recipient's deductions as if they had none. The baseline list
-# leaves the allowance out too, so this matters only under a reform that
+# Allowance as a tax reduction at Step 6 (s. 55B(1)), not a deduction at Step 3,
+# so the search weighs the reduction and takes no exclusion for it. The baseline
+# list leaves the allowance out too, so this matters only under a reform that
 # lists it.
 IGNORED_EXCLUSIONS = ("marriage_allowance",)
 
@@ -194,6 +230,7 @@ def _inputs(person, period, income_tax):
         if variable not in ALLOCATED_EXCLUSIONS + IGNORED_EXCLUSIONS
     ]
     savings = values("taxable_savings_interest_income")
+    limits = marriage_allowance_rate_limits(person, period, income_tax)
     return dict(
         savings=savings,
         dividends=values("taxable_dividend_income"),
@@ -208,13 +245,19 @@ def _inputs(person, period, income_tax):
         gift=values("gift_aid_grossed_up"),
         scottish=np.asarray(person("pays_scottish_income_tax", period)),
         savings_allowance=values("savings_allowance"),
+        marriage_allowance_reduction=values("marriage_allowance_reduction_at_stake"),
+        rate_test_non_savings_limit=np.asarray(limits.non_savings, dtype=np.float64),
+        rate_test_savings_allowance=np.broadcast_to(
+            np.asarray(limits.savings_allowance, dtype=np.float64), savings.shape
+        ),
+        old_order_meets_rate_test=_old_order_meets_rate_test(person, period, limits),
     )
 
 
 def _context(person, period, parameters):
     """Everything the tax on a share depends on, as float64 columns."""
     income_tax = parameters(period).gov.hmrc.income_tax
-    return _build(_inputs(person, period, income_tax), income_tax)
+    return _build(_inputs(person, periods.period(period), income_tax), income_tax)
 
 
 def _build(inputs, income_tax):
@@ -292,6 +335,27 @@ def _build(inputs, income_tax):
         c.shared = used
         c.offset = np.zeros_like(savings)
     c.step_3_income = c.first + savings + dividends - c.shared
+    # The Marriage Allowance rate test. These columns stay nil for a caller
+    # that passes no recipients.
+    zero = np.zeros_like(savings)
+    c.marriage_allowance_reduction = columns.get("marriage_allowance_reduction", zero)
+    c.old_order_meets_rate_test = columns.get("old_order_meets_rate_test", zero > 0)
+    c.rate_test_savings_allowance = columns.get("rate_test_savings_allowance", zero)
+    non_savings_limit = columns.get("rate_test_non_savings_limit", zero)
+    basic_rate_limit = c.bands[1]
+    # The rate test reads all the non-savings income, so it adds what s. 25(3A)
+    # leaves below the first component.
+    c.non_savings_below_first = c.other_left if c.other_first else zero
+    room = RATE_TEST_ROOM + RATE_TEST_ROOM_FRACTION * np.maximum(
+        np.maximum(np.abs(non_savings_limit), np.abs(basic_rate_limit)),
+        np.abs(c.non_savings_below_first + c.step_3_income),
+    )
+    c.rate_test_limits = SimpleNamespace(
+        non_savings=non_savings_limit - room,
+        basic_rate=basic_rate_limit - room,
+        starting=c.starting_limit - room,
+        savings_allowance=c.rate_test_savings_allowance + TIE,
+    )
     return c
 
 
@@ -379,6 +443,27 @@ def step_5_tax(c, x, s, v):
     return earned_tax + property_tax + savings_tax + dividend_tax
 
 
+def _meets_rate_test(c, x, s, v):
+    """Whether the share meets the Marriage Allowance rate test with room
+    below each limit. ``TIE`` covers float64 rounding of a share that leaves
+    savings at the savings allowance or no dividends."""
+    return meets_marriage_allowance_rate_test(
+        x + c.non_savings_below_first,
+        s,
+        np.maximum(0, v - TIE),
+        c.rate_test_limits,
+    )
+
+
+def tax_after_marriage_allowance(c, x, s, v):
+    """The Step 5 tax less the Marriage Allowance reduction the share wins:
+    ``f`` in the module docstring."""
+    tax = step_5_tax(c, x, s, v)
+    if not np.any(c.marriage_allowance_reduction > 0):
+        return tax
+    return tax - c.marriage_allowance_reduction * _meets_rate_test(c, x, s, v)
+
+
 def _candidates(c):
     """The points where two of the lines the module docstring lists cross."""
     zero = np.zeros_like(c.savings)
@@ -432,6 +517,20 @@ def _candidates(c):
         horizontal += [
             limit - dividend_allowance - offset + zero for limit in c.dividend_scale[0]
         ]
+    if np.any(c.marriage_allowance_reduction > 0):
+        # The Marriage Allowance rate test's limit on non-savings income. Its
+        # other edges, no dividends left (w = total) and savings left at the
+        # savings allowance (w - x = allowance), already have lines. Everyone
+        # else repeats the line x = 0, so the search finds them the same share
+        # whoever else it searches.
+        recipient = c.marriage_allowance_reduction > 0
+        vertical += [
+            np.where(
+                recipient,
+                c.rate_test_limits.non_savings - c.non_savings_below_first,
+                zero,
+            )
+        ]
     xs = np.concatenate([np.broadcast_to(v, zero.shape) for v in vertical], axis=1)
     ws = np.concatenate([np.broadcast_to(h, zero.shape) for h in horizontal], axis=1)
     ds = np.concatenate([np.broadcast_to(d, zero.shape) for d in diagonal], axis=1)
@@ -480,10 +579,10 @@ def _shares(c, x, w):
 
 
 def _least_tax_share(c):
-    """The candidate share with the least Step 5 tax, per person. Of shares
-    within TIE of it, the one setting most against the first component, then
-    most against savings: the nearest the least tax allows to the order
-    non-savings, savings, dividends."""
+    """The candidate share with the least ``f``, per person. Of shares within
+    TIE of it, the one setting most against the first component, then most
+    against savings: the nearest the least tax allows to the order non-savings,
+    savings, dividends."""
     x, w = _candidates(c)
     n, count = x.shape
     tax = np.empty((n, count))
@@ -491,7 +590,7 @@ def _least_tax_share(c):
     for start in range(0, count, width):
         part = slice(start, start + width)
         x[:, part], w[:, part], _ = _shares(c, x[:, part], w[:, part])
-        tax[:, part] = step_5_tax(
+        tax[:, part] = tax_after_marriage_allowance(
             c, x[:, part], w[:, part], c.step_3_income - x[:, part] - w[:, part]
         )
     near = tax <= tax.min(axis=1, keepdims=True) + TIE
@@ -621,11 +720,37 @@ def _old_order_is_least(c, to_savings, to_dividends):
     return nothing_to_share | (in_first & nil_rated) | (in_reach & rates_hold)
 
 
+def _marriage_allowance_in_reach(c):
+    """Recipients the old order denies the Marriage Allowance reduction, where
+    the least non-savings income any share leaves falls within the rate test's
+    limit."""
+    least_first = np.maximum(0, c.step_3_income - c.savings - c.dividends)
+    return (
+        (c.marriage_allowance_reduction > 0)
+        & ~c.old_order_meets_rate_test
+        & (least_first + c.non_savings_below_first <= c.rate_test_limits.non_savings)
+    )
+
+
+def _exact_where_the_rate_test_reads(c, s, v):
+    """Savings and dividends left, with a recipient's savings at the savings
+    allowance, or dividends at nil, set exactly, so that float32 rounding keeps
+    them there."""
+    recipient = c.marriage_allowance_reduction > 0
+    allowance = c.rate_test_savings_allowance
+    s = np.where(
+        recipient & (np.abs(s - allowance) <= TIE),
+        np.minimum(c.savings, allowance),
+        s,
+    )
+    return s, np.where(recipient & (v <= TIE), 0, v)
+
+
 def allocate_deductions(person, period, parameters):
     """Deductions against savings and dividend income in the share that gives
-    the least Income Tax (ITA 2007 s. 25(2) and (3A)). Where no share gives less
-    tax than the order non-savings, savings, dividends, the function returns
-    that order's deductions exactly."""
+    the least Income Tax after the Marriage Allowance (ITA 2007 s. 25(2) and
+    (3A)). Where no share gives less tax than the order non-savings, savings,
+    dividends, the function returns that order's deductions exactly."""
     default = default_order_deductions(person, period)
     income_tax = parameters(period).gov.hmrc.income_tax
     savings, dividends = least_tax_deductions(
@@ -643,14 +768,18 @@ def least_tax_deductions(
     """The deductions from savings and dividends: the old order's
     (``to_savings`` and ``to_dividends``) unless another share saves more than
     TOLERANCE. The search runs only on people the tests in
-    ``_old_order_is_least`` leave, or on everyone with ``search_all``."""
+    ``_old_order_is_least`` leave and on Marriage Allowance recipients whom
+    another share could win the reduction, or on everyone with
+    ``search_all``."""
     to_savings = np.asarray(to_savings, dtype=np.float64)
     to_dividends = np.asarray(to_dividends, dtype=np.float64)
     if search_all:
         search = np.ones(len(to_savings), dtype=bool)
     else:
-        search = ~_old_order_is_least(
-            _build(inputs, income_tax), to_savings[:, None], to_dividends[:, None]
+        everyone = _build(inputs, income_tax)
+        search = (
+            ~_old_order_is_least(everyone, to_savings[:, None], to_dividends[:, None])
+            | _marriage_allowance_in_reach(everyone)
         )[:, 0]
     if not search.any():
         return to_savings, to_dividends
@@ -659,15 +788,47 @@ def least_tax_deductions(
     default_s = c.savings - to_savings[search][:, None]
     default_v = c.dividends - to_dividends[search][:, None]
     default_x = c.step_3_income - default_s - default_v
-    lower = (
-        step_5_tax(c, x, s, v)
-        < step_5_tax(c, default_x, default_s, default_v) - TOLERANCE
-    )[:, 0]
+    # The old order takes the rate test's own answer, not the search's with
+    # room, so a person it already qualifies never moves for the reduction.
+    old_order_tax = step_5_tax(c, default_x, default_s, default_v) - (
+        c.marriage_allowance_reduction * c.old_order_meets_rate_test
+    )
+    lower = (tax_after_marriage_allowance(c, x, s, v) < old_order_tax - TOLERANCE)[:, 0]
+    s, v = _exact_where_the_rate_test_reads(c, s, v)
     moved = np.flatnonzero(search)[lower]
     to_savings, to_dividends = to_savings.copy(), to_dividends.copy()
     to_savings[moved] = (c.savings - s)[lower, 0]
     to_dividends[moved] = (c.dividends - v)[lower, 0]
     return to_savings, to_dividends
+
+
+def _old_order_non_savings_left(person, period):
+    """Non-savings income left under the old order: net income less savings,
+    dividends and allowances, as the model has always computed it."""
+    savings = np.maximum(0, person("taxable_savings_interest_income", period))
+    dividends = np.maximum(0, person("taxable_dividend_income", period))
+    return np.maximum(
+        0,
+        person("net_income", period)
+        - savings
+        - dividends
+        - person("allowances", period),
+    )
+
+
+def _old_order_meets_rate_test(person, period, limits):
+    """Whether the old order meets the Marriage Allowance rate test, in the
+    arithmetic ``meets_marriage_allowance_income_conditions`` applies where the
+    share keeps that order."""
+    default = default_order_deductions(person, period)
+    return meets_marriage_allowance_rate_test(
+        _old_order_non_savings_left(person, period),
+        np.maximum(
+            0, person("taxable_savings_interest_income", period) - default.savings
+        ),
+        np.maximum(0, person("taxable_dividend_income", period) - default.dividends),
+        limits,
+    )
 
 
 def non_savings_deductions(person, period):
@@ -698,9 +859,7 @@ def non_savings_deductions(person, period):
     non_savings = np.maximum(0, net_income + relief - savings - dividends)
     used = np.minimum(relief + allowances, non_savings + savings + dividends)
     to_non_savings = used - to_savings - to_dividends
-    # The old order: net income less savings, dividends and allowances, as the
-    # model has always computed it.
-    default_left = np.maximum(0, net_income - savings - dividends - allowances)
+    default_left = _old_order_non_savings_left(person, period)
     return SimpleNamespace(
         earned=np.where(moved, np.maximum(0, to_non_savings - relief), default.earned),
         relief_against_savings_and_dividends=np.where(

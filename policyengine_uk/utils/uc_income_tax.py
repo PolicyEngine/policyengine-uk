@@ -86,8 +86,9 @@ def uc_income_tax_on_earnings_slice(person, period, parameters, include_trade=Tr
     # the model follows PAYE coding, which sets the allowances against the
     # job; moving them onto savings or dividends to lower the year's tax
     # would otherwise raise the tax on earnings. So the earnings slice reads
-    # the old order's deductions, and more savings or dividends never raise
-    # it.
+    # the old order's deductions, and more savings or dividends raise it
+    # only by taking away a Step 6 tax reduction, as when they fail a
+    # Marriage Allowance recipient on the rate test.
     default = default_order_deductions(person, period)
     # The income left in earned taxable income before allowances, under
     # that order. The part of it above earnings is the person's other

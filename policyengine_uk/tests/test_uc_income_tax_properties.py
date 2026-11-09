@@ -10,9 +10,11 @@ non-savings, savings, dividends, so tax on other income never comes off
 earnings:
 
 - adding savings or dividend income never raises either slice, for every
-  person whose allowances it leaves unchanged (more income can taper the
-  Personal Allowance, which raises the tax on earnings for a reason of its
-  own).
+  person whose allowances and Step 6 tax reductions it leaves unchanged
+  (more income can taper the Personal Allowance, or fail a Marriage
+  Allowance recipient on the rate test, and either raises the tax on
+  earnings for a reason of its own). Everyone here lives alone, so no one
+  has the Marriage Allowance.
 """
 
 import numpy as np
