@@ -1,3 +1,19 @@
+## [2.176.2] - 2026-11-09
+
+### Fixed
+
+- The model now calculates Housing Benefit and national Council Tax Reduction non-dependant deductions under each scheme's rules. Bands include their lower edge. For a non-exempt non-dependant outside remunerative work, including someone on Income Support, income-based JSA or income-related ESA, the council deducts the lowest amount whatever their income. The council bands a couple on its joint gross income plus the family's awards, counting Universal Credit after the benefit cap and before debt deductions, and normally makes one deduction, the higher. Under Wales's working-age scheme, it deducts both members' amounts when their own Universal Credit award assesses either member. It deducts separately for each other adult. The model counts other investment income, ISA interest and ISA dividends in gross income, and treats a self-employment or property loss as nil. Councils apply the claimant and non-dependant exemptions, and for the Universal Credit exemption the model reads Universal Credit's own calculation of earned income. The model gives the England pensioner, Scottish and Welsh Council Tax Reduction schemes their own scales from 2013-14, and follows each jointly liable applicant's own scheme. For the Universal Credit benefit cap, the model now totals welfare benefits without Housing Benefit (`uc_benefit_cap_welfare_benefits`). A caller who supplies the combined total, `benefit_cap_welfare_benefits`, must also supply `housing_benefit_pre_benefit_cap` or `uc_benefit_cap_welfare_benefits` for every benefit unit; otherwise the model raises `ValueError` when it calculates the Universal Credit cap.
+- Give each member of the benefit unit aged 16 or over who is not the claimant or partner a bedroom in the Universal Credit LHA size criteria (UC Regs 2013 Sch 4 para 10(1)(b) and (c)), except a qualifying young person no one is responsible for (para 9(2)(g)) and a household head who does not claim and is not a qualifying young person the renter is responsible for, whom the formula treats as liable for the rent (para 9(2)(d)). The bedroom reads the definition that the housing cost contribution uses (is_benefit_unit_non_dependant_for_universal_credit), and the claim that bears an in-unit non-dependant's contribution has their bedroom.
+- - Charge Universal Credit, Housing Benefit and national Council Tax Reduction non-dependant deductions for members of the claimant's own benefit unit who are not the claimant, partner or a child or young person, such as an adult son (UC Regs 2013 Sch 4 para 9; HB Regs 2006 and HB (SPC) Regs 2006 reg 3; SI 2012/2885 reg 9 and the Welsh and Scottish equivalents). Housing Benefit and Council Tax Reduction apportion every non-dependant between joint occupiers or jointly liable applicants, a lodger's adult son included, and a household head is never her own benefit unit's non-dependant. Apply the Universal Credit renter exemption from housing cost contributions (Sch 4 para 15) where a claimant, not a partner whom reg 3(3) leaves out of the claim, is blind or receives a listed benefit, armed forces independence payment included (reg 2's attendance allowance), and give the para 16(2)(b) Pension Credit exemption only to the claimant or partner who receives it, so a pensioner's adult son is no longer exempt by her award.
+
+
+## [2.176.1] - 2026-11-06
+
+### Fixed
+
+- Placed the 1 September following a qualifying young person's 19th birthday from their date of birth, for Universal Credit and Pension Credit (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002 reg. 4A(1)(b)). The model now counts a 19-year-old in education for Universal Credit by default in household calculations, as the microdata already did, and applies the date to Pension Credit, which had no terminal date.
+
+
 ## [2.176.0] - 2026-11-06
 
 ### Added

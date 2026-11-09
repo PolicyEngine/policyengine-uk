@@ -23,8 +23,7 @@ family with a child, and the head's own partner and children:
    person as the head's Universal Credit non-dependant.
 
 The generator keeps everyone in the lodger units under State Pension age, so
-no lodger family receives Pension Credit, which would exempt the unit's
-non-paying adult from the housing cost contribution.
+no lodger family receives Pension Credit.
 """
 
 import numpy as np
