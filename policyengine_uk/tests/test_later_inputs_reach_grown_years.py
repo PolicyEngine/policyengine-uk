@@ -1,0 +1,442 @@
+"""An input a caller sets for an earlier year reaches a year Core grew (#2774).
+
+For a year an input variable holds no input for, Core grows the latest earlier
+input by the variable's ``uprating`` index, or carries the latest input over,
+and caches the result in the variable's holder. Simulation grows a stored
+household total the same way. An input a caller sets afterwards for a year in
+between changes what that year should be. On a named branch Core drops the
+values that may depend on the input. On the default branch Simulation drops
+what it calculated before its next calculation (``drop_calculated_values``),
+and keeps only the years Core records as supplied, through the data or
+``set_input``, of each input variable.
+
+Invariants, for any amounts and any order of inputs and calculations:
+
+- the default branch, a named branch and a new simulation that gets the same
+  inputs give the same value for each of the three input variables the
+  property sets, and for a formula that reads them, in every year from 2025 to
+  2040;
+- the simulation keeps the value of every year the data, a caller or a
+  scenario's modifier supplied, whether that year comes before or after a year
+  a caller sets later;
+- a branch that a caller takes before its parent changes keeps the values it
+  held then.
+"""
+
+import numpy as np
+import pandas as pd
+import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
+from policyengine_core.periods import period
+from policyengine_core.simulations.simulation import _uprating_index_value
+
+from policyengine_uk import Simulation
+from policyengine_uk.data.dataset_schema import UKSingleYearDataset
+from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
+from policyengine_uk.model_api import YEAR, Person, Variable
+from policyengine_uk.scenarios import no_economic_assumptions
+from policyengine_uk.utils.scenario import Scenario
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
+DATA_YEAR = 2025
+LAST_YEAR = 2040
+YEARS = range(DATA_YEAR, LAST_YEAR + 1)
+# A person balance that Core grows by GDP per capita, a person income the
+# uprating map grows by the private pension index, and a person input with no
+# index, which Core carries over flat.
+VARIABLES = ("cash_isa_balance", "private_pension_income", "car_list_price")
+PROPERTY_SETTINGS = settings(
+    max_examples=6,
+    deadline=None,
+    derandomize=True,
+    database=None,
+)
+
+
+def _frame(**columns):
+    """One person, with a ``name__year`` column for each value given."""
+    return pd.DataFrame(
+        {
+            f"{name}__{DATA_YEAR}": [value]
+            for name, value in (
+                ("person_id", 1),
+                ("person_benunit_id", 1),
+                ("person_household_id", 1),
+            )
+        }
+        | {name: [value] for name, value in columns.items()}
+    )
+
+
+def _growth(simulation, name, year, base):
+    """The factor Core grows ``name`` by from ``base`` to ``year``."""
+    parameters = simulation.tax_benefit_system.parameters
+    index = parameters.get_child(simulation.tax_benefit_system.variables[name].uprating)
+    return _uprating_index_value(index, period(year).start) / _uprating_index_value(
+        index, period(base).start
+    )
+
+
+# The issue's rows hold the variables Core grows to 2035 from £3,000 in 2025,
+# and then from £10,000 in 2030. savings_interest_income depends on the ISA
+# balances, so it has a simulation of its own.
+ISSUE_ROWS = {
+    "balances": ("cash_isa_balance", "savings"),
+    "savings interest": ("savings_interest_income",),
+}
+
+
+@pytest.mark.parametrize("row", ISSUE_ROWS)
+def test_an_input_set_for_an_earlier_year_reaches_a_year_already_grown(row):
+    # As in the issue, the data supply £3,000 for 2025. Core grows it to 2035
+    # on each path. Each path then gets £10,000 for 2030, and Core grows that
+    # instead, as it does in a new simulation that gets both inputs. A copy,
+    # which Simulation.__init__ also makes for a baseline, works as a default
+    # branch too. A branch that the test takes before the input keeps the
+    # value its parent held then.
+    names = ISSUE_ROWS[row]
+    simulation = Simulation(
+        dataset=_frame(**{f"{name}__{DATA_YEAR}": 3_000.0 for name in names})
+    )
+    copy = simulation.clone()
+    named = simulation.get_branch("edited")
+    untouched = simulation.get_branch("untouched")
+    paths = (simulation, copy, named)
+    grown = {name: 3_000 * _growth(simulation, name, 2035, DATA_YEAR) for name in names}
+    for name in names:
+        for path in (*paths, untouched):
+            assert path.calculate(name, 2035)[0] == pytest.approx(grown[name], rel=1e-6)
+    for name in names:
+        for path in paths:
+            path.set_input(name, 2030, np.array([10_000.0]))
+    new = Simulation(
+        dataset=_frame(
+            **{f"{name}__{DATA_YEAR}": 3_000.0 for name in names},
+            **{f"{name}__2030": 10_000.0 for name in names},
+        )
+    )
+    for name in names:
+        values = [path.calculate(name, 2035)[0] for path in (*paths, new)]
+        assert values == [values[-1]] * 4, name
+        assert values[-1] == pytest.approx(
+            10_000 * _growth(simulation, name, 2035, 2030), rel=1e-6
+        )
+        assert untouched.calculate(name, 2035)[0] == pytest.approx(
+            grown[name], rel=1e-6
+        )
+        for path in paths:
+            assert path.calculate(name, DATA_YEAR)[0] == 3_000
+            assert path.calculate(name, 2030)[0] == 10_000
+
+
+def _two_adults_with_a_stored_cash_isa():
+    return UKSingleYearDataset(
+        person=pd.DataFrame(
+            {
+                "person_id": [1, 2],
+                "person_benunit_id": [1, 1],
+                "person_household_id": [1, 1],
+                "age": [30, 28],
+            }
+        ),
+        benunit=pd.DataFrame({"benunit_id": [1]}),
+        household=pd.DataFrame(
+            {
+                "household_id": [1],
+                "household_weight": [1.0],
+                "region": ["LONDON"],
+                "tenure_type": ["RENT_PRIVATELY"],
+                "council_tax": [1_500.0],
+                "rent": [12_000.0],
+                "savings": [1_000.0],
+                "cash_isa": [3_000.0],
+            }
+        ),
+        fiscal_year=DATA_YEAR,
+    )
+
+
+def test_a_balance_set_for_an_earlier_year_reaches_a_total_already_summed():
+    # As in the issue, the data store cash_isa through PROJECTION_END_YEAR. A
+    # balance of £100 for 2034, newer than the stored total, gives cash_isa in
+    # 2040 grown from it. A balance of £200 that the test then sets for 2035
+    # gives cash_isa grown from that on the default branch, as on a named
+    # branch and in a new simulation that gets both balances before the test
+    # calculates the total.
+    assert PROJECTION_END_YEAR < 2034
+    simulation = Simulation(dataset=_two_adults_with_a_stored_cash_isa())
+    named = simulation.get_branch("edited")
+    new = Simulation(dataset=_two_adults_with_a_stored_cash_isa())
+    for path in (simulation, named, new):
+        path.set_input("cash_isa_balance", 2034, np.array([100.0, 0.0]))
+    for path in (simulation, named):
+        assert path.calculate("cash_isa", 2040)[0] == pytest.approx(
+            100 * _growth(simulation, "cash_isa_balance", 2040, 2034), rel=1e-6
+        )
+        path.set_input("cash_isa_balance", 2035, np.array([200.0, 0.0]))
+    new.set_input("cash_isa_balance", 2035, np.array([200.0, 0.0]))
+    values = [path.calculate("cash_isa", 2040)[0] for path in (simulation, named, new)]
+    assert values == [values[-1]] * 3
+    assert values[-1] == pytest.approx(
+        200 * _growth(simulation, "cash_isa_balance", 2040, 2035), rel=1e-6
+    )
+    for path in (simulation, named):
+        assert path.calculate("cash_isa", DATA_YEAR)[0] == 3_000
+
+
+def test_years_the_data_supply_after_a_later_input_keep_their_values():
+    # The frame supplies 2025 and 2033. After Core grows 2030 and 2035, an
+    # input for 2028 replaces what 2030 grew from, but not 2033, nor 2035,
+    # which grows from 2033.
+    data = {
+        f"cash_isa_balance__{DATA_YEAR}": 3_000.0,
+        "cash_isa_balance__2033": 5_000.0,
+    }
+    simulation = Simulation(dataset=_frame(**data))
+    named = simulation.get_branch("edited")
+    for path in (simulation, named):
+        for year in (2030, 2035):
+            path.calculate("cash_isa_balance", year)
+        path.set_input("cash_isa_balance", 2028, np.array([10_000.0]))
+    new = Simulation(dataset=_frame(**data, cash_isa_balance__2028=10_000.0))
+    for year in YEARS:
+        values = [
+            path.calculate("cash_isa_balance", year)[0]
+            for path in (simulation, named, new)
+        ]
+        assert values == [values[-1]] * 3, year
+    for path in (simulation, named):
+        assert path.calculate("cash_isa_balance", 2033)[0] == 5_000
+        assert path.calculate("cash_isa_balance", 2035)[0] == pytest.approx(
+            5_000 * _growth(simulation, "cash_isa_balance", 2035, 2033), rel=1e-6
+        )
+        assert path.calculate("cash_isa_balance", 2030)[0] == pytest.approx(
+            10_000 * _growth(simulation, "cash_isa_balance", 2030, 2028), rel=1e-6
+        )
+
+
+def test_years_a_dataset_projects_under_a_reform_before_data_load_stay():
+    # no_economic_assumptions applies before data load, so the dataset holds
+    # cash_isa flat at £3,000 through PROJECTION_END_YEAR. The test calculates
+    # a year beyond that projection, then overrides the first projected year.
+    # The other projected years keep their stored totals.
+    simulation = Simulation(
+        scenario=no_economic_assumptions,
+        dataset=_two_adults_with_a_stored_cash_isa(),
+    )
+    later = PROJECTION_END_YEAR + 3
+    assert simulation.calculate("cash_isa", later)[0] == 3_000
+    simulation.set_input("cash_isa", DATA_YEAR + 1, np.array([10_000.0]))
+    assert simulation.calculate("cash_isa", DATA_YEAR + 1)[0] == 10_000
+    for year in range(DATA_YEAR + 2, PROJECTION_END_YEAR + 1):
+        assert simulation.calculate("cash_isa", year)[0] == 3_000, year
+    assert simulation.calculate("cash_isa", later)[0] == 3_000
+
+
+def _sets_a_later_balance(simulation):
+    simulation.set_input("cash_isa_balance", 2038, np.array([7_000.0]))
+
+
+@pytest.mark.parametrize("route", ["modifier", "simulation", "holder"])
+def test_a_year_set_for_later_than_a_later_input_keeps_its_value(route):
+    # A modifier or a caller supplies £7,000 for 2038, through the simulation
+    # or its holder, before the test reads the balance for 2040. Core grows
+    # 2040 from that input. A later input for 2030 changes the earlier grown
+    # years while the supplied 2038 value and the growth from it stay fixed.
+    data = _frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
+    if route == "modifier":
+        simulation = Simulation(
+            scenario=Scenario(simulation_modifier=_sets_a_later_balance), dataset=data
+        )
+    else:
+        simulation = Simulation(dataset=data)
+        if route == "simulation":
+            _sets_a_later_balance(simulation)
+        else:
+            simulation.get_holder("cash_isa_balance").set_input(
+                period(2038), np.array([7_000.0])
+            )
+    grown = 7_000 * _growth(simulation, "cash_isa_balance", 2040, 2038)
+    assert simulation.calculate("cash_isa_balance", 2040)[0] == pytest.approx(
+        grown, rel=1e-6
+    )
+    assert simulation.calculate("cash_isa_balance", 2035)[0] == pytest.approx(
+        3_000 * _growth(simulation, "cash_isa_balance", 2035, DATA_YEAR), rel=1e-6
+    )
+    simulation.set_input("cash_isa_balance", 2030, np.array([10_000.0]))
+    assert simulation.calculate("cash_isa_balance", 2035)[0] == pytest.approx(
+        10_000 * _growth(simulation, "cash_isa_balance", 2035, 2030), rel=1e-6
+    )
+    assert simulation.calculate("cash_isa_balance", 2038)[0] == 7_000
+    assert simulation.calculate("cash_isa_balance", 2040)[0] == pytest.approx(
+        grown, rel=1e-6
+    )
+
+
+class twice_car_list_price(Variable):
+    value_type = float
+    entity = Person
+    label = "Twice the car list price"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return 2 * person("car_list_price", period)
+
+
+def test_a_formula_variable_supplied_for_one_year_is_recalculated_for_others():
+    # A caller supplies a formula variable for 2025 only, so the simulation
+    # keeps it as an input variable. Its formula gives 2030 from the list
+    # price carried from 2025. A list price the caller then sets for 2028
+    # changes both on every path, and the simulation keeps the supplied year.
+    # The formula reads the list price as formulas do, through Core's cache of
+    # results by variable and period. A call from outside the simulation
+    # doesn't read that cache, and nor does Core's sum of a variable's adds,
+    # which maps the result to the variable's entity. So the drop clears that
+    # cache too.
+    data = {f"car_list_price__{DATA_YEAR}": 3_000.0}
+    simulation = Simulation(dataset=_frame(**data))
+    new = Simulation(dataset=_frame(**data, car_list_price__2028=5_000.0))
+    for path in (simulation, new):
+        path.tax_benefit_system.add_variable(twice_car_list_price)
+    named = simulation.get_branch("edited")
+    for path in (simulation, named, new):
+        path.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))
+    for path in (simulation, named):
+        assert path.calculate("car_list_price", 2030)[0] == 3_000
+        assert path.calculate("twice_car_list_price", 2030)[0] == 6_000
+        path.set_input("car_list_price", 2028, np.array([5_000.0]))
+    for path in (simulation, named, new):
+        assert path.calculate("twice_car_list_price", 2030)[0] == 10_000
+        assert path.calculate("car_list_price", 2030)[0] == 5_000
+        assert path.calculate("twice_car_list_price", DATA_YEAR)[0] == 1
+
+
+def test_a_reset_drops_grown_years_and_keeps_supplied_ones():
+    # reset_calculations keeps what the drop before a calculation keeps: the
+    # years the data or a caller supplied, here 2025 and 2038, and not the
+    # years Core grew from them.
+    simulation = Simulation(
+        dataset=_frame(**{f"cash_isa_balance__{DATA_YEAR}": 3_000.0})
+    )
+    simulation.set_input("cash_isa_balance", 2038, np.array([7_000.0]))
+    holder = simulation.get_holder("cash_isa_balance")
+    for year in (2035, 2040):
+        simulation.calculate("cash_isa_balance", year)
+        assert holder.get_array(period(year)) is not None
+    simulation.reset_calculations()
+    for year in (2035, 2040):
+        assert holder.get_array(period(year)) is None
+    assert holder.get_array(period(DATA_YEAR))[0] == 3_000
+    assert holder.get_array(period(2038))[0] == 7_000
+
+
+def test_a_reset_after_a_later_input_recalculates_a_supplied_formula_variable():
+    # The caller supplies twice_car_list_price for 2025, and its formula
+    # calculates 2030 from the list price carried from 2025. The caller then
+    # changes the list price for 2028 and resets calculations. The reset
+    # keeps the supplied 2025 value and drops the calculated 2030 value, so
+    # the formula reads the new list price. The reset also clears the pending
+    # drop, so it must invalidate the formula's cached value itself.
+    simulation = Simulation(dataset=_frame(**{f"car_list_price__{DATA_YEAR}": 3_000.0}))
+    simulation.tax_benefit_system.add_variable(twice_car_list_price)
+    simulation.set_input("twice_car_list_price", DATA_YEAR, np.array([1.0]))
+    assert simulation.calculate("twice_car_list_price", 2030)[0] == 6_000
+    simulation.set_input("car_list_price", 2028, np.array([5_000.0]))
+    simulation.reset_calculations()
+    assert simulation.calculate("twice_car_list_price", 2030)[0] == 10_000
+    assert simulation.calculate("car_list_price", 2030)[0] == 5_000
+    assert simulation.calculate("twice_car_list_price", DATA_YEAR)[0] == 1
+
+
+class sum_of_the_inputs(Variable):
+    value_type = float
+    entity = Person
+    label = "The inputs the property test sets, summed by a formula"
+    definition_period = YEAR
+
+    def formula(person, period, parameters):
+        return sum(person(name, period) for name in VARIABLES)
+
+
+AMOUNTS = st.integers(min_value=0, max_value=5_000_000).map(lambda pence: pence / 100)
+LATER_YEARS = st.integers(min_value=DATA_YEAR + 1, max_value=LAST_YEAR)
+STEPS = st.lists(
+    st.one_of(
+        st.tuples(
+            st.just("calculate"),
+            st.sampled_from(VARIABLES),
+            st.integers(min_value=DATA_YEAR, max_value=LAST_YEAR),
+        ),
+        st.tuples(st.just("set"), st.sampled_from(VARIABLES), LATER_YEARS, AMOUNTS),
+    ),
+    min_size=1,
+    max_size=8,
+)
+# The data supply each variable in 2025, and maybe in one later year.
+DATA = st.fixed_dictionaries(
+    {
+        name: st.tuples(AMOUNTS, st.none() | st.tuples(LATER_YEARS, AMOUNTS))
+        for name in VARIABLES
+    }
+)
+
+
+@PROPERTY_SETTINGS
+@given(data=DATA, steps=STEPS)
+@example(
+    data={name: (3_000.0, None) for name in VARIABLES},
+    steps=[("calculate", name, 2035) for name in VARIABLES]
+    + [("set", name, 2030, 10_000.0) for name in VARIABLES],
+)
+@example(
+    data={name: (3_000.0, (2033, 5_000.0)) for name in VARIABLES},
+    steps=[
+        ("calculate", "private_pension_income", 2040),
+        ("set", "private_pension_income", 2028, 10_000.0),
+        ("calculate", "car_list_price", 2030),
+        ("set", "car_list_price", 2027, 20_000.0),
+        ("calculate", "cash_isa_balance", 2036),
+        ("set", "cash_isa_balance", 2034, 100.0),
+        ("set", "cash_isa_balance", 2035, 200.0),
+    ],
+)
+def test_every_path_gives_what_a_new_simulation_gives(data, steps):
+    # The test runs the same inputs and calculations, in the same order, on the
+    # default branch, on a copy of it and on a named branch, which it takes
+    # before any step, and each calculation gives the same value on all three.
+    # Afterwards each input variable in every year, and a formula that reads
+    # them all through Core's cache of results by variable and period, equal
+    # what a new simulation that gets all the inputs gives. The simulation
+    # keeps the value of every supplied year.
+    columns = {}
+    for name, (amount, later) in data.items():
+        columns[f"{name}__{DATA_YEAR}"] = amount
+        if later is not None:
+            columns[f"{name}__{later[0]}"] = later[1]
+    simulation = Simulation(dataset=_frame(**columns))
+    simulation.tax_benefit_system.add_variable(sum_of_the_inputs)
+    paths = (simulation, simulation.clone(), simulation.get_branch("edited"))
+    for step in steps:
+        if step[0] == "calculate":
+            _, name, year = step
+            values = [path.calculate(name, year)[0] for path in paths]
+            assert values == [values[0]] * 3, (step, steps)
+        else:
+            _, name, year, amount = step
+            for path in paths:
+                path.set_input(name, year, np.array([amount]))
+            columns[f"{name}__{year}"] = amount
+    new = Simulation(dataset=_frame(**columns))
+    new.tax_benefit_system.add_variable(sum_of_the_inputs)
+    # Read the formula before the inputs, so it reads them through Core's
+    # result cache.
+    for name in ("sum_of_the_inputs", *VARIABLES):
+        for year in YEARS:
+            values = [path.calculate(name, year)[0] for path in (*paths, new)]
+            assert values == [values[-1]] * 4, (name, year, steps)
+    for column, amount in columns.items():
+        name, year = column.rsplit("__", 1)
+        for path in paths:
+            assert path.calculate(name, int(year))[0] == np.float32(amount), column

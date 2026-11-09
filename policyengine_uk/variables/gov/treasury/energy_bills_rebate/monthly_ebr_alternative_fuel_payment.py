@@ -7,9 +7,9 @@ class monthly_ebr_alternative_fuel_payment(Variable):
         "Northern Ireland's £200 Alternative Fuel Payment for the month. "
         "Electricity suppliers paid it with the £400 Energy Bills Support "
         "Scheme amount, as one £600 payment to each eligible domestic "
-        "customer, whatever fuel the household heats with. Great Britain's "
-        "Alternative Fuel Payment, for households that heat with heating oil, "
-        "LPG, biomass and other alternative fuels, is not modelled."
+        "customer, whatever fuel the household heats with. The model leaves "
+        "out Great Britain's Alternative Fuel Payment, which suppliers paid on "
+        "electricity meters the government listed in areas off the gas grid."
     )
     entity = Household
     definition_period = MONTH

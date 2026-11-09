@@ -5,8 +5,8 @@
 # https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2025-to-2026
 # These ordinary employment-only cases test the band and the existing Marriage
 # Allowance rate-condition classifier, not every donor/election condition.
-# Annual formula dispatch is at 1 January: 2018 uses formula_2017_04_06;
-# 2025 uses formula_2018_06_01. Existing historical tests cover earlier methods.
+# Annual formula dispatch is at 1 January: 2018 and 2025 use formula_2018.
+# The formula_2017 route uses the existing above-limit helper.
 
 - name: Rest-of-UK income at the personal allowance is untaxed in 2018
   period: 2018
