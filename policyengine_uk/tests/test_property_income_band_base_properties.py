@@ -10,13 +10,13 @@ interest and dividends drawn freely:
    amount leaves savings and dividend tax unchanged, in England and in
    Scotland. (The taxable amount, because the £1,000 property allowance can
    relieve small property income in full.)
-2. Accounting: with no Marriage Allowance, non_savings_taxable_income equals
-   adjusted net income less the allowances and the savings and dividends left
-   after the allowances set against them, floored at nil
-   (earned_taxable_income also subtracts Marriage Allowance; #1947). Under
-   ITA 2007 s. 25(2) the model can set allowances against savings or
-   dividends while non-savings income remains, so the savings and dividends
-   left, not their full amounts, sit above it.
+2. Accounting: non_savings_taxable_income equals adjusted net income less the
+   allowances and the savings and dividends left after the allowances set
+   against them, floored at nil. The Marriage Allowance does not enter it: the
+   model gives the allowance as a tax reduction at Step 6 (ITA 2007 s. 55B(1)).
+   Under s. 25(2) the model can set allowances against savings or dividends
+   while non-savings income remains, so the savings and dividends left, not
+   their full amounts, sit above it.
 3. Monotonic: more property income never lowers the income tax. Savings or
    dividend tax alone can fall, because under s. 25(2) the model can move
    allowances from property income to savings as property income rises.

@@ -90,9 +90,9 @@ share gives less tax, so it never charges more than that order.
 The search ignores the Marriage Allowance. Parliament gives it as a tax
 reduction (s. 55B(1)), which the taxpayer deducts at Step 6, not as a
 deduction at Step 3, and whether a person qualifies for it (s. 55B(2)(b))
-depends on the share. The model still subtracts the allowance from earned
-income (#1947), which moves a recipient's savings and dividends down by up to
-that amount, so for a recipient the search's tax can differ from the model's.
+depends on the share. The model deducts it at Step 6 too
+(``marriage_allowance_tax_reduction``), so the allowance never enters the
+Step 5 tax the search compares.
 
 Who cannot gain
 ---------------
@@ -158,7 +158,9 @@ ALLOCATED_EXCLUSIONS = (
 # The search leaves these exclusions out. Parliament gives the Marriage
 # Allowance as a tax reduction (s. 55B(1)), not a deduction at Step 3, and
 # whether a person qualifies (s. 55B(2)(b)) depends on the share, so the search
-# shares a recipient's deductions as if they had none.
+# shares a recipient's deductions as if they had none. The baseline list
+# leaves the allowance out too, so this matters only under a reform that
+# lists it.
 IGNORED_EXCLUSIONS = ("marriage_allowance",)
 
 

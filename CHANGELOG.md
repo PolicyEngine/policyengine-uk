@@ -1,3 +1,74 @@
+## [2.177.2] - 2026-11-09
+
+### Fixed
+
+- The model now reports Scottish tax bands from 2017-18 using Scottish limits for non-savings, non-dividend income and UK limits for savings and dividends, and tests the Marriage Allowance income conditions directly under ITA 2007 s. 55B(2)(b) and (ba), allowing income at a rate limit and savings at a permitted nil rate. It gives the Marriage Allowance recipient a Step 6 tax reduction of the basic rate, or the Scottish basic rate, on the transferable amount (s. 55B(1) and (3)), in place of a deduction from taxable income. A reduction larger than the tax on earnings now also comes off the tax the Welsh working-age Council Tax Reduction route disregards on pensions and benefits.
+- The aggregate checker reports non-finite baseline values as blocking failures and continues checking readable households.
+- Pay the Scottish Carer Supplement for each award week in which Carer Support Payment is payable, up to 52 a year, counting the weeks from the larger of the payment and the entitlement before the overlapping-benefit reduction, so a carer paid 13 weeks of Carer Support Payment after moving to England gets £152.10 of supplement in 2026-27 rather than £608.40.
+- The model now dates the main residential rates in s. 55(1B) Table A from 4 December 2014, first-time buyers' relief from 22 November 2017, the higher rates for additional dwellings from 1 April 2016 and the 2016 non-residential rates from 17 March 2016. Before 17 March 2016 it computes SDLT on a non-residential purchase as one percentage of the whole price. It computes SDLT on purchases in Wales until 31 March 2018 and Land Transaction Tax from 1 April 2018.
+- Scottish working-age Council Tax Reduction counts Carer Support Payment after the overlapping-benefit reduction, so a carer whose contributory ESA or another overlapping benefit reduces it to nil has none counted.
+
+
+## [2.177.1] - 2026-11-09
+
+### Changed
+
+- Document that state_pension_reported is the weekly State Pension times 52, the weeks the State Pension components read it back at, and test the route from a survey's weekly amount to Income Tax under the Pension Tax Allowance.
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
+## [2.177.0] - 2026-11-09
+
+### Added
+
+- Added property tests for VAT grossing (the routing between the survey coverage and the deprecated combined factor, including the closeness band, and VAT as the statutory liability over the shipped product, times one minus private school fees' share of VAT receipts, on a vector of households), a test that the model grosses 2024 by the same product as later years, and a record of how the coverage of 0.67 performed on the Microcosm UK cuts `6cba5d71` and `a133f37a`, which followed `f9d1922c` (#2633).
+
+### Changed
+
+- Re-derived the survey VAT consumption coverage (`gov.simulation.vat.survey_consumption_coverage`) on the certified Microcosm UK 2024-25 national cut `a6299504` and moved it from 0.67 to 0.69: on that cut, 2024-25 total `vat` comes to £176.06bn at 0.67, 3.0% above OBR receipts of £170.994bn, and £171.02bn at 0.69, 0.02% above. Moved the deprecated combined factor `gov.simulation.microdata_vat_coverage` to the new product, 0.483.
+
+
+## [2.176.3] - 2026-11-09
+
+### Fixed
+
+- `Simulation.subsample()` no longer raises `TypeError` about a missing `dataset` argument: it keeps a weighted sample of households with every supplied weight total unchanged, and replaces the baseline and `dataset` with copies holding the same households. It keeps the stored inputs and model values of neutralised variables for the sampled records.
+- `supplied_input` and `supplied_input_periods` no longer count a value cached over a supplied input as supplied, and read an input stored on disk from disk when a value is cached over it in memory (#2307).
+
+
+## [2.176.2] - 2026-11-09
+
+### Fixed
+
+- The model now calculates Housing Benefit and national Council Tax Reduction non-dependant deductions under each scheme's rules. Bands include their lower edge. For a non-exempt non-dependant outside remunerative work, including someone on Income Support, income-based JSA or income-related ESA, the council deducts the lowest amount whatever their income. The council bands a couple on its joint gross income plus the family's awards, counting Universal Credit after the benefit cap and before debt deductions, and normally makes one deduction, the higher. Under Wales's working-age scheme, it deducts both members' amounts when their own Universal Credit award assesses either member. It deducts separately for each other adult. The model counts other investment income, ISA interest and ISA dividends in gross income, and treats a self-employment or property loss as nil. Councils apply the claimant and non-dependant exemptions, and for the Universal Credit exemption the model reads Universal Credit's own calculation of earned income. The model gives the England pensioner, Scottish and Welsh Council Tax Reduction schemes their own scales from 2013-14, and follows each jointly liable applicant's own scheme. For the Universal Credit benefit cap, the model now totals welfare benefits without Housing Benefit (`uc_benefit_cap_welfare_benefits`). A caller who supplies the combined total, `benefit_cap_welfare_benefits`, must also supply `housing_benefit_pre_benefit_cap` or `uc_benefit_cap_welfare_benefits` for every benefit unit; otherwise the model raises `ValueError` when it calculates the Universal Credit cap.
+- Give each member of the benefit unit aged 16 or over who is not the claimant or partner a bedroom in the Universal Credit LHA size criteria (UC Regs 2013 Sch 4 para 10(1)(b) and (c)), except a qualifying young person no one is responsible for (para 9(2)(g)) and a household head who does not claim and is not a qualifying young person the renter is responsible for, whom the formula treats as liable for the rent (para 9(2)(d)). The bedroom reads the definition that the housing cost contribution uses (is_benefit_unit_non_dependant_for_universal_credit), and the claim that bears an in-unit non-dependant's contribution has their bedroom.
+- - Charge Universal Credit, Housing Benefit and national Council Tax Reduction non-dependant deductions for members of the claimant's own benefit unit who are not the claimant, partner or a child or young person, such as an adult son (UC Regs 2013 Sch 4 para 9; HB Regs 2006 and HB (SPC) Regs 2006 reg 3; SI 2012/2885 reg 9 and the Welsh and Scottish equivalents). Housing Benefit and Council Tax Reduction apportion every non-dependant between joint occupiers or jointly liable applicants, a lodger's adult son included, and a household head is never her own benefit unit's non-dependant. Apply the Universal Credit renter exemption from housing cost contributions (Sch 4 para 15) where a claimant, not a partner whom reg 3(3) leaves out of the claim, is blind or receives a listed benefit, armed forces independence payment included (reg 2's attendance allowance), and give the para 16(2)(b) Pension Credit exemption only to the claimant or partner who receives it, so a pensioner's adult son is no longer exempt by her award.
+
+
+## [2.176.1] - 2026-11-06
+
+### Fixed
+
+- Placed the 1 September following a qualifying young person's 19th birthday from their date of birth, for Universal Credit and Pension Credit (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002 reg. 4A(1)(b)). The model now counts a 19-year-old in education for Universal Credit by default in household calculations, as the microdata already did, and applies the date to Pension Credit, which had no terminal date.
+
+
+## [2.176.0] - 2026-11-06
+
+### Added
+
+- Model rent from boarders, lodgers and sub-tenants for the householder: rent-a-room relief in income tax, the £20 and board-and-lodging disregards in the legacy means tests (not Universal Credit), and no non-dependant deductions for a boarder or lodger and their partner, while a non-paying adult in their family stays a non-dependant. For Universal Credit, the model also leaves a boarder's or lodger's child or qualifying young person out of the householder's extended benefit unit, so they add no bedroom.
+
+
+## [2.175.8] - 2026-11-06
+
+### Fixed
+
+- Give Scotland's working-age council tax reduction scheme and the Welsh rules for persons who are not pensioners their own route: Universal Credit claimants are means-tested under each country's Universal Credit rules (Wales against the Universal Credit maximum amount; Scotland counting only the child and childcare elements), Income Support, income-based JSA and income-related ESA passport to the maximum reduction, applicable amounts include each country's personal allowances, child amounts, family premium and disabled child premiums (2013-14 to 2026-27), and income follows the law (Child Benefit disregarded, earnings disregards, tariff income from capital, and childcare charges capped by the number of children with charges, which Scotland deducts after adding unearned income).
+
+
 ## [2.175.7] - 2026-11-05
 
 ### Fixed

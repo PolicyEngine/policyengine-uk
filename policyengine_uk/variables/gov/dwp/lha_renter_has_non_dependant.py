@@ -9,10 +9,15 @@ class lha_renter_has_non_dependant(Variable):
         "Universal Credit: someone in this benefit unit who is neither a "
         "claimant or partner nor a child or young person, or, for the claim "
         "that counts the household's non-dependants (see "
-        "uc_non_dependants_counted), a claimant or partner of a family not "
-        "liable for rent. Joint tenants and other sharers of the rent, "
-        "boarders and lodgers are not non-dependants. Foster children are not "
-        "identified. Housing Benefit uses housing_benefit_has_non_dependant."
+        "uc_non_dependants_counted), anyone in another family who is a "
+        "Universal Credit non-dependant of the renter "
+        "(is_uc_non_dependant_of_household_head), such as the adult son, who "
+        "pays nothing, of a lodger whose family makes no claim of its own. "
+        "Joint tenants and other sharers of the rent, "
+        "boarders and lodgers are not non-dependants, and the flag leaves "
+        "out a boarder's or lodger's child or qualifying young person (UC "
+        "Regs 2013 Sch 4 para 9(2)(g)). The model does not identify foster "
+        "children. Housing Benefit uses housing_benefit_has_non_dependant."
     )
     definition_period = YEAR
     reference = (
@@ -32,12 +37,16 @@ class lha_renter_has_non_dependant(Variable):
             | ((age >= 16) & (age < 17))
         )
         within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_qyp)
-        # UC Regs 2013 Sch 4 para 9(2)(d)-(f); HB Regs 2006 reg 3(2)(d)-(e).
-        non_dependant_claimants = claimant_or_partner & person(
-            "is_non_dependant_of_household_head", period
+        # UC Regs 2013 Sch 4 para 9(1)(c) and 9(2): the non-dependants of
+        # other families, whoever in the family they are. A boarder's or
+        # lodger's non-paying adult son counts unless their own family's claim
+        # does (para 9(2)(f)); their child or qualifying young person does not
+        # (para 9(2)(g)).
+        other_family_non_dependant = person(
+            "is_uc_non_dependant_of_household_head", period
         )
         counted = benunit("uc_non_dependants_counted", period)
         other_family_non_dependants = counted * benunit.max(
-            person.household.sum(non_dependant_claimants)
+            person.household.sum(other_family_non_dependant)
         )
         return within_benefit_unit | (other_family_non_dependants > 0)

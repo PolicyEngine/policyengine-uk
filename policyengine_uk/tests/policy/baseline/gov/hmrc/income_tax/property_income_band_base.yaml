@@ -125,7 +125,7 @@
     taxed_income: 47_430
     personal_pension_contributions_tax: 4_000
 
-- name: Case 7, Marriage Allowance still comes off the band base (pinned; #1947).
+- name: Case 7, Marriage Allowance leaves the band base unchanged.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -140,8 +140,10 @@
         members: [person]
         country: ENGLAND
   output:
-    # earned_taxable_income subtracts Marriage Allowance, which the law gives
-    # as a tax reduction (ITA 2007 s. 55B), so the base is 30,000 - 12,570 -
-    # 1,260 = 16,170 rather than 17,430. Pinned here until #1947 is fixed.
-    non_savings_taxable_income: 16_170
+    # Parliament gives the Marriage Allowance as a tax reduction at Step 6
+    # (ITA 2007 ss. 55A(2) and 55B(1)), so it leaves the base at
+    # 30,000 - 12,570 = 17,430.
+    non_savings_taxable_income: 17_430
+    # Step 5: 17,430 x 20% = 3,486. Step 6: 3,486 - 20% x 1,260 = 3,234.
+    income_tax: 3_234
     non_savings_income_after_allowances: 17_430
