@@ -56,7 +56,9 @@ class council_tax_reduction_carer_premium(Variable):
         "allowance reduced to nil; that choice does not change the amount. "
         "Before 1 April 2022 councils paid the premium to persons under "
         "pension age on entitlement to Carer's Allowance only (SSI 2012/303 "
-        "Sch 1 para 14; carer_premium_counts_uc_carer_element)."
+        "Sch 1 para 14; carer_premium_counts_uc_carer_element). Scotland's "
+        "working-age award reads council_tax_reduction_working_age_carers, "
+        "which applies the same test to the applicant and partner."
     )
     definition_period = YEAR
     unit = GBP

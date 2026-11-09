@@ -59,6 +59,8 @@
     carer_premium: 0
     council_tax_reduction_carer_premium: 48.15 * 52
     council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_adult_premiums: 48.15 * 52
 
 - name: The Scottish carer premium for a carer element starts with the 2021 Regulations on 1 April 2022
   # The model reads model year 2022 (2022-23) at 30 April 2022. Carer element
@@ -84,6 +86,8 @@
     uc_carer_element: 168.81 * 12
     council_tax_reduction_carer_premium: 38.85 * 52
     council_tax_reduction_applicable_amount: (77.00 + 38.85) * 52
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_adult_premiums: 38.85 * 52
 
 - name: Before 1 April 2022 the Scottish scheme for persons under pension age tested Carer's Allowance only
   # Under SSI 2012/303 Sch 1 para 14, councils included the premium for an
@@ -109,6 +113,8 @@
   output:
     uc_carer_element: 163.73 * 12
     council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
+    council_tax_reduction_working_age_adult_premiums: 0
 
 - name: The same carer in England gets no carer premium for the carer element
   # In England the model takes the working-age premiums from the Housing
@@ -134,6 +140,7 @@
     receives_uc_carer_element: true
     council_tax_reduction_carer_premium: 0
     council_tax_reduction_applicable_amount: 95.55 * 52
+    council_tax_reduction_working_age_carers: 0
 
 - name: The same carer in Wales gets no carer premium for the carer element
   # Welsh councils include the premium for an applicant or partner "entitled
@@ -158,6 +165,7 @@
     receives_uc_carer_element: true
     council_tax_reduction_carer_premium: 0
     council_tax_reduction_applicable_amount: 95.55 * 52
+    council_tax_reduction_working_age_carers: 0
 
 - name: A Scottish carer whose income tapers the award to nil has no award and no carer premium
   # With £20,000 of earnings the award comes to nil, which in 2026 leaves no
@@ -186,6 +194,7 @@
     universal_credit: 0
     receives_uc_carer_element: false
     council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
 
 - name: In 2024 a Scottish carer whose earnings taper the award to nil has no award and no carer premium
   # The same carer in 2024-25. The maximum amount comes to (393.45 + 198.31)
@@ -223,6 +232,7 @@
     is_entitled_to_carer_benefit: false
     carer_premium: 0
     council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
 
 - name: From 1 April 2025 the same Scottish carer's nil award leaves no award
   # The same carer in 2025-26. The maximum amount comes to (400.14 + 201.68)
@@ -255,6 +265,7 @@
     receives_uc_carer_element: false
     is_entitled_to_carer_benefit: false
     council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
 
 - name: A Scottish carer with both Carer Support Payment and the carer element gets one premium
   # The applicant has regular and substantial caring responsibilities under
@@ -282,6 +293,7 @@
     receives_uc_carer_element: true
     carer_premium: 48.15 * 52
     council_tax_reduction_carer_premium: 48.15 * 52
+    council_tax_reduction_working_age_carers: 1
 
 - name: Scottish partners caring for the same person get one premium, whichever holds the carer element
   # Both care 35 hours. The younger receives Carer Support Payment and the
@@ -314,6 +326,40 @@
     receives_carer_benefit: [false, true]
     receives_uc_carer_element: [true, false]
     council_tax_reduction_carer_premium: 48.15 * 52
+    council_tax_reduction_working_age_carers: 1
+
+- name: Scottish partners caring for different people get a premium each, one on Carer Support Payment and one with the carer element
+  # Both care 35 hours, for different people. The younger receives Carer
+  # Support Payment, and the award includes a carer element for each (UC Regs
+  # 2013 reg 29(2)). Councils include the premium for each (para 5(2)): the
+  # elder under para 6(1)(c), the younger under para 6(1)(a), so 2 x 48.15 x
+  # 52 = 5,007.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 45
+        care_hours: 35
+        would_claim_carers_allowance: false
+      younger:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+    benunits:
+      couple:
+        members: [elder, younger]
+        partners_care_for_same_severely_disabled_person: false
+    households:
+      household:
+        members: [elder, younger]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    is_entitled_to_carer_benefit: [false, true]
+    receives_uc_carer_element: [true, true]
+    council_tax_reduction_working_age_carers: 2
+    council_tax_reduction_working_age_adult_premiums: 2 * 48.15 * 52
 
 - name: A Scottish pensioner's schedule has no carer element limb
   # Under Scotland's pension-age scheme, councils test entitlement to Carer's
@@ -374,3 +420,4 @@
     receives_carer_benefit: [false, true, false]
     carer_premium: [0, 0]
     council_tax_reduction_carer_premium: [0, 0]
+    council_tax_reduction_working_age_carers: [0, 0]

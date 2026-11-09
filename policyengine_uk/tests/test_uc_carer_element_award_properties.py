@@ -34,7 +34,9 @@ Invariants, on generated households under baseline law:
 4. Bounds: the Scottish premium comes to a whole number of weekly amounts, at most
    the number of claimants and partners, and at most one where partners care
    for the same person; a person with both an allowance and a carer element
-   counts once.
+   counts once. council_tax_reduction_working_age_carers, which Scotland's
+   working-age award reads, gives the same count unless the household head
+   applies alone.
 5. The carer test is the award: has_uc_award_with_carer_element equals
    receives_uc_carer_element for every person, and
    universal_credit_pre_benefit_cap comes to more than nil wherever
@@ -107,6 +109,7 @@ ALL_READERS = BENUNIT_READERS + (
     "housing_benefit",
     "income_support",
     "council_tax_reduction",
+    "council_tax_reduction_working_age_carers",
     "household_net_income",
 )
 
@@ -332,6 +335,8 @@ def test_the_carer_element_limb_moves_only_its_readers_and_only_one_way(populati
     variables = SEVERE_READERS + (
         "carer_premium",
         "council_tax_reduction_carer_premium",
+        "council_tax_reduction_working_age_carers",
+        "council_tax_reduction_head_applies_alone",
         "council_tax_reduction_pensioner",
         "partners_care_for_same_severely_disabled_person",
         "is_cared_for_by_carer_benefit_recipient",
@@ -410,6 +415,12 @@ def test_the_carer_element_limb_moves_only_its_readers_and_only_one_way(populati
     assert (np.round(weekly) <= claimants).all()
     same_person = drawn["partners_care_for_same_severely_disabled_person"]
     assert (np.round(weekly[same_person]) <= 1).all()
+    # Scotland's working-age award counts carers with its own variable. It
+    # assesses the applicant and partner, who are the claimant and partner
+    # unless the household head applies alone.
+    counted = scottish_working_age & ~drawn["council_tax_reduction_head_applies_alone"]
+    carers = drawn["council_tax_reduction_working_age_carers"]
+    assert (carers[counted] == np.round(weekly[counted])).all()
 
     # 6. Everyone cared for meets Carer's Allowance's severe disability test; no
     # household has more people cared for than carers, and the attribution
