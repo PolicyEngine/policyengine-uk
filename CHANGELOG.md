@@ -1,3 +1,14 @@
+## [2.177.2] - 2026-11-09
+
+### Fixed
+
+- The model now reports Scottish tax bands from 2017-18 using Scottish limits for non-savings, non-dividend income and UK limits for savings and dividends, and tests the Marriage Allowance income conditions directly under ITA 2007 s. 55B(2)(b) and (ba), allowing income at a rate limit and savings at a permitted nil rate. It gives the Marriage Allowance recipient a Step 6 tax reduction of the basic rate, or the Scottish basic rate, on the transferable amount (s. 55B(1) and (3)), in place of a deduction from taxable income. A reduction larger than the tax on earnings now also comes off the tax the Welsh working-age Council Tax Reduction route disregards on pensions and benefits.
+- The aggregate checker reports non-finite baseline values as blocking failures and continues checking readable households.
+- Pay the Scottish Carer Supplement for each award week in which Carer Support Payment is payable, up to 52 a year, counting the weeks from the larger of the payment and the entitlement before the overlapping-benefit reduction, so a carer paid 13 weeks of Carer Support Payment after moving to England gets £152.10 of supplement in 2026-27 rather than £608.40.
+- The model now dates the main residential rates in s. 55(1B) Table A from 4 December 2014, first-time buyers' relief from 22 November 2017, the higher rates for additional dwellings from 1 April 2016 and the 2016 non-residential rates from 17 March 2016. Before 17 March 2016 it computes SDLT on a non-residential purchase as one percentage of the whole price. It computes SDLT on purchases in Wales until 31 March 2018 and Land Transaction Tax from 1 April 2018.
+- Scottish working-age Council Tax Reduction counts Carer Support Payment after the overlapping-benefit reduction, so a carer whose contributory ESA or another overlapping benefit reduces it to nil has none counted.
+
+
 ## [2.177.1] - 2026-11-09
 
 ### Changed
