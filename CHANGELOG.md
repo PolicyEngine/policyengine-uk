@@ -1,3 +1,11 @@
+## [2.176.3] - 2026-11-09
+
+### Fixed
+
+- `Simulation.subsample()` no longer raises `TypeError` about a missing `dataset` argument: it keeps a weighted sample of households with every supplied weight total unchanged, and replaces the baseline and `dataset` with copies holding the same households. It keeps the stored inputs and model values of neutralised variables for the sampled records.
+- `supplied_input` and `supplied_input_periods` no longer count a value cached over a supplied input as supplied, and read an input stored on disk from disk when a value is cached over it in memory (#2307).
+
+
 ## [2.176.2] - 2026-11-09
 
 ### Fixed
