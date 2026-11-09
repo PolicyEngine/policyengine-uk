@@ -128,9 +128,28 @@ def _visible_branches(sim):
     return branches
 
 
+def _same_array(a, b) -> bool:
+    """Equality where NaN equals NaN, as ``supplied_inputs.same_array`` has it.
+
+    CI runs the pull request head's copy of this tool against the base's
+    package too, which need not have that helper, so the tool keeps a copy.
+    """
+    try:
+        return np.array_equal(a, b, equal_nan=True)
+    except TypeError:
+        # equal_nan needs numbers.
+        return np.array_equal(a, b)
+
+
 def _capture_input_origins(sim, variables):
     """Copy actual registered input slots before any synthetic write."""
     from policyengine_uk.utils.supplied_inputs import SUPPLIED_INPUT_VARIABLES
+
+    try:
+        from policyengine_uk.utils.supplied_inputs import CalculatedValue
+    except ImportError:
+        # A base's package without it (see _same_array) records no such value.
+        CalculatedValue = ()
 
     names = set(variables) & SUPPLIED_INPUT_VARIABLES
     if not names:
@@ -152,9 +171,18 @@ def _capture_input_origins(sim, variables):
             if value is None:
                 continue
             marker = model.get(key)
-            is_model = marker is not None and np.array_equal(marker, value)
+            is_model = marker is not None and _same_array(marker, value)
+            is_calculated = is_model and isinstance(marker, CalculatedValue)
             if key in keys or is_model:
-                slots.append((branch, period, np.array(value, copy=True), is_model))
+                slots.append(
+                    (
+                        branch,
+                        period,
+                        np.array(value, copy=True),
+                        is_model,
+                        is_calculated,
+                    )
+                )
         origins[name] = tuple(slots)
     return origins
 
@@ -197,8 +225,8 @@ def _guard_snapshot(sim, snapshot, variables):
     for name in set(snapshot) & SUPPLIED_INPUT_VARIABLES:
         for period, value in snapshot[name]:
             if not any(
-                saved_period == period and np.array_equal(saved_value, value)
-                for _, saved_period, saved_value, _ in origins.get(name, ())
+                saved_period == period and _same_array(saved_value, value)
+                for _, saved_period, saved_value, *_ in origins.get(name, ())
             ):
                 raise ValueError("Plain input snapshot has no matching original slot")
     return _InputSnapshot(snapshot, owner=sim, origins=origins)
@@ -243,12 +271,27 @@ def _restore(sim, variable, snapshot):
     holder.delete_arrays(branch_name=sim.branch_name)
     drop_missing_supplied_inputs(sim, variable)
     drop_missing_model_values(sim, variable)
-    for branch, period, value, is_model in snapshot.origins[variable]:
+    restored_calculated = False
+    for branch, period, value, is_model, is_calculated in snapshot.origins[variable]:
         if branch == sim.branch_name:
-            if is_model:
+            if is_calculated:
+                # A value that stands for a calculation stays one. It can hold
+                # the NaN set_input refuses, so it goes straight into the
+                # holder, and the discard below drops what the simulation
+                # calculated from the synthetic value, as set_input does on a
+                # branch. Only a package with CalculatedValue gets here, and
+                # it has this helper too (see _same_array).
+                from policyengine_uk.utils.supplied_inputs import record_model_value
+
+                holder._set(period, value, branch, is_input=True)
+                record_model_value(sim, variable, period, branch, calculated=True)
+                restored_calculated = True
+            elif is_model:
                 set_model_value(sim, variable, period, value)
             else:
                 sim.set_input(variable, period, value)
+    if restored_calculated:
+        discard_formula_results(sim)
 
 
 def _months(year):
