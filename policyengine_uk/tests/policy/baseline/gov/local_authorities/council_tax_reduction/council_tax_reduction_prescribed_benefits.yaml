@@ -570,10 +570,15 @@
     # A single pensioner who reached pensionable age before April 2021:
     # 256.00 * 52 = 13,312.00.
     council_tax_reduction_applicable_amount: 13_312
-    # 1,800 - 0.2 x (14,980.16 - 13,312.00) = 1,800 - 333.632 = 1,466.368.
-    # The couple are in her benefit unit, so the model charges no
-    # non-dependant deduction for them (#2017).
-    council_tax_benefit: 1_466.368
+    # Applying alone, she has the mother and father, a couple outside her
+    # family, as her non-dependants (SI 2012/2885 reg 9(1), (2)(a)).
+    # Neither works, so each takes the lowest pensioner amount, £5.20 a
+    # week, and the couple pays one deduction, the higher (Sch 1 para 8):
+    # 5.20 x 52 = 270.40.
+    council_tax_reduction_non_dep_deductions: 270.40
+    # 1,800 - 0.2 x (14,980.16 - 13,312.00) - 270.40
+    # = 1,800 - 333.632 - 270.40 = 1,195.968.
+    council_tax_benefit: 1_195.968
 
 - name: A guarantee credit recipient with IIDB has nil Council Tax Reduction income
   period: 2026
