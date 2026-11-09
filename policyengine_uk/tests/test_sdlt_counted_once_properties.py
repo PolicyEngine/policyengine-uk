@@ -8,7 +8,9 @@ corporations pay. ``household_tax``, ``gov_tax`` and
 appear in them exactly once, and ``gov.hmrc.stamp_duty.abolish`` must remove
 both.
 
-Each example builds a two-household population and simulates it three ways:
+Each example builds a two-household dataset and simulates it three ways. It
+is built from data because shares of corporate SDLT sum to one only over a
+population; a household situation takes none (policyengine-uk#2896).
 
 - B: the baseline;
 - A: with ``gov.hmrc.stamp_duty.abolish`` set;
@@ -40,10 +42,12 @@ of the largest value compared, per household); "exactly" means bit-equal.
 """
 
 import numpy as np
+import pandas as pd
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.system import system
 
 ALWAYS = "2000-01-01.2100-12-31"
@@ -81,28 +85,43 @@ household = st.fixed_dictionaries(
 )
 
 
-def situation(households: list, year: int) -> dict:
-    people, benunits, hh = {}, {}, {}
-    for i, inputs in enumerate(households):
-        person, benunit = f"person_{i}", f"benunit_{i}"
-        people[person] = {
-            "age": {year: 40 + 20 * i},
-            "employment_income": {year: inputs["employment_income"]},
+def dataset(households: list, year: int) -> UKSingleYearDataset:
+    """One person per household, as a dataset for ``year``."""
+    ids = list(range(1, len(households) + 1))
+    person = pd.DataFrame(
+        {
+            "person_id": ids,
+            "person_benunit_id": ids,
+            "person_household_id": ids,
+            "age": [40 + 20 * i for i in range(len(households))],
+            "employment_income": [inputs["employment_income"] for inputs in households],
         }
-        benunits[benunit] = {"members": [person]}
-        hh[f"household_{i}"] = {
-            "members": [person],
+    )
+    household = pd.DataFrame(
+        {
+            "household_id": ids,
+            # Columns dataset uprating reads.
+            "council_tax": [0.0] * len(ids),
+            "rent": [0.0] * len(ids),
+            "tenure_type": ["OWNED_OUTRIGHT"] * len(ids),
+            "household_owns_tv": [False] * len(ids),
             **{
-                name: {year: value}
-                for name, value in inputs.items()
+                name: [inputs[name] for inputs in households]
+                for name in households[0]
                 if name != "employment_income"
             },
         }
-    return {"people": people, "benunits": benunits, "households": hh}
+    )
+    return UKSingleYearDataset(
+        person=person,
+        benunit=pd.DataFrame({"benunit_id": ids}),
+        household=household,
+        fiscal_year=year,
+    )
 
 
 def simulate(households: list, year: int, reform=None) -> dict:
-    sim = Simulation(situation=situation(households, year), reform=reform)
+    sim = Simulation(dataset=dataset(households, year), reform=reform)
     return {
         name: np.asarray(sim.calculate(name, year), dtype=np.float64)
         for name in VARIABLES
