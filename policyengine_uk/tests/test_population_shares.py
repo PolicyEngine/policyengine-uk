@@ -242,3 +242,217 @@ def test_situation_decile_uses_the_fixed_bounds_whatever_the_weight():
     )
     assert deciles[0] == deciles[1] == deciles[2]
     assert 1 <= deciles[0] <= 10
+
+
+# Runs of part of the UK, with the UK totals carried by the data.
+
+# Four households in two regions, whose keys differ. Each stands for millions,
+# as survey households do, so no one bears much of any UK total.
+POPULATION = [
+    {
+        "region": "LONDON",
+        "corporate_wealth": 100_000,
+        "private_pension_wealth": 50_000,
+        "food_and_non_alcoholic_beverages_consumption": 4_000,
+        "transport_consumption": 2_000,
+        "household_weight": 3e6,
+        "employment_income": 40_000,
+    },
+    {
+        "region": "LONDON",
+        "corporate_wealth": 0,
+        "private_pension_wealth": 200_000,
+        "food_and_non_alcoholic_beverages_consumption": 6_000,
+        "transport_consumption": 1_000,
+        "household_weight": 5e6,
+        "employment_income": 20_000,
+    },
+    {
+        "region": "WALES",
+        "corporate_wealth": 300_000,
+        "private_pension_wealth": 0,
+        "food_and_non_alcoholic_beverages_consumption": 3_000,
+        "transport_consumption": 4_000,
+        "household_weight": 2e6,
+        "employment_income": 60_000,
+    },
+    {
+        "region": "WALES",
+        "corporate_wealth": 10_000,
+        "private_pension_wealth": 20_000,
+        "food_and_non_alcoholic_beverages_consumption": 5_000,
+        "transport_consumption": 500,
+        "household_weight": 4e6,
+        "employment_income": 30_000,
+    },
+]
+
+# Every term spread by a population key, under one reform.
+SPREAD = [
+    "shareholding",
+    "consumption_shareholding",
+    "corporate_land_value",
+    "business_rates",
+    "corporate_sdlt",
+    "corporate_incident_tax_revenue_change",
+    "consumer_incident_tax_revenue_change",
+    "carbon_tax",
+    "LVT",
+]
+SPREAD_REFORM = {
+    **CASES["corporate_incident_tax_revenue_change"],
+    **CASES["consumer_incident_tax_revenue_change"],
+    **CASES["LVT"],
+    "gov.contrib.ubi_center.carbon_tax.rate": {YEAR: 100},
+    "gov.contrib.ubi_center.carbon_tax.consumer_incidence": {YEAR: 0.5},
+}
+
+
+def hand_totals(rows):
+    """The UK total of each key component over ``rows``, at their weights."""
+    from policyengine_uk.utils.uk_totals import KEYS, components, total_name
+
+    return {
+        total_name(component): sum(
+            row.get(component, 0) * row["household_weight"] for row in rows
+        )
+        for key in KEYS
+        for component in components(key)
+    }
+
+
+def population_simulation(rows, carried=None, year=YEAR, reform=SPREAD_REFORM):
+    """A simulation built from ``rows``, one person per household, with the UK
+    totals ``carried`` written on every household."""
+    n = len(rows)
+    ids = list(range(1, n + 1))
+    household = {
+        "household_id": ids,
+        # Columns dataset uprating reads.
+        "council_tax": [0.0] * n,
+        "rent": [0.0] * n,
+        "tenure_type": ["OWNED_OUTRIGHT"] * n,
+        "household_owns_tv": [False] * n,
+    }
+    for name in rows[0]:
+        if name != "employment_income":
+            household[name] = [row[name] for row in rows]
+    for name, value in (carried or {}).items():
+        household[name] = [value] * n
+    dataset = UKSingleYearDataset(
+        person=pd.DataFrame(
+            {
+                "person_id": ids,
+                "person_benunit_id": ids,
+                "person_household_id": ids,
+                "age": [45] * n,
+                "employment_income": [row["employment_income"] for row in rows],
+            }
+        ),
+        benunit=pd.DataFrame({"benunit_id": ids}),
+        household=pd.DataFrame(household),
+        fiscal_year=year,
+    )
+    return Simulation(dataset=dataset, reform=reform)
+
+
+def spread_values(sim, year=YEAR):
+    return {variable: calculate_at(sim, variable, year) for variable in SPREAD}
+
+
+def calculate_at(sim, variable, year):
+    return np.asarray(sim.calculate(variable, year, map_to="household"))
+
+
+def test_part_of_the_uk_carrying_the_uk_totals_gets_its_national_shares():
+    whole = spread_values(population_simulation(POPULATION))
+    # Wales on its own, as a region filtered from the data.
+    wales = spread_values(
+        population_simulation(POPULATION[2:], carried=hand_totals(POPULATION))
+    )
+    for variable in SPREAD:
+        assert whole[variable][2:].any(), variable
+        assert wales[variable] == pytest.approx(whole[variable][2:], rel=1e-5), variable
+
+
+def test_blocks_carrying_the_pool_totals_match_the_unblocked_run():
+    """As a build runs a pool in blocks, each block's weights scaled up to the
+    pool's mass: carrying the pool's totals, a block gives each household what
+    the whole pool gives it, whichever households the block holds."""
+    pool = spread_values(population_simulation(POPULATION))
+    totals = hand_totals(POPULATION)
+    pool_mass = sum(row["household_weight"] for row in POPULATION)
+    for block in (POPULATION[:2], POPULATION[2:]):
+        scale = pool_mass / sum(row["household_weight"] for row in block)
+        scaled = [
+            {**row, "household_weight": row["household_weight"] * scale}
+            for row in block
+        ]
+        values = spread_values(population_simulation(scaled, carried=totals))
+        start = POPULATION.index(block[0])
+        for variable in SPREAD:
+            assert values[variable] == pytest.approx(
+                pool[variable][start : start + len(block)], rel=1e-5
+            ), variable
+
+
+def test_whole_uk_carrying_its_totals_matches_the_weighted_branch():
+    without = spread_values(population_simulation(POPULATION))
+    carrying = spread_values(
+        population_simulation(POPULATION, carried=hand_totals(POPULATION))
+    )
+    for variable in SPREAD:
+        assert carrying[variable] == pytest.approx(without[variable], rel=1e-5), (
+            variable
+        )
+
+
+def test_carried_totals_project_with_the_data():
+    """Totals written at the dataset's year grow as the weighted totals of the
+    projected data do, so a later year's shares still match."""
+    base_year, later = 2024, 2027
+    whole = population_simulation(POPULATION, year=base_year)
+    wales = population_simulation(
+        POPULATION[2:], carried=hand_totals(POPULATION), year=base_year
+    )
+    for variable in ["shareholding", "consumption_shareholding", "carbon_tax"]:
+        assert calculate_at(wales, variable, later) == pytest.approx(
+            calculate_at(whole, variable, later)[2:], rel=1e-4
+        ), variable
+
+
+def test_situation_carrying_uk_totals_gets_its_share():
+    situation = copies(HOLDER, [1, 1_000])
+    totals = {
+        "uk_total_corporate_wealth": 4e12,
+        "uk_total_private_pension_wealth": 6e12,
+        "uk_total_food_and_non_alcoholic_beverages_consumption": 1e11,
+        "uk_total_transport_consumption": 9e10,
+    }
+    for household in situation["households"].values():
+        household.update({name: {YEAR: value} for name, value in totals.items()})
+    sim = Simulation(situation=situation)
+    assert calculate(sim, "shareholding") == pytest.approx([7e4 / 1e13] * 2)
+    assert calculate(sim, "consumption_shareholding") == pytest.approx(
+        [8e3 / 1.9e11] * 2
+    )
+
+
+def test_every_key_component_has_a_uk_total_input():
+    from policyengine_uk.system import system
+    from policyengine_uk.utils.carbon import CARBON_CATEGORIES
+    from policyengine_uk.utils.uk_totals import KEYS, components, total_name
+
+    growth = {
+        "corporate_sector_wealth": "per_capita_gdp",
+        "consumption": "consumer_price_index",
+    }
+    for key in KEYS:
+        assert components(key) == list(system.get_variable(key).adds)
+        for component in components(key):
+            variable = system.get_variable(total_name(component))
+            assert variable.entity.key == "household"
+            assert variable.uprating == (
+                f"gov.economic_assumptions.indices.uk_totals.{growth[key]}"
+            )
+    assert set(CARBON_CATEGORIES) == set(components("consumption"))
