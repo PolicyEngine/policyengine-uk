@@ -1,3 +1,15 @@
+## [2.177.4] - 2026-11-09
+
+### Changed
+
+- Run the tests that need the dataset in their own CI shard, with one worker, so the other seven shards no longer build simulations of the whole dataset.
+- Require policyengine-core 3.34.9 or later. From that release, an input set on a variable that a reform has neutralised has no effect, as core documents, so a reform that restores the variable reads the input supplied before neutralisation.
+
+### Fixed
+
+- The real income variables now price to the year in gov.simulation.price_base_year (2026) instead of the year the simulation runs, and inflation_adjustment_ahc uses one price index on both sides of its ratio.
+
+
 ## [2.177.3] - 2026-11-09
 
 ### Fixed
