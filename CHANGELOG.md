@@ -1,3 +1,14 @@
+## [2.177.1] - 2026-11-09
+
+### Changed
+
+- Document that state_pension_reported is the weekly State Pension times 52, the weeks the State Pension components read it back at, and test the route from a survey's weekly amount to Income Tax under the Pension Tax Allowance.
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
 ## [2.177.0] - 2026-11-09
 
 ### Added

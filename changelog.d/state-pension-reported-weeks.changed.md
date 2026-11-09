@@ -1,1 +1,0 @@
-Document that state_pension_reported is the weekly State Pension times 52, the weeks the State Pension components read it back at, and test the route from a survey's weekly amount to Income Tax under the Pension Tax Allowance.
