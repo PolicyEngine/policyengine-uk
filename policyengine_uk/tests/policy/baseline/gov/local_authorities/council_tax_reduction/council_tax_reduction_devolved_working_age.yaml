@@ -268,6 +268,74 @@
     council_tax_reduction_working_age_passported: true
     simulated_council_tax_reduction_benunit: 1_800
 
+- name: Scotland, a passported claimant's adult son still brings a non-dependant deduction
+  # Reg 79(1): the maximum reduction is the liability less the reg 90
+  # deductions. The son is 25 and not in remunerative work, so reg 90(1)(b)
+  # deducts £5.55 a week.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        employment_income: 3_000
+        council_tax_benefit_reported: 100
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, son]
+        would_claim_uc: false
+        esa_income: 5_000
+    households:
+      household:
+        members: [claimant, son]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_passported: true
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction_non_dep_deductions: 5.55 * 52
+    simulated_council_tax_reduction_benunit: 1_800 - 5.55 * 52
+
+- name: Wales, a passported claimant's adult son still brings a non-dependant deduction
+  # Sch 6 para 4(1): the maximum reduction is the liability less the para 5
+  # deductions. The son is 25 and not in remunerative work, so para 5(1)(b)
+  # deducts £6.70 a week.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        employment_income: 3_000
+        council_tax_benefit_reported: 100
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, son]
+        would_claim_uc: false
+        esa_income: 5_000
+    households:
+      household:
+        members: [claimant, son]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_passported: true
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction_non_dep_deductions: 6.70 * 52
+    simulated_council_tax_reduction_benunit: 1_800 - 6.70 * 52
+
 - name: Scotland, a passported claimant still faces the capital limit
   # Reg 13(1)(a) keeps the capital condition; reg 13(11) deems only the income
   # conditions met.
