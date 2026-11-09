@@ -15,7 +15,7 @@ with the simulation's own definitions and parameters. Each column is uprated
 like the column it sums, times population (create_uk_total_growth).
 """
 
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 
@@ -64,3 +64,58 @@ def carried_uk_emissions(population, period, parameters) -> np.ndarray:
             CARBON_CATEGORIES, carbon_intensities(parameters, period)
         )
     )
+
+
+def uk_total_columns() -> List[str]:
+    """The inputs that carry the UK totals, in key order."""
+    return [total_name(component) for key in KEYS for component in components(key)]
+
+
+def uk_totals(household) -> Dict[str, float]:
+    """The UK total of each key component over a table of households, at its
+    ``household_weight``: the values add_uk_totals writes. A table without
+    weights weighs each household 1, as household_weight's default does. A
+    component the table lacks totals 0. The table must hold every UK
+    household."""
+    weight = (
+        np.asarray(household["household_weight"], dtype=float)
+        if "household_weight" in household
+        else np.ones(len(household))
+    )
+    totals = {}
+    for key in KEYS:
+        for component in components(key):
+            values = (
+                np.asarray(household[component], dtype=float)
+                if component in household
+                else np.zeros_like(weight)
+            )
+            totals[total_name(component)] = float(np.sum(values * weight))
+    return totals
+
+
+def add_uk_totals(dataset):
+    """A copy of ``dataset`` whose households carry their UK totals.
+
+    Call it on a dataset holding every UK household, before taking any part
+    of it: a region, an extract, a household subset or a block of a build.
+    The totals are written at the dataset's year, and a simulation projects
+    them with the data. A multi-year dataset's years each carry their own.
+    """
+    from policyengine_uk.data.dataset_schema import (
+        UKMultiYearDataset,
+        UKSingleYearDataset,
+    )
+
+    if isinstance(dataset, UKMultiYearDataset):
+        return UKMultiYearDataset(
+            datasets=[add_uk_totals(dataset[year]) for year in dataset.years]
+        )
+    if not isinstance(dataset, UKSingleYearDataset):
+        raise TypeError(
+            "add_uk_totals takes a UKSingleYearDataset or UKMultiYearDataset, "
+            f"not {type(dataset).__name__}."
+        )
+    new = dataset.copy()
+    new.household = new.household.assign(**uk_totals(new.household))
+    return new

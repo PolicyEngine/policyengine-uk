@@ -321,9 +321,9 @@ def hand_totals(rows):
     }
 
 
-def population_simulation(rows, carried=None, year=YEAR, reform=SPREAD_REFORM):
-    """A simulation built from ``rows``, one person per household, with the UK
-    totals ``carried`` written on every household."""
+def population_dataset(rows, carried=None, year=YEAR):
+    """A dataset of ``rows``, one person per household, with the UK totals
+    ``carried`` written on every household."""
     n = len(rows)
     ids = list(range(1, n + 1))
     household = {
@@ -339,7 +339,7 @@ def population_simulation(rows, carried=None, year=YEAR, reform=SPREAD_REFORM):
             household[name] = [row[name] for row in rows]
     for name, value in (carried or {}).items():
         household[name] = [value] * n
-    dataset = UKSingleYearDataset(
+    return UKSingleYearDataset(
         person=pd.DataFrame(
             {
                 "person_id": ids,
@@ -353,7 +353,11 @@ def population_simulation(rows, carried=None, year=YEAR, reform=SPREAD_REFORM):
         household=pd.DataFrame(household),
         fiscal_year=year,
     )
-    return Simulation(dataset=dataset, reform=reform)
+
+
+def population_simulation(rows, carried=None, year=YEAR, reform=SPREAD_REFORM):
+    """A simulation built from ``population_dataset``."""
+    return Simulation(dataset=population_dataset(rows, carried, year), reform=reform)
 
 
 def spread_values(sim, year=YEAR):
@@ -456,3 +460,73 @@ def test_every_key_component_has_a_uk_total_input():
                 f"gov.economic_assumptions.indices.uk_totals.{growth[key]}"
             )
     assert set(CARBON_CATEGORIES) == set(components("consumption"))
+
+
+# The helper whoever holds the whole population calls.
+
+
+def test_add_uk_totals_writes_each_components_weighted_total():
+    from policyengine_uk.utils.uk_totals import add_uk_totals, uk_total_columns
+
+    carrying = add_uk_totals(population_dataset(POPULATION)).household
+    expected = hand_totals(POPULATION)
+    assert set(uk_total_columns()) == set(expected)
+    for name, value in expected.items():
+        # The same total on every household; 0 for a component no household has.
+        assert carrying[name].to_numpy() == pytest.approx([value] * len(POPULATION))
+    assert expected["uk_total_education_consumption"] == 0
+
+
+def test_a_region_taken_after_add_uk_totals_gets_its_national_shares():
+    """As a regional run filters rows from a dataset that carries the totals."""
+    from policyengine_uk.utils.uk_totals import add_uk_totals
+
+    whole = spread_values(population_simulation(POPULATION))
+    carrying = add_uk_totals(population_dataset(POPULATION))
+    wales = carrying.copy()
+    wales.household = wales.household[wales.household.region == "WALES"]
+    kept = wales.household.household_id
+    wales.person = wales.person[wales.person.person_household_id.isin(kept)]
+    wales.benunit = wales.benunit[wales.benunit.benunit_id.isin(kept)]
+    values = spread_values(Simulation(dataset=wales, reform=SPREAD_REFORM))
+    for variable in SPREAD:
+        assert values[variable] == pytest.approx(whole[variable][2:], rel=1e-5), (
+            variable
+        )
+
+
+def test_add_uk_totals_gives_each_year_of_a_multi_year_dataset_its_own():
+    from policyengine_uk.data import UKMultiYearDataset
+    from policyengine_uk.utils.uk_totals import add_uk_totals
+
+    later = [
+        {**row, "household_weight": 2 * row["household_weight"]} for row in POPULATION
+    ]
+    carrying = add_uk_totals(
+        UKMultiYearDataset(
+            datasets=[
+                population_dataset(POPULATION, year=2025),
+                population_dataset(later, year=2026),
+            ]
+        )
+    )
+    for year, rows in [(2025, POPULATION), (2026, later)]:
+        household = carrying[year].household
+        assert household["uk_total_corporate_wealth"].iloc[0] == pytest.approx(
+            hand_totals(rows)["uk_total_corporate_wealth"]
+        )
+
+
+def test_filter_dataset_extract_keeps_its_national_share():
+    """An extract of one household used to take every UK total: its share was
+    1 over its own weight."""
+    from policyengine_uk.data.filter_dataset import filter_dataset
+
+    whole_sim = population_simulation(POPULATION)
+    whole = spread_values(whole_sim)
+    extract = filter_dataset(whole_sim, household_id=3, year=YEAR)
+    values = spread_values(Simulation(dataset=extract, reform=SPREAD_REFORM))
+    for variable in SPREAD:
+        assert values[variable] == pytest.approx(whole[variable][2:3], rel=1e-5), (
+            variable
+        )
