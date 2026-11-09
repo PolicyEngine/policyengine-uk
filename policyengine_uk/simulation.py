@@ -45,6 +45,10 @@ from policyengine_uk.data.economic_assumptions import (
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.core_route_checks import (
+    check_identifiers,
+    check_supplied_periods,
+)
 from policyengine_uk.data.energy_price_basis import core_dataset_energy_price_basis
 from policyengine_uk.data.savings_income_projection import (
     SAVINGS_INCOME_PROJECTION_KEY,
@@ -99,6 +103,17 @@ from policyengine_uk.utils.supplied_inputs import (
     keep_population_records,
     model_value_input_records,
 )
+from policyengine_uk.utils.stored_draws import (
+    REGISTERED_DRAW_NAMES,
+    STUDENT_LOAN_TAKE_UP,
+    calculation,
+    check_boolean_input,
+    check_draw_answer,
+    check_new_draw_input,
+    check_option_request,
+    input_source,
+)
+from policyengine_uk.utils.protected_inputs import install_draw_storage, protects_draws
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_parameter_changes,
@@ -182,6 +197,11 @@ class _InputKeyLog(set):
 # Kept outside the simulation, because core's clone copies its __dict__:
 # a clone or branch made while a reform runs must not log for it.
 _input_key_logs: Dict[int, list] = {}
+
+
+# Simulation.calculate: a variable that is not a stored draw read in a
+# simulation built from data.
+_UNCHECKED = object()
 
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
@@ -632,8 +652,16 @@ class Simulation(CoreSimulation):
         # the values the new populations hold, and only those: an equal value
         # a rebuild stores later (from a situation or a frame) is supplied.
         keep_population_records(self, adopted)
+        install_draw_storage(self)
 
     def set_input(self, variable_name: str, period: Period, value) -> None:
+        if variable_name in REGISTERED_DRAW_NAMES:
+            # Before core stores anything: never during a calculation, and
+            # never over a value calculated from an earlier state.
+            check_new_draw_input(self, variable_name)
+        elif variable_name == STUDENT_LOAN_TAKE_UP:
+            # Before core casts the values: a missing value would load as True.
+            check_boolean_input(variable_name, value)
         # What is set here is supplied, even a value equal to the model's own,
         # so forget the model value (set_model_value) of each period the call
         # stores a value for, and only those. set_model_value records its
@@ -1423,6 +1451,22 @@ class Simulation(CoreSimulation):
             time_period_values = data[variable_name]
             return time_period_values[first_time_period]
 
+        # Populations use sorted group IDs; arrays in a Core dataset follow
+        # the order of that period's supplied identifier array instead.
+        group_orders = {
+            entity: {
+                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
+            }
+            for entity in ("benunit", "household")
+        }
+        # The export below keeps only the first period, and the rebuild
+        # re-declares groups by their int32 identifiers: refuse data whose
+        # stored columns either would change.
+        check_identifiers(data)
+        check_supplied_periods(
+            data, self.tax_benefit_system, first_time_period, group_orders
+        )
+
         # Build entity structure from IDs
         self.build_from_ids(
             *map(
@@ -1443,15 +1487,6 @@ class Simulation(CoreSimulation):
             [period_(first_time_period).start.year],
         )
         self._savings_income_projection = savings_income_projection
-
-        # Populations use sorted group IDs; arrays in a Core dataset follow
-        # the order of that period's supplied identifier array instead.
-        group_orders = {
-            entity: {
-                period: np.argsort(ids) for period, ids in data[f"{entity}_id"].items()
-            }
-            for entity in ("benunit", "household")
-        }
 
         # Load all variable values
         for variable in data:
@@ -1799,6 +1834,20 @@ class Simulation(CoreSimulation):
             # as supplied.
             drop_missing_supplied_inputs(self, variable_name)
 
+        draw_source = _UNCHECKED
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
+            # A stored draw: decide which supplied input core reads, after the
+            # cleanups above and before core, and never answer from the fast
+            # cache, which can outlive the value the check examined.
+            draw_source = input_source(
+                self.get_variable_population(variable_name), variable_name, period
+            )
+            fast_cache = getattr(self, "_fast_cache", None)
+            if fast_cache:
+                fast_cache.pop((variable_name, period), None)
+
         outer_calculation = self._cgt_calculation_depth == 0
         if outer_calculation:
             self._cgt_operation_inputs = set()
@@ -1809,9 +1858,15 @@ class Simulation(CoreSimulation):
             record = self._cgt_calculation_record(variable_name, period, neutralized)
         self._cgt_calculation_depth += 1
         try:
-            result = super().calculate(
-                variable_name, period, map_to=map_to, decode_enums=decode_enums
-            )
+            with calculation():
+                if draw_source is _UNCHECKED or draw_source is None:
+                    result = super().calculate(
+                        variable_name, period, map_to=map_to, decode_enums=decode_enums
+                    )
+                else:
+                    result = self._calculate_source_backed_draw(
+                        variable_name, period, draw_source, map_to
+                    )
             if record is not None:
                 if neutralized:
                     self._cgt_defaulted_periods.add((variable_name, str(period)))
@@ -1826,6 +1881,42 @@ class Simulation(CoreSimulation):
             for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
                 self._warn_unused_cgt_projection(period_(input_period))
         return result
+
+    def _calculate_source_backed_draw(self, variable_name, period, source, map_to):
+        """Core's answer for a stored draw with a supplied source, checked
+        against that source before it is mapped or returned."""
+        raw = super().calculate(variable_name, period, map_to=None, decode_enums=False)
+        check_draw_answer(self, variable_name, period, source, raw)
+        if map_to is not None:
+            entity = self.tax_benefit_system.get_variable(variable_name).entity.key
+            return self.map_result(raw, entity, map_to)
+        return raw
+
+    def calculate_add(self, variable_name: str, period: Period = None, *args, **kwargs):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
+            check_option_request(self, variable_name, "calculate_add")
+        with calculation():
+            return super().calculate_add(variable_name, period, *args, **kwargs)
+
+    def calculate_divide(
+        self, variable_name: str, period: Period = None, *args, **kwargs
+    ):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
+            check_option_request(self, variable_name, "calculate_divide")
+        with calculation():
+            return super().calculate_divide(variable_name, period, *args, **kwargs)
+
+    def calculate_output(self, variable_name: str, period: Period = None):
+        if variable_name in REGISTERED_DRAW_NAMES and (
+            protects_draws(self) or built_from_data(self)
+        ):
+            check_option_request(self, variable_name, "calculate_output")
+        with calculation():
+            return super().calculate_output(variable_name, period)
 
     def apply_dynamics(self, year: int):
         """Apply dynamics to the simulation for a specific year.
