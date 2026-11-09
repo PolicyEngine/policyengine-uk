@@ -1,0 +1,149 @@
+# Ordinary, non-relieved purchases. HMRC's historical rate tables:
+# https://www.gov.uk/government/publications/rates-and-allowances-stamp-duty-land-tax
+# FA 2003 s55(1)-(2) Table A before 4 December 2014; SDLT Act 2015 s2(2).
+# Before 2015 annual lookup retains 1 January, not the later fiscal conversion.
+# These cases do not model the 2010-12 first-time-buyer or disadvantaged-area reliefs.
+- name: Case 1, ordinary main purchases in 2014 pay one rate on the whole price.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    region: [LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON]
+    main_residential_property_purchased: [0, 125_000, 200_000, 250_000, 300_000, 500_000, 1_000_000, 2_000_000, 2_500_000]
+  output:
+    sdlt_on_residential_property_transactions: [0, 0, 2_000, 2_500, 9_000, 15_000, 40_000, 100_000, 175_000]
+    stamp_duty_land_tax: [0, 0, 2_000, 2_500, 9_000, 15_000, 40_000, 100_000, 175_000]
+
+- name: Case 2, additional purchases in 2014 pay the same ordinary whole-price rates.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    region: [LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON, LONDON]
+    additional_residential_property_purchased: [0, 125_000, 200_000, 250_000, 300_000, 500_000, 1_000_000, 2_000_000, 2_500_000]
+  output:
+    sdlt_on_residential_property_transactions: [0, 0, 2_000, 2_500, 9_000, 15_000, 40_000, 100_000, 175_000]
+    stamp_duty_land_tax: [0, 0, 2_000, 2_500, 9_000, 15_000, 40_000, 100_000, 175_000]
+
+- name: Case 3, the first-purchase flag does not invoke modern relief in 2014.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    main_residential_property_purchased: 300_000
+    main_residential_property_purchased_is_first_home: true
+  output:
+    stamp_duty_land_tax: 9_000
+
+- name: Case 4, annual 2003 precedes SDLT commencement on 1 December.
+  period: 2003
+  input:
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 200_000
+  output:
+    sdlt_on_residential_property_transactions: 0
+
+- name: Case 5, annual 2004 reads the ordinary sixty-thousand nil band.
+  period: 2004
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 100_000
+  output:
+    sdlt_on_residential_property_transactions: 1_000
+
+- name: Case 6, annual 2005 retains January law before the March threshold rise.
+  period: 2005
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 100_000
+  output:
+    sdlt_on_residential_property_transactions: 1_000
+
+- name: Case 7, annual 2006 retains January law before the March threshold rise.
+  period: 2006
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 123_000
+  output:
+    sdlt_on_residential_property_transactions: 1_230
+
+- name: Case 8, annual 2008 precedes the September holiday.
+  period: 2008
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 170_000
+  output:
+    sdlt_on_residential_property_transactions: 1_700
+
+- name: Case 9, annual 2009 falls within the ordinary residential holiday.
+  period: 2009
+  input:
+    main_residential_property_purchased: 170_000
+  output:
+    sdlt_on_residential_property_transactions: 0
+
+- name: Case 10, the holiday has ended on 1 January 2010.
+  period: 2010
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 170_000
+  output:
+    sdlt_on_residential_property_transactions: 1_700
+
+- name: Case 11, annual 2011 precedes the five-percent rate from 6 April.
+  period: 2011
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 1_500_000
+  output:
+    sdlt_on_residential_property_transactions: 60_000
+
+- name: Case 12, annual 2012 precedes the seven-percent rate from 22 March.
+  period: 2012
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 2_500_000
+  output:
+    sdlt_on_residential_property_transactions: 125_000
+
+- name: Case 13, annual 2013 includes the seven-percent rate.
+  period: 2013
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: 2_500_000
+  output:
+    sdlt_on_residential_property_transactions: 175_000
+
+- name: Case 14, the main and additional ordinary charges add independently.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    main_residential_property_purchased: 300_000
+    additional_residential_property_purchased: 200_000
+  output:
+    stamp_duty_land_tax: 11_000
+
+- name: Case 15, annual 2015 uses the marginal regime after December 2014.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    main_residential_property_purchased: 300_000
+  output:
+    stamp_duty_land_tax: 5_000
+
+- name: Case 16, a reform can charge the 2014 schedule on marginal slices.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.residential.purchase_charged_on_whole_price: false
+    main_residential_property_purchased: 300_000
+  output:
+    sdlt_on_residential_property_transactions: 2_750
+
+- name: Case 17, exact slab upper limits retain the lower percentage.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    main_residential_property_purchased: [125_000, 125_001, 250_000, 250_001, 500_000, 500_001, 1_000_000, 1_000_001, 2_000_000, 2_000_001]
+  output:
+    sdlt_on_residential_property_transactions: [0, 1_250.01, 2_500, 7_500.03, 15_000, 20_000.04, 40_000, 50_000.05, 100_000, 140_000.07]

@@ -1,0 +1,13 @@
+description: Whether HMRC charges an ordinary residential purchase one percentage of the whole price, using the band the price falls in. When false, HMRC charges each band's rate on the slice of the price in that band.
+values:
+  0000-01-01: false
+  2003-12-01: true
+  2014-12-04: false
+metadata:
+  unit: bool
+  label: Stamp Duty on residential purchases charged on the whole price
+  reference:
+    - title: Finance Act 2003 s. 55(1), (2), as at 3 December 2014
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2014-12-03
+    - title: Stamp Duty Land Tax Act 2015 s. 2(2)
+      href: https://www.legislation.gov.uk/ukpga/2015/1/section/2/enacted
