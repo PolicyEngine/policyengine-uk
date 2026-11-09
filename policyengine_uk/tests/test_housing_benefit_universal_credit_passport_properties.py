@@ -11,9 +11,11 @@ and deductions. Housing Benefit is then the appropriate maximum: the eligible
 rent, capped at the LHA rate for LHA tenants, less non-dependant deductions
 (SSCBA 1992 s.130(3)(a); reg 70).
 
-The model has no route yet to Housing Benefit alongside Universal Credit
-(specified or temporary accommodation, UC (Transitional Provisions) Regs 2014
-reg 5(2)(a)), so each claimant benefit unit supplies housing_benefit_eligible.
+The model pays Housing Benefit alongside Universal Credit for specified or
+temporary accommodation (UC (Transitional Provisions) Regs 2014 reg 5(2)(a))
+through in_specified_or_temporary_accommodation. Each claimant benefit unit
+here supplies housing_benefit_eligible instead, so the test checks the
+passport without the Universal Credit housing costs element changing.
 
 Invariants, for any generated population of renting families (some with a
 non-dependant in the household), each on Universal Credit (a supplied amount
@@ -168,6 +170,10 @@ def situation(units, bump=0.0, overrides=None):
             name = f"a{i}_{j}"
             person = {
                 "age": {YEAR: adult["age"]},
+                # The drawn adults are the claimant and partner, however far
+                # apart their ages; the age presumption alone would read a
+                # partner 20 or more years younger as the claimant's child.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: adult["employment_income"] + bump},
                 "private_pension_income": {
                     YEAR: adult["private_pension_income"] + bump
@@ -179,7 +185,10 @@ def situation(units, bump=0.0, overrides=None):
             members.append(name)
         for k, child_age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: child_age}}
+            people[name] = {
+                "age": {YEAR: child_age},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             members.append(name)
         benunit = {
             "members": list(members),
@@ -202,6 +211,8 @@ def situation(units, bump=0.0, overrides=None):
             name = f"n{i}"
             people[name] = {
                 "age": {YEAR: 30},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
                 "employment_income": {YEAR: unit["non_dependant_earnings"]},
             }
             benunits[f"nb{i}"] = {"members": [name], "would_claim_uc": {YEAR: False}}

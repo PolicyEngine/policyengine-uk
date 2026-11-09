@@ -23,9 +23,12 @@ from policyengine_uk.utils.aggregate_impact.compare import (
 from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_measure import (
     _rebuilt,
 )
+from policyengine_uk.utils.aggregate_impact.guard import counted_once
 from policyengine_uk.utils.aggregate_impact.measure import (
     Recorder,
     definitions_digest,
+    publishable_guard,
+    record_guard_checks,
     runtime_identity,
     tool_digest,
     weighted_gini,
@@ -639,10 +642,21 @@ def test_decile_impacts_match_a_direct_grouped_calculation(seed, n):
 
 
 @settings(max_examples=30, deadline=None)
-@given(seed=st.integers(0, 2**32 - 1), shift=st.floats(-1e4, 1e4))
-def test_a_uniform_change_shows_in_every_decile(seed, shift):
+@given(
+    seed=st.integers(0, 2**32 - 1),
+    shift_pence=st.one_of(st.integers(-1_000_000, -1), st.integers(1, 1_000_000)),
+)
+def test_a_uniform_change_shows_in_every_decile(seed, shift_pence):
     rng = np.random.default_rng(seed)
-    base = households(200, rng, decile=np.repeat(np.arange(1, 11), 20))
+    # Whole pennies on whole-pound incomes keep this visibility property
+    # clear of the half-penny change boundary and floating £1 crossings.
+    shift = shift_pence / 100
+    base = households(
+        200,
+        rng,
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=rng.integers(1_000, 100_000, 200).astype(float),
+    )
     head = copy.deepcopy(base)
     for columns in head.values():
         columns["income"] = columns["income"] + shift
@@ -746,8 +760,8 @@ def test_the_guard_section_lists_failures_and_mediated_responses():
         "double_counts": [],
     }
     text = _guard({"head": {"guard": guard}})
-    assert "held at its baseline value" in text
-    assert "1 failed; 0 were skipped" in text
+    assert "holding every other head at its baseline value" in text
+    assert "1 failed and the check skipped 0" in text
     assert "pension_credit rises in 2 households" in text
     assert (
         "`universal_credit` responds only through other heads in 72 households "
@@ -1449,6 +1463,74 @@ def test_withheld_decile_years_are_explained_not_called_missing():
 
 
 @pytest.mark.parametrize(
+    "shift, any_change",
+    [
+        (0.0, False),
+        (np.nextafter(0.005, 0.0), False),
+        (0.005, False),
+        (np.nextafter(0.005, np.inf), True),
+        (np.nextafter(-0.005, 0.0), False),
+        (-0.005, False),
+        (np.nextafter(-0.005, -np.inf), True),
+    ],
+)
+def test_uniform_change_respects_half_penny_reporting_boundary(shift, any_change):
+    """Issue #2500: half a penny is unchanged; strictly more is a change."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"] == any_change
+        assert row["mean_change"] == 0
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == 0
+        assert row["share_losing"] == 0
+
+
+@pytest.mark.parametrize(
+    "shift, share_gaining, share_losing",
+    [
+        (-1.01, 0.0, 1.0),
+        (-1.0, 0.0, 0.0),
+        (1.0, 0.0, 0.0),
+        (1.01, 1.0, 0.0),
+    ],
+)
+def test_uniform_change_respects_one_pound_gain_loss_boundary(
+    shift, share_gaining, share_losing
+):
+    """Published gain/loss shares count changes strictly greater than £1."""
+    base = households(
+        200,
+        np.random.default_rng(0),
+        decile=np.repeat(np.arange(1, 11), 20),
+        income=np.zeros(200),
+        weight=np.ones(200),
+    )
+    head = copy.deepcopy(base)
+    for columns in head.values():
+        columns["income"] = columns["income"] + shift
+    impacts, notes = decile_impacts(base, head, YEARS)
+    assert not notes
+    for row in impacts[str(YEARS[0])]:
+        assert not row["suppressed"]
+        assert row["any_change"]
+        assert math.isnan(row["relative_change"])
+        assert row["share_gaining"] == share_gaining
+        assert row["share_losing"] == share_losing
+
+
+@pytest.mark.parametrize(
     "fields",
     [("python",), ("machine",), ("python", "machine")],
     ids=["python", "machine", "both-fields"],
@@ -1500,3 +1582,183 @@ def test_issue_2499_model_axis_preserves_missing_runtime_identity_behavior():
     summary = compare(base, head, SPEC, axis="model")
 
     assert summary["status"] == "pass", summary["failures"]
+
+
+def _guard_summary(base_failing, head_failing):
+    return compare(
+        result({}, [check("counted_once:tax_b", "fail", base_failing)]),
+        result({}, [check("counted_once:tax_b", "fail", head_failing)]),
+        SPEC,
+    )
+
+
+def _guard_check(summary):
+    return next(c for c in summary["checks"] if c["id"] == "counted_once:tax_b")
+
+
+def test_a_failure_the_base_could_not_confirm_blocks_and_says_so():
+    """The base could not confirm whether tax_h contained tax_b, and the head
+    finds that it does. The failure may predate this change, so the report
+    says so, and the job still fails: a new containment can look the same."""
+    summary = _guard_summary(["gov_tax:tax_h:unconfirmed"], ["gov_tax:tax_h:contains"])
+
+    assert summary["status"] == "fail"
+    found = _guard_check(summary)
+    assert found["classification"] == "regression"
+    assert found["base_unconfirmed"] == ["gov_tax:tax_h:contains"]
+    assert any(
+        "On the base, the check could not confirm whether tax_h contains tax_b "
+        "(gov_tax), so this change may not have introduced it." in failure
+        for failure in summary["failures"]
+    )
+    assert (
+        "**Checks:** 0 broken by this change, 1 failing that the base could not "
+        "confirm, 0 failing on both sides" in render(summary, SPEC)
+    )
+
+
+def test_the_failure_names_a_containment_its_details_leave_out():
+    """The failure text shows a check's first three details, which here hold
+    only failures the base confirmed. The note still says which containment
+    the base could not confirm."""
+    shared = [f"gov_tax:tax_{letter}:moves" for letter in "abc"]
+    details = [f"{scope} detail" for scope in shared]
+    base = {
+        **check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:unconfirmed"]),
+        "details": [*details, "gov_tax: could not confirm tax_h"],
+    }
+    head = {
+        **check("counted_once:tax_b", "fail", [*shared, "gov_tax:tax_h:contains"]),
+        "details": [*details, "gov_tax: tax_h contains tax_b"],
+    }
+
+    summary = compare(result({}, [base]), result({}, [head]), SPEC)
+
+    failure = next(f for f in summary["failures"] if "counted_once:tax_b" in f)
+    assert "tax_h contains tax_b" not in failure.split(". On the base")[0]
+    assert "could not confirm whether tax_h contains tax_b (gov_tax)" in failure
+
+
+def test_the_failure_names_every_containment_the_base_could_not_confirm():
+    summary = _guard_summary(
+        ["gov_tax:tax_h:unconfirmed", "gov_tax:tax_g:unconfirmed"],
+        ["gov_tax:tax_h:contains", "gov_tax:tax_g:contains"],
+    )
+
+    assert any(
+        "On the base, the check could not confirm whether tax_g contains tax_b "
+        "(gov_tax) or whether tax_h contains tax_b (gov_tax), so this change may "
+        "not have introduced them." in failure
+        for failure in summary["failures"]
+    )
+
+
+def test_a_new_failure_beside_an_unconfirmed_one_counts_as_broken():
+    summary = _guard_summary(
+        ["gov_tax:tax_h:unconfirmed"],
+        ["gov_tax:tax_h:contains", "gov_tax:tax_g:contains"],
+    )
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+    assert "**Checks:** 1 broken by this change, 0 failing on both" in render(
+        summary, SPEC
+    )
+    assert not any("could not confirm" in f for f in summary["failures"])
+
+
+def test_a_head_that_stops_confirming_counts_as_broken():
+    """The change, not the base, took the confirmation away."""
+    summary = _guard_summary(["gov_tax:tax_h:contains"], ["gov_tax:tax_h:unconfirmed"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_an_unconfirmed_base_for_another_head_confirms_nothing_here():
+    summary = _guard_summary(["gov_tax:tax_g:unconfirmed"], ["gov_tax:tax_h:contains"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_an_unconfirmed_base_leaves_another_kind_of_failure_broken():
+    summary = _guard_summary(["gov_tax:tax_h:unconfirmed"], ["gov_tax:tax_h:rises"])
+
+    assert _guard_check(summary)["base_unconfirmed"] == []
+
+
+def test_repairing_an_unrelated_nan_reports_no_tax_broken_by_the_change():
+    """A benefit that turns NaN on the base stops the check confirming tax_h,
+    and the head repairs that benefit. tax_h contained tax_b on both sides."""
+    from policyengine_uk.tests.aggregate_impact.test_aggregate_impact_guard import (
+        FakeSim,
+        partition,
+    )
+
+    def measured(nan):
+        formulas = {
+            "tax_b": lambda f: np.array([5.0]),
+            "tax_g": lambda f: 2 * (f("tax_b") - 5),
+            "tax_h": lambda f: f("tax_b") * (f("tax_g") > 0) + 0.25 * f("tax_g"),
+            "ben_c": lambda f: np.sqrt(5 - f("tax_b")) if nan else np.array([0.0]),
+            "gov_tax": lambda f: f("tax_b") + f("tax_g") + f("tax_h"),
+            "gov_spending": lambda f: f("ben_c"),
+        }
+        parts = partition(
+            ["tax_b", "tax_g", "tax_h"],
+            ["ben_c"],
+            reads={"tax_g": ["tax_b"], "tax_h": ["tax_b", "tax_g"]},
+        )
+        with np.errstate(invalid="ignore"):
+            guard = counted_once(
+                FakeSim(formulas, {"x": [0.0]}, [1.0]),
+                parts,
+                2026,
+                1e-6,
+                variables_to_check=["tax_b"],
+            )
+        recorder = Recorder()
+        record_guard_checks(recorder, guard)
+        measurement = result({})
+        measurement["checks"].extend(recorder.checks.values())
+        measurement["guard"] = publishable_guard(guard)
+        return measurement
+
+    summary = compare(measured(True), measured(False), SPEC)
+
+    assert summary["status"] == "fail"
+    assert _guard_check(summary)["base_unconfirmed"]
+    assert "1 broken by this change" not in render(summary, SPEC)
+    assert "1 failing that the base could not confirm" in render(summary, SPEC)
+
+
+_scope = st.sampled_from(["tax_g", "tax_h", "ben_c"]).flatmap(
+    lambda head: st.sampled_from(["contains", "unconfirmed", "rises"]).map(
+        lambda kind: f"gov_tax:{head}:{kind}"
+    )
+)
+
+
+@given(st.sets(_scope, min_size=1), st.sets(_scope, min_size=1))
+@settings(max_examples=120, deadline=None)
+def test_the_report_excuses_only_failures_the_base_could_not_confirm(base, head):
+    """Invariant: the job fails either way. The report moves a failure out of
+    "broken by this change" only when every new scope confirms a containment
+    the base failed as unconfirmed."""
+    summary = _guard_summary(sorted(base), sorted(head))
+    found = _guard_check(summary)
+
+    new = head - base
+    if not new:
+        assert found["classification"] == "pre_existing"
+        assert found["base_unconfirmed"] == []
+        return
+    assert summary["status"] == "fail"
+    assert found["classification"] == "regression"
+    excused = all(
+        scope.endswith(":contains")
+        and scope.replace(":contains", ":unconfirmed") in base
+        for scope in new
+    )
+    assert found["base_unconfirmed"] == (sorted(new) if excused else [])
+    assert ("failing that the base could not confirm" in render(summary, SPEC)) is (
+        excused
+    )

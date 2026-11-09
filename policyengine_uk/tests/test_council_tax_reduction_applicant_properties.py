@@ -11,7 +11,10 @@ can share a benefit unit with a young couple who are its claimant and
 partner (#1896's parent-couple rule). She then applies alone.
 
 Invariants, for any generated population of households: heads alone, in a
-couple (with partners aged 16 and over), or sharing a benefit unit with two
+couple (with partners aged 16 and over; where the two are 20 or more years
+apart, or 16 or more with the younger under 20, the model presumes the
+younger the elder's child and reads no couple, and the invariants follow the
+model's reading), or sharing a benefit unit with two
 parents aged 16 to 30 and their baby; another family, sometimes a sharer;
 income-based Jobseeker's Allowance and Universal Credit supplied for the
 head's benefit unit; the head's disability, Attendance Allowance, Carer's
@@ -371,6 +374,12 @@ DIFFERENTIAL_VARIABLES = [
     "council_tax_reduction_relevant_income_based_benefit",
     "council_tax_reduction_pensioner",
     "council_tax_reduction_applicant_has_non_dep_exemption",
+    # Scotland's and Wales's working-age route (#1966).
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_passported",
+    "council_tax_reduction_working_age_has_universal_credit",
     "simulated_council_tax_reduction_benunit",
 ]
 

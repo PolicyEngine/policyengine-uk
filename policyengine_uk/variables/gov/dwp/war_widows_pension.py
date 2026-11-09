@@ -16,8 +16,10 @@ class war_widows_pension(Variable):
         "State Pension Credit Regulations 2002 Sch. IV paras 2 to 6 and 12 "
         "(for example a supplementary pension under article 23(2) of the "
         "Service Pensions Order 2006) are not separated. Family Resources "
-        "Survey benefit code 9 belongs here; the datasets still add it to "
-        "bsp_reported (policyengine-uk-data#578, microcosm#1222)."
+        "Survey benefit code 9 belongs here. Microcosm separates it into "
+        "war_widows_pension_reported (microcosm#1333); the Enhanced FRS and "
+        "older Microcosm releases can still include it in bsp_reported "
+        "(policyengine-uk-data#578)."
     )
     definition_period = YEAR
     unit = GBP

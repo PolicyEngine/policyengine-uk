@@ -164,6 +164,9 @@ def cases(draw):
         people["dependant"] = {"age": 18, "current_education": "UPPER_SECONDARY"}
         people["older"]["is_parent"] = True
     for name, person in people.items():
+        # The older and younger members are the couple whatever their age gap,
+        # so the roles are supplied rather than left to the age presumption.
+        person["is_claimant_or_partner"] = name != "dependant"
         if name == "dependant":
             continue
         if person["age"] >= 67:
@@ -185,6 +188,10 @@ def cases(draw):
         "benunit": {
             "would_claim_uc": draw(st.booleans()),
             "would_claim_pc": draw(st.booleans()),
+            # The reference formulas read would_claim_uc alone, so no family
+            # here claims when the abolition of income-related ESA reaches
+            # the older member's award in 2026-27.
+            "would_claim_uc_at_legacy_closure": False,
         },
         "household": {
             "tenure_type": tenure,

@@ -3,18 +3,16 @@
 # award is the eligible rent less the non-dependant deductions.
 
 - name: A zero-income full-time student does not reduce the claimant's HB
-  # The counterexample from the PolicyEngine/policyengine-uk#1925 review:
-  # HB Regs 2006 reg 74(7)(c)-(d).
+  # A full-time student lives with the claimant; HB Regs 2006
+  # reg 74(7)(c)-(d) exempts the student from a deduction.
   period: 2025
   absolute_error_margin: 0.01
   input:
     people:
       tenant:
         age: 40
-        total_income: 0
       student:
         age: 20
-        total_income: 0
         employment_status: STUDENT
         current_education: TERTIARY
     benunits:
@@ -56,10 +54,8 @@
     people:
       tenant:
         age: 40
-        total_income: 0
       son:
         age: 30
-        total_income: 0
         current_education: NOT_IN_EDUCATION
     benunits:
       tenant_unit:

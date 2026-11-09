@@ -32,8 +32,10 @@ class uc_non_dep_deductions(Variable):
         deductions = person("uc_individual_non_dep_deduction", period)
         # Non-dependants from other families are not liable for rent (para
         # 9(2)(d)), and each counts in one Universal Credit claim only (para
-        # 9(2)(f)): see uc_non_dependants_counted.
-        other_family = person("is_non_dependant_of_household_head", period)
+        # 9(2)(f)): see uc_non_dependants_counted. The Universal Credit flag
+        # also leaves out a boarder's or lodger's child or qualifying young
+        # person (para 9(2)(g)), and an adult their own family's claim counts.
+        other_family = person("is_uc_non_dependant_of_household_head", period)
         # A member of a renter's own benefit unit who is not the claimant,
         # partner or a qualifying young person is a non-dependant of that
         # renter (para 9(1)(c) and (2)(a), (g)). Their own family's claim

@@ -85,12 +85,9 @@
     is_council_tax_reduction_lone_parent: true
     # Lone parent aged 18 or over: 95.55 * 52.
     council_tax_reduction_applicable_amount: 4_968.60
-    # Child Benefit 1,406.60 plus the young person's earnings of 2,000, which
-    # are below the income tax and National Insurance thresholds. Counting a
-    # young person's own earnings is an older approximation of the model's,
-    # not the law (reg. 36(2) leaves them out); this pins that the member is
-    # in the family, not a statutory income figure.
-    council_tax_reduction_applicable_income: 3_406.60
+    # Child Benefit, 27.05 * 52. The young person's own earnings of 2,000 are
+    # not the applicant's (SSI 2021/249 reg. 36(2)).
+    council_tax_reduction_applicable_income: 1_406.60
 
 - name: Case 3, England keeps the Child Benefit young person past the Universal Credit terminal date.
   period: 2026
@@ -121,7 +118,10 @@
     is_child_or_young_person_for_council_tax_reduction: [false, true]
     is_council_tax_reduction_lone_parent: true
     council_tax_reduction_applicable_amount: 4_968.60
-    council_tax_reduction_applicable_income: 3_406.60
+    # Child Benefit only: the young person's own earnings are not the
+    # applicant's (SI 2012/2885 Sch 1 para 11 counts the applicant and
+    # partner).
+    council_tax_reduction_applicable_income: 1_406.60
 
 - name: Case 4, Wales keeps the Child Benefit young person past the Universal Credit terminal date.
   period: 2026
@@ -181,8 +181,10 @@
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_child_or_young_person_for_council_tax_reduction: [false, true]
     is_council_tax_reduction_lone_parent: true
-    # Lone parent of pension age: 256.00 * 52.
-    council_tax_reduction_applicable_amount: 13_312
+    # Lone parent of pension age, 256.00 * 52 = 13,312, plus the young
+    # person's amount (SSI 2012/319 reg 20(b) and Sch 1 para 3), 109.85 * 52
+    # = 5,712.20.
+    council_tax_reduction_applicable_amount: 19_024.20
 
 - name: Case 6, Scotland's working-age scheme used the Child Benefit young person in 2021-22.
   period: 2021

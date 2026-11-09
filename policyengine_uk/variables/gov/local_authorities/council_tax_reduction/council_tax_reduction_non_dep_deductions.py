@@ -19,10 +19,10 @@ class council_tax_reduction_non_dep_deductions(Variable):
         "Deductions for a claiming family's non-dependants, whether in its "
         "own benefit unit or another family's: one per couple, the higher of "
         "the two members' amounts (both, in the Welsh scheme for people who "
-        "are not pensioners, when the couple has a Universal Credit award), "
-        "one for each other non-dependant, each under the applicant family's "
-        "own scheme and apportioned equally between jointly liable "
-        "applicants; none if the applicant or partner is exempt."
+        "are not pensioners, when the couple's own Universal Credit award "
+        "assesses either member), one for each other non-dependant, each "
+        "under the applicant family's own scheme and apportioned between "
+        "jointly liable applicants; none if the applicant or partner is exempt."
     )
     definition_period = YEAR
     unit = GBP
@@ -38,11 +38,19 @@ class council_tax_reduction_non_dep_deductions(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         country = benunit.household("country", period)
-        # WSI 2013/3029 Sch 6 para 5(3): a working-age applicant's deduction is
-        # for each member of a non-dependant couple with a Universal Credit
-        # award.
-        universal_credit_couple = is_wales_scheme(country) & (
-            benunit("universal_credit_pre_benefit_cap", period) > 0
+        # WSI 2013/3029 Sch 6 para 5(3): from a working-age applicant's claim
+        # the council deducts for each member of a non-dependant couple with a
+        # Universal Credit award. The award must be the couple's own, one that
+        # assesses the claimant or partner. Another member's award as a single
+        # claimant leaves the couple one deduction.
+        couple_claims_universal_credit = benunit.any(
+            person("is_uc_assessed_claimant", period)
+            & person("is_claimant_or_partner", period)
+        )
+        universal_credit_couple = (
+            is_wales_scheme(country)
+            & couple_claims_universal_credit
+            & (benunit("universal_credit_pre_benefit_cap", period) > 0)
         )
         # council_tax_reduction_individual_non_dep_deduction is each person's
         # deduction under the scheme of the household head's family. A jointly

@@ -131,14 +131,25 @@ def esa_weekly_earnings(adult, parameters):
     return (net_pay + net_profit) / WEEKS
 
 
+def esa_higher_earnings_limit(parameters):
+    """Reg 45(4) from 11 April 2011: 16 x the adult/NLW rate (reg 2(1),
+    DMG 41190), with part of a pound under 50p rounded up to 50p and over
+    50p up to the next pound (reg 45(9A))."""
+    exempt_work = parameters.gov.dwp.ESA.exempt_work
+    # The scale is sorted by age. The final band holds the designated adult
+    # rate even if a reform sets a younger band's rate above it.
+    adult_rate = parameters.gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
+    limit = exempt_work.higher_earnings_limit_minimum_wage_hours * adult_rate
+    return math.ceil(round(limit * 2, 6)) / 2
+
+
 def esa_claimant_in_remunerative_work(adult, parameters):
     exempt_work = parameters.gov.dwp.ESA.exempt_work
     earnings = esa_weekly_earnings(adult, parameters)
     within_lower_limit = earnings <= exempt_work.lower_earnings_limit
-    permitted_work = (
-        weekly_hours(adult) < exempt_work.hours_limit
-        and earnings <= exempt_work.higher_earnings_limit
-    )
+    permitted_work = weekly_hours(
+        adult
+    ) < exempt_work.hours_limit and earnings <= esa_higher_earnings_limit(parameters)
     return not (within_lower_limit or permitted_work)
 
 
@@ -170,10 +181,41 @@ def legacy_benefits_closed(couple, others, parameters):
     return not all(adult["age"] >= 70 for adult in couple)
 
 
+def esa_abolition_claim(couple, parameters):
+    """Whether the claimant and partner claim Universal Credit when the
+    abolition of income-related ESA reaches their award, which ends their
+    reports (esa_income_report_closed).
+
+    The abolition reaches every remaining award on 1 July 2026 in England
+    (SI 2025/1148 art. 3A), the households' default country, and no member
+    here has the appointee saving, so it reaches any award reported in a
+    year with less than all of it payable. would_claim_uc_at_legacy_closure
+    keeps its default, true. The conditions are those of the other
+    working-age closures: no Pension Credit report, and not all pension age.
+    """
+    payable = parameters.gov.dwp.ESA.income.awards_payable.great_britain
+    reports_award = any(m.get("esa_income_reported", 0) > 0 for m in couple)
+    on_pension_credit = any(m.get("pension_credit_reported", 0) > 0 for m in couple)
+    if not reports_award or payable >= 1 or on_pension_credit:
+        return False
+    assert all(not 65 <= adult["age"] < 70 for adult in couple), couple
+    return not all(adult["age"] >= 70 for adult in couple)
+
+
+def couple_report_closed(couple, reported, parameters):
+    """Whether the claimant's and partner's own reports of an award have
+    closed: their legacy benefits have closed, or, for income-related ESA,
+    they claim Universal Credit when its abolition reaches the award."""
+    closed = legacy_benefits_closed(couple, [], parameters)
+    if reported == "esa_income_reported":
+        closed = closed or esa_abolition_claim(couple, parameters)
+    return closed
+
+
 def candidates(couple, others, reported, parameters):
     """Indexes (into couple + others) of members who could be the claimant."""
     members = couple + others
-    couple_closed = legacy_benefits_closed(couple, [], parameters)
+    couple_closed = couple_report_closed(couple, reported, parameters)
     open_reports = [
         member.get(reported, 0) > 0
         and not (

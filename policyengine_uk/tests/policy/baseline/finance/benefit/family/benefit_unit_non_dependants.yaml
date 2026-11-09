@@ -518,11 +518,13 @@
   output:
     housing_benefit_non_dep_deductions: [530.40, 530.40, 0]
 
-# A lodger's adult son is the lodger's non-dependant, and the householder's
-# too: reg 3(2)(e)(i) excludes only the person liable to pay the householder.
-# The lodger is not a joint occupier with the householder, so reg 74(5) does
-# not apportion him and each bears the whole deduction.
-- name: HB, a lodger's adult son is a non-dependant of the lodger and of the householder
+# A lodger's adult son is the householder's non-dependant: reg 3(2)(e)(i)
+# excludes only the person liable to pay the householder. He normally resides
+# with the lodger too, and no regulation or decision we know of settles whether
+# reg 74(5) splits his deduction between them or the lodger alone bears it
+# (#2894). The model charges the householder the whole deduction and the
+# lodger none.
+- name: HB, the householder bears a lodger's adult son in full and the lodger none
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -550,7 +552,7 @@
         members: [head, lodger, lodger_son]
         rent: 9_000
   output:
-    housing_benefit_non_dep_deductions: [1_060.80, 1_060.80]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
 
 - name: CTR, the claimant's family bears the non-dependant in its benefit unit
   period: 2026
@@ -1093,9 +1095,10 @@
     household_benefits_individual_non_dep_deduction: [0, 0, 5_470.40]
     housing_benefit_non_dep_deductions: [2_735.20, 0]
 
-# A lodger on the PIP daily living component is exempt for its own son (reg
-# 74(6)); the householder, who is not exempt, still bears him in full.
-- name: HB, an exempt lodger is not charged for its own adult son but the householder is
+# A lodger on the PIP daily living component is exempt from deductions (reg
+# 74(6)). The exemption covers the lodger's own claim only, so the householder
+# still bears the lodger's son in full.
+- name: HB, an exempt lodger leaves the householder bearing its adult son in full
   period: 2026
   absolute_error_margin: 0.01
   input:

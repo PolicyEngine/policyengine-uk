@@ -546,7 +546,7 @@ class StubSim:
         return np.asarray(self.values.get(variable, np.zeros(self.n)), dtype=float)
 
 
-def _measured_year(values):
+def _measured_year(values, partition=None):
     from policyengine_uk.utils.aggregate_impact.measure import measure_year
     from policyengine_uk.utils.aggregate_impact.partition import (
         default_partition_path,
@@ -557,13 +557,52 @@ def _measured_year(values):
     rec.scope = "2026"
     measure_year(
         StubSim(values),
-        load_partition(default_partition_path()),
+        partition or load_partition(default_partition_path()),
         load_spec(),
         2026,
         rec,
         households,
     )
     return rec, households
+
+
+def _corporate_sdlt_double_counted():
+    """The shipped partition in its shape before the #2159 fix: expected_sdlt
+    carries corporate SDLT, declared as a double count rather than a head.
+    The fix left the model with no double counts, so the tests of how a
+    declared one is measured use this."""
+    import yaml
+
+    from policyengine_uk.utils.aggregate_impact.partition import (
+        default_partition_path,
+        parse_partition,
+    )
+
+    with open(default_partition_path()) as f:
+        raw = yaml.safe_load(f)
+    totals = next(h for h in raw["tax_heads"] if h["id"] == "sdlt_corporate")["totals"]
+    raw["tax_heads"] = [h for h in raw["tax_heads"] if h["id"] != "sdlt_corporate"]
+
+    def repoint(ids):
+        return list(
+            dict.fromkeys("sdlt_household" if i == "sdlt_corporate" else i for i in ids)
+        )
+
+    for exclusion in raw["exclusions"]:
+        if exclusion.get("spans"):
+            exclusion["spans"] = repoint(exclusion["spans"])
+        if exclusion.get("head") == "sdlt_corporate":
+            exclusion["head"] = "sdlt_household"
+    for guard in raw["overlap_guards"]:
+        guard["heads"] = repoint(guard.get("heads") or [])
+    raw["model_double_counts"] = [
+        {
+            "variable": "corporate_sdlt",
+            "contained_in": "expected_sdlt",
+            "totals": totals,
+        }
+    ]
+    return parse_partition(raw)
 
 
 def _first(n, value):
@@ -589,7 +628,8 @@ def test_a_double_count_from_few_records_is_suppressed_and_left_out():
             "household_tax": model_tax,
             "pre_budget_change_household_tax": model_tax,
             "gov_balance": model_tax,
-        }
+        },
+        _corporate_sdlt_double_counted(),
     )
     published = _published(rec)
     assert published["double_counts.corporate_sdlt"] is None
@@ -1056,3 +1096,46 @@ def test_the_published_guard_strips_a_few_unit_double_count_coefficient():
         assert shown in text and "NO LONGER contained" in text
         if units == 3:
             assert "0.43" not in text
+
+
+@pytest.mark.parametrize("units", [3, 500])
+def test_a_double_count_whose_container_is_not_finite_is_not_called_stale(units):
+    """Issue #2759: the check cannot show a container that is not finite
+    still contains the component, and its detail holds no figures."""
+    from policyengine_uk.utils.aggregate_impact.measure import publishable_guard
+    from policyengine_uk.utils.aggregate_impact.render import _guard
+
+    detail = (
+        "expected_sdlt is not finite when corporate_sdlt rises, so the check "
+        "cannot show that expected_sdlt still contains corporate_sdlt"
+    )
+    guard = {
+        "status": "ran",
+        "year": 2026,
+        "components": [
+            {"variable": "corporate_sdlt", "units": units, "status": "fail"}
+        ],
+        "double_counts": [
+            {
+                "variable": "corporate_sdlt",
+                "contained_in": "expected_sdlt",
+                "coefficient": float("nan"),
+                "issue": "#2159",
+                "status": "fail",
+                "not_finite": True,
+                "detail": detail,
+            }
+        ],
+    }
+    published = publishable_guard(guard)
+    (row,) = published["double_counts"]
+    assert row["status"] == "fail" and row["detail"] == detail
+    if units == 3:
+        assert row["coefficient"] is None
+    text = _guard({"head": {"guard": {**published, "components": []}}})
+    assert (
+        "- declared double count `corporate_sdlt`: `expected_sdlt` is NOT FINITE "
+        "when `corporate_sdlt` rises, so the check cannot show that "
+        "`expected_sdlt` still contains `corporate_sdlt` (#2159)"
+    ) in text
+    assert "NO LONGER contained" not in text and "fewer than 10 units" not in text

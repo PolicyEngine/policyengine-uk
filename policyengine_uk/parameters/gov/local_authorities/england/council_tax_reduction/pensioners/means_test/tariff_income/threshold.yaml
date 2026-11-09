@@ -1,0 +1,10 @@
+description: Capital above which the England Council Tax Reduction pensioner scheme treats capital as yielding a weekly tariff income.
+values:
+  2013-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: England Council Tax Reduction pensioner tariff income threshold
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 37
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/37

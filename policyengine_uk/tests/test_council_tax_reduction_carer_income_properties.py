@@ -20,7 +20,9 @@ the supplement does not touch Council Tax Reduction at all. The model deducts
 all of a family's income tax from its Council Tax Reduction income, an
 existing approximation, so there the supplement, which is taxable (SI
 2026/93), reaches that income through the tax charged on it and in no other
-way.
+way. The tax deducted is the liability before the winter fuel payment charge
+(ITEPA 2003 s. 681I), which recovers a winter payment rather than taxing the
+income assessed; "income tax" below means that liability.
 
 Invariants, for single people and couples in Scotland in 2026 in which one
 member is a carer, all of working age and taking no Universal Credit or all
@@ -60,6 +62,43 @@ credit (reg 25), so those cells are left out of 1 to 3 and checked instead by:
    Council Tax Reduction income is nil; where it is in receipt of savings credit
    only, it equals Pension Credit income plus the Pension Credit paid.
 
+Invariants 1 to 4 concern claims that follow the shared formula (Council Tax
+Reduction income and the Housing Benefit applicable amounts). A working-age
+Scottish or Welsh claim (council_tax_reduction_devolved_working_age) follows
+the devolved working-age route instead, which has its own income, applicable
+amount and earnings disregards, so invariants 1 and 2 are checked there only
+where council_tax_reduction_devolved_working_age is false, and these hold
+where it is true:
+
+5. Counts the component on the devolved route: claiming Carer Support Payment
+   raises the working-age unearned income by exactly the Carer Support Payment
+   component before any overlapping-benefit reduction (SSI 2021/249 reg
+   57(1)(b)(iva)), and, where the claim is not passported, raises the
+   working-age income less net earnings after the disregard by the same
+   amount: without children or Universal Credit that income is net earnings
+   less the disregard (never more than the earnings), plus unearned income,
+   plus tariff income, and the claim changes no capital. The working-age
+   applicable amount rises by exactly one Scottish carer premium (Sch 1 para
+   6(1)). The reduction never rises, and where both awards are partial it
+   falls by 20% of the rise in working-age income less the rise in the
+   working-age applicable amount.
+6. The supplement on the devolved route: setting the Scottish Carer
+   Supplement to zero leaves the working-age unearned income, the working-age
+   applicable amount, and the working-age income less net earnings after the
+   disregard unchanged. Reg 57(1) is a closed list that leaves the supplement
+   out, and the route counts unearned income gross (reg 57): it deducts income
+   tax only from earnings (reg 50(3)(a)), taking earnings as the lowest slice
+   of the earner's income. So where the net earnings are unchanged, the
+   income and the reduction are unchanged, and the supplement never lowers
+   the reduction.
+
+   Net earnings can move: the model's marriage allowance transfers the
+   transferor's unused personal allowance, up to its cap
+   (partners_unused_personal_allowance), so a taxable supplement or Carer
+   Support Payment paid to a transferor shrinks the transfer and raises the
+   income tax the recipient partner pays on earnings. That is tax on the
+   partner's earnings, which the route deducts, not tax on the supplement.
+
 These compare the model's own income measures, so they hold whatever carer's
 benefit the model pays. The model reduces Carer Support Payment by
 overlapping benefits such as State Pension (the Carer's Assistance (Carer
@@ -75,6 +114,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.system import system
 
 YEAR = 2026
 PENSIONS = np.arange(0, 40_001, 2_000)
@@ -82,6 +122,15 @@ WEEKS = 52
 CARER_SUPPORT_PAYMENT = 86.45 * WEEKS
 SCOTTISH_CARER_SUPPLEMENT = 11.70 * WEEKS
 WITHDRAWAL_RATE = 0.2
+# A year of the Scottish working-age carer premium in the model year (SSI
+# 2021/249 Sch 1, as uprated), read from the parameter the route uses.
+_SCOTTISH_CTR = system.parameters(
+    str(YEAR)
+).gov.local_authorities.scotland.council_tax_reduction
+SCOTTISH_CARER_PREMIUM = _SCOTTISH_CTR.working_age.adult_premiums.carer_premium * WEEKS
+# The income tax Council Tax Reduction income deducts: the liability before
+# the winter fuel payment charge.
+INCOME_TAX = "income_tax_before_winter_fuel_payment_charge"
 PROPERTY_SETTINGS = settings(
     max_examples=10,
     deadline=None,
@@ -120,6 +169,13 @@ BENUNIT_VARIABLES = [
     "in_receipt_of_savings_credit_only",
     "pension_credit_income",
     "pension_credit",
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_unearned_income",
+    "council_tax_reduction_working_age_earnings_disregard",
+    "council_tax_reduction_working_age_earned_income",
+    "council_tax_reduction_working_age_passported",
     *OTHER_COUNTED_BENEFITS,
 ]
 PERSON_VARIABLES = [
@@ -128,7 +184,7 @@ PERSON_VARIABLES = [
     "carer_support_payment",
     "carer_support_payment_pre_overlap",
     "scottish_carer_supplement",
-    "income_tax",
+    INCOME_TAX,
     "national_insurance",
 ]
 CLAIMS = (True, False)
@@ -186,6 +242,11 @@ def situation(families):
                     name = f"p{i}_{k}_{c}_{j}"
                     person = {
                         "age": {YEAR: a["age"]},
+                        # The drawn adults are the claimant and partner,
+                        # however far apart their ages; the age presumption
+                        # alone would read a partner 20 or more years younger
+                        # as the claimant's child.
+                        "is_claimant_or_partner": {YEAR: True},
                         "state_pension": {YEAR: a.get("state_pension", 0.0)},
                         "employment_income": {YEAR: a.get("employment_income", 0.0)},
                         # All private pension goes to the first adult.
@@ -236,7 +297,7 @@ def grid(families, reform=None):
     # from the other benefits it counts.
     g["income_before_tax"] = (
         g["council_tax_reduction_applicable_income"]
-        + g["income_tax"]
+        + g[INCOME_TAX]
         + g["national_insurance"]
         - g["other_counted_benefits"]
     )
@@ -246,6 +307,10 @@ def grid(families, reform=None):
         g["in_receipt_of_guarantee_credit"].astype(bool)
         | g["in_receipt_of_savings_credit_only"].astype(bool)
     )
+    # Cells on the devolved working-age route, and those on the shared
+    # formula.
+    g["devolved"] = g["council_tax_reduction_devolved_working_age"].astype(bool)
+    g["shared"] = ~g["devolved"]
     return g
 
 
@@ -253,6 +318,59 @@ def partial(g, i):
     """Where the award is neither nil nor the whole council tax bill."""
     award = g["council_tax_benefit"][i]
     return (award > 0.01) & (award < np.max(award) - 0.01)
+
+
+def income_other_than_earnings(g):
+    """Working-age income less net earnings after the disregard."""
+    return (
+        g["council_tax_reduction_working_age_applicable_income"]
+        - g["council_tax_reduction_working_age_earned_income"]
+        + g["council_tax_reduction_working_age_earnings_disregard"]
+    )
+
+
+def check_devolved_carer_claim(g, i, fam):
+    """Invariant 5: claiming Carer Support Payment on the devolved
+    working-age route."""
+    devolved = g["devolved"][i, :, 0] & g["devolved"][i, :, 1]
+    if not devolved.any():
+        return
+    # The scheme follows the family's ages, not the claim.
+    assert np.all(g["devolved"][i, :, 0] == g["devolved"][i, :, 1]), fam
+    unearned = g["council_tax_reduction_working_age_unearned_income"][i]
+    assert np.allclose(
+        (unearned[:, 0] - unearned[:, 1])[devolved],
+        g["carer_support_payment_pre_overlap"][i, :, 0][devolved],
+        atol=0.01,
+    ), (fam, unearned)
+    assert np.allclose(
+        g["carer_support_payment_pre_overlap"][i, :, 0][devolved],
+        CARER_SUPPORT_PAYMENT,
+        atol=0.01,
+    ), fam
+    income = g["council_tax_reduction_working_age_applicable_income"][i]
+    passported = g["council_tax_reduction_working_age_passported"][i].astype(bool)
+    assessed = devolved & ~passported[:, 0] & ~passported[:, 1]
+    other_income = income_other_than_earnings(g)[i]
+    other_income_rise = other_income[:, 0] - other_income[:, 1]
+    assert np.allclose(other_income_rise[assessed], CARER_SUPPORT_PAYMENT, atol=0.05), (
+        fam,
+        other_income_rise[assessed],
+    )
+    amount = g["council_tax_reduction_working_age_applicable_amount"][i]
+    amount_rise = amount[:, 0] - amount[:, 1]
+    assert np.allclose(amount_rise[devolved], SCOTTISH_CARER_PREMIUM, atol=0.01), (
+        fam,
+        amount_rise[devolved],
+    )
+    award = g["council_tax_benefit"][i]
+    assert np.all((award[:, 0] <= award[:, 1] + 0.01)[devolved]), fam
+    both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & assessed
+    excess_rise = (income[:, 0] - amount[:, 0]) - (income[:, 1] - amount[:, 1])
+    fall = award[:, 1] - award[:, 0]
+    assert np.allclose(
+        fall[both_partial], WITHDRAWAL_RATE * excess_rise[both_partial], atol=0.05
+    ), (fam, fall[both_partial], excess_rise[both_partial])
 
 
 @PROPERTY_SETTINGS
@@ -277,13 +395,17 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
             atol=0.01,
         ), fam
         assert np.all(g["carers_allowance"][i] == 0), fam
-        # Only where the zero floor on income does not bind in either run, and
-        # both runs follow the general rules.
-        general = g["general_rules"][i, :, 0] & g["general_rules"][i, :, 1]
+        # Invariant 1 on the shared formula: both runs on it, and only where
+        # the zero floor on income does not bind in either run and both runs
+        # follow the general rules.
+        shared = g["shared"][i, :, 0] & g["shared"][i, :, 1]
+        general = g["general_rules"][i, :, 0] & g["general_rules"][i, :, 1] & shared
         compared = (income[i, :, 0] > 0) & (income[i, :, 1] > 0) & general
-        # At the top of the pension grid every family follows the general
-        # rules with positive income, so the comparison is never empty.
-        assert compared.any(), fam
+        # At the top of the pension grid every family on the shared formula
+        # follows the general rules with positive income, so the comparison
+        # is never empty.
+        assert compared.any() or not shared.any(), fam
+        check_devolved_carer_claim(g, i, fam)
         rise = g["income_before_tax"][i, :, 0] - g["income_before_tax"][i, :, 1]
         assert np.allclose(rise[compared], CARER_SUPPORT_PAYMENT, atol=0.05), (
             fam,
@@ -328,16 +450,49 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
                 fam,
                 variable,
             )
+        # Invariant 6: on the devolved working-age route the supplement
+        # reaches neither the unearned income nor the applicable amount, and
+        # moves the income only through net earnings.
+        devolved = g["devolved"][i] & without["devolved"][i]
+        assert np.all(g["devolved"][i] == without["devolved"][i]), fam
+        for variable in [
+            "council_tax_reduction_working_age_unearned_income",
+            "council_tax_reduction_working_age_applicable_amount",
+        ]:
+            assert np.allclose(
+                g[variable][i][devolved], without[variable][i][devolved], atol=0.01
+            ), (fam, variable)
+        assert np.allclose(
+            income_other_than_earnings(g)[i][devolved],
+            income_other_than_earnings(without)[i][devolved],
+            atol=0.05,
+        ), fam
+        same_earnings = devolved & np.isclose(
+            g["council_tax_reduction_working_age_earned_income"][i],
+            without["council_tax_reduction_working_age_earned_income"][i],
+            atol=0.01,
+        )
+        for variable in [
+            "council_tax_reduction_working_age_applicable_income",
+            "council_tax_benefit",
+        ]:
+            assert np.allclose(
+                g[variable][i][same_earnings],
+                without[variable][i][same_earnings],
+                atol=0.01,
+            ), (fam, variable)
+        # Invariant 2 on the shared formula: both runs on it, and only where
+        # the zero floor on income does not bind in either run and both runs
+        # follow the general rules.
+        shared = g["shared"][i] & without["shared"][i]
         income = g["council_tax_reduction_applicable_income"][i]
         income_without = without["council_tax_reduction_applicable_income"][i]
-        # Only where the zero floor on income does not bind in either run, and
-        # both runs follow the general rules.
-        general = g["general_rules"][i] & without["general_rules"][i]
+        general = g["general_rules"][i] & without["general_rules"][i] & shared
         compared = (income > 0) & (income_without > 0) & general
-        assert compared.any(), fam
+        assert compared.any() or not shared.any(), fam
         assert np.allclose(
-            (income + g["income_tax"][i])[compared],
-            (income_without + without["income_tax"][i])[compared],
+            (income + g[INCOME_TAX][i])[compared],
+            (income_without + without[INCOME_TAX][i])[compared],
             atol=0.05,
         ), fam
         award = g["council_tax_benefit"][i]
@@ -347,14 +502,16 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         # follows invariant 4).
         assert np.all(award >= award_without - 0.01), fam
         both_partial = partial(g, i) & partial(without, i) & general
-        tax_on_supplement = g["income_tax"][i] - without["income_tax"][i]
+        tax_on_supplement = g[INCOME_TAX][i] - without[INCOME_TAX][i]
         assert np.allclose(
             (award - award_without)[both_partial],
             WITHDRAWAL_RATE * tax_on_supplement[both_partial],
             atol=0.05,
         ), fam
         # Without a claim there is no supplement, so nothing moves.
-        assert np.allclose(income[:, 1], income_without[:, 1], atol=0.01), fam
+        assert np.allclose(
+            income[:, 1][shared[:, 1]], income_without[:, 1][shared[:, 1]], atol=0.01
+        ), fam
 
 
 @PROPERTY_SETTINGS

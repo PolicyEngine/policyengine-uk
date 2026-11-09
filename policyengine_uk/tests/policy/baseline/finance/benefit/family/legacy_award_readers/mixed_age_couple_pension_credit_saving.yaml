@@ -78,6 +78,7 @@
       benunit:
         members: [older, younger]
         is_mixed_age_couple: true
+        would_claim_uc: false
     households:
       household:
         members: [older, younger]

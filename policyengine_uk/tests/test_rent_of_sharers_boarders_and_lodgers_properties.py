@@ -265,7 +265,24 @@ def test_non_dependants(population):
     payer = np.isin(roles, ["boarder", "lodger"])
     liable_for_rent = calc(sim, "benunit_is_rent_liable")
     non_dependant = calc(sim, "is_non_dependant_of_household_head")
-    person_liable = sim.map_result(liable_for_rent, "benunit", "person") > 0
+    # Liability to the householder is person by person: a boarder's or
+    # lodger's non-paying child or adult relative can be a non-dependant,
+    # while the payer and the payer's partner cannot.
+    pays = (calc(sim, "rent_paid_as_boarder") + calc(sim, "rent_paid_as_lodger")) > 0
+    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    partner_pays = (
+        sim.map_result(
+            sim.map_result(pays & claimant_or_partner, "person", "benunit") > 0,
+            "benunit",
+            "person",
+        )
+        > 0
+    )
+    liable_to_householder = pays | (claimant_or_partner & partner_pays)
+    family_pays = np.isin(roles, ["boarder", "lodger"])
+    person_liable = (
+        sim.map_result(liable_for_rent & ~family_pays, "benunit", "person") > 0
+    ) | liable_to_householder
     assert not np.any(non_dependant & person_liable)
     assert non_dependant.any()
     # Universal Credit: one claim per household counts the non-dependants.
@@ -292,8 +309,8 @@ def test_non_dependants(population):
     )
     hb_total = sim.map_result(hb_individual, "person", "household")
     assert hb_total.max() > 0
-    # Each non-dependant family pays one deduction for its couple, the higher
-    # (HB Regs 2006 reg 74(3)), and one for each other member. The pool is
+    # The council deducts once for each non-dependant couple, the higher amount
+    # (HB Regs 2006 reg 74(3)), and once for each other member. The pool is
     # apportioned over the families liable for the rent, and none falls on a
     # family whose claimant or partner is exempt (reg 74(6)).
     families = sim.populations["benunit"]

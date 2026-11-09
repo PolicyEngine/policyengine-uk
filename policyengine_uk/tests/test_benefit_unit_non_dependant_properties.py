@@ -14,13 +14,13 @@ population of households:
    occupiers is apportioned (by rent or liability share, whichever family
    the non-dependant is in).
 2. Conservation: every Housing Benefit non-dependant deduction (a couple's
-   counted once) is borne in full across the joint occupiers, and once more
-   by a boarder or lodger for a non-dependant in its own benefit unit,
-   unless a claimant is exempt; each Council Tax Reduction claiming family
-   bears every non-dependant, under its own scheme, in proportion to its
-   joint-liability share
-   unless the applicant is exempt; every Universal Credit contribution is
-   borne by exactly one family unless that family's renter is exempt.
+   counted once) is borne in full across the joint occupiers unless a
+   claimant is exempt, and a boarder or lodger bears none, even for a
+   non-dependant in its own benefit unit; each Council Tax Reduction
+   claiming family bears every non-dependant, under its own scheme, in
+   proportion to its joint-liability share unless the applicant is exempt;
+   every Universal Credit contribution is borne by exactly one family
+   unless that family's renter is exempt.
 3. Exemptions: a family whose renter is exempt (UC Sch 4 para 15; HB reg
    74(6); CTR Sch 1 para 8(6)) has no deductions; no deduction is charged for
    a non-dependant under 21 (UC) or under 18 (HB, CTR), or for a qualifying
@@ -301,6 +301,14 @@ def oracle(
             role = family_rows[f]["role"]
             other_family = role == "non_dependant"
             own_family = row["kind"] == "non_dependant"
+            # Only a lodger and partner are liable to pay the householder, so
+            # for HB and CTR the lodger's qualifying young person is a
+            # non-dependant of the joint occupiers too. UC leaves them out
+            # (Sch 4 para 9(2)(g)).
+            lodgers_young_person = role == "lodger" and row["kind"] in (
+                "dependant",
+                "looked_after",
+            )
             # UC: a member of a family not liable for rent counts in the
             # claim that counts the household's non-dependants; a non-QYP
             # member aged 16+ of any other family counts in their own family's
@@ -322,17 +330,15 @@ def oracle(
             ):
                 exp_uc[bearer] += uc[p]
             # HB: every non-dependant, in any family, is pooled across the
-            # joint occupiers by rent share; a boarder or lodger, who is not
-            # a joint occupier, also bears its own in full.
-            if other_family or own_family:
+            # joint occupiers by rent share. A boarder or lodger, who is not a
+            # joint occupier, bears none, even for its own (#2894).
+            if other_family or own_family or lodgers_young_person:
                 for i in fams:
                     exp_hb[i] += share[i] * hb[p]
-                if own_family and role == "lodger":
-                    exp_hb[f] += hb[p]
             # CTR: every non-dependant, a lodger's included, is pooled across
             # the claiming families by joint-liability share, except that a
             # family's own claimant or partner is not its non-dependant.
-            if other_family or own_family:
+            if other_family or own_family or lodgers_young_person:
                 for i in fams:
                     if i == f and not own_family:
                         continue
@@ -453,6 +459,11 @@ def test_deductions_match_the_oracle(population):
                         row["kind"] == "non_dependant"
                         and family_rows[row["family"]]["role"] in own_family_roles
                     )
+                    # Only a lodger and partner are liable to pay the householder.
+                    or (
+                        family_rows[row["family"]]["role"] == "lodger"
+                        and row["kind"] in ("dependant", "looked_after")
+                    )
                 )
                 for row in person_rows
             ]
@@ -480,20 +491,12 @@ def test_conservation_and_exemptions(population):
     ages = np.array([row["age"] for row in person_rows])
     kinds = np.array([row["kind"] for row in person_rows])
     # 2. Conservation. HB: each deduction, a couple's once, is borne in full
-    # across the joint occupiers, and a lodger's own non-dependant once more
-    # by the lodger, where no claimant is exempt.
+    # across the joint occupiers, where no claimant is exempt.
     hb_counted = counted_once_per_couple(person_rows, v["hb"])
     hb_families = sim.map_result(
         calc(sim, "housing_benefit_non_dep_deductions"), "benunit", "household"
     )
-    lodgers_own = np.array(
-        [
-            row["kind"] == "non_dependant"
-            and family_rows[row["family"]]["role"] == "lodger"
-            for row in person_rows
-        ]
-    )
-    hb_people = sim.map_result(hb_counted * (1 + lodgers_own), "person", "household")
+    hb_people = sim.map_result(hb_counted, "person", "household")
     hb_exempt = (
         sim.map_result(
             calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt"),
@@ -504,6 +507,10 @@ def test_conservation_and_exemptions(population):
     )
     assert np.allclose(hb_families[~hb_exempt], hb_people[~hb_exempt], atol=0.01)
     assert np.all(hb_families <= hb_people + 0.01)
+    # A boarder or lodger bears none, even for a non-dependant in its own
+    # benefit unit (#2894).
+    lodger = np.array([row["role"] == "lodger" for row in family_rows])
+    assert np.all(calc(sim, "housing_benefit_non_dep_deductions")[lodger] == 0)
     # CTR: every non-dependant is borne by each claiming family, under its
     # own scheme, in proportion to its joint-liability share (which follows
     # the regulations' per-person wording, so shares need not sum to one);
@@ -538,11 +545,15 @@ def test_conservation_and_exemptions(population):
     assert np.all(v["hb"][ages < 18] == 0)
     assert np.all(v["ctr"][ages < 18] == 0)
     # Nobody in a family liable for rent is charged except its own
-    # non-dependants.
+    # non-dependants. In a lodger's family, only the lodger and partner are
+    # liable.
     not_non_dependant = kinds != "non_dependant"
-    liable_family = np.array(
-        [family_rows[row["family"]]["role"] != "non_dependant" for row in person_rows]
-    )
+
+    def in_liable_family(row):
+        role = family_rows[row["family"]]["role"]
+        return role != "non_dependant" and (role != "lodger" or row["kind"] == "adult")
+
+    liable_family = np.array([in_liable_family(row) for row in person_rows])
     for amounts in (v["uc"], v["hb"], v["ctr"]):
         assert np.all(amounts[not_non_dependant & liable_family] == 0)
 

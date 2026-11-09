@@ -1,0 +1,33 @@
+# #2735 shares the allowance between trade receipts and Chapter 8 income;
+# the Budget 2026 increase must reach that same shared allowance in 2027.
+- name: Before the Budget increase one allowance covers trade and miscellaneous income
+  period: 2026
+  input:
+    age: 40
+    self_employment_gross_receipts: 2_000
+    self_employment_income: 1_500
+    miscellaneous_income: 2_000
+    income_not_otherwise_charged: 2_000
+  output:
+    trading_allowance_deduction: 500
+    miscellaneous_income_trading_allowance_deduction: 0
+    taxable_self_employment_income: 1_000
+    taxable_miscellaneous_income: 2_000
+    miscellaneous_income_before_trading_allowance: 2_000
+    uses_trading_allowance: true
+
+- name: The Budget increase gives miscellaneous income the part of 3000 trade receipts leave
+  period: 2027
+  input:
+    age: 40
+    self_employment_gross_receipts: 2_000
+    self_employment_income: 1_500
+    miscellaneous_income: 2_000
+    income_not_otherwise_charged: 2_000
+  output:
+    trading_allowance_deduction: 1_500
+    miscellaneous_income_trading_allowance_deduction: 1_000
+    taxable_self_employment_income: 0
+    taxable_miscellaneous_income: 1_000
+    miscellaneous_income_before_trading_allowance: 2_000
+    uses_trading_allowance: true

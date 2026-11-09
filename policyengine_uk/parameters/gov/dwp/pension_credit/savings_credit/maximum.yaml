@@ -1,0 +1,18 @@
+description: Maximum weekly Savings Credit, used to derive projected income thresholds and higher pension-age Housing Benefit allowances.
+SINGLE:
+  values:
+    2026-04-01: 17.96
+COUPLE:
+  values:
+    2026-04-01: 20.10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Pension Credit Savings Credit maximum
+  uprating: gov.benefit_uprating_cpi
+  propagate_metadata_to_children: true
+  reference:
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk), Pension Credit
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027#pension-credit
+    - title: Statutory Review of State Pension and Benefit Rates 2026/27, HCWS1101 (Savings Credit maximum increases by September CPI)
+      href: https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101

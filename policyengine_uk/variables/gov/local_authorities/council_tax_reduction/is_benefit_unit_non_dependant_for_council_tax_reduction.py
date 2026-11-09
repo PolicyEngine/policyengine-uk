@@ -16,7 +16,10 @@ class is_benefit_unit_non_dependant_for_council_tax_reduction(Variable):
         "is_benefit_unit_non_dependant_for_legacy_benefits. Where a household "
         "head who is not the benefit unit's claimant or partner applies alone "
         "(council_tax_reduction_head_applies_alone), the benefit unit's "
-        "claimant and partner are the head's non-dependants. This person's own "
+        "claimant and partner are the head's non-dependants. A member who pays "
+        "the household head as a boarder or lodger (pays_rent_to_householder) "
+        "is liable for their own occupation, so is not one (SI 2012/2885 reg "
+        "9(2)(e)). This person's own "
         "benefit awards are not modelled, so the exemptions for a "
         "non-dependant on an income-related benefit or on Universal Credit "
         "with no earned income never apply to them."
@@ -39,4 +42,7 @@ class is_benefit_unit_non_dependant_for_council_tax_reduction(Variable):
         child_or_young_person = person(
             "is_child_or_qualifying_young_person_for_child_benefit", period
         )
-        return ~applicant_or_partner & ~child_or_young_person
+        # Reg 9(2)(e) and its equivalents: a person liable to pay the applicant
+        # on a commercial basis for their occupation is not a non-dependant.
+        pays_householder = person("pays_rent_to_householder", period)
+        return ~applicant_or_partner & ~child_or_young_person & ~pays_householder
