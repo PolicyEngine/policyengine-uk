@@ -85,6 +85,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/15",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20",
         "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21",
@@ -162,13 +165,17 @@ class council_tax_reduction_applicable_income(Variable):
             # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
             # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
             # excepts it), so scottish_carer_supplement is not listed.
-            # Whether CTR counts CSP before or after the CSP Regs reg 16(2)
-            # overlapping-benefit reduction is unsettled: SSI 2012/319 reg
-            # 27(3) grosses up deductions other than the reg 27(5)
-            # adjustments, which do not list reg 16(2), while SSI 2021/249 reg
-            # 57(1)(b) counts the amount the applicant is entitled to. Until
-            # that is decided, the amount before the reduction is counted, as
-            # it was before the reduction was modelled.
+            # Scottish working-age claims follow the devolved route, which
+            # counts CSP after the CSP Regs (SSI 2023/302) reg 16(2)
+            # overlapping-benefit reduction
+            # (council_tax_reduction_working_age_unearned_income). For the
+            # pension-age scheme the question stays open: SSI 2012/319 reg
+            # 27(3) counts a benefit before any deduction other than the reg
+            # 27(5) adjustments, and reg 27(5) doesn't list reg 16(2), while
+            # the Pension Credit and pension-age Housing Benefit regulations
+            # do (SI 2002/1792 reg 15(4)(g); SI 2006/214 reg 29(4)(g)). Until
+            # a ruling settles it, this formula counts the amount before the
+            # reduction, as it did before the model applied the reduction.
             "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
