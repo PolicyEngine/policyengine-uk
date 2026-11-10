@@ -12,9 +12,6 @@ YEAR = 2025
 # Synthetic totals make the existing allocation rules independently checkable:
 # corporate incidence is £150 times shareholding; consumer revenue is £7,000.
 REFORM = {
-    "household.wealth.national_balance_sheet.household.financial_net_worth": {
-        YEAR: 1_000_000,
-    },
     "gov.hmrc.business_rates.statistics.revenue.ENGLAND": {YEAR: 100},
     "gov.hmrc.business_rates.statistics.revenue.ENGLAND_CENTRAL_LIST": {YEAR: 0},
     "gov.hmrc.business_rates.statistics.revenue.SCOTLAND": {YEAR: 0},
@@ -90,20 +87,21 @@ def incidence_simulation(weights, wealth, consumption, *, dataset=True):
 
 
 @pytest.mark.parametrize(
-    "variable, expected",
+    "variable",
     [
-        ("shareholding", [0.01, 0]),
-        ("consumption_shareholding", [0, 0]),
-        # The fallback allocates £7,000 over existing aggregate consumption £846bn.
-        ("consumer_incident_tax_revenue_change", [21 / 846_000, 0]),
-        ("corporate_tax_incidence", [1.5, 0]),
-        ("household_tax", [1.5 + 21 / 846_000, 0]),
+        "shareholding",
+        "consumption_shareholding",
+        "consumer_incident_tax_revenue_change",
+        "corporate_tax_incidence",
+        "household_tax",
     ],
 )
-def test_zero_weight_holder_uses_existing_fallback(variable, expected):
+def test_zero_weighted_total_gives_no_share(variable):
+    # The only holder of either key has no weight, so the weighted totals are
+    # zero and nobody takes a share (policyengine-uk#2896).
     sim = incidence_simulation([0, 1], [10_000, 0], [3_000, 0])
 
-    assert sim.calculate(variable, YEAR) == pytest.approx(expected)
+    assert sim.calculate(variable, YEAR) == pytest.approx([0, 0])
 
 
 @pytest.mark.parametrize(
@@ -139,15 +137,16 @@ def test_zero_values_keep_zero_fallback(variable):
 
 
 @pytest.mark.parametrize(
-    "variable, expected",
+    "variable",
     [
-        ("shareholding", [0.01, 0.03]),
-        ("consumption_shareholding", [0, 0]),
-        ("consumer_incident_tax_revenue_change", [21 / 846_000, 7 / 846_000]),
-        ("corporate_tax_incidence", [1.5, 4.5]),
+        "shareholding",
+        "consumption_shareholding",
+        "consumer_incident_tax_revenue_change",
+        "corporate_tax_incidence",
     ],
 )
-def test_situation_keeps_no_dataset_fallback(variable, expected):
+def test_situation_takes_no_share(variable):
+    # A situation has no population to take a share of (policyengine-uk#2896).
     sim = incidence_simulation([2, 1], [10_000, 30_000], [3_000, 1_000], dataset=False)
 
-    assert sim.calculate(variable, YEAR) == pytest.approx(expected)
+    assert sim.calculate(variable, YEAR) == pytest.approx([0, 0])

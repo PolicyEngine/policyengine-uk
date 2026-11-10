@@ -488,7 +488,7 @@
 "policyengine_uk/tests/test_lha_freeze.py::test_great_britain_lha_reforms_leave_northern_ireland_rates_unchanged" = 26
 "policyengine_uk/tests/test_bonus_sacrifice_properties.py::test_bonus_sacrifice_scores_like_salary_sacrifice[split-2028]" = 26
 "policyengine_uk/tests/test_legacy_carer_premium_properties.py::test_scottish_caring_hours_follow_carer_support_payment" = 26
-"policyengine_uk/tests/test_weighted_incidence.py::test_zero_weight_holder_uses_existing_fallback[shareholding-expected0]" = 26
+"policyengine_uk/tests/test_weighted_incidence.py::test_zero_weighted_total_gives_no_share[shareholding]" = 26
 "policyengine_uk/tests/test_dated_reform_routes.py::test_a_dict_reform_reaches_the_uc_rebalancing_inputs" = 26
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_claimant_and_partner_awards_passport_housing_benefit_income" = 25
 "policyengine_uk/tests/test_dataframe_dataset.py::test_spending_on_a_small_frame_goes_to_the_deciles_it_holds[nhs]" = 25
