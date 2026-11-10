@@ -1,0 +1,13 @@
+description: Scotland Council Tax Reduction makes no deduction for a non-dependant entitled to Universal Credit calculated on the basis that they have no earned income, from the year this applies (SSI 2012/319 reg. 48(8)(c), SSI 2012/303 reg. 67(8)(c) and SSI 2021/249 reg. 90(8)(c)).
+values:
+  2013-04-01: false
+  2016-04-01: true
+metadata:
+  label: Scotland CTR exempts non-dependants on Universal Credit without earned income
+  unit: bool
+  period: year
+  reference:
+    - title: SSI 2012/319 reg. 48(8)(c) and SSI 2012/303 reg. 67(8)(c), inserted from 1 April 2016 by SSI 2016/81
+      href: https://www.legislation.gov.uk/ssi/2016/81/made
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 90(8)(c)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/90

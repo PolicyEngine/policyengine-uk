@@ -42,7 +42,7 @@ PATH = (
 def test_all_historical_scale_cells(year, thresholds, amounts):
     # SI 2015/457 art 18(3); SI 2016/242 reg 5; SI 2017/260 art 22(4);
     # SI 2018/281 arts 1(2)(h), 23(3) and 24(3).
-    # Test the parameter itself, not the separate #2007 eligibility/banding fix.
+    # Test the parameter itself, not eligibility or banding.
     scale = load_parameter_file(str(PATH), "hb_non_dep_scale")(f"{year}-04-30")
     assert scale.thresholds == thresholds
     assert scale.amounts == amounts

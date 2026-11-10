@@ -7,9 +7,10 @@ family paid Housing Benefit alongside Universal Credit (for specified or
 temporary accommodation) is therefore capped only through Universal Credit,
 on its other welfare benefits.
 
-The model's Housing Benefit eligibility rules out a family that claims
-Universal Credit (housing_benefit_eligible), so both awards are supplied here
-as inputs (universal_credit_pre_benefit_cap, housing_benefit_pre_benefit_cap).
+The model pays both awards to a family in specified or temporary accommodation
+(housing_benefit_eligible, uc_housing_costs_element). This file supplies both
+awards as inputs (universal_credit_pre_benefit_cap,
+housing_benefit_pre_benefit_cap) so that it can draw any pair of amounts.
 
 Invariants, for every family:
 

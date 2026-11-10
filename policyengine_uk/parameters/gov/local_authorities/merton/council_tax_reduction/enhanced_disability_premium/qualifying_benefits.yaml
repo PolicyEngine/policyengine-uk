@@ -5,17 +5,48 @@ description: >
   applicant's family, towards the enhanced disability premium in its
   working-age Council Tax Support scheme. It omits armed forces independence
   payment, and counts each award only for a person under the qualifying age
-  for State Pension Credit. The council's scheme rules for 2023-24, 2025-26 and
-  2026-27 set this list, and the model applies it from 2023-24
-  (qualifying_benefits_in_effect). The council's website offers its 2023 rules
-  as its 2024-25 scheme, and the 2023 and 2025 rules set the same list, so the
-  model keeps it in 2024-25. The model reads the list as at 30 April of each
-  year.
+  for State Pension Credit. The council sets this list in its scheme rules for
+  2013-14, 2014-15, 2015-16, 2020-21, 2021-22, 2022-23, 2023-24, 2025-26 and
+  2026-27, and links its 2023 rules as its 2024-25 scheme. In its Cabinet and
+  Council reports for 2017/18 to 2020/21 the council says it continued the
+  same scheme through 2019/20, so the model also applies the list from
+  2016-17 to 2019-20, for which it cites no scheme text. The model reads the
+  list as at 30 April of each year.
 metadata:
   label: Merton Council Tax Support enhanced disability premium qualifying benefits
   period: year
   unit: list
   reference:
+    - title: Council Tax Reduction Scheme L B Merton April 2013 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20150530202253id_/http://www.merton.gov.uk/council_tax_reduction_scheme_l_b_merton_april_2013_with_uprated_amounts_final_310113-2.pdf
+    - title: Council Tax Reduction Scheme L B Merton April 2014 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20150530203929id_/http://www.merton.gov.uk/council_tax_reduction_scheme_l_b_merton_april_2014_with_uprated_amounts_final_280114.pdf
+    - title: Council Tax Reduction Scheme L B Merton April 2015 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20150530203354id_/http://www.merton.gov.uk/council_tax_reduction_scheme_l_b_merton_april_2015_with_uprated_amounts_final_280115.pdf
+    - title: Cabinet report on the Council Tax Support Scheme 2017/18 (archived copy; the Council continued the same scheme)
+      href: https://web.archive.org/web/20240912160841id_/https://democracy.merton.gov.uk/documents/s15005/Council%20Tax%20Support%20Scheme.pdf
+    - title: Cabinet report on the Council Tax Support Scheme 2018/19, 13 November 2017 (archived copy)
+      href: https://web.archive.org/web/20250420052844id_/https://democracy.merton.gov.uk/documents/s20013/Council%20Tax%20Support%20Scheme%20Cabinet%20Report%201819.pdf
+    - title: Council report on the Council Tax Support Scheme 2018/19, 22 November 2017 (archived copy)
+      href: https://web.archive.org/web/20250513135239id_/https://democracy.merton.gov.uk/documents/s20163/Council%20Tax%20Support%20Scheme%20Full%20Council%20Report%201819.pdf
+    - title: Cabinet report on the Council Tax Support Scheme 2019/20 (archived copy)
+      href: https://web.archive.org/web/20220325065644id_/https://democracy.merton.gov.uk/documents/s25279/Council%20Tax%20Support%20Scheme%20and%20Council%20Tax%20Technical%20Reforms%20201920%20full%20Council%20eport.pdf
+    - title: Council report on the Council Tax Support Scheme 2019/20, 21 November 2018 (archived copy)
+      href: https://web.archive.org/web/20200919054918id_/https://democracy.merton.gov.uk/documents/s25438/Council%20Tax%20Support%20Scheme%20and%20Council%20Tax%20Technical%20Reforms%20201920%20full%20Council%20report%202.pdf
+    - title: Cabinet report on the Council Tax Support Scheme 2020/21, 11 November 2019 (archived copy)
+      href: https://web.archive.org/web/20220208235004id_/https://democracy.merton.gov.uk/documents/s30060/Council%20Tax%20Support%20Scheme%20202021.pdf
+    - title: Council report on the Council Tax Support Scheme 2020/21, 5 February 2020 (archived copy)
+      href: https://web.archive.org/web/20200928082644id_/https://democracy.merton.gov.uk/documents/s30950/Council%20Tax%20Support%20Sceme%20202021.pdf
+    - title: Council Tax Reduction Scheme L B Merton 2020-21 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20230207113512id_/https://www.merton.gov.uk/system/files?file=council20tax20reduction20scheme20l20b20merton20final20formatting20numbers202020-21.pdf
+    - title: Council Tax Reduction Scheme L B Merton 2021-22 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20240911170941id_/https://www.merton.gov.uk/system/files?file=council20tax20reduction20scheme20l20b20merton202021-2220final.pdf
+    - title: Council Tax Reduction Scheme L B Merton 2022-2023 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20230129084916id_/https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202022-2023.pdf
+    - title: Council Tax Reduction Scheme L B Merton 2022-2023 final (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20260117195021id_/https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202022-2023%20final.pdf
+    - title: Council Tax Reduction Scheme L B Merton 2023-24 (archived copy), Sch. 3 para. 12(1)(b), (c)
+      href: https://web.archive.org/web/20240718130610id_/https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202023-24.pdf
     - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2023, Sch. 3 para. 12(1)(b), (c)
       href: https://www.merton.gov.uk/system/files/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202023-24_0.pdf
     - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2025, Sch. 3 para. 12(1)(b), (c)
@@ -23,6 +54,6 @@ metadata:
     - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2026, Sch. 3 para. 12(1)(b), (c)
       href: https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf
 values:
-  2023-04-01:
+  2013-04-01:
     - has_highest_dla_sc_award
     - pip_dl

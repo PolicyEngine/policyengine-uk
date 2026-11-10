@@ -737,12 +737,13 @@
   # The rent no longer counts, but the property counts as capital at 90% of
   # its value (WSI 2013/3029 Sch 6 para 28(a)): 9,000. Sch 6 para 33 treats it
   # as a weekly income of 1 for each 250, or part of 250, over 6,000: 12 a
-  # week, 624 a year. Earnings 9,000 are below the personal allowance and the
-  # NI threshold, but they leave 3,570 of the allowance for the rent of
-  # 5,200, which bears (5,200 - 3,570) x 20% = 326. Without the earnings the
-  # rent bears no tax, so the 326 is deducted. Income 9,000 - 326 + 624 =
-  # 9,298. With the applicable amount supplied as 6,000, CTR = 1,500 - 20% x
-  # (9,298 - 6,000) = 840.40.
+  # week, 624 a year. The devolved working-age route assesses the claim. It
+  # deducts only the tax on the pay (Sch 6 para 15(3)(a)), taking earnings
+  # as the lowest slice of income, so the 9,000 of pay bears none; the 326
+  # the shared formula would deduct falls on the rent. Earnings 9,000 less
+  # the £5 single disregard (260) + 624 = 9,364. With the working-age
+  # applicable amount supplied as 6,000, CTR = 1,500 - 20% x (9,364 - 6,000)
+  # = 827.20.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -756,7 +757,7 @@
         members: [person]
         claims_all_entitled_benefits: true
         would_claim_uc: false
-        council_tax_reduction_applicable_amount: 6_000
+        council_tax_reduction_working_age_applicable_amount: 6_000
     households:
       household:
         members: [person]
@@ -767,20 +768,24 @@
         council_tax: 1_500
         other_residential_property_value: 10_000
   output:
+    council_tax_reduction_devolved_working_age: true
     council_tax_reduction_assessable_capital: 9_000
     council_tax_reduction_tariff_income: 624
     legacy_means_test_deducted_income_tax: 326
-    council_tax_reduction_applicable_income: 9_298
-    council_tax_reduction: 840.40
+    council_tax_reduction_working_age_earned_income: 9_000
+    council_tax_reduction_working_age_applicable_income: 9_364
+    council_tax_reduction: 827.20
 
 - name: Scottish working-age assumed yield on a let property below the capital limit
   # SSI 2021/249 reg 70(1)(a) values the property less 10%: 9,000. Reg
   # 63(1)(b): a weekly income of 1 for each 250 over 6,000 and 1 for any part
   # of 250: 12 a week, 624 a year; reg 63(3) treats the actual rent as
-  # capital. The earnings leave 3,570 of the personal allowance for the rent
-  # of 5,200, which bears (5,200 - 3,570) x 19% (the Scottish starter rate) =
-  # 309.70, all caused by the earnings and deducted. Income 9,000 - 309.70 +
-  # 624 = 9,314.30. CTR = 1,500 - 20% x (9,314.30 - 6,000) = 837.14.
+  # capital. The devolved working-age route assesses the claim. It deducts
+  # only the tax deducted from the pay (reg 50(3)(a)), taking earnings as the
+  # lowest slice of income, so the 9,000 of pay bears none; the 309.70 the
+  # shared formula would deduct falls on the rent. Earnings 9,000 less the £5
+  # single disregard (260) + 624 = 9,364. With the working-age applicable
+  # amount supplied as 6,000, CTR = 1,500 - 20% x (9,364 - 6,000) = 827.20.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -794,7 +799,7 @@
         members: [person]
         claims_all_entitled_benefits: true
         would_claim_uc: false
-        council_tax_reduction_applicable_amount: 6_000
+        council_tax_reduction_working_age_applicable_amount: 6_000
     households:
       household:
         members: [person]
@@ -805,11 +810,13 @@
         council_tax: 1_500
         other_residential_property_value: 10_000
   output:
+    council_tax_reduction_devolved_working_age: true
     council_tax_reduction_assessable_capital: 9_000
     council_tax_reduction_tariff_income: 624
     legacy_means_test_deducted_income_tax: 309.70
-    council_tax_reduction_applicable_income: 9_314.30
-    council_tax_reduction: 837.14
+    council_tax_reduction_working_age_earned_income: 9_000
+    council_tax_reduction_working_age_applicable_income: 9_364
+    council_tax_reduction: 827.20
 
 - name: An English pensioner's let property valued less sale expenses stays within the limit
   # A 17,000 property is valued at 15,300 (SI 2012/2885 Sch 1 para 32(a)), so
@@ -2087,7 +2094,7 @@
   # (Sch 1 para 37): £1 a week for each £500, or part, over £10,000:
   # 4,000 / 500 = 8; 8 x 52 = 416. Tax on her pension: (13,000 - 12,570)
   # x 20% = 86. Income 13,000 - 86 + 416 = 13,330. CTR 2,000 - 20% x
-  # (13,330 - 13,312) = 1,996.40.
+  # (13,330 - 13,312) = 1,996.40 before the non-dependant deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -2124,7 +2131,16 @@
     council_tax_reduction_tariff_income: [416]
     council_tax_reduction_applicable_income: [13_330]
     council_tax_reduction_applicable_amount: [13_312]
-    council_tax_reduction: 1_996.40
+    # The council counts the couple as the head's non-dependants: they
+    # normally live with her (SI 2012/2885 reg 9(1)) and don't belong to her
+    # family (reg 9(2)(a)). The model exempts the member to whom DWP pays the
+    # Pension Credit (is_on_pension_credit) and not the other, so the council
+    # deducts England's lowest pensioner amount, 5.20 x 52 = 270.40, for the
+    # couple, neither of whom works.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [270.40]
+    # 1,996.40 - 270.40 = 1,726.
+    council_tax_reduction: 1_726
 
 - name: A household head applying alone keeps her tariff income when the couple she lives with gets savings credit only
   # As the guarantee credit case, but the couple are 80 and 78 and the elder
@@ -2133,7 +2149,7 @@
   # keeps her tariff income. The head, aged 90, reached State Pension age
   # before 1 April 2021, so her allowance is 256 x 52 = 13,312. Tariff
   # 8 x 52 = 416; tax (13,000 - 12,570) x 20% = 86; income 13,000 - 86 + 416
-  # = 13,330. CTR 2,000 - 20% x (13,330 - 13,312) = 1,996.40.
+  # = 13,330. CTR 2,000 - 20% x (13,330 - 13,312) = 1,996.40 before the non-dependant deduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -2172,4 +2188,13 @@
     council_tax_reduction_tariff_income: [416]
     council_tax_reduction_applicable_income: [13_330]
     council_tax_reduction_applicable_amount: [13_312]
-    council_tax_reduction: 1_996.40
+    # The council counts the couple as the head's non-dependants: they
+    # normally live with her (SI 2012/2885 reg 9(1)) and don't belong to her
+    # family (reg 9(2)(a)). The model exempts the member to whom DWP pays the
+    # Pension Credit (is_on_pension_credit) and not the other, so the council
+    # deducts England's lowest pensioner amount, 5.20 x 52 = 270.40, for the
+    # couple, neither of whom works.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [270.40]
+    # 1,996.40 - 270.40 = 1,726.
+    council_tax_reduction: 1_726

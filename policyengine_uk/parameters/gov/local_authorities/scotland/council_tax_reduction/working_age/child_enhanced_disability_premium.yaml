@@ -1,0 +1,79 @@
+description: Weekly enhanced disability premium for each child or young person in a working-age applicant's
+  family who gets the highest rate of the care component of disability living allowance or the enhanced
+  daily living component of personal independence payment, under the Scottish council tax reduction scheme.
+values:
+  2013-04-01:
+    value: 23.45
+    reference:
+    - title: SSI 2013/48 reg 14(f)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+  2014-04-01:
+    value: 24.08
+    reference:
+    - title: SSI 2014/35 reg 4(d)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+  2015-04-01:
+    value: 24.43
+    reference:
+    - title: SSI 2015/46 reg 9(c)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+  2017-04-01:
+    value: 24.78
+    reference:
+    - title: SSI 2017/41 reg 10(a)(vii)
+      href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+  2018-04-01:
+    value: 25.48
+    reference:
+    - title: SSI 2018/69 reg 9(a)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+  2019-04-01:
+    value: 26.04
+    reference:
+    - title: SSI 2019/29 reg 5(a)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+  2020-04-01:
+    value: 26.6
+    reference:
+    - title: SSI 2020/25 reg 8(c)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+  2021-04-01:
+    value: 26.67
+    reference:
+    - title: SSI 2021/51 reg 7(c)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+  2022-04-01:
+    value: 27.44
+    reference:
+    - title: SSI 2022/52 reg 25(c)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+  2023-04-01:
+    value: 30.17
+    reference:
+    - title: SSI 2023/38 reg 20(i)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+  2024-04-01:
+    value: 32.2
+    reference:
+    - title: SSI 2024/35 reg 17(i)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+  2025-04-01:
+    value: 32.75
+    reference:
+    - title: SSI 2025/24 reg 16(i)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+  2026-04-01:
+    value: 33.99
+    reference:
+    - title: SSI 2026/56 reg 14(i)(v)(aa)
+      href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+metadata:
+  label: Scotland working-age CTR child enhanced disability premium
+  unit: currency-GBP
+  period: week
+  reference:
+  - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 3(b), 4(b) and 17
+    href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+  - title: The Council Tax Reduction (Scotland) Amendment Regulations 2026 reg. 14(i)(v)
+    href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+  uprating: gov.benefit_uprating_cpi
