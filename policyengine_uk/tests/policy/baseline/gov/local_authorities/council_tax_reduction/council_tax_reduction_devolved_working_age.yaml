@@ -525,6 +525,43 @@
     council_tax_reduction_working_age_applicable_income: 17_827
     simulated_council_tax_reduction_benunit: 397.80
 
+- name: Wales, a Step 6 reduction larger than the tax on earnings comes off the tax on the pension
+  # Taxable income 13,000 + 3,000 - 12,570 = 3,430, so the tax before Step 6 is
+  # 686, and the lowest slice, the earnings, bears 430 x 20% = 86 of it. The
+  # partner's 1,260 of Marriage Allowance takes 252 off at Step 6, earnings
+  # first, so the tax on earnings is nil and the pension bears the other 434.
+  # Income: 13,000 - 34.40 Class 1 - 520 + 3,000 - 434 = 15,011.60; applicable
+  # amount 159.85 x 52 = 8,312.20; award 1,800 - 0.2 x 6,699.40 = 460.12.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 13_000
+        private_pension_income: 3_000
+        weekly_hours: 20
+        council_tax_benefit_reported: 100
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [earner, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [earner, partner]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    marriage_allowance: [1_260, 0]
+    uc_income_tax_on_earnings: [0, 0]
+    council_tax_reduction_working_age_unearned_income_tax: 434
+    council_tax_reduction_working_age_applicable_income: 15_011.60
+    simulated_council_tax_reduction_benunit: 460.12
+
 - name: Wales, the £17.10 needs the disabled member of a couple to be the one in work
   # Sch 8 para 18(2)(b)(v): the disabled claimant does not work, so only the
   # £20 disability disregard applies (para 4), 1,040 a year.

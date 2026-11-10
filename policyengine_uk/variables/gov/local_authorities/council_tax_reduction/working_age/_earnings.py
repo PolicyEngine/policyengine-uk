@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
+from policyengine_uk.utils.uc_income_tax import earnings_tax_reductions
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_wales_scheme,
 )
@@ -169,20 +170,23 @@ def working_age_earnings(person, period, parameters):
     return net, net_employed
 
 
-def working_age_unearned_income_tax(person, period):
+def working_age_unearned_income_tax(person, period, parameters):
     """Income tax on the person's counted taxable unearned income.
 
     earned_income_tax is the tax on non-savings income other than property
-    income: earnings, pensions and taxable social security benefits. Less the
-    tax on earnings (uc_income_tax_on_earnings, earnings being the lowest
-    slice), the rest is tax on pensions and benefits, shared pro rata with the
-    taxable ones the schemes do not count (the Scottish Carer Supplement).
-    The tax on miscellaneous income, which the schemes count as unearned
-    income, is added (_pay_and_miscellaneous_tax).
+    income, before the Step 6 tax reductions: earnings, pensions and taxable
+    social security benefits. uc_income_tax_on_earnings (earnings being the
+    lowest slice) bears those reductions first, so the formula takes them off
+    earned_income_tax too. Less the tax on earnings, the rest is tax on
+    pensions and benefits, shared pro rata with the taxable ones the schemes
+    do not count (the Scottish Carer Supplement). The tax on miscellaneous
+    income, which the schemes count as unearned income, is added
+    (_pay_and_miscellaneous_tax).
     """
     other_non_savings_tax = max_(
         0,
         person("earned_income_tax", period)
+        - earnings_tax_reductions(person, period, parameters)
         - person("uc_income_tax_on_earnings", period),
     )
     base = add(

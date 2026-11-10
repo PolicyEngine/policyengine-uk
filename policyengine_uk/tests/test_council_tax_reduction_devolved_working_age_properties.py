@@ -36,6 +36,11 @@ Invariants, for any working-age family in Scotland or Wales:
    disregard: the £17.10 additional disregard needs earnings that cover the
    charges, and from April 2022 only employed earnings qualify, so the
    disregard never changes for a family with no employed earnings.
+7. For a family whose taxed income is pay and a private pension, the tax the
+   route takes on earnings (uc_income_tax_on_earnings) and the tax it takes on
+   counted unearned income (council_tax_reduction_working_age_unearned_income_tax)
+   add to the family's income tax, so a Step 6 tax reduction neither disappears
+   nor counts twice.
 
 Each example puts every family and its variants in one simulation, so the
 formulas also run on arrays with several benefit units and households.
@@ -189,6 +194,54 @@ def test_income_related_esa_passports_to_the_full_liability(units):
     assert flag.all()
     assert np.allclose(deductions, 0)
     assert np.allclose(award, liability, atol=0.01)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(
+            st.sampled_from(REGIONS),
+            st.booleans(),
+            st.integers(0, 60_000),
+            st.integers(0, 40_000),
+        ),
+        min_size=1,
+        max_size=8,
+    )
+)
+def test_tax_on_earnings_and_on_a_pension_add_to_the_income_tax(rows):
+    # Invariant 7. A partner with no income gives a basic-rate earner Marriage
+    # Allowance, a Step 6 tax reduction.
+    units = []
+    for region, couple, pay, pension in rows:
+        people = [
+            {
+                "age": 40,
+                "employment_income": pay,
+                "private_pension_income": pension,
+                "council_tax_benefit_reported": 100,
+            }
+        ]
+        if couple:
+            people.append({"age": 40})
+        units.append(
+            {
+                "region": region,
+                "people": people,
+                "would_claim_uc": False,
+                "rent": 0,
+                "council_tax": 1_800,
+                "savings": 0,
+                "esa_income": 0,
+            }
+        )
+    sim = Simulation(situation=situation(units))
+    income_tax = sim.calculate("income_tax", YEAR, map_to="benunit")
+    on_earnings = sim.calculate("uc_income_tax_on_earnings", YEAR, map_to="benunit")
+    on_unearned = sim.calculate(
+        "council_tax_reduction_working_age_unearned_income_tax", YEAR
+    )
+    np.testing.assert_allclose(on_earnings + on_unearned, income_tax, atol=0.01)
 
 
 def welsh_universal_credit_family(earnings, rent, statutory_maternity_pay=0):

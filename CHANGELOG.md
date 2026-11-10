@@ -1,3 +1,78 @@
+## [2.177.6] - 2026-11-10
+
+### Fixed
+
+- Pay the legacy enhanced disability premium for an award of enhanced PIP daily living or armed forces independence payment as well as the highest DLA care rate, and apply its State Pension Credit age limit. Count an award only where its amount is positive, and count an amount entered without its category when it reaches `52 × (top weekly rate − £1)`. Give four working-age Council Tax Reduction schemes their own lists. Scottish councils count attendance allowance at either rate from April 2023, and the Scottish Ministers removed the age limit from June 2022. Merton and Westminster count either PIP daily living rate and omit armed forces independence payment; Newham counts either PIP daily living rate and armed forces independence payment. In Kingston upon Thames the model keeps reading `is_enhanced_disabled_for_benefits`, with no age limit, until it can apply the council's own list.
+
+
+## [2.177.5] - 2026-11-10
+
+### Fixed
+
+- The model no longer pays income-related ESA to a claimant who has reached pensionable age, or to a couple that would get State Pension Credit without that award, whether the model's formulas, an input or a reform set that Pension Credit, and it pays no Pension Credit to a couple while it pays the couple income-related ESA (Welfare Reform Act 2007 s.1(3)(c) and Sch 1 para 6(1)(c) and (d)).
+
+
+## [2.177.4] - 2026-11-09
+
+### Changed
+
+- Run the tests that need the dataset in their own CI shard, with one worker, so the other seven shards no longer build simulations of the whole dataset.
+- Require policyengine-core 3.34.9 or later. From that release, an input set on a variable that a reform has neutralised has no effect, as core documents, so a reform that restores the variable reads the input supplied before neutralisation.
+
+### Fixed
+
+- The real income variables now price to the year in gov.simulation.price_base_year (2026) instead of the year the simulation runs, and inflation_adjustment_ahc uses one price index on both sides of its ratio.
+
+
+## [2.177.3] - 2026-11-09
+
+### Fixed
+
+- Pay Carer's Allowance and Carer Support Payment, and count a carer for the Universal Credit carer element, on caring hours only where the new input `cares_for_severely_disabled_person` says the person cared for gets a qualifying disability benefit; it defaults to true, so results change only where a calculation sets it false.
+- The student loan repayment formula now charges Plan 5 borrowers nothing before 6 April 2026, as SI 2009/470 reg. 15(2BA) requires.
+
+
+## [2.177.2] - 2026-11-09
+
+### Fixed
+
+- The model now reports Scottish tax bands from 2017-18 using Scottish limits for non-savings, non-dividend income and UK limits for savings and dividends, and tests the Marriage Allowance income conditions directly under ITA 2007 s. 55B(2)(b) and (ba), allowing income at a rate limit and savings at a permitted nil rate. It gives the Marriage Allowance recipient a Step 6 tax reduction of the basic rate, or the Scottish basic rate, on the transferable amount (s. 55B(1) and (3)), in place of a deduction from taxable income. A reduction larger than the tax on earnings now also comes off the tax the Welsh working-age Council Tax Reduction route disregards on pensions and benefits.
+- The aggregate checker reports non-finite baseline values as blocking failures and continues checking readable households.
+- Pay the Scottish Carer Supplement for each award week in which Carer Support Payment is payable, up to 52 a year, counting the weeks from the larger of the payment and the entitlement before the overlapping-benefit reduction, so a carer paid 13 weeks of Carer Support Payment after moving to England gets £152.10 of supplement in 2026-27 rather than £608.40.
+- The model now dates the main residential rates in s. 55(1B) Table A from 4 December 2014, first-time buyers' relief from 22 November 2017, the higher rates for additional dwellings from 1 April 2016 and the 2016 non-residential rates from 17 March 2016. Before 17 March 2016 it computes SDLT on a non-residential purchase as one percentage of the whole price. It computes SDLT on purchases in Wales until 31 March 2018 and Land Transaction Tax from 1 April 2018.
+- Scottish working-age Council Tax Reduction counts Carer Support Payment after the overlapping-benefit reduction, so a carer whose contributory ESA or another overlapping benefit reduces it to nil has none counted.
+
+
+## [2.177.1] - 2026-11-09
+
+### Changed
+
+- Document that state_pension_reported is the weekly State Pension times 52, the weeks the State Pension components read it back at, and test the route from a survey's weekly amount to Income Tax under the Pension Tax Allowance.
+
+### Fixed
+
+- - Model the 25p a week State Pension age addition at 80 (SSCBA 1992 s.79) for basic State Pension recipients, never uprated, and take it out of the reported amount before the flat-rate and additional pension split.
+
+
+## [2.177.0] - 2026-11-09
+
+### Added
+
+- Added property tests for VAT grossing (the routing between the survey coverage and the deprecated combined factor, including the closeness band, and VAT as the statutory liability over the shipped product, times one minus private school fees' share of VAT receipts, on a vector of households), a test that the model grosses 2024 by the same product as later years, and a record of how the coverage of 0.67 performed on the Microcosm UK cuts `6cba5d71` and `a133f37a`, which followed `f9d1922c` (#2633).
+
+### Changed
+
+- Re-derived the survey VAT consumption coverage (`gov.simulation.vat.survey_consumption_coverage`) on the certified Microcosm UK 2024-25 national cut `a6299504` and moved it from 0.67 to 0.69: on that cut, 2024-25 total `vat` comes to £176.06bn at 0.67, 3.0% above OBR receipts of £170.994bn, and £171.02bn at 0.69, 0.02% above. Moved the deprecated combined factor `gov.simulation.microdata_vat_coverage` to the new product, 0.483.
+
+
+## [2.176.3] - 2026-11-09
+
+### Fixed
+
+- `Simulation.subsample()` no longer raises `TypeError` about a missing `dataset` argument: it keeps a weighted sample of households with every supplied weight total unchanged, and replaces the baseline and `dataset` with copies holding the same households. It keeps the stored inputs and model values of neutralised variables for the sampled records.
+- `supplied_input` and `supplied_input_periods` no longer count a value cached over a supplied input as supplied, and read an input stored on disk from disk when a value is cached over it in memory (#2307).
+
+
 ## [2.176.2] - 2026-11-09
 
 ### Fixed

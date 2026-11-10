@@ -6,13 +6,15 @@ class non_savings_income_after_allowances(Variable):
     entity = Person
     label = "Non-savings, non-dividend income for Income Tax after allowances"
     documentation = (
-        "Net income (before the Gift Aid step of adjusted net income, which "
-        "does not reduce the income charged to tax) less savings and dividend "
-        "income and allowances, floored at nil: the income below savings and "
-        "dividends (ITA 2007 s. 16) once the allowances, which go to it first, "
-        "are taken off. "
-        "property_income_tax and taxable_property_income_after_allowances "
-        "both read it."
+        "The model subtracts savings income, dividend income and allowances "
+        "from net income and floors the result at zero, so it sets allowances "
+        "against this income first. Parliament treats savings and dividends "
+        "as the highest part of income, above this income (ITA 2007 s. 16). "
+        "It raises the rate limits by the grossed-up Gift Aid gift "
+        "(s. 414(2)(b)), which does not reduce this taxable income. "
+        "property_income_tax, taxable_property_income_after_allowances, the "
+        "Marriage Allowance rate test and, for Scottish taxpayers, tax_band "
+        "read it."
     )
     definition_period = YEAR
     reference = dict(
