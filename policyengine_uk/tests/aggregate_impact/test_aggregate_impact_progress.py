@@ -361,6 +361,7 @@ def test_workflow_uploads_only_report_and_timing_sidecars():
         "report",
         "measured/*/timing.jsonl",
         "measured/*/infra-profile.json",
+        "measured/*/first-guard-probe/infra-profile.json",
     ]
     measure = next(
         step for step in job["steps"] if step.get("name") == "Measure base, then head"
@@ -1292,3 +1293,90 @@ def test_profile_exports_three_native_hotspot_frames_without_model_imports(
     assert "PRIVATE" not in stream.getvalue()
     assert stream.flushes > 0
     assert tool.blocked_imports == []
+
+
+def test_existing_guard_probe_profiles_are_uploaded_without_private_files(
+    tool, monkeypatch, tmp_path
+):
+    """Select the CLI's real nested output, never neighboring private files."""
+    infra = _infra(tool)
+    expected = {"report/comment.md"}
+    report = tmp_path / "report"
+    report.mkdir()
+    (report / "comment.md").write_text("Public diagnostic status.\n")
+    for label in ("base", "head"):
+        fixture = tmp_path / label
+        fixture.mkdir()
+        run = _cli(tool, monkeypatch, fixture)
+        run.args.label = label
+        run.args.out = str(tmp_path / "measured" / label)
+        run.args.profile_first_guard_probe = True
+        _fake_profiler(infra, monkeypatch)
+        original = tool.measure.counted_once
+
+        def counted(*args, **kwargs):
+            observer = kwargs.pop("probe_profile")
+            observer("start", "first_counted_once_probe", year=args[2])
+            observer("stop", "first_counted_once_probe", year=args[2], completed=True)
+            return original(*args, **kwargs)
+
+        monkeypatch.setattr(tool.measure, "counted_once", counted)
+        assert tool.cli.cmd_measure(run.args) == 0
+        side = Path(run.args.out)
+        nested = side / "first-guard-probe" / "infra-profile.json"
+        record = json.loads(nested.read_text())
+        assert record["schema"] == infra.SCHEMA
+        assert record["window"] == "first_counted_once_probe"
+        assert record["label"] == label and record["completed"] is True
+        expected.add(nested.relative_to(tmp_path).as_posix())
+        expected.add((side / "timing.jsonl").relative_to(tmp_path).as_posix())
+        infra._publish(
+            side,
+            {
+                "schema": infra.SCHEMA,
+                "status": "ok",
+                "label": label,
+                "year": 2025,
+                "completed": True,
+                "window_seconds": 0.0,
+                "functions": [],
+            },
+        )
+        expected.add((side / "infra-profile.json").relative_to(tmp_path).as_posix())
+
+    for relative in (
+        "measured/base/private/households.npz",
+        "measured/head/private/households.npz",
+        "measured/base/private/infra-profile.json",
+        "measured/head/arbitrary/infra-profile.json",
+        "measured/base/first-guard-probe/households.npz",
+        "measured/head/first-guard-probe/rows.json",
+        "measured/head/first-guard-probe/raw.pstats",
+        "measured/head/first-guard-probe/infra-profile.json.bak",
+        "dataset/certified.h5",
+    ):
+        forbidden = tmp_path / relative
+        forbidden.parent.mkdir(parents=True, exist_ok=True)
+        forbidden.write_bytes(b"Excluded public fixture; never survey data.")
+
+    workflow = yaml.safe_load(
+        (
+            TOOL.parents[2] / ".github" / "workflows" / "aggregate-impact.yaml"
+        ).read_text()
+    )
+    upload = next(
+        step
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    selected = set()
+    for pattern in upload["with"]["path"].splitlines():
+        for match in tmp_path.glob(pattern):
+            files = [match] if match.is_file() else match.rglob("*")
+            selected.update(
+                path.relative_to(tmp_path).as_posix()
+                for path in files
+                if path.is_file()
+            )
+    assert selected == expected

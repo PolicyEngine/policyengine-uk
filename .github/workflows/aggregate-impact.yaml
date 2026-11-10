@@ -251,6 +251,7 @@ jobs:
             report
             measured/*/timing.jsonl
             measured/*/infra-profile.json
+            measured/*/first-guard-probe/infra-profile.json
           if-no-files-found: ignore
           retention-days: 30
 

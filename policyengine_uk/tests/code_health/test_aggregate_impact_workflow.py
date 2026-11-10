@@ -65,6 +65,7 @@ ALLOWED_UPLOAD_PATHS = {
     "report",
     "measured/*/timing.jsonl",
     "measured/*/infra-profile.json",
+    "measured/*/first-guard-probe/infra-profile.json",
 }
 
 
