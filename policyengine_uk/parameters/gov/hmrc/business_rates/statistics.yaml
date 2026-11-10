@@ -31,8 +31,8 @@ metadata:
 # "Business rates" line, Northern Ireland with its "Northern Ireland business
 # rates" line (gov.economic_assumptions.yoy_growth.obr.business_rates), which
 # appears to cover the regional rate only (see NORTHERN_IRELAND below). The
-# economic-assumption indices run to 2039, so every series is flat in cash
-# terms from 2039-40.
+# economic-assumption indices end where the growth series end, so every series
+# is flat in cash terms after that year.
 revenue:
   description: Total revenue raised by business rates.
   ENGLAND:

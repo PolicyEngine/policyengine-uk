@@ -120,7 +120,12 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         receiving_income_related_esa = benunit.project(
             couple_esa_award > 0
         ) & is_payee_of_couple_award(
-            person, period, "esa_income_reported", couple=claimant_or_partner
+            person,
+            period,
+            "esa_income_reported",
+            # WRA 2007 s.1(3)(c): not a member who has reached pensionable age.
+            can_claim=~person("is_SP_age", period),
+            couple=claimant_or_partner,
         )
         receiving_esa = (person("esa_contrib", period) > 0) | (
             receiving_income_related_esa
@@ -136,10 +141,11 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         # Benefit before the cap; it is then capped through Universal Credit,
         # which counts its Housing Benefit as nil (UC Regs 2013 reg 80(2A)).
         # A family on Universal Credit alone keeps the exceptions above, so
-        # the two schemes' exceptions can be compared for it. Housing Benefit
-        # eligibility (housing_benefit_eligible) rules out a family that
-        # claims Universal Credit, so this applies only where both awards are
-        # supplied.
+        # the two schemes' exceptions can be compared for it. A family
+        # receives both awards in specified or temporary accommodation, where
+        # Housing Benefit continues beside a Universal Credit claim or opens
+        # on a new claim (housing_benefit_eligible), or where a user supplies
+        # both amounts.
         receiving_universal_credit = (
             benunit("universal_credit_pre_benefit_cap", period) > 0
         ) & (benunit("housing_benefit_pre_benefit_cap", period) > 0)

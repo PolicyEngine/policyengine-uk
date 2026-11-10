@@ -1,0 +1,11 @@
+description: Wales Council Tax Reduction makes no deduction for a non-dependant entitled to Universal Credit calculated on the basis that they have no earned income, from the year this applies (Sch. 1 para. 3(8)(c) and Sch. 6 para. 5(8)(c)).
+values:
+  2013-04-01: false
+  2015-04-01: true
+metadata:
+  label: Wales CTR exempts non-dependants on Universal Credit without earned income
+  unit: bool
+  period: year
+  reference:
+    - title: WSI 2013/3029 Sch. 1 para. 3(8)(c) and Sch. 6 para. 5(8)(c), added for 2015-16 by WSI 2015/44
+      href: https://www.legislation.gov.uk/wsi/2015/44/made

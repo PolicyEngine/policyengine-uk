@@ -11,7 +11,8 @@
 # test_ci_test_shards.py fails if an entry names a test that no longer
 # exists, so a pull request that renames or removes a listed test should
 # rename or delete its line here. Regenerate when a shard drifts well above
-# the others.
+# the others. The last shard runs the tests that need the dataset, so this
+# table leaves them out: regenerate it from the other shards' logs.
 [seconds]
 "policyengine_uk/tests/test_capital_share_components.py::test_capital_matches_the_original_lists" = 1299
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_nics_cap_preserves_aa_inputs_and_charge_with_fixed_ordinary_tax[2029]" = 761
@@ -21,14 +22,10 @@
 "policyengine_uk/tests/test_dated_reform_routes.py::test_routes_agree_on_start_stop_keys" = 392
 "policyengine_uk/tests/test_reform_representations.py::test_parametric_reform_representations_agree" = 368
 "policyengine_uk/tests/test_tax_credits_pension_credit_passport_properties.py::test_results_do_not_depend_on_request_order" = 340
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_accounting_identities_and_closure_hold" = 338
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_household_detail_is_complete" = 338
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_every_tax_component_is_counted_exactly_once" = 333
 "policyengine_uk/tests/test_childcare_entitlement_floor_properties.py::test_more_hours_used_never_lowers_childcare_support" = 330
 "policyengine_uk/tests/test_pension_credit_earnings_disregard_properties.py::test_statute_bounds_differential_and_monotonicity" = 330
 "policyengine_uk/tests/test_tax_credits_pension_credit_passport_properties.py::test_without_awards_pension_credit_alone_decides_the_passport" = 320
 "policyengine_uk/tests/test_brma_region_default.py::test_brma_with_sparse_regions_follows_the_rule_and_keeps_regions" = 302
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_declared_double_counts_are_still_double_counted_by_the_model" = 301
 "policyengine_uk/tests/test_housing_benefit_universal_credit_passport_properties.py::test_universal_credit_limb_dates" = 296
 "policyengine_uk/tests/test_from_reform_modifier.py::test_sequence_modifier_matches_apply_with_repeated_and_reordered_writes[True]" = 288
 "policyengine_uk/tests/test_pension_credit_child_amount_tax_credit_properties.py::test_results_do_not_depend_on_request_order" = 286
@@ -285,7 +282,7 @@
 "policyengine_uk/tests/test_trading_loss_properties.py::test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award[tax_credits-2024]" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_for_young_singles" = 65
 "policyengine_uk/tests/test_carer_overlapping_benefits_properties.py::test_claiming_a_carer_benefit_reduced_to_nil_increases_pension_credit" = 65
-"policyengine_uk/tests/test_property_income_band_base_properties.py::test_more_property_income_never_lowers_savings_or_dividend_tax" = 65
+"policyengine_uk/tests/test_property_income_band_base_properties.py::test_more_property_income_never_lowers_income_tax" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_claimant_or_partner_awards_bounded_by_benefit_unit_awards" = 65
 "policyengine_uk/tests/test_labour_supply_response_baseline.py::test_no_policy_change_gives_no_response" = 65
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_for_working_parents" = 64
@@ -359,8 +356,6 @@
 "policyengine_uk/tests/test_housing_benefit_savings_credit_only_properties.py::test_income_follows_the_route_for_the_award" = 50
 "policyengine_uk/tests/test_housing_benefit_specified_accommodation_disregard_properties.py::test_income_support_disregards_all_earnings" = 49
 "policyengine_uk/tests/test_pension_age_severe_disability_premium_properties.py::test_net_income_does_not_fall_where_guarantee_credit_ends" = 49
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise personal allowance by ~800GBP/year]" = 49
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise basic rate by 1pp]" = 49
 "policyengine_uk/tests/test_scenario_sum_timing.py::test_a_simulation_runs_each_part_once_at_its_own_time" = 48
 "policyengine_uk/tests/test_uc_statutory_pay_properties.py::test_statutory_pay_counts_as_wages_and_earned_income_adds_up" = 48
 "policyengine_uk/tests/test_uc_work_related_groups_properties.py::test_thresholds_follow_the_group_and_expected_hours" = 48
@@ -380,7 +375,6 @@
 "policyengine_uk/tests/test_variable_module_release.py::test_dead_systems_modules_are_released_while_a_test_runs" = 47
 "policyengine_uk/tests/test_housing_benefit_pension_age_cohorts.py::test_council_tax_reduction_splits_only_in_england" = 47
 "policyengine_uk/tests/test_capital_gains_tax_components.py::TestEqualisationReforms::test_main_rate_reform_leaves_the_other_schedules_at_current_law" = 47
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise Class 1 main employee NICs rate to 10%]" = 47
 "policyengine_uk/tests/test_uc_property_capital.py::test_financial_allocation_conserves_pool_with_reports_and_complete_overrides" = 46
 "policyengine_uk/tests/test_housing_benefit_specified_accommodation_disregard_properties.py::test_no_earner_has_no_para_18_amount" = 46
 "policyengine_uk/tests/test_housing_benefit_earnings_disregard_properties.py::test_disregard_lowers_applicable_income_by_no_more_than_earnings" = 46
@@ -405,8 +399,6 @@
 "policyengine_uk/tests/test_pension_credit_war_pension_properties.py::test_guarantee_credit_does_not_rise_with_an_afcs_payment" = 44
 "policyengine_uk/tests/test_ni_class_2.py::test_ni_class_2_properties" = 44
 "policyengine_uk/tests/test_statutory_paternity_pay_income_tax_properties.py::test_statutory_paternity_pay_is_treated_as_statutory_sick_pay" = 44
-"policyengine_uk/tests/microsimulation/test_salary_sacrifice_cap_reform.py::test_salary_sacrifice_cap_revenue_impact" = 44
-"policyengine_uk/tests/microsimulation/test_state_pension_reform.py::test_relative_state_pension_reform_affects_budget" = 44
 "policyengine_uk/tests/test_uc_childcare_work_condition_properties.py::test_condition_matches_the_regulation_32_reference" = 43
 "policyengine_uk/tests/test_housing_benefit_specified_accommodation_disregard_properties.py::test_bounds" = 43
 "policyengine_uk/tests/test_housing_benefit_universal_credit_passport_properties.py::test_universal_credit_passport_ignores_income_and_capital" = 43
@@ -421,11 +413,8 @@
 "policyengine_uk/tests/test_pension_annual_allowance_properties.py::test_charge_matches_band_by_band_reference" = 43
 "policyengine_uk/tests/test_severe_disability_premium_properties.py::test_premium_matches_independent_oracle_and_range" = 43
 "policyengine_uk/tests/test_uc_company_owner_properties.py::test_property_company_gives_no_earnings" = 43
-"policyengine_uk/tests/test_scenario_baseline_parameters.py::test_before_load_spending_scenario_constructs_on_the_dataset" = 43
 "policyengine_uk/tests/test_uc_disabled_child_addition_properties.py::test_exact_award_categories_and_blindness_select_one_tier" = 42
 "policyengine_uk/tests/test_lha_published_rates.py::test_northern_ireland_maxima_and_minimum_change_only_northern_ireland" = 42
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_head_totals_agree_with_the_model_weighted_sums" = 42
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise higher rate by 1pp]" = 42
 "policyengine_uk/tests/test_salary_sacrifice_ni_only.py::test_explicit_actual_return_matches_actual_pay_and_member_inputs[employee_pension_contributions]" = 42
 "policyengine_uk/tests/test_dataframe_dataset.py::test_an_exported_frame_gives_the_results_of_its_dataset[default export]" = 42
 "policyengine_uk/tests/test_ni_class_4_profits_properties.py::test_losses_carry_forward_over_many_years" = 42
@@ -450,7 +439,7 @@
 "policyengine_uk/tests/test_housing_benefit_guarantee_credit_passport_properties.py::test_receipt_means_a_paid_guarantee_credit_and_passports" = 39
 "policyengine_uk/tests/test_labour_supply_response_baseline.py::test_each_response_is_measured_before_the_other" = 39
 "policyengine_uk/tests/test_pension_annual_allowance_taper.py::test_allowance_bounds_and_statutory_two_gate_reference" = 39
-"policyengine_uk/tests/test_trading_loss_properties.py::test_relief_taxes_like_income_cut_in_section_25_order" = 38
+"policyengine_uk/tests/test_trading_loss_properties.py::test_relief_never_taxes_more_than_income_cut_in_the_old_order" = 38
 "policyengine_uk/tests/test_salary_sacrifice_needs_pay_properties.py::test_ni_excess_never_falls_with_sacrifice_or_pay" = 38
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_trade_losses_do_not_leak_nics_reclassification_into_aa[DC-2030]" = 38
 "policyengine_uk/tests/test_severe_disability_afcs_properties.py::test_severe_disability_matches_the_tax_credit_condition" = 38
@@ -462,12 +451,10 @@
 "policyengine_uk/tests/test_uc_childcare_work_condition_properties.py::test_a_couple_both_in_paid_work_always_meets_the_condition" = 37
 "policyengine_uk/tests/test_state_pension_components.py::test_add_on_follows_september_cpi_and_nothing_else_changes" = 37
 "policyengine_uk/tests/test_property_income_band_base_properties.py::test_non_savings_taxable_income_is_the_rest_after_allowances" = 37
-"policyengine_uk/tests/aggregate_impact/test_aggregate_impact_certified.py::test_spending_never_rises_by_more_than_is_added_except_known_defects" = 37
 "policyengine_uk/tests/test_rent_of_sharers_boarders_and_lodgers_properties.py::test_non_dependants" = 37
 "policyengine_uk/tests/test_statutory_paternity_pay_income_tax_properties.py::test_statutory_paternity_pay_is_taxed_as_wages" = 36
 "policyengine_uk/tests/test_trading_loss_properties.py::test_class_4_profits_net_of_the_loss_balance" = 36
 "policyengine_uk/tests/test_dataframe_dataset.py::test_an_exported_frame_gives_the_results_of_its_dataset[export of every stored value]" = 36
-"policyengine_uk/tests/microsimulation/test_salary_sacrifice_cap_reform.py::test_decile_impact_negative_for_higher_earners" = 36
 "policyengine_uk/tests/test_dated_reform_routes.py::test_a_fresh_process_agrees_with_a_warm_one" = 36
 "policyengine_uk/tests/test_statutory_pension_edges.py::test_trade_losses_do_not_leak_nics_reclassification_into_aa[DB-2030]" = 35
 "policyengine_uk/tests/test_trading_loss_properties.py::test_relief_is_the_loss_within_net_income_and_the_cap" = 35
@@ -484,19 +471,14 @@
 "policyengine_uk/tests/test_council_tax_reduction_child_benefit_properties.py::test_pensioner_ctr_is_invariant_to_actual_child_benefit_claim" = 33
 "policyengine_uk/tests/test_child_benefit_charge_rounding_properties.py::test_simulated_charge_matches_the_statute" = 33
 "policyengine_uk/tests/code_health/test_cached_arrays_not_written_in_place.py::test_branching_runs_with_read_only_cache[labour_supply_responses]" = 33
-"policyengine_uk/tests/microsimulation/test_salary_sacrifice_cap_reform.py::test_income_tax_impact" = 33
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_reported_winter_heating_is_conserved" = 33
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Reduce Universal Credit taper rate to 20%]" = 33
 "policyengine_uk/tests/test_capital_gains_tax_components.py::TestEqualisationReforms::test_setting_every_schedule_taxes_every_gain_alike" = 32
 "policyengine_uk/tests/test_triple_lock_statutory_inputs.py::test_policy_levers_apply_from_the_april_of_the_year_they_name" = 32
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_reported_winter_heating_follows_each_years_country" = 32
 "policyengine_uk/tests/test_uc_health_element_freeze.py::test_lifting_the_freeze_reaches_a_simulated_new_claimant" = 31
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise child benefit by 25GBP/week per additional child]" = 31
 "policyengine_uk/tests/test_state_pension_age.py::test_extracted_household_keeps_its_birthday" = 30
 "policyengine_uk/tests/test_benefit_cap_specified_benefits_properties.py::test_an_element_a_reform_gives_is_decided_by_its_value[uc_carer_element]" = 30
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise VAT standard rate by 2pp]" = 30
 "policyengine_uk/tests/test_benefit_cap_specified_benefits_properties.py::test_an_element_a_reform_gives_is_decided_by_its_value[uc_LCWRA_element]" = 29
-"policyengine_uk/tests/microsimulation/test_reform_impacts.py::test_reform_fiscal_impacts[Raise additional rate by 3pp]" = 28
 "policyengine_uk/tests/test_dated_reform_routes.py::test_a_scenario_keeps_its_modifiers_parameters_and_its_parameter_changes[False]" = 28
 "policyengine_uk/tests/test_targeted_childcare_guarantee_credit_properties.py::test_known_families_detect_the_earlier_routes" = 27
 "policyengine_uk/tests/test_data_built_imputations.py::test_imputations_do_not_depend_on_total_weight" = 27
@@ -521,7 +503,6 @@
 "policyengine_uk/tests/test_from_reform_modifier.py::test_modifier_matches_scenario_apply_on_built_parameters" = 24
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_an_outside_adults_work_keeps_their_non_dependant_deduction" = 24
 "policyengine_uk/tests/test_savings_credit_only_receipt_properties.py::test_stopping_pension_credit_payments_ends_savings_credit_only_receipt" = 24
-"policyengine_uk/tests/microsimulation/test_salary_sacrifice_cap_reform.py::test_ni_increases_with_reform" = 24
 "policyengine_uk/tests/test_dataframe_dataset.py::test_a_reform_on_an_exported_frame_gives_the_results_of_its_dataset" = 24
 "policyengine_uk/tests/test_capital_gains_responses.py::test_realisations_fall_when_rates_rise" = 24
 "policyengine_uk/tests/test_lha_freeze.py::test_great_britain_lha_maxima_and_minimum_leave_northern_ireland_unchanged" = 24
@@ -561,10 +542,8 @@
 "policyengine_uk/tests/test_marginal_rates_hold_behavioural_responses.py::test_marginal_rates_hold_the_labour_supply_response[marginal_tax_rate_on_capital_gains-22000-0-changes0]" = 21
 "policyengine_uk/tests/test_claims_all_entitled_benefits.py::TestPerBenefitUnit::test_reporters_of_any_of_the_seven_are_false" = 21
 "policyengine_uk/tests/test_marginal_rates_hold_behavioural_responses.py::test_marginal_tax_rate_holds_the_capital_gains_response[13000]" = 21
-"policyengine_uk/tests/test_latest_data_smoke.py::test_universal_credit_aggregate_in_range" = 21
 "policyengine_uk/tests/test_capital_gains_response_default.py::test_pay_rise_branches_hold_the_realisation_response" = 21
 "policyengine_uk/tests/code_health/test_cached_arrays_not_written_in_place.py::test_branching_runs_with_read_only_cache[capital_gains_responses]" = 21
-"policyengine_uk/tests/microsimulation/test_state_pension_reform.py::test_basic_state_pension_responds_to_reform" = 21
 "policyengine_uk/tests/test_council_tax_reduction_pensioner_earnings_disregard_properties.py::test_disregard_is_the_statutory_weekly_sum_in_every_year" = 21
 "policyengine_uk/tests/test_marginal_rates_hold_behavioural_responses.py::test_marginal_rates_hold_the_labour_supply_response[marginal_tax_rate_wrt_employer_cost-0-10000-changes2]" = 21
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_reform_sets_reported_benefits[Simulation]" = 21
@@ -579,3 +558,13 @@
 "policyengine_uk/tests/test_disable_simulated_benefits_winter_heating.py::test_a_household_that_moves_is_paid_under_each_years_scheme[LONDON-SCOTLAND]" = 20
 "policyengine_uk/tests/test_capital_gains_responses.py::test_revenue_falls_short_of_the_static_estimate" = 20
 "policyengine_uk/tests/test_capital_gains_response_default.py::test_employer_cost_branches_hold_the_realisation_response" = 20
+# test_person_isa_capital.py (#2729): local timings on 1 November 2026, one
+# test at a time at load 40 to 90, and the threshold and first Pension Credit
+# nodes in one run of the file at load 90 to 165, until CI logs replace them.
+"policyengine_uk/tests/test_person_isa_capital.py::test_balances_alone_and_totals_alone_give_one_unit_the_same_capital" = 221
+"policyengine_uk/tests/test_person_isa_capital.py::test_isas_over_a_total_leave_an_unrelated_adult_exactly_at_a_threshold" = 109
+"policyengine_uk/tests/test_person_isa_capital.py::test_household_only_data_keep_todays_capital" = 73
+"policyengine_uk/tests/test_person_isa_capital.py::test_a_pound_counts_once_in_pension_credit[households0]" = 65
+"policyengine_uk/tests/test_person_isa_capital.py::test_a_pound_counts_once_in_working_age_means_tests" = 60
+"policyengine_uk/tests/test_person_isa_capital.py::test_both_forms_in_one_dataset_add_up_to_the_stored_total" = 38
+"policyengine_uk/tests/test_person_isa_capital.py::test_person_balances_without_household_totals_count_with_their_holders" = 27

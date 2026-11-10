@@ -2,8 +2,9 @@
 9-12; HB Regs 2006 and HB (SPC) Regs 2006 reg 13D and reg 21(3)): the
 bedrooms of benefit-unit members aged 16 or over who are not the claimant or
 partner, the children of other families in the household, foster and
-adoption placements, and the additional bedrooms for foster parents and
-overnight care.
+adoption placements, the additional bedrooms for foster parents and
+overnight care, and the housing cost contributions of in-unit
+non-dependants.
 
 Invariants, for any generated population of households:
 
@@ -25,6 +26,10 @@ Invariants, for any generated population of households:
    - if they join a non-dependant's family, the claim that counts the
      household's non-dependants (uc_non_dependants_counted) gains one
      Universal Credit bedroom unless no one is responsible for them;
+   - if they are an in-unit non-dependant (invariant 6) of a family that
+     makes no Universal Credit claim of its own and does not count the
+     household's non-dependants, the claim that does gains one Universal
+     Credit bedroom, as it bears their contribution (para 9(2)(f));
    - if they join a non-dependant's, boarder's or lodger's family, every
      family liable for the rent gains one Housing Benefit bedroom, even if
      they are placed with that family: reg 21(3) takes out only a child or
@@ -53,11 +58,12 @@ Invariants, for any generated population of households:
    status comes from the test's own predicates on the inputs (UC reg 5
    qualifying young person, the Child Benefit qualifying young person for
    HB reg 19, looked after and under 18 for a foster child), not from the
-   model; which claim counts the non-dependants, and which families are
-   liable for the rent, are read from the model and tested elsewhere.
-   Children's rooms come from a brute-force pairing. The count applies the
-   same legal readings as the model, so it checks the implementation of
-   those readings, not the readings themselves:
+   model; which claim counts the non-dependants, which families make a
+   claim of their own, and which families are liable for the rent, are read
+   from the model and tested elsewhere. Children's rooms come from a
+   brute-force pairing. The count applies the same legal readings as the
+   model, so it checks the implementation of those readings, not the
+   readings themselves:
    - one for the claimant or couple;
    - one for each other member aged 16 or over (UC: except a qualifying
      young person no one is responsible for, a foster child under 18 and a
@@ -65,10 +71,11 @@ Invariants, for any generated population of households:
      placed with the family as a foster child);
    - for the claim counting the non-dependants (UC), one for each person
      aged 16 or over in a non-dependant's family, except one no one is
-     responsible for; for a family liable for the rent (HB), one for the
-     couple or single adult of each non-dependant's, boarder's or lodger's
-     family and one for each other member aged 16 or over, including one
-     placed with that family;
+     responsible for, and one for each in-unit non-dependant of a family
+     that makes no claim of its own; for a family liable for the rent
+     (HB), one for the couple or single adult of each non-dependant's,
+     boarder's or lodger's family and one for each other member aged 16 or
+     over, including one placed with that family;
    - the fewest rooms that hold the counted children under 16 two to a
      room, where only children of the same sex or two children under 10 may
      share, found by brute force. UC counts the family's own children other
@@ -83,12 +90,18 @@ Invariants, for any generated population of households:
      placements.
 6. In-unit non-dependants: every member of a benefit unit aged 16 or over
    who is neither the claimant nor partner nor a Universal Credit
-   qualifying young person nor the household head nor the family's foster
-   child is a non-dependant (para 9(2)) with a bedroom (para 10(1)(c)). So
-   their family has one more Universal Credit bedroom with them than
-   without them, and making them qualifying young persons the renter is
-   responsible for (para 10(1)(b)) leaves every family's Universal Credit
-   bedrooms unchanged.
+   qualifying young person nor the household head (the householder in
+   whose name the accommodation is rented, whom the formula reads as liable
+   for the rent, so that para 9(2)(d) excludes them) nor the family's
+   foster child (para 9(2)(c)) is a non-dependant (para 9(2)) with a
+   bedroom (para 10(1)(c)). So their family has one more Universal Credit
+   bedroom with them than without them, and making them qualifying young
+   persons the renter is responsible for (para 10(1)(b)) leaves every
+   family's Universal Credit bedrooms unchanged, except that the claim
+   counting the household's non-dependants loses the bedroom of one whose
+   own family makes no claim and is not that claim (para 9(2)(g)). The
+   model's is_benefit_unit_non_dependant_for_universal_credit, which the
+   formula reads, marks exactly these members.
 7. Close-relative adopters: marking every child's adopter as a foster
    parent or close relative of the child (UC reg 89(3)(a)) takes away the
    foster parent condition exactly where an adoption placement was the
@@ -97,10 +110,23 @@ Invariants, for any generated population of households:
    Credit responsibility (reg 4A(1)(c)), the Housing Benefit placement test
    (reg 21(3)), the qualifying parent or carer and every family's Housing
    Benefit bedrooms stay the same.
+8. Rooms and contributions: nobody owes a housing cost contribution without
+   being a non-dependant (para 13). Adding an adult aged 16 to 64, not in
+   education, to any family: if they are an in-unit non-dependant, they owe
+   a contribution unless aged under 21 or receiving Attendance Allowance
+   (para 16(2)); the claim that bears it (their own family's if it makes a
+   claim, otherwise the one that counts the household's non-dependants)
+   gains exactly that contribution, unless its renter is exempt (para 15),
+   and one bedroom; no other family's contributions change.
+9. Coding: moving such an adult aged 20 or over, not claiming, between a
+   family and a benefit unit of their own leaves every claiming family's
+   Universal Credit bedrooms, contributions and award unchanged. Someone
+   younger can be a qualifying young person, and their family's Child Benefit
+   and child element then depend on them.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, example, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -294,6 +320,17 @@ def claim_roles(sim):
     return counted.astype(bool), liable
 
 
+def own_claims(sim):
+    """Per benefit unit: whether it makes its own Universal Credit claim as a
+    renter, the test uc_non_dep_deductions applies to an in-unit
+    non-dependant's family."""
+    return (
+        np.asarray(sim.calculate("benunit_is_rent_liable", YEAR))
+        & np.asarray(sim.calculate("is_uc_eligible", YEAR))
+        & np.asarray(sim.calculate("claims_universal_credit", YEAR))
+    )
+
+
 def fewest_rooms_for_children(children):
     """Brute force: the fewest rooms holding the children two to a room,
     where a pair must be of the same sex or both under 10."""
@@ -434,6 +471,10 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     assert np.array_equal(liable, liable_before)
     added = flags(person)
     fam = population[target[0]][target[1]]
+    names = list(after["people"])
+    marked = in_unit_non_dependants(sim)[
+        names.index(f"h{target[0]}_f{target[1]}_added")
+    ]
     # 2. Exact effect.
     expected_uc = np.zeros(len(keys))
     expected_hb = np.zeros(len(keys))
@@ -443,7 +484,13 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     expected_hb[t] += 0 if added["placed"] else 1
     expected_hb[t] += int(added["placed"] and not fosters(fam))
     same_household = np.array([h == target[0] for h, _ in keys])
-    if fam["role"] == "non_dependant" and not added["unclaimed"]:
+    passed_on = (
+        fam["role"] != "non_dependant"
+        and marked
+        and not own_claims(sim)[t]
+        and not counted[t]
+    )
+    if (fam["role"] == "non_dependant" and not added["unclaimed"]) or passed_on:
         expected_uc[same_household & counted] += 1
     if fam["role"] in OCCUPIER_ROLES:
         expected_hb[same_household & liable] += 1
@@ -533,6 +580,9 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
         sim.calculate("housing_benefit_LHA_additional_bedrooms", YEAR)
     )
     added = flags(person)
+    own_claim = own_claims(sim)
+    names = list(situation["people"])
+    marked = in_unit_non_dependants(sim)
     # 5. Reference count.
     for b, (h, f) in enumerate(keys):
         families = population[h]
@@ -567,6 +617,10 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
                     c[3] for c in other["children"] if c[2] != "foster"
                 )
                 uc_overnight |= joins and added["overnight"] and not added["unclaimed"]
+            elif counted[b] and joins and not own_claim[keys.index((h, g))]:
+                # UC: an in-unit non-dependant of a family that makes no
+                # claim of its own counts in this claim (para 9(2)(f)).
+                uc_rooms += int(marked[names.index(f"h{h}_f{g}_added")])
             if liable[b] and other["role"] in OCCUPIER_ROLES:
                 # HB reg 13D(3)(a), (b): the occupier family's couple or
                 # single adult has one bedroom, and the added person one.
@@ -599,7 +653,9 @@ def in_unit_non_dependants(sim):
     Universal Credit qualifying young person, not the household head (UC
     Regs 2013 Sch 4 para 9(2), with (d) for the head, the householder in
     whose name the accommodation is rented) and not the family's foster
-    child (para 9(2)(c))."""
+    child (para 9(2)(c)). Checks that the model's
+    is_benefit_unit_non_dependant_for_universal_credit marks the same
+    people."""
     age = np.asarray(sim.calculate("age", YEAR))
     claimant_or_partner = np.asarray(sim.calculate("is_claimant_or_partner", YEAR))
     qualifying = np.asarray(
@@ -607,13 +663,18 @@ def in_unit_non_dependants(sim):
     )
     household_head = np.asarray(sim.calculate("is_resolved_household_head", YEAR))
     foster_child = np.asarray(sim.calculate("is_lha_foster_child", YEAR))
-    return (
+    marked = (
         (age >= 16)
         & ~claimant_or_partner
         & ~qualifying
         & ~household_head
         & ~foster_child
     )
+    model = np.asarray(
+        sim.calculate("is_benefit_unit_non_dependant_for_universal_credit", YEAR)
+    )
+    assert np.array_equal(marked, model)
+    return marked
 
 
 @PROPERTY_SETTINGS
@@ -627,7 +688,8 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
     names = list(situation["people"])
     # 6. A marked member has a bedroom of their own: without them, their
     # family has one fewer, and so does the claim counting the household's
-    # non-dependants if they are in a non-dependant's family. Only the added
+    # non-dependants if they are in a non-dependant's family, or in a family
+    # that neither makes its own claim nor is that claim. Only the added
     # person can be marked: the generated adults are claimants or partners
     # and the generated children are under 16.
     if marked[names.index(f"h{target[0]}_f{target[1]}_added")]:
@@ -635,13 +697,27 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
         _, uc_without, _ = bedrooms(without)
         expected = np.zeros(len(keys))
         expected[keys.index(target)] = 1
-        if population[target[0]][target[1]]["role"] == "non_dependant":
-            counted, _ = claim_roles(sim)
+        role = population[target[0]][target[1]]["role"]
+        counted, _ = claim_roles(sim)
+        t = keys.index(target)
+        if role == "non_dependant" or not (own_claims(sim)[t] or counted[t]):
             same_household = np.array([h == target[0] for h, _ in keys])
             expected[same_household & counted] += 1
         assert np.array_equal(uc - uc_without, expected)
     # Making every marked member a qualifying young person the renter is
-    # responsible for leaves every family's bedrooms unchanged.
+    # responsible for leaves every family's bedrooms unchanged, except that
+    # the claim counting the household's non-dependants loses the bedroom of
+    # one whose own family makes no claim and is not that claim: another
+    # family's qualifying young person is not that renter's non-dependant
+    # (para 9(2)(g)).
+    expected_change = np.zeros(len(keys))
+    if marked[names.index(f"h{target[0]}_f{target[1]}_added")]:
+        counted, _ = claim_roles(sim)
+        t = keys.index(target)
+        role = population[target[0]][target[1]]["role"]
+        if role != "non_dependant" and not (own_claims(sim)[t] or counted[t]):
+            same_household = np.array([h == target[0] for h, _ in keys])
+            expected_change[same_household & counted] = -1
     as_dependants = {
         **situation,
         "people": {
@@ -659,7 +735,7 @@ def test_every_in_unit_non_dependant_has_a_bedroom(case):
     }
     sim_as_dependants, uc_as_dependants, _ = bedrooms(as_dependants)
     assert not in_unit_non_dependants(sim_as_dependants).any()
-    assert np.array_equal(uc, uc_as_dependants)
+    assert np.array_equal(uc_as_dependants - uc, expected_change)
 
 
 def as_close_relative_adopters(situation):
@@ -718,3 +794,149 @@ def test_a_close_relative_adopter_loses_only_the_foster_room(case):
     for name in before:
         if name not in ("uc", "hb", "foster"):
             assert np.array_equal(before[name], after[name])
+
+
+@st.composite
+def adult_member(draw):
+    """A member aged 16 or over who is not in education, with or without
+    Attendance Allowance (an exemption under UC Regs 2013 Sch 4 para 16(2)).
+    Outside education, UC reg 5(1)(a) makes them a qualifying young person
+    only before the 1 September after their 16th birthday."""
+    return dict(
+        age=draw(st.integers(16, 64)),
+        is_male=draw(st.booleans()),
+        current_education="NOT_IN_EDUCATION",
+        is_looked_after_by_local_authority=False,
+        attendance_allowance=draw(st.sampled_from([0, 5_000])),
+    )
+
+
+@st.composite
+def adult_scenario(draw):
+    population = draw(st.lists(household(), min_size=1, max_size=3))
+    h = draw(st.integers(0, len(population) - 1))
+    f = draw(st.integers(0, len(population[h]) - 1))
+    # Whether each family would claim Universal Credit, so that the claim
+    # bearing a non-dependant is sometimes not their own family's.
+    would_claim = [[draw(st.booleans()) for _ in families] for families in population]
+    return population, (h, f), draw(adult_member()), would_claim
+
+
+def with_claim_flags(situation, would_claim):
+    for name, unit in situation["benunits"].items():
+        if name.startswith("h") and "_f" in name:
+            h, f = name[1:].split("_f")
+            unit["would_claim_uc"] = would_claim[int(h)][int(f)]
+    return situation
+
+
+def in_own_benefit_unit(population, target, person, would_claim):
+    """The population with ``person`` in a benefit unit of their own, in the
+    household of family ``target``, not claiming Universal Credit. Invariant 9
+    covers people aged 20 or over."""
+    assume(person["age"] >= 20)
+    situation, keys = build(population)
+    situation = with_claim_flags(situation, would_claim)
+    h = target[0]
+    situation["people"]["moved"] = {
+        **person,
+        "is_household_head": False,
+        "is_claimant_or_partner": True,
+    }
+    situation["benunits"]["moved"] = {"members": ["moved"], "would_claim_uc": False}
+    situation["households"][f"h{h}"]["members"].append("moved")
+    return situation, keys
+
+
+def claim_and_contributions(situation):
+    sim = Simulation(situation=situation)
+
+    def calc(variable):
+        return np.asarray(sim.calculate(variable, YEAR))
+
+    own_claim = (
+        calc("benunit_is_rent_liable")
+        & calc("is_uc_eligible")
+        & calc("claims_universal_credit")
+    )
+    return sim, calc, own_claim
+
+
+@PROPERTY_SETTINGS
+@given(adult_scenario())
+def test_every_in_unit_non_dependant_with_a_room_owes_a_contribution(case):
+    population, target, person, would_claim = case
+    before, keys = build(population)
+    after, _ = build(population, (target, person))
+    before = with_claim_flags(before, would_claim)
+    after = with_claim_flags(after, would_claim)
+    sim_before, calc_before, own_claim_before = claim_and_contributions(before)
+    sim, calc, own_claim = claim_and_contributions(after)
+    counted = calc("uc_non_dependants_counted")
+    assert np.array_equal(own_claim, own_claim_before)
+    assert np.array_equal(counted, calc_before("uc_non_dependants_counted"))
+    # 8. Nobody owes a contribution without being a non-dependant (Sch 4
+    # para 9(2) and para 13).
+    owes = calc("uc_individual_non_dep_deduction") > 0
+    non_dependant = calc("is_benefit_unit_non_dependant_for_universal_credit") | calc(
+        "is_non_dependant_of_household_head"
+    )
+    assert not np.any(owes & ~non_dependant)
+    names = list(after["people"])
+    i = names.index(f"h{target[0]}_f{target[1]}_added")
+    in_unit = calc("is_benefit_unit_non_dependant_for_universal_credit")[i]
+    head = calc("is_resolved_household_head")[i]
+    # The added member is never a claimant. Outside education, they count as
+    # a qualifying young person only before the 1 September after their 16th
+    # birthday (UC reg 5(1)(a)), which the formula reads.
+    qualifying = calc("is_qualifying_young_person_for_universal_credit")[i]
+    assert in_unit == (person["age"] >= 16 and not head and not qualifying)
+    if not in_unit:
+        return
+    # An in-unit non-dependant owes a contribution unless aged under 21 or
+    # receiving Attendance Allowance (para 16(2)(a), (2)(c)).
+    p = sim.tax_benefit_system.parameters(
+        YEAR
+    ).gov.dwp.universal_credit.elements.housing.non_dep_deduction
+    exempt = person["age"] < p.age_threshold or person["attendance_allowance"] > 0
+    assert owes[i] == (not exempt)
+    # The claim that bears them: their own family's if it makes one,
+    # otherwise the one counting the household's non-dependants.
+    b = keys.index(target)
+    role = population[target[0]][target[1]]["role"]
+    same_household = np.array([h == target[0] for h, _ in keys])
+    if own_claim[b] and role != "non_dependant":
+        bearer = np.arange(len(keys)) == b
+    else:
+        bearer = same_household & counted.astype(bool)
+    renter_exempt = calc("uc_non_dep_deductions_renter_exempt")
+    expected = bearer * (not exempt) * ~renter_exempt * p.amount * 12
+    delta = calc("uc_non_dep_deductions") - calc_before("uc_non_dep_deductions")
+    assert np.allclose(delta, expected)
+    # The claim that bears the contribution also has their bedroom.
+    rooms = calc("LHA_allowed_bedrooms") - calc_before("LHA_allowed_bedrooms")
+    assert np.all(rooms[bearer] == 1)
+
+
+@PROPERTY_SETTINGS
+@given(adult_scenario())
+def test_moving_a_non_claiming_adult_out_of_the_benefit_unit_changes_no_claim(case):
+    population, target, person, would_claim = case
+    inside, keys = build(population, (target, person))
+    inside = with_claim_flags(inside, would_claim)
+    outside, _ = in_own_benefit_unit(population, target, person, would_claim)
+    _, calc_in, own_claim_in = claim_and_contributions(inside)
+    _, calc_out, own_claim_out = claim_and_contributions(outside)
+    n = len(keys)
+    # The household head's family keeps its claim either way.
+    assert np.array_equal(own_claim_in, own_claim_out[:n])
+    # 9. Every family making a claim keeps its bedrooms, contribution and
+    # award whether the adult is coded in a benefit unit or in their own.
+    for variable in (
+        "LHA_allowed_bedrooms",
+        "uc_non_dep_deductions",
+        "universal_credit",
+    ):
+        a = calc_in(variable)[own_claim_in]
+        b = calc_out(variable)[:n][own_claim_in]
+        assert np.allclose(a, b), variable

@@ -10,6 +10,8 @@ of the State Pension triple lock, and that the earnings-path guarantee models
 one reading of the plan announced in September 2026 as a parameter reform.
 """
 
+from decimal import ROUND_HALF_UP, Decimal
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -50,6 +52,12 @@ def earnings_uprating(parameters, year):
     )
 
 
+def nearest_5p(amount):
+    """Nearest multiple of 5p, halves up, as each Order rounds the rates."""
+    pennies = Decimal(repr(float(amount))).quantize(Decimal("0.000001")) * 20
+    return float(pennies.quantize(Decimal(1), ROUND_HALF_UP) / 20)
+
+
 def new_state_pension_weekly(parameters, year):
     return parameters.gov.dwp.state_pension.new_state_pension.amount(f"{year}-06-01")
 
@@ -67,7 +75,8 @@ def test_april_2027_uses_published_may_july_2026_earnings():
     """ONS confirmed May-July 2026 total pay growth at 3.9% on 20 October,
     unchanged from September. April 2027's triple lock is max(3.5% CPI,
     3.9% earnings, 2.5%), so the new State Pension rises from £241.30 to
-    £250.71 (before rounding to 5p)."""
+    £250.7107, £250.70 to the nearest 5p: 52 weeks of it is the £13,036.40
+    of HM Treasury's Pension Tax Allowance explainer."""
     parameters = system.parameters
     inputs = statutory_inputs(parameters)
     assert inputs.cpi_september("2026-09-01") == pytest.approx(0.035)
@@ -76,9 +85,7 @@ def test_april_2027_uses_published_may_july_2026_earnings():
         "2027-04-30"
     ) == pytest.approx(0.025)
     assert uprating(parameters, 2027) == pytest.approx(0.039)
-    assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
-        241.30 * 1.039, abs=0.005
-    )
+    assert new_state_pension_weekly(parameters, 2027) == pytest.approx(250.70, abs=1e-9)
 
 
 def test_pension_credit_uses_the_state_pension_statutory_earnings_input():
@@ -268,14 +275,13 @@ def test_macro_scenario_moves_the_state_pension_in_a_microsimulation():
 
     baseline_pension = float(baseline.calculate("new_state_pension", 2028)[0])
     reformed_pension = float(reformed.calculate("new_state_pension", 2028)[0])
-    full_rate_2027 = 241.30 * 1.039
-    # Uprating indices are stored to 5 decimal places.
-    assert baseline_pension == pytest.approx(
-        full_rate_2027 * 1.034 * WEEKS_IN_YEAR, rel=1e-5
-    )
-    assert reformed_pension == pytest.approx(
-        full_rate_2027 * 1.053 * WEEKS_IN_YEAR, rel=1e-5
-    )
+    # Each April's rate is the year before's, uprated, to the nearest 5p:
+    # £241.30 x 1.039 = £250.7107 gives £250.70 for April 2027, then
+    # £250.70 x 1.034 = £259.2238 gives £259.20 and £250.70 x 1.053 =
+    # £263.9871 gives £264.00 for April 2028. Simulations hold float32, so
+    # compare to half a penny.
+    assert baseline_pension == pytest.approx(259.20 * WEEKS_IN_YEAR, abs=0.005)
+    assert reformed_pension == pytest.approx(264.00 * WEEKS_IN_YEAR, abs=0.005)
 
 
 def test_setting_a_statutory_input_directly_overrides_its_forecast():
@@ -319,6 +325,13 @@ def test_plan_is_a_parameter_reform():
       the triple lock pays 6.0%.
     - April 2033: the path grows 3.0% to 1.1137 and the pension, at
       1.0821, again needs 2.92%, rounded up to 3.0%, as the triple lock pays.
+
+    The guarantee holds for the uprating percentages. Each year's weekly rate
+    is then the year before's raised by that percentage to the nearest 5p, as
+    in any year, so the rate can sit a few pence below the earnings path:
+    s.150A(4) lets the rounding go below the minimum, as in April 2019, when
+    earnings growth of 2.6% took £164.35 to £168.6231 and the Order set
+    £168.60.
     """
     growth = {
         f"{INPUTS}.awe_total_pay_may_july": {
@@ -342,16 +355,18 @@ def test_plan_is_a_parameter_reform():
     for year in range(2027, 2030):
         assert uprating(plan, year) == uprating(triple_lock, year)
 
-    base = new_state_pension_weekly(plan, 2029)
-    assert base == new_state_pension_weekly(triple_lock, 2029)
-    earnings_path = base
+    previous = new_state_pension_weekly(plan, 2029)
+    assert previous == new_state_pension_weekly(triple_lock, 2029)
+    level = earnings_path = 1.0
     for year in range(2030, 2034):
+        rise = uprating(plan, year)
+        level *= 1 + rise
         earnings_path *= 1 + [0.01, 0.01, 0.06, 0.03][year - 2030]
-        # Uprating indices are stored to 5 decimal places.
-        assert new_state_pension_weekly(plan, year) >= earnings_path * (1 - 1e-5)
-        assert new_state_pension_weekly(plan, year) <= new_state_pension_weekly(
-            triple_lock, year
-        )
+        assert level >= earnings_path * (1 - 1e-12)
+        rate = new_state_pension_weekly(plan, year)
+        assert rate == pytest.approx(nearest_5p(previous * (1 + rise)), abs=1e-9)
+        assert rate <= new_state_pension_weekly(triple_lock, year)
+        previous = rate
 
 
 def test_plan_is_off_under_current_law():

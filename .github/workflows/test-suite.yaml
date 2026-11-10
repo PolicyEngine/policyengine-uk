@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over six runners, and Result, which fails unless every listed
+# tests split over eight runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/6" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/8" and "Test / Result";
 # "Test / Result" is the one to require.
 #
 # Runners. These jobs, and the check jobs that pull requests, merge queue
@@ -87,9 +87,11 @@ jobs:
     # was then not enough either: on 29 October jobs were cancelled at it
     # after every test had passed, with the process still alive 11 and 18
     # minutes after pytest's summary (runs 40895005971 and 40917254004).
-    # The runner most likely runs short of memory, because every case's
-    # simulation is kept to the end (#2741). 75 minutes matches the Python
-    # shards, which Result waits for anyway, until the cases are released.
+    # The runner most likely ran short of memory, because every case's
+    # simulation was kept to the end (#2741). 75 minutes was set to match
+    # the Python shards until the cases were released. #2742 released them,
+    # and the job has since taken about 9 minutes (8.7 to 9.3 in six pull
+    # request runs on 1 November).
     timeout-minutes: 75
     steps:
       - name: Checkout repo
@@ -141,7 +143,8 @@ jobs:
           retention-days: 7
 
   Python:
-    # Shard K of N runs the tests whose node id hashes to K (--shard in
+    # The last shard runs the tests that need the dataset. Each other shard K
+    # of N runs the remaining tests whose node id hashes to K (--shard in
     # policyengine_uk/tests/conftest.py), so each test is in exactly one
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
@@ -174,6 +177,24 @@ jobs:
     # 15.5 GB (run 40395541241). With six, the listed slow tests come to
     # about 134 minutes of worker time per shard instead of 161, and each
     # worker runs about a sixth fewer tests.
+    #
+    # Seven, not six, for time. Nine successful test runs started on 31
+    # October (EDT) took 57 to 73 minutes a shard, and the 75-minute limit
+    # cancelled shard 1/6 with its tests at 99% (run 41191216150, first
+    # attempt). With seven, the listed slow tests come to about 115 minutes
+    # of worker time per shard instead of 134.
+    #
+    # Eight, not seven, for memory: the eighth runs the tests that need the
+    # dataset, with one worker, so only one simulation of the dataset runs at
+    # a time, and the other seven run none of them. In merge queue run
+    # 42212587066 the five shards that built the fixture in
+    # test_aggregate_impact_certified.py peaked at 14.2 to 15.3 GiB, and the
+    # two without it at 10.9 and 12.6 GiB. On a merge of 28 pull requests with
+    # those tests on all seven shards, runs 42218280596 and 42218280615 lost
+    # eight of their 14 shard jobs within minutes at 15.1 to 15.4 GiB, and
+    # shard 6/7 of the first lost its runner at 15.2 GiB 51 minutes in, with
+    # test_latest_data_smoke.py running. With the certified tests on one shard
+    # of seven, run 42231098419 lost that shard at 15.2 GiB.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -185,11 +206,17 @@ jobs:
     # 59m32s and the 60-minute limit then cancelled the job during its
     # Codecov upload, which took that pull request out of the queue.
     # 75 minutes leaves room for a slow runner and still stops a hung shard.
-    timeout-minutes: 75
+    # It stopped leaving room on 1 November: #2765's shards took 63 to 75
+    # minutes on runners of varying speed (runs 41303444320, 41313872613 and
+    # 41326415023), and the limit cancelled shards 2/6 and 3/6, then 3/6 at
+    # 99% with no test failing, while the same tests took 19% longer than a
+    # run earlier that day. 90 minutes leaves that room again and still
+    # stops a hung shard.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -216,6 +243,7 @@ jobs:
           POLICYENGINE_UK_REQUIRE_TEST_DATA: ${{ inputs.require-data && '1' || '' }}
           SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
           OUTCOMES: outcomes-${{ matrix.shard }}.jsonl
+          WORKERS: ${{ matrix.shard == strategy.job-total && 1 || 4 }}
           # Measure coverage with sys.monitoring instead of the C trace
           # function: the same lines are reported, at less cost per line.
           COVERAGE_CORE: sysmon
@@ -224,9 +252,10 @@ jobs:
             export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
           fi
           # Log memory each minute, so a runner lost to memory pressure
-          # ("The runner has received a shutdown signal") shows it.
+          # ("The runner has received a shutdown signal") shows it. free -m
+          # counts MiB.
           (while sleep 60; do
-            free -m | awk 'NR == 2 { print "memory: " $3 " MB used, " $7 " MB available" }'
+            free -m | awk 'NR == 2 { print "memory: " $3 " MiB used, " $7 " MiB available" }'
           done) &
           trap 'kill $! 2>/dev/null' EXIT
           coverage=()
@@ -236,14 +265,15 @@ jobs:
           # .github/pytest_outcome_log.py records each test's outcome for
           # Result. xfail_strict makes an xfail marker without strict= fail
           # when its test passes, so a fixed bug cannot hide behind it.
-          # Four pytest-xdist workers, one per core. Their memory grows with
-          # each test they run (#2330): with three shards they peaked at
-          # 15.6 GB of the runner's 16 GB (run 38156967136).
+          # Four pytest-xdist workers, one per core, and one on the last shard.
+          # Their memory grows with each test they run (#2330): with three
+          # shards they peaked at 15.3 GiB of the 15.6 GiB the runner reports
+          # as used and available (run 38156967136).
           PYTHONPATH="$GITHUB_WORKSPACE/.github" pytest "$TESTS" \
             --rootdir "$ROOTDIR" -c pyproject.toml -p no:cacheprovider \
             -p pytest_outcome_log --outcome-log="$OUTCOMES" \
             -o xfail_strict=true --maxfail=0 -v \
-            -n 4 --dist worksteal --shard "$SHARD" "${coverage[@]}"
+            -n "$WORKERS" --dist worksteal --shard "$SHARD" "${coverage[@]}"
       - name: Upload the test outcomes
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

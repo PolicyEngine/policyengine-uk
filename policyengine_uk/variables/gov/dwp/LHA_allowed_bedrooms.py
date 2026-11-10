@@ -60,6 +60,39 @@ def bedrooms_for_children(
     )
 
 
+def other_family_non_dependants(benunit, period):
+    """People outside the family whom the Universal Credit claim that counts
+    the household's non-dependants (uc_non_dependants_counted) treats as its
+    non-dependants, children included.
+
+    They are the Universal Credit non-dependants of other families
+    (is_uc_non_dependant_of_household_head), less any child or qualifying
+    young person no one is responsible for (UC Regs 2013 Sch 4 para 9(2)(g)),
+    and the members whom is_benefit_unit_non_dependant_for_universal_credit
+    marks in a family that neither makes a Universal Credit claim of its own
+    nor counts the household's non-dependants (para 9(2)(f)), as in
+    uc_non_dep_deductions.
+    """
+    person = benunit.members
+    other_family = person("is_uc_non_dependant_of_household_head", period)
+    qualifying = person("is_qualifying_young_person_for_universal_credit", period)
+    responsible = person(
+        "is_child_or_qualifying_young_person_for_universal_credit", period
+    )
+    no_one_responsible = (
+        person("is_child_for_universal_credit", period) | qualifying
+    ) & ~responsible
+    own_claim = (
+        benunit("benunit_is_rent_liable", period)
+        & benunit("is_uc_eligible", period)
+        & benunit("claims_universal_credit", period)
+    )
+    counted = benunit("uc_non_dependants_counted", period)
+    in_unit = person("is_benefit_unit_non_dependant_for_universal_credit", period)
+    passed_on = in_unit & ~other_family & ~benunit.project(own_claim | counted)
+    return (other_family & ~no_one_responsible) | passed_on
+
+
 class LHA_allowed_bedrooms(Variable):
     value_type = float
     entity = BenUnit
@@ -69,25 +102,32 @@ class LHA_allowed_bedrooms(Variable):
         "unit: one bedroom for the renter or couple, one for each qualifying "
         "young person the renter is responsible for, one for each other "
         "member of the benefit unit aged 16 or over who is not the claimant, "
-        "partner, household head or a foster child, one for each "
-        "non-dependant aged 16 or over from another family, the children's "
-        "bedrooms, and the additional bedrooms for overnight care and foster "
-        "parents (see LHA_additional_bedrooms). The formula treats the "
-        "household head as liable for the rent, so a head who does not claim "
-        "is not a non-dependant (para 9(2)(d)); a head who is a qualifying "
-        "young person the renter is responsible for keeps their bedroom. The "
-        "children are the renter's own children and the children of the "
-        "household's non-dependants, such as a grandchild whose parent lives "
-        "with the renter; they share rooms with each other. A child or "
-        "qualifying young person no one is responsible for, such as a foster "
-        "child or another child looked after by a local authority, is not a "
-        "non-dependant and has no bedroom, in this family or another; a "
-        "child placed for adoption is the adopter's responsibility (reg "
-        "4A(1)(c)) and counts. Joint tenants and other sharers of the rent, "
-        "boarders and lodgers are not non-dependants, so neither they nor "
-        "their children add a bedroom to anyone's entitlement; the "
-        "household's non-dependants and their children count in one "
-        "Universal Credit claim only (see uc_non_dependants_counted)."
+        "partner, household head or a foster child (see "
+        "is_benefit_unit_non_dependant_for_universal_credit, whose members "
+        "also bear a housing cost contribution), one for each non-dependant "
+        "aged 16 or over from another family, one for each such member of a "
+        "family that makes no Universal Credit claim of its own (in the claim "
+        "that counts the household's non-dependants, which also bears their "
+        "contribution), the children's bedrooms, and the additional bedrooms "
+        "for overnight care and foster parents (see LHA_additional_bedrooms). "
+        "The formula treats the household head as liable for the rent, so a "
+        "head who does not claim is not a non-dependant (para 9(2)(d)); a "
+        "head who is a qualifying young person the renter is responsible for "
+        "keeps their bedroom. The children are the renter's own children and "
+        "the children of the household's non-dependants, such as a grandchild "
+        "whose parent lives with the renter; they share rooms with each "
+        "other. A child or qualifying young person no one is responsible for, "
+        "such as a foster child or another child looked after by a local "
+        "authority, is not a non-dependant and has no bedroom, in this family "
+        "or another; a child placed for adoption is the adopter's "
+        "responsibility (reg 4A(1)(c)) and counts. Joint tenants and other "
+        "sharers of the rent, boarders and lodgers are not non-dependants, so "
+        "they add no bedroom to anyone's entitlement; the household's "
+        "non-dependants and their children count in one Universal Credit "
+        "claim only (see uc_non_dependants_counted). A boarder's or lodger's "
+        "child or qualifying young person adds none either: no one in the "
+        "renter's extended benefit unit is responsible for them (see "
+        "is_uc_non_dependant_of_household_head)."
     )
     definition_period = YEAR
     reference = (
@@ -122,10 +162,13 @@ class LHA_allowed_bedrooms(Variable):
         # Para 10(1)(b): a qualifying young person for whom the renter is
         # responsible (regs 4 and 5).
         qualifying_young_person = family_member & responsible
-        # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
-        # non-dependant with a bedroom, unless they head the household or are
-        # the renter's foster child (para 9(2)(c), 9(3); see
-        # is_lha_foster_child). The formula reads the household head
+        # Para 10(1)(c) with para 9(2): any other member who is not a child
+        # is a non-dependant with a bedroom, unless they head the household
+        # or are the renter's foster child (para 9(2)(c), 9(3); see
+        # is_lha_foster_child). is_benefit_unit_non_dependant_for_universal_credit
+        # marks the members who are not a child, a qualifying young person or
+        # the household head, and uc_non_dep_deductions charges a housing cost
+        # contribution for them (para 13). It reads the household head
         # (is_resolved_household_head, the householder in whose name the
         # accommodation is rented) as liable to make payments on a commercial
         # basis for their occupation, so para 9(2)(d) stops them being a
@@ -133,22 +176,23 @@ class LHA_allowed_bedrooms(Variable):
         # (paras 1(2) and 9(1)(a)). A head who is a qualifying young person
         # the renter is responsible for keeps the para 10(1)(b) bedroom above
         # (para 9(1)(b)).
-        family_non_dependant = (
-            family_member
-            & ~qualifying
-            & ~person("is_resolved_household_head", period)
-            & ~person("is_lha_foster_child", period)
-        )
+        family_non_dependant = person(
+            "is_benefit_unit_non_dependant_for_universal_credit", period
+        ) & ~person("is_lha_foster_child", period)
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 9(1)(c) and 9(2): people of other families who are
         # non-dependants. A non-dependant's own child is their responsibility
-        # (reg 4(2)) and so a non-dependant too; para 9(2)(g) excludes a
-        # child or qualifying young person no one is responsible for, such as
-        # a non-dependant's foster child.
-        non_dependant = (
-            person("is_non_dependant_of_household_head", period) & ~no_one_responsible
-        )
+        # (reg 4(2)) and so a non-dependant too. The Universal Credit flag
+        # applies para 9(2)(g), so a boarder's or lodger's child or qualifying
+        # young person gets no bedroom, and para 9(2)(f), so an adult whose
+        # own family's claim counts them has their bedroom in that claim. An
+        # in-unit non-dependant whose own family makes no Universal Credit
+        # claim counts in the claim that counts the household's other
+        # non-dependants, as in uc_non_dep_deductions, so that claim has their
+        # bedroom as well as their housing cost contribution. Where that claim
+        # is their own family's, family_rooms already holds the bedroom.
         counted = benunit("uc_non_dependants_counted", period)
+        non_dependant = other_family_non_dependants(benunit, period)
         # Para 10(1)(c): a non-dependant from another family who is not a
         # child.
         non_dependants = counted * benunit.max(

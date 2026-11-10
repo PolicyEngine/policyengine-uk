@@ -4,7 +4,7 @@ Pension Credit income left out Carer's Allowance and Carer Support Payment,
 although the State Pension Credit Regulations 2002 reg 15(1) prescribe "all
 social security benefits" as income except those they list, and neither is
 listed. Pension-age Housing Benefit counted both, and Council Tax Reduction
-counted Carer's Allowance (it does not yet count Carer Support Payment: #1955).
+counted Carer's Allowance (it did not yet count Carer Support Payment, #1955).
 While Guarantee Credit was paid, both were passported to their maximum and hid
 the difference; when Guarantee Credit ended, both were assessed on the
 Carer's Allowance that Pension Credit had ignored, so a pensioner couple whose

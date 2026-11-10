@@ -1,5 +1,6 @@
-description: One-off Cost-of-Living Payment to households on qualifying means-tested benefits. £650 across 2022-23 (Spring £326 + Autumn £324) and £900 across 2023-24 (Spring £301 + Autumn £300 + Spring 2024 £299).
+description: Yearly total of the means-tested Cost of Living Payments to each benefit unit on a qualifying benefit or tax credit. Parliament set £326 and £324 in the Social Security (Additional Payments) Act 2022, £650 in all, and £301, £300 and £299 in the Social Security (Additional Payments) Act 2023, £900 in all. The model pays the 2022 Act's amounts in 2022-23 and the 2023 Act's in 2023-24, and the amount reads zero before 2022 and from 2024.
 values:
+  0001-01-01: 0
   2022-01-01: 650
   2023-01-01: 900
   2024-01-01: 0
@@ -8,6 +9,10 @@ metadata:
   period: year
   label: Cost-of-Living Payment (means-tested)
   reference:
+    - title: Social Security (Additional Payments) Act 2022, section 1(1) and (2)
+      href: https://www.legislation.gov.uk/ukpga/2022/38/section/1
+    - title: Social Security (Additional Payments) Act 2023, section 1(1) and (2)
+      href: https://www.legislation.gov.uk/ukpga/2023/7/section/1
     - title: 2022-23 Cost-of-Living Support package announcement (HMT/DWP, May 2022)
       href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
     - title: 2023-24 Cost-of-Living Payments (Autumn Statement 2022, DWP guidance)

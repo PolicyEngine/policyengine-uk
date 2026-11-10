@@ -55,7 +55,18 @@ def _spec_for_years(spec: Spec, years: Optional[Sequence[int]]) -> Spec:
 
 
 def to_report(result: dict) -> dict:
-    """Flatten a measurement into the long-format qualification report."""
+    """Flatten a measurement into the long-format qualification report.
+
+    Rows of the ``reforms.<id>`` and ``reform_targets.<id>`` figures also
+    carry ``withheld_because``: for a year the tool withholds, the conditions
+    that withheld it, each as ``{"condition", "variable", "metric_id"}``
+    (``privacy.WITHHELD_CONDITIONS``); for a published year, an empty list.
+    A ``small_target_change`` names the reform's own target, never another
+    reform's (#2775).
+    A ``no_baseline`` reason stands alone: without a baseline record the
+    tool tests no other condition, so the reason says nothing about the
+    reform's records.
+    """
     provenance = result.get("provenance") or {}
     report = {
         "schema": TOOL_SCHEMA + "/report",
@@ -75,29 +86,37 @@ def to_report(result: dict) -> dict:
             metric["id"].split(".", 1)[1] if section in PARTITIONED_SECTIONS else None
         )
         for year, value in metric["values"].items():
-            report["metrics"].append(
-                {
-                    "metric_id": metric["id"],
-                    "year": int(year),
-                    # None when the figure comes from fewer than 10 records.
-                    "value": value,
-                    "suppressed": year in metric.get("suppressed", ()),
-                    # The suppressed components this total is rebuilt without
-                    # that year (measure.rebuild_protected); compare totals at
-                    # equal exclusion.
-                    "excludes": sorted((metric.get("excludes") or {}).get(year) or {}),
-                    # The sign each enters the total with (+1 or -1), so two
-                    # additive totals with different exclusions can be lined
-                    # up from published figures (compare._aligned).
-                    "exclude_signs": dict(
-                        sorted(((metric.get("excludes") or {}).get(year) or {}).items())
-                    ),
-                    "unit": metric["kind"],
-                    "kind": KIND_BY_SECTION.get(section, section),
-                    "partition": head_id,
-                    "label": metric["label"],
-                }
-            )
+            row = {
+                "metric_id": metric["id"],
+                "year": int(year),
+                # None when the figure comes from fewer than 10 records.
+                "value": value,
+                "suppressed": year in metric.get("suppressed", ()),
+                # The suppressed components this total is rebuilt without
+                # that year (measure.rebuild_protected); compare totals at
+                # equal exclusion.
+                "excludes": sorted((metric.get("excludes") or {}).get(year) or {}),
+                # The sign each enters the total with (+1 or -1), so two
+                # additive totals with different exclusions can be lined
+                # up from published figures (compare._aligned).
+                "exclude_signs": dict(
+                    sorted(((metric.get("excludes") or {}).get(year) or {}).items())
+                ),
+                "unit": metric["kind"],
+                "kind": KIND_BY_SECTION.get(section, section),
+                "partition": head_id,
+                "label": metric["label"],
+            }
+            if "withheld_because" in metric:
+                # A reform figure: why the tool withholds its year, one
+                # reason per condition and the component or variable it
+                # holds for (measure.withheld_reasons); empty exactly when
+                # the tool publishes the year.
+                row["withheld_because"] = [
+                    dict(reason)
+                    for reason in (metric["withheld_because"].get(year) or [])
+                ]
+            report["metrics"].append(row)
     for check in result["checks"]:
         report["identities"].append(
             {
