@@ -128,9 +128,14 @@ Invariants, for any generated population of households:
    and one bedroom; no other family's contributions change.
 9. Coding: moving such an adult aged 20 or over, not claiming, between a
    family and a benefit unit of their own leaves every claiming family's
-   Universal Credit bedrooms, contributions and award unchanged. Someone
-   younger can be a qualifying young person, and their family's Child Benefit
-   and child element then depend on them.
+   Universal Credit bedrooms, contributions and award unchanged, with one
+   exception. Where the adult's family makes its own claim and does not
+   count the household's non-dependants, that claim bears them while the
+   family includes them (invariant 8), and the claim that counts the
+   household's non-dependants bears them in a benefit unit of their own.
+   Their bedroom then moves between those two claims, and no other claim
+   changes. Someone younger can be a qualifying young person, and their
+   family's Child Benefit and child element then depend on them.
 """
 
 import numpy as np
@@ -952,6 +957,37 @@ def test_every_in_unit_non_dependant_with_a_room_owes_a_contribution(case):
 
 @PROPERTY_SETTINGS
 @given(adult_scenario())
+# A claiming sharer's family bears the adult, whom the head's claim counts
+# once they have a benefit unit of their own.
+@example(
+    (
+        [
+            [
+                dict(
+                    role="head",
+                    adults=[(59, False), (20, False)],
+                    children=[],
+                    between_placements=False,
+                ),
+                dict(
+                    role="sharer",
+                    adults=[(59, False), (66, False)],
+                    children=[],
+                    between_placements=False,
+                ),
+            ]
+        ],
+        (0, 1),
+        dict(
+            age=57,
+            is_male=False,
+            current_education="NOT_IN_EDUCATION",
+            is_looked_after_by_local_authority=False,
+            attendance_allowance=0,
+        ),
+        [[True, True]],
+    )
+)
 def test_moving_a_non_claiming_adult_out_of_the_benefit_unit_changes_no_claim(case):
     population, target, person, would_claim = case
     inside, keys = build(population, (target, person))
@@ -962,13 +998,32 @@ def test_moving_a_non_claiming_adult_out_of_the_benefit_unit_changes_no_claim(ca
     n = len(keys)
     # The household head's family keeps its claim either way.
     assert np.array_equal(own_claim_in, own_claim_out[:n])
-    # 9. Every family making a claim keeps its bedrooms, contribution and
+    counted = calc_in("uc_non_dependants_counted").astype(bool)
+    assert np.array_equal(counted, calc_out("uc_non_dependants_counted")[:n] > 0)
+    # 9. In their family, the family's own claim bears the adult if it makes
+    # one (invariant 8); in a benefit unit of their own, the claim that counts
+    # the household's non-dependants bears them. Where those claims differ,
+    # the adult's bedroom moves from the first to the second.
+    t = keys.index(target)
+    role = population[target[0]][target[1]]["role"]
+    counting = np.array([h == target[0] for h, _ in keys]) & counted
+    moves = own_claim_in[t] and role != "non_dependant" and not counted[t]
+    changed = np.zeros(n, dtype=bool)
+    if moves:
+        changed[t] = True
+        changed |= counting
+        rooms_in = calc_in("LHA_allowed_bedrooms")
+        rooms_out = calc_out("LHA_allowed_bedrooms")[:n]
+        assert rooms_in[t] == rooms_out[t] + 1
+        assert np.all(rooms_out[counting] == rooms_in[counting] + 1)
+    # Every other family making a claim keeps its bedrooms, contribution and
     # award whether the adult is coded in a benefit unit or in their own.
+    keep = own_claim_in & ~changed
     for variable in (
         "LHA_allowed_bedrooms",
         "uc_non_dep_deductions",
         "universal_credit",
     ):
-        a = calc_in(variable)[own_claim_in]
-        b = calc_out(variable)[:n][own_claim_in]
+        a = calc_in(variable)[keep]
+        b = calc_out(variable)[:n][keep]
         assert np.allclose(a, b), variable
