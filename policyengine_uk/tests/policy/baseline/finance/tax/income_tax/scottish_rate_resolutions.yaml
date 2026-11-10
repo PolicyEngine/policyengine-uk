@@ -395,10 +395,9 @@
 # of it, which s. 55A(2) applies at Step 6 of s. 23, after Step 4 charges tax
 # at each rate.
 #
-# The model takes the transferable amount off the earner's income instead
-# (#1947), so its income tax for a claiming couple differs from the law's.
-# These cases check the claim and the amount transferred, and check the tax
-# at each rate on a twin couple that makes no election.
+# These cases check the claim, the amount transferred, the reduction and the
+# earner's income tax, and check the tax at each rate on a twin couple that
+# makes no election.
 
 # 2018-19, S5M-10397: 21% to £31,580, then 41%. Allowance £11,850: the
 # spouse transfers £1,190 and keeps £10,660.
@@ -430,6 +429,8 @@
     tax_band: [INTERMEDIATE, NONE]
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance: [1_190, 0]
+    marriage_allowance_tax_reduction: [238, 0]
+    income_tax: [6_252.30, 0]
 
 - name: Scottish 2018-19 earner 1 pound above the 31580 limit cannot receive the Marriage Allowance
   period: 2018
@@ -485,11 +486,14 @@
         region: SCOTLAND
   output:
     # 43,430 - 12,500 = 30,930, all at or below the intermediate rate limit,
-    # so none at the 41% higher rate.
+    # so none at the 41% higher rate. Without the election the earner pays
+    # 6,350.37, the next case; with it, 6,350.37 - 1,250 x 20% = 6,100.37.
     non_savings_income_after_allowances: [30_930, 0]
     tax_band: [INTERMEDIATE, NONE]
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance: [1_250, 0]
+    marriage_allowance_tax_reduction: [250, 0]
+    income_tax: [6_100.37, 0]
 
 - name: Scottish 2019-20 earner at the 30930 limit without the election pays the intermediate rate on the last pound
   period: 2019
@@ -571,10 +575,14 @@
     # on top (s. 16) and take the rest-of-UK bands (s. 11D(6)): 31,000 of
     # taxable income stays below the 37,500 basic rate limit, though it
     # passes the 30,930 Scottish limit, so nothing bears a higher rate.
+    # Without the election the earner pays 5,285, the next case; with it,
+    # 5,285 - 1,250 x 20% = 5,035.
     non_savings_income_after_allowances: [1_500, 0]
     tax_band: [BASIC, NONE]
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance: [1_250, 0]
+    marriage_allowance_tax_reduction: [250, 0]
+    income_tax: [5_035, 0]
 
 - name: Scottish 2019-20 earner with pay of 14000 and savings of 29500 without the election pays the starter and savings basic rates
   period: 2019
@@ -634,11 +642,14 @@
         region: SCOTLAND
   output:
     # 43,430 - 12,500 = 30,930, all at or below the intermediate rate limit,
-    # so none at the 41% higher rate.
+    # so none at the 41% higher rate. Without the election the earner pays
+    # 6,347.87, the next case; with it, 6,347.87 - 1,250 x 20% = 6,097.87.
     non_savings_income_after_allowances: [30_930, 0]
     tax_band: [INTERMEDIATE, NONE]
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance: [1_250, 0]
+    marriage_allowance_tax_reduction: [250, 0]
+    income_tax: [6_097.87, 0]
 
 - name: Scottish 2020-21 earner at the 30930 limit without the election pays the intermediate rate on the last pound
   period: 2020
@@ -720,10 +731,14 @@
     # on top (s. 16) and take the rest-of-UK bands (s. 11D(6)): 31,000 of
     # taxable income stays below the 37,500 basic rate limit, though it
     # passes the 30,930 Scottish limit, so nothing bears a higher rate.
+    # Without the election the earner pays 5,285, the next case; with it,
+    # 5,285 - 1,250 x 20% = 5,035.
     non_savings_income_after_allowances: [1_500, 0]
     tax_band: [BASIC, NONE]
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance: [1_250, 0]
+    marriage_allowance_tax_reduction: [250, 0]
+    income_tax: [5_035, 0]
 
 - name: Scottish 2020-21 earner with pay of 14000 and savings of 29500 without the election pays the starter and savings basic rates
   period: 2020
