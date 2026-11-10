@@ -1,1 +1,0 @@
-`is_benefit_unit_non_dependant_for_universal_credit` now cites Universal Credit Regulations 2013 Sch 4 para 9(2)(b) and reg 3 for the partner of a renter who claims as a single person. Two Council Tax Reduction test comments now cite reg 9(1) of SI 2012/2885 beside reg 9(2)(a).
