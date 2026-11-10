@@ -1,3 +1,10 @@
+## [2.177.9] - 2026-11-10
+
+### Fixed
+
+- The model now counts a carer's Universal Credit award with the carer element, where the award comes to at least one penny, when deciding the severe disability premium and the Pension Credit severe disability addition, and in Scotland's working-age council tax reduction it counts such an award for the carer premium from 1 April 2022 (#2120, #2124).
+
+
 ## [2.177.8] - 2026-11-10
 
 ### Changed
