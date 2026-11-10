@@ -1,3 +1,10 @@
+## [2.177.5] - 2026-11-10
+
+### Fixed
+
+- The model no longer pays income-related ESA to a claimant who has reached pensionable age, or to a couple that would get State Pension Credit without that award, whether the model's formulas, an input or a reform set that Pension Credit, and it pays no Pension Credit to a couple while it pays the couple income-related ESA (Welfare Reform Act 2007 s.1(3)(c) and Sch 1 para 6(1)(c) and (d)).
+
+
 ## [2.177.4] - 2026-11-09
 
 ### Changed
