@@ -30,6 +30,12 @@ Invariants, for any generated population of households:
      makes no Universal Credit claim of its own and does not count the
      household's non-dependants, the claim that does gains one Universal
      Credit bedroom, as it bears their contribution (para 9(2)(f));
+   - if they are the foster child, not a qualifying young person, of
+     the head's, a sharer's, a boarder's or a lodger's family, the
+     claim that counts the household's non-dependants gains one
+     Universal Credit bedroom unless it is that family's or they head
+     the household: para 9(2)(c) takes them out of their foster
+     parent's extended benefit unit only;
    - if they join a non-dependant's, boarder's or lodger's family, every
      family liable for the rent gains one Housing Benefit bedroom, even if
      they are placed with that family: reg 21(3) takes out only a child or
@@ -71,8 +77,10 @@ Invariants, for any generated population of households:
      placed with the family as a foster child);
    - for the claim counting the non-dependants (UC), one for each person
      aged 16 or over in a non-dependant's family, except one no one is
-     responsible for, and one for each in-unit non-dependant of a family
-     that makes no claim of its own; for a family liable for the rent
+     responsible for, one for each in-unit non-dependant of a family
+     that makes no claim of its own, and one for each foster child of
+     another family who is not a qualifying young person and does not
+     head the household; for a family liable for the rent
      (HB), one for the couple or single adult of each non-dependant's,
      boarder's or lodger's family and one for each other member aged 16 or
      over, including one placed with that family;
@@ -490,7 +498,20 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
         and not own_claims(sim)[t]
         and not counted[t]
     )
-    if (fam["role"] == "non_dependant" and not added["unclaimed"]) or passed_on:
+    # A foster child who is not a qualifying young person is out of their
+    # foster parent's extended benefit unit only (para 9(2)(c)).
+    fostered_on = (
+        fam["role"] != "non_dependant"
+        and added["fostered"]
+        and not added["unclaimed"]
+        and not person.get("is_household_head", False)
+        and not counted[t]
+    )
+    if (
+        (fam["role"] == "non_dependant" and not added["unclaimed"])
+        or passed_on
+        or fostered_on
+    ):
         expected_uc[same_household & counted] += 1
     if fam["role"] in OCCUPIER_ROLES:
         expected_hb[same_household & liable] += 1
@@ -617,10 +638,21 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
                     c[3] for c in other["children"] if c[2] != "foster"
                 )
                 uc_overnight |= joins and added["overnight"] and not added["unclaimed"]
-            elif counted[b] and joins and not own_claim[keys.index((h, g))]:
+            elif counted[b] and joins:
                 # UC: an in-unit non-dependant of a family that makes no
-                # claim of its own counts in this claim (para 9(2)(f)).
-                uc_rooms += int(marked[names.index(f"h{h}_f{g}_added")])
+                # claim of its own (para 9(2)(f)), and another family's
+                # foster child who is not a qualifying young person (para
+                # 9(2)(c)), count in this claim.
+                passed_on = (
+                    marked[names.index(f"h{h}_f{g}_added")]
+                    and not own_claim[keys.index((h, g))]
+                ) or (
+                    added["fostered"]
+                    and not added["unclaimed"]
+                    and not person.get("is_household_head", False)
+                )
+                uc_rooms += int(passed_on)
+                uc_overnight |= bool(passed_on and added["overnight"])
             if liable[b] and other["role"] in OCCUPIER_ROLES:
                 # HB reg 13D(3)(a), (b): the occupier family's couple or
                 # single adult has one bedroom, and the added person one.

@@ -67,11 +67,20 @@ def other_family_non_dependants(benunit, period):
 
     They are the Universal Credit non-dependants of other families
     (is_uc_non_dependant_of_household_head), less any child or qualifying
-    young person no one is responsible for (UC Regs 2013 Sch 4 para 9(2)(g)),
-    and the members whom is_benefit_unit_non_dependant_for_universal_credit
+    young person no one is responsible for (UC Regs 2013 Sch 4 para 9(2)(g));
+    the members whom is_benefit_unit_non_dependant_for_universal_credit
     marks in a family that neither makes a Universal Credit claim of its own
     nor counts the household's non-dependants (para 9(2)(f)), as in
-    uc_non_dep_deductions.
+    uc_non_dep_deductions; and a foster child aged 16 or 17 who is not a
+    qualifying young person, in a family that does not count the household's
+    non-dependants. Para 9(2)(c) takes such a foster child out of their
+    foster parent's extended benefit unit only, and unless they head the
+    household or pay the householder (para 9(2)(d)), no other exclusion in
+    para 9(2) applies to them. Where the foster family's claim is the one
+    that counts the household's non-dependants, no claim counts them: the
+    model counts a non-dependant in one claim only. Being under 21, they owe
+    no housing cost contribution (para 16(2)(a)), so uc_non_dep_deductions
+    needs no counterpart.
     """
     person = benunit.members
     other_family = person("is_uc_non_dependant_of_household_head", period)
@@ -89,7 +98,17 @@ def other_family_non_dependants(benunit, period):
     )
     counted = benunit("uc_non_dependants_counted", period)
     in_unit = person("is_benefit_unit_non_dependant_for_universal_credit", period)
-    passed_on = in_unit & ~other_family & ~benunit.project(own_claim | counted)
+    fostered = (
+        person("is_lha_foster_child", period)
+        & ~person("is_child_for_universal_credit", period)
+        & ~qualifying
+        & ~person("is_resolved_household_head", period)
+        & ~person("pays_rent_to_householder", period)
+    )
+    passed_on = ~other_family & (
+        (in_unit & ~benunit.project(own_claim | counted))
+        | (fostered & ~benunit.project(counted))
+    )
     return (other_family & ~no_one_responsible) | passed_on
 
 
@@ -120,7 +139,11 @@ class LHA_allowed_bedrooms(Variable):
         "such as a foster child or another child looked after by a local "
         "authority, is not a non-dependant and has no bedroom, in this family "
         "or another; a child placed for adoption is the adopter's "
-        "responsibility (reg 4A(1)(c)) and counts. Joint tenants and other "
+        "responsibility (reg 4A(1)(c)) and counts. A foster child aged 16 or "
+        "17 who is not a qualifying young person is not a non-dependant of "
+        "their foster parent (para 9(2)(c)), but the claim that counts the "
+        "household's non-dependants has their bedroom unless it is the "
+        "foster family's (see other_family_non_dependants). Joint tenants and other "
         "sharers of the rent, boarders and lodgers are not non-dependants, so "
         "they add no bedroom to anyone's entitlement; the household's "
         "non-dependants and their children count in one Universal Credit "
@@ -164,11 +187,11 @@ class LHA_allowed_bedrooms(Variable):
         qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member who is not a child
         # is a non-dependant with a bedroom, unless they head the household
-        # or are the renter's foster child (para 9(2)(c), 9(3); see
+        # or are the renter's foster child (para 9(2)(c) and (3); see
         # is_lha_foster_child). is_benefit_unit_non_dependant_for_universal_credit
-        # marks the members who are not a child, a qualifying young person or
-        # the household head, and uc_non_dep_deductions charges a housing cost
-        # contribution for them (para 13). It reads the household head
+        # marks them, and uc_non_dep_deductions charges a housing cost
+        # contribution for the same people (para 13), so the room and the
+        # contribution follow one definition. It reads the household head
         # (is_resolved_household_head, the householder in whose name the
         # accommodation is rented) as liable to make payments on a commercial
         # basis for their occupation, so para 9(2)(d) stops them being a
@@ -178,7 +201,7 @@ class LHA_allowed_bedrooms(Variable):
         # (para 9(1)(b)).
         family_non_dependant = person(
             "is_benefit_unit_non_dependant_for_universal_credit", period
-        ) & ~person("is_lha_foster_child", period)
+        )
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 9(1)(c) and 9(2): people of other families who are
         # non-dependants. A non-dependant's own child is their responsibility
@@ -190,7 +213,10 @@ class LHA_allowed_bedrooms(Variable):
         # claim counts in the claim that counts the household's other
         # non-dependants, as in uc_non_dep_deductions, so that claim has their
         # bedroom as well as their housing cost contribution. Where that claim
-        # is their own family's, family_rooms already holds the bedroom.
+        # is their own family's, family_rooms already holds the bedroom. A
+        # foster child aged 16 or 17 who is not a qualifying young person
+        # counts in that claim too, unless it is their foster family's (para
+        # 9(2)(c)).
         counted = benunit("uc_non_dependants_counted", period)
         non_dependant = other_family_non_dependants(benunit, period)
         # Para 10(1)(c): a non-dependant from another family who is not a
@@ -200,8 +226,8 @@ class LHA_allowed_bedrooms(Variable):
         )
         # Para 10(1)(d)-(f): the children in the extended benefit unit, the
         # renter's own and their non-dependants', allotted to the fewest
-        # bedrooms (para 10(2)). A foster child is in no one's extended
-        # benefit unit (paras 9(1)(b), 9(2)(c) and 9(3); reg 4(6)(a)).
+        # bedrooms (para 10(2)). A foster child under 16 is in no one's
+        # extended benefit unit (paras 9(1)(b), 9(2)(c) and (g); reg 4(6)(a)).
         children = bedrooms_for_children(
             benunit,
             period,
