@@ -1,3 +1,18 @@
+## [2.178.0] - 2026-11-10
+
+### Added
+
+- Added inputs for the UK totals of the components of corporate_sector_wealth and consumption (uk_total_*), and policyengine_uk.utils.uk_totals.add_uk_totals to write them: where the data carries them, shareholding, consumption_shareholding and carbon tax's corporate part give each household its national share in any simulation of part of the UK, such as a region, an extract or one block of a build, and filter_dataset's extracts carry them.
+
+### Fixed
+
+- A household situation no longer takes the whole UK total of business rates, corporate Stamp Duty Land Tax, corporate land and the other amounts shared out by shareholding, consumption_shareholding or income decile; whatever its weight or axes, it takes no share unless one is set.
+
+### Removed
+
+- Removed the household financial net worth parameter (household.wealth.national_balance_sheet), whose only reader was the shareholding fallback for household situations.
+
+
 ## [2.177.9] - 2026-11-10
 
 ### Fixed
