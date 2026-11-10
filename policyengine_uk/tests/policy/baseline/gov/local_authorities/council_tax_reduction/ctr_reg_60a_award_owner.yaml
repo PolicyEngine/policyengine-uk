@@ -1,0 +1,149 @@
+# Council Tax Reduction disregards a Universal Credit award "where regulation
+# 60A ... applies in respect of the award" in England from the 2025-26
+# scheme year and in Wales from 2026-27 (SI 2012/2885 reg 3(2)(b);
+# WSI 2013/3029 reg 3(2)(b)). Scotland counts it (SSI 2021/249 reg 3(2)(b)).
+# Under SI 2014/1230 reg 60A(1), the upper age condition in WRA 2012
+# s.4(1)(b) does not apply to a qualifying claim by a single claimant, or
+# joint claimants both, who have reached the qualifying age for State Pension
+# Credit, hold an award of Working Tax Credit and hold no award of State
+# Pension Credit when the migration notice is issued. A couple both aged 16
+# or over and in the UK must claim a tax credit together (Tax Credits Act
+# 2002 s.3(3)), and s.10(1) ties entitlement to "the person or persons by
+# whom a claim ... has been made". So both members hold the couple's award,
+# and the claimant holds no part of an award another member claimed. Where
+# reg 60A does not apply, the formula keeps its approximation for a wholly
+# pension-age award awaiting termination or made in error (SI 2012/2885
+# reg 3(2); SSI 2021/249 reg 3(2)), so the family stays a pensioner family.
+
+- name: Another adult's Working Tax Credit doesn't make a Scottish pensioner's UC award a reg 60A award
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      other_adult:
+        age: 40
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        claims_uc_at_legacy_closure: true
+        universal_credit_pre_benefit_cap: 4_000
+    households:
+      household:
+        members: [claimant, other_adult]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: A dependant's Working Tax Credit doesn't make a Scottish pensioner's UC award a reg 60A award
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        is_parent: true
+      dependant:
+        age: 17
+        is_claimant_or_partner: false
+        current_education: POST_SECONDARY
+        working_tax_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, dependant]
+        claims_uc_at_legacy_closure: true
+        universal_credit_pre_benefit_cap: 4_000
+    households:
+      household:
+        members: [claimant, dependant]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: Another adult's Working Tax Credit doesn't make an English pensioner's 2024 UC award a reg 60A award
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      other_adult:
+        age: 40
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        claims_uc_at_legacy_closure: true
+        universal_credit_pre_benefit_cap: 4_000
+    households:
+      household:
+        members: [claimant, other_adult]
+        region: NORTH_EAST
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: true
+
+- name: A Scottish pensioner's own Working Tax Credit makes the UC award a reg 60A award
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false
+
+- name: A partner's Working Tax Credit makes a Scottish pensioner couple's UC award a reg 60A award
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 72
+        is_claimant_or_partner: true
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, partner]
+        claims_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_eligible: true
+    is_uc_entitled: true
+    council_tax_reduction_pensioner: false

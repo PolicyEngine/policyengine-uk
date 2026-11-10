@@ -33,7 +33,9 @@ Small cells (`privacy.py`):
 - A total that holds one is rebuilt from its other components and marked †.
 - Poverty, inequality and deciles are withheld while HBAI income holds one.
 - A reform's figures for a year are withheld when they would come from a
-  small cell.
+  small cell. `withheld_because` names each condition that withheld them and
+  the component or variable it holds for, never a count, and the comment
+  lists them under the reform costings.
 
 `privacy.py` also states the threat model.
 
@@ -124,7 +126,12 @@ The checks are:
   every other head held at baseline, and fails only where it still breaks
   it; a response carried by another head (Incapacity Benefit lowers Carer's
   Allowance, which Universal Credit counts as income) is reported as
-  mediated. A declared double count must still be contained in its head;
+  mediated. A declared double count must still be contained in its head. The
+  check records a NaN or infinite baseline value under a blocking `finite:`
+  check (`finite:metrics` for a total or a double count) and continues
+  judging readable households. It holds such a head by leaving it to its
+  formula, and judges each household where the formula gives back the held
+  value;
 - **signs, bounds and finiteness**, and **determinism:** a rebuilt
   simulation reproduces the baseline exactly;
 - **inert heads:** a head that is zero for every unit is a warning, unless the

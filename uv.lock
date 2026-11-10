@@ -2195,7 +2195,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-core"
-version = "3.33.12"
+version = "3.34.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dpath" },
@@ -2216,14 +2216,14 @@ dependencies = [
     { name = "standard-imghdr" },
     { name = "wheel" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/df/627cc963937084b29dc522bf64eb7b0fddafef51aac581c291357d2bdb5c/policyengine_core-3.33.12.tar.gz", hash = "sha256:9bbfb47665df2518a360e584bad12daa6fb1e7aa57b4dd124e53349f34b93116", size = 727426, upload-time = "2026-10-19T20:43:00.401Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/28/f95c5723c7840bd918f14f9a304466c8fae550529b3ce58033611389419f/policyengine_core-3.34.9.tar.gz", hash = "sha256:685334fed586e886527a995f7c622cb41a48548c49c780655f531fc3236b9639", size = 760350, upload-time = "2026-11-07T12:24:12.854Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/f0/3f7019759fc8d9b09d7930a2582dc87677c51a4be1990763c1d9493f0a7e/policyengine_core-3.33.12-py3-none-any.whl", hash = "sha256:dd4ca127a4063b8b28216f6c6a1ff05c2a42e3bd23837c6e6a08e043b4d09d6e", size = 307532, upload-time = "2026-10-19T20:42:58.741Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/5a/b250004db2ec2462fceb612c60c566070598d63e154316ed2c66fdfe19af/policyengine_core-3.34.9-py3-none-any.whl", hash = "sha256:3b100d536375958abfff367aef4c03d30064daf0c77bcdc270d1dc4268215406", size = 308111, upload-time = "2026-11-07T12:24:11.114Z" },
 ]
 
 [[package]]
 name = "policyengine-uk"
-version = "2.170.0"
+version = "2.177.4"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python" },
@@ -2259,7 +2259,7 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'" },
     { name = "jupyter-book", marker = "extra == 'dev'", specifier = ">=2.0.0a0" },
     { name = "microdf-python", specifier = ">=1.2.1" },
-    { name = "policyengine-core", specifier = ">=3.33.0" },
+    { name = "policyengine-core", specifier = ">=3.34.9" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "pytest-xdist", marker = "extra == 'dev'" },

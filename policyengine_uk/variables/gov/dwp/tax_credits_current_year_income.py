@@ -10,7 +10,10 @@ from policyengine_uk.model_api import *
 # 579A) or, for a foreign pension, foreign income (reg 12), which is also step
 # one. savings_interest_income and dividend_income are investment income (reg
 # 10(1)(a), (d)), and property_income_after_finance_costs retains the
-# model's deduction of property finance costs.
+# model's deduction of property finance costs. Property income disregards
+# profits sheltered by rent-a-room relief (reg 11(2)), so of rent from
+# boarders, lodgers and sub-tenants in the home only taxable_rent_a_room_income
+# counts.
 STEP_ONE_INCOME = [
     "state_pension",
     "widowed_parents_allowance",
@@ -18,6 +21,7 @@ STEP_ONE_INCOME = [
     "savings_interest_income",
     "dividend_income",
     "property_income_after_finance_costs",
+    "taxable_rent_a_room_income",
 ]
 
 # Social security income (reg 7): benefits payable under the Contributions and

@@ -20,19 +20,19 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     s. 4(17)), and places the nil-rate slice above the starting rate limit
     for savings (s. 12A).
 
-    The test reads income before the Marriage Allowance. Parliament charges
-    tax at each rate at Step 4 and takes tax reductions off at Step 6
-    (s. 23), and it gives the allowance as a tax reduction (s. 55B(1)). The
-    model still takes the allowance off earned_taxable_income (#1947), so
-    non_savings_taxable_income and the savings rate bands built on it would
-    read this test back.
+    Parliament charges tax at each rate at Step 4 and takes tax reductions
+    off at Step 6 (s. 23), and it gives the allowance as a tax reduction at
+    Step 6 (ss. 55A(2) and 55B(1)). So the allowance never changes the income
+    each rate applies to, and this test never reads it:
+    marriage_allowance_tax_reduction takes the allowance off the tax, and
+    the test reads income after allowances and the savings, dividend and
+    Gift Aid amounts directly.
     """
     rates = parameters(period).gov.hmrc.income_tax.rates
     gross_gift = person("gift_aid_grossed_up", period)
     # Earnings, pensions, property and other non-savings income after
     # allowances, which go to it first: the income below savings and
-    # dividends (s. 16). This reads non-savings taxable income before the
-    # Marriage Allowance.
+    # dividends (s. 16).
     non_savings = person("non_savings_income_after_allowances", period)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; in 2017-18 the Scottish scale had only the basic rate below it.
