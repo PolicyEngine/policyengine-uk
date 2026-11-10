@@ -1,3 +1,23 @@
+## [2.177.4] - 2026-11-09
+
+### Changed
+
+- Run the tests that need the dataset in their own CI shard, with one worker, so the other seven shards no longer build simulations of the whole dataset.
+- Require policyengine-core 3.34.9 or later. From that release, an input set on a variable that a reform has neutralised has no effect, as core documents, so a reform that restores the variable reads the input supplied before neutralisation.
+
+### Fixed
+
+- The real income variables now price to the year in gov.simulation.price_base_year (2026) instead of the year the simulation runs, and inflation_adjustment_ahc uses one price index on both sides of its ratio.
+
+
+## [2.177.3] - 2026-11-09
+
+### Fixed
+
+- Pay Carer's Allowance and Carer Support Payment, and count a carer for the Universal Credit carer element, on caring hours only where the new input `cares_for_severely_disabled_person` says the person cared for gets a qualifying disability benefit; it defaults to true, so results change only where a calculation sets it false.
+- The student loan repayment formula now charges Plan 5 borrowers nothing before 6 April 2026, as SI 2009/470 reg. 15(2BA) requires.
+
+
 ## [2.177.2] - 2026-11-09
 
 ### Fixed

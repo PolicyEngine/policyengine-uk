@@ -86,15 +86,17 @@ the same suite,
 tree; a release tests the wheel it is about to publish, installed on its own.
 
 The suite runs the YAML policy tests in one job and splits the Python tests
-over seven runners. Each runner runs one shard:
+over eight runners. Each runner runs one shard:
 
 ```bash
-pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/7 -o xfail_strict=true
+pytest policyengine_uk/tests -n 4 --dist worksteal --shard K/8 -o xfail_strict=true
 ```
 
-`--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the
-tests whose node id hashes to shard K of N, so every test is in exactly one
-shard, including a test added later. Each shard records every test's outcome
+`--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. Shard N of N
+keeps the tests with the `microsimulation` marker, which need the dataset, and
+CI runs it with one worker. Every other shard keeps the remaining tests whose
+node id hashes to it, so every test is in exactly one shard, including a test
+added later. Each shard records every test's outcome
 with `.github/pytest_outcome_log.py`. The final job, `Test / Result`, runs
 `.github/check_test_shards.py`. It fails unless every collected test ran in
 exactly one shard and passed. The exceptions are outcomes accepted in
