@@ -384,17 +384,21 @@
     is_child_or_young_person_for_council_tax_reduction: [false, true]
     council_tax_reduction_pensioner: false
     is_council_tax_reduction_lone_parent: true
-    # Lone parent aged 18 or over, £92.05 a week in 2025-26: 92.05 * 52.
-    council_tax_reduction_applicable_amount: 4_786.60
+    # Sch 1 paras 1 and 2 at the 2025-26 rates (SSI 2025/24 reg 16): a lone
+    # parent's personal allowance of £92.05 a week and a child premium of
+    # £105.85. The model gives no family premium: SSI 2016/81 removed it
+    # from May 2016, except for a family entitled on 30 April 2016 (regs 2
+    # and 5). (92.05 + 105.85) * 52 = 10,290.80.
+    council_tax_reduction_working_age_applicable_amount: 10_290.80
     # Earnings of £11,000 fall below the £12,570 personal allowance and
-    # National Insurance primary threshold, so no tax or contributions. The
-    # model counts the earnings with no earnings disregard on this route,
-    # plus Child Benefit for an eldest child, £26.05 a week: 11,000 +
-    # 26.05 * 52 = 12,354.60.
-    council_tax_reduction_applicable_income: 12_354.60
-    # Scotland's withdrawal rate is 20%: 1,800 - 0.2 * (12,354.60 -
-    # 4,786.60) = 1,800 - 1,513.60 = 286.40.
-    council_tax_reduction: 286.40
+    # National Insurance primary threshold, so no tax or contributions. A
+    # lone parent's earnings disregard is £25 a week (Sch 3 para 5), and
+    # reg 57(1)'s list of unearned income leaves out Child Benefit:
+    # 11,000 - 25 * 52 = 9,700.
+    council_tax_reduction_working_age_applicable_income: 9_700
+    # Income below the applicable amount gives the maximum reduction, the
+    # whole council tax (reg 13(6)(a)(ii) and (9)(a)).
+    council_tax_reduction: 1_800
 
 - name: Case 12, Scotland working age, the same family with the child placed for adoption.
   period: 2025
@@ -426,17 +430,13 @@
     is_child_or_young_person_for_council_tax_reduction: [false, true]
     council_tax_reduction_pensioner: false
     is_council_tax_reduction_lone_parent: true
-    # Lone parent aged 18 or over, £92.05 a week in 2025-26: 92.05 * 52.
-    council_tax_reduction_applicable_amount: 4_786.60
-    # Earnings of £11,000 fall below the £12,570 personal allowance and
-    # National Insurance primary threshold, so no tax or contributions. The
-    # model counts the earnings with no earnings disregard on this route,
-    # plus Child Benefit for an eldest child, £26.05 a week: 11,000 +
-    # 26.05 * 52 = 12,354.60.
-    council_tax_reduction_applicable_income: 12_354.60
-    # Scotland's withdrawal rate is 20%: 1,800 - 0.2 * (12,354.60 -
-    # 4,786.60) = 1,800 - 1,513.60 = 286.40.
-    council_tax_reduction: 286.40
+    # As in Case 11: (92.05 + 105.85) * 52 = 10,290.80.
+    council_tax_reduction_working_age_applicable_amount: 10_290.80
+    # As in Case 11: 11,000 - 25 * 52 = 9,700.
+    council_tax_reduction_working_age_applicable_income: 9_700
+    # Income below the applicable amount gives the maximum reduction (reg
+    # 13(6)(a)(ii) and (9)(a)).
+    council_tax_reduction: 1_800
     # Housing Benefit and Income Support still leave the child out of the
     # household (HB Regs 2006 reg 21(3)(c); IS Regs 1987 reg 16(4)).
     is_child_or_young_person_placed_with_family: [false, true]

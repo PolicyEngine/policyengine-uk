@@ -204,7 +204,14 @@
         tenure_type: RENT_PRIVATELY
         brma: MAIDSTONE
   output:
-    is_non_dependant_of_household_head: [false, false, false]
+    # The lodger pays the householder on a commercial basis, which leaves
+    # the lodger out of Housing Benefit's non-dependants (HB Regs 2006 reg
+    # 3(2)(e)(i)). No exception in reg 3(2) covers the lodger's child, who
+    # is the householder's non-dependant. Universal Credit leaves the child
+    # out, as nobody in the householder's extended benefit unit is
+    # responsible for them (UC Regs 2013 Sch 4 para 9(2)(g)).
+    is_non_dependant_of_household_head: [false, false, true]
+    is_uc_non_dependant_of_household_head: [false, false, false]
     # UC: the lodger is liable to pay on a commercial basis (para 9(2)(d)),
     # so is not in the householder's extended benefit unit, and the lodger's
     # child is excluded by para 9(2)(g): the householder's bedroom only.
