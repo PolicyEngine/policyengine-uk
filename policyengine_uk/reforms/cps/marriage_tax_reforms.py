@@ -95,11 +95,31 @@ def create_expanded_ma_reform(
             takes_up = person("would_claim_marriage_allowance", period)
             return eligible * amount_if_eligible * takes_up
 
+    class marriage_allowance_reduction_at_stake(Variable):
+        value_type = float
+        entity = Person
+        label = "Marriage Allowance tax reduction at stake in the share of deductions"
+        documentation = (
+            "Nil for a person who meets the reform's expansion conditions, "
+            "who receives the allowance at any share of reliefs and allowances."
+        )
+        definition_period = YEAR
+        unit = GBP
+
+        def formula(person, period, parameters):
+            return where(
+                person("meets_expanded_ma_conditions", period),
+                0,
+                person("marriage_allowance_appropriate_percentage", period)
+                * person("marriage_allowance_if_income_conditions_met", period),
+            )
+
     class reform(Reform):
         def apply(self):
             self.add_variable(meets_expanded_ma_conditions)
             self.update_variable(meets_marriage_allowance_income_conditions)
             self.update_variable(marriage_allowance)
+            self.update_variable(marriage_allowance_reduction_at_stake)
 
     return reform
 
