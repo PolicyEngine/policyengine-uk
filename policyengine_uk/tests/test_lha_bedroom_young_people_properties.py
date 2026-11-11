@@ -469,6 +469,32 @@ def lone(role, age):
 # The same young person in a non-dependant's family: no Universal Credit
 # bedroom in the renter's claim either (para 9(2)(g)).
 @example(([[lone("head", 40), lone("non_dependant", 45)]], (0, 1), LOOKED_AFTER_QYP))
+# A sharer's looked-after 17-year-old not in education: the head's claim,
+# which counts the household's non-dependants, gains their bedroom and so
+# has a non-dependant (para 28(4)).
+@example(
+    (
+        [[lone("head", 30), lone("sharer", 40)]],
+        (0, 1),
+        dict(LOOKED_AFTER_QYP, current_education="NOT_IN_EDUCATION"),
+    )
+)
+# A 19-year-old not in education in the family of a sharer over State
+# Pension age, which makes no Universal Credit claim: the head's claim
+# gains their bedroom and so has a non-dependant.
+@example(
+    (
+        [[lone("head", 30), lone("sharer", 70)]],
+        (0, 1),
+        dict(
+            LOOKED_AFTER_QYP,
+            age=19,
+            current_education="NOT_IN_EDUCATION",
+            is_before_universal_credit_qualifying_young_person_terminal_date=False,
+            is_looked_after_by_local_authority=False,
+        ),
+    )
+)
 def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     population, target, person = case
     person = without_overnight_care(person)
