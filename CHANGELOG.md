@@ -1,3 +1,10 @@
+## [2.178.2] - 2026-11-11
+
+### Changed
+
+- The enhanced disability premium property test now checks a Kingston upon Thames claimant whose highest-rate DLA care award carries £1,000 a year, below 52 times the top weekly rate.
+
+
 ## [2.178.1] - 2026-11-11
 
 ### Fixed
