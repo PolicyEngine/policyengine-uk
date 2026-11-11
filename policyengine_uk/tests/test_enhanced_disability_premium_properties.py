@@ -500,6 +500,32 @@ def test_entered_amounts_straddle_the_threshold():
             assert not top_rate_award(low, benefit, year), (award, year)
 
 
+def test_a_kingston_claimant_holds_the_award_without_the_amount():
+    """Kingston upon Thames reads is_enhanced_disabled_for_benefits, which
+    needs DLA care of at least 52 times the highest weekly rate, not any
+    award at the highest rate. A claimant awarded highest-rate DLA care at
+    £1,000 a year holds the award without the amount, so the oracle check
+    tells the two conditions apart in every year, with and without an
+    enhanced PIP daily living award on top."""
+    f = dict(
+        place=("ENGLAND", "KINGSTON_UPON_THAMES"),
+        shape="single",
+        adults=[
+            dict(age=30, awards=("dla_care_highest_part_amount",)),
+            dict(age=30, awards=()),
+        ],
+        upgrade_member=0,
+        upgrade_award="pip_daily_living_enhanced",
+    )
+    inputs = award_inputs(f["adults"][0]["awards"])
+    families = [f, upgraded(f)]
+    sim, person, benunit = build(families, [])
+    for year in YEARS:
+        assert top_rate_award(inputs, "dla_sc", year), year
+        assert not enhanced_disabled_flag(inputs, year), year
+        check_families(sim, person, benunit, families, year)
+
+
 class NeutraliseDlaCareAndPipDailyLiving(Reform):
     def apply(self):
         self.neutralize_variable("dla_sc")
