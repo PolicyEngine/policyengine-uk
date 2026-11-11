@@ -21,7 +21,7 @@ values:
       reference:
         - title: Scotland Act 2012 s. 29(2), (4), (5), (6)
           href: https://www.legislation.gov.uk/ukpga/2012/11/section/29
-        - title: The Scotland Act 2012, Sections 29 and 31 (Disapplication of UK Stamp Duty Land Tax and UK Landfill Tax) (Appointed Days) Order 2015 (SI 2015/637) art. 2
+        - title: The Scotland Act 2012, Section 29 (Disapplication of UK Stamp Duty Land Tax) (Appointed Day) Order 2015
           href: https://www.legislation.gov.uk/uksi/2015/637/article/2/made
 metadata:
   unit: bool
@@ -36,5 +36,5 @@ metadata:
       href: https://www.gov.uk/government/publications/rates-and-allowances-stamp-duty-land-tax/stamp-duty-land-tax-rates-1-december-2003-to-16-march-2005
     - title: Scotland Act 2012 s. 29(2), (4), (5), (6)
       href: https://www.legislation.gov.uk/ukpga/2012/11/section/29
-    - title: The Scotland Act 2012, Sections 29 and 31 (Disapplication of UK Stamp Duty Land Tax and UK Landfill Tax) (Appointed Days) Order 2015 (SI 2015/637) art. 2
+    - title: The Scotland Act 2012, Section 29 (Disapplication of UK Stamp Duty Land Tax) (Appointed Day) Order 2015
       href: https://www.legislation.gov.uk/uksi/2015/637/article/2/made
