@@ -1,3 +1,10 @@
+## [2.178.1] - 2026-11-11
+
+### Fixed
+
+- The model now adds the disabled child premium and the enhanced disability premium to a pensioner's Council Tax Reduction applicable amount for each qualifying child or young person in England, Wales and Scotland, with each nation's armed forces independence payment routes by year.
+
+
 ## [2.178.0] - 2026-11-10
 
 ### Added
