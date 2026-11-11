@@ -13,7 +13,9 @@
 # already limits the Housing Benefit reduction to the award less the reg 75
 # minimum (50 pence a week).
 #
-# The award before the cap and the capped total are entered. Annual limits
+# Each case supplies the award before the cap and the capped total. With
+# the total, each supplies the Housing Benefit in it, which Universal
+# Credit's cap leaves out (UC reg 80(2A)). Annual limits
 # outside London (UC reg 80A(2)(b)(ii), HB reg 75CA(2)(b)(ii)): couple
 # 22,020; single without children 14,753.
 
@@ -34,6 +36,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 100
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
     households:
       household:
@@ -63,6 +67,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 7_980
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
     households:
       household:
@@ -90,6 +96,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 10_000
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
     households:
       household:
@@ -117,6 +125,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 100
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
         uc_childcare_element: 3_000
     households:
@@ -146,6 +156,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 100
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
         uc_childcare_element: 9_000
     households:
@@ -174,6 +186,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 100
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
         uc_deduction_rate: 0.25
     households:
@@ -206,6 +220,8 @@
       benunit:
         members: [claimant, partner]
         universal_credit_pre_benefit_cap: 10_000
+        # No rent, so the model calculates no Housing Benefit.
+        housing_benefit_pre_benefit_cap: 0
         benefit_cap_welfare_benefits: 30_000
         uc_deduction_rate: 0.25
     households:

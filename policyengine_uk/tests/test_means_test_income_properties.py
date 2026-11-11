@@ -7,8 +7,8 @@ Invariants:
    example an 18- or 19-year-old presumed the claimant's child but not in
    education, a 16-year-old outside education and past the 1 September
    following their 16th birthday, or a third adult) never changes a means
-   test's income. The UC, HB, IS, tax credit, CTR and Pension Credit income
-   totals are covered.
+   test's income. The UC, HB, IS, tax credit, CTR (including the Scottish and
+   Welsh working-age income) and Pension Credit income totals are covered.
 2. Giving income to the family's own child or young person never changes it
    either (HB Regs 2006 reg 25(3); IS Regs 1987 reg 23(2); Tax Credits
    (Definition and Calculation of Income) Regs 2002 reg 3(1); SSI 2021/249 reg
@@ -37,6 +37,7 @@ INCOME_TESTS = [
     "income_support_applicable_income",
     "tax_credits_applicable_income",
     "council_tax_reduction_applicable_income",
+    "council_tax_reduction_working_age_applicable_income",
     "pension_credit_income",
 ]
 EDUCATIONS = ["NOT_IN_EDUCATION", "UPPER_SECONDARY", "TERTIARY"]
