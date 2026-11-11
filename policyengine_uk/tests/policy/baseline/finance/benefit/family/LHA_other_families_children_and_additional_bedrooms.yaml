@@ -1553,3 +1553,63 @@
     lha_renter_meets_foster_parent_condition: true
     LHA_allowed_bedrooms: 3
     housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: A sharer's looked-after 17-year-old ends the head's shared accommodation rate through final Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+      sharer:
+        age: 40
+        employment_income: 60_000
+      foster_child:
+        age: 17
+        is_looked_after_by_local_authority: true
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: true
+        claims_universal_credit: true
+        liable_for_share_of_household_rent: true
+      sharer_family:
+        members: [sharer, foster_child]
+        would_claim_uc: false
+        claims_universal_credit: false
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer, foster_child]
+        rent: 26_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        region: SOUTH_EAST
+  output:
+    # Not in education, the foster child of 17 is no qualifying young
+    # person (UC reg 5). The sharer's family does not count the household's
+    # non-dependants, so the head's claim counts the foster child as a
+    # non-dependant with a bedroom (renter 1 + 1 = 2; see
+    # other_family_non_dependants).
+    uc_non_dependants_counted: [true, false]
+    LHA_allowed_bedrooms: [2, 2]
+    # The third condition in para 28(4) fails, so the head, single and
+    # under 35, is not a specified renter (para 27): category C, not A.
+    lha_renter_has_non_dependant: [true, true]
+    is_lha_shared_accommodation_rate_specified_renter: [false, false]
+    LHA_category: [C, C]
+    # The head's £13,000 share of the rent exceeds Maidstone's two-bedroom
+    # Universal Credit rate, £905 a month: 905 x 12 = 10,860. The foster
+    # child, under 21, owes no housing cost contribution (para 16(2)(a)).
+    uc_non_dep_deductions: [0, 0]
+    uc_housing_costs_element: [10_860, 10_860]
+    # 5,098.80 (the standard allowance for a single claimant aged 25 or
+    # over) + 10,860 = 15,958.80, with no income to taper. The sharer's
+    # family makes no claim.
+    universal_credit_pre_benefit_cap: [15_958.80, 0]
+    # The head has no earnings, so the cap for a single claimant outside
+    # London, £14,753, applies: 15,958.80 - 14,753 = 1,205.80.
+    uc_benefit_cap_reduction: [1_205.80, 0]
+    universal_credit: [14_753, 0]

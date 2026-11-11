@@ -531,3 +531,62 @@
     # (96.55 x 12 = 1,158.60) and has his bedroom (renter 1 + son 1 = 2).
     uc_non_dep_deductions: [0, 1_158.60]
     LHA_allowed_bedrooms: [2, 2]
+
+- name: A non-claiming sharer's adult son ends the head's shared accommodation rate through final Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 40
+        employment_income: 60_000
+        is_claimant_or_partner: true
+      son:
+        age: 22
+        is_claimant_or_partner: false
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: true
+        claims_universal_credit: true
+        liable_for_share_of_household_rent: true
+      sharer_family:
+        members: [sharer, son]
+        would_claim_uc: false
+        claims_universal_credit: false
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer, son]
+        rent: 26_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        region: SOUTH_EAST
+  output:
+    # The sharer's family makes no claim and does not count the household's
+    # non-dependants, so the head's claim counts the son (para 9(2)(f)): it
+    # bears his contribution and has his bedroom (renter 1 + son 1 = 2).
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    uc_non_dependants_counted: [true, false]
+    LHA_allowed_bedrooms: [2, 2]
+    # The third condition in para 28(4) fails, so the head, single and
+    # under 35, is not a specified renter (para 27): category C, not A.
+    lha_renter_has_non_dependant: [true, true]
+    is_lha_shared_accommodation_rate_specified_renter: [false, false]
+    LHA_category: [C, C]
+    # 96.55 x 12 = 1,158.60.
+    uc_non_dep_deductions: [1_158.60, 0]
+    # The head's £13,000 share of the rent exceeds Maidstone's two-bedroom
+    # Universal Credit rate, £905 a month: 905 x 12 = 10,860, less the
+    # contribution, 9,701.40.
+    uc_housing_costs_element: [9_701.40, 10_860]
+    # 5,098.80 + 9,701.40 = 14,800.20, with no income to taper.
+    universal_credit_pre_benefit_cap: [14_800.20, 0]
+    # The head has no earnings, so the cap for a single claimant outside
+    # London, £14,753, applies: 14,800.20 - 14,753 = 47.20.
+    uc_benefit_cap_reduction: [47.20, 0]
+    universal_credit: [14_753, 0]

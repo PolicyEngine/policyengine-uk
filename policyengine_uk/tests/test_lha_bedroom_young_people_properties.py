@@ -522,6 +522,15 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
         expected_hb[same_household & liable] += 1
     assert np.array_equal(uc_after - uc_before, expected_uc)
     assert np.array_equal(hb_after - hb_before, expected_hb)
+    # 3. A bedroom another family's person gives the counting claim is a
+    # non-dependant's, so that claim's renter is no specified renter (UC
+    # Sch 4 para 28(4)).
+    has_non_dependant = np.asarray(
+        sim.calculate("lha_renter_has_non_dependant", YEAR)
+    ).astype(bool)
+    gained = (uc_after > uc_before) & same_household & counted
+    gained[t] = False
+    assert has_non_dependant[gained].all()
 
 
 @PROPERTY_SETTINGS
