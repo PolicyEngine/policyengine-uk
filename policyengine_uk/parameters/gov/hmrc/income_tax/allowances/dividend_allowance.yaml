@@ -1,10 +1,5 @@
 description: Amount of dividend income untaxed per year.
 values:
-  "0000-01-01":
-    value: 0
-    reference:
-      - title: Finance Act 2016 s. 5(5) and (10) (dividend nil rate from 2016-17)
-        href: https://www.legislation.gov.uk/ukpga/2016/24/section/5/enacted
   2016-04-06:
     value: 5_000
     reference:
