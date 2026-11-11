@@ -1,10 +1,9 @@
 from policyengine_uk.model_api import *
-import datetime
 import numpy as np
 
 
 class real_household_net_income(Variable):
-    label = f"real household net income ({datetime.datetime.now().year} prices)"
+    label = "real household net income (base-year prices)"
     entity = Household
     definition_period = YEAR
     value_type = float

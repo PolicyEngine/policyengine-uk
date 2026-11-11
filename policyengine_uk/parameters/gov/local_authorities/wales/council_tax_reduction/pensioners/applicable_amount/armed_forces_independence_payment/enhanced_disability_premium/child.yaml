@@ -1,0 +1,14 @@
+description: Councils in Wales count a child (under 16) in a pensioner's family for the enhanced disability premium under the Welsh Council Tax Reduction prescribed requirements when an armed forces independence payment (AFIP) is payable for them, if this is true.
+values:
+  2015-04-01:
+    value: true
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 7(1)(c), as in force on 30 April 2015
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2015-04-30
+metadata:
+  unit: bool
+  period: year
+  label: Wales Council Tax Reduction pensioner enhanced disability premium AFIP route for a child
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 2 paras. 7 and 8
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2

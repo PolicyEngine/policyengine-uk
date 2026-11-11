@@ -1,3 +1,83 @@
+## [2.178.2] - 2026-11-11
+
+### Changed
+
+- The enhanced disability premium property test now checks a Kingston upon Thames claimant whose highest-rate DLA care award carries £1,000 a year, below 52 times the top weekly rate.
+
+
+## [2.178.1] - 2026-11-11
+
+### Fixed
+
+- The model now adds the disabled child premium and the enhanced disability premium to a pensioner's Council Tax Reduction applicable amount for each qualifying child or young person in England, Wales and Scotland, with each nation's armed forces independence payment routes by year.
+
+
+## [2.178.0] - 2026-11-10
+
+### Added
+
+- Added inputs for the UK totals of the components of corporate_sector_wealth and consumption (uk_total_*), and policyengine_uk.utils.uk_totals.add_uk_totals to write them: where the data carries them, shareholding, consumption_shareholding and carbon tax's corporate part give each household its national share in any simulation of part of the UK, such as a region, an extract or one block of a build, and filter_dataset's extracts carry them.
+
+### Fixed
+
+- A household situation no longer takes the whole UK total of business rates, corporate Stamp Duty Land Tax, corporate land and the other amounts shared out by shareholding, consumption_shareholding or income decile; whatever its weight or axes, it takes no share unless one is set.
+
+### Removed
+
+- Removed the household financial net worth parameter (household.wealth.national_balance_sheet), whose only reader was the shareholding fallback for household situations.
+
+
+## [2.177.9] - 2026-11-10
+
+### Fixed
+
+- The model now counts a carer's Universal Credit award with the carer element, where the award comes to at least one penny, when deciding the severe disability premium and the Pension Credit severe disability addition, and in Scotland's working-age council tax reduction it counts such an award for the carer premium from 1 April 2022 (#2120, #2124).
+
+
+## [2.177.8] - 2026-11-10
+
+### Changed
+
+- `is_benefit_unit_non_dependant_for_universal_credit` now cites Universal Credit Regulations 2013 Sch 4 para 9(2)(b) and reg 3 for the partner of a renter who claims as a single person. Two Council Tax Reduction test comments now cite reg 9(1) of SI 2012/2885 beside reg 9(2)(a).
+
+### Fixed
+
+- Corrected Scottish income tax rates and limits for 2018-19 to 2021-22 to match Parliament's annual resolutions, including the 41% higher rate from 2018-19.
+
+
+## [2.177.7] - 2026-11-10
+
+### Fixed
+
+- The model now sets the Personal Allowance, other allowances and trade loss relief against non-savings, savings and dividend income in the way that gives the least tax (ITA 2007 s. 25(2)), and from 2027-28 against other income before property, savings and dividend income (s. 25(3A)), where it previously always took them from non-savings income first. When it compares ways, it counts the Marriage Allowance tax reduction that each wins or loses (s. 55B(2)). Pension relief stays on non-savings income, and the income tax that Universal Credit deducts from earnings still follows the order non-savings, savings, dividends.
+
+
+## [2.177.6] - 2026-11-10
+
+### Fixed
+
+- Pay the legacy enhanced disability premium for an award of enhanced PIP daily living or armed forces independence payment as well as the highest DLA care rate, and apply its State Pension Credit age limit. Count an award only where its amount is positive, and count an amount entered without its category when it reaches `52 × (top weekly rate − £1)`. Give four working-age Council Tax Reduction schemes their own lists. Scottish councils count attendance allowance at either rate from April 2023, and the Scottish Ministers removed the age limit from June 2022. Merton and Westminster count either PIP daily living rate and omit armed forces independence payment; Newham counts either PIP daily living rate and armed forces independence payment. In Kingston upon Thames the model keeps reading `is_enhanced_disabled_for_benefits`, with no age limit, until it can apply the council's own list.
+
+
+## [2.177.5] - 2026-11-10
+
+### Fixed
+
+- The model no longer pays income-related ESA to a claimant who has reached pensionable age, or to a couple that would get State Pension Credit without that award, whether the model's formulas, an input or a reform set that Pension Credit, and it pays no Pension Credit to a couple while it pays the couple income-related ESA (Welfare Reform Act 2007 s.1(3)(c) and Sch 1 para 6(1)(c) and (d)).
+
+
+## [2.177.4] - 2026-11-09
+
+### Changed
+
+- Run the tests that need the dataset in their own CI shard, with one worker, so the other seven shards no longer build simulations of the whole dataset.
+- Require policyengine-core 3.34.9 or later. From that release, an input set on a variable that a reform has neutralised has no effect, as core documents, so a reform that restores the variable reads the input supplied before neutralisation.
+
+### Fixed
+
+- The real income variables now price to the year in gov.simulation.price_base_year (2026) instead of the year the simulation runs, and inflation_adjustment_ahc uses one price index on both sides of its ratio.
+
+
 ## [2.177.3] - 2026-11-09
 
 ### Fixed
