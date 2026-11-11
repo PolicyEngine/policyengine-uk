@@ -21,16 +21,39 @@ Annual 2003 precedes SDLT's 1 December commencement and returns zero for
 this residential SDLT component. This does not calculate predecessor stamp
 duty or establish complete historical UK tax coverage.
 
+For ordinary Scottish transactions, SDLT applies from 1 December 2003 through
+31 March 2015. Land and Buildings Transaction Tax (LBTT) applies from
+1 April 2015 instead. Before LBTT starts, its total returns zero without
+reading its inactive purchase or rent schedules. Annual 2014 therefore uses
+Scottish SDLT, while annual 2015 samples 30 April and uses LBTT. Raw dated
+liability tests separately cover 31 March and 1 April; they do not give an
+annual purchase amount an individual effective transaction date.
+
+Some Scottish transactions under contracts entered into on or before
+1 May 2012 remain subject to SDLT after the ordinary switch. The model has
+no contract-date selector and does not model those exceptions or the related
+LBTT transitional charge and credit provisions. It uses the household's
+country, derived from its region, as a proxy for the land's location. The
+legal jurisdiction follows the land, not the purchaser's residence; the
+model has no separate purchased-property-location input.
+
 The model's first-time-buyer relief covers Schedule 6ZA from 22 November
 2017. The separate relief for qualifying purchases from 25 March 2010 through
 24 March 2012 remains unmodelled. The ordinary historical rates do not cover
 that relief, disadvantaged-area relief, linked transactions, contractual
 transitional elections, or distinct corporate, non-resident and short-lease
-rules. Regional liability gates and lease-rent calculations are unchanged.
+rules. The Wales liability switch, lease-rent schedules and component
+arithmetic are unchanged.
 The program registry's verified-year range is unchanged.
 
 Sources: [HMRC's historical SDLT tables](https://www.gov.uk/government/publications/rates-and-allowances-stamp-duty-land-tax),
 [Finance Act 2003 s. 55 as at 3 December 2014](https://www.legislation.gov.uk/ukpga/2003/14/section/55/2014-12-03),
 [Finance Act 2003 Schedule 19](https://www.legislation.gov.uk/ukpga/2003/14/schedule/19/enacted),
 [Stamp Duty Land Tax Act 2015 s. 2](https://www.legislation.gov.uk/ukpga/2015/1/section/2/enacted),
-and [Finance Act 2010 s. 6](https://www.legislation.gov.uk/ukpga/2010/13/section/6/enacted).
+[Finance Act 2010 s. 6](https://www.legislation.gov.uk/ukpga/2010/13/section/6/enacted),
+[Finance Act 2003 s. 48 as enacted](https://www.legislation.gov.uk/ukpga/2003/14/section/48/enacted),
+[Scotland Act 2012 s. 28](https://www.legislation.gov.uk/ukpga/2012/11/section/28),
+[Scotland Act 2012 s. 29](https://www.legislation.gov.uk/ukpga/2012/11/section/29),
+[SI 2015/637 art. 2](https://www.legislation.gov.uk/uksi/2015/637/article/2/made),
+[SSI 2015/108 art. 2](https://www.legislation.gov.uk/ssi/2015/108/article/2/made),
+and [SSI 2014/377 arts. 3–4](https://www.legislation.gov.uk/ssi/2014/377/made).

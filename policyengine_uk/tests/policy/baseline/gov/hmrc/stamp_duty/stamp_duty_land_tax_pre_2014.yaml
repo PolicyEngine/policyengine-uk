@@ -147,3 +147,32 @@
     main_residential_property_purchased: [125_000, 125_001, 250_000, 250_001, 500_000, 500_001, 1_000_000, 1_000_001, 2_000_000, 2_000_001]
   output:
     sdlt_on_residential_property_transactions: [0, 1_250.01, 2_500, 7_500.03, 15_000, 20_000.04, 40_000, 50_000.05, 100_000, 140_000.07]
+
+# FA 2003 s55 Table A: 3% of the whole £300,000 consideration = £9,000.
+# Ordinary Scottish LBTT commences on 1 April 2015 (SSI 2015/108 art2).
+- name: Case 18, Scottish annual 2014 pays SDLT and no inactive LBTT.
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 300_000
+  output:
+    stamp_duty_land_tax: 9_000
+    expected_sdlt: 9_000
+    land_and_buildings_transaction_tax: 0
+    expected_lbtt: 0
+
+# Annual 2015 samples 30 April; this is not a 31 March transaction-date test.
+# SSI 2015/126 Table A: 2% * £105,000 + 5% * £50,000 = £4,600.
+- name: Case 19, Scottish annual 2015 pays ordinary LBTT instead of SDLT.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    region: SCOTLAND
+    main_residential_property_purchased: 300_000
+    main_residential_property_purchased_is_first_home: false
+  output:
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+    land_and_buildings_transaction_tax: 4_600
+    expected_lbtt: 4_600

@@ -221,3 +221,191 @@ def test_positive_reformed_first_threshold_does_not_charge_prices_below_it(
         rtol=0,
         atol=1e-8,
     )
+
+
+# Ordinary Scottish jurisdiction: Scotland Act 2012 s29; SI 2015/637 art2;
+# SSI 2015/108 art2. Older-contract exceptions and transition credits are
+# outside these snapshots. Country remains a proxy for the land's location.
+@pytest.fixture(scope="module")
+def raw_scottish_transaction_parameters():
+    root = Path(policyengine_uk.__file__).parent / "parameters/gov"
+    return (
+        ParameterNode("stamp_duty", directory_path=str(root / "hmrc/stamp_duty")),
+        ParameterNode("lbtt", directory_path=str(root / "revenue_scotland/lbtt")),
+    )
+
+
+class JurisdictionHouseholds:
+    """Use the production Country enum and require the anchored YEAR period."""
+
+    def __init__(self, expected_period, allow_country=True):
+        from policyengine_uk.variables.household.demographic.country import Country
+
+        self.country = Country.encode(
+            np.array(["SCOTLAND", "ENGLAND", "NORTHERN_IRELAND", "WALES", "UNKNOWN"])
+        )
+        self.expected_period = expected_period
+        self.allow_country = allow_country
+
+    def __call__(self, variable, period):
+        assert self.allow_country, "Inactive LBTT must return before reading country"
+        assert variable == "country"
+        assert period == self.expected_period
+        return self.country
+
+    def filled_array(self, value):
+        return np.full(self.country.shape, value, dtype=bool)
+
+
+def raw_jurisdiction_inputs(raw_parameters, effective_date, abolish=False):
+    from policyengine_core.periods import Instant, Period, YEAR
+
+    stamp_duty, lbtt = raw_parameters
+    if abolish:
+        stamp_duty = stamp_duty.clone()
+        stamp_duty.abolish.update(period="2014", value=True)
+    # Call the liability formula directly with a real YEAR anchored on the
+    # legal date. An annual simulation separately samples Jan/Apr law; this
+    # unit snapshot does not introduce a transaction-date API.
+    anchored = Period(
+        (
+            YEAR,
+            Instant((effective_date.year, effective_date.month, effective_date.day)),
+            1,
+        )
+    )
+    parameters = SimpleNamespace(
+        gov=SimpleNamespace(
+            hmrc=SimpleNamespace(stamp_duty=stamp_duty(effective_date.isoformat())),
+            revenue_scotland=SimpleNamespace(lbtt=lbtt(effective_date.isoformat())),
+        )
+    )
+
+    def at_period(period):
+        assert period == anchored
+        return parameters
+
+    return anchored, parameters, at_period
+
+
+@pytest.mark.parametrize(
+    "effective_date,sdlt_in_scotland,lbtt_in_effect",
+    [
+        (date(2003, 11, 30), False, False),
+        (date(2003, 12, 1), True, False),
+        (date(2015, 3, 31), True, False),
+        (date(2015, 4, 1), False, True),
+    ],
+    ids=["sdlt-commencement-eve", "sdlt-commencement", "switch-eve", "switch-day"],
+)
+def test_raw_scottish_dates_run_both_production_liability_gates(
+    raw_scottish_transaction_parameters,
+    effective_date,
+    sdlt_in_scotland,
+    lbtt_in_effect,
+):
+    from policyengine_uk.variables.gov.hmrc.sdlt_liable import sdlt_liable
+    from policyengine_uk.variables.gov.revenue_scotland.lbtt_liable import lbtt_liable
+
+    anchored, parameters, at_period = raw_jurisdiction_inputs(
+        raw_scottish_transaction_parameters, effective_date
+    )
+    assert bool(parameters.gov.hmrc.stamp_duty.applies_in_scotland) is sdlt_in_scotland
+    assert bool(parameters.gov.revenue_scotland.lbtt.in_effect) is lbtt_in_effect
+    households = JurisdictionHouseholds(anchored)
+    np.testing.assert_array_equal(
+        sdlt_liable.formula(households, anchored, at_period),
+        [sdlt_in_scotland, True, True, True, False],
+    )
+    np.testing.assert_array_equal(
+        lbtt_liable.formula(households, anchored, at_period),
+        [lbtt_in_effect, False, False, False, False],
+    )
+
+
+def test_inactive_raw_lbtt_does_not_read_country(raw_scottish_transaction_parameters):
+    from policyengine_uk.variables.gov.revenue_scotland.lbtt_liable import lbtt_liable
+
+    anchored, _, at_period = raw_jurisdiction_inputs(
+        raw_scottish_transaction_parameters, date(2014, 1, 1)
+    )
+    np.testing.assert_array_equal(
+        lbtt_liable.formula(
+            JurisdictionHouseholds(anchored, allow_country=False), anchored, at_period
+        ),
+        [False, False, False, False, False],
+    )
+
+
+def test_raw_sdlt_abolition_includes_historical_scotland(
+    raw_scottish_transaction_parameters,
+):
+    from policyengine_uk.variables.gov.hmrc.sdlt_liable import sdlt_liable
+
+    anchored, _, at_period = raw_jurisdiction_inputs(
+        raw_scottish_transaction_parameters, date(2014, 1, 1), abolish=True
+    )
+    np.testing.assert_array_equal(
+        sdlt_liable.formula(JurisdictionHouseholds(anchored), anchored, at_period),
+        [False, False, False, False, False],
+    )
+
+
+def scottish_purchase_world(year, regions):
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for index, region in enumerate(regions):
+        person = f"person{index}"
+        situation["people"][person] = {"age": {year: 40}}
+        situation["benunits"][f"benunit{index}"] = {"members": [person]}
+        situation["households"][f"household{index}"] = {
+            "members": [person],
+            "region": {year: region},
+            "main_residential_property_purchased": {year: 300_000},
+            "main_residential_property_purchased_is_first_home": {year: False},
+        }
+    return situation
+
+
+@pytest.mark.parametrize(
+    "year,expected_sdlt,expected_lbtt",
+    [(2014, 9_000, 0), (2015, 0, 4_600), (2026, 0, 4_600)],
+)
+def test_scottish_final_transaction_taxes_use_the_ordinary_annual_snapshot(
+    year, expected_sdlt, expected_lbtt
+):
+    from policyengine_uk import Simulation
+
+    # FA 2003 s55 Table A: £300,000 * 3% = £9,000 in January 2014.
+    # SSI 2015/126 Table A: £105,000 * 2% + £50,000 * 5% = £4,600.
+    # Annual 2015 samples 30 April, after the ordinary 1 April switch.
+    simulation = Simulation(situation=scottish_purchase_world(year, ["SCOTLAND"]))
+    sdlt = simulation.calculate("stamp_duty_land_tax", year)
+    lbtt = simulation.calculate("land_and_buildings_transaction_tax", year)
+    np.testing.assert_allclose(sdlt, [expected_sdlt], rtol=0, atol=0.01)
+    np.testing.assert_allclose(lbtt, [expected_lbtt], rtol=0, atol=0.01)
+    np.testing.assert_allclose(
+        sdlt + lbtt, [expected_sdlt + expected_lbtt], rtol=0, atol=0.01
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("sdlt_liable", year), [year == 2014]
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("lbtt_liable", year), [year >= 2015]
+    )
+
+
+def test_2014_final_taxes_preserve_mixed_country_and_unknown_controls():
+    from policyengine_uk import Simulation
+
+    regions = ["SCOTLAND", "LONDON", "NORTHERN_IRELAND", "WALES", "UNKNOWN"]
+    simulation = Simulation(situation=scottish_purchase_world(2014, regions))
+    np.testing.assert_allclose(
+        simulation.calculate("stamp_duty_land_tax", 2014),
+        [9_000, 9_000, 9_000, 9_000, 0],
+        rtol=0,
+        atol=0.01,
+    )
+    np.testing.assert_array_equal(
+        simulation.calculate("land_and_buildings_transaction_tax", 2014),
+        [0, 0, 0, 0, 0],
+    )
