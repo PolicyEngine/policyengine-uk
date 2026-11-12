@@ -28,7 +28,7 @@ statutory paternity pay:
    - ITA 2007 s. 12B cuts the Personal Savings Allowance from £1,000 to £500
      once the recipient has higher-rate income, and to nil with
      additional-rate income, so one pound across the basic rate limit can
-     cost £100 of tax on savings.
+     cost £100 of tax.
    - ITEPA 2003 s. 681C(3)(b) rounds the charge's percentage down to a
      whole number, so one pound across a £200 step adds 1% of the year's
      Child Benefit at once.
@@ -429,17 +429,23 @@ def rise(results, variable):
 
 
 def test_a_pound_of_statutory_paternity_pay_can_halve_the_savings_allowance():
-    # Wages of £48,270 and £2,000 of savings interest give taxable income of
-    # 50,270 - 12,570 = £37,700, exactly the basic rate limit, so the
-    # Personal Savings Allowance is £1,000 (ITA 2007 s. 12B). A pound of
-    # statutory paternity pay gives higher-rate income and a £500 allowance.
-    # Non-savings income goes from £35,700 to £35,701 (20p more). Savings tax
+    # Wages of £48,270 and £2,000 of savings interest give taxable income
+    # of 50,270 - 12,570 = £37,700, exactly the basic rate limit, so the
+    # Personal Savings Allowance is £1,000 (ITA 2007 s. 12B). A pound
+    # of statutory paternity pay gives higher-rate income and a £500
+    # allowance. Under the order non-savings, savings, dividends, savings tax
     # goes from 20% of 1,000 = £200 to 20% of 1,499 plus 40% of 1 = £300.20.
+    # Setting £1,500 of the Personal Allowance against savings instead leaves
+    # the last pound within the £500 savings allowance. Pay of 37,201 then
+    # bears 20%, so income tax rises from £7,340 to £7,440.20, not £7,440.40
+    # (ITA 2007 s. 25(2)). That pound would bear 40% but for the savings nil
+    # rate, so it still counts as higher-rate income (s. 12B(8)(b)(ii)), and
+    # the allowance stays at £500.
     results = Results([single_earner(48_270.0, savings=2_000.0)])
     assert results.recipient("savings_allowance", 0, LOW) == 1_000
     assert results.recipient("savings_allowance", 0, HIGH) == 500
     assert (
-        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 100.4)
+        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 100.2)
         < 0.01
     )
 

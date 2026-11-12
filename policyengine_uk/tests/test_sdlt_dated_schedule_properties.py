@@ -1,7 +1,8 @@
 """Property-based tests for the dated residential SDLT schedules (issue #2245).
 
 The reference below restates the legislation's own tables, for effective
-dates from 15 March 2018:
+dates from 4 December 2014, the date from which s55(1B) Table A has effect
+(Stamp Duty Land Tax Act 2015 s1(3), s2(2)):
 
 - Finance Act 2003 s55(1B) Table A (main rates); Sch4ZA para 1(2) (higher
   rates for additional dwellings, the main rates plus 3 points, or 5 from
@@ -9,6 +10,10 @@ dates from 15 March 2018:
   from £40,000; Sch6ZA paras 1(3) and 4 (first-time buyers' relief: 0% to
   £300,000 and 5% above, on prices up to £500,000); Sch5 para 2(3) Table A
   (lease rent: 1% of net present value above £125,000).
+- Finance Act 2016 s128(5): Sch4ZA's higher rates from 1 April 2016. Before
+  then a buyer of an additional dwelling paid the main rates at any price.
+- Finance Act 2018 s41(8): Sch6ZA's relief from 22 November 2017. Before then
+  a first-time buyer paid the main rates.
 - SDLT (Temporary Relief) Act 2020 s1, from 8 July 2020 to 30 June 2021 (the
   end as amended by Finance Act 2021 s87(2)(a)): 0% to £500,000 on the main
   and lease rent tables, and no first-time buyers' relief (s1(5)).
@@ -22,12 +27,12 @@ Invariants, for any effective date, price and buyer:
 
 1. Differential: the raw dated parameters give the reference tax for a
    non-first purchase, a first-time buyer, an additional dwelling and a
-   lease.
-2. Annual sampling: each model year from 2018 to 2040 reads every residential
-   SDLT parameter at 30 April of that year.
-3. Through stamp_duty_land_tax, in every model year from 2018 to 2040, each
-   buyer's tax equals the reference at 30 April, and in every model year
-   from 2015 to 2040 it never falls as the price or the lease rent rises.
+   lease, on any date and on each day a schedule changes and the day before.
+2. Annual sampling: each model year from 2015 to 2040 reads every residential
+   SDLT parameter in force at 30 April of that year.
+3. Through stamp_duty_land_tax, in every model year from 2015 to 2040, each
+   buyer's tax equals the reference at 30 April and never falls as the price
+   or the lease rent rises.
 4. At any effective date, no buyer's tax falls as the price or the lease
    rent rises.
 5. Omitted relief: from 8 July 2020 to 30 June 2021, whatever the main and
@@ -67,8 +72,11 @@ NIL_250K = ((0, 0), (250_000, 0.05), (925_000, 0.10), (1_500_000, 0.12))
 FIRST_TIME_BUYER = (300_000, 500_000)
 FIRST_TIME_BUYER_2022_25 = (425_000, 625_000)
 # First effective date, main rates, first-time buyers' relief (nil band,
-# maximum price) or None, higher-rates surcharge, lease rent nil band.
+# maximum price) or None, higher-rates surcharge or None, lease rent nil band.
 TIMELINE = (
+    (date(2014, 12, 4), STANDARD, None, None, 125_000),
+    (date(2016, 4, 1), STANDARD, None, 0.03, 125_000),
+    (date(2017, 11, 22), STANDARD, FIRST_TIME_BUYER, 0.03, 125_000),
     (date(2018, 3, 15), STANDARD, FIRST_TIME_BUYER, 0.03, 125_000),
     (date(2020, 7, 8), NIL_500K, None, 0.03, 500_000),
     (date(2021, 7, 1), NIL_250K, FIRST_TIME_BUYER, 0.03, 250_000),
@@ -103,7 +111,8 @@ def reference_tax(effective_date, price, buyer):
         nil_band, maximum = first_time_buyer
         if price <= maximum:
             return _marginal(((0, 0), (nil_band, 0.05)), price)
-    if buyer == "additional" and price >= HIGHER_RATES_MINIMUM:
+    higher_rates_apply = surcharge is not None
+    if buyer == "additional" and higher_rates_apply and price >= HIGHER_RATES_MINIMUM:
         higher = tuple((start, rate + surcharge) for start, rate in main)
         return _marginal(higher, price)
     return _marginal(main, price)
@@ -116,17 +125,20 @@ def reference_lease_tax(effective_date, net_present_value):
 
 def _model_tax(purchase, price, buyer):
     # The schedule sdlt_on_residential_property_transactions applies to each
-    # kind of purchase.
-    if buyer == "first":
+    # kind of purchase. Before a relief or surcharge starts, its schedule
+    # holds no brackets on the raw dated parameters, and the formula reads
+    # the main rates instead.
+    main_rates_tax = purchase.main.subsequent.calc(price)
+    if buyer == "first" and purchase.main.first.max > 0:
         return np.where(
             price <= purchase.main.first.max,
             purchase.main.first.rate.calc(price),
-            purchase.main.subsequent.calc(price),
+            main_rates_tax,
         )
-    if buyer == "additional":
+    if buyer == "additional" and purchase.additional.higher_rates_apply:
         chargeable = np.where(price < purchase.additional.min, 0, price)
         return purchase.additional.rate.calc(chargeable)
-    return purchase.main.subsequent.calc(price)
+    return main_rates_tax
 
 
 RAW = ParameterNode(
@@ -164,6 +176,46 @@ def test_dated_parameters_match_the_statutory_tables(effective_date, price_list)
             atol=1e-6,
             err_msg=f"{buyer} on {effective_date}",
         )
+
+
+CHANGE_DAYS = sorted(
+    {d + timedelta(days=offset) for d in CHANGE_DATES for offset in (-1, 0)}
+)
+BOUNDARY_PRICES = sorted(
+    {0.0, 0.01, 2_000_000.0}
+    | {float(b + offset) for b in PRICE_BOUNDARIES for offset in (-1, 0, 1)}
+)
+
+
+def _check_statutory_tables(effective_date):
+    residential = RAW(effective_date.isoformat())
+    price = np.array(BOUNDARY_PRICES)
+    for buyer in BUYERS:
+        expected = [reference_tax(effective_date, p, buyer) for p in BOUNDARY_PRICES]
+        np.testing.assert_allclose(
+            _model_tax(residential.purchase, price, buyer),
+            expected,
+            rtol=1e-12,
+            atol=1e-6,
+            err_msg=f"{buyer} on {effective_date}",
+        )
+    expected = [reference_lease_tax(effective_date, v) for v in BOUNDARY_PRICES]
+    np.testing.assert_allclose(
+        residential.rent.calc(price), expected, rtol=1e-12, atol=1e-6
+    )
+
+
+@pytest.mark.parametrize("effective_date", CHANGE_DAYS, ids=str)
+def test_each_change_day_and_its_eve_match_the_statutory_tables(effective_date):
+    _check_statutory_tables(effective_date)
+
+
+def test_table_a_starts_on_4_december_2014():
+    # Stamp Duty Land Tax Act 2015 s2(2): s55(1B) Table A has effect from 4
+    # December 2014. The day before, the main rates hold other bands.
+    _check_statutory_tables(FIRST_DATE)
+    eve = RAW((FIRST_DATE - timedelta(days=1)).isoformat()).purchase.main.subsequent
+    assert tuple(zip(eve.thresholds, eve.rates)) != STANDARD
 
 
 @PROPERTY_SETTINGS
@@ -225,6 +277,7 @@ def test_omitted_relief_ignores_buyer_status_under_any_rates(
     _change_rates_over_initial_relief(main.subsequent, main_rates)
     _change_rates_over_initial_relief(main.first.rate, first_time_buyer_rates)
     purchase = residential(effective_date.isoformat()).purchase
+    assert purchase.main.first.max == 0
     assert list(purchase.main.subsequent.rates) == main_rates
     assert list(purchase.main.first.rate.rates) == first_time_buyer_rates
     price = np.array(price_list, dtype=float)
@@ -240,13 +293,19 @@ def _scale(scale):
 
 
 def _read(residential):
+    # Before a relief or surcharge starts, the model year reads backdated
+    # values that the formula never uses, so only schedules in force count.
     purchase = residential.purchase
+    first, additional = purchase.main.first, purchase.additional
+    relief = (_scale(first.rate),) if first.max > 0 else ()
+    higher_rates = bool(additional.higher_rates_apply)
+    surcharge = (_scale(additional.rate), additional.min) if higher_rates else ()
     return (
         _scale(purchase.main.subsequent),
-        _scale(purchase.main.first.rate),
-        purchase.main.first.max,
-        _scale(purchase.additional.rate),
-        purchase.additional.min,
+        first.max,
+        relief,
+        higher_rates,
+        surcharge,
         _scale(residential.rent),
     )
 

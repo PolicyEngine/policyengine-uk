@@ -3,9 +3,9 @@
 # HB Regulations 2006 reg 13D(2)(a)(i) and reg 2(1) "young individual"
 # (housing_benefit_LHA_category):
 # https://www.legislation.gov.uk/uksi/2006/213/regulation/13D
-# The existing bedroom calculation is unchanged: B = 1 bedroom, C = 2;
-# A is the shared accommodation rate, overriding the bedroom calculation.
-# Where the schemes agree, each case asserts both categories.
+# B = 1 bedroom, C = 2; A is the shared accommodation rate, overriding the
+# bedroom calculation. Where the schemes agree, each case asserts both
+# categories.
 - name: Single 17-year-old renter is not their own dependent child
   period: 2025
   input:
@@ -71,8 +71,11 @@
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
     lha_renter_has_non_dependant: true
     is_lha_shared_accommodation_rate_specified_renter: false
-    # No UC QYP, but a non-dependant blocks A. Existing bedroom formula = 1: B.
-    LHA_category: B
+    # No UC QYP (UC Regs 2013 reg 5(3): training under a contract of
+    # employment does not count), but a non-dependant blocks A. The
+    # non-dependant is not a child, so has a bedroom (Sch 4 para 10(1)(c)):
+    # 1 + 1 = 2: C.
+    LHA_category: C
     # HB reg 13D(3)(a)-(b): a bedroom for the renter and one for the
     # 17-year-old, who is not a child (reg 2(1): under 16): 2 bedrooms, C.
     housing_benefit_LHA_category: C
@@ -98,8 +101,9 @@
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
     lha_renter_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false
-    # Responsibility for a UC QYP blocks A. Existing bedroom formula = 1: B.
-    LHA_category: B
+    # Responsibility for a UC QYP blocks A. The QYP has a bedroom (Sch 4
+    # para 10(1)(b)): 1 + 1 = 2: C.
+    LHA_category: C
     # HB reg 13D(3)(a)-(b): a bedroom for the renter and one for the
     # 18-year-old, who is not a child (reg 2(1): under 16): 2 bedrooms, C.
     housing_benefit_LHA_category: C

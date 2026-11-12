@@ -1,0 +1,76 @@
+# The Marriage Allowance tax reduction the share of reliefs and allowances can
+# win or lose (ITA 2007 ss. 25(2) and 55B). 2026-27: Personal Allowance £12,570,
+# so the transfer reaches 10%, £1,257, rounded up to £1,260 (s. 55B(4) and (5)),
+# and the reduction 20% of that, £252.
+
+- name: A higher-rate earner has the reduction at stake, though the rate test fails
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 60_000
+      partner:
+        age: 40
+    benunit:
+      members: [earner, partner]
+      is_married: true
+  output:
+    marriage_allowance_if_income_conditions_met: [1_260, 0]
+    marriage_allowance_reduction_at_stake: [252, 0]
+    marriage_allowance: [0, 0]
+
+- name: The partner's unused allowance limits the amount at stake
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      partner:
+        age: 40
+        employment_income: 12_000
+    benunit:
+      members: [earner, partner]
+      is_married: true
+  output:
+    # The partner leaves £570 unused: 20% of it is £114.
+    marriage_allowance_if_income_conditions_met: [570, 0]
+    marriage_allowance_reduction_at_stake: [114, 0]
+
+- name: An unmarried couple has nothing at stake
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+      partner:
+        age: 40
+    benunit:
+      members: [earner, partner]
+      is_married: false
+  output:
+    marriage_allowance_if_income_conditions_met: [0, 0]
+    marriage_allowance_reduction_at_stake: [0, 0]
+
+- name: A person who would not claim has nothing at stake
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 30_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 40
+    benunit:
+      members: [earner, partner]
+      is_married: true
+  output:
+    marriage_allowance_if_income_conditions_met: [0, 0]
+    marriage_allowance_reduction_at_stake: [0, 0]

@@ -1,0 +1,21 @@
+description: Weekly family premium for a working-age applicant whose family includes a child or young person under the Scottish council tax reduction scheme. It was removed for new claims from 1 May 2016; families with an unbroken claim since then keep it as a transitional family premium, which the model does not track, so the model gives it to no one after that date.
+values:
+  2013-04-01:
+    value: 17.40
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2012 Sch. 1 para. 4(1)(b)
+        href: https://www.legislation.gov.uk/ssi/2012/303/schedule/1/paragraph/4/made
+  2014-04-01:
+    value: 17.45
+    reference:
+      - title: SSI 2014/35 reg 4(c)
+        href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+  2016-05-01:
+    value: 0
+    reference:
+      - title: The Council Tax Reduction (Scotland) Amendment Regulations 2016 (SSI 2016/81) regs. 2 and 5
+        href: https://www.legislation.gov.uk/ssi/2016/81/regulation/5
+metadata:
+  label: Scotland working-age CTR family premium
+  unit: currency-GBP
+  period: week
