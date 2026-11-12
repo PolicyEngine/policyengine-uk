@@ -1,0 +1,154 @@
+description: England pensioner Council Tax Reduction deducts this weekly amount for each non-dependant aged 18 or over, by the non-dependant's normal gross weekly income if they are in remunerative work; a non-dependant not in remunerative work pays the lowest amount.
+
+# Sums from paragraph 8 of Schedule 1 to the Council Tax Reduction Schemes
+# (Prescribed Requirements) (England) Regulations 2012 (SI 2012/2885), as
+# substituted for each financial year by the amending instruments in the
+# references. Each year's sums apply from 1 April.
+brackets:
+- threshold:
+    2013-04-01: 0
+  amount:
+    2013-04-01: 3.65
+    2014-04-01: 3.7
+    2015-04-01: 3.74
+    2016-04-01: 3.77
+    2017-04-01: 3.8
+    2018-04-01: 3.9
+    2019-04-01: 4
+    2020-04-01: 4.05
+    2021-04-01: 4.05
+    2022-04-01: 4.2
+    2023-04-01: 4.6
+    2024-04-01: 4.9
+    2025-04-01: 5
+    2026-04-01: 5.2
+- threshold:
+    2013-04-01: 186
+    2014-04-01: 188
+    2015-04-01: 189
+    2016-04-01: 195
+    2017-04-01: 196.95
+    2018-04-01: 202.85
+    2019-04-01: 207.7
+    2020-04-01: 217
+    2021-04-01: 217
+    2022-04-01: 224
+    2023-04-01: 236
+    2024-04-01: 256
+    2025-04-01: 266
+    2026-04-01: 279
+  amount:
+    2013-04-01: 7.25
+    2014-04-01: 7.45
+    2015-04-01: 7.52
+    2016-04-01: 7.58
+    2017-04-01: 7.65
+    2018-04-01: 7.9
+    2019-04-01: 8.1
+    2020-04-01: 8.25
+    2021-04-01: 8.3
+    2022-04-01: 8.55
+    2023-04-01: 9.4
+    2024-04-01: 10.05
+    2025-04-01: 10.2
+    2026-04-01: 10.6
+- threshold:
+    2013-04-01: 322
+    2014-04-01: 326
+    2015-04-01: 328
+    2016-04-01: 338
+    2017-04-01: 341.4
+    2018-04-01: 351.65
+    2019-04-01: 360.1
+    2020-04-01: 377
+    2021-04-01: 377
+    2022-04-01: 389
+    2023-04-01: 410
+    2024-04-01: 445
+    2025-04-01: 463
+    2026-04-01: 485
+  amount:
+    2013-04-01: 9.15
+    2014-04-01: 9.4
+    2015-04-01: 9.49
+    2016-04-01: 9.56
+    2017-04-01: 9.65
+    2018-04-01: 9.95
+    2019-04-01: 10.2
+    2020-04-01: 10.35
+    2021-04-01: 10.4
+    2022-04-01: 10.7
+    2023-04-01: 11.8
+    2024-04-01: 12.6
+    2025-04-01: 12.8
+    2026-04-01: 13.3
+- threshold:
+    2013-04-01: 401
+    2014-04-01: 406
+    2015-04-01: 408
+    2016-04-01: 420
+    2017-04-01: 424.2
+    2018-04-01: 436.9
+    2019-04-01: 447.4
+    2020-04-01: 469
+    2021-04-01: 469
+    2022-04-01: 484
+    2023-04-01: 511
+    2024-04-01: 554
+    2025-04-01: 577
+    2026-04-01: 605
+  amount:
+    2013-04-01: 10.95
+    2014-04-01: 11.25
+    2015-04-01: 11.36
+    2016-04-01: 11.45
+    2017-04-01: 11.55
+    2018-04-01: 11.9
+    2019-04-01: 12.2
+    2020-04-01: 12.4
+    2021-04-01: 12.45
+    2022-04-01: 12.85
+    2023-04-01: 14.15
+    2024-04-01: 15.1
+    2025-04-01: 15.35
+    2026-04-01: 15.95
+metadata:
+  label: England pensioner CTR non-dependant deduction
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  economy: false
+  propagate_metadata_to_children: true
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012, Sch. 1 para. 8
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8
+    - title: SI 2012/3085, sums for 2013-14
+      href: https://www.legislation.gov.uk/uksi/2012/3085/made
+    - title: SI 2013/3181, sums for 2014-15
+      href: https://www.legislation.gov.uk/uksi/2013/3181/made
+    - title: SI 2014/3312, sums for 2015-16
+      href: https://www.legislation.gov.uk/uksi/2014/3312/made
+    - title: SI 2015/2041, sums for 2016-17
+      href: https://www.legislation.gov.uk/uksi/2015/2041/made
+    - title: SI 2016/1262, sums for 2017-18
+      href: https://www.legislation.gov.uk/uksi/2016/1262/made
+    - title: SI 2017/1305, sums for 2018-19
+      href: https://www.legislation.gov.uk/uksi/2017/1305/made
+    - title: SI 2018/1346, sums for 2019-20
+      href: https://www.legislation.gov.uk/uksi/2018/1346/made
+    - title: SI 2020/23, sums for 2020-21
+      href: https://www.legislation.gov.uk/uksi/2020/23/made
+    - title: SI 2021/29, sums for 2021-22
+      href: https://www.legislation.gov.uk/uksi/2021/29/made
+    - title: SI 2022/25, sums for 2022-23
+      href: https://www.legislation.gov.uk/uksi/2022/25/made
+    - title: SI 2023/16, sums for 2023-24
+      href: https://www.legislation.gov.uk/uksi/2023/16/made
+    - title: SI 2024/29, sums for 2024-25
+      href: https://www.legislation.gov.uk/uksi/2024/29/made
+    - title: SI 2025/39, sums for 2025-26
+      href: https://www.legislation.gov.uk/uksi/2025/39/made
+    - title: SI 2026/27, sums for 2026-27
+      href: https://www.legislation.gov.uk/uksi/2026/27/made

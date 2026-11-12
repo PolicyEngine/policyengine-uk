@@ -38,8 +38,10 @@ from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_i
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     BEREAVEMENT_SPLIT_INPUTS,
+    STORED_HOUSEHOLD_TOTALS,
     extend_single_year_dataset,
     reset_growthfactor_uprating,
+    stored_total_uprating,
     uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
@@ -84,8 +86,10 @@ from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.input_dataframe_export import input_dataframe
 from policyengine_uk.utils.measurement_branches import (
     drop_calculated_values,
+    drop_calculated_years,
     retained_input_variables,
 )
+from policyengine_uk.utils.subsample import subsample_simulation
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     copy_model_values,
@@ -706,7 +710,134 @@ class Simulation(CoreSimulation):
         # anchor when translating that stored amount in either direction.
         return self.calculate(TAX_FREE_INTEREST, period_(period).start.period("year"))
 
+    def _record_derived(self, variable_name):
+        # The value depends on which other periods hold inputs, as an uprated
+        # one does in Core, so an input set for any period can change it.
+        history = getattr(self, "_get_store_history", None)
+        if callable(history):
+            # Store-history tracking is available in newer Core releases;
+            # the declared minimum already caches formula results without it.
+            from policyengine_core.data_storage.store_history import (
+                next_sequence_number,
+            )
+
+            history().record_derived(variable_name, next_sequence_number())
+
+    def _index_growth(self, index_name, source, period):
+        # Core's uprating factor: the ratio of the index at the two starts,
+        # or 1 where the index has no value or is zero at the source.
+        if index_name is None:
+            return 1
+        index = self.tax_benefit_system.parameters.get_child(index_name)
+        source_index = _uprating_index_value(index, source.start)
+        target_index = _uprating_index_value(index, period.start)
+        return (
+            target_index / source_index
+            if source_index not in (None, 0) and target_index is not None
+            else 1
+        )
+
+    def _latest_source(self, name, period):
+        source = self._isa_latest_input(name, period, earlier=True)
+        if source is None:
+            # Core first uprates strictly earlier annual inputs, then carries
+            # an input starting on the query date if there was none earlier.
+            source = self._isa_latest_input(name, period)
+        return source
+
+    def _abolished(self, name, period) -> bool:
+        # Core's own test for gov.abolitions, which a reform may supply and
+        # the baseline does not: without the node, nothing is abolished.
+        try:
+            return bool(self.tax_benefit_system.parameters(period).gov.abolitions[name])
+        except Exception:
+            return False
+
+    def _carries_over(self, variable) -> bool:
+        # Core's own test for carrying over an input with no index.
+        return (
+            self.tax_benefit_system.auto_carry_over_input_variables
+            and variable.calculate_output is None
+        )
+
+    def _stands_for_stored_parts(self, variable, period) -> bool:
+        # A stored total means the sum of the parts STORED_HOUSEHOLD_TOTALS
+        # names for it, each a plain input. Grow it only while the variable
+        # still sums exactly those parts, each once, with nothing subtracted,
+        # and each part still reads its inputs: the total's own period, a
+        # float Core doesn't round, no computation prerequisite, no formula,
+        # sum or subtraction for this period, no defined_for mask, not
+        # neutralized or abolished, and an index or Core's carry-over to bring
+        # an earlier input forward. Anything a reform changes there leaves the
+        # total to Core, as in data with no stored total.
+        parts = STORED_HOUSEHOLD_TOTALS.get(variable.name)
+        if (
+            parts is None
+            or not built_from_data(self)
+            or variable.get_formula(period) is not None
+            or variable.subtracts
+            or sorted(variable.adds or ()) != sorted(parts)
+        ):
+            return False
+        for name in parts:
+            part = self.tax_benefit_system.variables.get(name)
+            if (
+                part is None
+                or part.definition_period != variable.definition_period
+                or part.value_type is not float
+                or part.requires_computation_after
+                or part.get_formula(period) is not None
+                or part.adds
+                or part.subtracts
+                or part.defined_for is not None
+                or part.is_neutralized
+                or self._abolished(name, period)
+                or not (part.uprating is not None or self._carries_over(part))
+            ):
+                return False
+        return True
+
+    def _stored_household_total(self, variable, period):
+        # A dataset that stores a household total keeps it, projected like
+        # its parts, in every year (#2740). Core serves the stored total for
+        # each year the data hold. For a later year it runs the variable's
+        # sum of person balances, which such data need not hold, so grow the
+        # latest stored total instead, as Core grows an input with `uprating`.
+        # Which years hold the total or its parts decides the result.
+        if not self._stands_for_stored_parts(variable, period):
+            return None
+        self._record_derived(variable.name)
+        source = self._latest_source(variable.name, period)
+        if source is None:
+            return None
+        for part in variable.adds:
+            part_source = self._isa_latest_input(part, period)
+            if part_source is None:
+                continue
+            native = self.tax_benefit_system.variables[part].definition_period
+            if part_source.start > source.start or part_source.unit != native:
+                # Person balances stored for a later year than the total give
+                # the newer observation, and Core doesn't uprate a balance
+                # stored in another unit, so their sum stands.
+                return None
+        try:
+            index_name = stored_total_uprating(self.tax_benefit_system, variable.name)
+        except ValueError:
+            # Parts that grow by different indices give the total no index of
+            # its own, so their sum stands.
+            return None
+        # The grown total reads none of the parts, so record them: a part
+        # input that a branch sets later for a later year then replaces it.
+        for part in variable.adds:
+            self._record_derived(part)
+        stored = self.get_holder(variable.name).get_array(source, self.branch_name)
+        return stored * self._index_growth(index_name, source, period)
+
     def _run_formula(self, variable, population, period):
+        if variable.name in STORED_HOUSEHOLD_TOTALS:
+            stored = self._stored_household_total(variable, period)
+            if stored is not None:
+                return stored
         result = super()._run_formula(variable, population, period)
         if (
             result is not None
@@ -720,20 +851,8 @@ class Simulation(CoreSimulation):
         # This is fallback, after Core's explicit input/abolition checks and
         # policy formulas. Preserve the old gross history even past the last
         # materialized dataset year; new additive records use Core normally.
-        history = getattr(self, "_get_store_history", None)
-        if callable(history):
-            # Store-history tracking is available in newer Core releases;
-            # the declared minimum already caches formula results without it.
-            from policyengine_core.data_storage.store_history import (
-                next_sequence_number,
-            )
-
-            history().record_derived(variable.name, next_sequence_number())
-        source = self._isa_latest_input(variable.name, period, earlier=True)
-        if source is None:
-            # Core first uprates strictly earlier annual inputs, then carries
-            # an input starting on the query date if there was none earlier.
-            source = self._isa_latest_input(variable.name, period)
+        self._record_derived(variable.name)
+        source = self._latest_source(variable.name, period)
         holder = self.get_holder(variable.name)
         if source is None:
             gross = holder.default_array()
@@ -744,16 +863,7 @@ class Simulation(CoreSimulation):
                 == "additive"
             ):
                 gross = gross + self._isa_stored_exemption(source)
-            if variable.uprating is not None:
-                index = self.tax_benefit_system.parameters.get_child(variable.uprating)
-                source_index = _uprating_index_value(index, source.start)
-                target_index = _uprating_index_value(index, period.start)
-                factor = (
-                    target_index / source_index
-                    if source_index not in (None, 0) and target_index is not None
-                    else 1
-                )
-                gross = gross * factor
+            gross = gross * self._index_growth(variable.uprating, source, period)
         return gross - self.calculate(TAX_FREE_INTEREST, period)
 
     @staticmethod
@@ -1009,6 +1119,9 @@ class Simulation(CoreSimulation):
         for variable in self.tax_benefit_system.variables:
             if variable not in retained:
                 self.delete_arrays(variable)
+        drop_calculated_years(
+            self, retained.intersection(self.tax_benefit_system.variables)
+        )
 
     def get_known_variables(self):
         variables = []
@@ -1539,6 +1652,75 @@ class Simulation(CoreSimulation):
         )
 
         self.build_from_populations(builder.populations)
+
+    def subsample(
+        self,
+        n: Optional[int] = None,
+        frac: Optional[float] = None,
+        seed=None,
+        time_period=None,
+        quantize_weights: bool = True,
+    ) -> "Simulation":
+        """Cut the simulation down to a weighted random sample of households.
+
+        Draws ``n`` households with replacement and keeps each household
+        drawn at least once, with its benefit units and people. So the sample
+        holds at most ``n`` households. Only households with a positive
+        weight in ``time_period`` can be drawn: with ``quantize_weights``
+        (the default), each with probability proportional to that weight;
+        without it, each with equal probability. A period before the first
+        one the simulation was given household weights for has none, so the
+        first given weights are used instead.
+
+        Every value the simulation was given (from its dataset or through
+        ``set_input``) is kept for the sampled records, for every period, and
+        so is every value the model stored as its own (``set_model_value``),
+        which stays the model's. So does the record of where each capital
+        gains input came from, and what the dataset declared about how its
+        amounts grow (its ISA income contracts and savings income series). Calculated values are dropped and recalculated
+        on the sample, and the tracer starts again.
+
+        Each supplied weight is replaced so that its total is unchanged in
+        every period: a household's new weight is proportional to the number
+        of times it was drawn, and also to its old weight without
+        ``quantize_weights``. A zero weight stays zero. With
+        ``quantize_weights``, a household's new weight in ``time_period``,
+        averaged over draws, is its old one; in another period that holds
+        only if the household's share of the total weight is the same there.
+
+        ``baseline`` is replaced with a copy subsampled to the same
+        households, which keeps its own policy and inputs. The baseline the
+        simulation held before is left as it was, since another simulation
+        (a clone of this one) can hold it too. ``dataset`` is replaced with
+        the rows of the dataset the simulation was built from for the
+        sampled records, with its weights rescaled in the same way. Like the
+        dataset before, it holds whole years only, and not values set with
+        ``set_input`` after the simulation was built.
+
+        Args:
+            n: The number of households to draw.
+            frac: The number to draw as a share of all households, used when
+                ``n`` is not given.
+            seed: A number or text that fixes the draw. The same seed always
+                draws the same households; without one, a fixed seed is used.
+            time_period: Draw households by their weight in this period.
+                Defaults to the default calculation period.
+            quantize_weights: If false, draw households with a positive
+                weight with equal probability, and make a household's new
+                weight proportional to its old weight times the number of
+                times it was drawn.
+
+        Returns:
+            This simulation, subsampled.
+        """
+        return subsample_simulation(
+            self,
+            n=n,
+            frac=frac,
+            seed=seed,
+            time_period=time_period,
+            quantize_weights=quantize_weights,
+        )
 
     def move_values(self, variable_donor: str, variable_target: str) -> None:
         """Move values from one variable to another across all branches.

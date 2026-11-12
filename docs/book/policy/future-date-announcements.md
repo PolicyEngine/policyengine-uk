@@ -121,7 +121,10 @@ The same pattern applies in reverse to one-off or time-limited
 payments. The means-tested Cost-of-Living Payment in
 [`gov/treasury/cost_of_living_support/means_tested_households/amount.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/treasury/cost_of_living_support/means_tested_households/amount.yaml)
 is £650 from 2022, £900 from 2023 and goes back to zero from
-2024-01-01.
+2024-01-01. It also reads zero before 2022, from a `0001-01-01: 0` row: the
+model carries each parameter's earliest value back to 2015
+(`backdate_parameters` in `policyengine_uk/utils/parameters.py`), so without
+that row it would pay the one-off amount in every year from 2015.
 
 ## Best practices
 

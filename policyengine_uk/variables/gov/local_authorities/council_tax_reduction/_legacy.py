@@ -4,6 +4,21 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 )
 
 
+def in_other_non_liable_family(person, period):
+    """Whether each person is outside every family claiming Council Tax
+    Reduction for the household, outside every family liable for a share of
+    its rent, and not paying the householder for their own occupation: all
+    such people aged 18 or over are the applicants' non-dependants (SI
+    2012/2885 reg 9(2)(a), (d)-(e) and the Welsh and Scottish equivalents).
+    The eligibility for a non-dependant deduction and the local schemes'
+    aggregation both use this, so they stay on one definition."""
+    return (
+        ~person.benunit("council_tax_reduction_claimant_benunit", period)
+        & ~person.benunit("liable_for_share_of_household_rent", period)
+        & ~person("pays_rent_to_householder", period)
+    )
+
+
 def is_full_time_student_non_dep(person, period):
     return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
         person("in_HE", period)
@@ -12,11 +27,11 @@ def is_full_time_student_non_dep(person, period):
 
 def applicant_has_universal_credit(benunit, period):
     """Whether the Council Tax Reduction applicant has the benefit unit's
-    Universal Credit award. The award belongs to the benefit unit's claimant
-    and partner, so not to a household head who applies alone."""
-    return (benunit("universal_credit", period) > 0) & ~benunit(
-        "council_tax_reduction_head_applies_alone", period
-    )
+    Universal Credit award (council_tax_reduction_universal_credit_award),
+    including one the benefit cap or deductions reduce to nil. The award
+    belongs to the benefit unit's claimant and partner, so not to a household
+    head who applies alone."""
+    return benunit("council_tax_reduction_universal_credit_award", period)
 
 
 def legacy_council_tax_reduction(
@@ -33,24 +48,36 @@ def legacy_council_tax_reduction(
     would_claim = benunit("would_claim_council_tax_reduction", period)
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
-    universal_credit = benunit("universal_credit", period)
     has_uc_award = applicant_has_universal_credit(benunit, period)
     uc_applicable_amount = benunit("uc_maximum_amount", period)
-    # The schemes use "the calculation or estimate of the amount of the
+    # The councils use "the calculation or estimate of the amount of the
     # income of the applicant ... made by the Secretary of State for the
-    # purpose of determining the award of universal credit", plus the award
-    # (Council Tax Reduction Schemes (Default Scheme) (England) Regulations
-    # 2012, Sch. para. 37(1) and (3)(a); Kingston upon Thames and Merton
-    # reproduce it, Newham refers to the same calculation, and Westminster's
-    # scheme is based on the Default Scheme). That income is
-    # earned income after tax, National Insurance and pension contributions
-    # and unearned income. The work allowance and taper are steps in the
-    # award (UC Regs 2013 reg. 22), not in the income, so the work allowance
-    # is not deducted here.
+    # purpose of determining the award of universal credit", plus "the amount
+    # of the award of universal credit" (Council Tax Reduction Schemes
+    # (Default Scheme) (England) Regulations 2012, Sch. para. 37(1) and
+    # (3)(a)). Kingston upon Thames and Merton reproduce para. 37, Newham
+    # refers to the same calculation and counts "the amount of entitlement to
+    # universal credit", and Westminster bases its scheme on the Default
+    # Scheme. The model takes that income as earned income after tax,
+    # National Insurance and pension contributions, plus unearned income. The
+    # Secretary of State applies the work allowance and taper to the award
+    # (UC Regs 2013 reg. 22), not to the income, so the model counts earned
+    # income before the work allowance. The Secretary of State reduces the
+    # award for the benefit cap (reg. 81(1)), then recovers debts from it:
+    # payments on account such as advances (SI 2013/383 reg. 10),
+    # overpayments (SI 2013/384 reg. 10) and the claimant's liabilities to
+    # third parties (SI 2013/380 Sch. 6 para. 2(1)). The Secretary of State
+    # may not make a third-party deduction that leaves less than a penny
+    # payable (Sch. 6 para. 3(1)(a)), and in para. 11(5) treats the award and
+    # the amount payable as two figures. The councils count the award after
+    # the benefit cap and before debt deductions.
+    # universal_credit gives the amount payable, so the model adds
+    # uc_deductions to it to recover that award.
+    uc_award = benunit("universal_credit", period) + benunit("uc_deductions", period)
     uc_applicable_income = (
         benunit("uc_earned_income_before_work_allowance", period)
         + benunit("uc_unearned_income", period)
-        + universal_credit
+        + uc_award
     )
     applicable_amount = where(has_uc_award, uc_applicable_amount, applicable_amount)
     applicable_income = where(has_uc_award, uc_applicable_income, applicable_income)
@@ -73,10 +100,20 @@ def legacy_council_tax_reduction(
         - excess_income * ctr.means_test.withdrawal_rate
         - non_dep_deductions,
     )
+    # council_tax_reduction_assessable_capital takes the Universal Credit
+    # assessment for an award of Universal Credit (the default scheme's
+    # para 37(6)), including one the benefit cap or deductions reduce to nil.
+    # Most councils keep the default scheme's disregard of the whole capital of
+    # an applicant on Income Support, income-based JSA or income-related ESA
+    # (its Schedule 10 para 8); each scheme says whether it does.
+    passported_capital_disregarded = (
+        relevant_income_based_benefit
+        & ctr.means_test.disregards_passported_applicants_capital
+    )
     capital = where(
-        has_uc_award,
-        benunit("uc_assessable_capital", period),
-        benunit.household("savings", period),
+        passported_capital_disregarded,
+        0,
+        benunit("council_tax_reduction_assessable_capital", period),
     )
     capital_eligible = capital <= ctr.means_test.capital_limit
     return (
@@ -94,7 +131,14 @@ def local_non_dep_deductions(
     individual_deduction_variable,
     one_deduction_for_uc_couples=True,
 ):
-    deductions = benunit.members(individual_deduction_variable, period)
+    # The local schemes still charge only the non-dependants of other
+    # families. Non-dependants within a family's own benefit unit, now
+    # eligible for the national schemes, are left out here until each
+    # council's aggregation is brought into line.
+    person = benunit.members
+    deductions = person(individual_deduction_variable, period) * (
+        in_other_non_liable_family(person, period)
+    )
     deduction_for_benunit = benunit.max(deductions)
     if not one_deduction_for_uc_couples:
         has_uc = benunit("universal_credit", period) > 0

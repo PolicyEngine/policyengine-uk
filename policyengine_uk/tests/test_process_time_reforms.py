@@ -26,6 +26,10 @@ Invariants:
 5. Monotonicity: the April 2028 State Pension is non-decreasing in the
    minimum rate.
 6. Baselines stay current law: ``sim.baseline`` and ``parameters.baseline``.
+
+Each April the State Pension rates are the year before's raised by the
+triple lock rate and rounded to the nearest 5p, so the checks of 1 and 3
+compare them with ``uprated``, exactly.
 """
 
 from decimal import ROUND_HALF_UP, Decimal
@@ -53,6 +57,8 @@ TRIPLE_LOCK = f"{GROWTH}.triple_lock"
 LAGGED_CPI = f"{GROWTH}.obr.lagged_cpi"
 INDICES = "gov.economic_assumptions.indices"
 ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
+# The calendar-year series on the gov tree (invariant 2).
+CALENDAR_YEAR_SERIES = (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.")
 CPI_INDEX = f"{INDICES}.obr.consumer_price_index"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 AWE = f"{INPUTS}.awe_total_pay_may_july"
@@ -112,6 +118,12 @@ def published(rate):
     return float(Decimal(repr(float(rate))).quantize(Decimal("0.001"), ROUND_HALF_UP))
 
 
+def uprated(previous, rate):
+    """A weekly State Pension rate raised by ``rate``, to the nearest 5p."""
+    amount = Decimal(repr(float(previous))) * (1 + Decimal(repr(float(rate))))
+    return float((amount / Decimal("0.05")).quantize(Decimal(1), ROUND_HALF_UP) / 20)
+
+
 def via_reform_dict(change, situation=PENSIONER):
     return Simulation(situation=situation, reform=change)
 
@@ -155,7 +167,7 @@ def test_the_minimum_rate_moves_the_triple_lock_and_the_state_pension(
             # scalar applies from 2023 (or 2000) and so raises it too.
             assert weekly(reformed, path, 2027) == weekly(baseline, path, 2027)
         assert weekly(reformed, path, 2028) == pytest.approx(
-            weekly(reformed, path, 2027) * 1.1, abs=0.006
+            uprated(weekly(reformed, path, 2027), 0.1), abs=1e-9
         )
     pension = float(reformed.calculate("new_state_pension", 2028).sum())
     assert pension == pytest.approx(
@@ -202,7 +214,7 @@ def test_earnings_growth_sets_the_next_aprils_triple_lock_by_its_rule(
         baseline, TRIPLE_LOCK, f"{year}-01-01"
     )
     assert weekly(reformed, NEW_STATE_PENSION, year + 1) == pytest.approx(
-        weekly(reformed, NEW_STATE_PENSION, year) * (1 + expected), abs=0.006
+        uprated(weekly(reformed, NEW_STATE_PENSION, year), expected), abs=1e-9
     )
 
 
@@ -314,9 +326,7 @@ def test_calendar_year_series_are_the_growth_rates_indices_and_household_tree():
     for path in paths:
         if path.startswith("baseline."):
             continue
-        expected = path.startswith(
-            (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.", "household.")
-        )
+        expected = path.startswith(CALENDAR_YEAR_SERIES + ("household.",))
         assert reads(path) is expected, path
     assert not reads("gov.not.a.parameter")
 
@@ -358,7 +368,7 @@ def test_a_triple_lock_rate_set_by_reform_uprates_the_state_pension(
     ]
     assert pensions == reference
     assert pensions[2] == pytest.approx(
-        weekly(baseline, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(baseline, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
@@ -366,7 +376,7 @@ def test_reform_from_dict_sets_a_generated_series(baseline):
     change = {TRIPLE_LOCK: {"2028-01-01.2028-12-31": 0.05}}
     reformed = Simulation(situation=PENSIONER, reform=Reform.from_dict(change))
     assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
-        weekly(baseline, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(baseline, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
@@ -474,7 +484,7 @@ def test_a_reprocessing_modifier_keeps_a_generated_series_change(baseline):
     reformed = Simulation(situation=PENSIONER, scenario=scenario)
     assert value(reformed, TRIPLE_LOCK, "2028-01-01") == pytest.approx(0.05)
     assert weekly(reformed, NEW_STATE_PENSION, 2028) == pytest.approx(
-        weekly(reformed, NEW_STATE_PENSION, 2027) * 1.05, abs=0.006
+        uprated(weekly(reformed, NEW_STATE_PENSION, 2027), 0.05), abs=1e-9
     )
 
 
@@ -590,8 +600,7 @@ def statutory_leaves():
 ORDINARY = [
     path
     for path in statutory_leaves()
-    if path.startswith("gov.")
-    and not path.startswith(("gov.economic_assumptions.yoy_growth.",))
+    if path.startswith("gov.") and not path.startswith(CALENDAR_YEAR_SERIES)
 ]
 KEYS = st.one_of(
     st.integers(2016, 2040),
@@ -601,6 +610,12 @@ KEYS = st.one_of(
     st.integers(2016, 2040).map(lambda y: f"year:{y}-01-01:1"),
     st.integers(2016, 2040).map(lambda y: f"{y}-04-06.{y + 1}-04-05"),
 )
+
+
+def test_no_ordinary_parameter_reads_calendar_years():
+    reads = tbs_module.parameter_reads_calendar_years()
+    assert ORDINARY
+    assert [path for path in ORDINARY if reads(path)] == []
 
 
 @settings(max_examples=200, deadline=None, derandomize=True)

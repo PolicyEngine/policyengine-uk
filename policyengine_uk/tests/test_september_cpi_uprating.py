@@ -16,6 +16,9 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     read_uprating_years,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     FIRST_UPRATING_YEAR,
     september_cpi_uprating_rate,
@@ -29,8 +32,8 @@ from policyengine_uk.tax_benefit_system import COUNTRY_DIR
 INDEX = "gov.benefit_uprating_cpi"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 OBR = "gov.economic_assumptions.yoy_growth.obr"
-# create_economic_assumption_indices builds the indices to 2039.
-LAST_INDEX_YEAR = 2039
+# create_economic_assumption_indices ends the indices where the growth series end.
+LAST_INDEX_YEAR = growth_horizon(system.parameters.gov.economic_assumptions.yoy_growth)
 
 # The index is stored to 5 decimal places, which leaves a few hundredths of
 # a penny of noise on a weekly rate.
@@ -134,16 +137,10 @@ def last_published_year(raw, name):
     return max(int(value.instant_str[:4]) for value in raw.get_child(name).values_list)
 
 
-# An older, unrelated omission: the national financial wealth total is meant
-# to project by GDP per capita, but its node metadata never reaches this leaf.
-# Keep its existing corporate-incidence fallback unchanged in this benefit fix.
-# Limit the exception to this exact leaf so new omissions still fail.
-KNOWN_UNPROPAGATED_UPRATING = {
-    (
-        "household.wealth.national_balance_sheet.household",
-        "household.wealth.national_balance_sheet.household.financial_net_worth",
-    ),
-}
+# Exceptions, each limited to an exact (node, leaf) pair so that new omissions
+# still fail. None remain: the last, the national balance sheet's financial
+# wealth total, went with shareholding's fallback (policyengine-uk#2896).
+KNOWN_UNPROPAGATED_UPRATING = set()
 
 
 def test_node_uprating_reaches_every_leaf():

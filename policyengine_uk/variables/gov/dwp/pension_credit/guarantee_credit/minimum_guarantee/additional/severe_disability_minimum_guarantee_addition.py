@@ -24,11 +24,17 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "modelled: the hospital-patient deeming (para 1(2)(b)-(bd)) "
         "and backdating (para 1(2)(a), (c)); sight regained within 28 weeks "
         "(para 1(3)); polygamous marriages; and the para 2 and 3 exceptions "
-        "listed on is_counted_resident_for_severe_disability_addition. Whom "
-        "a carer benefit is paid for caring for is attributed by "
-        "is_cared_for_by_carer_benefit_recipient, which the legacy severe "
-        "disability premium shares. Blindness "
-        "(is_blind) is not in the survey data, so in microsimulation the "
+        "listed on is_counted_resident_for_severe_disability_addition. "
+        "is_cared_for_by_carer_benefit_recipient attributes each carer "
+        "benefit to the person it is paid for caring for, and the legacy "
+        "severe disability premium shares it. The attribution counts an award of "
+        "Universal Credit which includes the carer element (para 1(4)), which "
+        "has_uc_award_with_carer_element reads from the carer's award: a "
+        "carer whose award comes to nil has no award and does not bar the "
+        "addition. The model applies the same rule in Northern Ireland, "
+        "where SR 2016/236 reg 31(7) inserted the same words into SPC Regs "
+        "(NI) 2003 Sch 1 para 1, with the same amount parameter. "
+        "Blindness (is_blind) is not in the survey data, so in microsimulation the "
         "blind-partner route never applies and a blind resident is counted."
     )
     entity = BenUnit
@@ -40,6 +46,9 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/2",
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/3",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2003/28/schedule/1/paragraph/1",
+        "https://www.legislation.gov.uk/nisr/2016/236/regulation/31",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/30",
     )
 
     def formula(benunit, period, parameters):

@@ -28,7 +28,7 @@ statutory paternity pay:
    - ITA 2007 s. 12B cuts the Personal Savings Allowance from £1,000 to £500
      once the recipient has higher-rate income, and to nil with
      additional-rate income, so one pound across the basic rate limit can
-     cost £100 of tax on savings.
+     cost £100 of tax.
    - ITEPA 2003 s. 681C(3)(b) rounds the charge's percentage down to a
      whole number, so one pound across a £200 step adds 1% of the year's
      Child Benefit at once.
@@ -44,11 +44,9 @@ statutory paternity pay:
    of s. Household net income is not compared: household_benefits counts
    statutory sick pay and not statutory paternity pay.
 4. Same as wages: statutory paternity pay of s on top of wages of e gives the
-   same income tax and National Insurance as wages of e + s, where the
-   recipient's wages and trading profit cover their pension contributions.
+   same income tax and National Insurance as wages of e + s.
    pension_contributions_relief caps relief at relevant UK earnings, which
-   include statutory pay as taxable employment income (utils/pensions.py),
-   so the restriction is conservative.
+   include statutory pay as taxable employment income (utils/pensions.py).
 5. Accounting: employment_benefits is statutory sick, maternity and
    paternity pay, and taxable_employment_income is wages plus those less
    employment deductions, floored at nil.
@@ -319,20 +317,11 @@ def test_statutory_paternity_pay_is_treated_as_statutory_sick_pay(population):
         )
 
 
-def covers_pension_contributions(family):
-    recipient = family["adults"][family["recipient"]]
-    return (
-        recipient["wages"] + recipient["profit"] >= recipient["pension_contributions"]
-    )
-
-
 @PROPERTY_SETTINGS
 @given(population=populations())
 def test_statutory_paternity_pay_is_taxed_as_wages(population):
     results = Results(population)
     for i, family in enumerate(population):
-        if not covers_pension_contributions(family):
-            continue
         # Invariant 4, for every member: the payment moves Marriage Allowance
         # and the High Income Child Benefit Charge as wages do.
         for variable in ["income_tax", "national_insurance", "adjusted_net_income"]:
@@ -440,17 +429,23 @@ def rise(results, variable):
 
 
 def test_a_pound_of_statutory_paternity_pay_can_halve_the_savings_allowance():
-    # Wages of £48,270 and £2,000 of savings interest give taxable income of
-    # 50,270 - 12,570 = £37,700, exactly the basic rate limit, so the
-    # Personal Savings Allowance is £1,000 (ITA 2007 s. 12B). A pound of
-    # statutory paternity pay gives higher-rate income and a £500 allowance.
-    # Non-savings income goes from £35,700 to £35,701 (20p more). Savings tax
+    # Wages of £48,270 and £2,000 of savings interest give taxable income
+    # of 50,270 - 12,570 = £37,700, exactly the basic rate limit, so the
+    # Personal Savings Allowance is £1,000 (ITA 2007 s. 12B). A pound
+    # of statutory paternity pay gives higher-rate income and a £500
+    # allowance. Under the order non-savings, savings, dividends, savings tax
     # goes from 20% of 1,000 = £200 to 20% of 1,499 plus 40% of 1 = £300.20.
+    # Setting £1,500 of the Personal Allowance against savings instead leaves
+    # the last pound within the £500 savings allowance. Pay of 37,201 then
+    # bears 20%, so income tax rises from £7,340 to £7,440.20, not £7,440.40
+    # (ITA 2007 s. 25(2)). That pound would bear 40% but for the savings nil
+    # rate, so it still counts as higher-rate income (s. 12B(8)(b)(ii)), and
+    # the allowance stays at £500.
     results = Results([single_earner(48_270.0, savings=2_000.0)])
     assert results.recipient("savings_allowance", 0, LOW) == 1_000
     assert results.recipient("savings_allowance", 0, HIGH) == 500
     assert (
-        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 100.4)
+        abs(rise(results, "income_tax_before_winter_fuel_payment_charge") - 100.2)
         < 0.01
     )
 
