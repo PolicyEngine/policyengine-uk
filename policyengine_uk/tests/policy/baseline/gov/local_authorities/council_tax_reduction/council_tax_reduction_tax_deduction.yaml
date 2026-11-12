@@ -737,6 +737,14 @@
     # 40,000 - 3,486 - the 10 a week couple's earnings disregard (520).
     council_tax_reduction_applicable_income: 35_994
 
+# The cases below test this variable's measure for the Welsh and Scottish
+# working-age schemes, which council_tax_reduction_applicable_income reads.
+# Those families' awards come from the devolved route
+# (council_tax_reduction_devolved_working_age), whose
+# council_tax_reduction_working_age_applicable_income takes the tax on pay
+# from Universal Credit's split of income tax, so this measure does not reach
+# their awards.
+
 - name: Wales's working-age scheme deducts the tax the legacy means tests deduct
   period: 2026
   absolute_error_margin: 0.01
@@ -771,7 +779,7 @@
     # The scheme counts the pay but not the interest: 20,000 - 5,594.40.
     council_tax_reduction_applicable_income: 14_405.60
 
-- name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,661
+- name: Scotland's working-age deduction passes the Marriage Allowance cliff through at pay of 43,661
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -793,20 +801,18 @@
         council_tax: 15_000
   output:
     # Taxable non-savings income 43,661 - 12,570 = 31,091, within the
-    # intermediate band, so the earner takes the partner's 1,260 of Marriage
-    # Allowance, which the model takes off taxable income: 29,831 taxable;
-    # 3,967 x 19% = 753.73, 12,989 x 20% = 2,597.80 and 12,875 x 21% =
-    # 2,703.75, so 6,055.28. Without the pay, nil. Class 1 (43,661 -
-    # 12,569.96) x 8% = 2,487.28. 6,055.28 + 2,487.28 = 8,542.56.
+    # intermediate band: 3,967 x 19% = 753.73, 12,989 x 20% = 2,597.80 and
+    # 14,135 x 21% = 2,968.35, so 6,319.88. The earner takes the partner's
+    # 1,260 of Marriage Allowance, a tax reduction of 20% of it, 252 (ITA 2007
+    # s 55B(1) and (3)): 6,067.88. Without the pay, nil. Class 1 (43,661 -
+    # 12,569.96) x 8% = 2,487.28. 6,067.88 + 2,487.28 = 8,555.16.
     marriage_allowance: [1_260, 0]
-    council_tax_reduction_tax_deduction: 8_542.56
-    # 43,661 - 8,542.56.
-    council_tax_reduction_applicable_income: 35_118.44
-    # 15,000 - 20% x (35,118.44 - the couple's allowance 150.15 x 52 =
-    # 7,807.80).
-    council_tax_reduction: 9_537.87
+    council_tax_reduction_tax_deduction: 8_555.16
+    # 43,661 - 8,555.16.
+    council_tax_reduction_applicable_income: 35_105.84
+    council_tax_reduction_devolved_working_age: true
 
-- name: Scotland's working-age scheme passes the Marriage Allowance cliff through at pay of 43,663
+- name: Scotland's working-age deduction passes the Marriage Allowance cliff through at pay of 43,663
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -829,18 +835,17 @@
   output:
     # Taxable 31,093 exceeds the Scottish intermediate limit of 31,092, so
     # the earner pays 1 pound at the higher rate and gets no Marriage
-    # Allowance: 753.73 + 2,597.80 + 14,136 x 21% = 2,968.56 + 1 x 42% =
-    # 0.42, so 6,320.51. Class 1 (43,663 - 12,569.96) x 8% = 2,487.44.
-    # 6,320.51 + 2,487.44 = 8,807.95: two pounds of pay raise the deduction
-    # by 265.39.
+    # Allowance (s 55B(2)(b)): 753.73 + 2,597.80 + 14,136 x 21% = 2,968.56 +
+    # 1 x 42% = 0.42, so 6,320.51. Class 1 (43,663 - 12,569.96) x 8% =
+    # 2,487.44. 6,320.51 + 2,487.44 = 8,807.95: two pounds of pay raise the
+    # deduction by 252.79.
     marriage_allowance: [0, 0]
     council_tax_reduction_tax_deduction: 8_807.95
     # 43,663 - 8,807.95.
     council_tax_reduction_applicable_income: 34_855.05
-    # 15,000 - 20% x (34,855.05 - 7,807.80): the reduction rises by 52.68.
-    council_tax_reduction: 9_590.55
+    council_tax_reduction_devolved_working_age: true
 
-- name: Scotland's working-age scheme passes a Child Benefit charge step through at pay of 64,999
+- name: Scotland's working-age deduction passes a Child Benefit charge step through at pay of 64,999
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -878,11 +883,9 @@
     # The model counts the pay and the Child Benefit: 64,999 + 2,337.40 -
     # 19,152.21.
     council_tax_reduction_applicable_income: 48_184.19
-    # 15,000 - 20% x (48,184.19 - the lone parent's allowance 95.55 x 52 =
-    # 4,968.60).
-    council_tax_reduction: 6_356.88
+    council_tax_reduction_devolved_working_age: true
 
-- name: Scotland's working-age scheme passes a Child Benefit charge step through at pay of 65,000
+- name: Scotland's working-age deduction passes a Child Benefit charge step through at pay of 65,000
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -916,5 +919,4 @@
     council_tax_reduction_tax_deduction: 19_176.65
     # 65,000 + 2,337.40 - 19,176.65.
     council_tax_reduction_applicable_income: 48_160.75
-    # 15,000 - 20% x (48,160.75 - 4,968.60): the reduction rises by 4.69.
-    council_tax_reduction: 6_361.57
+    council_tax_reduction_devolved_working_age: true
