@@ -8,12 +8,16 @@ Invariants:
 2. Ranking: latest_supplied_input_period picks, of the supplied periods that
    start before the request, the one policyengine-core's carry-over order
    (_latest_input_key) ranks last, whatever order they were stored in.
-3. A recorded key counts only where the engine reads it: its branch is the
-   first readable branch that stores the period, and the tier read there
-   (memory before disk) still holds the input. A value cached over the input
-   in the same slot, a child branch's value over a parent's input and a
-   memory cache over an input on disk each leave the key uncounted, while the
-   input it shadows is still recorded.
+3. Two rules count recorded inputs. The general helpers (supplied_input,
+   supplied_input_periods, supplied_by) count an input while it survives, on
+   the nearest branch that still stores one, as policyengine-core's
+   Simulation._get_recorded_input_array does. _counted_input, which
+   stored_draws reads to name a draw's source, counts an input only where a
+   calculation reads it: its branch is the first readable branch that stores
+   the period, and the tier read there (memory before disk) holds the input.
+   A value cached over the input in its own slot leaves it uncounted under
+   both rules. A child branch's value over a parent's input, and a memory
+   cache over an input on disk, leave it supplied but uncounted.
 4. set_model_value refuses the three stored inputs.
 """
 
@@ -30,6 +34,7 @@ from policyengine_uk.tests.stored_draw_fixtures import one_person_units_frame
 from policyengine_uk.utils.supplied_inputs import (
     REQUIRED_STORED_INPUTS,
     SUPPLIED_INPUT_VARIABLES,
+    _counted_input,
     latest_supplied_input_period,
     set_model_value,
     supplied_by,
@@ -149,7 +154,12 @@ def test_a_value_cached_over_an_input_in_its_slot_is_not_supplied():
     assert not supplied_by(population, OTHER, period(2026))
 
 
-def test_a_child_branch_value_over_a_parent_input_is_not_supplied_on_the_child():
+def counted(sim, name=OTHER, branch_name="default", year=2025):
+    """_counted_input for the input ``name`` recorded on ``branch_name``."""
+    return _counted_input(sim, sim.get_holder(name), (name, branch_name, period(year)))
+
+
+def test_a_child_branch_value_over_a_parent_input_is_not_counted_on_the_child():
     sim = built()
     sim.set_input(OTHER, 2025, [100])
     child = sim.get_branch("child")
@@ -158,9 +168,21 @@ def test_a_child_branch_value_over_a_parent_input_is_not_supplied_on_the_child()
     # Core reads the child's value from the child, the parent's input from the parent.
     assert child_holder.get_array(period(2025), "child").tolist() == [999]
     assert sim.get_holder(OTHER).get_array(period(2025), "default").tolist() == [100]
+    # A calculation on the child reads the child's value, which is no input,
+    # not the parent's input.
+    assert counted(child) is None
+    assert counted(child, branch_name="child") is None
+    np.testing.assert_array_equal(counted(sim), [100])
+    # The parent's input survives, so the general helpers still count it on
+    # the child, as core's own record does.
     child_population = child.get_variable_population(OTHER)
-    assert supplied_input_periods(child_population, OTHER) == []
-    assert supplied_input(child_population, OTHER, period(2025)) is None
+    assert supplied_input_periods(child_population, OTHER) == [period(2025)]
+    np.testing.assert_array_equal(
+        supplied_input(child_population, OTHER, period(2025)), [100]
+    )
+    np.testing.assert_array_equal(
+        child._get_recorded_input_array(OTHER, period(2025)), [100]
+    )
     parent_population = sim.get_variable_population(OTHER)
     assert supplied_input_periods(parent_population, OTHER) == [period(2025)]
     np.testing.assert_array_equal(
@@ -179,10 +201,8 @@ def test_a_parent_input_with_nothing_on_the_child_is_supplied_on_the_child():
     )
 
 
-@pytest.mark.parametrize("memory_cache", [False, True])
-def test_an_input_on_disk_counts_only_when_memory_does_not_hide_it(
-    memory_cache, tmp_path
-):
+def input_on_disk(tmp_path):
+    """A simulation whose input for OTHER in 2025 is stored on disk only."""
     sim = built()
     sim.set_input(OTHER, 2025, [100])
     holder = sim.get_holder(OTHER)
@@ -194,12 +214,26 @@ def test_an_input_on_disk_counts_only_when_memory_does_not_hide_it(
         source,
         frozenset({"disk"}),
     )
+    return sim, holder, source
+
+
+def test_an_input_on_disk_counts_when_memory_holds_nothing(tmp_path):
+    sim, holder, source = input_on_disk(tmp_path)
     population = sim.get_variable_population(OTHER)
     assert supplied_input_periods(population, OTHER) == [source]
-    if memory_cache:
-        holder._memory_storage.put(np.array([999.0]), source, "default", derived=True)
-        # Core reads memory first, so the cache, not the input on disk.
-        assert supplied_input_periods(population, OTHER) == []
-        assert supplied_input(population, OTHER, source) is None
-    else:
-        np.testing.assert_array_equal(supplied_input(population, OTHER, source), [100])
+    np.testing.assert_array_equal(supplied_input(population, OTHER, source), [100])
+    np.testing.assert_array_equal(counted(sim), [100])
+
+
+def test_an_input_on_disk_under_a_memory_cache_is_supplied_but_not_counted(
+    tmp_path,
+):
+    sim, holder, source = input_on_disk(tmp_path)
+    holder._memory_storage.put(np.array([999.0]), source, "default", derived=True)
+    # Core reads memory first, so the cache, not the input on disk.
+    assert holder.get_array(source, "default").tolist() == [999]
+    assert counted(sim) is None
+    # The input on disk survives, so the general helpers still count it.
+    population = sim.get_variable_population(OTHER)
+    assert supplied_input_periods(population, OTHER) == [source]
+    np.testing.assert_array_equal(supplied_input(population, OTHER, source), [100])
