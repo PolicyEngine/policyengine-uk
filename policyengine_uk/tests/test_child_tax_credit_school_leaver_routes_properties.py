@@ -36,7 +36,8 @@ Invariants:
    education condition's alone, as before.
 3. Switching a leaver fact on never removes the status.
 4. The benefit unit's child or qualifying young person is a child or
-   qualifying young person who is not its claimant or partner.
+   qualifying young person who is not its claimant or partner and who, if
+   under 18, is not looked after by a local authority.
 5. Reg. 5(4)(c), which reg. 4(2) keeps for the reg. 4 period: a member who
    is not the claimant or partner and reports Income Support of their own
    while it is in payment is never a qualifying young person, on any route;
