@@ -1,3 +1,10 @@
+## [2.178.6] - 2026-11-12
+
+### Fixed
+
+- Included the VAT effect of road fuel duty reforms without grossing up the additional household VAT or double-counting VAT already embedded in consumption.
+
+
 ## [2.178.5] - 2026-11-12
 
 ### Fixed
