@@ -1,3 +1,44 @@
+## [2.178.3] - 2026-11-12
+
+### Changed
+
+- The CI shard durations table now comes from 11 November's logs, to keep Python shard 4/8 inside its 90-minute limit.
+
+### Fixed
+
+- Added the Child Benefit qualifying young person conditions for young people who have left education (Child Benefit (General) Regulations 2006 regs 4, 5 and 7), which the Housing Benefit, legacy benefit and Council Tax Reduction young persons follow: a 16-year-old counts until the 31 August after their 16th birthday, in any year that starts before it, two new inputs place the 20-week extension period and the terminal date, and the model pays no Child Benefit for a young person who qualifies only through the terminal date and works 24 hours or more a week (reg. 7(3)). A young person who reports their own Universal Credit, Employment and Support Allowance or income-based Jobseeker's Allowance, or their own Income Support while DWP pays it, is not one, on any route (reg. 8).
+- Counted a 16-year-old who has left education as a Child Tax Credit qualifying young person until the 31 August after their 16th birthday, in any year that starts before it (Child Tax Credit Regulations 2002 reg. 4), and added an input for the 20 weeks after leaving while registered for work or training (reg. 5(3)(b)). Remunerative work of 24 hours a week ends both for a young person who has left education (reg. 5(4)(a)), and Income Support received by the young person ends every route (reg. 5(4)(c)).
+
+
+## [2.178.2] - 2026-11-11
+
+### Changed
+
+- The enhanced disability premium property test now checks a Kingston upon Thames claimant whose highest-rate DLA care award carries £1,000 a year, below 52 times the top weekly rate.
+
+
+## [2.178.1] - 2026-11-11
+
+### Fixed
+
+- The model now adds the disabled child premium and the enhanced disability premium to a pensioner's Council Tax Reduction applicable amount for each qualifying child or young person in England, Wales and Scotland, with each nation's armed forces independence payment routes by year.
+
+
+## [2.178.0] - 2026-11-10
+
+### Added
+
+- Added inputs for the UK totals of the components of corporate_sector_wealth and consumption (uk_total_*), and policyengine_uk.utils.uk_totals.add_uk_totals to write them: where the data carries them, shareholding, consumption_shareholding and carbon tax's corporate part give each household its national share in any simulation of part of the UK, such as a region, an extract or one block of a build, and filter_dataset's extracts carry them.
+
+### Fixed
+
+- A household situation no longer takes the whole UK total of business rates, corporate Stamp Duty Land Tax, corporate land and the other amounts shared out by shareholding, consumption_shareholding or income decile; whatever its weight or axes, it takes no share unless one is set.
+
+### Removed
+
+- Removed the household financial net worth parameter (household.wealth.national_balance_sheet), whose only reader was the shareholding fallback for household situations.
+
+
 ## [2.177.9] - 2026-11-10
 
 ### Fixed

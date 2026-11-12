@@ -8,7 +8,7 @@ class child_benefit_child_index(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        child = person("is_child_or_qualifying_young_person_for_child_benefit", period)
+        child = person("is_child_benefit_payable_for_person", period)
         rank = (
             person.get_rank(
                 person.benunit,

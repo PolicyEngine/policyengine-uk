@@ -1,0 +1,9 @@
+description: Weekly hours of paid work from which a person is in remunerative work for Child Tax Credit rules.
+values:
+  0001-01-01: 24
+metadata:
+  unit: hour
+  label: Child Tax Credit remunerative work hours
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 2(1), "remunerative work"
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/2
