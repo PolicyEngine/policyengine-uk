@@ -32,14 +32,19 @@ value is gone before the engine can refill it, and the helpers only answer for
 those variables. ``Simulation.delete_arrays`` forgets such records too, for any
 variable it deletes.
 
-A recorded input counts only where the engine reads it. For a period, the
-engine reads the first branch, of this one and those it was made from, that
-stores a value, and in that branch memory before disk
-(``Holder._branch_storing``, ``Holder._get_array_from_storage``). So a key
-counts only when its branch is that branch and the tier the engine reads
-there still holds the input (``_supplied_value_storage``). A value cached over
-the input in the same tier, a child branch's value over a parent's input, and
-a value cached in memory over an input on disk each leave the key uncounted.
+Stored draws ask a narrower question: not whether an input survives, but
+whether a calculation reads it. ``_counted_input`` answers it for
+``policyengine_uk.utils.stored_draws``. For a period, the engine reads the
+first branch, of this one and those it was made from, that stores a value,
+and in that branch memory before disk (``Holder._branch_storing``,
+``Holder._get_array_from_storage``). So ``_counted_input`` counts a recorded
+input only on that branch, and only while the tier the engine reads there
+holds it (``_engine_read_storage``). A child branch's value over a parent's
+input, or a value cached in memory over an input on disk, leaves the input
+supplied (``supplied_input`` returns it) but unread, and ``_counted_input``
+does not count it. For a variable that is not neutralised, an input
+``_counted_input`` counts is the value ``Holder.get_array`` reads, and
+``supplied_input`` returns it too.
 
 A scenario that stores a value the model calculated (``set_model_value``)
 records it as the model's, and the helpers do not return it. The record of
@@ -181,17 +186,18 @@ def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
     )
 
 
-def _supplied_value_storage(holder, period: Period, branch_name: str):
+def _engine_read_storage(holder, period: Period, branch_name: str):
     """The storage tier (memory or disk) the engine reads for ``period`` on
-    ``branch_name``, if it still holds the input stored there; otherwise
-    None.
+    ``branch_name``, if it holds the input recorded there; otherwise None.
 
     The engine reads memory before disk. That tier must hold a value the
-    engine did not calculate, and the holder's record of where the input went
-    (``Holder._user_input_storage``) must list it, as
+    engine did not calculate, the simulation must record the input
+    (``Simulation._user_input_keys``), and the holder's record of where the
+    input went (``Holder._user_input_storage``) must list the tier, as
     ``policyengine_core.holders.helpers._is_input`` decides. A slot restored
-    with no such record uses its tier's mark instead. An input on disk under a
-    value cached in memory does not count: the engine reads the cache.
+    with no such record uses its tier's mark instead. Unlike
+    ``_supplied_value_storage``, an input on disk under a value cached in
+    memory does not count: the engine reads the cache.
     """
     for storage_name, storage in (
         ("memory", holder._memory_storage),
@@ -204,21 +210,22 @@ def _supplied_value_storage(holder, period: Period, branch_name: str):
     return None
 
 
-def stored_supplied_value(holder, period: Period, branch_name: str):
-    """The input ``holder`` stores for ``period`` on ``branch_name``, from the
-    tier the engine reads, or None (see ``_supplied_value_storage``)."""
-    storage = _supplied_value_storage(holder, period, branch_name)
-    return None if storage is None else storage.get(period, branch_name)
-
-
 def _counted_input(simulation, holder, key) -> Optional[np.ndarray]:
     """The value of the recorded input ``key`` if the engine reads it for its
-    period from this simulation's branch, and it is not the model's own
-    value (``set_model_value``); otherwise None."""
+    period on this simulation's branch, and it is not the model's own value
+    (``set_model_value``); otherwise None.
+
+    ``stored_draws`` names a draw's source with this, so it counts only the
+    input a calculation reads (see the module docstring). ``supplied_input``
+    and the other general helpers count every recorded input that survives.
+    """
     name, branch_name, period = key
     if holder._branch_storing(period, simulation.branch_name) != branch_name:
         return None
-    value = stored_supplied_value(holder, period, branch_name)
+    storage = _engine_read_storage(holder, period, branch_name)
+    if storage is None:
+        return None
+    value = storage.get(period, branch_name)
     if value is None or _is_model_value(simulation, key, value):
         return None
     return value
