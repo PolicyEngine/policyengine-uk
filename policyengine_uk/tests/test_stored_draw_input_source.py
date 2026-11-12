@@ -39,7 +39,7 @@ from policyengine_core.periods import period
 from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Simulation
-from policyengine_uk.model_api import BenUnit, Person, Variable, YEAR
+from policyengine_uk.model_api import ETERNITY, BenUnit, Person, Variable, YEAR
 from policyengine_uk.tests.stored_draw_fixtures import one_person_units_frame
 from policyengine_uk.utils.stored_draws import (
     CORE_DISK_KEY_ISSUE,
@@ -224,9 +224,9 @@ def test_a_stale_non_default_cache_with_no_source_raises():
         sim.calculate(DRAW, 2026)
 
 
-def test_a_cached_default_is_compared_with_the_holders_own_default():
+def test_a_cached_default_is_compared_with_the_default_the_holder_follows():
     sim = built()
-    sim.calculate(DRAW, 2026)
+    sim.calculate(DRAW, 2026)  # caches the default, 1.0, as derived
 
     class pip_phase_in_draw(Variable):
         value_type = float
@@ -236,8 +236,17 @@ def test_a_cached_default_is_compared_with_the_holders_own_default():
         label = "draw with another default"
 
     sim.tax_benefit_system.update_variable(pip_phase_in_draw)
-    # The holder keeps the definition it was made with, so its default 1.0.
-    assert source_of(sim, 2026) is None
+    # From policyengine-core 3.34.9 (core#653), the holder follows the
+    # system's current definition, whose default is 0.5.
+    assert sim.get_holder(DRAW).variable.default_value == 0.5
+    # Core would return the 1.0 it cached under the old definition, which is
+    # no longer what an absent draw reads as, so the read raises.
+    with pytest.raises(StoredDrawError, match="not the default"):
+        sim.calculate(DRAW, 2026)
+    np.testing.assert_array_equal(core_answer(sim, 2026), [1.0, 1.0, 1.0])
+    # A year with nothing cached reads the new default.
+    assert source_of(sim, 2027) is None
+    np.testing.assert_array_equal(sim.calculate(DRAW, 2027), [0.5, 0.5, 0.5])
 
 
 def test_input_source_changes_nothing():
@@ -424,12 +433,61 @@ def test_a_draw_moved_to_another_entity_raises():
         source_of(sim, 2025)
 
 
-def test_a_holder_kept_from_another_definition_raises():
+def test_a_holder_given_another_definition_follows_the_current_one():
+    sim = built({2025: VALUES})
+    holder = sim.get_holder(DRAW)
+    current = holder.variable
+    retained = copy.copy(current)
+    retained.value_type = int
+    holder.variable = retained
+    # From policyengine-core 3.34.9 (core#653), the next lookup gives a
+    # holder of the same entity and ETERNITY storage the current definition,
+    # so core reads the draw as a float again and the check passes.
+    assert sim.get_holder(DRAW).variable is current
+    assert source_of(sim, 2025).period == period(2025)
+    np.testing.assert_array_equal(sim.calculate(DRAW, 2025), VALUES)
+
+
+def test_a_holder_core_keeps_from_an_eternity_definition_is_refused():
+    sim = built()
+    population = sim.get_variable_population(DRAW)
+    year_definition = type(sim.tax_benefit_system.variables[DRAW])
+    sim.tax_benefit_system.update_variable(
+        type(
+            DRAW,
+            (Variable,),
+            dict(
+                value_type=float,
+                entity=Person,
+                definition_period=ETERNITY,
+                default_value=1.0,
+                label="eternal draw",
+            ),
+        )
+    )
+    # Core makes the holder for the ETERNITY definition, then keeps it after
+    # the year definition comes back: a holder cannot change its ETERNITY
+    # storage (core#653).
+    assert population.get_holder(DRAW)._memory_storage.is_eternal
+    sim.tax_benefit_system.update_variable(year_definition)
+    holder = sim.get_holder(DRAW)
+    assert holder.variable.definition_period == ETERNITY
+    # The request check refuses it first: the holder stores the draw for
+    # eternity, not for the year asked for.
+    with pytest.raises(StoredDrawError, match="read only for one year"):
+        sim.calculate(DRAW, 2025)
+
+
+def test_a_holder_kept_with_another_entity_raises():
     sim = built({2025: VALUES})
     holder = sim.get_holder(DRAW)
     retained = copy.copy(holder.variable)
-    retained.value_type = int
+    retained.entity = sim.populations["benunit"].entity
+    # No public path leaves a holder of another entity where a read looks
+    # (core#653 keeps one only in the population of its own entity), so set it
+    # here, as code reaching into a holder could.
     holder.variable = retained
+    assert sim.get_holder(DRAW).variable is retained
     with pytest.raises(StoredDrawError, match="holder's definition"):
         sim.calculate(DRAW, 2025)
 
