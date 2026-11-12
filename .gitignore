@@ -57,6 +57,7 @@ policyengine_uk/calibration/*.h5
 !uprating_growth_factors.csv
 !policyengine_uk/parameters/gov/dwp/LHA/lha_published_rates_sources.csv
 !policyengine_uk/tests/fixtures/energy_prices/*.csv
+!policyengine_uk/tests/fixtures/sdlt_ltt_main_grid_2018_2030.csv
 
 # Virtual environments
 .venv/

@@ -1,0 +1,9 @@
+description: Age limit below which a person who has left education or training may be a Child Tax Credit qualifying young person for 20 weeks while registered for work or training.
+values:
+  0001-01-01: 18
+metadata:
+  unit: year
+  label: Child Tax Credit extension period age limit
+  reference:
+    - title: The Child Tax Credit Regulations 2002 reg. 5(3)(b)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/5
