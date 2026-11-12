@@ -71,7 +71,9 @@ class council_tax_reduction_applicable_income(Variable):
         "for people under pension age add their own tariff income. "
         "Rent the applicant and partner receive for letting part of the home "
         "counts, less the sub-tenant disregard, on the schemes' own income "
-        "rules (council_tax_reduction_home_letting_income). It does not count "
+        "rules (council_tax_reduction_home_letting_income), with rent from "
+        "boarders and lodgers paid to an applicant or partner who heads the "
+        "household, less the board and lodging and lodger disregards. It does not count "
         "where a working-age applicant has an award of Universal Credit, "
         "whose income the schemes take from the Secretary of State's "
         "Universal Credit assessment (which does not count it), or in the "
@@ -81,7 +83,9 @@ class council_tax_reduction_applicable_income(Variable):
         "scheme allows (council_tax_reduction_tax_deduction): on earnings "
         "only in Scotland's working-age scheme, on income taken into account "
         "in the pensioner schemes, and in the other schemes the income tax "
-        "the legacy means tests deduct (legacy_means_test_deducted_income_tax)."
+        "the legacy means tests deduct (legacy_means_test_deducted_income_tax), "
+        "less, on the Universal Credit route, the tax uncounted rent would "
+        "bear without earnings (rent_a_room_income_tax_without_earnings)."
     )
     definition_period = YEAR
     unit = GBP
@@ -99,6 +103,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/15",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20",
         "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21",
@@ -179,13 +186,17 @@ class council_tax_reduction_applicable_income(Variable):
             # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
             # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
             # excepts it), so scottish_carer_supplement is not listed.
-            # Whether CTR counts CSP before or after the CSP Regs reg 16(2)
-            # overlapping-benefit reduction is unsettled: SSI 2012/319 reg
-            # 27(3) grosses up deductions other than the reg 27(5)
-            # adjustments, which do not list reg 16(2), while SSI 2021/249 reg
-            # 57(1)(b) counts the amount the applicant is entitled to. Until
-            # that is decided, the amount before the reduction is counted, as
-            # it was before the reduction was modelled.
+            # Scottish working-age claims follow the devolved route, which
+            # counts CSP after the CSP Regs (SSI 2023/302) reg 16(2)
+            # overlapping-benefit reduction
+            # (council_tax_reduction_working_age_unearned_income). For the
+            # pension-age scheme the question stays open: SSI 2012/319 reg
+            # 27(3) counts a benefit before any deduction other than the reg
+            # 27(5) adjustments, and reg 27(5) doesn't list reg 16(2), while
+            # the Pension Credit and pension-age Housing Benefit regulations
+            # do (SI 2002/1792 reg 15(4)(g); SI 2006/214 reg 29(4)(g)). Until
+            # a ruling settles it, this formula counts the amount before the
+            # reduction, as it did before the model applied the reduction.
             "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
@@ -333,7 +344,11 @@ class council_tax_reduction_applicable_income(Variable):
         )
         # Rent the applicant and partner receive for letting part of the home
         # counts under the schemes' own income rules, less the sub-tenant
-        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10). Two exceptions:
+        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10),
+        # and so does rent from boarders and lodgers paid to an applicant or
+        # partner who heads the household, less the board and lodging and
+        # lodger disregards (Sch 1 para 16(1)(p), Sch 5 paras 9 and 10). Two
+        # exceptions:
         # - A working-age applicant with an award of Universal Credit: the
         #   schemes use the Secretary of State's assessment of income for the
         #   award (SI 2012/2886 Sch para 37(1); WSI 2013/3029 Sch 6 para 9(1);

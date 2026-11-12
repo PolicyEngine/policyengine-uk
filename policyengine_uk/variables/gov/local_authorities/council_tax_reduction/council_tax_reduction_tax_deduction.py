@@ -56,7 +56,11 @@ class council_tax_reduction_tax_deduction(Variable):
         "outside Great Britain, the formula deducts what the legacy means "
         "tests deduct: the applicant's and partner's "
         "legacy_means_test_deducted_income_tax, with their sum floored at "
-        "nil, and all their National Insurance. " + DECISION
+        "nil, and all their National Insurance. With an award of Universal "
+        "Credit, those schemes do not count rent from boarders, lodgers and "
+        "sub-tenants in the home, so the formula first takes off the tax "
+        "that rent would bear without earnings "
+        "(rent_a_room_income_tax_without_earnings). " + DECISION
     )
     definition_period = YEAR
     unit = GBP
@@ -109,8 +113,19 @@ class council_tax_reduction_tax_deduction(Variable):
             with_universal_credit | without_universal_credit | pensioner_scheme
         )
         if other_schemes.any():
+            # Where a working-age applicant's award of Universal Credit keeps
+            # rent out of the income, the formula leaves out the tax the rent
+            # would bear without earnings and keeps the extra tax earnings
+            # cause on it.
+            uncounted_rent_tax = where(
+                ~pensioner & applicant_has_universal_credit(benunit, period),
+                total(person("rent_a_room_income_tax_without_earnings", period)),
+                0,
+            )
             legacy_deduction = max_(
-                0, total(person("legacy_means_test_deducted_income_tax", period))
+                0,
+                total(person("legacy_means_test_deducted_income_tax", period))
+                - uncounted_rent_tax,
             ) + total(person("national_insurance", period))
         else:
             legacy_deduction = zeros

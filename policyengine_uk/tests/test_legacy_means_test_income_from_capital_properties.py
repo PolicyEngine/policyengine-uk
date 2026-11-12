@@ -737,9 +737,14 @@ HEAD_ALONE_VARIABLES = [
 
 def head_alone_values(households, year, **kwargs):
     sim = Simulation(situation=head_alone_situation(households, year, **kwargs))
-    return {
+    values = {
         v: np.asarray(sim.calculate(v, year), dtype=float) for v in HEAD_ALONE_VARIABLES
     }
+    # The head comes first of each household's four members.
+    values["head_taxable_rent_a_room_income"] = np.asarray(
+        sim.calculate("taxable_rent_a_room_income", year), dtype=float
+    )[::4]
+    return values
 
 
 @PROPERTY_SETTINGS
@@ -764,6 +769,23 @@ def head_alone_values(households, year, **kwargs):
     2026,
     1_000.0,
 )
+# The couple's first receipts halve the head's rent-a-room limit, so part of
+# her own rent becomes taxable and the tax the scheme deducts rises.
+@example(
+    [
+        dict(
+            head_age=65,
+            parent_ages=(16, 16),
+            head_pension=13_819.52,
+            head_wages=0.0,
+            head_rent=5_254.85,
+            parent_rent=0.0,
+            region="NORTH_EAST",
+        )
+    ],
+    2025,
+    1.0,
+)
 def test_a_head_applying_alone_counts_only_her_own_letting_income(
     households, year, extra
 ):
@@ -771,7 +793,12 @@ def test_a_head_applying_alone_counts_only_her_own_letting_income(
     council tax reduction applicant (SI 2012/2885 reg 2(1), Sch 1 para 11):
     her income moves with her own rent from letting part of the home, by the
     change in council_tax_reduction_home_letting_income wherever the scheme
-    counts it, and not with the benefit unit's claimant's or partner's."""
+    counts it, and not with the benefit unit's claimant's or partner's. Her
+    rent-a-room relief can move the tax the scheme deducts: rent above her
+    limit bears tax, and the limit halves once someone else in the household
+    also has receipts (rent_a_room_limit). So the equalities hold where her
+    taxable rent-a-room income stays the same, and the couple's rent never
+    raises her income."""
     base = head_alone_values(households, year)
     assert np.all(base["council_tax_reduction_head_applies_alone"] == 1)
     more_own = head_alone_values(households, year, head_extra=extra)
@@ -782,9 +809,12 @@ def test_a_head_applying_alone_counts_only_her_own_letting_income(
     counts = ~((region == "SCOTLAND") & (base["council_tax_reduction_pensioner"] == 0))
     income = "council_tax_reduction_applicable_income"
     letting = "council_tax_reduction_home_letting_income"
+    taxable = "head_taxable_rent_a_room_income"
+    same_tax_own = np.isclose(more_own[taxable], base[taxable], atol=0.01)
+    same_tax_others = np.isclose(more_others[taxable], base[taxable], atol=0.01)
     np.testing.assert_allclose(
-        more_own[income] - base[income],
-        np.where(counts, more_own[letting] - base[letting], 0),
+        (more_own[income] - base[income])[same_tax_own],
+        np.where(counts, more_own[letting] - base[letting], 0)[same_tax_own],
         atol=0.02,
     )
     assert np.all(more_own[letting] >= base[letting] - 0.01)
@@ -792,7 +822,12 @@ def test_a_head_applying_alone_counts_only_her_own_letting_income(
     # a margin for float32 rounding, her letting income is positive.
     above = np.array([(h["head_rent"] + extra) / 52 > 20.01 for h in households])
     assert np.all(more_own[letting][above] > 0)
-    np.testing.assert_allclose(more_others[income], base[income], atol=0.01)
+    np.testing.assert_allclose(
+        more_others[income][same_tax_others],
+        base[income][same_tax_others],
+        atol=0.01,
+    )
+    assert np.all(more_others[income] <= base[income] + 0.01)
     np.testing.assert_allclose(more_others[letting], base[letting], atol=0.01)
     # The couple's own legacy measure does count it, less the £20 weekly
     # disregard.
