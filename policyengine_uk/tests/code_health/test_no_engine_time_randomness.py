@@ -153,7 +153,9 @@ engine-time draws that still have to move into the data. Both count exact
 occurrences per (file, enclosing scope, kind): an extra occurrence fails, and
 so does an entry that no longer matches as many as it says, so entries are
 lowered and removed as sites go. RATCHET_CEILING only ever falls, and
-RATCHET must reach zero.
+RATCHET must reach zero. SAMPLING_TOOLS lists the occurrences of one reviewed
+sampling tool, ``Simulation.subsample``; they count the same way, and because
+they are not in EXEMPT the tool's functions stay draw helpers.
 """
 
 import ast
@@ -296,6 +298,31 @@ EXEMPT = {
     "utils/build_lha_published_rates.py": {
         ("<module>", "hash library"): 1,
         ("fetch", "hash use"): 1,
+    },
+}
+# One reviewed sampling tool. Simulation.subsample draws households when a
+# caller calls it, and the draw decides which households the simulation keeps
+# and the weights they carry. It draws from a generator of its own, seeded
+# from the caller's seed or the fixed default "policyengine-uk". draw_helpers
+# does not read this list, so the tool's functions stay draw helpers and a use
+# of one from any other scope counts there as a draw helper call.
+SAMPLING_TOOLS = {
+    # _random_state seeds a numpy RandomState from the SHA-256 digest of the
+    # seed's text, and the module-level random source is its return
+    # annotation. draw_household_counts calls it and draws households with
+    # choice, and subsample_simulation calls draw_household_counts.
+    "utils/subsample.py": {
+        ("<module>", "hash library"): 1,
+        ("<module>", "random source"): 1,
+        ("_random_state", "hash use"): 1,
+        ("_random_state", "random source"): 1,
+        ("draw_household_counts", "sampling call"): 1,
+        ("draw_household_counts", "draw helper call"): 1,
+        ("subsample_simulation", "draw helper call"): 1,
+    },
+    # The method, which passes its arguments on to subsample_simulation.
+    "simulation.py": {
+        ("Simulation.subsample", "draw helper call"): 1,
     },
 }
 OFFLINE_MODULES = set()
@@ -4101,8 +4128,34 @@ def test_splitmix64_hash_and_its_uprating_caller_are_draw_helpers():
     assert "policyengine_uk.build_metadata.get_data_build_fingerprint" not in helpers
 
 
+def test_the_subsample_tools_functions_are_draw_helpers():
+    # SAMPLING_TOOLS allows their occurrences and leaves them in this set.
+    # EXEMPT entries for them would take them out of it.
+    helpers = package_scan().helpers
+    for name in ("_random_state", "draw_household_counts", "subsample_simulation"):
+        assert f"policyengine_uk.utils.subsample.{name}" in helpers
+
+
+def _summed(first: dict, second: dict) -> dict:
+    """Two allowlists as one, which allows each key the sum of their counts.
+
+    ``check_allowlists`` allows what its two lists allow between them, and
+    ``draw_helpers`` reads EXEMPT alone. So RATCHET summed with SAMPLING_TOOLS,
+    passed as the first list, allows the sampling tool's occurrences and
+    leaves its functions draw helpers.
+    """
+    summed = {relative: dict(entries) for relative, entries in first.items()}
+    for relative, entries in second.items():
+        file_entries = summed.setdefault(relative, {})
+        for key, count in entries.items():
+            file_entries[key] = file_entries.get(key, 0) + count
+    return summed
+
+
 def test_package_draws_nothing_outside_the_allowlists():
-    violations, _ = check_allowlists(package_scan().counts, RATCHET, EXEMPT)
+    violations, _ = check_allowlists(
+        package_scan().counts, _summed(RATCHET, SAMPLING_TOOLS), EXEMPT
+    )
     assert not violations, (
         "The model must not draw, sample, shuffle or hash entities to a "
         "pseudo-random value while a simulation is built or run "
@@ -4114,7 +4167,9 @@ def test_package_draws_nothing_outside_the_allowlists():
 
 
 def test_allowlist_entries_still_match():
-    _, stale = check_allowlists(package_scan().counts, RATCHET, EXEMPT)
+    _, stale = check_allowlists(
+        package_scan().counts, _summed(RATCHET, SAMPLING_TOOLS), EXEMPT
+    )
     assert not stale, (
         "These entries allow more than the package now has. Lower or delete "
         "them, and lower RATCHET_CEILING to match RATCHET:\n" + "\n".join(stale)
@@ -4135,6 +4190,96 @@ def test_ratchet_only_shrinks():
     assert total <= RATCHET_CEILING, (
         "RATCHET lists engine-time draws still to move into the data. Draw "
         "a new stochastic input in the dataset build instead of adding it."
+    )
+
+
+def test_a_use_of_a_sampling_tools_function_from_another_scope_fails():
+    drawn = (
+        "def legacy(x):\n"
+        "    return x ^ (x >> 3)\n"
+        "def sampler(weights, seed):\n"
+        "    return np.random.RandomState(seed).choice(len(weights))\n"
+        "def tool(weights, seed):\n"
+        "    kept = sampler(weights, seed)\n"
+    )
+    formula = "def formula(weights):\n    return sampler(weights, 1)\n"
+    ratchet = {("legacy", "xorshift"): 1}
+    tools = {
+        ("sampler", "random source"): 1,
+        ("sampler", "sampling call"): 1,
+        ("tool", "draw helper call"): 1,
+    }
+
+    def check(source, tools=tools):
+        counted = count_findings({"m.py": draw_findings(source, "m.py")})
+        allowed = _summed({"m.py": ratchet}, {"m.py": tools})
+        return check_allowlists(counted, allowed, {})
+
+    assert check(drawn) == ([], [])
+    # The sampler is still a draw helper, so a formula that uses it fails, and
+    # nothing else does.
+    violations, stale = check(drawn + formula)
+    assert len(violations) == 1 and not stale
+    assert "in formula: draw helper call (1 found, 0 allowed)" in violations[0]
+    # A second use inside the tool's own scope fails too.
+    violations, _ = check(drawn + "    kept += sampler(weights, seed + 1)\n")
+    assert len(violations) == 1
+    assert "in tool: draw helper call (2 found, 1 allowed)" in violations[0]
+    # An entry with no match is stale.
+    _, stale = check(drawn, {**tools, ("tool", "sampling call"): 1})
+    assert len(stale) == 1
+    assert "in tool: sampling call (1 allowed, 0 found)" in stale[0]
+    # EXEMPT entries for the sampler would let the formula's use pass: a
+    # function whose findings are exempt is not a draw helper.
+    exempt = {key: count for key, count in tools.items() if key[0] == "sampler"}
+    findings = draw_findings(drawn + formula, "m.py", exempt=exempt)
+    counted = count_findings({"m.py": findings})
+    assert check_allowlists(counted, {"m.py": ratchet}, {"m.py": exempt}) == ([], [])
+    # Summing two lists adds the counts of a key both hold and changes neither.
+    key = ("legacy", "xorshift")
+    assert _summed({"m.py": ratchet}, {"m.py": {key: 2}}) == {"m.py": {key: 3}}
+    assert ratchet == {key: 1}
+
+
+def test_sampling_tools_lists_only_the_subsample_tool_and_no_key_is_in_two_lists():
+    method = ("simulation.py", ("Simulation.subsample", "draw helper call"))
+    others = [
+        (relative, key)
+        for relative, entries in SAMPLING_TOOLS.items()
+        for key in entries
+        if relative != "utils/subsample.py" and (relative, key) != method
+    ]
+    assert not others, (
+        "SAMPLING_TOOLS lists the occurrences of Simulation.subsample alone. "
+        "Draw a new stochastic input in the dataset build instead of adding "
+        "it:\n" + "\n".join(map(str, others))
+    )
+    # check_allowlists adds the counts of a key that two lists hold, so the
+    # lists would allow more than either says.
+    listed = Counter(
+        (relative, key)
+        for allowlist in (RATCHET, EXEMPT, SAMPLING_TOOLS)
+        for relative, entries in allowlist.items()
+        for key in entries
+    )
+    repeated = sorted(key for key, count in listed.items() if count > 1)
+    assert not repeated, (
+        "RATCHET, EXEMPT and SAMPLING_TOOLS must not share a (file, scope, "
+        "kind) key:\n" + "\n".join(map(str, repeated))
+    )
+
+
+def test_no_package_module_uses_the_subsample_method():
+    uses = [
+        f"{relative}:{node.lineno}"
+        for relative, _, _, path in package_modules()
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+        if isinstance(node, ast.Attribute) and node.attr == "subsample"
+    ]
+    assert not uses, (
+        "Simulation.subsample draws households, and the scan does not follow "
+        "method calls. No module of the package may call or read an "
+        "attribute named subsample:\n" + "\n".join(uses)
     )
 
 
