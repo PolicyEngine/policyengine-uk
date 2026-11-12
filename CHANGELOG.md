@@ -1,3 +1,10 @@
+## [2.178.4] - 2026-11-12
+
+### Changed
+
+- The test suite fails on any new random draw, sampling call or hash of entity ids in the package. It lists today's draws in a ratchet and `Simulation.subsample`'s draw as a reviewed sampling tool.
+
+
 ## [2.178.3] - 2026-11-12
 
 ### Changed
