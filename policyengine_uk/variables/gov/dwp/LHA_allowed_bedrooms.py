@@ -76,11 +76,13 @@ def other_family_non_dependants(benunit, period):
     non-dependants. Para 9(2)(c) takes such a foster child out of their
     foster parent's extended benefit unit only, and unless they head the
     household or pay the householder (para 9(2)(d)), no other exclusion in
-    para 9(2) applies to them. Where the foster family's claim is the one
-    that counts the household's non-dependants, no claim counts them: the
-    model counts a non-dependant in one claim only. Being under 21, they owe
-    no housing cost contribution (para 16(2)(a)), so uc_non_dep_deductions
-    needs no counterpart.
+    para 9(2) applies to them. Another renter's claim can count them, since
+    the foster family's claim does not treat them as a non-dependant (para
+    9(2)(f)). The model gives the household's non-dependants to one claim,
+    though (uc_non_dependants_counted), so where that claim is the foster
+    family's, no claim counts them. That gap comes from the model's routing,
+    not from the law. Being under 21, they owe no housing cost contribution
+    (para 16(2)(a)), so uc_non_dep_deductions needs no counterpart.
     """
     person = benunit.members
     other_family = person("is_uc_non_dependant_of_household_head", period)
