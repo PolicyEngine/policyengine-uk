@@ -382,16 +382,36 @@ def in_qualifying_education(p, age_limit_for_entry=19):
     )
 
 
+def before_first_september_after_16th_birthday(p):
+    """Whether some of the year falls before the 1 September after the
+    person's 16th birthday. The generated ages are whole and
+    months_since_last_birthday keeps its default of 6, so each person's
+    birthday is 6 April, the first day of the year: a person aged 16 turns 16
+    that day, and an older one turned 16 in an earlier year. The model counts
+    a person in that period for part of the year as in it for the year (see
+    is_before_first_september_following_16th_birthday)."""
+    return p["age"] == 16
+
+
 def uc_qualifying_young_person(p):
-    """UC Regs 2013 reg 5: aged 16 to 19, in non-advanced education entered
-    before 19, before the terminal date if 19, and not receiving benefits in
-    their own right."""
+    """UC Regs 2013 reg 5: aged 16 to 19 and either before the 1 September
+    after their 16th birthday, whatever their education (reg 5(1)(a)), or in
+    non-advanced education entered before 19 and, if 19, before the terminal
+    date (reg 5(1)(b) and (2)); and not receiving benefits in their own
+    right (reg 5(5))."""
     return (
         16 <= p["age"] < 20
-        and in_qualifying_education(p)
         and (
-            p["age"] < 19
-            or p["is_before_universal_credit_qualifying_young_person_terminal_date"]
+            before_first_september_after_16th_birthday(p)
+            or (
+                in_qualifying_education(p)
+                and (
+                    p["age"] < 19
+                    or p[
+                        "is_before_universal_credit_qualifying_young_person_terminal_date"
+                    ]
+                )
+            )
         )
         and not p["receives_benefits_in_own_right"]
     )
@@ -493,6 +513,17 @@ def lone(role, age):
             is_before_universal_credit_qualifying_young_person_terminal_date=False,
             is_looked_after_by_local_authority=False,
         ),
+    )
+)
+# A sharer's looked-after 16-year-old not in education: a qualifying young
+# person until the 1 September after their 16th birthday (reg 5(1)(a)) whom
+# no one is responsible for, so the head's claim, which counts the
+# household's non-dependants, gains no bedroom (para 9(2)(g)).
+@example(
+    (
+        [[lone("head", 30), lone("sharer", 40)]],
+        (0, 1),
+        dict(LOOKED_AFTER_QYP, age=16, current_education="NOT_IN_EDUCATION"),
     )
 )
 def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
