@@ -1,0 +1,979 @@
+# Councils add the disabled child premium and the enhanced disability premium
+# to a pensioner's Council Tax Reduction applicable amount for each qualifying
+# child or young person in the family:
+#
+# - England: SI 2012/2885 Sch 1 para 6(1)(d), Sch 2 paras 7 and 8, amounts in
+#   Sch 2 Part 4 entries (2) and (3). For schemes from 1 April 2023 the
+#   Secretary of State added an AFIP limb to para 7 for any child or young
+#   person, and to para 8 for a young person (SI 2023/16 regs 1(3) and
+#   7(7)-(8)).
+# - Wales: WSI 2013/3029 Sch 1 para 1(1)(d), Sch 2 paras 7, 8 and 12. The
+#   Welsh Ministers name AFIP for any child or young person in para 7(1)(c),
+#   and added it to para 8 for schemes from 1 April 2024 (WSI 2024/56 regs
+#   1(3) and 5(d)).
+# - Scotland: SSI 2012/319 reg 20(d), Sch 1 paras 8, 9 and 13. The Scottish
+#   Ministers name AFIP for a young person only (paras 8(1)(aa) and 9(ba)).
+#
+# Weekly amounts, the same in all three nations (each schedule's table of
+# premium amounts in force on 30 April):
+#   year  enhanced disability premium  disabled child premium
+#   2015  24.43                        60.06
+#   2022  27.44                        68.04
+#   2023  30.17                        74.69
+#   2024  32.20                        80.01
+#   2026  33.99                        84.46
+# So in 2026 the two premiums come to 84.46 * 52 = 4,391.92 and 33.99 * 52 =
+# 1,767.48 a year, together 118.45 * 52 = 6,159.40.
+#
+# Each 2026 pensioner is 72, reached State Pension age before 1 April 2021,
+# and gets a single or lone parent personal allowance of 256.00 a week (13,312
+# a year). Councils add a child or young person amount of 87.88 a week in
+# England and Wales and 109.85 in Scotland, and in Wales a family premium of
+# 20.22 (the child_or_young_person and family_premium parameters under
+# gov.local_authorities.<nation>.council_tax_reduction.pensioners.applicable_amount).
+# A young person here is a 17-year-old at school, a Child Benefit qualifying
+# young person (SI 2012/2885 reg 2; WSI 2013/3029 reg 2; SSI 2012/319 reg
+# 4). The formula multiplies weekly amounts by 52.
+
+- name: Case A0 England, an English pensioner with no child gets no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    # 256.00 * 52.
+    council_tax_reduction_applicable_amount: 13_312
+
+- name: Case A1 England, a ten-year-old with no disability benefit adds no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    council_tax_reduction_premiums: 0
+    # (256.00 + 87.88) * 52.
+    council_tax_reduction_applicable_amount: 17_881.76
+
+- name: Case A2 England, a child on the highest DLA care rate adds both premiums.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # (84.46 + 33.99) * 52 = 6,159.40.
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_premiums: 6_159.40
+    # 17,881.76 + 6,159.40.
+    council_tax_reduction_applicable_amount: 24_041.16
+
+- name: Case A3 England, a child on the middle DLA care rate adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 17,881.76 + 4,391.92.
+    council_tax_reduction_applicable_amount: 22_273.68
+
+- name: Case A4 England, a blind child with no DLA adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        is_blind: true
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 17,881.76 + 4,391.92.
+    council_tax_reduction_applicable_amount: 22_273.68
+
+- name: Case A2c England, with £24,000 of pensions the premiums bring income within the applicable amount and the full reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+        private_pension_income: 11_430
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_applicable_amount: 24_041.16
+    # Applicable income 21,714.00 falls short of 24,041.16, so councils
+    # give the maximum reduction, 100% of the council tax (England Sch 1
+    # paras 2(e), 7(1) and 10(2)), here 2,000.
+    council_tax_reduction_applicable_income: 21_714.00
+    council_tax_reduction: 2_000
+
+- name: Case A0 Wales, a Welsh pensioner with no child gets no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    # 256.00 * 52.
+    council_tax_reduction_applicable_amount: 13_312
+
+- name: Case A1 Wales, a ten-year-old with no disability benefit adds no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    council_tax_reduction_premiums: 0
+    # (256.00 + 87.88 + 20.22) * 52.
+    council_tax_reduction_applicable_amount: 18_933.20
+
+- name: Case A2 Wales, a child on the highest DLA care rate adds both premiums.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # (84.46 + 33.99) * 52 = 6,159.40.
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_premiums: 6_159.40
+    # 18,933.20 + 6,159.40.
+    council_tax_reduction_applicable_amount: 25_092.60
+
+- name: Case A3 Wales, a child on the middle DLA care rate adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 18,933.20 + 4,391.92.
+    council_tax_reduction_applicable_amount: 23_325.12
+
+- name: Case A4 Wales, a blind child with no DLA adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        is_blind: true
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 18,933.20 + 4,391.92.
+    council_tax_reduction_applicable_amount: 23_325.12
+
+- name: Case A2c Wales, with £24,000 of pensions the premiums bring income within the applicable amount and the full reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+        private_pension_income: 11_430
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_applicable_amount: 25_092.60
+    # Applicable income 21,714.00 falls short of 25,092.60, so the council
+    # gives the maximum reduction, the whole council tax (WSI 2013/3029
+    # reg 22(e) and Sch 1 paras 2(1) and 4(2);
+    # gov.local_authorities.wales.council_tax_reduction.maximum_support_rate),
+    # here 2,000.
+    council_tax_reduction_applicable_income: 21_714.00
+    council_tax_reduction: 2_000
+
+- name: Case A0 Scotland, a Scottish pensioner with no child gets no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    # 256.00 * 52.
+    council_tax_reduction_applicable_amount: 13_312
+
+- name: Case A1 Scotland, a ten-year-old with no disability benefit adds no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+    council_tax_reduction_premiums: 0
+    # (256.00 + 109.85) * 52.
+    council_tax_reduction_applicable_amount: 19_024.20
+
+- name: Case A2 Scotland, a child on the highest DLA care rate adds both premiums.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # (84.46 + 33.99) * 52 = 6,159.40.
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_premiums: 6_159.40
+    # 19,024.20 + 6,159.40.
+    council_tax_reduction_applicable_amount: 25_183.60
+
+- name: Case A3 Scotland, a child on the middle DLA care rate adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 19,024.20 + 4,391.92.
+    council_tax_reduction_applicable_amount: 23_416.12
+
+- name: Case A4 Scotland, a blind child with no DLA adds the disabled child premium only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        is_blind: true
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 84.46 * 52 = 4,391.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_391.92
+    # 19,024.20 + 4,391.92.
+    council_tax_reduction_applicable_amount: 23_416.12
+
+- name: Case A2c Scotland, with £24,000 of pensions the premiums bring income within the applicable amount and the full reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+        private_pension_income: 11_430
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+    council_tax_reduction_applicable_amount: 25_183.60
+    # Applicable income 21,753.67 falls short of 25,183.60, so the council
+    # gives the maximum reduction, the whole council tax (SSI 2012/319
+    # regs 14(5)(a)(ii) and (8)(a) and 47(1);
+    # gov.local_authorities.scotland.council_tax_reduction.maximum_support_rate),
+    # here 2,000.
+    council_tax_reduction_applicable_income: 21_753.67
+    council_tax_reduction: 2_000
+
+- name: AFIP England 2022, a young person on AFIP alone meets neither condition before SI 2023/16.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+
+- name: AFIP England 2023, a young person on AFIP alone meets both conditions (paras 7(1)(c) and 8(e)).
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # (74.69 + 30.17) * 52 = 104.86 * 52 = 5,452.72.
+    council_tax_reduction_pensioner_child_disability_premiums: 5_452.72
+
+# The Secretary of State and the Welsh Ministers name AFIP for a child or
+# young person (England para 7(1)(c); Wales paras 7(1)(c) and 8(d)); the
+# cases with a 10-year-old on AFIP test that wording.
+- name: AFIP England 2023, a child under 16 on AFIP alone meets the enhanced condition only.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    # The Secretary of State gives AFIP the disabled child premium for a young
+    # person only (para 8(e)): 30.17 * 52 = 1,568.84.
+    council_tax_reduction_pensioner_child_disability_premiums: 1_568.84
+
+- name: AFIP Wales 2023, a child on AFIP alone meets the enhanced condition only (para 7(1)(c)).
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    # 30.17 * 52 = 1,568.84.
+    council_tax_reduction_pensioner_child_disability_premiums: 1_568.84
+
+- name: AFIP Wales 2024, a child on AFIP alone meets both conditions (paras 7(1)(c) and 8(d)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    # (80.01 + 32.20) * 52 = 112.21 * 52 = 5,834.92.
+    council_tax_reduction_pensioner_child_disability_premiums: 5_834.92
+
+- name: AFIP Scotland 2026, a child under 16 on AFIP alone meets neither condition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    # The Scottish Ministers give AFIP both premiums for a young person only
+    # (paras 8(1)(aa) and 9(ba)).
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+
+- name: AFIP Scotland 2026, a young person on AFIP alone meets both conditions (paras 8(1)(aa) and 9(ba)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        armed_forces_independence_payment: 3_000
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # (84.46 + 33.99) * 52 = 6,159.40.
+    council_tax_reduction_pensioner_child_disability_premiums: 6_159.40
+
+- name: Earlier year England 2015, a child on the highest DLA care rate adds both premiums at the 2015-16 amounts.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    # (60.06 + 24.43) * 52 = 84.49 * 52 = 4,393.48.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_393.48
+    council_tax_reduction_premiums: 4_393.48
+
+- name: Earlier year Wales 2015, a child on the highest DLA care rate adds both premiums at the 2015-16 amounts.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    # (60.06 + 24.43) * 52 = 84.49 * 52 = 4,393.48.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_393.48
+    council_tax_reduction_premiums: 4_393.48
+
+- name: Earlier year Scotland 2015, a child on the highest DLA care rate adds both premiums at the 2015-16 amounts.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    # (60.06 + 24.43) * 52 = 84.49 * 52 = 4,393.48.
+    council_tax_reduction_pensioner_child_disability_premiums: 4_393.48
+    council_tax_reduction_premiums: 4_393.48
+
+- name: Nil, a working-age lone parent's child on the highest DLA care rate adds no pensioner child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 20_000
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_pensioner_child_disability_premiums: 0
+
+- name: Nil, a pensioner household head who applies alone has no child in their family, so their grandchild on the highest DLA care rate adds nothing.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      mother:
+        age: 30
+        is_parent: true
+        is_household_head: false
+      father:
+        age: 30
+        is_parent: true
+        is_household_head: false
+      child:
+        age: 5
+        dla_sc_category: HIGHER
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, mother, father, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, mother, father, child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_head_applies_alone: [true]
+    council_tax_reduction_pensioner: [true]
+    council_tax_reduction_pensioner_child_disability_premiums: [0]
+    # A single pensioner aged 80: 256.00 * 52.
+    council_tax_reduction_applicable_amount: [13_312]
+
+- name: Nil, a pensioner in Northern Ireland with a child on the highest DLA care rate gets no child disability premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 72
+        state_pension: 12_570
+      child:
+        age: 10
+        dla_sc_category: HIGHER
+    benunits:
+      benunit:
+        members: [pensioner, child]
+        would_claim_pc: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, child]
+        country: NORTHERN_IRELAND
+  output:
+    council_tax_reduction_pensioner: true
+    # The child meets both conditions, as Housing Benefit's reading shows.
+    housing_benefit_child_disability_premiums: 6_159.40
+    council_tax_reduction_pensioner_child_disability_premiums: 0

@@ -39,9 +39,15 @@
         members: [person]
         country: ENGLAND
   output:
-    # £500 savings allowance, then 9,770 at 20% (1,954) to the basic rate
-    # limit and 9,730 at 40% (3,892).
-    savings_income_tax: 5_846
+    # Under ITA 2007 s. 25(2) the model sets £2,300 of the Personal Allowance
+    # against the property income, leaving it at the basic rate limit,
+    # £37,700, and the other £10,270 against savings, so the £500 savings
+    # allowance covers savings taxed at 40% rather than 20%. Savings left:
+    # 9,730, less £500 at the nil rate (s. 12A), at 40%: 3,692. Property
+    # income 37,700 at 20%: 7,540. The old order, with all the allowance
+    # against property income, charged 5,486 and 5,846: £100 more.
+    savings_income_tax: 3_692
+    income_tax: 7_540 + 3_692
 
 - name: Case 3, pay and property income together form the band base.
   period: 2026
@@ -119,7 +125,7 @@
     taxed_income: 47_430
     personal_pension_contributions_tax: 4_000
 
-- name: Case 7, Marriage Allowance still comes off the band base (pinned; #1947).
+- name: Case 7, Marriage Allowance leaves the band base unchanged.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -134,8 +140,10 @@
         members: [person]
         country: ENGLAND
   output:
-    # earned_taxable_income subtracts Marriage Allowance, which the law gives
-    # as a tax reduction (ITA 2007 s. 55B), so the base is 30,000 - 12,570 -
-    # 1,260 = 16,170 rather than 17,430. Pinned here until #1947 is fixed.
-    non_savings_taxable_income: 16_170
+    # Parliament gives the Marriage Allowance as a tax reduction at Step 6
+    # (ITA 2007 ss. 55A(2) and 55B(1)), so it leaves the base at
+    # 30,000 - 12,570 = 17,430.
+    non_savings_taxable_income: 17_430
+    # Step 5: 17,430 x 20% = 3,486. Step 6: 3,486 - 20% x 1,260 = 3,234.
+    income_tax: 3_234
     non_savings_income_after_allowances: 17_430
