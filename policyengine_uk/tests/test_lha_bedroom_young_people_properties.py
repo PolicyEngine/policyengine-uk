@@ -419,11 +419,19 @@ def uc_qualifying_young_person(p):
 
 def child_benefit_qualifying_young_person(p):
     """SSCBA 1992 s.142 and the Child Benefit (General) Regulations 2006, as
-    HB reg 19's "young person": aged 16 to 19 in non-advanced education
-    entered before 19, and not receiving benefits in their own right."""
+    HB reg 19(1)'s "young person": aged 16 to 19 and either in non-advanced
+    education entered before 19 (reg 3) or before the 31 August after their
+    16th birthday, whatever their education (reg 4; the 31 August falls in
+    the same year as Universal Credit's 1 September); and not receiving
+    benefits in their own right (reg 8). The generator sets neither an
+    extension period (reg 5) nor a terminal date (reg 7). Like the model,
+    this has no input for an eligible child, whom HB reg 19(2)(c) leaves out
+    of "young person" (see is_child_or_young_person_placed_with_family)."""
     return (
         16 <= p["age"] < 20
-        and in_qualifying_education(p)
+        and (
+            in_qualifying_education(p) or before_first_september_after_16th_birthday(p)
+        )
         and not p["receives_benefits_in_own_right"]
     )
 
@@ -512,6 +520,60 @@ def lone(role, age):
             current_education="NOT_IN_EDUCATION",
             is_before_universal_credit_qualifying_young_person_terminal_date=False,
             is_looked_after_by_local_authority=False,
+        ),
+    )
+)
+# A looked-after 16-year-old in advanced education, placed with an approved
+# foster parent who already has the carer's room. Until the 31 August after
+# their 16th birthday they are a young person (Child Benefit (General)
+# Regulations 2006 reg 4; HB reg 19(1)), so they do not occupy the dwelling
+# (HB reg 21(3)) and the family gains no Housing Benefit bedroom.
+@example(
+    (
+        [[dict(lone("head", 40), between_placements=True)]],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, age=16, current_education="TERTIARY"),
+    )
+)
+# The same young person placed with a foster parent of 40 whose one foster
+# child, aged 5, gives the claimant the carer's room: the family gains no
+# Housing Benefit bedroom.
+@example(
+    (
+        [[dict(lone("head", 40), children=[(5, True, "foster", False)])]],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, age=16, current_education="TERTIARY"),
+    )
+)
+# The same young person placed with a foster parent of 82 who has three
+# foster children and a daughter of 13. The foster children already give
+# the claimant the carer's room, so the family gains no Housing Benefit
+# bedroom.
+@example(
+    (
+        [
+            [
+                dict(
+                    role="head",
+                    adults=[(82, True)],
+                    children=[
+                        (6, True, "foster", False),
+                        (10, False, "foster", True),
+                        (2, False, "foster", False),
+                        (13, False, "own", False),
+                    ],
+                    between_placements=False,
+                )
+            ]
+        ],
+        (0, 0),
+        dict(
+            LOOKED_AFTER_QYP,
+            age=16,
+            current_education="TERTIARY",
+            age_started_or_accepted_current_education_or_training=19,
+            is_before_universal_credit_qualifying_young_person_terminal_date=False,
+            is_household_head=False,
         ),
     )
 )
@@ -660,6 +722,18 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
         ],
         (0, 0),
         dict(LOOKED_AFTER_QYP, is_looked_after_by_local_authority=False),
+    )
+)
+# A looked-after 16-year-old not in education placed with a lone renter: a
+# young person until the 31 August after their 16th birthday (Child Benefit
+# (General) Regulations 2006 reg 4; HB reg 19(1)), so the renter has the
+# qualifying parent or carer's additional bedroom (reg 13D(3A)(b)) and the
+# young person has none of their own (reg 21(3)).
+@example(
+    (
+        [[lone("head", 40)]],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, age=16, current_education="NOT_IN_EDUCATION"),
     )
 )
 def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
