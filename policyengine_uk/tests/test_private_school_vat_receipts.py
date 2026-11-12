@@ -37,7 +37,7 @@ CONTRIB = "gov.contrib.labour.private_school_vat"
 LEGACY = "gov.simulation.microdata_vat_coverage"
 FEES = "gov.simulation.private_school_vat.private_school_fees"
 BASIS = "gov.simulation.private_school_vat.private_school_vat_basis"
-FACTOR = 0.67 * 0.7
+FACTOR = 0.69 * 0.7
 # HMRC's OBR-certified costing of VAT on private school fees (Autumn Budget
 # 2024 Table 5.1, £m) and OBR cash-basis VAT receipts (October 2026 EFO
 # detailed forecast tables, receipts, sheet 4.8, row 13, cells D13:H13, £m),
@@ -190,13 +190,13 @@ def test_vat_reads_neither_attendance_nor_fees():
 
 
 def test_published_microcosm_receipts_check_is_unchanged():
-    # Rounded aggregate inputs published in docs/engineering/vat-coverage.md,
-    # with energy bills split out: the standard-rated base and the energy-bill
-    # VAT, which is added after grossing. Model year 2024 has no school charge
-    # and no share to reallocate.
-    sim = simulation(year=2024, full=396.15e9, reduced=0, energy_vat=1.99e9)
+    # Rounded aggregate inputs that docs/engineering/vat-coverage.md publishes
+    # for Microcosm a6299504, with energy bills split out: the standard-rated
+    # base, and the energy-bill VAT, which vat adds after grossing. Model year
+    # 2024 has no school charge and no share to reallocate.
+    sim = simulation(year=2024, full=407.40e9, reduced=0, energy_vat=2.33e9)
     combined = amount(sim, "vat", 2024) + amount(sim, "private_school_vat", 2024)
-    expected = 0.2 * 396.15e9 / FACTOR + 1.99e9
+    expected = 0.2 * 407.40e9 / FACTOR + 2.33e9
     assert combined == pytest.approx(expected)
     assert combined / 170.994e9 == pytest.approx(1, rel=0.001)
 

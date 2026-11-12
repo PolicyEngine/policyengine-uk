@@ -1,0 +1,70 @@
+# SI 2009/470 reg. 15(2BA), inserted by SI 2022/1335 reg. 15(9): "a borrower
+# is not required to repay any part of a plan 5 loan on or before 5th April
+# 2026". Reg. 15(2BB) omits (2BA) on 6 April 2026.
+#
+# The model reads year Y's parameters at 30 April of Y, so 2025 reads the law
+# for 2025-26 (no Plan 5 repayment due) and 2026 reads 2026-27 (due).
+# Repayment income here equals employment income: there is no other income,
+# deduction or benefit in kind.
+
+- name: A Plan 5 borrower on £40,000 owes nothing in 2024-25
+  period: 2024
+  input:
+    age: 25
+    employment_income: 40_000
+    student_loan_plan: PLAN_5
+  output:
+    # Reg. 15(2BA) applies, so nil.
+    student_loan_repayment: 0
+
+- name: A Plan 5 borrower on £40,000 owes nothing in 2025-26
+  period: 2025
+  input:
+    age: 25
+    employment_income: 40_000
+    student_loan_plan: PLAN_5
+  output:
+    # Reg. 15(2BA) applies, so nil.
+    student_loan_repayment: 0
+
+- name: A Plan 5 borrower on £40,000 repays 9% above £25,000 in 2026-27
+  period: 2026
+  input:
+    age: 25
+    employment_income: 40_000
+    student_loan_plan: PLAN_5
+  output:
+    # 0.09 x (40,000 - 25,000) = 0.09 x 15,000 = 1,350
+    student_loan_repayment: 1_350
+
+- name: A Plan 5 borrower on £200,000 owes nothing in 2025-26
+  period: 2025
+  input:
+    age: 25
+    employment_income: 200_000
+    student_loan_plan: PLAN_5
+  output:
+    # Reg. 15(2BA) applies however far income exceeds the £25,000 threshold.
+    student_loan_repayment: 0
+
+- name: A Plan 2 borrower on £60,000 repays 9% above £28,470 in 2025-26
+  period: 2025
+  input:
+    age: 25
+    employment_income: 60_000
+    student_loan_plan: PLAN_2
+  output:
+    # Plan 2 threshold from 6 April 2025: £28,470.
+    # 0.09 x (60,000 - 28,470) = 0.09 x 31,530 = 2,837.70
+    student_loan_repayment: 2_837.70
+
+- name: A postgraduate borrower on £40,000 repays 6% above £21,000 in 2025-26
+  period: 2025
+  input:
+    age: 25
+    employment_income: 40_000
+    student_loan_plan: POSTGRADUATE
+  output:
+    # Postgraduate threshold £21,000, rate 6%.
+    # 0.06 x (40,000 - 21,000) = 0.06 x 19,000 = 1,140
+    student_loan_repayment: 1_140

@@ -175,7 +175,7 @@ def pytest_report_header(config):
     ]
     shard = config.getoption("shard", default=None)
     if shard is not None:
-        lines.append(f"shard: {shard[0]} of {shard[1]}, chosen by node id")
+        lines.append(f"shard: {shard[0]} of {shard[1]}, by marker and node id")
     return lines
 
 
@@ -193,12 +193,17 @@ def cloned_uk_tax_benefit_system():
 
 
 # CI splits the suite over several runners with ``--shard K/N``. The shard of a
-# test is a function of its node id alone (and of the checked-in table below),
-# so the shards partition whatever is collected: every test runs in exactly
-# one of them, including a test added later. The Test job checks that on each
-# run (.github/check_test_shards.py).
+# test is a function of its marker and node id alone (and of the checked-in
+# table below), so the shards partition whatever is collected: every test runs
+# in exactly one of them, including a test added later. The Test job checks that
+# on each run (.github/check_test_shards.py).
 #
-# Most tests are placed by a hash of their node id. A hash spreads thousands
+# The last shard runs the tests that need the dataset, which build simulations
+# of all of it, and the other shards share the rest. CI gives the last shard
+# one worker, so only one of those simulations runs at a time
+# (.github/workflows/test-suite.yaml has the measurements).
+#
+# Most other tests are placed by a hash of their node id. A hash spreads thousands
 # of short tests evenly, but not a few long ones: on 24 October 2026 one
 # property test took 22 minutes, and by chance it and several others of 4 to
 # 7 minutes hashed to shard 2 of 5, which then took 57 minutes on average
@@ -257,6 +262,17 @@ def shard_of(nodeid: str, shards: int) -> int:
     return int.from_bytes(digest[:8], "big") % shards + 1
 
 
+def item_shard(item, shards: int) -> int:
+    """The shard, from 1 to ``shards``, that runs a collected test.
+
+    The last of two or more shards runs the tests that need the dataset, and
+    ``shard_of`` places the others on the remaining shards.
+    """
+    if shards == 1:
+        return 1
+    return shards if needs_data(item) else shard_of(item.nodeid, shards - 1)
+
+
 def parse_shard(value: str) -> tuple[int, int]:
     """Parse ``K/N`` into ``(K, N)``, requiring 1 <= K <= N."""
     match = re.fullmatch(r"([0-9]+)/([0-9]+)", value)
@@ -286,7 +302,7 @@ def pytest_collection_modifyitems(config, items):
         this_shard, shards = shard
         selected, deselected = [], []
         for item in items:
-            if shard_of(item.nodeid, shards) == this_shard:
+            if item_shard(item, shards) == this_shard:
                 selected.append(item)
             else:
                 deselected.append(item)
