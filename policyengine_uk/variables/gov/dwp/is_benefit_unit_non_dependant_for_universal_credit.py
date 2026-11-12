@@ -16,7 +16,12 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         "young person the renter is responsible for is a member of the "
         "renter's extended benefit unit, and one no one is responsible for, "
         "for example one looked after by a local authority, is excluded by "
-        "para 9(2)(g). A child, under 16, is always one or the other. The "
+        "para 9(2)(g). A child, under 16, is always one or the other. A "
+        "foster child of the claimant or partner, aged 16 or 17 "
+        "(is_lha_foster_child), is not a non-dependant of their foster "
+        "parent (para 9(2)(c) and (3)); the claim that counts the "
+        "household's non-dependants can count them (see "
+        "LHA_allowed_bedrooms). The "
         "household head (is_resolved_household_head), a householder in whose "
         "name the accommodation is rented, is liable for it and so never a "
         "non-dependant (para 9(2)(d)), even where the benefit unit's "
@@ -36,7 +41,7 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
     )
 
     def formula(person, period, parameters):
-        # UC Regs 2013 Sch 4 para 9(1)(a)-(b) and (2)(a), (b), (g); WRA 2012 s.40.
+        # UC Regs 2013 Sch 4 para 9(1)(a)-(b) and (2)(a), (b), (c), (g); WRA 2012 s.40.
         not_a_child = ~person("is_child_for_universal_credit", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
         qualifying_young_person = person(
@@ -46,10 +51,13 @@ class is_benefit_unit_non_dependant_for_universal_credit(Variable):
         # and a member who pays the head for their occupation is liable too.
         household_head = person("is_resolved_household_head", period)
         pays_householder = person("pays_rent_to_householder", period)
+        # Para 9(2)(c) and (3): the claimant's or partner's foster child.
+        foster_child = person("is_lha_foster_child", period)
         return (
             not_a_child
             & ~claimant_or_partner
             & ~qualifying_young_person
             & ~household_head
             & ~pays_householder
+            & ~foster_child
         )

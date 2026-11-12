@@ -446,7 +446,10 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
     head_claims = per_household(sim, claims_uc) > 0
     assert np.allclose(head_deductions[head_claims], outside[head_claims], atol=0.01)
     # Bedrooms: what the head's family would have alone, plus one for each
-    # person aged 16 or over outside it.
+    # person aged 16 or over outside it. Non-dependants' children under 16
+    # share rooms with the head's own children (UC Sch 4 para 10(1)(d)-(f));
+    # test_lha_bedroom_young_people_properties.py counts those, so this check
+    # covers households with no child outside the head's family.
     alone = [dict(house, others=[]) for house in population]
     alone_situation, _ = build(alone)
     alone_sim = Simulation(situation=alone_situation)
@@ -455,10 +458,14 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
     adults_outside = sim.map_result(
         aged_16_or_over & ~person_head_family, "person", "household"
     )
+    children_outside = sim.map_result(
+        ~aged_16_or_over & ~person_head_family, "person", "household"
+    )
+    checked = head_claims & (children_outside == 0)
     head_bedrooms = per_household(sim, calc(sim, "LHA_allowed_bedrooms") * head)
     assert np.allclose(
-        head_bedrooms[head_claims],
-        (bedrooms_alone + adults_outside)[head_claims],
+        head_bedrooms[checked],
+        (bedrooms_alone + adults_outside)[checked],
     )
     # Council Tax Reduction: one claim, the household head's family's, on its
     # own scheme; every family's reduction is simulated or reported as that

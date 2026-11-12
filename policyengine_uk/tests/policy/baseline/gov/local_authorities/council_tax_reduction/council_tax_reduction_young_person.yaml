@@ -353,3 +353,121 @@
     is_council_tax_reduction_applicant_or_partner: [true, false, false]
     is_child_or_young_person_for_council_tax_reduction: [true, false, false]
     council_tax_reduction_applicable_income: 10_000
+
+- name: Case 11, Scotland working age, an adopter of 23 with a child of 3 who lives with them.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adopter:
+        age: 23
+        employment_income: 11_000
+        is_household_head: true
+      child:
+        age: 3
+        is_placed_for_adoption: false
+    benunits:
+      family:
+        members: [adopter, child]
+        would_claim_uc: false
+    households:
+      home:
+        members: [adopter, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # SSI 2021/249 reg 7(2): the adopter is responsible for a child who
+    # normally lives with them; reg 7(8) takes out only a child placed with
+    # a foster carer, so an adoption placement leaves the child in the
+    # family and the adopter a lone parent.
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_pensioner: false
+    is_council_tax_reduction_lone_parent: true
+    # Sch 1 paras 1 and 2 at the 2025-26 rates (SSI 2025/24 reg 16): a lone
+    # parent's personal allowance of £92.05 a week and a child premium of
+    # £105.85. The model gives no family premium: SSI 2016/81 removed it
+    # from May 2016, except for a family entitled on 30 April 2016 (regs 2
+    # and 5). (92.05 + 105.85) * 52 = 10,290.80.
+    council_tax_reduction_working_age_applicable_amount: 10_290.80
+    # Earnings of £11,000 fall below the £12,570 personal allowance and
+    # National Insurance primary threshold, so no tax or contributions. A
+    # lone parent's earnings disregard is £25 a week (Sch 3 para 5), and
+    # reg 57(1)'s list of unearned income leaves out Child Benefit:
+    # 11,000 - 25 * 52 = 9,700.
+    council_tax_reduction_working_age_applicable_income: 9_700
+    # Income below the applicable amount gives the maximum reduction, the
+    # whole council tax (reg 13(6)(a)(ii) and (9)(a)).
+    council_tax_reduction: 1_800
+
+- name: Case 12, Scotland working age, the same family with the child placed for adoption.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adopter:
+        age: 23
+        employment_income: 11_000
+        is_household_head: true
+      child:
+        age: 3
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter, child]
+        would_claim_uc: false
+    households:
+      home:
+        members: [adopter, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # SSI 2021/249 reg 7(2): the adopter is responsible for a child who
+    # normally lives with them; reg 7(8) takes out only a child placed with
+    # a foster carer, so an adoption placement leaves the child in the
+    # family and the adopter a lone parent.
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_pensioner: false
+    is_council_tax_reduction_lone_parent: true
+    # As in Case 11: (92.05 + 105.85) * 52 = 10,290.80.
+    council_tax_reduction_working_age_applicable_amount: 10_290.80
+    # As in Case 11: 11,000 - 25 * 52 = 9,700.
+    council_tax_reduction_working_age_applicable_income: 9_700
+    # Income below the applicable amount gives the maximum reduction (reg
+    # 13(6)(a)(ii) and (9)(a)).
+    council_tax_reduction: 1_800
+    # Housing Benefit and Income Support still leave the child out of the
+    # household (HB Regs 2006 reg 21(3)(c); IS Regs 1987 reg 16(4)).
+    is_child_or_young_person_placed_with_family: [false, true]
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    is_responsible_for_child_or_young_person_for_legacy_benefits: false
+    is_lone_parent: false
+
+- name: Case 13, Scotland's pension-age scheme leaves out a child placed for adoption.
+  period: 2025
+  input:
+    people:
+      adopter:
+        age: 70
+        is_household_head: true
+      child:
+        age: 3
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter, child]
+        would_claim_uc: false
+    households:
+      home:
+        members: [adopter, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # SSI 2012/319 reg 11(2)(c): a child placed for adoption with the
+    # applicant is not a member of the household, so the adopter is not a
+    # lone parent.
+    council_tax_reduction_pensioner: true
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
