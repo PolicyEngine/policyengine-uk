@@ -63,8 +63,9 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  for their own award only; no family here reaches that in 2025, when
-  Income Support and income-based JSA are open and nobody reports tax credits;
+  and the model then ends every member's status too; no family here reaches
+  that in 2025, when Income Support and income-based JSA are open and
+  nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
@@ -87,6 +88,7 @@ one simulation, in separate households and benefit units.
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
@@ -102,8 +104,11 @@ from policyengine_uk.tax_benefit_system import system
 YEAR = 2025
 # Merton's working-age council tax reduction scheme has parameters from
 # April 2026, so the non-dependant property runs in 2027 (income-related ESA
-# only: Income Support and income-based JSA closed in April 2026).
+# only: Income Support and income-based JSA closed in April 2026). Its ESA
+# reporters keep their awards through the appointee saving (SI 2025/1148 art.
+# 3A(2)), since the abolition ends every other award from 1 July 2026.
 NON_DEP_YEAR = 2027
+SAVED = {"esa_income_appointee_saving": {NON_DEP_YEAR: True}}
 
 FAMILY_READERS = [
     "claimant_or_partner_esa_income",
@@ -238,13 +243,15 @@ def families(draw):
 def other_members(draw):
     """An adult who is neither claimant, partner nor a dependant.
 
-    They are under state pension age and not in education, so a 16 to 19 year
-    old is not a qualifying young person. They may work, and have no income
-    other than their pay and the awards they report.
+    They are under state pension age, not in education and past the 1
+    September following their 16th birthday (UC Regs 2013 reg. 5(1)(a)), so a
+    16 to 19 year old is not a qualifying young person. They may work, and have
+    no income other than their pay and the awards they report.
     """
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **draw(work()),
         **draw(award_reports()),
     }
@@ -539,6 +546,7 @@ def other_members_with_awards(draw):
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **awards,
     }
 
@@ -653,6 +661,7 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
                 values[starts[i] : starts[i] + n],
                 values[starts[k + i] : starts[k + i] + n],
             ), (variable, drawn[i])
+    return sim
 
 
 @SETTINGS
@@ -677,6 +686,44 @@ def test_other_members_awards_never_change_the_readers_at_pension_age(drawn):
 )
 def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
     _family_readers_never_change(drawn)
+
+
+@pytest.mark.parametrize("report", ["esa_income_reported", "jsa_income_reported"])
+def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report):
+    # A natural route-(a) case: no route or own-right Boolean is supplied.
+    # UC reg 5(5) and SPC reg 4A(5) still exclude the member's own award.
+    family = (
+        [
+            {
+                "age": 18,
+                "is_benunit_head": True,
+                "current_education": "NOT_IN_EDUCATION",
+                **NO_AWARDS,
+            }
+        ],
+        [],
+        {"country": "SCOTLAND", "savings": 0},
+    )
+    other = outside_adult(16, is_benunit_head=False, **{report: 5_000})
+    sim = _family_readers_never_change([(family, other)])
+    assert sim.calculate("is_before_first_september_following_16th_birthday", YEAR)[-1]
+    assert not sim.calculate("receives_benefits_in_own_right", YEAR).any()
+    for programme in ("universal_credit", "pension_credit"):
+        assert not sim.calculate(f"is_qualifying_young_person_for_{programme}", YEAR)[
+            -1
+        ]
+        assert not sim.calculate(
+            f"is_child_or_qualifying_young_person_for_{programme}", YEAR
+        )[-1]
+    for variable in (
+        "uc_child_element",
+        "is_uc_work_allowance_eligible",
+        "uc_work_allowance",
+    ):
+        assert not sim.calculate(variable, YEAR).any(), variable
+    for variable in ("uc_earned_income", "uc_unearned_income"):
+        values = sim.calculate(variable, YEAR)
+        assert np.isclose(values[0], values[1], atol=0.01), variable
 
 
 @SETTINGS
@@ -938,6 +985,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: True},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: award},
+                    **SAVED,
                 }
                 unit.append(name)
             if existing_award is not None:
@@ -947,6 +995,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: False},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: existing_award},
+                    **SAVED,
                 }
                 unit.append(name)
             if other_present:
@@ -956,6 +1005,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: False},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: other_award},
+                    **SAVED,
                 }
                 unit.append(name)
             people[names[0]]["is_claimant_or_partner"] = {year: True}
@@ -1277,6 +1327,7 @@ def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
                 "is_claimant_or_partner": {year: role},
                 "current_education": {year: "NOT_IN_EDUCATION"},
                 "esa_income_reported": {year: report},
+                **SAVED,
             }
             if works:
                 inputs.update({k: {year: v} for k, v in FULL_TIME_PAY.items()})

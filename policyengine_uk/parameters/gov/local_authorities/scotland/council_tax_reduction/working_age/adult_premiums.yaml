@@ -1,0 +1,544 @@
+description: Weekly adult premiums in the applicable amount of a working-age applicant under the Scotland
+  council tax reduction rules.
+disability_premium:
+  description: Scotland working-age CTR disability premium.
+  single:
+    description: Weekly disability premium for a single applicant or lone parent.
+    values:
+      2013-04-01:
+        value: 31.0
+        reference:
+        - title: SSI 2013/48 reg 14(f)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 31.85
+        reference:
+        - title: SSI 2014/35 reg 4(d)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 32.25
+        reference:
+        - title: SSI 2015/46 reg 9(c)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 32.55
+        reference:
+        - title: SSI 2017/41 reg 10(a)(i)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 33.55
+        reference:
+        - title: SSI 2018/69 reg 9(a)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 34.35
+        reference:
+        - title: SSI 2019/29 reg 5(a)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 34.95
+        reference:
+        - title: SSI 2020/25 reg 8(c)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 35.1
+        reference:
+        - title: SSI 2021/51 reg 7(c)(i)(aa)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 36.2
+        reference:
+        - title: SSI 2022/52 reg 25(c)(iii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 39.85
+        reference:
+        - title: SSI 2023/38 reg 20(i)(iii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 42.5
+        reference:
+        - title: SSI 2024/35 reg 17(i)(iii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 43.2
+        reference:
+        - title: SSI 2025/24 reg 16(i)(iii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 44.85
+        reference:
+        - title: SSI 2026/56 reg 14(i)(iii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+  couple:
+    description: Weekly disability premium for a couple.
+    values:
+      2013-04-01:
+        value: 44.2
+        reference:
+        - title: SSI 2013/48 reg 14(f)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 45.4
+        reference:
+        - title: SSI 2014/35 reg 4(d)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 45.95
+        reference:
+        - title: SSI 2015/46 reg 9(c)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 46.4
+        reference:
+        - title: SSI 2017/41 reg 10(a)(ii)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 47.8
+        reference:
+        - title: SSI 2018/69 reg 9(a)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 48.95
+        reference:
+        - title: SSI 2019/29 reg 5(a)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 49.8
+        reference:
+        - title: SSI 2020/25 reg 8(c)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 50.05
+        reference:
+        - title: SSI 2021/51 reg 7(c)(i)(bb)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 51.6
+        reference:
+        - title: SSI 2022/52 reg 25(c)(iii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 56.8
+        reference:
+        - title: SSI 2023/38 reg 20(i)(iii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 60.6
+        reference:
+        - title: SSI 2024/35 reg 17(i)(iii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 61.65
+        reference:
+        - title: SSI 2025/24 reg 16(i)(iii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 64.0
+        reference:
+        - title: SSI 2026/56 reg 14(i)(iii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+severe_disability_premium:
+  description: Scotland working-age CTR severe disability premium.
+  single:
+    description: Weekly severe disability premium where one person qualifies, or where someone is paid
+      a carer benefit for caring for a member of the couple.
+    values:
+      2013-04-01:
+        value: 59.5
+        reference:
+        - title: SSI 2013/48 reg 14(f)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 61.1
+        reference:
+        - title: SSI 2014/35 reg 4(d)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 61.85
+        reference:
+        - title: SSI 2015/46 reg 9(c)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 62.45
+        reference:
+        - title: SSI 2017/41 reg 10(a)(iii)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 64.3
+        reference:
+        - title: SSI 2018/69 reg 9(a)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 65.85
+        reference:
+        - title: SSI 2019/29 reg 5(a)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 66.95
+        reference:
+        - title: SSI 2020/25 reg 8(c)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 67.3
+        reference:
+        - title: SSI 2021/51 reg 7(c)(ii)(aa)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 69.4
+        reference:
+        - title: SSI 2022/52 reg 25(c)(iv)(aa)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 76.4
+        reference:
+        - title: SSI 2023/38 reg 20(i)(iv)(aa)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 81.5
+        reference:
+        - title: SSI 2024/35 reg 17(i)(iv)(aa)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 82.9
+        reference:
+        - title: SSI 2025/24 reg 16(i)(iv)(aa)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 86.05
+        reference:
+        - title: SSI 2026/56 reg 14(i)(iv)(aa)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR severe disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+  couple:
+    description: Weekly severe disability premium for a couple who both qualify and for whom no one is
+      paid a carer benefit.
+    values:
+      2013-04-01:
+        value: 119.0
+        reference:
+        - title: SSI 2013/48 reg 14(f)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 122.2
+        reference:
+        - title: SSI 2014/35 reg 4(d)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 123.7
+        reference:
+        - title: SSI 2015/46 reg 9(c)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 124.9
+        reference:
+        - title: SSI 2017/41 reg 10(a)(iv)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 128.6
+        reference:
+        - title: SSI 2018/69 reg 9(a)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 131.7
+        reference:
+        - title: SSI 2019/29 reg 5(a)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 133.9
+        reference:
+        - title: SSI 2020/25 reg 8(c)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 134.6
+        reference:
+        - title: SSI 2021/51 reg 7(c)(ii)(bb)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 138.8
+        reference:
+        - title: SSI 2022/52 reg 25(c)(iv)(bb)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 152.8
+        reference:
+        - title: SSI 2023/38 reg 20(i)(iv)(bb)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 163.0
+        reference:
+        - title: SSI 2024/35 reg 17(i)(iv)(bb)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 165.8
+        reference:
+        - title: SSI 2025/24 reg 16(i)(iv)(bb)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 172.1
+        reference:
+        - title: SSI 2026/56 reg 14(i)(iv)(bb)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR severe disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+enhanced_disability_premium:
+  description: Scotland working-age CTR enhanced disability premium.
+  single:
+    description: Weekly enhanced disability premium for a single applicant or lone parent.
+    values:
+      2013-04-01:
+        value: 15.15
+        reference:
+        - title: SSI 2013/48 reg 14(f)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 15.55
+        reference:
+        - title: SSI 2014/35 reg 4(d)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 15.75
+        reference:
+        - title: SSI 2015/46 reg 9(c)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 15.9
+        reference:
+        - title: SSI 2017/41 reg 10(a)(viii)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 16.4
+        reference:
+        - title: SSI 2018/69 reg 9(a)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 16.8
+        reference:
+        - title: SSI 2019/29 reg 5(a)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 17.1
+        reference:
+        - title: SSI 2020/25 reg 8(c)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 17.2
+        reference:
+        - title: SSI 2021/51 reg 7(c)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 17.75
+        reference:
+        - title: SSI 2022/52 reg 25(c)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 19.55
+        reference:
+        - title: SSI 2023/38 reg 20(i)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 20.85
+        reference:
+        - title: SSI 2024/35 reg 17(i)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 21.2
+        reference:
+        - title: SSI 2025/24 reg 16(i)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 22.0
+        reference:
+        - title: SSI 2026/56 reg 14(i)(v)(bb)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR enhanced disability premium, single
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+  couple:
+    description: Weekly enhanced disability premium for a couple.
+    values:
+      2013-04-01:
+        value: 21.75
+        reference:
+        - title: SSI 2013/48 reg 14(f)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+      2014-04-01:
+        value: 22.35
+        reference:
+        - title: SSI 2014/35 reg 4(d)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+      2015-04-01:
+        value: 22.6
+        reference:
+        - title: SSI 2015/46 reg 9(c)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+      2017-04-01:
+        value: 22.85
+        reference:
+        - title: SSI 2017/41 reg 10(a)(ix)
+          href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+      2018-04-01:
+        value: 23.55
+        reference:
+        - title: SSI 2018/69 reg 9(a)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+      2019-04-01:
+        value: 24.1
+        reference:
+        - title: SSI 2019/29 reg 5(a)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+      2020-04-01:
+        value: 24.5
+        reference:
+        - title: SSI 2020/25 reg 8(c)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+      2021-04-01:
+        value: 24.6
+        reference:
+        - title: SSI 2021/51 reg 7(c)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+      2022-04-01:
+        value: 25.35
+        reference:
+        - title: SSI 2022/52 reg 25(c)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+      2023-04-01:
+        value: 27.9
+        reference:
+        - title: SSI 2023/38 reg 20(i)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+      2024-04-01:
+        value: 29.75
+        reference:
+        - title: SSI 2024/35 reg 17(i)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+      2025-04-01:
+        value: 30.25
+        reference:
+        - title: SSI 2025/24 reg 16(i)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+      2026-04-01:
+        value: 31.4
+        reference:
+        - title: SSI 2026/56 reg 14(i)(v)(cc)
+          href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+    metadata:
+      label: Scotland working-age CTR enhanced disability premium, couple
+      unit: currency-GBP
+      period: week
+      uprating: gov.benefit_uprating_cpi
+      reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+carer_premium:
+  description: Weekly carer premium for each claimant or partner who qualifies.
+  values:
+    2013-04-01:
+      value: 33.3
+      reference:
+      - title: SSI 2013/48 reg 14(f)(iv)
+        href: https://www.legislation.gov.uk/ssi/2013/48/regulation/14
+    2014-04-01:
+      value: 34.2
+      reference:
+      - title: SSI 2014/35 reg 4(d)(iv)
+        href: https://www.legislation.gov.uk/ssi/2014/35/regulation/4
+    2015-04-01:
+      value: 34.6
+      reference:
+      - title: SSI 2015/46 reg 9(c)(iv)
+        href: https://www.legislation.gov.uk/ssi/2015/46/regulation/9
+    2017-04-01:
+      value: 34.95
+      reference:
+      - title: SSI 2017/41 reg 10(a)(vi)
+        href: https://www.legislation.gov.uk/ssi/2017/41/regulation/10
+    2018-04-01:
+      value: 36.0
+      reference:
+      - title: SSI 2018/69 reg 9(a)(iv)
+        href: https://www.legislation.gov.uk/ssi/2018/69/regulation/9
+    2019-04-01:
+      value: 36.85
+      reference:
+      - title: SSI 2019/29 reg 5(a)(iv)
+        href: https://www.legislation.gov.uk/ssi/2019/29/regulation/5
+    2020-04-01:
+      value: 37.5
+      reference:
+      - title: SSI 2020/25 reg 8(c)(iv)
+        href: https://www.legislation.gov.uk/ssi/2020/25/regulation/8
+    2021-04-01:
+      value: 37.7
+      reference:
+      - title: SSI 2021/51 reg 7(c)(iv)
+        href: https://www.legislation.gov.uk/ssi/2021/51/regulation/7
+    2022-04-01:
+      value: 38.85
+      reference:
+      - title: SSI 2022/52 reg 25(c)(ii)
+        href: https://www.legislation.gov.uk/ssi/2022/52/regulation/25/made
+    2023-04-01:
+      value: 42.75
+      reference:
+      - title: SSI 2023/38 reg 20(i)(ii)
+        href: https://www.legislation.gov.uk/ssi/2023/38/regulation/20
+    2024-04-01:
+      value: 45.6
+      reference:
+      - title: SSI 2024/35 reg 17(i)(ii)
+        href: https://www.legislation.gov.uk/ssi/2024/35/regulation/17
+    2025-04-01:
+      value: 46.4
+      reference:
+      - title: SSI 2025/24 reg 16(i)(ii)
+        href: https://www.legislation.gov.uk/ssi/2025/24/regulation/16
+    2026-04-01:
+      value: 48.15
+      reference:
+      - title: SSI 2026/56 reg 14(i)(ii)
+        href: https://www.legislation.gov.uk/ssi/2026/56/regulation/14
+  metadata:
+    label: Scotland working-age CTR carer premium
+    unit: currency-GBP
+    period: week
+    uprating: gov.benefit_uprating_cpi
+    reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 1 paras. 5 and 11-17
+      href: https://www.legislation.gov.uk/ssi/2021/249/schedule/1
+metadata:
+  label: Scotland working-age CTR adult premiums

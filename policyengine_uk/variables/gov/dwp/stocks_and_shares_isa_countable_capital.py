@@ -1,0 +1,47 @@
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._person_capital_pool import (
+    bounded_person_holding,
+)
+
+
+class stocks_and_shares_isa_countable_capital(Variable):
+    label = "Stocks and shares ISA value counted as means-tested capital"
+    documentation = (
+        "The person's stocks and shares ISA balance (stocks_and_shares_isa_balance) as "
+        "the means tests count it, in the holder's own benefit unit. The account "
+        "investor beneficially owns an ordinary ISA's investments, and the named child "
+        "owns a junior ISA's investments. The household's share_like_capital already "
+        "includes the balance, through stocks_and_shares_isa within corporate_wealth "
+        "or the itemised sum, and its part without sale expenses "
+        "(share_like_capital_without_sale_expenses) holds it, since "
+        "gov.dwp.share_like_capital.without_sale_expenses lists stocks_and_shares_isa. "
+        "Each means test subtracts the balance from that part before allocating the "
+        "pool between benefit units, and counts it at face value. The formula bounds the "
+        "person's balance by the smaller of stocks_and_shares_isa and "
+        "share_like_capital, so the household never counts more stocks and shares ISA "
+        "than it holds. When the household's stored balance sum exceeds that total, it "
+        "scales the balances to sum to the total exactly, rounding each proportional "
+        "share down or up to a whole float32 step of the total. When the balances sum "
+        "to less, the rest stays in the pool, and a household with no balances keeps "
+        "all of share_like_capital there."
+    )
+    entity = Person
+    definition_period = YEAR
+    value_type = float
+    unit = GBP
+    quantity_type = STOCK
+    reference = [
+        "https://www.legislation.gov.uk/uksi/1998/1870/regulation/4",
+        "https://www.legislation.gov.uk/uksi/1998/1870/regulation/2B",
+    ]
+
+    def formula(person, period, parameters):
+        household_total = min_(
+            person.household("stocks_and_shares_isa", period),
+            person.household("share_like_capital", period),
+        )
+        return bounded_person_holding(
+            person,
+            person("stocks_and_shares_isa_balance", period),
+            household_total,
+        )

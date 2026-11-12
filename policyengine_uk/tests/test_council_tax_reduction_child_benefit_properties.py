@@ -1,8 +1,9 @@
 """Pensioner Child Benefit exclusion and unchanged adjacent CTR contracts.
 
-These model2026 tests use actual Child Benefit claims and family incomes, not
-forced applicable income, pensioner status or reduction awards. The 20% cash
-relation is conditional on an interior award; the existing floor/cap still apply.
+These tests calculate 2026 Council Tax Reduction awards from actual Child
+Benefit claims and family incomes. Where the award lies between the floor and
+the cap, they check that excluding Child Benefit raises it by 20% of the Child
+Benefit.
 """
 
 from copy import deepcopy
@@ -79,7 +80,11 @@ def calculate(data, claim, status_first=False):
 @settings(max_examples=4, deadline=None, derandomize=True)
 @given(
     st.sampled_from(sorted(COUNTRIES)),
-    st.integers(15000, 19000),
+    # Income after tax exceeds the applicable amount, which includes the
+    # children's amounts (up to 2 * 109.85 * 52 in Scotland), so the award
+    # falls between the floor and the cap, and total income stays under the
+    # £35,000 Winter Fuel Payment charge threshold.
+    st.integers(30000, 34000),
     st.integers(1, 2),
     st.booleans(),
 )

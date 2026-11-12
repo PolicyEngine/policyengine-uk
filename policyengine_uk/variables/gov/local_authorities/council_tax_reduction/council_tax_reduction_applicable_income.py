@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_scotland_scheme,
+)
 from policyengine_uk.variables.household.demographic.country import Country
 
 
@@ -7,26 +10,28 @@ class council_tax_reduction_applicable_income(Variable):
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
     documentation = (
-        "Income taken into account in the Council Tax Reduction means test. The "
-        "pensioner schemes disregard the whole income of an applicant who, or "
-        "whose partner, is in receipt of Pension Credit guarantee credit, and "
-        "use the Secretary of State's Pension Credit assessment of income, plus "
-        "the savings credit payable, where the award is savings credit only. "
-        "Otherwise a pension-age family's net earnings are reduced by the "
-        "pensioner earnings disregards. Great Britain's pensioner schemes "
-        "also exclude Child Benefit from general-rule income; statutory sick "
-        "and maternity pay remain counted as earnings. The other adjustments those "
-        "provisions allow (childcare charges, the £20 earnings disregards "
-        "and the rest) are not modelled. Spousal maintenance counts less one "
+        "We count the applicant's and partner's income "
+        "(is_council_tax_reduction_applicant_or_partner) in the Council Tax "
+        "Reduction means test. Under the pensioner schemes, councils "
+        "disregard the whole income of an applicant who, or whose partner, is "
+        "in receipt of Pension Credit guarantee credit, and use the Secretary "
+        "of State's Pension Credit assessment of income, plus the savings "
+        "credit payable, where the award is savings credit only. Otherwise we "
+        "deduct the pensioner earnings disregards from a pension-age family's "
+        "net earnings, and add its tariff income from capital "
+        "(council_tax_reduction_tariff_income). Councils in Great "
+        "Britain also exclude Child Benefit from a pensioner's general-rule "
+        "income and count statutory sick and maternity pay as earnings. We "
+        "omit the other "
+        "adjustments these provisions allow (childcare charges, the £20 "
+        "earnings disregards and the rest). Spousal maintenance counts less one "
         "£15 weekly disregard where the applicant's family includes a child "
         "or young person (the statutory family-premium condition in England's "
         "default and Welsh schemes). "
         "Widowed Parent's Allowance counts less £15 weekly per recipient. "
-        "Child maintenance is excluded. Scotland's working-age maintenance "
+        "We count no child maintenance. Scotland's working-age maintenance "
         "rule, like Universal Credit, requires a court order or agreement; "
-        "the input is assumed to meet that condition. "
-        "The income counted is the Council Tax Reduction applicant's and "
-        "partner's (is_council_tax_reduction_applicant_or_partner). "
+        "we assume the input meets that condition. "
         "Where the household head applies alone "
         "(council_tax_reduction_head_applies_alone), the benefit unit's own "
         "awards (Child Benefit, Income Support, income-based JSA, "
@@ -35,10 +40,34 @@ class council_tax_reduction_applicable_income(Variable):
         "head, so none of them counts. Industrial injuries disablement "
         "benefit, severe disablement allowance and incapacity benefit count "
         "in every scheme, for the applicant and partner only, not for "
-        "children or young persons. War pensions and Armed Forces "
-        "Compensation Scheme payments are not counted: Scotland disregards or "
-        "omits them, and English and Welsh councils may relieve them beyond "
-        "the prescribed £10 a week, so the model takes the full disregard."
+        "children or young persons. We disregard war pensions and Armed "
+        "Forces Compensation Scheme payments in full: Scottish councils count "
+        "none of them, and English and Welsh councils may relieve them beyond "
+        "the prescribed £10 a week. No scheme "
+        "counts income derived from capital, such as rent from property, "
+        "interest and dividends, as income, so it is not listed and tax on it "
+        "is not deducted (legacy_means_test_income_tax). The pensioner schemes "
+        "disregard any actual income from capital; the Welsh working-age "
+        "scheme and the English default scheme treat it as capital; the "
+        "Scottish working-age scheme counts only the unearned income it "
+        "lists, which includes the assumed yield from capital but not actual "
+        "rent, interest or dividends. Instead, the national schemes (England "
+        "for pensioners, Wales and Scotland) count the tariff income they "
+        "treat capital as yielding (council_tax_reduction_tariff_income); the "
+        "English local schemes for people under pension age add their own. "
+        "Rent the applicant and partner receive for letting part of the home "
+        "counts, less the sub-tenant disregard, on the schemes' own income "
+        "rules (council_tax_reduction_home_letting_income), with rent from "
+        "boarders and lodgers paid to an applicant or partner who heads the "
+        "household, less the board and lodging and lodger disregards. It does not count "
+        "where a working-age applicant has an award of Universal Credit, "
+        "whose income the schemes take from the Secretary of State's "
+        "Universal Credit assessment (which does not count it), or in the "
+        "Scottish scheme for people under pension age from April 2022, which "
+        "does not list it. There the rent is uncounted income like income "
+        "from capital: the tax deducted leaves out the tax the rent would "
+        "bear without earnings (rent_a_room_income_tax_without_earnings) and "
+        "keeps the extra tax earnings cause on it."
     )
     definition_period = YEAR
     unit = GBP
@@ -46,6 +75,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/37",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/31",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/10",
@@ -53,6 +85,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/16",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/15",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/7",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20",
         "https://www.legislation.gov.uk/uksi/2012/2886/appendix/8/paragraph/21",
@@ -68,6 +103,17 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/37",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/64",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/8",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/4",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/9",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2012/303/regulation/26",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/3",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/11",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/21",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/5",
@@ -93,7 +139,7 @@ class council_tax_reduction_applicable_income(Variable):
         # 21(3); SSI 2021/249 reg 36(2)); the other schemes count the
         # applicant's and partner's alone. Anyone else in the benefit unit does
         # not count either. A household head who applies alone is the
-        # applicant, whatever else the benefit unit reads her as.
+        # applicant, whatever else the benefit unit reads them as.
         person = benunit.members
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         applicant_family = ~head_applies_alone
@@ -119,13 +165,17 @@ class council_tax_reduction_applicable_income(Variable):
             # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
             # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
             # excepts it), so scottish_carer_supplement is not listed.
-            # Whether CTR counts CSP before or after the CSP Regs reg 16(2)
-            # overlapping-benefit reduction is unsettled: SSI 2012/319 reg
-            # 27(3) grosses up deductions other than the reg 27(5)
-            # adjustments, which do not list reg 16(2), while SSI 2021/249 reg
-            # 57(1)(b) counts the amount the applicant is entitled to. Until
-            # that is decided, the amount before the reduction is counted, as
-            # it was before the reduction was modelled.
+            # Scottish working-age claims follow the devolved route, which
+            # counts CSP after the CSP Regs (SSI 2023/302) reg 16(2)
+            # overlapping-benefit reduction
+            # (council_tax_reduction_working_age_unearned_income). For the
+            # pension-age scheme the question stays open: SSI 2012/319 reg
+            # 27(3) counts a benefit before any deduction other than the reg
+            # 27(5) adjustments, and reg 27(5) doesn't list reg 16(2), while
+            # the Pension Credit and pension-age Housing Benefit regulations
+            # do (SI 2002/1792 reg 15(4)(g); SI 2006/214 reg 29(4)(g)). Until
+            # a ruling settles it, this formula counts the amount before the
+            # reduction, as it did before the model applied the reduction.
             "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
@@ -198,7 +248,6 @@ class council_tax_reduction_applicable_income(Variable):
         income_components = [
             "employment_income",
             "self_employment_income",
-            "property_income_after_finance_costs",
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
@@ -272,6 +321,43 @@ class council_tax_reduction_applicable_income(Variable):
             - maintenance_disregard
             + widowed_parents_allowance
         )
+        # Rent the applicant and partner receive for letting part of the home
+        # counts under the schemes' own income rules, less the sub-tenant
+        # disregard (SI 2012/2885 Sch 1 paras 11 and 16(1)(v), Sch 5 para 10),
+        # and so does rent from boarders and lodgers paid to an applicant or
+        # partner who heads the household, less the board and lodging and
+        # lodger disregards (Sch 1 para 16(1)(p), Sch 5 paras 9 and 10). Two
+        # exceptions:
+        # - A working-age applicant with an award of Universal Credit: the
+        #   schemes use the Secretary of State's assessment of income for the
+        #   award (SI 2012/2886 Sch para 37(1); WSI 2013/3029 Sch 6 para 9(1);
+        #   SSI 2012/303 reg 26(1)), which does not count it (UC Regs 2013
+        #   reg 66), and Oxford's Appendix 3 disregards it.
+        # - The Scottish scheme for people under pension age from 1 April 2022
+        #   (SSI 2021/249, whose reg 57(1) list has no head for it). That
+        #   scheme applies under reg 3(1) to everyone the pension-age scheme
+        #   does not cover (council_tax_reduction_pensioner). An award held
+        #   only by people over pensionable age does not count (reg 3(2)); the
+        #   selector stands this in by requiring a younger applicant or
+        #   partner, as Universal Credit itself does (UC Regs 2013 reg
+        #   3(2)(a)). The model cannot represent reg 3(2)'s other statuses or
+        #   a claim awaiting determination (reg 3(1)(b)(ii), from April 2023).
+        universal_credit_route = ~pensioner & benunit(
+            "council_tax_reduction_universal_credit_award", period
+        )
+        scottish_working_age_scheme = is_scotland_scheme(country) & ~pensioner
+        p_scotland = parameters(
+            period
+        ).gov.local_authorities.scotland.council_tax_reduction.means_test
+        counts_home_letting = ~universal_credit_route & (
+            ~scottish_working_age_scheme
+            | p_scotland.working_age_counts_home_letting_income
+        )
+        increased_income += where(
+            counts_home_letting,
+            benunit("council_tax_reduction_home_letting_income", period),
+            0,
+        )
 
         if not bi.interactions.include_in_means_tests:
             increased_income -= add_for_members(
@@ -285,11 +371,24 @@ class council_tax_reduction_applicable_income(Variable):
         pension_contributions = add_for_members(
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
-        tax = add_for_members(
-            benunit,
-            period,
-            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
-            members,
+        # Where the scheme does not count the rent, the formula treats it as
+        # uncounted income like income from capital: it leaves out of the
+        # deduction the tax the rent would bear without earnings, and keeps
+        # the extra tax earnings cause on it.
+        income_tax = add_for_members(
+            benunit, period, ["legacy_means_test_deducted_income_tax"], members
+        ) - where(
+            counts_home_letting,
+            0,
+            add_for_members(
+                benunit, period, ["rent_a_room_income_tax_without_earnings"], members
+            ),
+        )
+        # The deduction can be negative for one person, where another
+        # member's earnings move a Step 7 charge off them; the test deducts the
+        # counted members' sum, floored at nil, so it never adds tax to income.
+        tax = max_(0, income_tax) + add_for_members(
+            benunit, period, ["national_insurance"], members
         )
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
@@ -298,9 +397,12 @@ class council_tax_reduction_applicable_income(Variable):
         earnings_disregard = benunit(
             "council_tax_reduction_pensioner_earnings_disregard", period
         )
+        # The national schemes also treat capital as yielding a tariff income
+        # (council_tax_reduction_tariff_income); the English local schemes for
+        # people under pension age add their own.
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions - earnings_disregard
-        )
+        ) + benunit("council_tax_reduction_tariff_income", period)
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases

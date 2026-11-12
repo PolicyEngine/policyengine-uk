@@ -1,0 +1,8 @@
+description: Calendar year whose prices the real income variables use. inflation_adjustment and inflation_adjustment_ahc divide the price index on 1 January of this year by the index in the period, so a simulation gives the same real incomes whatever year it runs in. A modelling convention with no legislation behind it.
+values:
+  0000-01-01: 2026
+metadata:
+  unit: year
+  period: year
+  economy: false
+  label: Price base year for real incomes

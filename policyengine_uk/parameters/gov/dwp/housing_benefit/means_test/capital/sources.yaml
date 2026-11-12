@@ -1,6 +1,11 @@
 description: >
-  Ordinary cash ISA balances are separate from savings and are included at
-  their accessible cash value, without a generic cash sale-cost deduction.
+  The formulas count ordinary accessible cash ISAs separately from savings,
+  at their cash value, without a generic cash sale-cost deduction.
+  Where the data tie a cash ISA or stocks and shares ISA balance to a member,
+  the formulas count it through `person_sources` in the holder's own benefit
+  unit and subtract it from `cash_isa` or
+  `share_like_capital_without_sale_expenses` before they
+  allocate the rest.
   Model variables currently mapped to countable Housing Benefit capital. The
   Housing Benefit Regulations 2006 treat the whole of a claimant's capital as
   assessable unless it is disregarded under Schedule 6. The current mappings
@@ -24,8 +29,8 @@ description: >
   regulations make the same disregard). Datasets built before private pension
   wealth was split out of `corporate_wealth` still carry it inside
   `share_like_capital`. Other Schedule 6 disregards within these broad asset
-  classes are not yet split out separately. Because the dataset only provides
-  household-level capital stocks, the model allocates them across benunits
+  classes are not yet split out separately. For capital whose owner the data
+  do not identify, the model allocates the household remainder across benunits
   using an adult-share proxy.
 metadata:
   label: Housing Benefit countable capital sources
