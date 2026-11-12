@@ -1,0 +1,94 @@
+# OBR: VAT applies after duty; 52.95p duty attracts 10.59p VAT at 20%.
+# https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/fuel-duties/
+# HMRC VATVAL02300: excise duty forms part of the value charged to VAT.
+# https://www.gov.uk/hmrc-internal-manuals/vat-valuation/vatval02300
+- name: Case 1, a five-pence duty increase adds one penny VAT per litre.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.petrol_and_diesel: 0.5795
+    petrol_litres: 600
+    diesel_litres: 400
+    full_rate_vat_consumption: 0
+    reduced_rate_vat_consumption: 0
+  output:
+    fuel_duty_vat_change: 10
+    vat_change: 10
+
+- name: Case 2, a five-pence duty reduction removes one penny VAT per litre.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.petrol_and_diesel: 0.4795
+    petrol_litres: 1_000
+    full_rate_vat_consumption: 1_000
+  output:
+    fuel_duty_vat_change: -10
+    vat_change: -10
+
+- name: Case 3, a household with no fuel has no duty-induced VAT change.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.petrol_and_diesel: 0.5795
+    petrol_litres: 0
+    diesel_litres: 0
+    lpg_kg: 0
+    natural_gas_kg: 0
+  output:
+    fuel_duty_vat_change: 0
+
+- name: Case 4, existing VAT on the native duty schedule is not added again.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    petrol_litres: 1_000
+    diesel_litres: 500
+    lpg_kg: 100
+    natural_gas_kg: 200
+    full_rate_vat_consumption: 10_000
+  output:
+    fuel_duty_vat_change: 0
+    vat_change: 0
+
+- name: Case 5, an extra penny rural relief reduces VAT by twenty pence per hundred litres.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.rural_fuel_duty_relief: 0.06
+    in_rural_fuel_duty_relief_area: true
+    petrol_litres: 600
+    diesel_litres: 400
+  output:
+    fuel_duty_vat_change: -2
+    vat_change: -2
+
+- name: Case 6, road-fuel gases use kilograms and do not receive rural relief.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.lpg: 0.3888
+    gov.hmrc.fuel_duty.natural_gas: 0.2757
+    gov.hmrc.fuel_duty.rural_fuel_duty_relief: 0.1
+    in_rural_fuel_duty_relief_area: true
+    petrol_litres: 0
+    diesel_litres: 0
+    lpg_kg: 100
+    natural_gas_kg: 200
+  output:
+    # (100 kg x £0.10 + 200 kg x £0.05) x 20%.
+    fuel_duty_vat_change: 4
+    vat_change: 4
+
+- name: Case 7, a simultaneous VAT reform uses the current standard rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.fuel_duty.petrol_and_diesel: 0.5795
+    gov.hmrc.vat.standard_rate: 0.25
+    petrol_litres: 1_000
+    full_rate_vat_consumption: 0
+    reduced_rate_vat_consumption: 0
+  output:
+    fuel_duty_vat_change: 12.5
+    vat_change: 12.5
