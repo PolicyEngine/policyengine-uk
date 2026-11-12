@@ -51,7 +51,12 @@ Invariants, for any people and incomes:
    and self-employed earnings is held alongside them, including the actual
    Class 2/4 components replaced by notional PC deductions. The personal
    reliefs used for PC's notional tax are held too: the loss can change
-   entitlement to those reliefs without offsetting PC earnings.
+   entitlement to those reliefs without offsetting PC earnings. Scotland's
+   and Wales's working-age Council Tax Reduction schemes take the earnings
+   of an applicant with Universal Credit from UC's own measure (SSI
+   2021/249 reg 51(2); WSI 2013/3029 Sch 6 para 9), which sets the loss
+   against the person's other trades' profits as UC does, so that measure
+   is held with the award.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -961,6 +966,42 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
         ),
     ]
 )
+@example(
+    [
+        # A Scottish working-age family with Universal Credit. Scotland's
+        # scheme counts UC's earned income before the minimum income floor,
+        # which the loss cuts to nil, so the reduction is the full council
+        # tax. Holding only the award, that income came back without the loss
+        # and the reduction fell to nil.
+        (
+            [
+                adult(
+                    age=62,
+                    private_pension_income=10_544.828058008017,
+                    trading_loss=2.00001,
+                    hours_worked=16.0,
+                ),
+                adult(
+                    age=70,
+                    self_employment_income=24_241.322894102683,
+                    private_pension_income=3_873.033381146696,
+                    savings_interest_income=2_062.022534554826,
+                    trading_loss=27_550.671978652488,
+                    hours_worked=0.0,
+                ),
+                {"age": 5, "trading_loss": 1_055.7520263588135},
+                {"age": 13, "trading_loss": 0.0},
+                {"age": 5, "trading_loss": 1.1},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 711.3180060250842,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "SCOTLAND",
+            },
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -1007,11 +1048,15 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
     # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
     # on both sides; the child's loss never enters the claimant's earnings.
+    # Council Tax Reduction reads income tax on branches that zero earnings,
+    # so holding the person's tax would also hold it on those branches. Hold
+    # the scheme's deduction from the with-loss side instead.
     pc_tax = {
         v: values(with_loss, v)
         for v in [
             "pension_credit_employment_income_tax",
             "pension_credit_self_employment_income_tax",
+            "council_tax_reduction_tax_deduction",
         ]
     }
     loss = values(with_loss, "trading_loss")
@@ -1030,6 +1075,17 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         v: values(with_loss, v)
         for v in ["uc_income_tax_on_trade", "uc_national_insurance_on_trade"]
     }
+    # The devolved working-age CTR schemes count, with UC, UC's own earned
+    # income measure (Scotland's before the minimum income floor), which
+    # nets the loss as UC does. Hold it with the award in the no-loss
+    # world; the netted world recomputes it for the UC tests.
+    uc_assessed_earnings = {
+        v: values(with_loss, v)
+        for v in [
+            "uc_individual_earned_income",
+            "uc_individual_earned_income_before_mif",
+        ]
+    }
 
     def held(k, **extra):
         return {
@@ -1044,7 +1100,16 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     no_loss = Simulation(
         situation=family_situation(
             units,
-            {name: held(k) for k, name in enumerate(names)},
+            {
+                name: held(
+                    k,
+                    **{
+                        v: float(uc_assessed_earnings[v][k])
+                        for v in uc_assessed_earnings
+                    },
+                )
+                for k, name in enumerate(names)
+            },
             {
                 b: {
                     "universal_credit": float(uc[k]),
