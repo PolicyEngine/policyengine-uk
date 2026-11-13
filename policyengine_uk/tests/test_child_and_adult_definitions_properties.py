@@ -75,8 +75,8 @@ remunerative work, which ends CTC's route. The tests here set UC's
 terminal-date input, false unless a test varies it; PC's terminal date
 follows the 19th-birthday date fact, which is true for everyone under 20 when
 only an age is given (test_qualifying_young_person_terminal_date_properties.py
-covers both dates). Nobody here reports Income Support, which SPC reg 4A(5)
-lists and UC reg 5(5) does not.
+covers both dates). Nobody here reports Income Support, which SPC reg 4A(5),
+Child Benefit reg 8 and CTC reg 5(4)(c) list and UC reg 5(5) does not.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
@@ -250,6 +250,12 @@ def qualifying_young_person(p, programme):
     return True
 
 
+def looked_after_child(p):
+    # Only a person under 18 can be looked after by a local authority:
+    # https://www.legislation.gov.uk/ukpga/1989/41/section/105
+    return p["is_looked_after_by_local_authority"] and p["age"] < 18
+
+
 def child_or_young_person(p, programme, claimant=False):
     # Encoded responsibility filters, without their statutory exceptions:
     # https://www.legislation.gov.uk/uksi/2013/376/regulation/4
@@ -262,7 +268,7 @@ def child_or_young_person(p, programme, claimant=False):
     eligible = statutory_child(p["age"]) or qualifying_young_person(p, programme)
     if programme != "universal_credit" and claimant:
         return False
-    if programme != "child_benefit" and p["is_looked_after_by_local_authority"]:
+    if programme != "child_benefit" and looked_after_child(p):
         return False
     return eligible
 
@@ -340,7 +346,7 @@ def legacy_child_or_young_person(p, claimant):
     # anyone placed by a local authority (IS reg16(4), HB reg21(3)):
     # https://www.legislation.gov.uk/uksi/1987/1967/regulation/16
     # https://www.legislation.gov.uk/uksi/2006/213/regulation/21
-    return not p["is_looked_after_by_local_authority"] and child_or_young_person(
+    return not looked_after_child(p) and child_or_young_person(
         p, "child_benefit", claimant
     )
 

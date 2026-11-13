@@ -342,12 +342,16 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-# The means tests deduct the income tax before the winter fuel payment charge
-# (ITEPA 2003 s.681I), less the tax on income they do not take into account
-# due without earnings (legacy_means_test_deducted_income_tax): the charge
-# recovers a payment rather than taxing the income they assess. A pensioner
-# over £35,000 of total income is charged it.
-MAIN_DEDUCTIONS = ["legacy_means_test_deducted_income_tax", "national_insurance"]
+# The income tax and National Insurance each scheme allows
+# (council_tax_reduction_tax_deduction), a benefit unit total for the
+# applicant and partner. It starts from income tax before the winter fuel
+# payment charge (ITEPA 2003 s.681I), because the charge recovers a payment
+# rather than taxing the income the schemes assess; a pensioner over £35,000
+# of total income pays it. The deduction's own tests
+# (test_council_tax_reduction_tax_deduction_properties.py and
+# council_tax_reduction_tax_deduction.yaml) check it against the law; this file
+# checks the routes around it.
+MAIN_DEDUCTIONS = ["council_tax_reduction_tax_deduction"]
 # The pensioner earnings disregards in 2026, written out from the law, not
 # read from the parameters: £25 a week for a lone parent, £10 with a partner,
 # £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
@@ -430,7 +434,7 @@ def calculate(units, guarantee=None, **kwargs):
             benunit_total(["child_benefit"]),
             0,
         )
-        - benunit_total(MAIN_DEDUCTIONS)
+        - sum(np.asarray(sim.calculate(v, YEAR))[claimants] for v in MAIN_DEDUCTIONS)
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
     )

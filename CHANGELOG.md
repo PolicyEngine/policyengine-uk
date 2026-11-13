@@ -1,3 +1,38 @@
+## [2.178.8] - 2026-11-13
+
+### Fixed
+
+- The model now deducts from Council Tax Reduction income only the income tax and National Insurance each scheme allows: in Scotland's working-age scheme the extra tax earnings cause and the notional tax on self-employed profit, and in the pensioner schemes of England, Wales and Scotland that same earnings tax, the tax on the other counted income and the notional tax on profit, with no tax on savings, dividends, rent from property or the Scottish Carer Supplement, and no High Income Child Benefit Charge, where earnings do not raise them.
+
+
+## [2.178.7] - 2026-11-13
+
+### Fixed
+
+- The LHA size criteria now count other families' children, give foster children no bedroom of their own and add the foster-parent, adopter and overnight-care bedrooms (UC Regs 2013 Sch 4 paras 9-12 and 29(9A); HB Regs 2006 reg 13D(3)-(3B)), with new inputs for adoption placements, foster parents between placements, non-resident overnight carers and adopters who are a foster parent or close relative of the child (UC reg 89(3)(a)). Housing Benefit counts a child placed with a non-dependant, boarder or lodger in the claimant's size criteria (reg 21(3) names only the claimant or partner), and the legacy household, Income Support (Sch 1B paras 2 and 2A) and Tax-Free Childcare leave out a child placed for adoption. A Universal Credit renter whose claim counts a non-dependant from another family, such as a sharer's foster child aged 16 or 17 who is not a qualifying young person, no longer gets the shared accommodation rate (Sch 4 para 28(4)).
+
+
+## [2.178.6] - 2026-11-12
+
+### Fixed
+
+- Included the VAT effect of road fuel duty reforms without grossing up the additional household VAT or double-counting VAT already embedded in consumption.
+
+
+## [2.178.5] - 2026-11-12
+
+### Fixed
+
+- Tested that Pension Credit, Child Benefit and Child Tax Credit each stop counting a young person who receives Income Support in their own right as a qualifying young person, and Universal Credit does not (SPC Regs 2002 reg. 4A(5); Child Benefit (General) Regulations 2006 reg. 8(2)(a); CTC Regs 2002 reg. 5(4)(c); UC Regs 2013 reg. 5(5)), in the baseline and under reforms that remove Income Support. Pension Credit and Child Tax Credit read the benefit unit's calculated Income Support for whichever of the claimant and partner receives it, so a reform that pays no Income Support ends the exclusion for that person; Child Benefit reads the young person's own report while Income Support is in payment.
+
+
+## [2.178.4] - 2026-11-12
+
+### Changed
+
+- The test suite fails on any new random draw, sampling call or hash of entity ids in the package. It lists today's draws in a ratchet and `Simulation.subsample`'s draw as a reviewed sampling tool.
+
+
 ## [2.178.3] - 2026-11-12
 
 ### Changed

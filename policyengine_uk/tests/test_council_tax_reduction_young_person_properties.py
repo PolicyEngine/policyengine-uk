@@ -37,6 +37,11 @@ Invariants:
    means test where Scotland's working-age scheme does not read them as a
    young person. A member who is not the applicant never counts: a young
    person's income is not the applicant's.
+7. Adoption placements. From 2022-23, placing any member of a Scottish
+   working-age family for adoption leaves its lone-parent status and its
+   applicable amount unchanged: SSI 2021/249 reg. 7(8) takes out only a
+   child or young person placed with a foster carer, and the applicant is
+   responsible for one who normally lives with them (reg. 7(2)).
 
 The pensioner test and the claimant and partner are supplied, so these tests
 exercise the young person rule alone; the YAML cases use the derived tests.
@@ -154,7 +159,10 @@ def assert_scheme_selection(units, year):
     sim = simulate(units, year)
     people = [p for unit in units for p in unit["members"]]
     claimant_or_partner = np.array([p["is_claimant_or_partner"] for p in people])
-    looked_after = np.array([p["is_looked_after_by_local_authority"] for p in people])
+    # Only a person under 18 can be looked after (is_looked_after_child).
+    looked_after = np.array(
+        [p["is_looked_after_by_local_authority"] and p["age"] < 18 for p in people]
+    )
     under_16 = np.array([p["age"] < 16 for p in people])
     flag = sim.calculate("is_child_or_young_person_for_council_tax_reduction", year)
     legacy = sim.calculate("is_child_or_young_person_for_legacy_benefits", year)
@@ -466,3 +474,43 @@ def test_applicants_own_earnings_count_under_every_scheme():
     # Not vacuous: a non-applicant who is the scheme's young person does not
     # count, nor one who is not.
     assert (~heads & ~young_person).any() and (~heads & young_person).any()
+
+
+@SETTINGS
+@given(
+    st.lists(families(), min_size=1, max_size=4),
+    st.sampled_from((2022, 2026)),
+    st.data(),
+)
+def test_scottish_working_age_adoption_placement_keeps_the_family(units, year, data):
+    # Invariant 7.
+    units = [dict(unit, country="SCOTLAND", pensioner=False) for unit in units]
+    people = [p for unit in units for p in unit["members"]]
+    placed = data.draw(
+        st.lists(st.booleans(), min_size=len(people), max_size=len(people))
+    )
+
+    def with_placement(flags):
+        result, k = [], 0
+        for unit in units:
+            members = []
+            for p in unit["members"]:
+                members.append(dict(p, is_placed_for_adoption=flags[k]))
+                k += 1
+            result.append(dict(unit, members=members))
+        return result
+
+    outputs = []
+    for flags in ([False] * len(people), placed):
+        sim = simulate(with_placement(flags), year)
+        outputs.append(
+            (
+                sim.calculate(
+                    "is_child_or_young_person_for_council_tax_reduction", year
+                ),
+                sim.calculate("is_council_tax_reduction_lone_parent", year),
+                sim.calculate("council_tax_reduction_applicable_amount", year),
+            )
+        )
+    for before, after in zip(*outputs):
+        np.testing.assert_array_equal(before, after)

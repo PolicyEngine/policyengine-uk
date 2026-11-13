@@ -28,7 +28,9 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
 5. Inputs: every supplied value other than a weight is unchanged for the kept
    records, in every period, and the subsample supplies the same variables
    and periods as before. Calculated values are not kept.
-6. Determinism: the same seed keeps the same households with the same weights.
+6. Determinism: the same seed keeps the same households with the same weights,
+   whatever numpy's and the standard library's global random streams hold,
+   and the draw leaves both streams as they were.
 7. Baseline: the baseline is replaced with a copy that holds the same
    households and weights and keeps its own policy. The baseline held before
    is unchanged, so subsampling a clone leaves the source simulation and its
@@ -65,6 +67,7 @@ household weights or a negative one, a branch, and a baseline holding other
 households raise ``ValueError`` and are left unchanged.
 """
 
+import random
 from types import SimpleNamespace
 
 import numpy as np
@@ -717,6 +720,38 @@ def test_different_seeds_keep_different_households():
     weights = np.array([weight for weight, _ in HOUSEHOLDS])
     draws = {tuple(draw_household_counts(weights, 2, seed)) for seed in range(12)}
     assert len(draws) > 1
+
+
+def global_random_states() -> tuple:
+    """numpy's and the standard library's global random states, as values
+    that ``==`` can compare."""
+    name, keys, *rest = np.random.get_state()
+    return (name, keys.tolist(), *rest), random.getstate()
+
+
+@pytest.mark.parametrize("quantize", [True, False])
+def test_the_draw_neither_reads_nor_moves_the_global_random_streams(quantize):
+    """The draw comes from a generator of its own: a seed draws the same
+    households whatever the global streams hold, and leaves them as they
+    were."""
+    weights = np.array([weight for weight, _ in HOUSEHOLDS])
+    numpy_state, stdlib_state = np.random.get_state(), random.getstate()
+    draws = []
+    try:
+        for global_seed in (1, 2):
+            np.random.seed(global_seed)
+            random.seed(global_seed)
+            before = global_random_states()
+
+            counts = draw_household_counts(weights, 4, "text seed", quantize)
+
+            assert global_random_states() == before
+            draws.append(counts.tolist())
+    finally:
+        np.random.set_state(numpy_state)
+        random.setstate(stdlib_state)
+
+    assert draws[0] == draws[1]
 
 
 def test_frac_sets_the_number_of_draws():

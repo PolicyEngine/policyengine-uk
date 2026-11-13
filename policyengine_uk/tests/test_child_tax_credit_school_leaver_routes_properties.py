@@ -36,7 +36,8 @@ Invariants:
    education condition's alone, as before.
 3. Switching a leaver fact on never removes the status.
 4. The benefit unit's child or qualifying young person is a child or
-   qualifying young person who is not its claimant or partner.
+   qualifying young person who is not its claimant or partner and who, if
+   under 18, is not looked after by a local authority.
 5. Reg. 5(4)(c), which reg. 4(2) keeps for the reg. 4 period: a member who
    is not the claimant or partner and reports Income Support of their own
    while it is in payment is never a qualifying young person, on any route;
@@ -49,7 +50,7 @@ from itertools import product
 from unittest.mock import patch
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -408,6 +409,20 @@ def benefit_units(draw):
     st.lists(benefit_units(), min_size=1, max_size=6),
     st.sampled_from(sorted(INCOME_SUPPORT_IN_PAYMENT)),
 )
+@example(
+    [
+        [
+            person(40, is_claimant_or_partner=True, **{ROUTE: False}),
+            person(
+                18,
+                current_education="UPPER_SECONDARY",
+                is_looked_after_by_local_authority=True,
+                **{ROUTE: False},
+            ),
+        ]
+    ],
+    2024,
+)
 def test_family_members_in_any_benefit_unit(units, year):
     # Invariants 2, 4 and 5 on benefit units of any shape, where a claimant or
     # partner can be a qualifying young person by status.
@@ -424,7 +439,8 @@ def test_family_members_in_any_benefit_unit(units, year):
     expected = [
         (p["age"] < 16 or qualifying_young_person_given_income_support(p, year))
         and not p["is_claimant_or_partner"]
-        and not p["is_looked_after_by_local_authority"]
+        # Only a person under 18 can be looked after (is_looked_after_child).
+        and not (p["is_looked_after_by_local_authority"] and p["age"] < 18)
         for p in people
     ]
     np.testing.assert_array_equal(family, expected)
