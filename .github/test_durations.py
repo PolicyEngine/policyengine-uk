@@ -28,8 +28,9 @@ from datetime import datetime
 LINE = re.compile(
     r"(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?)Z "
     r"\[(gw\d+)\] \[\s*\d+%\] (?:PASSED|FAILED|SKIPPED|XFAIL|XPASS|ERROR) (.+?)"
-    # The job's once-a-minute memory report can land on the same line.
-    r"(?: memory: \d+ MB used, \d+ MB available)? *$"
+    # The job's once-a-minute memory report can land on the same line. It
+    # counts MiB; logs from before November 2026 label it MB.
+    r"(?: memory: \d+ Mi?B used, \d+ Mi?B available)? *$"
 )
 # pytest-xdist logs this once its workers are up; a worker's first test is
 # timed from here.

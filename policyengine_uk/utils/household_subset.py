@@ -40,9 +40,7 @@ WHOLE_POPULATION_VARIABLES = frozenset(
     {
         "attends_private_school",
         "carbon_tax",
-        "consumer_incident_tax_revenue_change",
         "consumption_shareholding",
-        "corporate_land_value",
         "education_budget_change",
         "employer_ni_response_capital_incidence",
         "employer_ni_response_consumer_incidence",

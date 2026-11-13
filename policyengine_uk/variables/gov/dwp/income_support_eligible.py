@@ -18,7 +18,8 @@ class income_support_eligible(Variable):
         "claimant must be under the "
         "qualifying age for State Pension Credit, fall within a prescribed "
         "category the model covers (a carer, a lone parent of a young child, "
-        "or a single claimant with a child placed by a local authority), not "
+        "or a single claimant with a child placed by a local authority or "
+        "for adoption), not "
         "be engaged in remunerative work (16 hours a week or more, unless a "
         "carer) and not be entitled to Employment and Support Allowance or "
         "Jobseeker's Allowance. The partner must not be engaged in "
@@ -52,6 +53,8 @@ class income_support_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/5",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/6",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B/paragraph/2",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B/paragraph/2A",
         "https://www.legislation.gov.uk/uksi/1987/1968/regulation/4",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
     )
@@ -79,9 +82,12 @@ class income_support_eligible(Variable):
         # says "under 5", and the model retains the existing inclusive
         # comparison pending a separate decision on the annual-age model.
         # Para 2 is "a single claimant or a lone parent with whom a child is
-        # placed" by a local authority or voluntary organisation. A child is
-        # under 16 (SSCBA s.137(1)). The model's proxy is a member under 16
-        # flagged is_looked_after_by_local_authority; the flag also marks a
+        # placed" by a local authority or voluntary organisation, and para 2A
+        # the same where an adoption agency places the child for adoption. A
+        # child is under 16 (SSCBA s.137(1)). The model's test is a member
+        # under 16 placed with the family
+        # (is_child_or_young_person_placed_with_family): a looked-after child
+        # or one placed for adoption. The looked-after flag also marks a
         # child living away in a local authority's care, whom para 2 does not
         # cover, and the model cannot tell the two apart. Para 4 is a carer.
         youngest_child_5_or_under = (
@@ -92,7 +98,7 @@ class income_support_eligible(Variable):
             benunit("is_lone_parent", period) & youngest_child_5_or_under
         )
         placed_child = (
-            person("is_looked_after_by_local_authority", period)
+            person("is_child_or_young_person_placed_with_family", period)
             & person("is_child_for_child_benefit", period)
             & ~claimant_or_partner
         )

@@ -73,13 +73,18 @@ SCHEMES = [
 ]
 SHAPES = ["alone", "couple", "young_parents"]
 # The head's own circumstances that the premiums and the exemption read:
-# disability, Attendance Allowance (a severe disability premium qualifying
-# benefit, which also exempts her from non-dependant deductions), Carer's
-# Allowance (the carer premium) and blindness.
+# disability, the enhanced disability flag (the enhanced disability premium
+# condition in Kingston upon Thames), the enhanced PIP daily living component
+# (an enhanced disability premium qualifying benefit elsewhere), Attendance
+# Allowance (a severe disability premium qualifying benefit, which also
+# exempts her from non-dependant deductions, and an enhanced disability
+# premium one for Scottish councils from 2023), Carer's Allowance (the carer
+# premium) and blindness.
 head_circumstances = st.fixed_dictionaries(
     dict(
         is_disabled_for_benefits=st.booleans(),
         is_enhanced_disabled_for_benefits=st.booleans(),
+        pip_dl_category=st.sampled_from(["NONE", "NONE", "ENHANCED"]),
         attendance_allowance=st.sampled_from([0, 0, 4_000]),
         carers_allowance=st.sampled_from([0, 0, 4_000]),
         is_blind=st.booleans(),
@@ -374,6 +379,12 @@ DIFFERENTIAL_VARIABLES = [
     "council_tax_reduction_relevant_income_based_benefit",
     "council_tax_reduction_pensioner",
     "council_tax_reduction_applicant_has_non_dep_exemption",
+    # Scotland's and Wales's working-age route (#1966).
+    "council_tax_reduction_devolved_working_age",
+    "council_tax_reduction_working_age_applicable_income",
+    "council_tax_reduction_working_age_applicable_amount",
+    "council_tax_reduction_working_age_passported",
+    "council_tax_reduction_working_age_has_universal_credit",
     "simulated_council_tax_reduction_benunit",
 ]
 

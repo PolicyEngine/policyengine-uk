@@ -127,3 +127,572 @@
     earned_taxable_income: 130000
     earned_income_tax: 50034.35
     income_tax: 50034.35
+
+# tax_band for a Scottish taxpayer with savings or dividends (#2350).
+# Parliament charges the Scottish rates only on income that is neither
+# savings nor dividends (ITA 2007 s. 11A(1A), (4) and (5), and s. 13;
+# S6M-16531 for 2025-26).
+# Savings and dividends form the top slice (s. 16) and take the rates and
+# bands they would bear outside Scotland (ss. 11D(6) and 13(5)). The model
+# returns the higher band. In 2025-26 Parliament sets the personal allowance
+# at £12,570, the basic rate limit at £37,700, the dividend allowance at £500
+# (8.75% ordinary, 33.75% upper) and the Personal Savings Allowance at
+# £1,000, or £500 with higher-rate income (s. 12B). The Scottish Parliament
+# sets the Scottish limits on taxable income at £2,827, £14,921, £31,092,
+# £62,430 and £125,140 (19%, 20%, 21%, 42%, 45%, 48%). The Marriage
+# Allowance test applies the rate conditions of s. 55B(2)(b) and the
+# dividend counterfactual of s. 55B(2)(ba). Savings at the savings nil rate
+# do not bar the Marriage Allowance.
+
+- name: Scottish 2025 pay of 40000 and dividends of 5000 reaches the intermediate band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 27,430 taxable, intermediate. 2,827 x 19% + 12,094 x 20%
+    # + 12,509 x 21% = 537.13 + 2,418.80 + 2,626.89 = 5,582.82.
+    # Dividends: 27,430 to 32,430, below 37,700: (5,000 - 500) x 8.75%.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_582.82
+    dividend_income_tax: 393.75
+
+- name: Scottish 2025 pay of 40000 and savings of 5000 reaches the intermediate band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        savings_interest_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay as above. Savings: 27,430 to 32,430, below 37,700, so the £1,000
+    # allowance and (5,000 - 1,000) x 20% = 800. The model assigns no savings
+    # to the starting rate because other taxable income exceeds £5,000
+    # (s. 12).
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_582.82
+    savings_income_tax: 800
+
+- name: England 2025 pay of 40000 and dividends of 5000 reaches the basic band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # 32,430 of taxable income, below 37,700. 27,430 x 20% = 5,486.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_486
+    dividend_income_tax: 393.75
+
+- name: Scottish 2025 pay of 60000 and dividends of 20000 reaches the higher band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 47,430 taxable, higher, not advanced. 537.13 + 2,418.80
+    # + 16,171 x 21% + 16,338 x 42% = 537.13 + 2,418.80 + 3,395.91
+    # + 6,861.96 = 13,213.80. Dividends: 47,430 to 67,430, all above
+    # 37,700 and below 125,140: (20,000 - 500) x 33.75% = 6,581.25. No
+    # income reaches the advanced, top or dividend additional rate.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 13_213.80
+    dividend_income_tax: 6_581.25
+
+- name: Scottish 2025 pay of 60000 and savings of 20000 reaches the higher band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        savings_interest_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay as above. Savings: 47,430 to 67,430, all at the higher rate with
+    # a £500 allowance: 19,500 x 40% = 7,800.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 13_213.80
+    savings_income_tax: 7_800
+
+- name: England 2025 pay of 60000 and dividends of 20000 reaches the higher band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # 37,700 x 20% + 9,730 x 40% = 7,540 + 3,892 = 11,432.
+    tax_band: HIGHER
+    earned_income_tax: 11_432
+    dividend_income_tax: 6_581.25
+
+- name: Scottish 2025 pay of 30000 and dividends of 25000 stays higher
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 30_000
+        dividend_income: 25_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 17,430 taxable, intermediate. 537.13 + 2,418.80 + 2,509 x 21%
+    # = 3,482.82. Dividends: 17,430 to 42,430. 20,270 below 37,700, the
+    # first 500 at nil: 19,770 x 8.75% = 1,729.875; 4,730 above it at the
+    # upper rate: 4,730 x 33.75% = 1,596.375. Total 3,326.25.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 3_482.82
+    dividend_income_tax: 3_326.25
+
+- name: Scottish 2025 pay of 30000 and savings of 25000 stays higher
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 30_000
+        savings_interest_income: 25_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Savings: 17,430 to 42,430 with a £500 allowance. 19,770 x 20%
+    # + 4,730 x 40% = 3,954 + 1,892 = 5,846.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 3_482.82
+    savings_income_tax: 5_846
+
+- name: Scottish 2025 income at both limits stays intermediate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_608
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 31,092 taxable, exactly the intermediate rate's limit, so none
+    # at 42%: 537.13 + 2,418.80 + 16,171 x 21% = 6,351.84. Dividends:
+    # 31,092 to 37,700, exactly the basic rate limit, so all at the
+    # ordinary rate: (6,608 - 500) x 8.75% = 534.45.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 6_351.84
+    dividend_income_tax: 534.45
+
+- name: Scottish 2025 dividends one pound above the basic rate limit reach the higher band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_609
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # As above, with £1 of dividends above 37,700 at the upper rate:
+    # 534.45 + 1 x 33.75% = 534.7875.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 6_351.84
+    dividend_income_tax: 534.79
+
+- name: Scottish 2025 Gift Aid raises the Scottish and basic rate limits
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 44_462
+        dividend_income: 5_000
+        gift_aid: 800
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # The gift grosses up to 1,000, which raises the Scottish limits from
+    # the basic rate's upper limit and the basic rate limit (s. 414(2)(b)).
+    # Pay: 31,892 taxable, below 31,092 + 1,000. 537.13 + 13,094 x 20%
+    # + 15,971 x 21% = 537.13 + 2,618.80 + 3,353.91 = 6,509.84.
+    # Dividends: 31,892 to 36,892, below 38,700: 4,500 x 8.75% = 393.75.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 6_509.84
+    dividend_income_tax: 393.75
+
+- name: Scottish 2025 allowance beyond pay goes to dividends, which reach the basic band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_000
+        dividend_income: 30_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # The allowance takes all 5,000 of pay first, then 7,570 of dividends,
+    # leaving 22,430 of dividends below 37,700 and nothing on the Scottish
+    # rates: (22,430 - 500) x 8.75% = 1,918.875.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 0
+    dividend_income_tax: 1_918.88
+
+- name: Scottish 2025 allowance beyond pay goes to savings, which reach the basic band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_000
+        savings_interest_income: 30_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # 22,430 of savings remain, with no other taxable income: 5,000 at the
+    # starting rate for savings (s. 12), 1,000 of allowance, then
+    # 16,430 x 20% = 3,286.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 0
+    savings_income_tax: 3_286
+
+- name: Scottish 2025 starter-rate pay without savings or dividends reaches the starter band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 14_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # 1,430 taxable, all at 19% = 271.70. The person has no savings or
+    # dividends, so the basic rate limit does not apply.
+    tax_band: STARTER
+    earned_income_tax: 271.70
+
+- name: Scottish 2025 pay equal to the personal allowance has no band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_570
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    tax_band: NONE
+    earned_income_tax: 0
+
+- name: Scottish 2018-19 pay of 40000 and dividends of 5000 reaches the intermediate band
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # gov.scot, Scottish income tax 2018-2019: starter to £13,850, basic to
+    # £24,000, intermediate to £43,430 of income with an £11,850 allowance.
+    # Pay: 28,150 taxable, intermediate. 2,000 x 19% + 10,150 x 20%
+    # + 16,000 x 21% = 380 + 2,030 + 3,360 = 5,770. Dividends: 28,150 to
+    # 33,150, below the 34,500 basic rate limit, with a £2,000 allowance:
+    # 3,000 x 7.5% = 225.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_770
+    dividend_income_tax: 225
+
+- name: Scottish 2017-18 pay above 43000 reaches the higher band
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 44_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # gov.scot, Income tax rates set (2017): the Scottish higher rate starts
+    # at £43,000 of income, £31,500 above the £11,500 allowance. 32,500
+    # taxable: 31,500 x 20% + 1,000 x 40% = 6,700. In 2017-18 Parliament
+    # allows the Scottish basic rate but not the Scottish higher rate
+    # (s. 55B(2)(b)).
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    earned_income_tax: 6_700
+
+# The same rules in 2026-27, with the Scottish limits of S6M-20844: £3,967,
+# £16,956, £31,092, £62,430 and £125,140 of taxable income. The personal
+# allowance stays £12,570 and the basic rate limit £37,700.
+
+- name: Scottish 2026 pay of 40000 and dividends of 5000 reaches the intermediate band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 40_000
+        dividend_income: 5_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 27,430 taxable, intermediate. 3,967 x 19% + 12,989 x 20%
+    # + 10,474 x 21% = 753.73 + 2,597.80 + 2,199.54 = 5,551.07.
+    # Dividends: 27,430 to 32,430, below 37,700.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    earned_income_tax: 5_551.07
+
+- name: Scottish 2026 pay of 60000 and savings of 20000 reaches the higher band
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        savings_interest_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 47,430 taxable, higher, below 62,430. Savings: 47,430 to 67,430,
+    # above 37,700 and below 125,140.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish 2026 income at both limits stays intermediate
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_608
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Pay: 31,092 taxable, the intermediate rate's limit. Dividends: 31,092
+    # to 37,700, the basic rate limit.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+
+- name: Scottish 2026 dividends one pound above the basic rate limit reach the higher band
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 43_662
+        dividend_income: 6_609
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish 2026 allowance beyond pay goes to dividends, which reach the basic band
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_000
+        dividend_income: 30_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # After allowances, the taxpayer has 22,430 of taxable dividends below
+    # 37,700 and pays no tax at Scottish rates.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+
+# Boundaries the cases above leave open, 2025-26.
+
+- name: Scottish 2025 dividends at the Gift Aid limit stay basic
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        dividend_income: 50_271
+        gift_aid: 0.8
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # The 80p gift grosses up to 1 (s. 415) and raises the basic rate limit
+    # to 37,701 (s. 414(2)(b)). The allowance takes 12,570 of the dividends,
+    # which leaves 37,701, all within that limit:
+    # (37,701 - 500) x 8.75% = 3,255.0875.
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+    dividend_income_tax: 3_255.09
+
+- name: Scottish 2025 savings at the higher rate limit stay higher
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        savings_interest_income: 125_140
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # At income of 125,140 Parliament withdraws the whole personal allowance
+    # (s. 35), so the person pays tax on all 125,140, up to the 125,140
+    # higher rate limit and not above it. With no other income, 5,000 bears
+    # the starting rate for savings (s. 12) and the higher-rate allowance
+    # covers 500 (s. 12B); the rest of the 37,700 bears 20% and the 87,440
+    # above it 40%:
+    # 32,200 x 20% + 87,440 x 40% = 6,440 + 34,976 = 41,416.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    savings_income_tax: 41_416
+
+- name: Scottish 2025 property income at the higher rate limit stays intermediate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_570
+        property_income: 31_092
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # The model reads property_income as profit and, with no receipts given,
+    # takes a profit above the 1,000 property allowance to reflect the better
+    # of expenses and the allowance already, so it taxes all 31,092. Pay
+    # takes the personal allowance. Property income bears the Scottish rates
+    # (s. 11A): 2,827 x 19% + 12,094 x 20% + 16,171 x 21% = 537.13
+    # + 2,418.80 + 3,395.91 = 6,351.84, with none above 31,092.
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true
+    property_income_tax: 6_351.84
+
+- name: Scottish 2025 property income one pound above the higher rate limit reaches the higher band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_570
+        property_income: 31_093
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # As above with 1 at the Scottish higher rate: 6,351.84 + 0.42.
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+    property_income_tax: 6_352.26

@@ -58,7 +58,12 @@ legal entitlement: caring, work hours, ESA, JSA and Income Support are the
 model's reported or proxy inputs; it reads the qualifying age
 (has_attained_state_pension_credit_qualifying_age) and the model's proxy for
 being on Pension Credit (meets_pension_credit_age_conditions and
-would_claim_pc) from the model; and the means test is out of scope. No
+would_claim_pc) from the model, and, for the income-related ESA screen,
+pensionable age (is_SP_age; WRA 2007 s.1(3)(c)) and whether the model pays
+the couple Pension Credit (Sch 1 para 6(1)(c) and (d)): no one drawn here has
+earnings, and in 2025 no one has tax credits, so the model's pension_credit is the same
+with or without the couple's income-related ESA; and the means test is out of
+scope. No
 claimant or partner drawn here reports Pension Credit or Housing Benefit
 (only some added adults do), so in 2025 no family with a claimant or partner
 under the qualifying age meets the Pension Credit age conditions. The
@@ -211,8 +216,10 @@ def families(draw):
 def excluded_members(draw):
     """An adult who is neither claimant, partner nor in the family.
 
-    They are not in education, so a 16 to 19 year old is not a qualifying
-    young person. Most are primed with what barred or opened the claim when
+    They are not in education and past the 31 August following their 16th
+    birthday (Child Benefit (General) Regulations 2006 reg. 4), so a 16 to 19
+    year old is not a qualifying young person. Most are primed with what
+    barred or opened the claim when
     every member counted: over state pension age, income-related ESA, an
     Income Support report, or caring. Some are primed with what the
     s.124(1)(g) proxy reads for a couple: over the qualifying age, with
@@ -221,6 +228,7 @@ def excluded_members(draw):
     adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
     }
     primed = draw(
         st.sampled_from(["random", "elderly", "esa", "award", "carer", "pension"])
@@ -396,8 +404,14 @@ def reference_eligibility(
     attained_qualifying_age,
     on_pension_credit,
     parameters,
+    entitled_to_pension_credit=False,
 ):
-    """The model's Income Support gate, read family by family."""
+    """The model's Income Support gate, read family by family.
+
+    on_pension_credit is the model's proxy for s.124(1)(g);
+    entitled_to_pension_credit records whether the model pays the couple
+    Pension Credit, which the income-related ESA screen reads (WRA 2007 Sch 1
+    para 6(1)(c) and (d))."""
     IS = parameters.gov.dwp.income_support
     WORK = IS.eligibility.remunerative_work
     JSA = parameters.gov.dwp.JSA.income
@@ -448,7 +462,13 @@ def reference_eligibility(
             sum(a["esa_income_reported"] for a in adults),
             capital,
             parameters.gov.dwp.ESA.income.capital,
-        ) and esa_screen(adults, [], capital, parameters)
+        ) and esa_screen(
+            adults,
+            [],
+            capital,
+            parameters,
+            on_pension_credit=entitled_to_pension_credit,
+        )
     if jsa_income is not None:
         # Within half a penny of zero is no award.
         income_based_jsa = jsa_income > 0.005
@@ -511,9 +531,23 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     on_pension_credit = sim.calculate(
         "meets_pension_credit_age_conditions", YEAR
     ) & sim.calculate("would_claim_pc", YEAR)
+    # Entitlement for the ESA screen: the couple would get Pension Credit.
+    # Without earnings or tax credits, DWP would pay the same Pension Credit
+    # with the couple's award as without.
+    entitled = on_pension_credit & (sim.calculate("pension_credit", YEAR) > 0)
+    pensionable_age = sim.calculate("is_SP_age", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
     for i, (adults, dependants, capital, extra) in enumerate(units):
+        # The ESA screen reads each member's pensionable age from the model.
+        adults = [
+            dict(adult, is_SP_age=pensionable_age[start + j])
+            for j, adult in enumerate(adults)
+        ]
+        if extra is not None:
+            extra = dict(
+                extra, is_SP_age=pensionable_age[start + len(adults) + len(dependants)]
+            )
         # An esa_income or jsa_income the reported amounts explain is read
         # through them, like a calculated one.
         entered_esa = entered_jsa = None
@@ -529,7 +563,13 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
                 reported_total,
                 capital,
                 parameters,
-                screen=esa_screen(adults, others, capital, parameters),
+                screen=esa_screen(
+                    adults,
+                    others,
+                    capital,
+                    parameters,
+                    on_pension_credit=entitled[i],
+                ),
             ):
                 entered_esa = esa_income[i]
         if jsa_income is not None:
@@ -554,6 +594,7 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             attained_qualifying_age[start : start + len(adults)],
             on_pension_credit[i],
             parameters,
+            entitled_to_pension_credit=entitled[i],
         )
         assert eligible[i] == expected, units[i]
         # The docstring's claim: no family drawn here with a claimant or

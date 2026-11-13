@@ -13,12 +13,15 @@ Invariants, for any people and incomes:
    is that less the pension contributions given relief once (own contributions
    up to the greater of £3,600 and pay plus profits, none from age 75).
 2. Differential: a person's Income Tax before the winter fuel payment
-   charge with a loss equals the same tax of the same person without the
-   loss and with their income cut by the relief, taken from non-savings
-   income first, then savings, then dividends: the model's fixed allowance
-   order (s.25(2) asks for the order giving the greatest reduction; #2106).
-   The charge itself can differ between the two: it tests total income,
-   which the relief, at Step 2, does not lower but the cut does.
+   charge with a loss never exceeds the same tax of the same person without
+   the loss and with their income cut by the relief, taken from non-savings
+   income first, then savings, then dividends. The model sets the relief and
+   allowances together where they give the least tax (s. 25(2)), and the
+   cut, with the allowances set against it, is one share the model weighs.
+   Where the person has no savings or dividend income, every share is that
+   cut, so the two taxes agree. The charge itself can differ between the
+   two: it tests total income, which the relief, at Step 2, does not lower
+   but the cut does.
 3. Income Tax before the winter fuel payment charge never rises with the
    loss and falls by at most the relief (for people without savings income:
    the personal savings allowance steps up by £500 when someone stops being
@@ -33,15 +36,27 @@ Invariants, for any people and incomes:
    means tests deduct) and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
-   2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
-   award equal the same family with those profits cut by the loss. The
-   model's means tests use annual tax deductions, so otherwise the loss
-   reaches them through those deductions. UC's own deductions for tax and
-   NI on earnings and Pension Credit's tax attribution to employed and
-   self-employed earnings are held alongside them, including the actual
+   2013 reg 57(2) step 2), so UC, its benefit cap earnings test and the
+   capped award equal the same family with those profits cut by the loss
+   and every tax and NI deduction the UC formula reads held at its
+   with-loss value: the totals on earnings and the parts of them in respect
+   of the trade (reg 57(2) step 3), whose remainder is in respect of the
+   employment (reg 55(5)(b)). Those deductions are what the person pays with
+   the loss, and the parts are the model's split of that payment between the
+   employment and the trade, not a loss rule. Recomputing the trade's part
+   for the cut profit would move tax from the trade, where the step 3 nil
+   floor can absorb it, to the employment, where nothing does. The model's
+   means tests use annual tax deductions, so otherwise the loss reaches them
+   through those deductions. Pension Credit's tax attribution to employed
+   and self-employed earnings is held alongside them, including the actual
    Class 2/4 components replaced by notional PC deductions. The personal
    reliefs used for PC's notional tax are held too: the loss can change
-   entitlement to those reliefs without offsetting PC earnings.
+   entitlement to those reliefs without offsetting PC earnings. Scotland's
+   and Wales's working-age Council Tax Reduction schemes take the earnings
+   of an applicant with Universal Credit from UC's own measure (SSI
+   2021/249 reg 51(2); WSI 2013/3029 Sch 6 para 9), which sets the loss
+   against the person's other trades' profits as UC does, so that measure
+   is held with the award.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -310,8 +325,10 @@ def portfolio_holders(draw):
 
 
 def reduced(person):
-    """The person's income cut by the relief, in the s.25 order the model
-    uses, computed outside the model."""
+    """The person's income cut by the relief in the order non-savings,
+    savings, dividends, which this test computes outside the model. The model
+    sets the relief and allowances where they give the least tax (ITA 2007
+    s. 25(2)), so it charges no more tax than on this cut."""
     pay = person["employment_income"]
     pension = person["private_pension_income"]
     savings = person["savings_interest_income"]
@@ -378,7 +395,7 @@ PINNED_PORTFOLIOS = [
     st.lists(portfolio_holders(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
 )
-def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
+def test_relief_never_taxes_more_than_income_cut_in_the_old_order(people, regions):
     twins = [reduced(p)[0] for p in people]
     # The winter fuel payment charge tests total income, before Step 2
     # reliefs (ITEPA 2003 s.681I(1)(b), ITA 2007 s.23), so a relief and an
@@ -392,9 +409,15 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
         assert abs(a["trade_loss_relief_against_general_income"][i] - relief) <= (
             tolerance(relief)
         ), person
-        assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+        assert a[tax][i] - b[tax][i] <= 0.5 + tolerance(
             a[tax][i], person["employment_income"]
         ), (person, a[tax][i], b[tax][i])
+        # With no savings or dividend income, the relief and allowances can
+        # come only off non-savings income, so every share is the cut.
+        if person["savings_interest_income"] == 0 and person["dividend_income"] == 0:
+            assert abs(a[tax][i] - b[tax][i]) <= 0.5 + tolerance(
+                a[tax][i], person["employment_income"]
+            ), (person, a[tax][i], b[tax][i])
 
 
 # A pensioner with a tiny Pension Credit award: Pension Credit income
@@ -908,6 +931,77 @@ def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
         ),
     ]
 )
+@example(
+    [
+        # A loss larger than the profit, beside a private pension (#2832).
+        # Relief of 16,000 leaves net income 53,000 and taxable income
+        # 40,430: tax 37,700 x 20% + 2,730 x 40% = 8,632. Earnings are the
+        # lowest slice, so the relief comes off the pension above them:
+        # other income 53,000 - 49,000 = 4,000 and tax on earnings
+        # (40,430 - 4,000) x 20% = 7,286. Without the trade, other income is
+        # 13,000 and the tax 27,430 x 20% = 5,486, so the trade bears 1,800.
+        # Class 1 is 27,430 x 8% = 2,194.40 and there is no Class 4. With
+        # the loss, self-employed earnings are max(0, 9,000 - 9,000 - 1,800)
+        # = 0 and employed earnings 40,000 - 5,486 - 2,194.40 = 32,319.60.
+        # With the profit cut to nil and only the totals held, the trade's
+        # part is recomputed as nil, all 7,286 comes off employed earnings
+        # and they fall to 30,519.60. Holding the trade's part keeps 32,319.60.
+        (
+            [
+                adult(
+                    age=18,
+                    employment_income=40_000.0,
+                    self_employment_income=9_000.0,
+                    private_pension_income=20_000.0,
+                    trading_loss=16_000.0,
+                    hours_worked=0.0,
+                )
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 0.0,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "LONDON",
+            },
+        ),
+    ]
+)
+@example(
+    [
+        # A Scottish working-age family with Universal Credit. Scotland's
+        # scheme counts UC's earned income before the minimum income floor,
+        # which the loss cuts to nil, so the reduction is the full council
+        # tax. Holding only the award, that income came back without the loss
+        # and the reduction fell to nil.
+        (
+            [
+                adult(
+                    age=62,
+                    private_pension_income=10_544.828058008017,
+                    trading_loss=2.00001,
+                    hours_worked=16.0,
+                ),
+                adult(
+                    age=70,
+                    self_employment_income=24_241.322894102683,
+                    private_pension_income=3_873.033381146696,
+                    savings_interest_income=2_062.022534554826,
+                    trading_loss=27_550.671978652488,
+                    hours_worked=0.0,
+                ),
+                {"age": 5, "trading_loss": 1_055.7520263588135},
+                {"age": 13, "trading_loss": 0.0},
+                {"age": 5, "trading_loss": 1.1},
+            ],
+            {
+                "rent": 0.0,
+                "council_tax": 711.3180060250842,
+                "tenure_type": "RENT_PRIVATELY",
+                "region": "SCOTLAND",
+            },
+        ),
+    ]
+)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -933,6 +1027,15 @@ def test_means_tests_see_the_loss_only_through_tax(units):
         "blind_persons_allowance",
         "marriage_allowance",
         "married_couples_allowance_deduction",
+        # The legacy means tests leave out the tax on uncounted income due
+        # without earnings, which reads the Step 4 split on its branch, and
+        # deduct the rest (legacy_means_test_deducted_income_tax). Each is
+        # recomputed from the tax components, so a loss that moves interest
+        # or dividends between bands would move them with income_tax held.
+        # Hold them as the tax the tests deduct.
+        "legacy_means_test_income_tax",
+        "legacy_means_test_uncounted_income_tax_without_earnings",
+        "legacy_means_test_deducted_income_tax",
     ]
     tax = {v: values(with_loss, v) for v in deductions}
     # SPC Regs reg 17(11) substitutes CER notional deductions for the tax
@@ -945,11 +1048,15 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     # is 5,239.09433 x 6% = 314.345660. Holding both tax allocations gives
     # PC income 17,809.09433 - 1,047.818866 - 314.345660 - 1,040 = 15,406.93
     # on both sides; the child's loss never enters the claimant's earnings.
+    # Council Tax Reduction reads income tax on branches that zero earnings,
+    # so holding the person's tax would also hold it on those branches. Hold
+    # the scheme's deduction from the with-loss side instead.
     pc_tax = {
         v: values(with_loss, v)
         for v in [
             "pension_credit_employment_income_tax",
             "pension_credit_self_employment_income_tax",
+            "council_tax_reduction_tax_deduction",
         ]
     }
     loss = values(with_loss, "trading_loss")
@@ -958,6 +1065,27 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     uc = values(with_loss, "universal_credit")
     uc_pre_cap = values(with_loss, "universal_credit_pre_benefit_cap")
     hb = values(with_loss, "housing_benefit")
+    # The parts of UC's tax and NI deductions in respect of the trade (reg
+    # 57(2) step 3). The UC formula takes them off the trade total and the
+    # rest of the totals off employed earnings (reg 55(5)(b)), so the netted
+    # world holds them with the totals: they split what the person pays with
+    # the loss, and recomputing them for the cut profit would move tax
+    # between the employment and the trade.
+    uc_trade_deductions = {
+        v: values(with_loss, v)
+        for v in ["uc_income_tax_on_trade", "uc_national_insurance_on_trade"]
+    }
+    # The devolved working-age CTR schemes count, with UC, UC's own earned
+    # income measure (Scotland's before the minimum income floor), which
+    # nets the loss as UC does. Hold it with the award in the no-loss
+    # world; the netted world recomputes it for the UC tests.
+    uc_assessed_earnings = {
+        v: values(with_loss, v)
+        for v in [
+            "uc_individual_earned_income",
+            "uc_individual_earned_income_before_mif",
+        ]
+    }
 
     def held(k, **extra):
         return {
@@ -972,7 +1100,16 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     no_loss = Simulation(
         situation=family_situation(
             units,
-            {name: held(k) for k, name in enumerate(names)},
+            {
+                name: held(
+                    k,
+                    **{
+                        v: float(uc_assessed_earnings[v][k])
+                        for v in uc_assessed_earnings
+                    },
+                )
+                for k, name in enumerate(names)
+            },
             {
                 b: {
                     "universal_credit": float(uc[k]),
@@ -995,6 +1132,9 @@ def test_means_tests_see_the_loss_only_through_tax(units):
                     k,
                     self_employment_income=float(profits[k] - min(loss[k], profits[k])),
                     uc_mif_applies=bool(mif[k]),
+                    **{
+                        v: float(uc_trade_deductions[v][k]) for v in uc_trade_deductions
+                    },
                 )
                 for k, name in enumerate(names)
             },

@@ -62,16 +62,13 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "Universal Credit before the cap (universal_credit_pre_benefit_cap), "
         "so a Universal Credit award the cap reduces to nil still lifts the "
         "Housing Benefit cap. A young person is the model's Child Benefit "
-        "qualifying young person, which leaves out a 16-year-old in neither "
-        "non-advanced education nor approved training. The Housing Benefit "
-        "cap rate (is_housing_benefit_benefit_cap_single_claimant_rate) "
-        "counts such a 16-year-old for the year, so a lone parent with one "
-        "gets the family rate, but the 16-year-old's own disability living "
-        "allowance or personal independence payment does not lift the cap. "
-        "In law one status decides both: a school leaver remains a "
-        "qualifying young person until a terminal date or the end of an "
-        "extension period (Child Benefit (General) Regulations 2006 regs. 5 "
-        "and 7), which the model does not place (#2287)."
+        "qualifying young person (HB Regs 2006 reg. 19), which includes a "
+        "16-year-old who has left education, until the 31 August after their "
+        "16th birthday (Child Benefit (General) Regulations 2006 reg. 4), and "
+        "a school leaver in an extension period or before a terminal date "
+        "where those inputs are set (regs. 5 and 7). Such a young person's "
+        "own disability living allowance, personal independence payment or "
+        "armed forces independence payment lifts the cap."
     )
     definition_period = YEAR
     reference = (
@@ -88,10 +85,9 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
 
         # A child under 16 or a Child Benefit qualifying young person the
         # claimant or partner is responsible for (HB Regs 2006 regs 2(1), 19).
-        # A 16-year-old in neither non-advanced education nor approved
-        # training is not one here, although the cap rate counts them for the
-        # year (has_sixteen_year_old_dependant); the model's qualifying young
-        # person has no school-leaver terminal date (#2287).
+        # A 16-year-old who has left education is one for the year (Child
+        # Benefit (General) Regulations 2006 reg. 4), as the cap rate counts
+        # them (has_sixteen_year_old_dependant).
         child_or_young_person = person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
@@ -120,7 +116,12 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         receiving_income_related_esa = benunit.project(
             couple_esa_award > 0
         ) & is_payee_of_couple_award(
-            person, period, "esa_income_reported", couple=claimant_or_partner
+            person,
+            period,
+            "esa_income_reported",
+            # WRA 2007 s.1(3)(c): not a member who has reached pensionable age.
+            can_claim=~person("is_SP_age", period),
+            couple=claimant_or_partner,
         )
         receiving_esa = (person("esa_contrib", period) > 0) | (
             receiving_income_related_esa
@@ -136,10 +137,11 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         # Benefit before the cap; it is then capped through Universal Credit,
         # which counts its Housing Benefit as nil (UC Regs 2013 reg 80(2A)).
         # A family on Universal Credit alone keeps the exceptions above, so
-        # the two schemes' exceptions can be compared for it. Housing Benefit
-        # eligibility (housing_benefit_eligible) rules out a family that
-        # claims Universal Credit, so this applies only where both awards are
-        # supplied.
+        # the two schemes' exceptions can be compared for it. A family
+        # receives both awards in specified or temporary accommodation, where
+        # Housing Benefit continues beside a Universal Credit claim or opens
+        # on a new claim (housing_benefit_eligible), or where a user supplies
+        # both amounts.
         receiving_universal_credit = (
             benunit("universal_credit_pre_benefit_cap", period) > 0
         ) & (benunit("housing_benefit_pre_benefit_cap", period) > 0)

@@ -5,9 +5,9 @@ explicit reform classes bypass. These public Simulation cases therefore use
 dated dictionaries and equivalent Scenario construction. They preserve the
 existing contributed formulas, rather than asserting new statutory policy.
 
-The current expanded-MA formula deducts its transfer from earned taxable
-income: at GBP80,000 the GBP1,260 transfer saves GBP504 at 40%, not a GBP252
-basic-rate credit. The reported-only cases declare synthetic survey reports;
+The expanded-MA cases retain the model's basic-rate tax reduction:
+at GBP80,000 the GBP1,260 transfer saves GBP252 at20%, without reducing
+earned taxable income. The reported-only cases declare synthetic survey reports;
 their isolated payments are not claims of natural statutory entitlement.
 """
 
@@ -172,15 +172,15 @@ def reported_dataset():
 
 
 def test_future_expanded_ma_applies_only_inside_interval(route):
-    """12570 x10%, rounded up to10, gives1260; higher-rate tax falls504."""
+    """12570 x10%, rounded up to10, gives1260; basic-rate credit saves252."""
     simulation = construct(couple(), {EXPAND: {FY2026: True}}, route)
     for year in YEARS:
         active = year == 2026
         equals(
             money(simulation, "marriage_allowance", year), [1_260 if active else 0, 0]
         )
-        # Existing earned-income deduction:7540 + (80000-12570-37700-MA)*40%.
-        equals(money(simulation, "income_tax", year), [18_928 if active else 19_432, 0])
+        # Step6 credit:19432 - MA*20%, with earned taxable income unchanged.
+        equals(money(simulation, "income_tax", year), [19_180 if active else 19_432, 0])
 
 
 def test_expanded_ma_child_limit_follows_calculation_period():
@@ -200,11 +200,11 @@ def test_expanded_ma_rate_only_later_change_preserves_off_year_statutory_cap(rou
     simulation = construct(couple(), {MA_RATE: {FY2026: 0.2}}, route)
     for year in YEARS:
         active = year == 2026
-        # The reform's own20% cap is2520 after rounding, saving1008 at40%.
+        # The reform's own20% cap is2520 after rounding, saving504 at20%.
         equals(
             money(simulation, "marriage_allowance", year), [2_520 if active else 0, 0]
         )
-        equals(money(simulation, "income_tax", year), [18_424 if active else 19_432, 0])
+        equals(money(simulation, "income_tax", year), [18_928 if active else 19_432, 0])
 
 
 def test_statutory_marriage_allowance_rate_alone_does_not_activate_cps():
@@ -324,7 +324,7 @@ def test_disjoint_true_false_true_intervals_restore_original_outputs():
         equals(
             money(simulation, "marriage_allowance", year), [1_260 if active else 0, 0]
         )
-        equals(money(simulation, "income_tax", year), [18_928 if active else 19_432, 0])
+        equals(money(simulation, "income_tax", year), [19_180 if active else 19_432, 0])
 
 
 def test_reverse_query_order_baseline_instances_and_clones_are_isolated():
@@ -376,7 +376,7 @@ def test_direct_bypass_reform_interfaces_keep_their_existing_behavior(kind):
     simulation = Simulation(situation=couple(), reform=reform)
     if kind == "expanded_ma":
         equals(money(simulation, "marriage_allowance", 2026), [1_260, 0])
-        equals(money(simulation, "income_tax", 2026), [18_928, 0])
+        equals(money(simulation, "income_tax", 2026), [19_180, 0])
     else:
         equals(money(simulation, "net_income", 2026), [40_000, 40_000])
         equals(money(simulation, "income_tax", 2026), [5_486, 5_486])
