@@ -41,15 +41,15 @@ class uc_assessable_capital(Variable):
         "holdings. Under regulation 77, it replaces disregarded company holdings with "
         "the claimant's or partner's share of company capital. Regulation 49(1) "
         "values the financial pool's sources whose sale would incur expenses "
-        "(sale_expenses.sources, shares in share_like_capital) at 90%, and the "
-        "formula values a stocks and shares ISA balance it moves out of "
-        "share_like_capital at the same 90%. A disregarded holding comes off at "
-        "the value at which the formula counted it: 90% in the pool and in a "
-        "complete override, which is a countable figure, and in full from a "
-        "recorded financial total, which the formula uses without valuation. "
-        "The formula rounds every amount it calculates to the nearest penny "
-        "(regulation 6(1)), including this capital, which it tests against the "
-        "limit."
+        "(sale_expenses.sources: directly held shares, and all of an "
+        "unitemised corporate_wealth) at 90%. The formula counts a stocks and "
+        "shares ISA balance it moves out of share_like_capital_without_sale_expenses "
+        "at its withdrawal value (ADM H1656-H1658). A disregarded holding comes off at the value at which the formula "
+        "counted it: 90% in the pool and in a complete override, which is a "
+        "countable figure, and in full from a recorded financial total, which the "
+        "formula uses without valuation. The formula rounds every amount it "
+        "calculates to the nearest penny (regulation 6(1)), including this "
+        "capital, which it tests against the limit."
     )
     definition_period = YEAR
     unit = GBP
@@ -80,8 +80,9 @@ class uc_assessable_capital(Variable):
             ),
             p,
         )
-        # A reg. 77 holding sits in share_like_capital, so it is counted at the
-        # same 90% as the shares around it wherever they are valued.
+        # A reg. 77 holding sits in the shares with sale expenses, so it is
+        # counted at the same 90% as the shares around it wherever they are
+        # valued.
         holding_value = counted_share(p.sale_expenses, HOLDINGS_SOURCE)
         benunit_claimants = benunit.sum(claimant_or_partner)
         person_capital = valued_person_capital(

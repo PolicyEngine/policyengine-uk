@@ -17,7 +17,8 @@ description: >
   child owns a junior ISA's investments (Individual Savings Account
   Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). In the ordinary calculation,
   the formula subtracts each bounded ISA balance from its household source
-  (`cash_isa`, `share_like_capital`) and counts it in the holder's unit. For a
+  (`cash_isa`, `share_like_capital_without_sale_expenses`) and counts it in the holder's
+  unit. For a
   family on a passporting benefit, or at pension age on a guarantee credit,
   the formula returns zero capital, and for a savings-credit-only award it
   uses the Pension Credit capital assessment. When a household's balances

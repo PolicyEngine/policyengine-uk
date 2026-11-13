@@ -4,13 +4,15 @@ from policyengine_uk.model_api import *
 
 # The formulas map each person source to the household source that already
 # includes it, subtract its stored household sum, and allocate the remainder.
-# cash_isa includes each cash ISA balance, and share_like_capital each stocks
-# and shares ISA balance (through stocks_and_shares_isa, inside
+# cash_isa includes each cash ISA balance, and
+# share_like_capital_without_sale_expenses each stocks and shares ISA balance
+# (through stocks_and_shares_isa, which gov.dwp.share_like_capital
+# .without_sale_expenses lists, and which share_like_capital holds inside
 # corporate_wealth or the itemised sum). No household source includes a person
 # source missing here, such as a Lifetime ISA.
 HOUSEHOLD_SOURCE_OF = {
     "cash_isa_countable_capital": "cash_isa",
-    "stocks_and_shares_isa_countable_capital": "share_like_capital",
+    "stocks_and_shares_isa_countable_capital": "share_like_capital_without_sale_expenses",
 }
 
 
