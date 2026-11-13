@@ -1,0 +1,40 @@
+description: Whether HMRC charges Stamp Duty Land Tax on ordinary transactions involving land in Scotland.
+values:
+  0000-01-01:
+    value: false
+    metadata:
+      note: This inert sentinel makes periods before SDLT commencement readable. It does not model the predecessor stamp duty or identify a statutory commencement date.
+  2003-12-01:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2003 s. 48(1)(a), as enacted
+          href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/enacted
+        - title: Finance Act 2003 schedule 19 paragraph 2(1), (2)
+          href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/19/enacted
+        - title: HMRC, Stamp Duty Land Tax rates 1 December 2003 to 16 March 2005
+          href: https://www.gov.uk/government/publications/rates-and-allowances-stamp-duty-land-tax/stamp-duty-land-tax-rates-1-december-2003-to-16-march-2005
+  2015-04-01:
+    value: false
+    metadata:
+      note: Scotland Act 2012 s. 29(5) and (6) preserve SDLT for transactions under some contracts entered into on or before 1 May 2012. The model has no contract or effective-transaction-date input, so it applies the ordinary switch without modelling those transitional contracts.
+      reference:
+        - title: Scotland Act 2012 s. 29(2), (4), (5), (6)
+          href: https://www.legislation.gov.uk/ukpga/2012/11/section/29
+        - title: The Scotland Act 2012, Section 29 (Disapplication of UK Stamp Duty Land Tax) (Appointed Day) Order 2015
+          href: https://www.legislation.gov.uk/uksi/2015/637/article/2/made
+metadata:
+  unit: bool
+  period: year
+  label: Stamp Duty applies in Scotland
+  reference:
+    - title: Finance Act 2003 s. 48(1)(a), as enacted
+      href: https://www.legislation.gov.uk/ukpga/2003/14/section/48/enacted
+    - title: Finance Act 2003 schedule 19 paragraph 2(1), (2)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/19/enacted
+    - title: HMRC, Stamp Duty Land Tax rates 1 December 2003 to 16 March 2005
+      href: https://www.gov.uk/government/publications/rates-and-allowances-stamp-duty-land-tax/stamp-duty-land-tax-rates-1-december-2003-to-16-march-2005
+    - title: Scotland Act 2012 s. 29(2), (4), (5), (6)
+      href: https://www.legislation.gov.uk/ukpga/2012/11/section/29
+    - title: The Scotland Act 2012, Section 29 (Disapplication of UK Stamp Duty Land Tax) (Appointed Day) Order 2015
+      href: https://www.legislation.gov.uk/uksi/2015/637/article/2/made

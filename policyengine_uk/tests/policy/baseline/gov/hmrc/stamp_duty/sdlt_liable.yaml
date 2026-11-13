@@ -11,3 +11,27 @@
     country: [ENGLAND, WALES, SCOTLAND, NORTHERN_IRELAND]
   output:
     sdlt_liable: [false, false, false, false]
+
+# Ordinary Scottish switch: Scotland Act 2012 s29; SI 2015/637 art2.
+# Annual 2014 samples January, while annual 2015 samples 30 April.
+- name: Case 3, ordinary Scottish purchases remain within SDLT in annual 2014.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+  output:
+    sdlt_liable: [true, true, true, true, false]
+
+- name: Case 4, annual 2015 samples the ordinary Scottish SDLT disapplication.
+  period: 2015
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+  output:
+    sdlt_liable: [false, true, true, true, false]
+
+- name: Case 5, abolishing SDLT also excludes historical Scottish households.
+  period: 2014
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+  output:
+    sdlt_liable: [false, false, false, false, false]
