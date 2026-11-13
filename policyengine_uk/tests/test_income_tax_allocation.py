@@ -1080,11 +1080,9 @@ def test_vertex_search_weighs_the_marriage_allowance(system, year):
 def test_search_keeps_a_recipient_the_test_passes_exactly_at_the_limit(system):
     """Pay of £38,570 and savings of £11,700 in 2026-27. The old order leaves
     £26,000 of pay and £37,700 in all, exactly the basic rate limit, which the
-    rate test allows (s. 10(2)): 7,340 less the £252 reduction, 7,088. The
-    search's room below the limit doesn't count that share as meeting the test,
-    though a share that stops savings at the £1,000 savings allowance does, for
-    the same 7,088. So the old order must answer for itself, or the search would
-    move the recipient for no saving."""
+    rate test allows (s. 10(2)): 7,340 less the £252 reduction, 7,088. A share
+    that stops savings at the £1,000 savings allowance gives the same 7,088, so
+    the search must keep the old order rather than move the recipient for no saving."""
     income_tax = system.parameters("2026").gov.hmrc.income_tax
     inputs, default = one_person(savings=11_700, net_income=50_270)
     inputs = with_marriage_allowance(income_tax, 2026, inputs, default, 0)

@@ -110,10 +110,11 @@ limit, and the test's other edges already lie among the lines listed. On
 each side of those edges ``f`` differs from the Step 5 tax by a constant, so
 the least ``f`` again lies where two lines cross.
 
-The model stores its variables in float32, whose rounding can carry income at
-a limit over it. So the search counts a share as meeting the rate test only
-with room below each limit, under 4p on £38,000, and sets savings at the
-savings allowance, or dividends at nil, exactly where the test reads them.
+The search applies the rate test at the statutory limits: where the only
+shares that meet it leave non-savings income at a limit, room below the limit
+would deny the reduction. The model stores its variables in float32, so the
+search sets savings at the savings allowance, or dividends at nil, exactly
+where the test reads them.
 
 The search keeps the order non-savings, savings, dividends unless another
 share lowers ``f``, so it never leaves more liability than that order.
@@ -179,11 +180,6 @@ TOLERANCE = 1e-3
 TIE = 1e-6
 # Bound on people times candidates evaluated at once, to bound memory.
 CHUNK = 2_000_000
-# The search counts a share as meeting the Marriage Allowance rate test only
-# with this much room below each limit: pounds, plus a fraction of the amounts
-# involved, several times the float32 rounding of the variables the test reads.
-RATE_TEST_ROOM = 1e-3
-RATE_TEST_ROOM_FRACTION = 1e-6
 # The variables on earned_taxable_income_exclusions that the allocation sets
 # rather than reads.
 ALLOCATED_EXCLUSIONS = (
@@ -346,14 +342,13 @@ def _build(inputs, income_tax):
     # The rate test reads all the non-savings income, so it adds what s. 25(3A)
     # leaves below the first component.
     c.non_savings_below_first = c.other_left if c.other_first else zero
-    room = RATE_TEST_ROOM + RATE_TEST_ROOM_FRACTION * np.maximum(
-        np.maximum(np.abs(non_savings_limit), np.abs(basic_rate_limit)),
-        np.abs(c.non_savings_below_first + c.step_3_income),
-    )
+    # The statutory limits. A share that leaves non-savings income at a limit
+    # can be the only one that meets the test (s. 10(2) lets income reach
+    # the limit), so the search keeps no room below them.
     c.rate_test_limits = SimpleNamespace(
-        non_savings=non_savings_limit - room,
-        basic_rate=basic_rate_limit - room,
-        starting=c.starting_limit - room,
+        non_savings=non_savings_limit,
+        basic_rate=basic_rate_limit,
+        starting=c.starting_limit,
         savings_allowance=c.rate_test_savings_allowance + TIE,
     )
     return c
@@ -444,8 +439,8 @@ def step_5_tax(c, x, s, v):
 
 
 def _meets_rate_test(c, x, s, v):
-    """Whether the share meets the Marriage Allowance rate test with room
-    below each limit. ``TIE`` covers float64 rounding of a share that leaves
+    """Whether the share meets the Marriage Allowance rate test at the
+    statutory limits. ``TIE`` covers float64 rounding of a share that leaves
     savings at the savings allowance or no dividends."""
     return meets_marriage_allowance_rate_test(
         x + c.non_savings_below_first,
@@ -788,8 +783,8 @@ def least_tax_deductions(
     default_s = c.savings - to_savings[search][:, None]
     default_v = c.dividends - to_dividends[search][:, None]
     default_x = c.step_3_income - default_s - default_v
-    # The old order takes the rate test's own answer, not the search's with
-    # room, so a person it already qualifies never moves for the reduction.
+    # The old order takes the rate test's own answer, so a person it already
+    # qualifies never moves for the reduction.
     old_order_tax = step_5_tax(c, default_x, default_s, default_v) - (
         c.marriage_allowance_reduction * c.old_order_meets_rate_test
     )

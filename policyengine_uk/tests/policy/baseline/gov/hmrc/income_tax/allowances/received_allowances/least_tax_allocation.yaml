@@ -552,3 +552,91 @@
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance_tax_reduction: [252, 0]
     income_tax: [7_088, 0]
+
+- name: Case 24, a recipient's only qualifying share leaves pay exactly at the basic rate limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 40_200
+        savings_interest_income: 9_000
+        dividend_income: 1_570
+      partner:
+        age: 40
+    benunit:
+      members: [recipient, partner]
+      is_married: true
+  output:
+    # Income after the allowance is 50,770 - 12,570 = 38,200, above the basic
+    # rate limit, so the savings allowance is £500 in every share (s. 12B).
+    # The rate test (s. 55B(2)(b) and (ba)) needs no dividends left, at most
+    # £500 of savings left and at most £37,700 of pay left, so one share meets
+    # it: £2,500 against pay, £8,500 against savings and £1,570 against
+    # dividends. Its tax is 37,700 x 20% = 7,540, less 252: £7,288. Without
+    # the reduction the least tax is £7,440 (£11,500 against pay and £1,070
+    # against dividends).
+    received_allowances_earned_income: [2_500, 0]
+    received_allowances_savings_income: [8_500, 0]
+    received_allowances_dividend_income: [1_570, 0]
+    income_tax_pre_charges: [7_540, 0]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance_tax_reduction: [252, 0]
+    income_tax: [7_288, 0]
+
+- name: Case 25, a recipient's share leaves pay 2p below the basic rate limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 40_199.98
+        savings_interest_income: 9_000
+        dividend_income: 1_570
+      partner:
+        age: 40
+    benunit:
+      members: [recipient, partner]
+      is_married: true
+  output:
+    # As Case 24 with 2p less pay. The same deductions leave £37,699.98 of pay
+    # and £500 of savings at the savings nil rate: 37,699.98 x 20% =
+    # 7,539.996, less 252: £7,287.996.
+    received_allowances_earned_income: [2_500, 0]
+    received_allowances_savings_income: [8_500, 0]
+    received_allowances_dividend_income: [1_570, 0]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance_tax_reduction: [252, 0]
+    income_tax: [7_287.996, 0]
+
+- name: Case 26, a recipient sets the allowance against dividends to stop pay at the basic rate limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 50_000
+        savings_interest_income: 500
+        dividend_income: 270
+      partner:
+        age: 40
+    benunit:
+      members: [recipient, partner]
+      is_married: true
+  output:
+    # The old order leaves £37,430 of pay, £500 of savings at the savings nil
+    # rate and £270 of dividends within the dividend allowance, for the least
+    # Step 5 tax, 37,430 x 20% = 7,486. Its £270 of dividends end above the
+    # basic rate limit, so it fails the rate test (s. 55B(2)(ba)). Setting
+    # £270 against dividends and £12,300 against pay leaves £37,700 of pay and
+    # £500 of savings: 37,700 x 20% = 7,540, less 252: £7,288.
+    received_allowances_earned_income: [12_300, 0]
+    received_allowances_savings_income: [0, 0]
+    received_allowances_dividend_income: [270, 0]
+    income_tax_pre_charges: [7_540, 0]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance_tax_reduction: [252, 0]
+    income_tax: [7_288, 0]
