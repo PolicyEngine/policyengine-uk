@@ -46,4 +46,4 @@ class adjusted_employer_cost(Variable):
         employer_ni = r_r * max_(
             0, ni_class_1_income - pen_con_subtracted_r + ni_only_earnings - t_r
         )
-        return ni_class_1_income + employer_ni
+        return ni_class_1_income + employer_ni + person("ni_class_1a", period)

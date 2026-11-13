@@ -103,3 +103,39 @@
     gov.contrib.policyengine.employer_ni.employee_incidence: 0.5
   output:
     employer_ni_fixed_employer_cost_change: 0
+
+- name: Case 11, employer costs include computed Class 1A alongside secondary Class 1.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income_before_lsr: 80_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # HMRC 480 Appendix 2: 30% car benefit; SSCBA 1992 s.10(5):
+    # Class 1A = 12,000 * 15% = 1,800. Secondary Class 1 is
+    # (80,000 - 5,000) * 15% = 11,250, so total cost is 93,050.
+    benefits_in_kind: 12_000
+    ni_class_1a: 1_800
+    ni_class_1_employer: 11_250
+    employer_cost: 93_050
+    adjusted_employer_cost: 93_050
+    employer_ni_fixed_employer_cost_change: 0
+
+- name: Case 12, under-21 Class 1 zero-rating leaves Class 1A in employer costs.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 20
+    employment_income_before_lsr: 30_000
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+  output:
+    # SSCBA 1992 s.9A zero-rates secondary Class 1 below the UST;
+    # it does not exempt the 12,000 * 15% Class 1A liability (s.10).
+    ni_class_1a: 1_800
+    ni_class_1_employer: 0
+    employer_cost: 31_800
+    adjusted_employer_cost: 31_800
+    employer_ni_fixed_employer_cost_change: 0
