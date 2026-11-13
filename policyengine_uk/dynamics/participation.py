@@ -340,11 +340,16 @@ def calculate_gain_to_work(
     Returns:
         DataFrame with in-work income, out-of-work income, and gain-to-work
     """
-    # Get current employment status and income
-    employment_income = sim.calculate("employment_income", year)
+    # Get current employment status and income. A Microsimulation returns
+    # MicroSeries, and masked assignment between MicroSeries raises "Cannot
+    # propagate weights unambiguously", so work on plain arrays (as a
+    # Simulation already returns).
+    employment_income = np.asarray(sim.calculate("employment_income", year))
     hours_worked = sim.calculate("hours_worked", year)
-    household_net_income = sim.calculate("household_net_income", year, map_to="person")
-    adult_index = sim.calculate("adult_index", year)
+    household_net_income = np.asarray(
+        sim.calculate("household_net_income", year, map_to="person")
+    )
+    adult_index = np.asarray(sim.calculate("adult_index", year))
 
     # Impute wages for non-workers if requested
     if impute_nonworker_wages:
@@ -377,8 +382,8 @@ def calculate_gain_to_work(
 
             sim.reset_calculations()
             sim.set_input("employment_income", year, temp_employment_out)
-            out_of_work_income[is_adult_i] = sim.calculate(
-                "household_net_income", year, map_to="person"
+            out_of_work_income[is_adult_i] = np.asarray(
+                sim.calculate("household_net_income", year, map_to="person")
             )[is_adult_i]
 
             # Calculate in-work income (use imputed wages if applicable).
@@ -394,8 +399,8 @@ def calculate_gain_to_work(
 
             sim.reset_calculations()
             sim.set_input("employment_income", year, temp_employment_in)
-            in_work_income[is_adult_i] = sim.calculate(
-                "household_net_income", year, map_to="person"
+            in_work_income[is_adult_i] = np.asarray(
+                sim.calculate("household_net_income", year, map_to="person")
             )[is_adult_i]
 
     # Reset to original state
