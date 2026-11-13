@@ -36,6 +36,7 @@ import pytest
 from policyengine_core.data_storage import OnDiskStorage
 from policyengine_core.model_api import ADD, DIVIDE
 from policyengine_core.periods import period
+from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 
 from policyengine_uk import Simulation
@@ -450,25 +451,31 @@ def test_a_holder_given_another_definition_follows_the_current_one():
 
 def test_a_holder_core_keeps_from_an_eternity_definition_is_refused():
     sim = built()
-    population = sim.get_variable_population(DRAW)
     year_definition = type(sim.tax_benefit_system.variables[DRAW])
-    sim.tax_benefit_system.update_variable(
-        type(
-            DRAW,
-            (Variable,),
-            dict(
-                value_type=float,
-                entity=Person,
-                definition_period=ETERNITY,
-                default_value=1.0,
-                label="eternal draw",
-            ),
-        )
-    )
-    # Core makes the holder for the ETERNITY definition, then keeps it after
-    # the year definition comes back: a holder cannot change its ETERNITY
-    # storage (core#653).
-    assert population.get_holder(DRAW)._memory_storage.is_eternal
+
+    class eternal_draw(Reform):
+        def apply(self):
+            self.update_variable(
+                type(
+                    DRAW,
+                    (Variable,),
+                    dict(
+                        value_type=float,
+                        entity=Person,
+                        definition_period=ETERNITY,
+                        default_value=1.0,
+                        label="eternal draw",
+                    ),
+                )
+            )
+
+    # A reform that gives the draw ETERNITY storage drops its holder, and the
+    # next lookup makes one for the ETERNITY definition.
+    sim.apply_reform(eternal_draw)
+    assert sim.get_holder(DRAW)._memory_storage.is_eternal
+    # Restoring the year definition on the system directly, not through a
+    # reform, leaves that holder in place: a holder cannot change its
+    # ETERNITY storage (core#653).
     sim.tax_benefit_system.update_variable(year_definition)
     holder = sim.get_holder(DRAW)
     assert holder.variable.definition_period == ETERNITY
