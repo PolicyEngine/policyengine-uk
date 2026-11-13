@@ -7,11 +7,12 @@ class tax_free_childcare_work_condition(Variable):
     label = "work conditions for tax-free childcare"
     documentation = (
         "The person applying and, if they have one, their partner must each "
-        "be at least 16 and in qualifying paid work. A person counts as in "
-        "qualifying paid work while on qualifying leave or statutory pay "
-        "(regs 12 and 14), or while they receive a caring or incapacity "
-        "benefit and their partner is in qualifying paid work (reg 13). "
-        "Children in the family play no part."
+        "be at least 16 and in qualifying paid work. This includes ordinary "
+        "paid work, explicitly qualified regulation 12 temporary absences, "
+        "or caring or incapacity while a partner is in qualifying paid work "
+        "under regulation 13. Legacy leave/pay facts and regulation 14's "
+        "separate childcare-cost connection rule alone do not establish "
+        "eligibility work. Children in the family play no part."
     )
     definition_period = YEAR
     reference = (
@@ -19,7 +20,9 @@ class tax_free_childcare_work_condition(Variable):
         "https://www.legislation.gov.uk/ukpga/2014/28/section/6",
         "https://www.legislation.gov.uk/uksi/2015/448/regulation/3",
         "https://www.legislation.gov.uk/uksi/2015/448/regulation/9",
+        "https://www.legislation.gov.uk/uksi/2015/448/regulation/12",
         "https://www.legislation.gov.uk/uksi/2015/448/regulation/13",
+        "https://www.legislation.gov.uk/uksi/2015/448/regulation/14",
     )
 
     def formula(person, period, parameters):
