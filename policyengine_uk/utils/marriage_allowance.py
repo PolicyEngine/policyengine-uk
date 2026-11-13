@@ -1,9 +1,10 @@
 """The rate test for the Marriage Allowance (ITA 2007 s. 55B(2)(b) and (ba)).
 
 The test reads the income the reliefs and allowances leave in each component,
-so it depends on how s. 25(2) shares them.
-``meets_marriage_allowance_income_conditions`` applies it to the share the
-model settles on, and ``income_tax_allocation`` to each share it compares.
+so it depends on how s. 25(2) shares them. ``income_tax_allocation`` applies
+it to each share it compares and, for
+``meets_marriage_allowance_income_conditions``, to the share the model
+settles on.
 """
 
 from types import SimpleNamespace
@@ -21,7 +22,8 @@ def marriage_allowance_rate_limits(person, period, income_tax):
     schedule.
     """
     rates = income_tax.rates
-    gross_gift = person("gift_aid_grossed_up", period)
+    # In float64, so a limit raised by a gift keeps the gift's pence.
+    gross_gift = np.asarray(person("gift_aid_grossed_up", period), dtype=np.float64)
     # The Scottish higher rate follows the starter, basic and intermediate
     # rates; in 2017-18 the Scottish scale had only the basic rate below it.
     # Before 2017-18 the test holds a Scottish taxpayer to the basic rate

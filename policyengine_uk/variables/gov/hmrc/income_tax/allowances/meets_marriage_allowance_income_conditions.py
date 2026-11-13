@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.marriage_allowance import (
-    marriage_allowance_rate_limits,
-    meets_marriage_allowance_rate_test,
+from policyengine_uk.utils.income_tax_allocation import (
+    share_meets_marriage_allowance_rate_test,
 )
 
 
@@ -31,27 +30,17 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     marriage_allowance_tax_reduction takes the allowance off the tax, and
     the test reads income after allowances and the savings, dividend and
     Gift Aid amounts directly.
+
+    The test reads the share of reliefs and allowances the model holds
+    (received_allowances_savings_income and
+    received_allowances_dividend_income) and works out the income it leaves in
+    float64, as the search for that share does (s. 25(2);
+    policyengine_uk.utils.income_tax_allocation). It counts income within
+    half a penny above a limit as at the limit, since Parliament lets income
+    reach each limit (s. 10(2)) and float32 holds a net income under £65,536
+    only to within a fifth of a penny.
     """
-    # Earnings, pensions, property and other non-savings income after the
-    # allowances set against it (s. 25(2)): the income below savings and
-    # dividends (s. 16). Savings and dividends left after the allowances the
-    # share sets against them.
-    return meets_marriage_allowance_rate_test(
-        person("non_savings_income_after_allowances", period),
-        max_(
-            0,
-            person("taxable_savings_interest_income", period)
-            - person("received_allowances_savings_income", period),
-        ),
-        max_(
-            0,
-            person("taxable_dividend_income", period)
-            - person("received_allowances_dividend_income", period),
-        ),
-        marriage_allowance_rate_limits(
-            person, period, parameters(period).gov.hmrc.income_tax
-        ),
-    )
+    return share_meets_marriage_allowance_rate_test(person, period, parameters)
 
 
 class meets_marriage_allowance_income_conditions(Variable):
