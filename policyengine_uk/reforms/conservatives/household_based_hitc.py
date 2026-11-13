@@ -37,3 +37,25 @@ def create_household_based_hitc_reform(parameters, period):
         return make_cb_hitc_household_based
     else:
         return None
+
+
+def create_period_aware_household_hitc_reform(parameters, period):
+    from policyengine_uk.reforms.reforms import (
+        parameter_ever_true,
+        apply_period_aware_reform,
+    )
+
+    path = "gov.contrib.conservatives.cb_hitc_household"
+    if not parameter_ever_true(parameters, path):
+        return None
+
+    def active(root, year):
+        return root(year).gov.contrib.conservatives.cb_hitc_household
+
+    class reform(Reform):
+        def apply(self):
+            apply_period_aware_reform(
+                self, make_cb_hitc_household_based, ("CB_HITC",), active
+            )
+
+    return reform

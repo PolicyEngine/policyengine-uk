@@ -87,3 +87,28 @@ def create_scottish_child_payment_reform(parameters, period, bypass: bool = Fals
 
 
 scottish_child_payment_reform = create_scottish_child_payment_baby_bonus_reform()
+
+
+def create_period_aware_scottish_child_payment_reform(parameters, period):
+    from policyengine_uk.reforms.reforms import (
+        parameter_ever_true,
+        apply_period_aware_reform,
+    )
+
+    path = "gov.contrib.scotland.scottish_child_payment.in_effect"
+    if not parameter_ever_true(parameters, path):
+        return None
+
+    def active(root, year):
+        return root(year).gov.contrib.scotland.scottish_child_payment.in_effect
+
+    class reform(Reform):
+        def apply(self):
+            apply_period_aware_reform(
+                self,
+                create_scottish_child_payment_baby_bonus_reform(),
+                ("scottish_child_payment",),
+                active,
+            )
+
+    return reform
