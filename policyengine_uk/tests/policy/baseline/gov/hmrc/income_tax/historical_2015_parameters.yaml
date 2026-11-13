@@ -1,0 +1,154 @@
+# Model period 2015 represents tax year 2015-16. All people are aged 40,
+# so the personal allowance is £10,600. The basic rate limit is £31,785:
+# ITA 2007 s.10(5), as at 6 April 2015, and the official 2015-16 table:
+# https://www.legislation.gov.uk/ukpga/2007/3/section/10/2015-04-06
+# https://www.gov.uk/government/publications/tax-and-tax-credit-rates-and-thresholds-for-2016-17/tax-and-tax-credit-rates-and-thresholds-for-2016-17
+# These wage/savings cases do not certify the pre-2016 dividend-credit regime.
+
+- name: Case 1, English earnings one pound below the 2015 basic rate limit.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    country: ENGLAND
+    employment_income: 42_384
+  output:
+    # (42,384 - 10,600) x 20% = 6,356.80.
+    earned_income_tax: 6_356.8
+    income_tax: 6_356.8
+
+- name: Case 2, Welsh earnings exactly at the 2015 basic rate limit.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    country: WALES
+    employment_income: 42_385
+  output:
+    # (42,385 - 10,600) x 20% = 6,357; no income bears 40%.
+    earned_income_tax: 6_357
+    income_tax: 6_357
+
+- name: Case 3, Northern Irish earnings one pound above the 2015 basic rate limit.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    country: NORTHERN_IRELAND
+    employment_income: 42_386
+  output:
+    # 31,785 x 20% + 1 x 40% = 6,357.40.
+    earned_income_tax: 6_357.4
+    income_tax: 6_357.4
+
+- name: Case 4, 2015 savings have no Personal Savings Allowance.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    country: ENGLAND
+    employment_income: 40_600
+    savings_interest_income: 1_000
+  output:
+    # Taxable wages are 30,000, above the £5,000 savings starting-rate
+    # limit. The £1,000 interest remains in the basic-rate band: 200 tax.
+    # FA 2016 s.4(17) starts the PSA in 2016-17, not 2015-16:
+    # https://www.legislation.gov.uk/ukpga/2016/24/section/4/enacted
+    savings_allowance: 0
+    earned_income_tax: 6_000
+    savings_income_tax: 200
+    income_tax: 6_200
+
+# Held 2015 dividend controls; see #2865 for the deferred tax credit and gross-up.
+# These preserve the recorded pre-backfill dividend outputs while the
+# historical tax-credit and gross-up work remains deferred. They do not
+# certify that the model computes the full statutory 2015 dividend regime.
+- name: Case 5, hold preserves the recorded 2015 basic-rate cash-dividend output.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 20_000
+    dividend_income: 2_000
+  output:
+    dividend_income_tax: 0
+    earned_income_tax: 1_880
+    income_tax: 1_880
+
+- name: Case 6, hold preserves the recorded 2015 higher-rate cash-dividend component.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 60_000
+    dividend_income: 10_000
+  output:
+    # The recorded legacy dividend component is 1,625, not the 2,500
+    # statutory result requiring the deferred credit and gross-up.
+    dividend_income_tax: 1_625
+    # 31,785 * 20% + (49,400 - 31,785) * 40% = 13,403.
+    # This retains the intentional 43 wage-tax correction against main's
+    # former 32,000 basic band, so final tax is 15,028 rather than 14,985.
+    earned_income_tax: 13_403
+    income_tax: 15_028
+
+# The following endpoints protect the coupled HOLD of the inherited
+# dividend allowance and rates. The 5,000 allowance and 37,500 threshold
+# are legacy model values, not claims about the statutory 2015 regime.
+- name: Case 7, held dividend income exactly fills the legacy allowance.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 20_000
+    dividend_income: 5_000
+  output:
+    dividend_income_tax: 0
+    earned_income_tax: 1_880
+    income_tax: 1_880
+
+- name: Case 8, one pound above the legacy allowance retains the held rate.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 20_000
+    dividend_income: 5_001
+  output:
+    # The inherited approximation charges 1 * 7.5% = 0.075.
+    dividend_income_tax: 0.075
+    earned_income_tax: 1_880
+    income_tax: 1_880.075
+
+- name: Case 9, held dividends exactly fill the legacy basic-rate band.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 20_000
+    dividend_income: 28_100
+  output:
+    # Taxable wages 9,400 plus dividends 28,100 fill 37,500.
+    # (28,100 - 5,000) * 7.5% = 1,732.50 under the held approximation.
+    dividend_income_tax: 1_732.5
+    earned_income_tax: 1_880
+    income_tax: 3_612.5
+
+- name: Case 10, one pound above the legacy basic band uses the held higher rate.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    employment_income: 20_000
+    dividend_income: 28_101
+  output:
+    # 1,732.50 + 1 * 32.5% = 1,732.825 under the held approximation.
+    dividend_income_tax: 1_732.825
+    earned_income_tax: 1_880
+    income_tax: 3_612.825

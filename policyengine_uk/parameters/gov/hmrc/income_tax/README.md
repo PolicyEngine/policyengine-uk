@@ -26,8 +26,33 @@ These limits apply after allowances. For example, in 2025, £49,000 of pay uses
 further £2,000 of dividends, £1,270 fits in the basic band, including the £500
 dividend nil-rate amount. The charge is £770 × 8.75% + £730 × 33.75% = £313.75.
 
-The threshold history does not certify the pre-2016 dividend-tax-credit regime
-or all historical allowance calculations. The inherited 2016 Personal Allowance
+The 2015–16 non-dividend correction sets the UK basic-rate limit to £31,785
+under [Finance Act 2014 s. 2(1)(a)](https://www.legislation.gov.uk/ukpga/2014/26/section/2/enacted)
+and keeps the Personal Savings Allowance at zero before 2016–17.
+[Finance Act 2016 s. 4(17)](https://www.legislation.gov.uk/ukpga/2016/24/section/4/enacted)
+commences that savings nil rate in 2016–17. Annual model years from 2015
+read the fiscal-year parameter value sampled at 30 April.
+
+The 2015 dividend parameter backfill remains held pending support for the
+historical tax credit and gross-up. The model retains its inherited 2015
+dividend rates of 7.5%, 32.5% and 38.1%, a £37,500 higher-rate threshold and
+a processed £5,000 dividend allowance. These values preserve the existing
+approximation; they do not encode the statutory 2015 dividend regime.
+The raw allowance file first states £5,000 on 6 April 2016. Parameter
+processing backdates that earliest value for earlier calculations, which
+does not establish that the allowance legally applied before that date.
+
+Qualifying distributions before 6 April 2016 carried a tax credit and
+gross-up under [ITTOIA 2005 ss. 397–398](https://www.gov.uk/hmrc-internal-manuals/savings-and-investment-manual/saim5100).
+The model does not determine that qualification, gross up distributions or
+automatically apply the historical credit. The historical dividend controls
+assert recorded model behavior and do not certify complete pre-2016
+cash-dividend liability. [Finance Act 2016 s. 5(3), (5) and (10)](https://www.legislation.gov.uk/ukpga/2016/24/section/5/enacted)
+introduces the £5,000 dividend nil-rate amount and changes the ordinary and
+additional dividend rates to 7.5% and 38.1% from 2016–17. The 2016 and later
+dividend parameters retain their prior values.
+
+The inherited 2016 Personal Allowance
 is a separate issue tracked in [#2359](https://github.com/PolicyEngine/policyengine-uk/issues/2359):
 the inherited amount was £10,600 while the statutory amount is £11,000. The 2016 regression
 uses £160,000 of dividends, which naturally withdraws the full allowance under
