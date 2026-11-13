@@ -7,8 +7,17 @@ inputs. A holder's known periods include both. policyengine-core records each
 (variable, branch, period) that ``set_input`` stores in
 ``Simulation._user_input_keys``. From 3.32.27 (policyengine-core#561), core
 forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
-clone gets its own copy of the record. The helpers also require a stored
-value, so missing arrays do not count as supplied inputs.
+clone gets its own copy of the record.
+
+The record can still outlive the value it names. A value cached over an input
+takes that storage tier (memory or disk) off the holder's record of where the
+input is (``Holder._user_input_storage``), but leaves the entry in
+``_user_input_keys``. So every helper here reads a supplied value only if it is
+still stored, and only from a tier in which ``Holder._stores_user_input``
+finds the input: one that the holder records the input in and that holds a
+value the engine did not calculate (see ``stored_supplied_value``). A missing
+value, or one carried over, calculated or cached into the same tier, is not
+supplied; an input stored on disk under a value cached in memory still is.
 
 ``Simulation.build_from_populations`` installs new populations, and so new
 holders, but core keeps the record of the values they replace
@@ -31,9 +40,13 @@ input set for a longer or shorter period that stores nothing there leaves
 it), when ``delete_arrays`` removes it, and when a rebuild installs
 populations that do not hold it, and a clone or branch gets its own copy of
 the record.
+
+``supplied_input_arrays`` answers for every variable. It includes values
+``set_model_value`` stored, which ``is_model_value`` tells apart.
 """
 
-from typing import List, Optional
+from functools import cache
+from typing import List, Optional, Tuple
 
 import numpy as np
 from policyengine_core import periods
@@ -46,6 +59,7 @@ from policyengine_core.periods import Period
 SUPPLIED_INPUT_VARIABLES = frozenset(
     {
         "adjusted_net_income",
+        "benefit_cap_welfare_benefits",
         "carers_allowance",
         "carers_allowance_pre_couple_limit",
         "carers_allowance_pre_overlap",
@@ -64,13 +78,19 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "extended_childcare_entitlement_term_share",
         "extended_childcare_entitlement_total_per_child",
         "gas_consumption_kwh",
+        "guarantee_credit",
         "housing_benefit_applicable_income",
         "housing_benefit_applicable_income_childcare_element",
         "housing_benefit_applicable_income_disregard",
         "housing_benefit_childcare_earnings_limit",
+        "housing_benefit_pre_benefit_cap",
         "housing_benefit_specified_or_temporary_accommodation_disregard",
+        "housing_benefit_wtc_disregard",
         "in_HE",
+        "is_pension_credit_eligible",
         "other_local_bus_trips",
+        "pension_credit",
+        "pension_credit_entitlement",
         "pip_dl_category",
         "pip_dl_points",
         "pip_m_category",
@@ -83,12 +103,14 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "ni_epg_full_rate_applies",
+        "savings_credit",
         "tenure_type",
         "targeted_childcare_entitlement",
         "trading_allowance_deduction",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
+        "universal_credit",
         "universal_childcare_entitlement",
     }
 )
@@ -136,7 +158,9 @@ def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
 
 def supplied_input_periods(population, variable_name: str) -> List[Period]:
     """Periods for which ``variable_name`` was supplied as an input, on this
-    branch or one it was made from, earliest first."""
+    branch or one it was made from, and the supplied value is still stored,
+    earliest first. A period whose input a value carried over, calculated or
+    cached in its place has replaced is left out."""
     _check_registered(variable_name)
     simulation = population.simulation
     branch_names = set(_visible_branch_names(simulation))
@@ -148,11 +172,10 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             for name, branch_name, period in input_keys
             if name == variable_name
             and branch_name in branch_names
-            and holder._get_array_from_storage(period, branch_name) is not None
-            and not _is_model_value(
-                simulation,
-                (name, branch_name, period),
-                holder._get_array_from_storage(period, branch_name),
+            # Checked without reading the value, which may be on disk, unless
+            # the model stored a value for the period (set_model_value).
+            and _supplied_without_reading(
+                simulation, holder, (name, branch_name, period)
             )
         },
         key=lambda period: period.start,
@@ -204,13 +227,73 @@ def stored_as_input(population, variable_name: str, period: Period) -> bool:
     )
 
 
+# Variable attributes that describe a variable without changing what Core
+# calculates for it.
+DESCRIPTIVE_ATTRIBUTES = frozenset(
+    {
+        "_explicit_attribute_names",
+        "baseline_variable",
+        "category",
+        "cerfa_field",
+        "documentation",
+        "hidden_input",
+        "index_in_module",
+        "label",
+        "metadata",
+        "module_name",
+        "reference",
+        "unit",
+    }
+)
+
+
+def calculation_definition(variable, period: Period) -> dict:
+    """Every attribute Core calculates ``variable`` from for ``period``: all
+    but the descriptive ones, with the formula for the period, by its code,
+    in place of the formulas, and the entity by its key."""
+    definition = {
+        name: value
+        for name, value in vars(variable).items()
+        if name not in DESCRIPTIVE_ATTRIBUTES | {"entity", "formulas"}
+    }
+    formula = variable.get_formula(period)
+    definition["formula"] = None if formula is None else formula.__code__
+    definition["entity"] = variable.entity.key
+    return definition
+
+
+@cache
+def _model_variable(variable_class):
+    return variable_class()
+
+
+def replaces_definition(population, variable_class, period: Period) -> bool:
+    """Whether the simulation can give the variable that ``variable_class``
+    defines a value for ``period`` other than the one that definition
+    calculates. A reform can change anything Core calculates it from:
+    neutralize it, give it another formula for the period or none, or change
+    its default, its defined_for, what it sums or its period. A caller can
+    also set an input for the period (``stored_as_input``), as a scenario
+    does with its own value (``set_model_value``). A cached formula result is
+    not an input, even in populations taken from another simulation or in
+    their clones and branches."""
+    name = variable_class.__name__
+    variable = population.simulation.tax_benefit_system.get_variable(name)
+    if calculation_definition(variable, period) != calculation_definition(
+        _model_variable(variable_class), period
+    ):
+        return True
+    return stored_as_input(population, name, period)
+
+
 def supplied_input(
     population, variable_name: str, period: Period
 ) -> Optional[np.ndarray]:
     """The value of ``variable_name`` for ``period`` if it was supplied as an
-    input, on this branch or the nearest one it was made from; otherwise
-    None. A value the engine carried over from an earlier period, or cached
-    after a calculation, is not an input."""
+    input, on this branch or the nearest one it was made from, and is still
+    stored; otherwise None. A value the engine carried over from an earlier
+    period, or cached after a calculation, is not an input, including one
+    cached over the input."""
     _check_registered(variable_name)
     simulation = population.simulation
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
@@ -218,10 +301,12 @@ def supplied_input(
     for branch_name in _visible_branch_names(simulation):
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
-            # to other branches' values, including cached calculations.
-            # A record can outlive its stored array (see above); a missing
-            # stored array must be ignored even if its key remains.
-            value = holder._get_array_from_storage(period, branch_name)
+            # to other branches' values, including cached calculations, and
+            # reads memory before disk whatever each holds. A record can
+            # outlive its input (see above); then look on the branch this one
+            # was made from, as policyengine-core's
+            # Simulation._get_recorded_input_array does.
+            value = stored_supplied_value(holder, period, branch_name)
             if value is not None:
                 # A value the model stored itself (set_model_value) is not
                 # supplied, though the engine keeps it like an input.
@@ -240,10 +325,82 @@ def supplied_input(
     return None
 
 
+def supplied_input_arrays(simulation) -> List[Tuple[str, Period, np.ndarray]]:
+    """Every value ``simulation`` was given as an input and still stores, on
+    its own branch, with its variable and the period it is stored for.
+
+    Ordered by variable and period, so that the same simulation always gives
+    the same list.
+    """
+    input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    arrays = []
+    for variable_name, branch_name, period in input_keys:
+        if branch_name != simulation.branch_name:
+            continue
+        value = stored_supplied_value(
+            simulation.get_holder(variable_name), period, branch_name
+        )
+        if value is not None:
+            arrays.append((variable_name, period, value))
+    return sorted(arrays, key=lambda item: (item[0], item[1].start, str(item[1])))
+
+
+def stored_supplied_value(holder, period: Period, branch_name: str):
+    """The supplied value ``holder`` still stores for ``period``, or None.
+
+    A record can outlive its stored value (see above), and a value calculated
+    later can take its place in one tier while the input survives in the
+    other. So read only a tier in which ``Holder._stores_user_input`` finds
+    the input: one that the holder records the input in (either tier when it
+    records none) and that holds a value it did not calculate, memory first.
+    Reading memory before disk regardless could return a value cached over an
+    input stored on disk.
+    """
+    storage = _supplied_value_storage(holder, period, branch_name)
+    return None if storage is None else storage.get(period, branch_name)
+
+
+def _supplied_value_storage(holder, period: Period, branch_name: str):
+    """The storage (memory or disk) from which ``stored_supplied_value``
+    reads, or None if the supplied value is gone."""
+    for location, storage in (
+        ("memory", holder._memory_storage),
+        ("disk", holder._disk_storage),
+    ):
+        if storage is not None and holder._stores_user_input(
+            period, branch_name, location
+        ):
+            return storage
+    return None
+
+
+def _supplied_without_reading(simulation, holder, key) -> bool:
+    """Whether ``supplied_input`` finds a supplied value for ``key`` on its
+    own branch. Reads the value only if the model stored one for the period
+    (``set_model_value``), to tell the two apart."""
+    _, branch_name, period = key
+    storage = _supplied_value_storage(holder, period, branch_name)
+    if storage is None:
+        return False
+    model_values = getattr(simulation, "_model_values", None) or {}
+    if key not in model_values:
+        return True
+    return not _is_model_value(simulation, key, storage.get(period, branch_name))
+
+
 def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
     return written is not None and np.array_equal(written, value)
+
+
+def is_model_value(simulation, variable_name: str, period: Period, value) -> bool:
+    """Whether ``value``, stored for ``variable_name`` and ``period`` on this
+    simulation's branch, is the model's own value (``set_model_value``)
+    rather than a supplied one."""
+    return _is_model_value(
+        simulation, (variable_name, simulation.branch_name, period), value
+    )
 
 
 def set_model_value(simulation, variable_name: str, period, value) -> None:

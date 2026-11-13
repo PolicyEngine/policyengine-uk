@@ -1,65 +1,53 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_applicable_income_childcare_element import (
-    hb_capped_childcare_charges,
-    housing_benefit_applicable_income_childcare_element,
-)
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
-    hb_childcare_earnings_limit,
+    hb_covers_additional_disregard,
     hb_standard_earnings_disregard,
-    housing_benefit_childcare_earnings_limit,
 )
 from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
     hb_accommodation_segments,
+    hb_apply_defined_for,
     hb_uses_annual_override,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
+    hb_segment_childcare_deduction,
+    hb_segment_wtc_disregard,
 )
 
 
-def hb_segment_deductions(benunit, period, parameters, accommodation):
-    """Apply childcare/earnings limits to one full accommodation amount."""
+def hb_capped_accommodation(benunit, period, accommodation):
+    """Cap a full accommodation amount at the net earnings the standard
+    disregard leaves."""
     net = max_(benunit("housing_benefit_net_earnings", period), 0)
     standard = hb_standard_earnings_disregard(benunit, period)
-    accommodation = min_(max_(accommodation, 0), max_(net - standard, 0))
-    childcare_name = "housing_benefit_applicable_income_childcare_element"
-    if hb_uses_annual_override(
-        benunit,
-        period,
-        childcare_name,
-        housing_benefit_applicable_income_childcare_element.formula,
-    ):
-        childcare = benunit(childcare_name, period)
-    else:
-        limit_name = "housing_benefit_childcare_earnings_limit"
-        if hb_uses_annual_override(
-            benunit,
-            period,
-            limit_name,
-            housing_benefit_childcare_earnings_limit.formula,
-        ):
-            childcare_limit = benunit(limit_name, period)
-        else:
-            childcare_limit = hb_childcare_earnings_limit(
-                benunit, period, accommodation=accommodation
-            )
-        childcare = min_(
-            hb_capped_childcare_charges(benunit, period, parameters), childcare_limit
-        )
+    return min_(max_(accommodation, 0), max_(net - standard, 0))
+
+
+def hb_segment_earnings_disregard(benunit, period, parameters, accommodation):
+    """Apply childcare and earnings limits to one full accommodation amount.
+    Return the earnings disregard and childcare deduction. Use an annual
+    override for the earnings disregard where present; otherwise apply its
+    defined_for condition. Leave WTC to hb_segment_deductions so a condition
+    on WTC can read the earnings disregard."""
+    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    standard = hb_standard_earnings_disregard(benunit, period)
+    accommodation = hb_capped_accommodation(benunit, period, accommodation)
+    childcare = hb_segment_childcare_deduction(
+        benunit, period, parameters, accommodation
+    )
     name = "housing_benefit_applicable_income_disregard"
     if hb_uses_annual_override(
         benunit, period, name, housing_benefit_applicable_income_disregard.formula
     ):
         return benunit(name, period), childcare
     p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
-    additional_amount = p.worker * WEEKS_IN_YEAR
-    # Compare in pence, including equality at a float32 earnings boundary.
-    covers_additional = np.round(net.astype(float), 2) >= np.round(
-        (standard + accommodation + childcare + additional_amount).astype(float), 2
-    )
     additional = where(
         benunit(
             "meets_housing_benefit_additional_earnings_disregard_conditions", period
         )
-        & covers_additional,
-        additional_amount,
+        & hb_covers_additional_disregard(
+            benunit, period, parameters, accommodation, childcare
+        ),
+        p.worker * WEEKS_IN_YEAR,
         0,
     )
     disregard = where(
@@ -67,7 +55,24 @@ def hb_segment_deductions(benunit, period, parameters, accommodation):
         net,
         standard + accommodation + additional,
     )
-    return disregard, childcare
+    return hb_apply_defined_for(benunit, period, name, disregard), childcare
+
+
+def hb_segment_deductions(benunit, period, parameters, accommodation):
+    """Return the earnings disregard, WTC disregard and childcare deduction
+    for one full accommodation amount. Use annual overrides where present;
+    otherwise apply each variable's defined_for condition."""
+    disregard, childcare = hb_segment_earnings_disregard(
+        benunit, period, parameters, accommodation
+    )
+    wtc_disregard = hb_segment_wtc_disregard(
+        benunit,
+        period,
+        parameters,
+        hb_capped_accommodation(benunit, period, accommodation),
+        childcare,
+    )
+    return disregard, wtc_disregard, childcare
 
 
 class housing_benefit_applicable_income_disregard(Variable):
@@ -119,7 +124,8 @@ class housing_benefit_applicable_income_disregard(Variable):
 
     def formula(benunit, period, parameters):
         return sum(
-            hb_segment_deductions(benunit, period, parameters, accommodation)[0] * share
+            hb_segment_earnings_disregard(benunit, period, parameters, accommodation)[0]
+            * share
             for accommodation, share in hb_accommodation_segments(
                 benunit, period, parameters
             )

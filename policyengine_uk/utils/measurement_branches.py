@@ -7,7 +7,7 @@ runs in a branch of the reform simulation or of its baseline, with every
 behavioural response neutralised and those inputs set.
 """
 
-from typing import Dict
+from typing import Dict, Iterable
 
 import numpy as np
 from policyengine_core.simulations import Simulation as CoreSimulation
@@ -43,21 +43,33 @@ def retained_input_variables(simulation) -> set:
     return retained
 
 
-def drop_calculated_totals(simulation, name: str) -> None:
-    """Delete the values of a stored household total that the simulation
+def drop_calculated_years(simulation, names: Iterable[str]) -> None:
+    """Delete the values of the input variables ``names`` that the simulation
     calculated, keeping those the data or a caller supplied.
 
-    A total in STORED_HOUSEHOLD_TOTALS that the data store counts as an input
-    by name, but the simulation calculates it for the years the data do not
-    hold, from the stored years and the parts. Core's own record of inputs
-    (``_user_input_keys``, checked by ``Holder._stores_user_input``) decides
-    which values go, as it does for ``drop_computed_arrays``.
+    The simulation counts an input variable as an input by name, but it also
+    holds years of it that it calculated. For a year with no input, Core grows
+    the latest earlier input by the variable's ``uprating`` index, or carries
+    the latest input over, and caches the result in the variable's holder
+    (``put_in_cache`` with ``derived=True``). The simulation grows a stored
+    household total itself (``Simulation._stored_household_total``). Where the
+    data or a caller supplied a formula variable for some years, Core runs its
+    formula for the others. Such a year depends on other years' inputs, so an
+    input a caller sets later for an earlier year changes it. Core keeps the
+    values its record of inputs (``_user_input_keys``, checked by
+    ``Holder._stores_user_input``) names: every value the data or a caller
+    stored through ``set_input``, whatever the year, as
+    ``drop_computed_arrays`` does. Core then calculates the other years again.
+    Formulas read Core's cache of results by variable and period, so this
+    function drops its entries for ``names`` too.
     """
-    simulation.get_holder(name)._drop_computed()
+    names = set(names)
+    for name in names:
+        simulation.get_holder(name)._drop_computed()
     cache = getattr(simulation, "_fast_cache", None)
-    if cache:
+    if cache and names:
         simulation._fast_cache = {
-            key: value for key, value in cache.items() if key[0] != name
+            key: value for key, value in cache.items() if key[0] not in names
         }
 
 

@@ -7,20 +7,28 @@ class council_tax_reduction_applicable_amount(Variable):
     entity = BenUnit
     label = "applicable Council Tax Reduction amount"
     documentation = (
-        "The applicant's personal allowance and premiums. Ages, couple status "
-        "and lone-parent status are those of the Council Tax Reduction "
-        "applicant and partner (is_council_tax_reduction_applicant_or_partner). "
-        "Where the household head applies alone "
-        "(council_tax_reduction_head_applies_alone), the head is a single "
-        "person with no partner or children, whatever the benefit unit's "
-        "claimant and partner are. Premiums are council_tax_reduction_premiums."
+        "We add the personal allowance for the applicant, or for the "
+        "applicant and partner, and council_tax_reduction_premiums. We take "
+        "their ages, couple status and lone-parent status from "
+        "is_council_tax_reduction_applicant_or_partner. When the household "
+        "head applies alone (council_tax_reduction_head_applies_alone), we "
+        "treat them as single with no partner or children. "
+        "For a pensioner we also add an amount for each child or young "
+        "person in the family (council_tax_reduction_pensioner_child_amounts) "
+        "and the family premium "
+        "(council_tax_reduction_pensioner_family_premium). A pensioner's "
+        "council_tax_reduction_premiums include the disabled child and "
+        "enhanced disability premiums for each qualifying child or young "
+        "person (council_tax_reduction_pensioner_child_disability_premiums)."
     )
     definition_period = YEAR
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/6",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/1",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/2",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/20",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/1",
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1",
@@ -94,7 +102,22 @@ class council_tax_reduction_applicable_amount(Variable):
             + couple * couple_personal_allowance
             + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
-        # The pension-age schedules have only the severe disability and carer
-        # premiums; the same pensioner test chooses the schedule.
+        # For a pensioner, council_tax_reduction_premiums holds the severe
+        # disability and carer premiums and the disabled child and enhanced
+        # disability premiums for the family's children and young persons
+        # (SI 2012/2885 Sch 1 para 6(1)(d)). It chooses the schedule by the
+        # same pensioner test.
         premiums = benunit("council_tax_reduction_premiums", period)
-        return personal_allowance + premiums
+        # A pensioner's amounts for the children and young persons in the
+        # family and the family premium (SI 2012/2885 Sch 1 para 6(1)(b)-(c);
+        # WSI 2013/3029 Sch 1 para 1(1)(b)-(c); SSI 2012/319 reg 20(b)).
+        # We add neither for working-age families here.
+        child_amounts = add(
+            benunit,
+            period,
+            [
+                "council_tax_reduction_pensioner_child_amounts",
+                "council_tax_reduction_pensioner_family_premium",
+            ],
+        )
+        return personal_allowance + premiums + child_amounts
