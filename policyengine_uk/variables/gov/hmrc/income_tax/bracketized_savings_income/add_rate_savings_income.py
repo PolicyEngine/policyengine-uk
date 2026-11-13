@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import taxable_savings_income_in_band
 
 
 class add_rate_savings_income(Variable):
@@ -13,29 +14,14 @@ class add_rate_savings_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
+        income_tax = parameters(period).gov.hmrc.income_tax
+        thresholds = income_tax.rates.uk.thresholds
         # ITA 2007 s.414(2)(b): extend both UK rate limits by the gross gift.
         gross_gift = person("gift_aid_grossed_up", period)
-        # Savings sit above all non-savings income, property income
-        # included (ITA 2007 s. 16).
-        other_income = person("non_savings_taxable_income", period)
-        savings_after_allowances = max_(
-            0,
-            person("taxable_savings_interest_income", period)
-            - person("received_allowances_savings_income", period),
-        )
-        zero_rate_savings = min_(
-            savings_after_allowances,
-            person("savings_starter_rate_income", period)
-            + person("savings_allowance", period),
-        )
-        taxable_savings_start = other_income + zero_rate_savings
-        add_rate_amount_with = clip(
-            other_income + savings_after_allowances,
-            (thresholds[2] + gross_gift),
+        return taxable_savings_income_in_band(
+            person,
+            period,
+            income_tax,
+            thresholds[2] + gross_gift,
             inf,
         )
-        add_rate_amount_without = clip(
-            taxable_savings_start, (thresholds[2] + gross_gift), inf
-        )
-        return max_(0, add_rate_amount_with - add_rate_amount_without)
