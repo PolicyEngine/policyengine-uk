@@ -17,7 +17,17 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         "a boarder's or lodger's adult son. Someone jointly and severally "
         "liable for the council tax with the applicant (a joint tenant or "
         "other sharer of the rent) and a boarder or lodger who pays the "
-        "applicant are not non-dependants."
+        "applicant are not non-dependants. Those exclusions belong to the "
+        "person, whatever family they are in: a joint tenant liable for the "
+        "rent who is not their benefit unit's claimant or partner, and a "
+        "person outside the household head's family who pays the "
+        "householder for their own board or lodging, is nobody's "
+        "non-dependant. A member of the household head's own family who pays "
+        "board is taken to be a close relative of the head, so remains a "
+        "non-dependant. The model has no relationship input, so a close "
+        "relative in another family who pays board or lodging, or someone "
+        "paying on a non-commercial basis, is treated as excluded, although "
+        "the schemes make them non-dependants."
     )
     definition_period = YEAR
     reference = (
@@ -37,4 +47,28 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         in_unit = person(
             "is_benefit_unit_non_dependant_for_council_tax_reduction", period
         )
-        return (person("age", period) >= 18) & (other_family | in_unit)
+        # Reg 9(2)(d)-(e) exclude the person, not only their family. A joint
+        # tenant (the same interest in the dwelling, LGFA 1992 s.6) is
+        # jointly and severally liable with the applicant, even one who is
+        # not their benefit unit's claimant or partner; the applicants and
+        # partners of liable families are never in_unit. Anyone who pays the
+        # householder for their own board or lodging is liable to make
+        # payments on a commercial basis, even where the rest of their family
+        # pays nothing, unless they are a close relative of the applicant or
+        # partner or the agreement is not commercial (reg 9(3)(a)). The model
+        # has no relationship input: a member of the household head's own
+        # family who pays board is taken to be a close relative, and anyone
+        # else who pays as excluded.
+        pays_householder = (
+            add(person, period, ["rent_paid_as_boarder", "rent_paid_as_lodger"]) > 0
+        )
+        in_head_family = person.benunit("benunit_contains_household_head", period)
+        joint_tenant = person("is_liable_for_household_rent", period) & ~person(
+            "is_claimant_or_partner", period
+        )
+        personally_excluded = joint_tenant | (pays_householder & ~in_head_family)
+        return (
+            (person("age", period) >= 18)
+            & (other_family | in_unit)
+            & ~personally_excluded
+        )
