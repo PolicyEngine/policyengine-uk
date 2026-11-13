@@ -66,7 +66,9 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
             & p.young_person_follows_universal_credit
         )
         # SSI 2021/249 regs 4, 6 and 7: a child under UC Regs reg. 4, or a
-        # qualifying young person under reg. 5 without TP reg. 28.
+        # qualifying young person under reg. 5 without TP reg. 28. Only a
+        # person under 18 can be looked after by a local authority
+        # (is_looked_after_child), as in the Universal Credit flag.
         universal_credit = (
             (
                 person("is_child_for_universal_credit", period)
@@ -75,7 +77,7 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
                     period,
                 )
             )
-            & ~person("is_looked_after_by_local_authority", period)
+            & ~person("is_looked_after_child", period)
             & ~person("is_claimant_or_partner", period)
         )
         child_benefit = person("is_child_or_young_person_for_legacy_benefits", period)
