@@ -1,0 +1,17 @@
+description: >
+  Whether a fraction of a penny in an income-based Jobseeker's Allowance
+  capital calculation is disregarded (true) rather than rounded to the
+  nearest penny (false). A fraction of a penny is treated as a penny only
+  where that is to the claimant's advantage, and is otherwise disregarded;
+  for capital that means rounding down.
+values:
+  1996-10-07: true
+metadata:
+  label: Income-based JSA capital rounded down to the penny
+  period: year
+  unit: bool
+  reference:
+    - title: The Jobseeker's Allowance Regulations 1996 reg. 92
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/92
+    - title: The Jobseeker's Allowance Regulations (Northern Ireland) 1996 reg. 92
+      href: https://www.legislation.gov.uk/nisr/1996/198/regulation/92

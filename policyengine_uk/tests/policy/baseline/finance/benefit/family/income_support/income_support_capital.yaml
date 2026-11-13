@@ -22,7 +22,9 @@
         other_residential_property_value: 3000
         non_residential_property_value: 4000
   output:
-    income_support_assessable_capital: 10500
+    # Savings at face value; land, shares and property less 10% for the
+    # expenses of sale (IS Regs 1987 reg. 49(a)): 1,000 + 90% of 9,500.
+    income_support_assessable_capital: 9550
 
 - name: Income Support has no tariff income at the lower capital threshold
   period: 2021
@@ -231,4 +233,150 @@
         corporate_wealth: 2000
         private_pension_wealth: 150000
   output:
-    income_support_assessable_capital: 3000
+    # Savings at face value; shares less 10% for the expenses of sale
+    # (IS Regs 1987 reg. 49(a)): 1,000 + 90% of 2,000.
+    income_support_assessable_capital: 2800
+
+- name: Income Support values overseas land and property less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    income_support_assessable_capital: 9_000
+
+- name: Income Support preserves household allocation for overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+        would_claim_IS: false
+      couple:
+        members: [second, partner]
+        would_claim_IS: false
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    income_support_assessable_capital: [5_400, 10_800]
+
+- name: Income Support reported claim path receives full overseas land and property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+      unrelated:
+        age: 40
+    benunits:
+      claiming:
+        members: claimant
+        would_claim_IS: true
+      other:
+        members: unrelated
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, unrelated]
+        overseas_property_value: 18_000
+  output:
+    # Existing claim-path allocation gives the claimant all net household capital.
+    income_support_assessable_capital: [16_200, 0]
+
+- name: Income Support values unclassified other real estate less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    income_support_assessable_capital: 9_000
+
+- name: Income Support preserves household allocation for unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+        would_claim_IS: false
+      couple:
+        members: [second, partner]
+        would_claim_IS: false
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    income_support_assessable_capital: [5_400, 10_800]
+
+- name: Income Support reported claim path receives full unclassified other real estate capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+      unrelated:
+        age: 40
+    benunits:
+      claiming:
+        members: claimant
+        would_claim_IS: true
+      other:
+        members: unrelated
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, unrelated]
+        other_property_value: 18_000
+  output:
+    # Existing claim-path allocation gives the claimant all net household capital.
+    income_support_assessable_capital: [16_200, 0]
+
+- name: Income Support deducts sale expenses before combined secured debt for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 80_000
+  output:
+    # max(0, 90% of 120,000 - 80,000); no separate buy-to-let input.
+    income_support_assessable_capital: 28_000
+
+- name: Income Support floors combined property equity at zero for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 120_000
+  output:
+    # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
+    income_support_assessable_capital: 0

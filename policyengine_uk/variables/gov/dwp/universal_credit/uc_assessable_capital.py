@@ -1,6 +1,15 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import (
+    counted_share,
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+    valued_person_capital,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.household_uc_company_holding_pool_scale import (
+    HOLDINGS_SOURCE,
+)
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
-    counted_person_sources,
     pooled_person_capital,
 )
 
@@ -14,7 +23,8 @@ class uc_assessable_capital(Variable):
         "uc_reported_capital, including zero, replaces ordinary capital sources before "
         "the regulation 77 company substitution. Otherwise a nonnegative "
         "benunit_reported_capital replaces financial household and person-level "
-        "proxies only; it does not replace countable property. The formula subtracts "
+        "proxies; it does not replace separately valued domestic, overseas or "
+        "unclassified other property. The formula subtracts "
         "complete overrides, otherwise observed financial totals, from the household "
         "financial pool, and allocates the financial remainder by claimant and partner "
         "counts among units without either report. Under this inherited convention, "
@@ -30,7 +40,17 @@ class uc_assessable_capital(Variable):
         "for the claimant and partner of a unit that reports its capital: it leaves "
         "their ISAs in the pool and subtracts the report, as for their company "
         "holdings. Under regulation 77, it replaces disregarded company holdings with "
-        "the claimant's or partner's share of company capital."
+        "the claimant's or partner's share of company capital. Regulation 49(1) "
+        "values the financial pool's sources whose sale would incur expenses "
+        "(sale_expenses.sources, shares in share_like_capital) at 90%, and the "
+        "formula values a stocks and shares ISA balance it moves out of "
+        "share_like_capital at the same 90%. A disregarded holding comes off at "
+        "the value at which the formula counted it: 90% in the pool and in a "
+        "complete override, which is a countable figure, and in full from a "
+        "recorded financial total, which the formula uses without valuation. "
+        "The formula rounds every amount it calculates to the nearest penny "
+        "(regulation 6(1)), including this capital, which it tests against the "
+        "limit."
     )
     definition_period = YEAR
     unit = GBP
@@ -54,26 +74,30 @@ class uc_assessable_capital(Variable):
             (person.benunit("benunit_reported_capital", period) >= 0)
             | (person.benunit("uc_reported_capital", period) >= 0)
         )
-        household_financial_capital = sum(
-            household(source, period)
-            - pooled_person_capital(benunit, source, period, p, ~covered)
-            for source in p.sources
+        household_financial_capital = valued_capital(
+            lambda source: (
+                household(source, period)
+                - pooled_person_capital(benunit, source, period, p, ~covered)
+            ),
+            p,
         )
+        # A reg. 77 holding sits in share_like_capital, so it is counted at the
+        # same 90% as the shares around it wherever they are valued.
+        holding_value = counted_share(p.sale_expenses, HOLDINGS_SOURCE)
         benunit_claimants = benunit.sum(claimant_or_partner)
-        person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
-            for source in counted_person_sources(p)
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
-        financial_report = benunit("benunit_reported_capital", period)
-        complete_override = benunit("uc_reported_capital", period)
+        financial_report = exact_amount(benunit("benunit_reported_capital", period))
+        complete_override = exact_amount(benunit("uc_reported_capital", period))
         unreported_claimants = household("household_uc_unreported_claimants", period)
         # Each unit consumes its complete override, otherwise its financial
         # report, from the financial pool under the inherited convention.
         residual_financial_capital = max_(
             0,
             household_financial_capital
-            - household("household_uc_reported_financial_capital", period)
-            - household("household_uc_pool_company_holdings", period),
+            - exact_amount(household("household_uc_reported_financial_capital", period))
+            - exact_amount(household("household_uc_pool_company_holdings", period)),
         )
         financial_proxy = where(
             unreported_claimants > 0,
@@ -83,7 +107,7 @@ class uc_assessable_capital(Variable):
             0,
         )
         own_holdings = benunit.sum(
-            benunit.members("uc_company_holding_disregard", period)
+            exact_amount(benunit.members("uc_company_holding_disregard", period))
             * claimant_or_partner
         )
         financial_capital = where(
@@ -93,10 +117,17 @@ class uc_assessable_capital(Variable):
         )
         assessed_capital = where(
             complete_override >= 0,
-            max_(0, complete_override - own_holdings),
-            financial_capital + benunit("uc_property_capital", period),
+            max_(
+                0,
+                complete_override
+                - round_to_penny(own_holdings * holding_value, p.round_down),
+            ),
+            financial_capital + exact_amount(benunit("uc_property_capital", period)),
         )
         company_capital = benunit.sum(
-            benunit.members("uc_company_capital", period) * claimant_or_partner
+            exact_amount(benunit.members("uc_company_capital", period))
+            * claimant_or_partner
         )
-        return max_(0, assessed_capital) + company_capital
+        # Every amount is rounded to the nearest penny (reg. 6(1)), the
+        # capital tested against the limit included.
+        return round_to_penny(max_(0, assessed_capital) + company_capital, p.round_down)

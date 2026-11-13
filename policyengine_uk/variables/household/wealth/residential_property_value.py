@@ -3,7 +3,12 @@ from policyengine_uk.model_api import *
 
 class residential_property_value(Variable):
     label = "Residential property value"
-    documentation = "Total value of all owned residential property"
+    documentation = (
+        "Gross value of domestic residential property: the main residence "
+        "plus other residential property, which combines second homes and "
+        "buy-to-let holdings. Overseas and unclassified other real estate "
+        "cannot be classified as residential from their aggregate values."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float

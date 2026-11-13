@@ -1,6 +1,11 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import (
+    exact_amount,
+    round_to_penny,
+    valued_capital,
+    valued_person_capital,
+)
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
-    counted_person_sources,
     pooled_person_capital,
 )
 
@@ -10,7 +15,13 @@ class housing_benefit_assessable_capital(Variable):
     entity = BenUnit
     label = "Housing Benefit assessable capital"
     documentation = (
-        "Housing Benefit capital counted from the configured capital sources. The "
+        "Housing Benefit capital counted from the configured capital sources. "
+        "The formula values each household source, less the ISA balances it "
+        "counts in their holders' own benunits, at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 47 of SI 2006/213, "
+        "reg. 45 of SI 2006/214), and values each "
+        "such ISA balance as it values that household source. "
+        "The "
         "formula counts person-level sources, such as a Lifetime ISA and the cash and "
         "stocks and shares ISAs, only in the holder's own benunit and only for its "
         "claimant or partner (is_claimant_or_partner), and excludes dependants' "
@@ -45,15 +56,16 @@ class housing_benefit_assessable_capital(Variable):
             "housing_benefit_pension_age_regulations_apply", period
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
-        household_capital = sum(
-            household(source, period)
-            - pooled_person_capital(benunit, source, period, p)
-            for source in p.sources
+        household_capital = valued_capital(
+            lambda source: (
+                household(source, period)
+                - pooled_person_capital(benunit, source, period, p)
+            ),
+            p,
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
-        person_capital = sum(
-            benunit.sum(person(source, period) * claimant_or_partner)
-            for source in counted_person_sources(p)
+        person_capital = valued_person_capital(
+            benunit, period, parameters, p, claimant_or_partner
         )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]
@@ -81,7 +93,7 @@ class housing_benefit_assessable_capital(Variable):
         )
         capital = where(
             savings_credit_only,
-            benunit("pension_credit_assessable_capital", period),
+            exact_amount(benunit("pension_credit_assessable_capital", period)),
             household_capital_proxy + person_capital,
         )
         # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
@@ -103,8 +115,9 @@ class housing_benefit_assessable_capital(Variable):
         on_passporting_benefit = benunit(
             "housing_benefit_on_passporting_benefit", period
         )
-        return where(
-            passported | on_passporting_benefit,
-            0,
-            max_(0, capital),
+        # Rounded to the nearest penny at the last stage (reg. 80; HB (SPC)
+        # Regs 2006 reg. 61(6)).
+        return round_to_penny(
+            where(passported | on_passporting_benefit, 0, max_(0, capital)),
+            p.round_down,
         )
