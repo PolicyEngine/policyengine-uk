@@ -1,0 +1,262 @@
+# ITA 2007 s.10(2), (3), (3A): income at an upper limit remains in the
+# lower band. Section 414(2)(b) extends both limits by grossed-up Gift Aid.
+# HMRC's employer tables supply the allowances, limits and rates:
+# https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2018-to-2019
+# https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2025-to-2026
+# These ordinary employment-only cases test the band and the existing Marriage
+# Allowance rate-condition classifier, not every donor/election condition.
+# Annual formula dispatch is at 1 January: 2018 and 2025 use formula_2018.
+# The formula_2017 route uses the existing above-limit helper.
+
+- name: Rest-of-UK income at the personal allowance is untaxed in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11_850
+    region: LONDON
+  output:
+    tax_band: NONE
+    income_tax: 0
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income at the basic-rate limit remains basic in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 46_350
+    region: LONDON
+  output:
+    tax_band: BASIC
+    income_tax: 6_900
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income above the basic-rate limit is higher in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 46_351
+    region: LONDON
+  output:
+    tax_band: HIGHER
+    income_tax: 6_900.40
+    meets_marriage_allowance_income_conditions: false
+
+- name: Rest-of-UK income at the personal allowance is untaxed in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 12_570
+    region: LONDON
+  output:
+    tax_band: NONE
+    income_tax: 0
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income above the personal allowance is basic in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 12_571
+    region: LONDON
+  output:
+    tax_band: BASIC
+    income_tax: 0.20
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income below the basic-rate limit remains basic in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_269
+    region: LONDON
+  output:
+    tax_band: BASIC
+    income_tax: 7_539.80
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income at the basic-rate limit remains basic in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_270
+    region: LONDON
+  output:
+    tax_band: BASIC
+    income_tax: 7_540
+    meets_marriage_allowance_income_conditions: true
+
+- name: Rest-of-UK income above the basic-rate limit is higher in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_271
+    region: LONDON
+  output:
+    tax_band: HIGHER
+    income_tax: 7_540.40
+    meets_marriage_allowance_income_conditions: false
+
+- name: Rest-of-UK income below the higher-rate limit remains higher in 2025
+  period: 2025
+  input:
+    age: 40
+    employment_income: 125_138
+    region: LONDON
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Rest-of-UK income at the higher-rate limit remains higher in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 125_140
+    region: LONDON
+  output:
+    tax_band: HIGHER
+    income_tax: 42_516
+    meets_marriage_allowance_income_conditions: false
+
+- name: Rest-of-UK income above the higher-rate limit is additional in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 125_141
+    region: LONDON
+  output:
+    tax_band: ADDITIONAL
+    income_tax: 42_516.45
+    meets_marriage_allowance_income_conditions: false
+
+- name: Welsh income at the basic-rate limit remains basic in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_270
+    region: WALES
+    country: WALES
+  output:
+    tax_band: BASIC
+    income_tax: 7_540
+    meets_marriage_allowance_income_conditions: true
+
+- name: Northern Irish income at the basic-rate limit remains basic in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50_270
+    region: NORTHERN_IRELAND
+    country: NORTHERN_IRELAND
+  output:
+    tax_band: BASIC
+    income_tax: 7_540
+    meets_marriage_allowance_income_conditions: true
+
+- name: Gift Aid keeps income at the extended basic-rate limit basic
+  # Gift Aid 1,600 grosses to 2,000; 39,700 taxable income is all at 20%.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 52_270
+    gift_aid: 1_600
+    region: LONDON
+  output:
+    gift_aid_grossed_up: 2_000
+    tax_band: BASIC
+    income_tax: 7_940
+    meets_marriage_allowance_income_conditions: true
+
+- name: Income above the Gift Aid extended basic-rate limit is higher
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 52_271
+    gift_aid: 1_600
+    region: LONDON
+  output:
+    gift_aid_grossed_up: 2_000
+    tax_band: HIGHER
+    income_tax: 7_940.40
+    meets_marriage_allowance_income_conditions: false
+
+- name: Gift Aid keeps income at the extended higher-rate limit higher
+  # 39,700 * 20% + (127,140 - 39,700) * 40% = 42,916.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 127_140
+    gift_aid: 1_600
+    region: LONDON
+  output:
+    gift_aid_grossed_up: 2_000
+    tax_band: HIGHER
+    income_tax: 42_916
+    meets_marriage_allowance_income_conditions: false
+
+- name: Income above the Gift Aid extended higher-rate limit is additional
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 127_141
+    gift_aid: 1_600
+    region: LONDON
+  output:
+    gift_aid_grossed_up: 2_000
+    tax_band: ADDITIONAL
+    income_tax: 42_916.45
+    meets_marriage_allowance_income_conditions: false
+
+- name: Mixed households retain the separate Scottish tax-band route
+  # Preservation control for the unchanged Scottish branch, away from its
+  # thresholds; this does not audit the separate Scottish band/date issues.
+  period: 2025
+  input:
+    people:
+      english:
+        age: 40
+        employment_income: 50_270
+      welsh:
+        age: 40
+        employment_income: 50_270
+      scottish:
+        age: 40
+        employment_income: 50_270
+    benunits:
+      english:
+        members: [english]
+      welsh:
+        members: [welsh]
+      scottish:
+        members: [scottish]
+    households:
+      english:
+        members: [english]
+        region: LONDON
+        country: ENGLAND
+      welsh:
+        members: [welsh]
+        region: WALES
+        country: WALES
+      scottish:
+        members: [scottish]
+        region: SCOTLAND
+        country: SCOTLAND
+  output:
+    tax_band: [BASIC, BASIC, HIGHER]
+    meets_marriage_allowance_income_conditions: [true, true, false]
