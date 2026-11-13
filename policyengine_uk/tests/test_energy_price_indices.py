@@ -62,6 +62,7 @@ ENERGY = tuple(sorted(DECLARED_ENERGY_INPUTS))
 GB_RATE = "gov.hmrc.vat.domestic_electricity_rate.great_britain"
 NI_RATE = "gov.hmrc.vat.domestic_electricity_rate.northern_ireland"
 REDUCED_RATE = "gov.hmrc.vat.reduced_rate"
+GAS_GB_RATE = "gov.hmrc.vat.domestic_gas_rate.great_britain"
 
 
 @pytest.fixture(scope="module")
@@ -450,7 +451,7 @@ def test_held_flat_holds_the_annual_levels_at_the_year_before(raw, current, star
 
 # 5. VAT reforms move neither the indices nor projected spending.
 
-VAT_PATHS = (GB_RATE, NI_RATE, REDUCED_RATE)
+VAT_PATHS = (GB_RATE, NI_RATE, REDUCED_RATE, GAS_GB_RATE)
 
 
 @settings(max_examples=40, deadline=None, derandomize=True)
@@ -523,7 +524,9 @@ def situation():
 VAT_REFORMS = {
     "no electricity VAT from 2027": {GB_RATE: {"2027-04-06.2033-04-05": 0.0}},
     "20% in Northern Ireland": {NI_RATE: {"2026-04-06.2033-04-05": 0.2}},
-    "reduced rate at 8%": {REDUCED_RATE: {"2026-04-06.2033-04-05": 0.08}},
+    # The shared reduced rate no longer reaches either fuel, so it is not
+    # here; it stays in VAT_PATHS above.
+    "gas VAT at 8% in Great Britain": {GAS_GB_RATE: {"2026-04-06.2033-04-05": 0.08}},
 }
 
 
