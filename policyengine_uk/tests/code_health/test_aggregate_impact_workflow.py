@@ -22,7 +22,8 @@ measures nothing. The comparison still runs, reports the run as skipped and
 passes. (It used to fail every Dependabot pull request: the measure step
 stopped before it set up the tool the comparison runs.)
 
-Data protection. Only aggregates may leave the job. The certified dataset
+Data protection. Only aggregate results and nonfinancial phase checkpoints
+may leave the job. The certified dataset
 is licensed survey microdata. The measurement keeps household-level detail
 for the decile comparison under ``private/``; these tests fail if the
 workflow could publish it, or could put the dataset where other workflows
@@ -59,7 +60,13 @@ if not WORKFLOW.exists():
         "the .github folder is not part of an installed package",
         allow_module_level=True,
     )
-ALLOWED_UPLOAD_PATHS = {"report"}
+# No private household detail, dataset or blanket measured-directory upload.
+ALLOWED_UPLOAD_PATHS = {
+    "report",
+    "measured/*/timing.jsonl",
+    "measured/*/infra-profile.json",
+    "measured/*/first-guard-probe/infra-profile.json",
+}
 
 
 def steps():
@@ -72,7 +79,7 @@ def test_only_the_aggregate_report_is_uploaded():
     assert uploads, "the report should be uploaded"
     for step in uploads:
         paths = {p.strip() for p in str(step["with"]["path"]).splitlines() if p.strip()}
-        assert paths <= ALLOWED_UPLOAD_PATHS, paths
+        assert paths == ALLOWED_UPLOAD_PATHS, paths
 
 
 def test_the_dataset_is_never_cached():
@@ -427,3 +434,36 @@ def test_only_dependabot_may_skip_a_run_with_no_data_access(tmp_path):
     assert measured.returncode != 0
     assert "::error::HUGGING_FACE_TOKEN is not available" in measured.stdout
     assert not (tmp_path / "measured" / "head" / "result.json").exists()
+
+
+def test_first_year_profile_flag_is_shared_by_both_measurements():
+    run = step_named("Measure base, then head")["run"]
+    assert run.count("--profile-first-year") == 1
+    assert run.index("--profile-first-year") < run.index('measure base "$BASE_NAME"')
+    assert run.index('measure base "$BASE_NAME"') < run.index(
+        'measure head "$HEAD_NAME"'
+    )
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    assert workflow["jobs"]["report"]["timeout-minutes"] == 120
+
+
+def test_first_guard_probe_profile_is_shared_and_cannot_expand_work():
+    run = step_named("Measure base, then head")["run"]
+    assert run.count("--profile-first-guard-probe") == 1
+    assert run.index("--profile-first-guard-probe") < run.index(
+        'measure base "$BASE_NAME"'
+    )
+    assert run.index('measure base "$BASE_NAME"') < run.index(
+        'measure head "$HEAD_NAME"'
+    )
+    assert (
+        "--no-guard" not in run and "--no-reforms" not in run and "--years" not in run
+    )
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    assert workflow["jobs"]["report"]["timeout-minutes"] == 120
+    uploads = [s for s in steps() if "upload-artifact" in str(s.get("uses", ""))]
+    assert all(
+        {p.strip() for p in s["with"]["path"].splitlines() if p.strip()}
+        == ALLOWED_UPLOAD_PATHS
+        for s in uploads
+    )

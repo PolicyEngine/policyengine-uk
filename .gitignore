@@ -48,6 +48,7 @@ policyengine_uk/calibration/*.h5
 
 **/*.h5
 **/*.csv
+!policyengine_uk/data/geography/local_authority_regions.csv
 **/*.pkl
 **/*.log
 **/ukmod.json

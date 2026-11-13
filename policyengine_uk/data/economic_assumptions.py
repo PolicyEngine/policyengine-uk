@@ -1,4 +1,5 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.utils.geography import region_from_table
 from policyengine_uk.data.capital_gains_projection import (
     CGT_DATASET_INPUTS,
     CGT_INDEX_PATH,
@@ -713,7 +714,9 @@ def uprate_council_tax(
     # receipts growth counted the growth in households twice (#2067).
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
-    region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
+    region = pd.Series(
+        region_from_table(current_year.household, period=current_year.time_period)
+    )
     unrecognised = set(region) - set(_COUNCIL_TAX_GROWTH_SERIES)
     if unrecognised:
         raise ValueError(
@@ -764,7 +767,9 @@ def uprate_water_and_sewerage_charges(
 
     if "water_and_sewerage_charges" not in previous_year.household.columns:
         return current_year
-    region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
+    region = pd.Series(
+        region_from_table(current_year.household, period=current_year.time_period)
+    )
     unrecognised = set(region) - set(_WATER_GROWTH_SERIES)
     if unrecognised:
         raise ValueError(
@@ -796,7 +801,7 @@ def uprate_rent(
 ):
     # Uprate rent for a single year dataset.
     is_private_rented = current_year.household["tenure_type"] == "RENT_PRIVATELY"
-    region = current_year.household["region"]
+    region = region_from_table(current_year.household, period=current_year.time_period)
     prev_rent = previous_year.household["rent"]
     growth = parameters.gov.economic_assumptions.yoy_growth
     year = int(current_year.time_period)
@@ -810,7 +815,7 @@ def uprate_rent(
     else:
         # Region.UNKNOWN has no regional index of its own, so those households
         # take the UK-wide one.
-        region_index = np.array(region.values.astype(str))
+        region_index = np.asarray(region).astype(str)
         region_index = np.where(
             region_index == "UNKNOWN", "UNITED_KINGDOM", region_index
         )
@@ -885,7 +890,10 @@ def uprate_student_loan_plans(
         base_year = int(previous_year.time_period)
 
     person = current_year.person.copy()
-    household = current_year.household[["household_id", "region"]].copy()
+    household = current_year.household[["household_id"]].copy()
+    household["region"] = region_from_table(
+        current_year.household, period=current_year.time_period
+    )
 
     # Join region onto person via person_household_id.
     person = person.merge(

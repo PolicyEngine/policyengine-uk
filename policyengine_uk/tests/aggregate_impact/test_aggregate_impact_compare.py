@@ -423,7 +423,11 @@ def test_measure_records_an_unpinned_dataset_by_its_bytes(tmp_path, monkeypatch)
         run_guard,
         provenance,
         fingerprint_at_start=None,
+        checkpoint=None,
+        year_profile=None,
     ):
+        assert callable(checkpoint)
+        assert year_profile is None
         return {
             "schema": "x",
             "status": "ok",
