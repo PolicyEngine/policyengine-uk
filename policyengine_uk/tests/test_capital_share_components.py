@@ -466,13 +466,22 @@ pennies = st.integers(min_value=0, max_value=2_000_000)
 # £1,000 of savings, £3,000 in a cash ISA, £3,000 of unit trusts and a £5,000
 # stocks-and-shares ISA in full, and 90% of £4,000 of shares: £15,600.
 @example([(100_000, 300_000, 400_000, 300_000, 500_000, 30, False)])
+# Income Support counts £16,834.13 here. The engine gives £16,834.12, held
+# in float32 as 16,834.119: £0.0109 under, or £0.0117 when the comparison
+# itself runs in float32.
+@example([(510_510, 1_046_019, 2_051, 437, 124_602, 30, True)])
+# Income Support counts £37,747.34 here, and the engine holds £37,747.33 as
+# 37,747.328: £0.0119 under, a penny plus half of float32's step at that
+# size (£0.0039).
+@example([(1_813_184, 40_164, 988_571, 7_260, 1_024_413, 30, False)])
 def test_itemised_holdings_are_valued_by_type_in_every_means_test(rows):
     """Given only itemised holdings, with the ISAs held as the person's own
     balances, every means test counts savings, a cash ISA, unit trusts and a
     stocks-and-shares ISA in full and directly held shares less 10%, rounded
     by the programme's rule. The engine adds the holdings in float32, which
     can move the shares' value by a fraction of a penny before valuation, so
-    each total is checked to within a penny."""
+    each total is checked to within a penny plus float32's step at that
+    size."""
     people, benunits, homes = {}, {}, {}
     for i, (savings, cash_isa, shares, trusts, isa, age, claims_uc) in enumerate(rows):
         people[f"p{i}"] = {
@@ -506,4 +515,9 @@ def test_itemised_holdings_are_valued_by_type_in_every_means_test(rows):
                 continue
             share_pence = (9 * shares + (0 if round_down else 5)) // 10
             expected = (savings + cash_isa + trusts + isa + share_pence) / 100
-            assert abs(values[i] - expected) <= 0.011, (variable, rows[i], values[i])
+            tolerance = 0.01 + float(np.spacing(np.float32(expected)))
+            assert abs(float(values[i]) - expected) <= tolerance, (
+                variable,
+                rows[i],
+                values[i],
+            )
