@@ -49,4 +49,5 @@ class hbai_benefits(Variable):
         "healthy_start_vouchers",
         "carer_support_payment",
         "scottish_carer_supplement",
+        "armed_forces_independence_payment",
     ]
