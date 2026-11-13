@@ -1,0 +1,137 @@
+# Childcare Offer for Wales: each parent must have gross income of no more
+# than £100,000 a year, counting all of that parent's income (guidance for
+# local authorities, version 8.3, April 2026, paragraphs 57 and 69; July 2020
+# income guidance, questions 8 and 9). The model shares the benefit unit's
+# benefits equally between the claimant and any partner, and a lone parent
+# counts all of them (benunit_gross_income_sources). Of income-related ESA and
+# income-based JSA it counts the claimant's and partner's awards
+# (claimant_or_partner_esa_income, claimant_or_partner_jsa_income). "other" is
+# a member who is neither the claimant, the partner nor a child or young person
+# they are responsible for, so an award they claim in their own right is their
+# income, not the parent's. An award entered for the benefit unit with no
+# reports behind it is read as the claimant's or partner's. Child Benefit is
+# set to zero so that wages and awards alone decide each case. The lone parent
+# earns £96,000, far above 16 hours a week at the National Living Wage. The
+# cases run in 2025, when income-related ESA and income-based JSA are paid for
+# the whole year.
+
+- name: Wales, another member's income-related ESA does not count towards a lone parent's gross income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 96_000
+        is_claimant_or_partner: true
+      child:
+        age: 3
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 8_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        would_claim_uc: false
+        child_benefit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: WALES
+        country: WALES
+  output:
+    esa_income: 8_000
+    claimant_or_partner_esa_income: 0
+    # 96,000 <= 100,000. Counting the other member's award would give
+    # 96,000 + 8,000 = 104,000.
+    wales_childcare_offer_parent_condition: [true, false, false]
+    wales_childcare_offer_eligible: true
+
+- name: Wales, another member's income-based JSA does not count towards a lone parent's gross income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 96_000
+        is_claimant_or_partner: true
+      child:
+        age: 3
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 8_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        would_claim_uc: false
+        child_benefit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: WALES
+        country: WALES
+  output:
+    jsa_income: 8_000
+    claimant_or_partner_jsa_income: 0
+    wales_childcare_offer_parent_condition: [true, false, false]
+    wales_childcare_offer_eligible: true
+
+- name: Wales, the benefit unit's income-related ESA counts towards the lone parent's gross income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 96_000
+        is_claimant_or_partner: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        child_benefit: 0
+        esa_income: 8_000
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+  output:
+    claimant_or_partner_esa_income: 8_000
+    # 96,000 + 8,000 = 104,000 > 100,000
+    wales_childcare_offer_parent_condition: [false, false]
+    wales_childcare_offer_eligible: false
+
+- name: Wales, the benefit unit's income-based JSA counts towards the lone parent's gross income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 96_000
+        is_claimant_or_partner: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        child_benefit: 0
+        jsa_income: 8_000
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+  output:
+    claimant_or_partner_jsa_income: 8_000
+    wales_childcare_offer_parent_condition: [false, false]
+    wales_childcare_offer_eligible: false
