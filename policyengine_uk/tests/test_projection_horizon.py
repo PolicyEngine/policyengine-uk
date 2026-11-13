@@ -458,3 +458,75 @@ def test_tax_free_savings_formula_takes_over_after_the_horizon():
     assert simulation.calculate(
         "tax_free_savings_income", PROJECTION_END_YEAR + 1
     ).values == pytest.approx(np.zeros(len(HOUSEHOLDS)))
+
+
+def test_positive_effective_losses_preserve_the_projection_horizon(record_property):
+    """The horizon constructor also works when allowance election leaves a loss.
+
+    Change only the loss column of the public fixture. Qualify the 2024
+    election explicitly: later years retain their actual policy, including
+    the allowance increase from 2027.
+    """
+    import json
+
+    from policyengine_core.periods import period
+    from policyengine_uk.utils.supplied_inputs import supplied_input
+
+    dataset = _dataset()
+    dataset.person["trading_loss"] = 2_000.0
+    simulation = Microsimulation(dataset=dataset)
+    years = list(range(BASE_YEAR, PROJECTION_END_YEAR + 1))
+    assert [int(year) for year in simulation.dataset.years] == years
+
+    uses_allowance = np.asarray(
+        simulation.calculate("uses_trading_allowance", BASE_YEAR), dtype=bool
+    )
+    supplied_loss = supplied_input(
+        simulation.populations["person"], "trading_loss", period(BASE_YEAR)
+    )
+    assert supplied_loss is not None
+    supplied_loss = np.asarray(supplied_loss, dtype=float)
+    effective_loss = np.where(uses_allowance, 0, np.maximum(0, supplied_loss))
+    record_property(
+        "positive_effective_loss_premise",
+        json.dumps(
+            {
+                "base_year": BASE_YEAR,
+                "uses_trading_allowance": uses_allowance.tolist(),
+                "supplied_trading_loss": supplied_loss.tolist(),
+                "effective_current_loss": effective_loss.tolist(),
+            },
+            sort_keys=True,
+        ),
+    )
+    np.testing.assert_array_equal(uses_allowance, np.zeros(len(HOUSEHOLDS), dtype=bool))
+    np.testing.assert_array_equal(supplied_loss, np.full(len(HOUSEHOLDS), 2_000))
+    np.testing.assert_array_equal(effective_loss, np.full(len(HOUSEHOLDS), 2_000))
+    general_relief = np.asarray(
+        simulation.calculate("trade_loss_relief_against_general_income", BASE_YEAR),
+        dtype=float,
+    )
+    record_property("actual_general_income_relief", json.dumps(general_relief.tolist()))
+    assert np.isfinite(general_relief).all()
+    assert ((general_relief >= 0) & (general_relief <= effective_loss)).all()
+    assert (general_relief > 0).all()
+    horizon_stock = np.asarray(
+        simulation.calculate("loss_relief", PROJECTION_END_YEAR), dtype=float
+    )
+    record_property(
+        "positive_effective_loss_qualification",
+        json.dumps(
+            {
+                "base_year": BASE_YEAR,
+                "uses_trading_allowance": uses_allowance.tolist(),
+                "supplied_trading_loss": supplied_loss.tolist(),
+                "effective_current_loss": effective_loss.tolist(),
+                "actual_general_income_relief": general_relief.tolist(),
+                "horizon_year": PROJECTION_END_YEAR,
+                "horizon_opening_stock": horizon_stock.tolist(),
+            },
+            sort_keys=True,
+        ),
+    )
+    assert np.isfinite(horizon_stock).all()
+    assert (horizon_stock >= 0).all()

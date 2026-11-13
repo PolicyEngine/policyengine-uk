@@ -19,11 +19,14 @@ class trading_loss(Variable):
         "against the person's other trades' profits (UC Regs 2013 reg 57(2)), "
         "and HB, CTR, Pension Credit and the legacy benefits not even that (HB "
         "Regs 2006 reg 38(10)); HBAI household income counts it as negative "
-        "income. Income Tax losses brought forward go in loss_relief; Class 4 "
+        "income. Income Tax tracks unrelieved earlier losses in loss_relief, "
+        "under its current-year and same-trade carry-forward claim "
+        "conventions; an explicit opening loss_relief overrides that stock. Class 4 "
         "tracks its own unrelieved balance in ni_class_4_losses_brought_forward. "
-        "For a one-off loss, set subsequent years explicitly to zero for "
-        "Income Tax and benefits; Class 4 counts only explicitly supplied "
-        "loss years and carries forward the unused balance automatically."
+        "Income Tax and Class 4 count only explicitly supplied loss years "
+        "and carry their unused balances forward separately. For a one-off "
+        "loss, set subsequent years explicitly to zero for other programmes "
+        "that read inherited values of this input."
     )
     definition_period = YEAR
     unit = GBP

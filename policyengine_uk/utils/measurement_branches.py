@@ -10,6 +10,7 @@ behavioural response neutralised and those inputs set.
 from typing import Dict, Iterable
 
 import numpy as np
+from policyengine_core.simulations import Simulation as CoreSimulation
 
 # Every behavioural response. Each is measured from the position before any
 # response, so one response's measurement does not include another response,
@@ -73,32 +74,15 @@ def drop_calculated_years(simulation, names: Iterable[str]) -> None:
 
 
 def drop_calculated_values(simulation) -> None:
-    """Delete the values a simulation has calculated, keeping its inputs.
+    """Drop calculated arrays while preserving each actual input cell.
 
-    Inputs are variables without a formula, variables the simulation was built
-    from, and variables set since through set_input, as a scenario's
-    simulation modifier does to formula variables. It keeps only the years of
-    each input variable that the data or a caller supplied (see
-    drop_calculated_years). It visits only the variables the simulation holds
-    values for.
+    An input for one period does not protect calculated values for other
+    periods of the same variable. Core keeps each stored set_input cell,
+    including model-owned values, using its period and branch records.
     """
-    supplied = retained_input_variables(simulation)
-    variables = simulation.tax_benefit_system.variables
-    held = {
-        name
-        for population in simulation.populations.values()
-        for name in getattr(population, "_holders", {})
-    }
-    inputs = set()
-    for name in held:
-        variable = variables.get(name)
-        if variable is None:
-            continue
-        if name in supplied or variable.is_input_variable():
-            inputs.add(name)
-            continue
-        simulation.delete_arrays(name)
-    drop_calculated_years(simulation, inputs)
+    # Routine cache cleanup does not change changed_from_baseline, as the
+    # UK wrapper's public drop_computed_arrays method would.
+    CoreSimulation.drop_computed_arrays(simulation)
 
 
 def held_behavioural_responses(person, period) -> dict:
