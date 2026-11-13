@@ -59,7 +59,7 @@
     savings_income_tax: 200
     income_tax: 6_200
 
-# Compatibility controls from Vahid's PR 2899 review, comment 6795295420.
+# Held 2015 dividend controls; see #2865 for the deferred tax credit and gross-up.
 # These preserve the recorded pre-backfill dividend outputs while the
 # historical tax-credit and gross-up work remains deferred. They do not
 # certify that the model computes the full statutory 2015 dividend regime.
