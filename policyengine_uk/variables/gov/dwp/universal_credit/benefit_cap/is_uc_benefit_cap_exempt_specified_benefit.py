@@ -61,7 +61,8 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "allowance (including armed forces independence payment, reg. 2), a "
         "war pension or armed forces compensation, disability living "
         "allowance, personal independence payment, carer's allowance or "
-        "carer support payment. A claimant is the single claimant or each "
+        "carer support payment, or a claimant is entitled to Guardian's "
+        "Allowance. A claimant is the single claimant or each "
         "joint claimant (is_uc_assessed_claimant): a partner who cannot be a "
         "joint claimant, so that the other member claims as a single person "
         "(reg. 3(3)), is not one, and another member of the benefit unit, "
@@ -75,6 +76,7 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/83",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/83",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
     )
 
@@ -187,8 +189,16 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
             person("is_carer_for_benefits", period),
         )
 
+        # Reg 83(1)(k) follows legal entitlement, including nil cash.
+        guardians_allowance = parameters(
+            period
+        ).gov.dwp.benefit_cap.guardians_allowance_exempt & benunit.any(
+            claimant & person("is_entitled_to_guardians_allowance", period)
+        )
+
         return (
-            esa_support_component
+            guardians_allowance
+            | esa_support_component
             | received_by(CLAIMANT_BENEFITS, claimant)
             | received_by(
                 CHILD_OR_QUALIFYING_YOUNG_PERSON_BENEFITS,

@@ -10,9 +10,10 @@ policyengine_uk.programs. The tests check:
    ``add`` calls imply; the fiscal partition's ``dropped_when`` for each
    total names the same terms as the registry.
 2. Differential: HOUSEHOLD_TAX_VARIABLES and HOUSEHOLD_BENEFIT_VARIABLES
-   equal, in order, the lists the formula modules held as literals at commit
-   2da212abcf2086337fc088a4a1236f4ae7b6af63, and the council tax and
-   uprating rules match the ones those formulas applied.
+   retain, in order, the lists the formula modules held as literals at commit
+   2da212abcf2086337fc088a4a1236f4ae7b6af63, with the explicit Guardian
+   cash addition below; the council tax and uprating rules match the ones
+   those formulas applied.
 3. budget_programs() returns the same records in a fresh interpreter,
    whichever module that interpreter imports first.
 4. Properties: every budget_programs() variable exists, none repeats, and
@@ -273,8 +274,11 @@ def test_household_tax_variables_equal_main():
 
 
 def test_household_benefit_variables_equal_main():
-    assert HOUSEHOLD_BENEFIT_VARIABLES == MAIN_HOUSEHOLD_BENEFIT_VARIABLES
-    assert budget_variables("benefit") == MAIN_HOUSEHOLD_BENEFIT_VARIABLES
+    # Keep the historical list and its order, with the new Guardian cash term.
+    expected = MAIN_HOUSEHOLD_BENEFIT_VARIABLES.copy()
+    expected.insert(expected.index("child_benefit") + 1, "guardians_allowance")
+    assert HOUSEHOLD_BENEFIT_VARIABLES == expected
+    assert budget_variables("benefit") == expected
 
 
 def test_council_tax_and_uprating_rules_equal_main():

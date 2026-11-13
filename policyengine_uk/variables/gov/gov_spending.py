@@ -4,6 +4,7 @@ from policyengine_uk.model_api import *
 GOV_SPENDING_VARIABLES = [
     "lifetime_isa_bonus",
     "child_benefit",
+    "guardians_allowance",
     "council_tax_benefit",
     "esa_income",
     "esa_contrib",
