@@ -499,6 +499,40 @@ def test_a_holder_kept_with_another_entity_raises():
         sim.calculate(DRAW, 2025)
 
 
+def test_a_holder_adopted_from_another_system_is_refused():
+    class int_draw(Reform):
+        def apply(self):
+            self.update_variable(
+                type(
+                    DRAW,
+                    (Variable,),
+                    dict(
+                        value_type=int,
+                        entity=Person,
+                        definition_period=YEAR,
+                        default_value=1,
+                        label="int draw",
+                    ),
+                )
+            )
+
+    other = Simulation(
+        dataset=one_person_units_frame(
+            count=3, years=(2025,), columns={DRAW: {2025: VALUES}}
+        ),
+        reform=int_draw,
+    )
+    sim = built({2025: VALUES})
+    # Core's Population.clone keeps the other simulation's entity, so
+    # get_holder gives the adopted holder the other system's definition
+    # (core#653) while this simulation's own definition stays current.
+    sim.build_from_populations(other.populations)
+    assert sim.tax_benefit_system.variables[DRAW].value_type is float
+    assert sim.get_holder(DRAW).variable.value_type is int
+    with pytest.raises(StoredDrawError, match="holder's definition"):
+        sim.calculate(DRAW, 2025)
+
+
 def test_carry_off_raises_only_where_a_read_needs_it():
     sim = built({2025: VALUES})
     sim.tax_benefit_system.auto_carry_over_input_variables = False

@@ -631,8 +631,9 @@ def check_both_rules(sim):
         ("cache", "child", 2025, False, False),
     ]
 )
-# An input on disk under a value cached in memory: supplied, not counted.
-@example(steps=[("set", "parent", 2025, True), ("cache", "parent", 2025, True, False)])
+# An input on disk under a value cached in memory: supplied, not counted. The
+# cache is not derived: core stores no derived value over an input.
+@example(steps=[("set", "parent", 2025, True), ("cache", "parent", 2025, False, False)])
 # The model's own value on the parent, then an input on the child.
 @example(
     steps=[

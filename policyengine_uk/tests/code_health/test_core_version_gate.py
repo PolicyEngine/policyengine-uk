@@ -13,7 +13,9 @@ these on that exact version and record the result:
         policyengine_uk/tests/test_stored_draw_input_source.py \
         policyengine_uk/tests/test_stored_draw_consumers.py \
         policyengine_uk/tests/test_stored_draw_core_route.py \
-        policyengine_uk/tests/test_supplied_input_tightening.py -n 4
+        policyengine_uk/tests/test_supplied_input_tightening.py \
+        policyengine_uk/tests/test_supplied_inputs.py \
+        policyengine_uk/tests/test_subsample.py -n 4
 
 The checks run when the tests run, not when policyengine_uk is imported.
 """
