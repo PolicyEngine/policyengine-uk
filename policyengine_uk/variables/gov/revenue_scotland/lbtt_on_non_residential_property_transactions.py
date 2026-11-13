@@ -8,6 +8,7 @@ class lbtt_on_non_residential_property_transactions(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "lbtt_liable"
 
     def formula(household, period, parameters):
         lbtt = parameters(period).gov.revenue_scotland.lbtt

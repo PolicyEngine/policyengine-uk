@@ -181,3 +181,116 @@
   output:
     land_and_buildings_transaction_tax: [13_350, 0, 0, 0]
     expected_lbtt: [13_350, 0, 0, 0]
+
+# Direct components follow the ordinary commencement and jurisdiction gate.
+# SSI 2015/108 art. 2 appoints 1 April 2015; household country remains the
+# model proxy for land location. No liability or component values are overridden.
+- name: Case 13, direct lbtt_on_transactions is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_transactions: [0, 0, 0, 0, 0]
+
+- name: Case 14, direct lbtt_on_rent is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_rent: [0, 0, 0, 0, 0]
+
+- name: Case 15, direct lbtt_on_residential_property_transactions is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_residential_property_transactions: [0, 0, 0, 0, 0]
+
+- name: Case 16, direct lbtt_on_non_residential_property_transactions is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_non_residential_property_transactions: [0, 0, 0, 0, 0]
+
+- name: Case 17, direct lbtt_on_residential_property_rent is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_residential_property_rent: [0, 0, 0, 0, 0]
+
+- name: Case 18, direct lbtt_on_non_residential_property_rent is zero before LBTT commenced.
+  period: 2014
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_non_residential_property_rent: [0, 0, 0, 0, 0]
+
+- name: Case 19, direct LBTT components are zero outside Scotland in a modern year.
+  period: 2026
+  input:
+    region: [LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_transactions: [0, 0, 0, 0]
+    lbtt_on_rent: [0, 0, 0, 0]
+    lbtt_on_residential_property_transactions: [0, 0, 0, 0]
+    lbtt_on_non_residential_property_transactions: [0, 0, 0, 0]
+    lbtt_on_residential_property_rent: [0, 0, 0, 0]
+    lbtt_on_non_residential_property_rent: [0, 0, 0, 0]
+
+# Existing statutory goldens: residential £4,600; non-residential £3,500;
+# non-residential rent £20,500; residential rent exempt. The two component
+# sums therefore give £8,100 on transactions and £20,500 on rent.
+- name: Case 20, direct LBTT components retain Scottish positive amounts in a mixed vector.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: [SCOTLAND, LONDON, WALES, NORTHERN_IRELAND, UNKNOWN]
+    main_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    main_residential_property_purchased_is_first_home: [false, false, false, false, false]
+    non_residential_property_purchased: [300_000, 300_000, 300_000, 300_000, 300_000]
+    rent: [200_000, 200_000, 200_000, 200_000, 200_000]
+    non_residential_rent: [2_100_000, 2_100_000, 2_100_000, 2_100_000, 2_100_000]
+  output:
+    lbtt_on_transactions: [8100, 0, 0, 0, 0]
+    lbtt_on_rent: [20500, 0, 0, 0, 0]
+    lbtt_on_residential_property_transactions: [4600, 0, 0, 0, 0]
+    lbtt_on_non_residential_property_transactions: [3500, 0, 0, 0, 0]
+    lbtt_on_residential_property_rent: [0, 0, 0, 0, 0]
+    lbtt_on_non_residential_property_rent: [20500, 0, 0, 0, 0]
