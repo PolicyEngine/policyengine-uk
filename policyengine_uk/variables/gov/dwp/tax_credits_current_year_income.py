@@ -8,8 +8,9 @@ from policyengine_uk.model_api import *
 # the £300 disregard.
 # private_pension_income is pension income (reg 5(1)(b), (d): ITEPA ss.569,
 # 579A) or, for a foreign pension, foreign income (reg 12), which is also step
-# one. savings_interest_income and dividend_income are investment income (reg
-# 10(1)(a), (d)), and property_income_after_finance_costs retains the
+# one. savings_interest_income, other_investment_income and dividend_income
+# are investment income (reg 10(1)(a), (d)), and
+# property_income_after_finance_costs retains the
 # model's deduction of property finance costs. Property income disregards
 # profits sheltered by rent-a-room relief (reg 11(2)), so of rent from
 # boarders, lodgers and sub-tenants in the home only taxable_rent_a_room_income
@@ -19,6 +20,7 @@ STEP_ONE_INCOME = [
     "widowed_parents_allowance",
     "private_pension_income",
     "savings_interest_income",
+    "other_investment_income",
     "dividend_income",
     "property_income_after_finance_costs",
     "taxable_rent_a_room_income",
@@ -60,7 +62,11 @@ class tax_credits_current_year_income(Variable):
         "the income test for a claimant on a prescribed benefit. The model "
         "takes it as the relevant income (s.7(3)). The income test reads "
         "tax_credits_applicable_income, which is nil while the test is "
-        "lifted; the targeted childcare criteria read this gross figure."
+        "lifted; the targeted childcare criteria read this assessed income. "
+        "Registered member pension contributions and gross Gift Aid are "
+        "deducted under SI 2002/2006 reg. 3(7). The model already records "
+        "personal pension contributions gross of relief at source and "
+        "employee contributions as net-pay member payments."
     )
     definition_period = YEAR
     unit = GBP
@@ -69,6 +75,7 @@ class tax_credits_current_year_income(Variable):
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/3",
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/5",
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/7",
+        "https://www.legislation.gov.uk/uksi/2002/2006/regulation/10",
         "https://www.legislation.gov.uk/ukpga/2003/1/section/577",
     )
 
@@ -103,5 +110,13 @@ class tax_credits_current_year_income(Variable):
         # reduce their joint income; a child's loss is not theirs.
         claimants = person("is_claimant_or_partner", period)
         return max_(
-            0, income - add_for_members(benunit, period, ["trading_loss"], claimants)
+            0,
+            income
+            - add_for_members(benunit, period, ["trading_loss"], claimants)
+            - add_for_members(
+                benunit,
+                period,
+                ["pension_contributions", "gift_aid_grossed_up"],
+                claimants,
+            ),
         )
