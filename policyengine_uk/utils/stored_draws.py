@@ -41,7 +41,7 @@ from policyengine_uk.utils.supplied_inputs import (
 # The policyengine-core versions whose provenance, dispatch, lifecycle and
 # loading behaviour the tests qualify. tests/code_health/test_core_version_gate.py
 # fails when uv.lock or the installed core holds any other.
-QUALIFIED_CORE_VERSIONS = frozenset({"3.33.3", "3.34.1"})
+QUALIFIED_CORE_VERSIONS = frozenset({"3.34.9"})
 
 # policyengine-core splits on-disk storage keys at every underscore, so a
 # branch name with one breaks its enumeration of inputs on disk.
