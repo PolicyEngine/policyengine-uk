@@ -9,8 +9,11 @@ include Income Support, but the Secretary of State leaves a person entitled
 to an existing benefit, Income Support among them, out of the Universal
 Credit test (SI 2014/1230 regs. 2(1) and 28). Universal Credit reads the
 person's own report while Income Support is in payment and not neutralised,
-for a claimant or partner as for any other member
-(is_qualifying_young_person_for_universal_credit).
+and until the model's legacy closure ends the person's award
+(person_legacy_benefits_closed), for a claimant or partner as for any other
+member (is_qualifying_young_person_for_universal_credit). No closure
+reaches a person these tests draw: Income Support and tax credits are in
+payment in 2016, 2019 and 2024, and the 2025 grid reports no tax credit.
 
 Pension Credit and Child Tax Credit read is_on_income_support: the benefit
 unit's calculated award, for whichever of the claimant and partner receives

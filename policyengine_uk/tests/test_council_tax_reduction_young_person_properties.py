@@ -2,10 +2,11 @@
 
 Scotland's working-age scheme, from 1 April 2022, defines a young person by
 the qualifying young person of UC Regs 2013 reg. 5 (Council Tax Reduction
-(Scotland) Regulations 2021 reg. 6(1)). The Secretary of State excludes a
-person entitled to an existing benefit only for the purposes of the UC
-Regulations and WRA 2012 Part 1 (SI 2014/1230 reg. 28), so that exclusion
-stays out. England, Wales and
+(Scotland) Regulations 2021 reg. 6(1)). The Secretary of State takes a
+person entitled to an existing benefit out of that definition "for the
+purposes of the Universal Credit Regulations" (SI 2014/1230 reg. 28(a)),
+and the model reads the Scottish reference to reg. 5 without that
+transitional provision. England, Wales and
 Scotland's pension-age scheme use the Child Benefit qualifying young person
 (SI 2012/2885 reg. 2; WSI 2013/3029 reg. 2; SSI 2012/319 reg. 4), as Scotland's
 working-age scheme did until 31 March 2022 (SSI 2012/303 reg. 4). Every scheme

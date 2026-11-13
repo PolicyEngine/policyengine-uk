@@ -160,6 +160,8 @@
     receives_income_support_in_own_right: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, true]
     is_qualifying_young_person_for_child_benefit: [false, true]
+    is_qualifying_young_person_under_universal_credit_regulation_5: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
 
 - name: Case 7, the Child Benefit input can be set directly; it does not decide Pension Credit or Child Tax Credit.
   period: 2025
