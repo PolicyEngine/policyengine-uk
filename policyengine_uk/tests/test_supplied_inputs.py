@@ -34,8 +34,31 @@ made from and on the default branch, in memory or on disk:
    input, so in normal use the helpers gave the right answer before the fix
    too.
 
+5. Differential, on a branch and on a branch made from it, after any
+   sequence of inputs, caches, model values (``set_model_value``),
+   deletions, writes to disk, calculations and branching: for every recorded
+   input, ``stored_supplied_value`` finds it exactly when
+   ``Holder._stores_user_input`` does; the value it finds on the nearest
+   branch is what ``Simulation._get_recorded_input_array`` returns; the
+   periods with a surviving input are those
+   ``Simulation._get_set_input_periods`` lists; and ``supplied_input`` and
+   ``supplied_input_periods`` give the same answers, leaving out the model's
+   own values.
+6. Engine reads: ``_counted_input``, which ``stored_draws`` reads to name a
+   draw's source, counts a recorded input exactly when policyengine-core's
+   ``Holder._is_input`` finds it on the branch ``Holder.get_array`` reads,
+   unless it is the model's own value; and the value it counts is the value
+   ``Holder.get_array`` returns, for a variable that is not neutralised.
+7. Inclusion: for a variable that is not neutralised, whenever
+   ``_counted_input`` counts an input, ``supplied_input`` returns the same
+   value. The engine reads the first value stored on its branches, and an
+   input it reads there is that branch's surviving input, so the engine-read
+   rule never counts an input the recorded rule misses.
+
 Intended: a neutralised variable whose input is still stored reads as its
-default, as it does through the engine.
+default, as it does through the engine. ``_counted_input`` still returns the
+stored input, which the engine does not read, so ``stored_draws`` refuses a
+neutralised draw before it asks.
 """
 
 from contextlib import contextmanager, nullcontext
@@ -53,6 +76,10 @@ from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
+    _counted_input,
+    _is_model_value,
+    _visible_branch_names,
+    set_model_value,
     stored_supplied_value,
     supplied_input,
     supplied_input_periods,
@@ -469,3 +496,214 @@ def test_only_inputs_still_stored_are_supplied(tmp_path_factory, steps):
                 assert (ours is not None) == holder._stores_user_input(
                     period, branch_name
                 ), (branch_name, period)
+
+
+# Invariants 5 to 7, on a branch ("parent") and a branch made from it
+# ("child"), which a step makes at any point.
+VARIABLE = "trading_loss"
+TARGETS = ("parent", "child")
+engine_step = st.one_of(
+    # Set an input through the simulation, on disk if under memory pressure.
+    st.tuples(
+        st.just("set"), st.sampled_from(TARGETS), st.sampled_from(YEARS), st.booleans()
+    ),
+    # Cache a value, calculated (derived) or not, on disk if under pressure.
+    st.tuples(
+        st.just("cache"),
+        st.sampled_from(TARGETS),
+        st.sampled_from(YEARS),
+        st.booleans(),
+        st.booleans(),
+    ),
+    # Store the model's own value (set_model_value), on disk if under pressure.
+    st.tuples(
+        st.just("model"),
+        st.sampled_from(TARGETS),
+        st.sampled_from(YEARS),
+        st.booleans(),
+    ),
+    # Delete through the simulation (every visible branch) or on the target's
+    # own branch only.
+    st.tuples(
+        st.just("delete"),
+        st.sampled_from(TARGETS),
+        st.sampled_from(YEARS),
+        st.booleans(),
+    ),
+    st.tuples(st.just("branch")),
+    st.tuples(
+        st.just("calculate"),
+        st.sampled_from(TARGETS),
+        st.sampled_from(["trading_loss", "ni_class_4_losses_brought_forward"]),
+        st.sampled_from(YEARS + (2027,)),
+    ),
+)
+
+
+def as_list(value):
+    return None if value is None else np.asarray(value).tolist()
+
+
+def check_both_rules(sim):
+    """Invariants 5 to 7 for ``VARIABLE`` in ``sim``."""
+    holder = sim.get_holder(VARIABLE)
+    population = holder.population
+    visible = _visible_branch_names(sim)
+    keys = [
+        key for key in sim._user_input_keys if key[0] == VARIABLE and key[1] in visible
+    ]
+    # Invariant 5: the general helpers against core.
+    surviving = {}
+    for key in keys:
+        _, branch_name, period = key
+        value = stored_supplied_value(holder, period, branch_name)
+        assert (value is not None) == holder._stores_user_input(period, branch_name), (
+            key
+        )
+        if value is not None:
+            surviving[key] = value
+    assert {key[2] for key in surviving} == set(sim._get_set_input_periods(VARIABLE))
+    supplied_periods = {
+        key[2]
+        for key, value in surviving.items()
+        if not _is_model_value(sim, key, value)
+    }
+    assert supplied_input_periods(population, VARIABLE) == sorted(
+        supplied_periods, key=lambda period: period.start
+    )
+    for year in YEARS:
+        period = period_(year)
+        nearest = next(
+            (
+                (VARIABLE, branch_name, period)
+                for branch_name in visible
+                if (VARIABLE, branch_name, period) in surviving
+            ),
+            None,
+        )
+        recorded = None if nearest is None else surviving[nearest]
+        assert as_list(recorded) == as_list(
+            sim._get_recorded_input_array(VARIABLE, period)
+        ), (sim.branch_name, period)
+        expected = (
+            None
+            if recorded is None or _is_model_value(sim, nearest, recorded)
+            else recorded
+        )
+        assert as_list(supplied_input(population, VARIABLE, period)) == as_list(
+            expected
+        ), (sim.branch_name, period)
+        # Invariant 6: the engine-read rule against the engine. The
+        # comparison with holder._is_input checks consistency only, since
+        # _engine_read_storage walks the same tiers; the independent check is
+        # that a counted value equals what holder.get_array reads, below.
+        storing = holder._branch_storing(period, sim.branch_name)
+        if storing is None:
+            continue
+        read = holder.get_array(period, sim.branch_name)
+        key = (VARIABLE, storing, period)
+        engine_reads_input = (
+            key in sim._user_input_keys
+            and holder._is_input(period, storing)
+            and not _is_model_value(sim, key, read)
+        )
+        assert (_counted_input(sim, holder, key) is not None) == engine_reads_input
+    for key in keys:
+        counted = _counted_input(sim, holder, key)
+        if counted is None:
+            continue
+        _, branch_name, period = key
+        assert branch_name == holder._branch_storing(period, sim.branch_name)
+        assert as_list(counted) == as_list(holder.get_array(period, sim.branch_name))
+        # Invariant 7.
+        assert as_list(counted) == as_list(supplied_input(population, VARIABLE, period))
+
+
+@settings(
+    max_examples=100,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(steps=st.lists(engine_step, max_size=12))
+# A child branch's value over the parent's input: supplied, not counted.
+@example(
+    steps=[
+        ("set", "parent", 2025, False),
+        ("branch",),
+        ("cache", "child", 2025, False, False),
+    ]
+)
+# An input on disk under a value cached in memory: supplied, not counted. The
+# cache is not derived: core stores no derived value over an input.
+@example(steps=[("set", "parent", 2025, True), ("cache", "parent", 2025, False, False)])
+# The model's own value on the parent, then an input on the child.
+@example(
+    steps=[
+        ("model", "parent", 2025, False),
+        ("branch",),
+        ("set", "child", 2025, True),
+        ("delete", "child", 2025, False),
+    ]
+)
+def test_the_two_rules_agree_with_core_on_a_branch_and_its_child(
+    tmp_path_factory, steps
+):
+    if not _templates:
+        _templates.append(single_person())
+    root = _templates[0].clone(clone_tax_benefit_system=False)
+    simulations = {"parent": root.get_branch("parent")}
+    folder = tmp_path_factory.mktemp("disk")
+    for index, (kind, *args) in enumerate(steps):
+        if kind == "branch":
+            simulations["child"] = simulations["parent"].get_branch("child")
+            continue
+        target, *args = args
+        sim = simulations.get(target)
+        if sim is None:
+            continue
+        holder = sim.get_holder(VARIABLE)
+        # Every value written is new.
+        value = np.array([1.0 + index + (100.0 if kind == "model" else 0.0)])
+        if kind in ("set", "cache", "model"):
+            year, *flags = args
+            pressure = flags[-1]
+            with under_memory_pressure(holder, folder) if pressure else nullcontext():
+                if kind == "set":
+                    sim.set_input(VARIABLE, year, value)
+                elif kind == "model":
+                    set_model_value(sim, VARIABLE, year, value)
+                else:
+                    holder.put_in_cache(
+                        value + 10_000, period_(year), sim.branch_name, flags[0]
+                    )
+        elif kind == "delete":
+            year, whole = args
+            if whole:
+                sim.delete_arrays(VARIABLE, year)
+            else:
+                holder.delete_arrays(period_(year), sim.branch_name)
+        else:
+            variable, year = args
+            sim.calculate(variable, year)
+        for simulation in simulations.values():
+            check_both_rules(simulation)
+
+
+def test_a_neutralised_input_is_counted_but_reads_as_its_default():
+    """``_counted_input`` reads storage, so for a neutralised variable it
+    returns the stored input while the engine and ``supplied_input`` return
+    the default. ``stored_draws`` refuses a neutralised draw before it asks
+    (``test_stored_draw_input_source.py::test_a_neutralised_draw_raises``)."""
+    sim = single_person({"trading_loss": {2025: 100.0}})
+    sim.apply_reform(neutralize_trading_loss)
+    # A branch made after the reform reads the input of the simulation it was
+    # made from.
+    branch = sim.get_branch("reform")
+    key = ("trading_loss", "default", period_(2025))
+    for simulation in (sim, branch):
+        holder = simulation.get_holder("trading_loss")
+        assert holder.variable.is_neutralized
+        assert as_list(_counted_input(simulation, holder, key)) == [100.0]
+        assert holder.get_array(period_(2025), simulation.branch_name).tolist() == [0.0]
+        assert read(holder.population, "trading_loss", 2025) == [0.0]
