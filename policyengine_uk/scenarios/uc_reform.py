@@ -3,6 +3,7 @@ from policyengine_uk import Microsimulation
 from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
+from policyengine_uk.utils.stored_draws import input_source
 import numpy as np
 import warnings
 from weakref import WeakKeyDictionary
@@ -131,6 +132,7 @@ def _protected_existing_health_element_monthly(
 
 
 NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
+NEW_CLAIMANT_DRAW = "uc_new_claimant_health_element_draw"
 LCWRA_AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
 
 
@@ -192,15 +194,15 @@ def warn_shadowed_lcwra_reform(sim) -> None:
 
 
 def _new_claimant_health_element_status(
-    sim: Microsimulation, year: int, drawn: np.ndarray, built_from_data: bool
+    sim: Microsimulation, year: int, drawn, built_from_data: bool
 ) -> np.ndarray:
     """Which benefit units get the new-claimant LCWRA rate in a year.
 
     A value the situation or dataset supplies is used as given. Data without
-    one takes the seeded draw, recorded as an input. A household situation
-    without one gets the protected amount (the variable's default): a draw
-    there would make a household's award depend on its position among the
-    other benefit units in the simulation.
+    one takes the draw (``drawn``, each benefit unit's decision), recorded
+    as an input. A household situation without one gets the protected amount
+    (the variable's default): a draw there would make a household's award
+    depend on its position among the other benefit units in the simulation.
     """
     # sim.get_array reads the simulation's own branch (and the branches it
     # inherits from); the holder's get_array reads only the default branch.
@@ -210,9 +212,18 @@ def _new_claimant_health_element_status(
     if built_from_data:
         status = np.asarray(drawn, dtype=bool)
     else:
-        status = np.zeros(len(drawn), dtype=bool)
+        status = np.zeros(
+            sim.get_variable_population(NEW_CLAIMANT_STATUS).count, dtype=bool
+        )
     sim.set_input(NEW_CLAIMANT_STATUS, year, status)
     return status
+
+
+def new_claimants_by_draw(draw, share) -> np.ndarray:
+    """Benefit units whose draw falls below the new-claimant share, compared
+    in float64: a stored draw is a float32 value, and comparing it with a
+    Python float in float32 would round the share first."""
+    return np.asarray(draw, dtype=np.float64) < share
 
 
 def _lcwra_amount_is_overridden(sim, year: int) -> bool:
@@ -308,9 +319,9 @@ def add_universal_credit_reform(sim: Microsimulation):
     _add_inactive_health_element_formula(sim)
     rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
-    generator = np.random.default_rng(43)
-
-    uc_seed = generator.random(len(sim.calculate("benunit_id")))
+    # The seeded stream, drawn only for a year whose dataset supplies no
+    # stored draw, and then once: each unit takes its position's value.
+    uc_seed = None
     # rebalancing.new_claimant_share: WPI Economics' estimates for 2026-27 to
     # 2029-30, held after that (an assumption; see the parameter).
     new_claimant_share = rebalancing.new_claimant_share
@@ -327,8 +338,23 @@ def add_universal_credit_reform(sim: Microsimulation):
             # Recalculate through the formula, preserving user-supplied awards.
             sim.delete_arrays("uc_LCWRA_element", year)
             continue
+        # Data without a status for the year takes the dataset's stored draw
+        # where one reaches the year, else the seeded stream.
+        drawn = None
+        if is_data and sim.get_array(NEW_CLAIMANT_STATUS, year) is None:
+            share = new_claimant_share(year)
+            draw_population = sim.get_variable_population(NEW_CLAIMANT_DRAW)
+            if input_source(draw_population, NEW_CLAIMANT_DRAW, year) is not None:
+                drawn = new_claimants_by_draw(
+                    sim.calculate(NEW_CLAIMANT_DRAW, year), share
+                )
+            else:
+                if uc_seed is None:
+                    generator = np.random.default_rng(43)
+                    uc_seed = generator.random(len(sim.calculate("benunit_id")))
+                drawn = new_claimants_by_draw(uc_seed, share)
         is_post_2025_claimant = _new_claimant_health_element_status(
-            sim, year, uc_seed < new_claimant_share(year), is_data
+            sim, year, drawn, is_data
         )
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.

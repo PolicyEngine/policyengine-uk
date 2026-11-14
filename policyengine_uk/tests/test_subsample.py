@@ -57,6 +57,12 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
     (``set_model_value``, as the Universal Credit health element reform does
     for every simulation) stays the model's, not supplied, and the record of
     where each capital gains input came from is unchanged.
+12. Stored draws: after a subsample, a read of each stored draw and of the
+    stored student loan decision gives the value the dataset stored for the
+    kept person or benefit unit, in each year it was stored and, carried
+    over, in a later one, on the simulation and on a branch made after the
+    subsample. ``stored_draws.input_source`` names that stored input as the
+    source, with the sequence number core records for it.
 
 The properties are generated for datasets of one year, which the model
 projects, and of several years whose weights change differently from
@@ -86,6 +92,7 @@ from policyengine_uk.data.isa_income import LEGACY_CONTRACT, simulation_contract
 from policyengine_uk.data.savings_income_projection import (
     OBR_SAVINGS_INCOME_2022_2025,
 )
+from policyengine_uk.utils.stored_draws import input_source
 from policyengine_uk.utils.subsample import (
     WEIGHT_VARIABLES,
     draw_household_counts,
@@ -1470,4 +1477,103 @@ def test_subsample_properties(
     for variable in ("household_net_income", "income_tax", "universal_credit"):
         assert values(rebuilt, variable, year).tolist() == pytest.approx(
             values(sample, variable, year).tolist()
+        )
+
+
+# Stored draws.
+
+DRAW_YEARS = (2025, 2026)
+PIP_DRAW = "pip_phase_in_draw"
+UC_DRAW = "uc_new_claimant_health_element_draw"
+TAKE_UP = "would_claim_student_loan"
+STORED_COLUMNS = {PIP_DRAW: "person", UC_DRAW: "benunit", TAKE_UP: "person"}
+NEW_CLAIMANT_SHARE = "gov.dwp.universal_credit.rebalancing.new_claimant_share"
+
+
+def stored_draw_dataset() -> UKMultiYearDataset:
+    """HOUSEHOLDS for 2025 and 2026, with each person's PIP phase-in draw and
+    student loan decision and each benefit unit's new-claimant draw stored
+    in both years, a different value in each."""
+    years = []
+    for offset, year in enumerate(DRAW_YEARS):
+        single = dataset(year=year)
+        person = single.person.copy()
+        benunit = single.benunit.copy()
+        people = np.arange(len(person))
+        units = np.arange(len(benunit))
+        person[PIP_DRAW] = ((5 * people + 3 + offset) % 16 / 16).astype(np.float32)
+        person[TAKE_UP] = (people + offset) % 3 == 0
+        benunit[UC_DRAW] = ((7 * units + 1 + offset) % 16 / 16).astype(np.float32)
+        years.append(
+            UKSingleYearDataset(
+                person=person,
+                benunit=benunit,
+                household=single.household,
+                fiscal_year=year,
+            )
+        )
+    return UKMultiYearDataset(datasets=years)
+
+
+def stored_by_id(data: UKMultiYearDataset, name: str, year: int) -> dict:
+    table = STORED_COLUMNS[name]
+    frame = getattr(data.datasets[year], table)
+    return dict(zip(frame[f"{table}_id"].tolist(), frame[name].tolist()))
+
+
+def test_stored_draws_follow_the_records_a_subsample_keeps():
+    data = stored_draw_dataset()
+    stored = {
+        (name, year): stored_by_id(data, name, year)
+        for name in STORED_COLUMNS
+        for year in DRAW_YEARS
+    }
+    simulation = Simulation(dataset=data)
+
+    simulation.subsample(n=4, seed=2, time_period=2025)
+
+    assert 1 <= len(ids(simulation, "household")) < len(HOUSEHOLDS)
+    reform = simulation.get_branch("reform", clone_system=True)
+    history = simulation._get_store_history()._first_stored
+    for name in STORED_COLUMNS:
+        definition = simulation.tax_benefit_system.get_variable(name)
+        kept = ids(simulation, definition.entity.key)
+        holder = simulation.get_holder(name)
+        # 2027 holds no stored value: core carries 2026's over.
+        for year in (2025, 2026, 2027):
+            source_year = min(year, DRAW_YEARS[-1])
+            expected = np.array(
+                [stored[name, source_year][record] for record in kept],
+                dtype=definition.dtype,
+            )
+            for sim in (simulation, reform):
+                np.testing.assert_array_equal(values(sim, name, year), expected)
+                if name == TAKE_UP:
+                    # Not a registered draw: no input_source, but supplied.
+                    population = sim.get_variable_population(name)
+                    supplied = supplied_input(population, name, period_(year))
+                    if year in DRAW_YEARS:
+                        np.testing.assert_array_equal(supplied, expected)
+                    else:
+                        assert supplied is None
+                    continue
+                source = input_source(sim.get_variable_population(name), name, year)
+                assert (source.period, source.branch_name, source.tier) == (
+                    period_(source_year),
+                    "default",
+                    "memory",
+                )
+                number = holder._stored_sequence_number(period_(source_year), "default")
+                assert number is not None
+                assert source.sequence_number == number
+                assert history[name][period_(source_year)] == number
+    # The Universal Credit statuses the build drew stay with their benefit
+    # units.
+    share = simulation.tax_benefit_system.parameters.get_child(NEW_CLAIMANT_SHARE)
+    kept = ids(simulation, "benunit")
+    for year in (2026, 2027):
+        draws = np.array([stored[UC_DRAW, min(year, 2026)][unit] for unit in kept])
+        np.testing.assert_array_equal(
+            values(simulation, "uc_receives_new_claimant_health_element", year),
+            draws.astype(np.float64) < share(str(year)),
         )
