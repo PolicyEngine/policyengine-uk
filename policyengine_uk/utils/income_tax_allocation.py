@@ -115,45 +115,55 @@ passes, and income above it fails. A share that leaves non-savings income at
 the limit can be the only one that meets the test, so the search keeps no room
 below the limit. The test reads the income the model holds. The model holds
 incomes in float32 and sums net income and allowances in float32, so the
-income it holds can sit a fraction of a penny either side of the sum of the
-amounts entered. A household entered exactly at a limit can then sit just
-above it and fail, as at the model's other limits; one entered a penny over
-stays over.
+income it holds can sit either side of the sum of the amounts entered. While
+net income and the allowances stay under £131,072 the gap is a fraction of a
+penny, but it grows above that: in a household with £301,100 of net income
+and £262,900 of other deductions it is 2p. A household entered at a limit can
+then sit just above it and fail, as at the model's other limits. One entered a
+penny or more over a limit can sit on it and pass.
 
 The model has always applied the test in float32, to non-savings income,
 savings and dividends each held in float32. Float32 rounding there can land
-income entered at a limit back on it, where a float64 sum of the same float32
-amounts sits a fraction of a penny over; and a float64 sum can sit at a limit
-where float32 rounding of the limit or of the amounts carries them apart. So
-a share meets the test where it does in either arithmetic
-(``_rate_test_on_stored``): in float32 as before, which for the old order is
-``_old_order_meets_rate_test`` and for a moved share
-``_float32_meets_rate_test``, or in float64 from the amounts the model holds
-(``_meets_rate_test``). The model never denies the reduction where its float32
-test gave it for the same share, and grants it a penny over a limit only where
-float32 rounding carries income onto the limit, as the float32 test always
-could.
+income entered over a limit back on it, where a float64 sum of the same
+float32 amounts sits over; and a float64 sum can sit at a limit where float32
+rounding of the limit or of the amounts carries them apart. So a share meets
+the test where it does in either arithmetic (``_rate_test_on_stored``): in
+float32 as before, which for the old order is ``_old_order_meets_rate_test``
+and for a moved share ``_float32_meets_rate_test``, or in float64 from the
+amounts the model holds (``_meets_rate_test``). The float64 test adds the
+grossed-up gift, as the model holds it in float32, to the basic rate limit.
+The vertex search scores each candidate in float64 only, so it can miss a
+share that passes only in float32, as at a limit a Gift Aid gift raises. The
+model never denies the reduction where its float32 test gave it for the same
+share. It grants the reduction over a limit only where float32 rounding of the
+amounts it holds carries income onto the limit, as the float32 test always
+could for the old order.
 
 The model stores the deductions from savings and dividends in float32 too. The
 search finds the least ``f`` in float64, then ``_stored_share`` rounds that
 share's deductions to float32, down or up, and takes the rounding with the
 least ``f``. Among roundings within ``TOLERANCE`` of each other it prefers one
 that leaves the first component within its bounds, but a rounding outside them
-still wins where it leaves less ``f``: from 2027-28 a person with no property
-income has a first component with no room, so the two deductions would have to
-add up to the shared amount exactly, which float32 rarely allows, and at a
-limit only one rounding may meet the rate test. The model then sets less than
-a float32 step of the deductions against the first component, or leaves that
-much unset. A rounding that sets more than half a penny beyond the shared
-allowances (``OVER_DEDUCTION``) ranks below every other, since the rate test
-would then read less income than the law taxes. From 2027-28 the shared amount
-is what other non-savings income leaves of the deductions, and the model reads
-that income from float32 net income. So there the rounding nearest the exact
-deductions keeps its rank: storing them in float32 rounds to it anyway, and it
-can sit more than half a penny beyond the model's shared amount and still
-within the amounts entered. The search prices the stored share and the old
-order each with ``_rate_test_on_stored``, and moves a person only where the
-stored share leaves less ``f``.
+still wins where it leaves less ``f``. A first component can have no room: a
+person may have no non-savings income, or from 2027-28 no property income. The
+two deductions then have to add up to the shared amount exactly, which float32
+rarely allows, and at a limit only one rounding may meet the rate test. The
+model then sets up to a float32 step more than the shared amount against
+savings and dividends, which leaves that much non-savings income beyond the
+first component, or it leaves up to a step of the shared amount unset.
+
+A rounding that sets more than half a penny beyond the shared amount
+(``OVER_DEDUCTION``) ranks below every other, since the rate test would then
+read that much of the savings or dividends as non-savings income the person
+does not have. One rounding keeps its rank: the one nearest the exact
+deductions, which storing them in float32 gives and the model has always held,
+unless it wins a reduction that the exact share does not. It can sit up to half
+a float32 step of each deduction beyond the shared amount, which can pass half
+a penny only where a deduction exceeds £65,536. So no rounding more than half a
+penny beyond the shared amount gives the reduction unless the exact share
+meets the test. The search prices the stored share and the old order each with
+``_rate_test_on_stored``, and moves a person only where the stored share leaves
+less ``f``.
 ``share_meets_marriage_allowance_rate_test`` gives the model's answer from the
 stored deductions through the same function, so the model applies the
 reduction wherever the search counted on it, and nowhere else.
@@ -225,11 +235,11 @@ TIE = 1e-6
 # Bound on people times candidates evaluated at once, to bound memory.
 CHUNK = 2_000_000
 # A float32 rounding of a share can set more than the shared allowances against
-# savings and dividends, by up to a float32 step of the deductions (over a
+# savings and dividends, by up to a float32 step of each deduction (over a
 # penny once a deduction passes £131,072). ``_stored_share`` ranks a rounding
-# that sets more than this (in pounds) beyond them below every other, except,
-# from 2027-28, the rounding to the nearest float32 value that storing the
-# deductions gives.
+# that sets more than this (in pounds) beyond them below every other, unless it
+# is the rounding to the nearest float32 values, which storing the deductions
+# gives, and wins no reduction that the exact share does not.
 OVER_DEDUCTION = 0.005
 # The variables on earned_taxable_income_exclusions that the allocation sets
 # rather than reads.
@@ -871,19 +881,19 @@ def _stored_share(c, s, v):
     its bounds by less than a float32 step of the deductions, and the model
     then reads it as ``_share_left`` does, at nil where it would fall below
     nil. Such a pair still wins where it gives less ``f``, for example where
-    only its rounding meets the rate test, unless it sets more than
-    ``OVER_DEDUCTION`` beyond the shared allowances; every such pair ranks
-    below every other. From 2027-28 the shared amount is what other non-savings
-    income leaves of the deductions, and the model reads that income from
-    float32 net income. There the pair nearest the exact deductions keeps its
-    rank: storing them in float32 rounds to it anyway, and where net income
-    rounds up, it can sit more than ``OVER_DEDUCTION`` beyond the model's
-    shared amount and still within the amounts entered. Deductions that are
-    float32 amounts already stay as they are. Returns the deductions, the first
+    only its rounding meets the rate test. A pair that sets more than
+    ``OVER_DEDUCTION`` beyond the shared allowances ranks below every other,
+    unless it is the pair nearest the exact deductions and wins no reduction
+    that the exact share does not. Storing the deductions in float32 gives
+    that pair, as the model always has, so the model keeps it wherever the
+    rate test does not turn on the rounding. Deductions that are float32
+    amounts already stay as they are. Returns the deductions, the first
     component, savings and dividends they leave, and their ``f``."""
     s, v = _exact_where_the_rate_test_reads(c, s, v)
     exact_savings = np.clip(c.savings - s, 0, c.savings)
     exact_dividends = np.clip(c.dividends - v, 0, c.dividends)
+    exact_meets = _meets_rate_test(c, *_share_left(c, exact_savings, exact_dividends))
+    recipient = c.marriage_allowance_reduction > 0
     nearest_savings = exact_savings.astype(np.float32).astype(np.float64)
     nearest_dividends = exact_dividends.astype(np.float32).astype(np.float64)
     highest = np.minimum(c.first, c.step_3_income)
@@ -898,17 +908,15 @@ def _stored_share(c, s, v):
                 - (c.dividends - to_dividends)
             )
             share = _share_left(c, to_savings, to_dividends)
-            tax = step_5_tax(c, *share) - c.marriage_allowance_reduction * (
-                _rate_test_on_stored(c, to_savings, to_dividends, True)
-            )
+            meets = _rate_test_on_stored(c, to_savings, to_dividends, True)
+            tax = step_5_tax(c, *share) - c.marriage_allowance_reduction * meets
             outside = (first < -TIE) | (first > highest + TIE)
+            nearest = (to_savings == nearest_savings) & (
+                to_dividends == nearest_dividends
+            )
+            false_gain = recipient & meets & ~exact_meets
             option = SimpleNamespace(
-                over=(first > highest + OVER_DEDUCTION)
-                & ~(
-                    c.other_first
-                    & (to_savings == nearest_savings)
-                    & (to_dividends == nearest_dividends)
-                ),
+                over=(first > highest + OVER_DEDUCTION) & ~(nearest & ~false_gain),
                 outside=outside,
                 tax=tax,
                 to_savings=to_savings,
