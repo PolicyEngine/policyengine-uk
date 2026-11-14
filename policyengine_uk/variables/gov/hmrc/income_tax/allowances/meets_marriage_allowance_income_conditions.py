@@ -33,12 +33,12 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
 
     The test reads the share of reliefs and allowances the model holds
     (received_allowances_savings_income and
-    received_allowances_dividend_income) and works out the income it leaves in
-    float64, as the search for that share does (s. 25(2);
-    policyengine_uk.utils.income_tax_allocation). It counts income within
-    half a penny above a limit as at the limit, since Parliament lets income
-    reach each limit (s. 10(2)) and float32 holds a net income under £65,536
-    only to within a fifth of a penny.
+    received_allowances_dividend_income) and counts the share as meeting the
+    test where it does either in float32, as the model always has, or in
+    float64 from the amounts the model holds, as the search that sets the share
+    (s. 25(2); policyengine_uk.utils.income_tax_allocation) counts it. So it
+    gives the answer the search counted on. Income at a limit meets the test,
+    since Parliament lets income reach each limit (s. 10(2)).
     """
     return share_meets_marriage_allowance_rate_test(person, period, parameters)
 

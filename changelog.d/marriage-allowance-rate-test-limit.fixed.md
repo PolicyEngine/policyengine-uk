@@ -1,1 +1,1 @@
-The Marriage Allowance search now applies the rate test at the statutory limits, so a recipient whose only qualifying share leaves non-savings income at the basic rate limit gets the allowance.
+The Marriage Allowance rate test now lets income reach each limit, instead of requiring about 3.9p of room below it, so a recipient whose only qualifying share of reliefs and allowances leaves income at a limit gets the reduction.
