@@ -12,8 +12,9 @@ person's own report while Income Support is in payment and not neutralised,
 and until the model's legacy closure ends the person's award
 (person_legacy_benefits_closed), for a claimant or partner as for any other
 member (is_qualifying_young_person_for_universal_credit). No closure
-reaches a person these tests draw: Income Support and tax credits are in
-payment in 2016, 2019 and 2024, and the 2025 grid reports no tax credit.
+reaches a person in the Universal Credit assertions below: Income Support
+and tax credits are in payment in 2016, 2019 and 2024, and the 2025 grid
+reports no tax credit.
 
 Pension Credit and Child Tax Credit read is_on_income_support: the benefit
 unit's calculated award, for whichever of the claimant and partner receives
@@ -45,9 +46,10 @@ Invariants:
    setting the report to zero, removes a report.
 4. The status under UC Regs reg. 5 alone never depends on reported Income
    Support, in the baseline or under either reform. The Universal Credit
-   status ends on a report while Income Support is in payment, for anyone,
-   until a reform neutralises Income Support; a reform that replaces its
-   formula with one returning zero leaves the exclusion in place.
+   status ends on a report while Income Support is in payment and the
+   person's legacy award remains open, for anyone, until a reform
+   neutralises Income Support; a reform that replaces its formula with one
+   returning zero leaves the exclusion in place.
 5. Setting a young person's reported Income Support to zero never lowers
    their household's Pension Credit.
 """
