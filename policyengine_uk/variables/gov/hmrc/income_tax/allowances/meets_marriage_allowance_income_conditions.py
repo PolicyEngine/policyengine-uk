@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.marriage_allowance import (
-    marriage_allowance_rate_limits,
-    meets_marriage_allowance_rate_test,
+from policyengine_uk.utils.income_tax_allocation import (
+    share_meets_marriage_allowance_rate_test,
 )
 
 
@@ -31,27 +30,18 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     marriage_allowance_tax_reduction takes the allowance off the tax, and
     the test reads income after allowances and the savings, dividend and
     Gift Aid amounts directly.
+
+    The test reads the share of reliefs and allowances the model holds
+    (received_allowances_savings_income and
+    received_allowances_dividend_income) and counts the share as meeting the
+    test where it does in either arithmetic: in float32, as the model always
+    has, or in float64 from the amounts the model holds. The search that sets
+    the share (s. 25(2); policyengine_uk.utils.income_tax_allocation) counts
+    the share it stores the same way, so this gives the answer the search
+    counted on. Income at a limit meets the test, since Parliament lets income
+    reach each limit (s. 10(2)).
     """
-    # Earnings, pensions, property and other non-savings income after the
-    # allowances set against it (s. 25(2)): the income below savings and
-    # dividends (s. 16). Savings and dividends left after the allowances the
-    # share sets against them.
-    return meets_marriage_allowance_rate_test(
-        person("non_savings_income_after_allowances", period),
-        max_(
-            0,
-            person("taxable_savings_interest_income", period)
-            - person("received_allowances_savings_income", period),
-        ),
-        max_(
-            0,
-            person("taxable_dividend_income", period)
-            - person("received_allowances_dividend_income", period),
-        ),
-        marriage_allowance_rate_limits(
-            person, period, parameters(period).gov.hmrc.income_tax
-        ),
-    )
+    return share_meets_marriage_allowance_rate_test(person, period, parameters)
 
 
 class meets_marriage_allowance_income_conditions(Variable):

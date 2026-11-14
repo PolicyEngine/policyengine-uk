@@ -32,11 +32,16 @@ reduction at Step 6:
    than the model's share.
 10. Where the search moves a share and counts it as meeting the rate test, the
     model's own variables meet the test at that share, through float32 rounding.
+    For every recipient the model's answer to the test is the one the search
+    counted on: the test in float64 on the income the stored deductions leave,
+    or in float32 as the model has always applied it.
 11. The vertex search finds the least Step 5 tax less the reduction a share
     wins, checked against a dense grid and the thin sets on which the rate test
     can hold: no dividends left, and savings left at the savings allowance.
 12. Fast path: invariant 7 holds with recipients among the people.
 """
+
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -48,9 +53,11 @@ from policyengine_uk import Simulation
 from policyengine_uk.utils.income_tax_allocation import (
     _build,
     _context,
+    _float32_meets_rate_test,
     _least_tax_share,
     _meets_rate_test,
     _old_order_is_least,
+    _share_left,
     _shares,
     default_order_deductions,
     least_tax_deductions,
@@ -899,13 +906,24 @@ def check_recipients(couple_sims, year, regions, rows):
     # Invariant 10: the model meets the test where the search counts on it.
     x, s, v = _least_tax_share(c)
     counted = _meets_rate_test(c, x, s, v)[:, 0]
-    moved = (
-        law.calculate("received_allowances_savings_income", year) != default.savings
-    ) | (
-        law.calculate("received_allowances_dividend_income", year) != default.dividends
+    stored = (
+        law.calculate("received_allowances_savings_income", year).astype(float),
+        law.calculate("received_allowances_dividend_income", year).astype(float),
     )
+    moved = (stored[0] != default.savings) | (stored[1] != default.dividends)
     meets = law.calculate("meets_marriage_allowance_income_conditions", year)
     assert meets[moved & counted].all()
+    # And it gives the search's own answer at the share it stores: the test in
+    # float64 from the stored amounts, or in float32 as the model has always
+    # applied it (the old order's own answer where the share did not move).
+    held = stored[0][:, None], stored[1][:, None]
+    single = np.where(
+        moved,
+        _float32_meets_rate_test(c, *held)[:, 0],
+        c.old_order_meets_rate_test[:, 0],
+    )
+    expected = _meets_rate_test(c, *_share_left(c, *held))[:, 0] | single
+    assert np.array_equal(meets, expected)
 
 
 @pytest.mark.parametrize("year", sorted({year for year, _, _ in RECIPIENTS}))
@@ -968,7 +986,7 @@ def test_rate_test_survives_float32_rounding(couple_sims):
 def with_marriage_allowance(income_tax, year, inputs, default, seed):
     """``inputs`` with a reduction at stake for about half the people, the rate
     test's limits for them, and the old order's answer to the test, in float32
-    as the model computes it."""
+    as the model computes it (``_old_order_meets_rate_test``)."""
     rng = np.random.default_rng(seed)
     count = len(inputs["savings"])
     f32 = np.float32
@@ -993,13 +1011,18 @@ def with_marriage_allowance(income_tax, year, inputs, default, seed):
         non_savings_left,
         np.maximum(0, savings - default.savings),
         np.maximum(0, dividends - default.dividends),
-        limits,
+        SimpleNamespace(
+            non_savings=np.asarray(limits.non_savings).astype(f32),
+            basic_rate=np.asarray(limits.basic_rate).astype(f32),
+            starting=limits.starting,
+            savings_allowance=limits.savings_allowance,
+        ),
     )
     return inputs | dict(
         marriage_allowance_reduction=rng.choice([0.0, 2.0, 100.0, 252.0], count),
         rate_test_non_savings_limit=np.asarray(limits.non_savings, dtype=np.float64),
         rate_test_savings_allowance=np.broadcast_to(
-            np.asarray(limits.savings_allowance, dtype=np.float64), savings.shape
+            np.asarray(limits.savings_allowance, dtype=np.float64), (count,)
         ),
         old_order_meets_rate_test=meets,
     )
@@ -1080,11 +1103,9 @@ def test_vertex_search_weighs_the_marriage_allowance(system, year):
 def test_search_keeps_a_recipient_the_test_passes_exactly_at_the_limit(system):
     """Pay of £38,570 and savings of £11,700 in 2026-27. The old order leaves
     £26,000 of pay and £37,700 in all, exactly the basic rate limit, which the
-    rate test allows (s. 10(2)): 7,340 less the £252 reduction, 7,088. The
-    search's room below the limit doesn't count that share as meeting the test,
-    though a share that stops savings at the £1,000 savings allowance does, for
-    the same 7,088. So the old order must answer for itself, or the search would
-    move the recipient for no saving."""
+    rate test allows (s. 10(2)): 7,340 less the £252 reduction, 7,088. A share
+    that stops savings at the £1,000 savings allowance gives the same 7,088, so
+    the search must keep the old order rather than move the recipient for no saving."""
     income_tax = system.parameters("2026").gov.hmrc.income_tax
     inputs, default = one_person(savings=11_700, net_income=50_270)
     inputs = with_marriage_allowance(income_tax, 2026, inputs, default, 0)
@@ -1094,3 +1115,363 @@ def test_search_keeps_a_recipient_the_test_passes_exactly_at_the_limit(system):
         inputs, income_tax, default.savings, default.dividends, search_all=True
     )
     assert to_savings[0] == 0 and to_dividends[0] == 0
+
+
+def test_search_moves_a_person_whose_first_component_has_no_room(system):
+    """Savings of £5,500 and dividends of £700.07 in 2026-27, with £3,569.63 of
+    allowances and no non-savings income. The old order sets the allowances
+    against savings, which leaves £1,930.37 of savings in the starting rate
+    band and £700.07 of dividends: £200.07 above the £500 dividend allowance
+    at 10.75%, £21.51. Setting £200.07 against the dividends and the rest
+    against savings leaves £2,130.44 of savings in the band and the dividends
+    within the allowance: nil.
+
+    With no non-savings income the first component has no room, so the two
+    deductions must add up to £3,569.63, which no float32 rounding of
+    £3,369.56 does exactly. The search still moves the person."""
+    income_tax = system.parameters("2026").gov.hmrc.income_tax
+    inputs, default = one_person(
+        savings=5_500, dividends=700.07, allowances=3_569.63, net_income=6_200.07
+    )
+    for search_all in (False, True):
+        to_savings, to_dividends = least_tax_deductions(
+            inputs, income_tax, default.savings, default.dividends, search_all
+        )
+        assert to_dividends[0] == pytest.approx(200.07, abs=1e-3)
+        assert to_savings[0] + to_dividends[0] == pytest.approx(3_569.63, abs=1e-3)
+    assert tax_saved(income_tax, inputs, default) == pytest.approx(21.51, abs=0.01)
+
+
+def test_search_moves_a_recipient_with_no_property_income_from_2027(couple_sims):
+    """Married recipients in 2027-28 whose partners have no income, with no
+    property income, so the first component has no room.
+
+    Pay £5,000, savings £2,000.37, dividends £20,000.11: net income £27,000.48,
+    Step 3 income £14,430.48. Section 25(3A) takes £5,000 of the £12,570
+    Personal Allowance off pay, and the taxpayer shares the other £7,570
+    (s. 25(2)). The old order leaves dividends of £14,430.48, taxed at 10.75%
+    above the £500 allowance: £1,497.53, less the £252 reduction, £1,245.53.
+    Setting all £7,570 against the dividends leaves the savings in the starting
+    rate band and dividends of £12,430.11: £1,282.49, less £252, £1,030.49.
+    The other rows follow the same way."""
+    year = 2027
+    rows = [
+        (5_000, 2_000.37, 20_000.11, 0),
+        (5_000.13, 2_000.37, 20_000.11, 0),
+        (9_000, 300.37, 10_485.76, 0),
+        (9_000, 3.37, 10_485.76, 0),
+    ]
+    sim = run_couples(couple_sims(year, ["LONDON"] * len(rows)), year, rows)
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([1_030.49, 1_030.50, 437.69, 437.69], abs=0.01)
+
+
+def explicit_couples(year, rows):
+    """A Simulation of married recipients whose partners have no income, one
+    couple a row. Each row maps person variables to the recipient's amounts,
+    with ``region`` for the household."""
+    people, benunits, households = {}, {}, {}
+    for i, row in enumerate(rows):
+        amounts = dict(row)
+        region = amounts.pop("region", "LONDON")
+        people[f"r{i}"] = {"age": {year: 40}, "uses_property_allowance": {year: False}}
+        people[f"r{i}"] |= {name: {year: value} for name, value in amounts.items()}
+        people[f"p{i}"] = {"age": {year: 40}}
+        benunits[f"b{i}"] = {"members": [f"r{i}", f"p{i}"], "is_married": {year: True}}
+        households[f"h{i}"] = {
+            "members": [f"r{i}", f"p{i}"],
+            "region": {year: region},
+        }
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+
+
+# Whole-pence recipients in 2026-27, each a penny over a limit of the rate test
+# under every share, so the law gives none of them the reduction. The model
+# sums net income and allowances in float32, which puts some of them a fraction
+# of a penny under the limit; the test must still fail them.
+PENNY_OVER = [
+    dict(
+        employment_income=46_951.24,
+        private_pension_income=1_366.33,
+        property_income=646.47,
+        savings_interest_income=166.71,
+        dividend_income=1_305.97,
+    ),
+    dict(
+        employment_income=46_699.33,
+        private_pension_income=1_000.33,
+        property_income=1_000.33,
+        savings_interest_income=200.08,
+        dividend_income=1_570.02,
+    ),
+    dict(
+        employment_income=53_997.58,
+        savings_interest_income=24.33,
+        dividend_income=1_588.58,
+        other_deductions=5_316.15,
+    ),
+    dict(
+        employment_income=48_944.49,
+        savings_interest_income=6_399.67,
+        dividend_income=320.74,
+        other_deductions=4_894.89,
+    ),
+    dict(
+        employment_income=44_718.49,
+        savings_interest_income=491.15,
+        dividend_income=667.15,
+        other_deductions=1_056.48,
+        region="SCOTLAND",
+    ),
+    dict(
+        employment_income=51_279.33,
+        savings_interest_income=50.97,
+        dividend_income=942.58,
+        gift_aid=1_561.52,
+    ),
+    dict(
+        employment_income=10_964.47,
+        savings_interest_income=2_969.9,
+        dividend_income=42_854.58,
+        trading_loss=6_518.94,
+    ),
+]
+
+
+def test_rate_test_fails_a_recipient_a_penny_over_a_limit():
+    """Pay £53,997.58, savings £24.33, dividends £1,588.58 and other deductions
+    of £5,316.15 (the third row): allowances of £17,886.15 leave £37,724.34, so
+    the old order leaves dividends above the basic rate limit, and setting the
+    £1,588.58 against the dividends leaves pay of £37,700.01, a penny over. The
+    second row's tax, worked by hand without the reduction, is £7,391.05."""
+    year = 2026
+    sim = explicit_couples(year, PENNY_OVER)
+    reduction = sim.calculate("marriage_allowance_tax_reduction", year)[0::2]
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert not meets.any() and not reduction.any()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax[1] == pytest.approx(7_391.05, abs=0.01)
+
+
+def test_rate_test_lets_income_reach_the_basic_rate_limit():
+    """Pay £6,214.61, savings £367.26, dividends £47,955.74 and other deductions
+    of £4,267.61 in 2026-27: allowances of £16,837.61 leave £37,700.00, the
+    basic rate limit. Setting all £16,837.61 against pay and dividends, none
+    against savings, leaves the savings in the starting rate band and dividends
+    of £37,332.74, all the income at the limit: 10.75% above the £500
+    allowance, £3,959.52,
+    less the £252 reduction, £3,707.52. The old order leaves the dividends at
+    £37,700, £3,999 less £252: £3,747."""
+    year = 2026
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=6_214.61,
+                savings_interest_income=367.26,
+                dividend_income=47_955.74,
+                other_deductions=4_267.61,
+            )
+        ],
+    )
+    assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    tax = sim.calculate("income_tax", year).astype(float)[0]
+    assert tax == pytest.approx(3_707.52, abs=0.01)
+
+
+def test_search_keeps_the_rounding_that_meets_the_rate_test_at_a_gift_aid_limit():
+    """Pay £188.28, property income £121.87, savings £175.31, dividends
+    £52,212.12, other deductions £1,218.28 and a Gift Aid gift of £967.44 in
+    2028-29. Allowances of £13,788.28 leave £38,909.30, the basic rate limit
+    raised by the £1,209.30 grossed-up gift (s. 414(2)(b)). Setting £310.15
+    against pay and property income and £13,478.13 against dividends leaves
+    savings in the starting rate band and dividends of £38,733.99, all the
+    income at the limit: 10.75% above the £500 allowance, £4,110.15, less the
+    £252 reduction, £3,858.15. Of the float32 roundings of that share, only
+    the one that leaves the first component a fraction of a penny below nil
+    meets the rate test."""
+    year = 2028
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=188.28,
+                property_income=121.87,
+                savings_interest_income=175.31,
+                dividend_income=52_212.12,
+                other_deductions=1_218.28,
+                gift_aid=967.44,
+            )
+        ],
+    )
+    assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    tax = sim.calculate("income_tax", year).astype(float)[0]
+    assert tax == pytest.approx(3_858.15, abs=0.01)
+
+
+def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
+    """Three 2026-27 recipients whose Gift Aid gifts raise the basic rate
+    limit above their pay. The first: pay £157,600, savings £140,500.3125,
+    other deductions £139,000, a trading loss of £1,000.30 and a gift of
+    £96,000, which lifts the limit to £157,700 (s. 414(2)(b)). The Personal
+    Allowance tapers to nil, so the shared amount is £139,000 plus £1,000.30
+    of loss relief, and every share leaves income of £158,100.0125: at least
+    1.25p of savings above the £500 savings nil rate band that starts at
+    £157,600. So no share meets the rate test, and the tax is £31,520.005.
+    Rounding the deduction from savings up to float32 would set 1.25p more
+    than the shared amount against savings and leave them at the band. The
+    second does the same with a step of 3.125p: pay £307,600, savings
+    £301,500.03125, other deductions £300,000, a loss of £1,000.001 and a gift
+    of £216,000 leave 3.03p of savings above the band and tax of £61,520.01.
+    The third is the first with a loss of £1,000.3055, which leaves 0.7p of
+    savings above the band. There the float32 value nearest the deduction
+    from savings sets 0.7p more than the shared amount, and it meets the rate
+    test where the exact share fails it, so that rounding ranks last too."""
+    year = 2026
+    common = dict(uses_trading_allowance=False)
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=157_600,
+                savings_interest_income=140_500.3125,
+                other_deductions=139_000,
+                trading_loss=1_000.30,
+                gift_aid=96_000,
+                **common,
+            ),
+            dict(
+                employment_income=307_600,
+                savings_interest_income=301_500.03125,
+                other_deductions=300_000,
+                trading_loss=1_000.001,
+                gift_aid=216_000,
+                **common,
+            ),
+            dict(
+                employment_income=157_600,
+                savings_interest_income=140_500.3125,
+                other_deductions=139_000,
+                trading_loss=1_000.3055,
+                gift_aid=96_000,
+                **common,
+            ),
+        ],
+    )
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert not meets.any()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([31_520, 61_520.01, 31_520], abs=0.01)
+
+
+@pytest.mark.parametrize(
+    "year, row, expected",
+    [
+        (
+            2027,
+            dict(
+                employment_income=19_149.97,
+                savings_interest_income=218_144.28,
+                dividend_income=0.29,
+                other_deductions=197_220.30,
+                gift_aid=1_899.40,
+            ),
+            7_925.75,
+        ),
+        (
+            2028,
+            dict(
+                employment_income=43_314.39,
+                savings_interest_income=212_622.26,
+                dividend_income=1_182.93,
+                other_deductions=219_419.59,
+            ),
+            7_145.51,
+        ),
+    ],
+)
+def test_search_keeps_the_nearest_rounding_where_net_income_rounds_up(
+    year, row, expected
+):
+    """Scottish recipients whose other deductions exceed their pay, so from
+    2027-28 the deductions take all the pay first (s. 25(3A)) and the rest
+    falls on savings. In 2028-29: savings of £212,622.26 less £176,105.20
+    leave £36,517.06, and with £1,182.93 of dividends income comes to
+    £37,699.99, a penny inside the £37,700 basic rate limit. The tax is
+    £30,517.06 × 24% on savings above the £5,000 starting rate band and the
+    £1,000 savings allowance, plus £682.93 × 10.75% on dividends above the
+    £500 dividend allowance: £7,397.51, or £7,145.51 after the £252
+    reduction. In 2027-28 a £1,899.40 gift raises the limit to £40,074.25 and
+    income comes to £40,074.24: £34,073.95 × 24% = £8,177.75, or £7,925.75.
+    The model sums net income in float32 a fraction of a penny high, which
+    puts income at the limit and shrinks the shared amount. Only the nearest
+    float32 rounding of the deduction from savings meets the rate test, and
+    against the model's shared amount it sets 0.7p more. The exact share
+    meets the test too, so that rounding keeps its rank."""
+    sim = explicit_couples(year, [dict(row, region="SCOTLAND")])
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert meets.all()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([expected], abs=0.01)
+
+
+def test_search_keeps_the_nearest_rounding_where_the_exact_share_meets_the_test():
+    """A 2026-27 recipient with no non-savings income: savings £3,000.01,
+    dividends £175,700, other deductions £140,000 and a trading loss of
+    £1,000.01. The Personal Allowance tapers to nil, and the whole £141,000.01
+    of shared deductions goes against the dividends, since the savings sit in
+    the starting rate band for savings at 0%. That leaves Step 3 income of
+    £37,700, at the basic rate limit, so the share meets the rate test. The
+    tax is £34,199.99 × 10.75% on dividends above the £500 dividend
+    allowance, £3,676.50, or £3,424.50 after the £252 reduction. The nearest
+    float32 value of the deduction from dividends sets 0.56p more than the
+    model's shared amount, and the rounding down leaves income over the
+    limit. The exact share meets the test, so the nearest rounding keeps its
+    rank."""
+    year = 2026
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                savings_interest_income=3_000.01,
+                dividend_income=175_700,
+                other_deductions=140_000,
+                trading_loss=1_000.01,
+                uses_trading_allowance=False,
+            )
+        ],
+    )
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert meets.all()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([3_424.50], abs=0.01)
+
+
+def test_search_stores_the_nearest_rounding_where_no_reduction_turns_on_it():
+    """A 2026-27 taxpayer with no non-savings income and shared deductions off
+    the float32 grid: savings £3,000, dividends £400,000, other deductions
+    £300,000 and a trading loss of £1,000.02. The whole £301,000.02 goes
+    against the dividends, and float32 storage rounds it to £301,000.03125,
+    1.1p more. No reduction turns on the rounding, so the model keeps that
+    nearest value rather than the rounding down, which would tax 2p more of
+    the dividends at 35.75%. The law's tax is £34,200 × 10.75% plus
+    £64,299.98 × 35.75%: £26,663.74."""
+    year = 2026
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                savings_interest_income=3_000,
+                dividend_income=400_000,
+                other_deductions=300_000,
+                trading_loss=1_000.02,
+                uses_trading_allowance=False,
+            )
+        ],
+    )
+    to_dividends = sim.calculate("received_allowances_dividend_income", year)[0::2]
+    assert to_dividends[0] == 301_000.03125
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([26_663.74], abs=0.01)
