@@ -1,0 +1,28 @@
+description: >-
+  Actual expenses and capital allowances of people the input data mark as
+  trading allowance claimants (trading_allowance_claim_status), as a share of
+  the allowance their input profit already deducts; capital allowances
+  supplied for them count where larger. It sets their ordinary treatment:
+  what a cut below that allowance adds to their taxable profit, and what they
+  weigh a supplied current loss against. A value outside 0 to 1 is taken as
+  the nearer bound. The rules are in policyengine_uk/utils/trading_allowance.py.
+# A claimant's expenses and capital allowances are below the allowance they
+# claim, or they would deduct them instead, but no survey records them. With
+# a share of 1, the default, they equal it, so a cut leaves a claimant's
+# taxable profit as reported: the lower bound of its yield. With 0 they have
+# none beyond any capital allowances supplied for them, so a claimant with
+# no capital allowances and no current loss keeps claiming and a cut adds its
+# full amount: the upper bound. 1 is a convention, not an estimate, kept so
+# that the model books no yield it cannot support
+# (PolicyEngine/policyengine-uk#2764).
+values:
+  2005-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Trading allowance claimant expenses as a share of the input allowance
+  reference:
+    - title: Income Tax (Trading and Other Income) Act 2005 s. 783AI (partial relief)
+      href: https://www.legislation.gov.uk/ukpga/2005/5/section/783AI
+    - title: Income Tax (Trading and Other Income) Act 2005 s. 783AM (election for partial relief)
+      href: https://www.legislation.gov.uk/ukpga/2005/5/section/783AM

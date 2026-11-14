@@ -24,7 +24,7 @@
         members: [person1, person2]
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2]
@@ -56,7 +56,7 @@
         members: [person1, person2]
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2]
@@ -91,7 +91,7 @@
         is_married: false
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2, person3]
@@ -116,7 +116,7 @@
         is_married: false
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2]
@@ -173,7 +173,7 @@
         members: [person1, person2]
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2]
@@ -203,7 +203,7 @@
         members: [person1, person2]
         uc_reported_capital: 0
         uc_latent_deduction_rate: 0
-        benefit_cap_reduction: 0
+        uc_benefit_cap_reduction: 0
     households:
       household:
         members: [person1, person2]

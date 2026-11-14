@@ -1,0 +1,18 @@
+description: Income-based Jobseeker's Allowance treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more. A member of a joint-claim couple whose partner works fewer hours than this, but 16 or more, may claim alone, so this limit decides whether a couple can have an award.
+values:
+  1996-10-07:
+    value: 24
+    reference:
+      - title: Jobseeker's Allowance Regulations 1996 reg. 51(1)(b) (as made)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/51/1996-10-07
+metadata:
+  unit: hour
+  period: week
+  label: Income-based JSA partner remunerative work hours
+  reference:
+    - title: Jobseekers Act 1995 s. 3(1)(e)
+      href: https://www.legislation.gov.uk/ukpga/1995/18/section/3
+    - title: Jobseeker's Allowance Regulations 1996 reg. 51(1)(b)
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/51
+    - title: Jobseeker's Allowance Regulations 1996 reg. 3E(1) and (2)(g)
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/3E

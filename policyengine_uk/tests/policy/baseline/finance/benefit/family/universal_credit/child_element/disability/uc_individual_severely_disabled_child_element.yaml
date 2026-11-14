@@ -4,7 +4,7 @@
   input:
     age: 6
     is_uc_claimant: false
-    is_severely_disabled_for_benefits: true
+    dla_sc_category: HIGHER
   output:
     uc_individual_severely_disabled_child_element: 5_942
 
@@ -14,7 +14,7 @@
   input:
     age: 18
     is_in_non_advanced_education: true
-    is_severely_disabled_for_benefits: true
+    dla_sc_category: HIGHER
   output:
     is_uc_claimant: true
     uc_individual_severely_disabled_child_element: 0

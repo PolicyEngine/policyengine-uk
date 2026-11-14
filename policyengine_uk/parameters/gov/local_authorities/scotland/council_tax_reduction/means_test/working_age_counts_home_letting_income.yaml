@@ -1,0 +1,21 @@
+description: >
+  Whether the Scottish council tax reduction scheme for people under pension
+  age counts rent from letting part of the applicant's home as income. The
+  Council Tax Reduction (Scotland) Regulations 2012 did, less £20 a week
+  (Schedule 4 paragraph 25). The Council Tax Reduction (Scotland) Regulations
+  2021, in force from 1 April 2022, list unearned income in full in
+  regulation 57(1), and the list has no head for it.
+metadata:
+  label: Scotland working-age council tax reduction counts home-letting income
+  unit: bool
+  period: year
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 Schedule 4 para. 25 (as at 1 April 2021)
+      href: https://www.legislation.gov.uk/ssi/2012/303/schedule/4/2021-04-01
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 1 (commencement, 1 April 2022)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/1
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 57
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/57
+values:
+  2013-04-01: true
+  2022-04-01: false

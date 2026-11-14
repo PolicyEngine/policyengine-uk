@@ -1,0 +1,78 @@
+# Relevant UK earnings (FA 2004 s.189(2)) set the annual limit on relief for a
+# person's own pension contributions (s.190). They are employment income
+# chargeable to income tax, which is net taxable earnings (ITEPA 2003 ss.9(2)
+# and 11), so allowable expenses (s.327(3)) come off; the pension deductions
+# s.327(5) also lists are the relief these earnings limit, so they do not.
+# They also include trading income chargeable under ITTOIA
+# 2005 Part 2, which is after capital allowances (CAA 2001 s.247) and the
+# trading allowance (ITTOIA 2005 s.783AF) but before relief for losses brought
+# forward (ITA 2007 s.83, a Step 2 deduction). pension_contributions_relief and
+# the pension deduction in adjusted_total_income (ITA 2007 s.24A(8)) use the
+# same figure. Each case is a person aged 45 in England with no other income.
+# Sources: https://www.legislation.gov.uk/ukpga/2004/12/section/189
+# https://www.legislation.gov.uk/ukpga/2003/1/section/11
+# https://www.legislation.gov.uk/ukpga/2003/1/section/327
+# https://www.legislation.gov.uk/ukpga/2001/2/section/247
+# https://www.legislation.gov.uk/ukpga/2005/5/section/783AF
+
+- name: Capital allowances reduce relevant UK earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 10_000
+    capital_allowances: 4_000
+    personal_pension_contributions: 9_000
+  output:
+    # Part 2 profit is 10,000 - 4,000 = 6,000, above the 3,600 basic amount,
+    # so relief stops at 6,000 of the 9,000 paid.
+    pension_contributions_relief: 6_000
+    # Total income 6,000 less the same 6,000 of relief.
+    adjusted_total_income: 0
+
+- name: Allowable employment expenses reduce relevant UK earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 20_000
+    employment_expenses: 5_000
+    employee_pension_contributions_reported: 18_000
+  output:
+    # Earnings after the 5,000 of expenses are 15,000, so a net pay
+    # arrangement relieves 15,000 of the 18,000 paid.
+    taxable_employment_income: 15_000
+    pension_contributions_relief: 15_000
+    adjusted_total_income: 0
+
+- name: Losses brought forward do not reduce relevant UK earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 10_000
+    loss_relief: 6_000
+    personal_pension_contributions: 8_000
+  output:
+    # The loss reduces taxable trading income to 4,000 but not the Part 2
+    # profit of 10,000, so all 8,000 is relieved.
+    taxable_self_employment_income: 4_000
+    pension_contributions_relief: 8_000
+    # Total income adds the 6,000 of brought-forward loss back: 10,000 less
+    # 8,000 of relief.
+    adjusted_total_income: 2_000
+
+- name: A profit within the trading allowance is not relevant UK earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 1_000
+    self_employment_income: 800
+    employee_pension_contributions_reported: 1_500
+  output:
+    # The trading allowance fully relieves the 800 profit, so relevant UK
+    # earnings are the 1,000 of pay. Net pay has no basic-amount increase
+    # (s.191(7)), so relief stops at 1,000.
+    taxable_self_employment_income: 0
+    pension_contributions_relief: 1_000

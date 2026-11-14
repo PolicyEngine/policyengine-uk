@@ -1,0 +1,43 @@
+description: Share of household VAT liability captured by consumption in the microdata. Household VAT computed from survey consumption is divided by this share and by the household share of VAT liabilities to match receipts.
+metadata:
+  unit: /1
+  period: year
+  economy: false
+  derivation: >-
+    This value matches 2024-25 VAT receipts on one dataset only: the certified
+    Microcosm UK 2024-25 national release (policyengine/populace-uk-private,
+    tag microcosm-uk-2024-25-national-20261025T091414Z-a6299504, revision
+    994cac89), whose fit excludes the obr.vat receipts target. The vat formula
+    adds VAT on household energy bills (domestic_energy_vat) without grossing
+    it up, so the coverage applies only to VAT on other recorded consumption.
+    On that release, pre-scaling VAT on that consumption comes to 0.20 x
+    £407.40bn = £81.48bn in 2024 (reduced_rate_vat_consumption takes domestic
+    fuel and power's share of spending out of the reduced-rate share, which
+    leaves the generic reduced-rate base empty), and VAT on energy bills comes
+    to £2.33bn. OBR VAT receipts for 2024-25 (outturn, March 2026 EFO table
+    3.8, cash basis) come to £170.994bn. Coverage = 81.48 / (0.7 x (170.994 -
+    2.33)) = 0.690. From 2024-25 to 2026-27 the coverage falls from 0.690 to
+    0.666, and the HMRC ready reckoner (£8.8bn for one point on the standard
+    rate in 2026-27) implies 0.704, leaving out the school share. On Enhanced
+    FRS 2024-25 (policyengine-uk-data 1.58.1) the same calculation gives 0.954
+    for 2024-25, so this value puts total VAT on that file 38% above 2024-25
+    receipts. Re-derive when the dataset it should match changes, with
+    docs/engineering/vat-coverage.md, which lists the inputs, file hashes and
+    per-dataset results. These receipts already include private school VAT. The
+    vat formula therefore removes school-fee VAT's share of receipts from the
+    grossed-up amount (not from energy-bill VAT) before gov_tax adds
+    private_school_vat. At a coverage of 0.67 on Enhanced FRS 2024-25
+    (policyengine-uk-data 1.58.1), the two heads summed to the
+    receipt-calibrated VAT at current law to within the share's accuracy, at
+    most 0.06% below it (Aggregate impact run 40116746457, 24 October 2026),
+    so this denominator needs no extra school receipts. See the
+    receipt-partition derivation in that document.
+  reference:
+    - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+    - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts (efo-march-2026-detailed-forecast-tables-receipts.xlsx), sheet 3.8, row 13 (Value added tax, cash basis), cell D13 for 2024-25 outturn (£bn)
+      href: https://obr.uk/docs/d055fbf02d5b3g6jq8l2/efo-march-2026-detailed-forecast-tables-receipts.xlsx
+    - title: HMRC, Direct effects of illustrative tax changes bulletin (June 2025)
+      href: https://www.gov.uk/government/statistics/direct-effects-of-illustrative-tax-changes/direct-effects-of-illustrative-tax-changes-bulletin-january-2025
+values:
+  2010-01-01: 0.69

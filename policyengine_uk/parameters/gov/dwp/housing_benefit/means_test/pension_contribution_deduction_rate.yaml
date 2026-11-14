@@ -1,0 +1,17 @@
+description: Housing Benefit deducts this share of pension contributions when it calculates net earnings.
+values:
+  2006-03-06: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Housing benefit net earnings pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Housing Benefit Regulations 2006, regulation 36(3)(b) and (c)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/36
+    - title: The Housing Benefit Regulations 2006, regulation 38(1)(b)(ii) and (3)(c)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/38
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, regulation 36(2)(b) and (c)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/36
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, regulation 39(1)(b)(ii) and (2)(c)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/39

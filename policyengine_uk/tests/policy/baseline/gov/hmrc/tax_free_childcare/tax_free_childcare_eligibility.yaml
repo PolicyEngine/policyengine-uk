@@ -60,3 +60,80 @@
     tax_free_childcare_work_condition: true
   output:
     tax_free_childcare_eligible: false
+
+
+# End to end: one parent earns £20,000 and the other receives Carer's Allowance
+# with no earnings. Reg 13 regards the carer as in qualifying paid work with the
+# minimum income, so the family is eligible. The child's £10,000 of childcare
+# attracts a 20% top-up of £2,000, which equals the £2,000 annual cap
+# (4 periods x £500).
+- name: A working parent and a partner on Carer's Allowance are eligible, and receive the top-up
+  period: 2025
+  input:
+    people:
+      earner:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      carer:
+        age: 38
+        is_parent: true
+        carers_allowance: 4_000
+        adjusted_net_income: 4_000
+        minimum_wage: 10
+      child:
+        age: 3
+        childcare_expenses: 10_000
+    benunits:
+      benunit:
+        members: [earner, carer, child]
+        universal_credit_pre_benefit_cap: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+    households:
+      household:
+        members: [earner, carer, child]
+        country: ENGLAND
+  output:
+    tax_free_childcare_work_condition: [true, true, false]
+    tax_free_childcare_eligible: true
+    tax_free_childcare: [0, 0, 2_000]
+
+# The same family with Disability Living Allowance in place of Carer's
+# Allowance: DLA is not a reg 13(1)(b) benefit, so the non-earner is not in
+# qualifying paid work and the family is not eligible.
+- name: A working parent and a partner on Disability Living Allowance only are not eligible
+  period: 2025
+  input:
+    people:
+      earner:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      partner:
+        age: 38
+        is_parent: true
+        dla: 4_000
+        adjusted_net_income: 4_000
+        minimum_wage: 10
+      child:
+        age: 3
+        childcare_expenses: 10_000
+    benunits:
+      benunit:
+        members: [earner, partner, child]
+        universal_credit_pre_benefit_cap: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+    households:
+      household:
+        members: [earner, partner, child]
+        country: ENGLAND
+  output:
+    tax_free_childcare_work_condition: [false, false, false]
+    tax_free_childcare_eligible: false
+    tax_free_childcare: [0, 0, 0]

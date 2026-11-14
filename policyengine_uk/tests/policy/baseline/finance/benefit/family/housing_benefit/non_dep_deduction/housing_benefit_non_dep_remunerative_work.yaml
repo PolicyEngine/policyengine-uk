@@ -1,0 +1,447 @@
+# HB Regs 2006 reg 74(1)(b), (2) and reg 6(1), (6); pension-age
+# HB Regs 2006 reg 55(1)(b), (2) and reg 6(1), (6).
+# For a non-worker or 15-hour worker, the council deducts 20.40 * 52 = 1,060.80 in 2026-27,
+# whatever their income. The exemptions in reg 74(7), (8) and (10) and reg
+# 55(7)-(9) act through eligibility, which most cases here take as an input.
+# Family awards, which a single non-dependant's gross income would count, are
+# held at zero.
+# A 16-hour worker's wages of 9,000 alone are below 192/week; adding
+# IIDB or child maintenance of 12,000 gives 403.85/week, so 105.20 * 52.
+
+
+- name: ENGLAND housing_benefit bands IIDB only from 16 weekly hours (0 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    employment_income: 0
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 0
+    housing_benefit_non_dep_gross_income: 12000
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: ENGLAND housing_benefit bands IIDB only from 16 weekly hours (15 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 780
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 15
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: ENGLAND housing_benefit bands IIDB only from 16 weekly hours (16 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 16
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 5470.4
+
+- name: ENGLAND housing_benefit bands IIDB only from 16 weekly hours (37.5 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1950
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 37.5
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 5470.4
+
+- name: ENGLAND housing_benefit bands child maintenance only from 16 weekly hours (0 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    employment_income: 0
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 0
+    housing_benefit_non_dep_gross_income: 12000
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: ENGLAND housing_benefit bands child maintenance only from 16 weekly hours (15 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 780
+    employment_income: 9000
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 15
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: ENGLAND housing_benefit bands child maintenance only from 16 weekly hours (16 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 16
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 5470.4
+
+- name: ENGLAND housing_benefit bands child maintenance only from 16 weekly hours (37.5 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1950
+    employment_income: 9000
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    weekly_hours: 37.5
+    housing_benefit_non_dep_gross_income: 21000
+    household_benefits_individual_non_dep_deduction: 5470.4
+
+- name: housing_benefit charges the flat amount on a non-worker's pension or nil income (pension income)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 70
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    private_pension_income: 28912
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: housing_benefit charges the flat amount to a non-worker with nil income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 70
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 0
+    private_pension_income: 0
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    # Reg 74(1)(b) gives a non-worker the flat amount whatever their income:
+    # 20.40 * 52.
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: housing_benefit charges no new deduction to a non-dependant under 25 on Income Support
+  # Reg 74(8)(a): no deduction for a non-dependant under 25 on Income Support.
+  # The exemption makes them ineligible for a deduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 22
+    hours_worked: 0
+    social_security_income: 0
+    is_on_income_support: true
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    housing_benefit_non_dep_deduction_exempt: true
+    housing_benefit_individual_non_dep_deduction_eligible: false
+    household_benefits_individual_non_dep_deduction: 0
+
+- name: housing_benefit excludes each income-related benefit recipient from remunerative work (Income Support)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: true
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: housing_benefit excludes each income-related benefit recipient from remunerative work (income-based JSA)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: true
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: housing_benefit excludes each income-related benefit recipient from remunerative work (income-related ESA)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: true
+  output:
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: housing_benefit excludes each income-related benefit recipient from remunerative work (no excluded benefit)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    age: 30
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    iidb: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 5470.4
+
+- name: ENGLAND housing_benefit reads its remunerative work hours parameter (16 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    gov.dwp.housing_benefit.non_dep_deduction.remunerative_work_hours: 20
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832
+    employment_income: 9000
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 1060.8
+
+- name: ENGLAND housing_benefit reads its remunerative work hours parameter (20 weekly hours)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    pension_credit: 0
+    gov.dwp.housing_benefit.non_dep_deduction.remunerative_work_hours: 20
+    age: 30
+    country: ENGLAND
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1040
+    employment_income: 9000
+    maintenance_income: 12000
+    social_security_income: 0
+    is_on_income_support: false
+    is_on_income_based_jsa: false
+    is_on_income_related_esa: false
+  output:
+    household_benefits_individual_non_dep_deduction: 5470.4

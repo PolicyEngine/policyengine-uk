@@ -1,4 +1,4 @@
-description: Annual allowance for relief on pension contributions.
+description: Standard annual allowance for pension input amounts.
 values:
   2015-04-01: 40_000
   2023-04-06: 60_000
@@ -6,6 +6,8 @@ metadata:
   unit: currency-GBP
   label: Annual allowance for pension contributions
   reference:
+  - title: Finance (No. 2) Act 2023 s. 20
+    href: https://www.legislation.gov.uk/ukpga/2023/30/section/20
   - title: Finance Act 2004 s. 228
     href: https://www.legislation.gov.uk/ukpga/2004/12/section/228
   - title: Tax on your private pension contributions

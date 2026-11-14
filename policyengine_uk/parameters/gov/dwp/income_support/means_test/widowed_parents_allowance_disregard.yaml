@@ -1,0 +1,10 @@
+description: Income Support disregards this much of a claimant's or partner's weekly Widowed Parent's Allowance.
+values:
+  2001-04-09: 10
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Income Support Widowed Parent's Allowance disregard
+  reference:
+    - title: The Income Support (General) Regulations 1987, Schedule 9 paragraph 16(h)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/16

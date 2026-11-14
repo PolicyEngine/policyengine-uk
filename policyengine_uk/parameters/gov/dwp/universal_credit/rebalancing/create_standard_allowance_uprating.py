@@ -1,0 +1,170 @@
+"""Build the uprating index for the Universal Credit standard allowance.
+
+Universal Credit Act 2025 s. 1 sets minimum standard allowance amounts for
+tax years 2026-27 to 2029-30 in three steps:
+
+1. Take the 2025-26 amounts for 2026-27, and the previous year's Step 2
+   amounts for each later year.
+2. Increase them by the relevant CPI percentage, never below 0% (s. 1(3)).
+3. Increase the result by the relevant uplift percentage for the year: 2.3%,
+   3.1%, 4.0% and 4.8% (s. 1(4)).
+
+Each uplift is measured against the CPI-only path from 2025-26, not compounded
+on the previous uplift, because Step 1 takes the previous year's amount before
+its Step 3. From one year to the next the allowance therefore grows by CPI
+times (1 + this year's uplift) / (1 + last year's uplift).
+
+The legislated amounts (2026-27 so far) are written into
+``standard_allowance/amount.yaml`` and used as they are. Later years are
+uprated by the index built here,
+``gov.economic_assumptions.indices.uc_standard_allowance``: the benefit
+uprating index ``gov.benefit_uprating_cpi``, with
+s. 1(3)'s 0% floor in 2026-27 to 2029-30, times one plus the uplift. For a
+year with legislated amounts the uplift is the one those amounts include, from
+the s. 1(4) table; for later years it is the uplift in force (nil with
+``rebalancing.active`` false). Uprating the legislated amounts by the index
+gives each later year the CPI growth and the change in uplift, so switching
+rebalancing off, or changing a later year's uplift, reaches every year after
+the legislated ones; changing a legislated year needs its amount set. After
+2029-30 the uplift stays at 4.8%, so the allowance grows with CPI alone.
+
+The benefit index is the model's measure of CPI for benefit uprating; s. 1(3)
+names September CPI. Because it is the same index, the difference from a
+CPI-only path is exactly the uplift. It is read on 30 April of each year, the
+date fiscal-year conversion samples, as uprating will extend it, so a reform to
+the benefit index reaches the allowance in the fiscal year it covers.
+
+The projection carries forward any margin in a legislated rate above the
+Act's minimum. In 2026-27 the single under-25 rate is GBP 338.58, above the
+Act's GBP 336.60 minimum; its CPI-only base here is 338.58 / 1.023.
+
+This runs once per tree in the shared parameter generation pipeline before
+uprating. Dated changes through ``Scenario(parameter_changes=...)`` or a
+``reform=`` dict rebuild that pipeline, as does resetting and reprocessing
+parameters, so they reach the allowance.
+"""
+
+from functools import lru_cache
+from pathlib import Path
+
+import yaml
+from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
+
+INDEX_NAME = "gov.economic_assumptions.indices.uc_standard_allowance"
+AMOUNT_FILE = Path(__file__).parents[1] / "standard_allowance" / "amount.yaml"
+# Universal Credit Act 2025 s. 1(1): tax years 2026-27 to 2029-30.
+FIRST_ACT_YEAR = 2026
+LAST_ACT_YEAR = 2029
+# s. 1(4): the uplift included in a legislated amount for each tax year.
+LEGISLATED_UPLIFT = {2026: 0.023, 2027: 0.031, 2028: 0.040, 2029: 0.048}
+
+
+def tax_year_instant(year: int) -> str:
+    """Date at which policy parameters are read for the tax year from April
+    ``year``: 30 April, the date fiscal-year conversion samples."""
+    return f"{year}-04-30"
+
+
+def tax_year(instant_str: str) -> int:
+    """Tax year of a dated amount. Rates are dated from the start of April,
+    before the 6 April start of the tax year they apply to."""
+    year, month = int(instant_str[:4]), int(instant_str[5:7])
+    return year if month >= 4 else year - 1
+
+
+def uplift_in_force(rebalancing: ParameterNode, year: int) -> float:
+    instant = tax_year_instant(year)
+    if not rebalancing.active(instant):
+        return 0.0
+    uplift = rebalancing.standard_allowance_uplift(instant)
+    # Nil before the uplift parameter starts (2025-26).
+    return 0.0 if uplift is None else uplift
+
+
+@lru_cache(maxsize=1)
+def last_legislated_year() -> int:
+    """The latest tax year with a legislated amount in amount.yaml for every
+    claimant type. Read from the file, so a reform that replaces an amount
+    does not change which years are legislated."""
+    data = yaml.safe_load(AMOUNT_FILE.read_text())
+    return min(
+        max(
+            tax_year(str(instant))
+            for instant, value in node["values"].items()
+            if value is not None
+        )
+        for node in data.values()
+        if isinstance(node, dict) and "values" in node
+    )
+
+
+def benefit_index_values(parameters: ParameterNode) -> dict:
+    """``gov.benefit_uprating_cpi`` for each year of its uprating index, as
+    uprating will extend it: its own values up to its latest one, then that
+    value moved with its uprating index. Each year is read on 30 April and
+    keyed by 1 January, as the index is."""
+    benefit_index = parameters.gov.benefit_uprating_cpi
+    cpi_index = get_parameter(parameters, benefit_index.metadata["uprating"])
+    last_instant = benefit_index.values_list[0].instant_str
+    value_at_last = benefit_index(last_instant)
+    cpi_at_last = cpi_index(last_instant)
+    values = {}
+    for entry in sorted(cpi_index.values_list, key=lambda e: e.instant_str):
+        instant = tax_year_instant(int(entry.instant_str[:4]))
+        if instant <= last_instant or cpi_at_last is None:
+            values[entry.instant_str] = benefit_index(instant)
+        else:
+            values[entry.instant_str] = value_at_last * cpi_index(instant) / cpi_at_last
+    return values
+
+
+def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNode:
+    universal_credit = parameters.gov.dwp.universal_credit
+    rebalancing = universal_credit.rebalancing
+    legislated_through = last_legislated_year()
+
+    values = {}
+    cpi_path = 1.0
+    previous_cpi = None
+    for instant, cpi in benefit_index_values(parameters).items():
+        year = int(instant[:4])
+        if cpi is None:
+            continue
+        if previous_cpi is not None:
+            growth = cpi / previous_cpi
+            if FIRST_ACT_YEAR <= year <= LAST_ACT_YEAR:
+                growth = max(1.0, growth)
+            cpi_path *= growth
+        previous_cpi = cpi
+        if year <= legislated_through and year in LEGISLATED_UPLIFT:
+            # The uplift the legislated amounts for this year include.
+            uplift = LEGISLATED_UPLIFT[year]
+        else:
+            uplift = uplift_in_force(rebalancing, year)
+        values[instant] = cpi_path * (1 + uplift)
+
+    parameters.gov.economic_assumptions.indices.add_child(
+        "uc_standard_allowance",
+        Parameter(
+            name=INDEX_NAME,
+            data={
+                "description": (
+                    "Uprating index for the Universal Credit standard "
+                    "allowance: benefit uprating CPI times one plus the "
+                    "Universal Credit Act 2025 uplift."
+                ),
+                "values": values,
+                "metadata": {
+                    "unit": "/1",
+                    "label": "Universal Credit standard allowance uprating index",
+                    "reference": [
+                        {
+                            "title": "Universal Credit Act 2025 s. 1",
+                            "href": "https://www.legislation.gov.uk/ukpga/2025/22/section/1",
+                        }
+                    ],
+                },
+            },
+        ),
+    )
+    return parameters

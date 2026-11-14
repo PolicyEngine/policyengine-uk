@@ -2,6 +2,7 @@ description: Percentage discount for qualifying aged households.
 values:
   2003-01-01: 1
 metadata:
+  preserve_calendar_dates: true
   unit: /1
   label: Aged TV Licence discount
   reference:

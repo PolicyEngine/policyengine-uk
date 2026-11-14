@@ -6,7 +6,10 @@ class pension_credit_earnings(Variable):
     documentation = (
         "Earnings of the claimant and partner. A claimant's income includes "
         "their partner's (State Pension Credit Act 2002 s.5), but not that of "
-        "children or young persons in the family."
+        "children or young persons in the family. Earnings include statutory "
+        "sick, maternity and paternity pay (State Pension Credit Regulations "
+        "2002 reg. 17A(2)(h) and (i)), listed in "
+        "gov.dwp.pension_credit.guarantee_credit.statutory_payments."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -15,12 +18,16 @@ class pension_credit_earnings(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/5",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B",
+        "https://www.legislation.gov.uk/uksi/1996/2745/regulation/13",
     )
 
     def formula(benunit, period, parameters):
-        sources = parameters(
-            period
-        ).gov.dwp.pension_credit.guarantee_credit.earnings_sources
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
+        sources = list(gc.earnings_sources) + list(gc.statutory_payments)
         person = benunit.members
-        earnings = add(person, period, sources)
+        # A loss in one employment is not set against earnings in another
+        # (Computation of Earnings Regs 1996 reg. 13(12), applied by SPC
+        # Regs 2002 reg. 17B(5)(b)), so a negative source counts as nil.
+        earnings = sum(max_(0, person(source, period)) for source in sources)
         return benunit.sum(earnings * person("is_claimant_or_partner", period))

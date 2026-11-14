@@ -1,0 +1,55 @@
+description: Weekly amount for each child or young person in the family of an applicant who is not a pensioner
+  under the Welsh council tax reduction schemes.
+values:
+  2013-04-01:
+    value: 65.62
+    reference:
+    - title: W.S.I. 2013/112 reg 10(b)
+      href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+  2014-04-01:
+    value: 66.33
+    reference:
+    - title: W.S.I. 2014/66 reg 10(b)
+      href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+  2015-04-01:
+    value: 66.9
+    reference:
+    - title: W.S.I. 2015/44 reg 11(b)
+      href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+  2022-04-01:
+    value: 70.8
+    reference:
+    - title: W.S.I. 2022/51 reg 8(b)
+      href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+  2023-04-01:
+    value: 77.78
+    reference:
+    - title: W.S.I. 2023/47 reg 9(b)
+      href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+  2024-04-01:
+    value: 83.24
+    reference:
+    - title: W.S.I. 2024/56 reg 8(b)
+      href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+  2025-04-01:
+    value: 84.66
+    reference:
+    - title: W.S.I. 2025/59 reg 9(b)
+      href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+  2026-04-01:
+    value: 87.88
+    reference:
+    - title: W.S.I. 2026/13 reg 11(b)
+      href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+metadata:
+  label: Wales working-age CTR child or young person amount
+  unit: currency-GBP
+  period: week
+  reference:
+  - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+      6 para. 1(1)(b) and Sch. 7 para. 3(1)
+    href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/3
+  - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Miscellaneous
+      Amendments) (Wales) Regulations 2026 reg. 11(b)
+    href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+  uprating: gov.benefit_uprating_cpi

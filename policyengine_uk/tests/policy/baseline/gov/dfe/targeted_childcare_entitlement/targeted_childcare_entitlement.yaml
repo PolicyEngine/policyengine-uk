@@ -1,3 +1,6 @@
+# Whole ages imply a 6 April birthday. Targeted provision begins in September
+# after the second birthday; after the third birthday it continues through
+# the summer term until universal provision starts (DfE guidance A1.4).
 - name: Child under 2 (ineligible) 
   period: 2024
   input:
@@ -22,9 +25,9 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4_719.60  # 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 3_146.40
 
-- name: Child aged 3 (not eligible by age, but has targeting)
+- name: Child aged 3 keeps the targeted summer term before universal starts
   period: 2024
   input:
     people:
@@ -35,7 +38,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 0.0  # Not eligible by age even if targeting criteria met
+    targeted_childcare_entitlement: 1_573.20
 
 - name: Child using fewer hours than maximum entitlement
   period: 2024
@@ -49,7 +52,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 3_146.4  # 10 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 2_097.60
 
 - name: Child using exactly maximum entitlement
   period: 2024
@@ -63,7 +66,7 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4_719.6  # 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 3_146.40
 
 - name: Child using more than maximum entitlement (capped)
   period: 2024
@@ -77,4 +80,4 @@
         members: [child]
         targeted_childcare_entitlement_eligible: True
   output:
-    targeted_childcare_entitlement: 4_719.6  # Capped at 15 hours * 38 weeks * £8.28 per hour
+    targeted_childcare_entitlement: 3_146.40

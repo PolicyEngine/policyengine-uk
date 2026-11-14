@@ -5,14 +5,16 @@
     age: 14
   output:
     is_child_or_qualifying_young_person_for_child_benefit: true
-- name: Child Benefit child or qualifying young person for student in FE
+- name: A student in FE is a Child Benefit qualifying young person, but alone is their own claimant, not their own qualifying young person
   period: 2020
   absolute_error_margin: 0
   input:
     age: 17
     current_education: POST_SECONDARY
   output:
-    is_child_or_qualifying_young_person_for_child_benefit: true
+    is_qualifying_young_person_for_child_benefit: true
+    is_claimant_or_partner: true
+    is_child_or_qualifying_young_person_for_child_benefit: false
 - name: Benefits premiums summed
   period: 2020
   absolute_error_margin: 0

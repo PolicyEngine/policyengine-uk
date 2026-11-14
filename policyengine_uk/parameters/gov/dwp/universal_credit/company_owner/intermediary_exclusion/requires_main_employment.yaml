@@ -1,0 +1,22 @@
+description: >
+  Whether employed earnings under the intermediaries rules take the person out
+  of Universal Credit's company owner rule only when they derive from the
+  person's main employment. As made, any such earnings did; from 28 November
+  2018 only those derived from activities that are the person's main
+  employment do.
+  Annual simulations use the rule in force at the start of each tax year, so
+  the 2018-19 tax year uses the earlier rule throughout.
+metadata:
+  label: Universal Credit company owner intermediary exclusion requires main employment
+  period: year
+  unit: bool
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 77(5) (as made)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/77/made
+    - title: The Universal Credit and Jobseeker's Allowance (Miscellaneous Amendments) Regulations 2018 reg. 3(5)
+      href: https://www.legislation.gov.uk/uksi/2018/1129/regulation/3/made
+    - title: The Universal Credit and Jobseeker's Allowance (Miscellaneous Amendments) Regulations (Northern Ireland) 2018 reg. 3(7)
+      href: https://www.legislation.gov.uk/nisr/2018/187/regulation/3/made
+values:
+  2013-04-29: false
+  2018-11-28: true

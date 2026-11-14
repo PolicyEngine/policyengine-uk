@@ -1,0 +1,200 @@
+# Annual public-input controls, not an audit of legacy entitlement or rates.
+# Ages 60/58 in 2026 permit legacy IB/SDA histories; receipt remains an input.
+# CA annual netting represents constant year-round amounts. The care-hours
+# interface does not attribute care to a recipient: the represented PIP recipient
+# documents the qualifying-care premise without certifying that missing link.
+# UC eligibility, components, income reduction and final awards remain live.
+
+- name: IB reduces a working-age claimant's positive final UC award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 60
+    incapacity_benefit_reported: 1_000
+    country: ENGLAND
+  output:
+    universal_credit: 424.90 * 12 - 1_000
+    incapacity_benefit: 1_000
+    is_uc_eligible: true
+    uc_maximum_amount: 424.90 * 12
+    uc_unearned_income: 1_000
+    uc_income_reduction: 1_000
+
+- name: No legacy income preserves a positive final UC award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 60
+    country: ENGLAND
+  output:
+    universal_credit: 424.90 * 12
+    uc_unearned_income: 0
+
+- name: IB 0 counts alongside actual residual Carer's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 60
+        care_hours: 35
+        incapacity_benefit_reported: 0
+      recipient:
+        age: 55
+        pip_dl_category: ENHANCED
+    benunits:
+      carer_unit:
+        members: [carer]
+      recipient_unit:
+        members: [recipient]
+    households:
+      household:
+        members: [carer, recipient]
+        country: ENGLAND
+  output:
+    universal_credit: [3115.48, 5098.80]
+    carers_allowance_pre_overlap: [4495.40, 0]
+    carers_allowance: [4495.40, 0]
+    uc_carer_element: [2512.08, 0]
+    is_uc_eligible: [true, true]
+    uc_maximum_amount: [7610.88, 5098.80]
+    uc_unearned_income: [4495.40, 0]
+    uc_income_reduction: [4495.40, 0]
+
+- name: IB 1000 counts alongside actual residual Carer's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 60
+        care_hours: 35
+        incapacity_benefit_reported: 1000
+      recipient:
+        age: 55
+        pip_dl_category: ENHANCED
+    benunits:
+      carer_unit:
+        members: [carer]
+      recipient_unit:
+        members: [recipient]
+    households:
+      household:
+        members: [carer, recipient]
+        country: ENGLAND
+  output:
+    universal_credit: [3115.48, 5098.80]
+    carers_allowance_pre_overlap: [4495.40, 0]
+    carers_allowance: [3495.40, 0]
+    uc_carer_element: [2512.08, 0]
+    is_uc_eligible: [true, true]
+    uc_maximum_amount: [7610.88, 5098.80]
+    uc_unearned_income: [4495.40, 0]
+    uc_income_reduction: [4495.40, 0]
+
+- name: IB 5000 counts alongside actual residual Carer's Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 60
+        care_hours: 35
+        incapacity_benefit_reported: 5000
+      recipient:
+        age: 55
+        pip_dl_category: ENHANCED
+    benunits:
+      carer_unit:
+        members: [carer]
+      recipient_unit:
+        members: [recipient]
+    households:
+      household:
+        members: [carer, recipient]
+        country: ENGLAND
+  output:
+    universal_credit: [2610.88, 5098.80]
+    carers_allowance_pre_overlap: [4495.40, 0]
+    carers_allowance: [0.00, 0]
+    uc_carer_element: [2512.08, 0]
+    is_uc_eligible: [true, true]
+    uc_maximum_amount: [7610.88, 5098.80]
+    uc_unearned_income: [5000.00, 0]
+    uc_income_reduction: [5000.00, 0]
+
+# SDA is the existing maximum-rate proxy, not the reported cash amount.
+# The public disability flag supplies the assessment premise; the calculator
+# does not infer this flag from a disability benefit report as datasets do.
+# Unchanged 2026 standard/health rates below are model controls, not a rate audit.
+- name: SDA report 1 counts the full modeled award and live LCWRA element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        sda_reported: 1
+        is_disabled_for_benefits: true
+      partner:
+        age: 58
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    universal_credit: (666.97 + 217.26) * 12 - 119.35 * 52
+    sda: [6206.20, 0]
+    uc_limited_capability_for_WRA: [true, false]
+    uc_LCWRA_element: 217.26 * 12
+    is_uc_eligible: true
+    uc_maximum_amount: (666.97 + 217.26) * 12
+    uc_unearned_income: 119.35 * 52
+    uc_income_reduction: 119.35 * 52
+
+# SDA is the existing maximum-rate proxy, not the reported cash amount.
+# The public disability flag supplies the assessment premise; the calculator
+# does not infer this flag from a disability benefit report as datasets do.
+# Unchanged 2026 standard/health rates below are model controls, not a rate audit.
+- name: SDA report 100 counts the full modeled award and live LCWRA element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        sda_reported: 100
+        is_disabled_for_benefits: true
+      partner:
+        age: 58
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    universal_credit: (666.97 + 217.26) * 12 - 119.35 * 52
+    sda: [6206.20, 0]
+    uc_limited_capability_for_WRA: [true, false]
+    uc_LCWRA_element: 217.26 * 12
+    is_uc_eligible: true
+    uc_maximum_amount: (666.97 + 217.26) * 12
+    uc_unearned_income: 119.35 * 52
+    uc_income_reduction: 119.35 * 52
+
+- name: A current Northern Ireland claimant's IB reduces final UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 60
+    incapacity_benefit_reported: 1_000
+    country: NORTHERN_IRELAND
+  output:
+    universal_credit: 424.90 * 12 - 1_000
+    is_uc_eligible: true
+    uc_unearned_income: 1_000

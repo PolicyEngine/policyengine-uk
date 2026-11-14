@@ -1,0 +1,106 @@
+# HB Regs 2006 Sch 4 para 12: where a claimant is on Universal Credit, Income
+# Support, income-based JSA or income-related ESA, all their earnings are
+# disregarded. The partner's earnings are the claimant's (reg 25) and a
+# couple's award covers both of them. "other" is a member who is neither the
+# claimant, the partner nor a child or young person they are responsible for,
+# so an award they report is their own claim, and the claimant keeps the
+# standard disregard: £5 a week for a single claimant (Sch 4 para 10), capped
+# at net earnings. The claimant's £3,000 of earnings is below the income tax
+# and National Insurance thresholds, so it is all net earnings. Income-based
+# JSA is in payment until April 2026, so these cases are in 2025.
+
+- name: Another member's income-related ESA leaves the claimant's earnings with the standard disregard
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    housing_benefit_net_earnings: 3_000
+    # 5 x 52
+    housing_benefit_applicable_income_disregard: 260
+
+- name: Another member's income-based JSA leaves the claimant's earnings with the standard disregard
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    housing_benefit_net_earnings: 3_000
+    housing_benefit_applicable_income_disregard: 260
+
+- name: The claimant's own income-related ESA disregards all their earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 3_000
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+  output:
+    housing_benefit_net_earnings: 3_000
+    housing_benefit_applicable_income_disregard: 3_000
+
+- name: The partner's income-based JSA disregards all the couple's earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_net_earnings: 3_000
+    housing_benefit_applicable_income_disregard: 3_000

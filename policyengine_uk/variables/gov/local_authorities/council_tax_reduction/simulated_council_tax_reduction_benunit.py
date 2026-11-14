@@ -30,9 +30,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
 
         country = benunit.household("country", period)
-        has_pensioner = benunit.household(
-            "council_tax_reduction_household_has_pensioner", period
-        )
+        # Each claim's scheme follows the applicant's own family (SI 2012/2885
+        # reg 3).
+        has_pensioner = benunit("council_tax_reduction_pensioner", period)
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
         scotland = is_scotland_scheme(country)
         wales = is_wales_scheme(country)
@@ -45,8 +45,21 @@ class simulated_council_tax_reduction_benunit(Variable):
         liability = benunit.household(
             "council_tax_reduction_maximum_eligible_liability", period
         ) * benunit("council_tax_reduction_joint_liability_share", period)
-        applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
-        applicable_income = benunit("council_tax_reduction_applicable_income", period)
+        # Scotland's working-age scheme and the Welsh rules for persons who
+        # are not pensioners have their own applicable amounts and income.
+        devolved_working_age = benunit(
+            "council_tax_reduction_devolved_working_age", period
+        )
+        applicable_amount = where(
+            devolved_working_age,
+            benunit("council_tax_reduction_working_age_applicable_amount", period),
+            benunit("council_tax_reduction_applicable_amount", period),
+        )
+        applicable_income = where(
+            devolved_working_age,
+            benunit("council_tax_reduction_working_age_applicable_income", period),
+            benunit("council_tax_reduction_applicable_income", period),
+        )
         non_dep_deductions = benunit("council_tax_reduction_non_dep_deductions", period)
 
         max_support = select(
@@ -84,7 +97,8 @@ class simulated_council_tax_reduction_benunit(Variable):
             - excess_income * withdrawal_rate
             - non_dep_deductions,
         )
-        capital_eligible = benunit.household("savings", period) <= capital_limit
+        capital = benunit("council_tax_reduction_assessable_capital", period)
+        capital_eligible = capital <= capital_limit
         national_ctr = (
             national_scheme
             * is_household_head_benunit

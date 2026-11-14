@@ -1,0 +1,17 @@
+description: Housing Benefit gives the additional earnings disregard for working the standard hours only to a claimant or partner of at least this age.
+values:
+  2006-03-06: 25
+metadata:
+  period: year
+  unit: year
+  label: Housing benefit worker element minimum age
+  economy: false
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 17(2)(b)(i)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, Schedule 4 paragraph 9(2)(b)(i)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/9
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 17(2)(b)(i)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006, Schedule 5 paragraph 9(2)(b)(i)
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/9

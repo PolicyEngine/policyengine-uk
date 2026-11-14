@@ -1,106 +1,100 @@
-# Company-director NI (annual cumulative basis)
+# Company-director National Insurance
 
-```{note}
-PolicyEngine UK applies a **single annual NI calculation** at the
-person level. For most users this matches what HMRC charges company
-directors at year end. This page explains the relationship between the
-director-specific "annual cumulative" basis HMRC uses and PolicyEngine's
-current modelling, and describes what would need to change to expose a
-dedicated director-specific path. Tracked under
-[#721](https://github.com/PolicyEngine/policyengine-uk/issues/721).
+## Supported 2022–23 employee schedule
+
+For model year `2022`, the explicit Person/year input
+`is_full_year_category_a_director` selects the employee primary Class 1
+schedule for a person who was a director throughout the tax year, had one
+employment and was in category A throughout. The input defaults to `False`;
+the model does not infer it from salary, dividends or company ownership.
+The input label names its supported 2022–23 period. In other model years,
+even an explicit `True` leaves the ordinary calculation unchanged.
+
+[Regulation 8(3) of the Social Security (Contributions) Regulations
+2001][reg8] sets the earnings period to the year for a director of the
+company at the beginning of that year.
+
+HMRC's [2022–23 employer guidance][rates] gives this annual director schedule:
+
+| Annual NI earnings | Employee rate |
+| --- | ---: |
+| Up to £11,908 | 0% |
+| Above £11,908 up to £50,270 | 12.73% |
+| Above £50,270 | 2.73% |
+
+For example, £30,000 of annual NI earnings produces £2,303.1116 before
+monetary rounding: (£30,000 − £11,908) × 12.73%. The model retains its existing
+floating-point representation; this is not a new payroll rounding rule.
+The director route uses the existing `ni_class_1_income` earnings definition,
+including its statutory-pay components, and the existing final `ni_liable`
+age gate. Employer NI, income-tax and other NI formulas and rates remain
+unchanged. Their outputs need not all be unchanged: the existing Class 4 annual
+maximum uses primary Class 1 contributions, so it can change for a director
+who also has trading profits. That is propagation through the existing cap,
+not a new Class 4 rule or a certification of all mixed-income cases.
+
+A policy-test input for this restricted case is:
+
+```yaml
+period: 2022
+input:
+  age: 40
+  employment_income: 30000
+  is_full_year_category_a_director: true
+output:
+  ni_class_1_employee: 2303.1116
 ```
 
-## What HMRC's annual cumulative basis is
+The primary and additional component variables allocate their respective
+annual liabilities equally over twelve model months. Adding the months
+recovers the annual liability. These allocations are **not** statutory
+interim payroll deductions, observed monthly cash, cumulative year-to-date
+charges or a model of bonus timing. The annual earnings interface does not
+represent when pay was received.
 
-Class 1 NI is normally charged on each *earnings period* (typically a
-week or a month) — the employer applies the weekly/monthly thresholds
-to that pay period's earnings in isolation. Directors are a special
-case because their pay is often irregular: a director might take £0 in
-salary for eleven months and then a £200,000 bonus in December. Under
-period-by-period NI rules, that pattern would generate massive NI in
-the bonus month and almost none in the other eleven, even though the
-director's annual income is no different from someone earning a steady
-salary.
+## Why this differs from the ordinary route
 
-To prevent this avoidance route, [SSCBA 1992 s.122 and the *Social
-Security (Contributions) Regulations 2001*][nim12000] require directors
-to use an **annual earnings period** by default:
+The ordinary employee route reads weekly thresholds and converts them to
+monthly equivalents. Existing fiscal parameter processing samples 30 April:
+model year `2022` therefore uses the ordinary employee rate and threshold
+in force on 30 April 2022. That convention does not reproduce the distinct
+annual director schedule above. Annual salary inputs alone do not make the
+two routes equivalent for 2022–23.
 
-1. The director's NI is computed on a **cumulative** year-to-date
-   basis.
-2. The annual thresholds (Primary Threshold, Upper Earnings Limit,
-   Secondary Threshold) are applied to YTD earnings, not to each pay
-   period's earnings in isolation.
-3. NI is charged once YTD earnings cross each threshold, and never
-   refunded if earnings drop later in the year.
+The new director parameters store annual thresholds, with raw dates starting
+6 April 2022. A separate implementation-coverage parameter is true only for
+2022–23, mapping to model year `2022` under that same fiscal convention.
+Its false value from 6 April 2023 limits this implementation; it does not
+mean that director law ended then. No ordinary rate or threshold history is
+changed. Broader fiscal-year representation remains separate work under
+[#1807](https://github.com/PolicyEngine/policyengine-uk/issues/1807).
 
-There is also an "**alternative**" method, which approximates the
-annual basis with monthly cumulative figures, used for in-year
-operational simplicity; the final year-end reconciliation still uses
-the annual basis.
+## Remaining limits
 
-## How PolicyEngine currently handles this
+HMRC describes a [standard annual method and an alternative method][directors].
+The alternative method uses pay-period calculations during the year and
+reconciles to the annual amount at year end. This page and the model's new
+route concern the supported full-year annual liability, not either method's
+in-year payment sequence.
 
-PolicyEngine UK already computes NI **annually** for every person:
+Appointment years, category changes, multiple employments, other years and
+employer-side director NI remain outside this implementation. The separate
+employer rate and threshold in HMRC's table are not employee inputs. An
+explicit contribution output supplied by a user retains the existing input
+override contract; the new fact does not validate that supplied amount.
 
-- The Class 1 employee primary and additional formulas in
-  [`variables/gov/hmrc/national_insurance/class_1/`](https://github.com/PolicyEngine/policyengine-uk/tree/main/policyengine_uk/variables/gov/hmrc/national_insurance/class_1)
-  read weekly thresholds from `gov.hmrc.national_insurance.class_1.thresholds`
-  and convert them to monthly (`× WEEKS_IN_YEAR / MONTHS_IN_YEAR`) before
-  applying the rate.
-- Because the input `employment_income` is annual and is implicitly
-  spread evenly across months, the **annual NI** the model produces is
-  identical to the annual cumulative figure a director would owe — for
-  someone earning the same total over the year, the two methods give
-  the same answer.
-
-That's why microsimulation results don't depend on director status.
-
-## Where the current model could diverge from HMRC's director rules
-
-Three situations could in principle produce a different answer:
-
-1. **Irregular within-year pay**. If a household-calculator user inputs
-   an annual `employment_income` of, say, £80,000 but means it as a
-   single lump-sum payment, PolicyEngine still spreads it across twelve
-   months — matching the annual cumulative outcome. There is no
-   surface here for the user to express the pay timing.
-2. **Mid-year start or end** of directorship within a tax year. The
-   pro-rating rules for directors who start or cease being a director
-   part-way through a year are slightly different from regular
-   employees — PolicyEngine assumes a full-year period everywhere.
-3. **Multiple employments**. A director with two separate company
-   roles can sometimes have NI calculated separately per employment.
-   PolicyEngine has a single `employment_income` per person and so
-   collapses this case.
-
-In practice (1) and (2) only matter for the household-calculator
-front-end, not microsimulation. (3) is a wider modelling gap that
-applies beyond directors.
-
-## What a dedicated director path would look like
-
-A future PR addressing this fully would add:
-
-- A new boolean input `is_company_director` (Person, year).
-- A documentation flag on `ni_class_1_employee_primary` / `_additional`
-  noting that for directors with `is_company_director == true` the
-  formula returns the same annual figure as the regular path (rather
-  than period-by-period NI), confirming the equivalence.
-- Optional follow-up: a `company_director_pay_timing` enum so that
-  household-calculator users who model a director's actual pay pattern
-  can document their intent, but the resulting NI stays on the annual
-  basis.
-
-For now PolicyEngine is **functionally correct** for any user whose
-input is an annual income — which is the expected interface — and
-no code changes are needed in the short term.
+This is a partial response to
+[#721](https://github.com/PolicyEngine/policyengine-uk/issues/721), which
+remains open. It introduces no director imputation, population estimate or
+encoded policy-parity claim.
 
 ## References
 
-- HMRC, [NIM12000 — Class 1 NICs: company directors](https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim12000) — primary internal guidance covering the annual cumulative basis.
-- HMRC, [CA44 — National Insurance for company directors](https://www.gov.uk/government/publications/ca44-national-insurance-for-company-directors) — the operational employer guide.
-- [The Social Security (Contributions) Regulations 2001 (SI 2001/1004) reg. 8](https://www.legislation.gov.uk/uksi/2001/1004/regulation/8) — the regulation that imposes the annual earnings period.
-- [Social Security Contributions and Benefits Act 1992 s. 8](https://www.legislation.gov.uk/ukpga/1992/4/section/8) — primary statute for Class 1 employee NI.
+- [Social Security (Contributions) Regulations 2001, regulation 8][reg8] — earnings periods for directors.
+- [Social Security Contributions and Benefits Act 1992, section 8](https://www.legislation.gov.uk/ukpga/1992/4/section/8) — calculation of primary Class 1 contributions.
+- [HMRC NIM12000 — Class 1 NICs: company directors](https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim12000).
+- [HMRC CA44 — National Insurance for company directors](https://www.gov.uk/government/publications/ca44-national-insurance-for-company-directors).
 
-[nim12000]: https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim12000
+[rates]: https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2022-to-2023
+[directors]: https://www.gov.uk/employee-directors
+[reg8]: https://www.legislation.gov.uk/uksi/2001/1004/regulation/8

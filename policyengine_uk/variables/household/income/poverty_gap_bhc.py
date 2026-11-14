@@ -5,6 +5,10 @@ class poverty_gap_bhc(Variable):
     value_type = float
     entity = Household
     label = "Positive financial gap between net household income and the poverty line"
+    documentation = (
+        "Income is HBAI income before housing costs with a negative figure "
+        "reset to zero, as in HBAI, so the gap is at most the poverty line."
+    )
     definition_period = YEAR
 
     def formula(household, period, parameters):

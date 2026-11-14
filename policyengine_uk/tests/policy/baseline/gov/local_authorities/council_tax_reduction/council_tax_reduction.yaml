@@ -215,7 +215,7 @@
         claims_all_entitled_benefits: true
         uc_maximum_amount: 5_000
         uc_income_reduction: 2_500
-        uc_earned_income: 6_000
+        uc_earned_income_before_work_allowance: 6_000
         uc_unearned_income: 0
     households:
       household:
@@ -227,6 +227,43 @@
   output:
     universal_credit: 2_500
     council_tax_reduction: 1_100
+
+- name: "Merton UC claimant's income counts earnings before the work allowance"
+  # #1986. Single parent, child aged 6, earning 12,000 (under the personal
+  # allowance and primary threshold, so earned income is 12,000), council rent,
+  # council tax 1,800. The award has a housing costs element, so the work
+  # allowance is 427 x 12 = 5,124 and UC = maximum - 55% x (12,000 - 5,124) =
+  # maximum - 3,781.80. Income (scheme para. 37) is earned income plus the
+  # award: 12,000 + maximum - 3,781.80, which exceeds the applicable amount
+  # (the maximum, para. 28) by 8,218.20. CTR = 1,800 - 20% x 8,218.20 =
+  # 156.36. Deducting the work allowance from income would have given 1,181.16.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 12_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+        local_authority: MERTON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income_before_work_allowance: 12_000
+    council_tax_reduction: 156.36
 
 - name: Merton UC claimant uses UC-reported capital
   period: 2026
@@ -371,7 +408,7 @@
         claims_all_entitled_benefits: true
         uc_maximum_amount: 5_000
         uc_income_reduction: 2_500
-        uc_earned_income: 6_000
+        uc_earned_income_before_work_allowance: 6_000
         uc_unearned_income: 0
     households:
       household:
@@ -383,6 +420,43 @@
   output:
     universal_credit: 2_500
     council_tax_reduction: 1_100
+
+- name: "Kingston upon Thames UC claimant's income counts earnings before the work allowance"
+  # #1986. Single parent, child aged 6, earning 12,000 (under the personal
+  # allowance and primary threshold, so earned income is 12,000), council rent,
+  # council tax 1,800. The award has a housing costs element, so the work
+  # allowance is 427 x 12 = 5,124 and UC = maximum - 55% x (12,000 - 5,124) =
+  # maximum - 3,781.80. Income (scheme para. 37) is earned income plus the
+  # award: 12,000 + maximum - 3,781.80, which exceeds the applicable amount
+  # (the maximum, para. 28) by 8,218.20. CTR = 1,800 - 20% x 8,218.20 =
+  # 156.36. Deducting the work allowance from income would have given 1,181.16.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 12_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+        local_authority: KINGSTON_UPON_THAMES
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income_before_work_allowance: 12_000
+    council_tax_reduction: 156.36
 
 - name: Kingston upon Thames UC claimant uses UC-reported capital
   period: 2026
@@ -542,6 +616,41 @@
   output:
     council_tax_reduction: 867.92
 
+- name: Newham UC claimant's income counts earnings before the work allowance
+  # #1986. Single parent, child aged 6, earning 4,000, council rent, council
+  # tax 1,800. Earnings are under the 5,124 work allowance, so UC is the
+  # maximum. Income is 4,000 + maximum, 4,000 over the applicable amount, so
+  # CTR = 70% x 1,800 - 25% x 4,000 = 260. Deducting the work allowance from
+  # income would have left no excess and given 1,260.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 4_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income_before_work_allowance: 4_000
+    uc_earned_income: 0
+    council_tax_reduction: 260
+
 - name: Newham UC claimant uses UC-reported capital against the local limit
   period: 2026
   absolute_error_margin: 0.01
@@ -686,7 +795,7 @@
         claims_all_entitled_benefits: true
         uc_maximum_amount: 5_000
         uc_income_reduction: 2_500
-        uc_earned_income: 6_000
+        uc_earned_income_before_work_allowance: 6_000
         uc_unearned_income: 0
     households:
       household:
@@ -698,6 +807,43 @@
   output:
     universal_credit: 2_500
     council_tax_reduction: 1_100
+
+- name: "Westminster UC claimant's income counts earnings before the work allowance"
+  # #1986. Single parent, child aged 6, earning 12,000 (under the personal
+  # allowance and primary threshold, so earned income is 12,000), council rent,
+  # council tax 1,800. The award has a housing costs element, so the work
+  # allowance is 427 x 12 = 5,124 and UC = maximum - 55% x (12,000 - 5,124) =
+  # maximum - 3,781.80. Income (scheme para. 37) is earned income plus the
+  # award: 12,000 + maximum - 3,781.80, which exceeds the applicable amount
+  # (the maximum, para. 28) by 8,218.20. CTR = 1,800 - 20% x 8,218.20 =
+  # 156.36. Deducting the work allowance from income would have given 1,181.16.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 12_000
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: LONDON
+        local_authority: WESTMINSTER
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+        council_tax: 1_800
+        savings: 0
+  output:
+    uc_earned_income_before_work_allowance: 12_000
+    council_tax_reduction: 156.36
 
 - name: Westminster UC claimant uses UC-reported capital
   period: 2026

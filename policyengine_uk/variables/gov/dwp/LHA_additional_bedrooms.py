@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
+    other_family_non_dependants,
+)
 
 
 class LHA_additional_bedrooms(Variable):
@@ -12,7 +15,10 @@ class LHA_additional_bedrooms(Variable):
         "people do; and one if the renter or a joint renter meets the foster "
         "parent condition (see lha_renter_meets_foster_parent_condition), "
         "however many children are placed. The extended benefit unit "
-        "includes the household head's non-dependants and their children. "
+        "includes the household's non-dependants and their children, in the "
+        "one Universal Credit claim that counts them (see "
+        "uc_non_dependants_counted), as the size criteria count them (see "
+        "other_family_non_dependants in LHA_allowed_bedrooms). "
         "Before 1 April 2017 only the renter could meet the overnight care "
         "condition. Plus the bedrooms for children and couples who cannot "
         "share a bedroom because of disability (see LHA_cannot_share_bedrooms)."
@@ -40,15 +46,13 @@ class LHA_additional_bedrooms(Variable):
         # (c): a child for whom the renter meets the foster parent condition.
         foster_child = person("is_lha_foster_child", period)
         own = overnight_care & (~no_one_responsible | foster_child)
-        # Para 9(1)(c): the household head's non-dependants from other
-        # families, and their children.
-        other = (
-            overnight_care
-            & person("is_non_dependant_of_household_head", period)
-            & ~no_one_responsible
-        )
-        head_family = benunit.any(person("is_household_head", period))
-        others = head_family * benunit.max(person.household.sum(other))
+        # Para 9(1)(c): non-dependants from other families, and their
+        # children, as the size criteria count them.
+        other = overnight_care & other_family_non_dependants(benunit, period)
+        # Universal Credit counts the household's non-dependants in one claim
+        # only (para 9(2)(f); see uc_non_dependants_counted).
+        counted = benunit("uc_non_dependants_counted", period)
+        others = counted * benunit.max(person.household.sum(other))
         # Before 1 April 2017 (SI 2017/213 reg 6) only the renter could meet
         # the overnight care condition.
         p = parameters(period).gov.dwp.LHA

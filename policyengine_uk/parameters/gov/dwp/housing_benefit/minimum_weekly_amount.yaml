@@ -1,0 +1,12 @@
+description: Housing Benefit is not payable where the weekly amount would be less than this; where the benefit cap would reduce Housing Benefit below it, the reduction leaves this amount.
+values:
+  2006-03-06: 0.5
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Housing Benefit minimum weekly amount
+  reference:
+    - title: Housing Benefit Regulations 2006 reg. 75 (minimum housing benefit)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/75
+    - title: Housing Benefit Regulations 2006 reg. 75D(2) (reduction of housing benefit)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/75D

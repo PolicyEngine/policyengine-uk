@@ -1,0 +1,746 @@
+# Explicit-facts input contract for the legacy SDP non-dependant gate.
+# Sources: HB SI2006/213 and SI2006/214reg3(2)(d),(3),(4);
+# IS SI1987/1967reg3(2B),(2C),(4). The ISclose-relative/date condition
+# differs from HBreg9(1). An assertedTrue below supplies ALLconditions
+# for EVERYprogramme using the shared gate, for this claimantBU and year.
+# It is NEVER inferred from the rentflag, headrole or anotherBU’s input.
+# The nonliable-target case deliberately supplies an inconsistent assertion
+# to test the guard; it is NOT presented as a lawful positive scenario.
+# Ordinary asserted rentalpairs satisfy thoseconditions; unknown/partial
+# cases remainFalse. Nonpaying thirdpersons are outside the assertion.
+# Numeric1000 pre-gate components isolate finalgate routing and accounting;
+# they are synthetic supplied public inputs, NOT statutory premium rates.
+# Othercases test existing age/blind/benefit/family input seams, not newlaw.
+
+- name: "Asserted ordinary rental occupiers preserve the premium gate in both head directions"
+  period: 2026
+  input:
+    people:
+      qualifying_head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_head:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      qualifying_sharer:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      qualifying_head_family:
+        members: ["qualifying_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+        severe_disability_premium_before_non_dependant_test: 1000
+      other_sharer_family:
+        members: ["other_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+        severe_disability_premium_before_non_dependant_test: 0
+      other_head_family:
+        members: ["other_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+        severe_disability_premium_before_non_dependant_test: 0
+      qualifying_sharer_family:
+        members: ["qualifying_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+        severe_disability_premium_before_non_dependant_test: 1000
+    households:
+      head_qualifies_home:
+        members: ["qualifying_head", "other_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+      sharer_qualifies_home:
+        members: ["other_head", "qualifying_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, true, true]
+    severe_disability_premium: [1000, 0, 0, 1000]
+    has_non_dependant_for_severe_disability_premium: [false, false, false, false]
+    severe_disability_premium_before_non_dependant_test: [1000, 0, 0, 1000]
+
+- name: "Omitting the assertion preserves both baseline rental gates"
+  period: 2026
+  input:
+    people:
+      qualifying_head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_head:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      qualifying_sharer:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      qualifying_head_family:
+        members: ["qualifying_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_before_non_dependant_test: 1000
+      other_sharer_family:
+        members: ["other_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_before_non_dependant_test: 0
+      other_head_family:
+        members: ["other_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_before_non_dependant_test: 0
+      qualifying_sharer_family:
+        members: ["qualifying_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_before_non_dependant_test: 1000
+    households:
+      head_qualifies_home:
+        members: ["qualifying_head", "other_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+      sharer_qualifies_home:
+        members: ["other_head", "qualifying_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    severe_disability_premium_joint_occupier_exclusion_applies: [false, false, false, false]
+    is_liable_for_household_rent: [true, true, true, true]
+    has_non_dependant_for_severe_disability_premium: [true, false, false, true]
+    severe_disability_premium: [0, 0, 0, 0]
+
+- name: "An explicit false assertion preserves both baseline rental gates"
+  period: 2026
+  input:
+    people:
+      qualifying_head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      other_head:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      qualifying_sharer:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      qualifying_head_family:
+        members: ["qualifying_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+        severe_disability_premium_before_non_dependant_test: 1000
+      other_sharer_family:
+        members: ["other_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+        severe_disability_premium_before_non_dependant_test: 0
+      other_head_family:
+        members: ["other_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+        severe_disability_premium_before_non_dependant_test: 0
+      qualifying_sharer_family:
+        members: ["qualifying_sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+        severe_disability_premium_before_non_dependant_test: 1000
+    households:
+      head_qualifies_home:
+        members: ["qualifying_head", "other_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+      sharer_qualifies_home:
+        members: ["other_head", "qualifying_sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    severe_disability_premium_joint_occupier_exclusion_applies: [false, false, false, false]
+    is_liable_for_household_rent: [true, true, true, true]
+    has_non_dependant_for_severe_disability_premium: [true, false, false, true]
+    severe_disability_premium: [0, 0, 0, 0]
+
+- name: "Only the head family supplies the exclusion assertion"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+    households:
+      home:
+        members: ["head", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    has_non_dependant_for_severe_disability_premium: [false, true]
+
+- name: "Only the sharer family supplies the exclusion assertion"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    has_non_dependant_for_severe_disability_premium: [true, false]
+
+- name: "A defensive assertion cannot activate a nonliable target family"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, false]
+    has_non_dependant_for_severe_disability_premium: [true, true]
+
+- name: "A nonpaying third adult still blocks both asserted liable families"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      nonpayer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      nonpayer_family:
+        members: ["nonpayer"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+    households:
+      home:
+        members: ["head", "sharer", "nonpayer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, false]
+    has_non_dependant_for_severe_disability_premium: [true, true, true]
+
+- name: "A same-benefit-unit nonfamily adult is not exempted with the liable claimant"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      nonfamily_adult:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: false
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head", "nonfamily_adult"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "nonfamily_adult", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, false, true]
+    has_non_dependant_for_severe_disability_premium: [true, true]
+
+- name: "The existing blind-person exclusion survives the liable-occupier filter"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      blind_nonpayer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: true
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      blind_family:
+        members: ["blind_nonpayer"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+    households:
+      home:
+        members: ["head", "sharer", "blind_nonpayer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, false]
+    has_non_dependant_for_severe_disability_premium: [false, false, true]
+
+- name: "The existing qualifying-benefit exclusion survives the liable-occupier filter"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      qualifying_nonpayer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: true
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      qualifying_family:
+        members: ["qualifying_nonpayer"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+    households:
+      home:
+        members: ["head", "sharer", "qualifying_nonpayer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, false]
+    has_non_dependant_for_severe_disability_premium: [false, false, true]
+
+- name: "The nondependant age boundary retains a nonfamily resident aged 17"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      nonfamily_young_person:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: false
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head", "nonfamily_young_person"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "nonfamily_young_person", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, false, true]
+    has_non_dependant_for_severe_disability_premium: [false, false]
+
+- name: "The nondependant age boundary retains a nonfamily resident aged 18"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      nonfamily_young_person:
+        age: 18
+        is_household_head: false
+        is_claimant_or_partner: false
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head", "nonfamily_young_person"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "nonfamily_young_person", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, false, true]
+    has_non_dependant_for_severe_disability_premium: [true, true]
+
+- name: "Assertions and residents remain local to their household"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 35
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      second_head:
+        age: 55
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      second_nonpayer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      head_family:
+        members: ["head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      second_head_family:
+        members: ["second_head"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+      second_nonpayer_family:
+        members: ["second_nonpayer"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: false
+    households:
+      home:
+        members: ["head", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+      other_home:
+        members: ["second_head", "second_nonpayer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, true, false]
+    has_non_dependant_for_severe_disability_premium: [false, false, true, true]
+
+- name: "An explicitly identified couple with a twenty-five-year age gap keeps both roles"
+  period: 2026
+  input:
+    people:
+      older_claimant:
+        age: 65
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      younger_partner:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      sharer:
+        age: 30
+        is_household_head: false
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      couple_family:
+        members: ["older_claimant", "younger_partner"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+      sharer_family:
+        members: ["sharer"]
+        liable_for_share_of_household_rent: true
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["older_claimant", "younger_partner", "sharer"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, true, true]
+    has_non_dependant_for_severe_disability_premium: [false, false]
+
+- name: "The claimant family still excludes its supplied qualifying young person"
+  period: 2026
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+      own_qualifying_young_person:
+        age: 19
+        is_household_head: false
+        is_claimant_or_partner: false
+        receives_severe_disability_premium_qualifying_benefit: false
+        is_blind: false
+        is_child_or_qualifying_young_person_for_child_benefit: true
+    benunits:
+      family:
+        members: ["head", "own_qualifying_young_person"]
+        liable_for_share_of_household_rent: false
+        severe_disability_premium_joint_occupier_exclusion_applies: true
+    households:
+      home:
+        members: ["head", "own_qualifying_young_person"]
+        country: "ENGLAND"
+        tenure_type: "RENT_PRIVATELY"
+        rent: 12000
+  output:
+    is_liable_for_household_rent: [true, false]
+    has_non_dependant_for_severe_disability_premium: false
+

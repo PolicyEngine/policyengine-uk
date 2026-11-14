@@ -1,0 +1,105 @@
+# SI 2022/1134 reg 27(1)(a): a child is eligible for working parent hours
+# from the first 1 January, 1 April or 1 September after the day its
+# declaration has effect, which for a declaration made in advance is the day
+# it attains the minimum age (regs 13(2)(a), 20(a) and 25(1)): nine months
+# from 1 September 2024 (SI 2023/1330 reg 2(5)(b)). The model year runs from
+# April, so its terms begin on 1 April, 1 September and 1 January.
+- name: Nine months before 1 January gives the spring term only
+  period: 2026
+  input:
+    age: 0
+    date_of_birth: 20260331
+  output:
+    # Nine months on 31 December 2026.
+    extended_childcare_entitlement_term_share: 0.3333
+  absolute_error_margin: 0.0001
+
+- name: Nine months on 1 January gives no term in the year
+  period: 2026
+  input:
+    age: 0
+    date_of_birth: 20260401
+  output:
+    # Nine months on 1 January 2027: eligible from 1 April 2027.
+    extended_childcare_entitlement_term_share: 0
+    extended_childcare_entitlement_qualifying_child: false
+
+- name: Nine months before 1 September gives the autumn and spring terms
+  period: 2026
+  input:
+    age: 0
+    date_of_birth: 20251130
+  output:
+    # Nine months on 30 August 2026.
+    extended_childcare_entitlement_term_share: 0.6667
+  absolute_error_margin: 0.0001
+
+- name: Nine months on 1 September gives the spring term only
+  period: 2026
+  input:
+    age: 0
+    date_of_birth: 20251201
+  output:
+    extended_childcare_entitlement_term_share: 0.3333
+  absolute_error_margin: 0.0001
+
+- name: A 1-year-old who reached nine months on 1 April misses the summer term
+  period: 2026
+  input:
+    age: 1
+    date_of_birth: 20250701
+  output:
+    extended_childcare_entitlement_term_share: 0.6667
+  absolute_error_margin: 0.0001
+
+- name: A 1-year-old who reached nine months before 1 April gets every term
+  period: 2026
+  input:
+    age: 1
+    date_of_birth: 20250630
+  output:
+    extended_childcare_entitlement_term_share: 1
+
+# Without a date of birth a whole age is the middle of the year of age: born
+# on 6 April, so nine months old on 6 January.
+- name: Without a date of birth, age 0 gets no term and age 1 every term
+  period: 2026
+  input:
+    people:
+      baby:
+        age: 0
+      toddler:
+        age: 1
+  output:
+    extended_childcare_entitlement_term_share: [0, 1]
+
+# A fractional age is the exact age on 6 October.
+- name: A child exactly nine months old on 6 October gets the spring term
+  period: 2026
+  input:
+    age: 0.75
+  output:
+    extended_childcare_entitlement_term_share: 0.3333
+  absolute_error_margin: 0.0001
+
+# Reg 13(2)(a): "two" from 1 April 2024 to 31 August 2024 (SI 2023/1330 reg
+# 2(5)(a)), the value on 30 April 2024, which the model reads for 2024.
+- name: A child turning two on 1 April 2024 qualifies from September
+  period: 2024
+  input:
+    age: 2
+    date_of_birth: 20220401
+  output:
+    extended_childcare_entitlement_term_share: 0.6667
+  absolute_error_margin: 0.0001
+
+# SI 2016/1257 reg 35(3) set the same start dates from the third birthday
+# before December 2022.
+- name: A child turning three after 1 April 2022 qualifies from September
+  period: 2022
+  input:
+    age: 3
+    date_of_birth: 20190415
+  output:
+    extended_childcare_entitlement_term_share: 0.6667
+  absolute_error_margin: 0.0001

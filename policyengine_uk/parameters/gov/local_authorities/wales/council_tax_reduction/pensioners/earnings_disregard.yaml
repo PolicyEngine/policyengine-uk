@@ -1,0 +1,55 @@
+description: Weekly sums the Welsh Council Tax Reduction prescribed requirements disregard from the net earnings of a pensioner applicant and partner.
+single:
+  description: Weekly earnings disregard for a pensioner applicant who has no partner and is not a lone parent, where no £20 disregard applies.
+  values:
+    2013-04-01: 5
+  metadata:
+    label: Wales pensioner CTR earnings disregard, single
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 3 para. 8(a)
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/3/paragraph/8
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 Sch. 3 para. 8(a) (financial year 2013-14)
+        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/3/made
+couple:
+  description: Weekly earnings disregard for a pensioner applicant who has a partner, where no £20 disregard applies.
+  values:
+    2013-04-01: 10
+  metadata:
+    label: Wales pensioner CTR earnings disregard, couple
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 3 para. 8(b)
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/3/paragraph/8
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 Sch. 3 para. 8(b) (financial year 2013-14)
+        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/3/made
+lone_parent:
+  description: Weekly earnings disregard for a pensioner applicant who is a lone parent.
+  values:
+    2013-04-01: 25
+  metadata:
+    label: Wales pensioner CTR earnings disregard, lone parent
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 3 paras. 1(a) and 2
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/3
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 Sch. 3 paras. 1(a) and 2 (financial year 2013-14)
+        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/3/made
+additional:
+  description: Weekly increase in the earnings disregard (the additional earnings disregard) where the pensioner applicant meets one of its work conditions and their net earnings at least equal the other disregards, the deductible childcare charges and this amount.
+  values:
+    2013-04-01: 17.1
+  metadata:
+    label: Wales pensioner CTR additional earnings disregard
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 3 para. 10(1) and (3)(c)
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/3/paragraph/10
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 Sch. 3 para. 10(1) and (3)(c) (financial year 2013-14)
+        href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/3/made
+metadata:
+  label: Wales pensioner CTR earnings disregards

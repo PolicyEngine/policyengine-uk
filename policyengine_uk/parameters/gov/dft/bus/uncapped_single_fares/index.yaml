@@ -1,0 +1,9 @@
+description: Uncapped single bus fares in England outside London in three bands, each with
+  its share of single tickets and its mean fare. The model prices a change in the national
+  single fare cap as the change in the mean capped fare over the bands, for the single-ticket
+  share of fare-paying boardings. The table is fitted to DfT's evaluation of the GBP 2 cap,
+  the 2023-24 fare cap grant, the January 2025 fares index step and the funding announced for
+  the GBP 3 cap in 2025 and the GBP 2 cap in 2027. See docs/engineering/bus-fares.md and
+  scripts/fit_bus_cap_savings.py.
+metadata:
+  label: uncapped single bus fares

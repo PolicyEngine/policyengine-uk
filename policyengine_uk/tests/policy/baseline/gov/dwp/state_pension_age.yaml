@@ -1,0 +1,279 @@
+# State Pension age by date of birth, at each boundary of Pensions Act 1995
+# Schedule 4 paragraph 1. Status is at 6 October of the fiscal year. Age and
+# months_since_last_birthday place the date of birth named in each test.
+# Expected values come from a day-level reading of the statute.
+
+- name: Woman born 5 April 1950 attains State Pension age at 60 (rule 2)
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    age: 65
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    state_pension_age: 60.0  # attained 5 April 2010
+    is_SP_age: true
+
+- name: Woman born 6 April 1950 attains it on 6 May 2010 (rule 3, table 1)
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    age: 65
+    months_since_last_birthday: 6.0
+    is_male: false
+  output:
+    state_pension_age: 60.0833  # attained 6 May 2010
+    is_SP_age: true
+
+- name: Woman born 6 April 1951 attains it on 6 May 2012 (table 1)
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 6.0
+    is_male: false
+  output:
+    state_pension_age: 61.0833  # attained 6 May 2012
+    is_SP_age: true
+
+- name: Man born 6 April 1951 attains it at 65 (rule 1)
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 6.0
+    is_male: true
+  output:
+    state_pension_age: 65.0  # attained 6 April 2016
+    is_SP_age: false
+
+- name: Woman born 6 April 1953 attains it on 6 July 2016 (table 1, four-month steps)
+  period: 2016
+  absolute_error_margin: 0.001
+  input:
+    age: 63
+    months_since_last_birthday: 6.0
+    is_male: false
+  output:
+    state_pension_age: 63.25  # attained 6 July 2016
+    is_SP_age: true
+
+- name: Man born 5 December 1953 attains it at 65 on 5 December 2018 (rule 1)
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 10.033333
+    is_male: true
+  output:
+    state_pension_age: 65.0  # attained 5 December 2018
+    is_SP_age: false
+
+- name: Man born 6 December 1953 attains it on 6 March 2019 (rule 5, table 2)
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 10.0
+    is_male: true
+  output:
+    state_pension_age: 65.25  # attained 6 March 2019
+    is_SP_age: false
+
+- name: Woman born 5 December 1953 attains it on 6 November 2018 (table 1)
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 10.033333
+    is_male: false
+  output:
+    state_pension_age: 64.9194  # attained 6 November 2018
+    is_SP_age: false
+
+- name: Woman born 6 December 1953 attains it on 6 March 2019 (table 2)
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    age: 64
+    months_since_last_birthday: 10.0
+    is_male: false
+  output:
+    state_pension_age: 65.25  # attained 6 March 2019
+    is_SP_age: false
+
+- name: Man born 5 December 1953 is over State Pension age in 2019-20
+  period: 2019
+  absolute_error_margin: 0.001
+  input:
+    age: 65
+    months_since_last_birthday: 10.033333
+    is_male: true
+  output:
+    state_pension_age: 65.0  # attained 5 December 2018
+    is_SP_age: true
+
+- name: Person born 5 October 1954 attains it on 6 September 2020 (table 2)
+  period: 2020
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 0.033333
+    is_male: true
+  output:
+    state_pension_age: 65.9194  # attained 6 September 2020
+    is_SP_age: true
+
+- name: Person born 6 October 1954 attains it at 66, on 6 October 2020 (rule 6)
+  period: 2020
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 0.0
+    is_male: false
+  output:
+    state_pension_age: 66.0  # attained 6 October 2020
+    is_SP_age: true
+
+- name: Person born 7 October 1954 attains it at 66, on 7 October 2020 (rule 6)
+  period: 2020
+  absolute_error_margin: 0.001
+  input:
+    age: 65
+    months_since_last_birthday: 11.967742
+    is_male: false
+  output:
+    state_pension_age: 66.0  # attained 7 October 2020
+    is_SP_age: false
+
+- name: Person born 5 April 1960 attains it at 66 (rule 6)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    state_pension_age: 66.0  # attained 5 April 2026
+    is_SP_age: true
+
+- name: Person born 6 April 1960 attains it at 66 years and 1 month (rule 7, table 3)
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 6.0
+    is_male: true
+  output:
+    state_pension_age: 66.0833  # attained 6 May 2026
+    is_SP_age: true
+
+- name: Person born 5 July 1960 attains it at 66 years and 3 months, on 5 October 2026
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 3.033333
+    is_male: false
+  output:
+    state_pension_age: 66.25  # attained 5 October 2026
+    is_SP_age: true
+
+- name: Person born 6 July 1960 attains it at 66 years and 4 months, on 6 November 2026
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 3.0
+    is_male: true
+  output:
+    state_pension_age: 66.3333  # attained 6 November 2026
+    is_SP_age: false
+
+- name: Person born 5 January 1961 attains it at 66 years and 9 months, on 5 October 2027
+  period: 2027
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 9.032258
+    is_male: false
+  output:
+    state_pension_age: 66.7499  # attained 5 October 2027
+    is_SP_age: true
+
+- name: Person born 6 January 1961 attains it at 66 years and 10 months, on 6 November 2027
+  period: 2027
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    months_since_last_birthday: 9.0
+    is_male: true
+  output:
+    state_pension_age: 66.8333  # attained 6 November 2027
+    is_SP_age: false
+
+- name: Person born 5 March 1961 attains it at 66 years and 11 months (table 3)
+  period: 2028
+  absolute_error_margin: 0.001
+  input:
+    age: 67
+    months_since_last_birthday: 7.035714
+    is_male: false
+  output:
+    state_pension_age: 66.917  # attained 5 February 2028
+    is_SP_age: true
+
+- name: Person born 6 March 1961 attains it at 67 (rule 8)
+  period: 2028
+  absolute_error_margin: 0.001
+  input:
+    age: 67
+    months_since_last_birthday: 7.0
+    is_male: true
+  output:
+    state_pension_age: 67.0  # attained 6 March 2028
+    is_SP_age: true
+
+- name: Person born 5 April 1977 attains it at 67 (rule 8)
+  period: 2044
+  absolute_error_margin: 0.001
+  input:
+    age: 67
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    state_pension_age: 67.0  # attained 5 April 2044
+    is_SP_age: true
+
+- name: Person born 6 April 1977 attains it on 6 May 2044 (rule 9, table 4)
+  period: 2044
+  absolute_error_margin: 0.001
+  input:
+    age: 67
+    months_since_last_birthday: 6.0
+    is_male: true
+  output:
+    state_pension_age: 67.0833  # attained 6 May 2044
+    is_SP_age: true
+
+- name: Person born 5 April 1978 attains it on 6 March 2046 (table 4)
+  period: 2046
+  absolute_error_margin: 0.001
+  input:
+    age: 68
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    state_pension_age: 67.9194  # attained 6 March 2046
+    is_SP_age: true
+
+- name: Person born 6 April 1978 attains it at 68 (rule 10)
+  period: 2046
+  absolute_error_margin: 0.001
+  input:
+    age: 68
+    months_since_last_birthday: 6.0
+    is_male: true
+  output:
+    state_pension_age: 68.0  # attained 6 April 2046
+    is_SP_age: true

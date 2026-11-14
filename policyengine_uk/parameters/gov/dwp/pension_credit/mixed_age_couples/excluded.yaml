@@ -1,0 +1,14 @@
+description: Whether a member of a mixed-age couple, where one partner has not reached the qualifying age for State Pension Credit, is excluded from State Pension Credit. The exclusion also bars the couple from new pension-age Housing Benefit claims.
+values:
+  2003-10-06: false
+  2019-05-15: true
+metadata:
+  unit: bool
+  label: Mixed-age couple exclusion from Pension Credit in force
+  reference:
+    - title: State Pension Credit Act 2002 s.4(1A)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/4
+    - title: SI 2019/37 art. 3 (appointed day 15 May 2019)
+      href: https://www.legislation.gov.uk/uksi/2019/37/article/3
+    - title: SR 2019/4 art. 3 (Northern Ireland, appointed day 15 May 2019)
+      href: https://www.legislation.gov.uk/nisr/2019/4/article/3

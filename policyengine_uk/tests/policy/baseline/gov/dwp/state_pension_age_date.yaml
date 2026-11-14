@@ -1,0 +1,104 @@
+# The day State Pension age is attained, written as a YYYYMMDD number, at
+# boundaries of Pensions Act 1995 Schedule 4 paragraph 1. Age and
+# months_since_last_birthday place the date of birth named in each test at
+# 6 October of the fiscal year. Expected days come from a day-level reading
+# of the statute.
+
+- name: Woman born 5 April 1950 attains State Pension age on her 60th birthday
+  period: 2015
+  input:
+    age: 65
+    months_since_last_birthday: 6.0323
+    is_male: false
+  output:
+    state_pension_age_date: 20100405
+
+- name: Woman born 6 April 1950 attains it on 6 May 2010 (table 1)
+  period: 2015
+  input:
+    age: 65
+    months_since_last_birthday: 6.0
+    is_male: false
+  output:
+    state_pension_age_date: 20100506
+
+- name: Man born 5 December 1953 attains it on his 65th birthday
+  period: 2018
+  input:
+    age: 64
+    months_since_last_birthday: 10.03333
+    is_male: true
+  output:
+    state_pension_age_date: 20181205
+
+- name: Man born 6 December 1953 attains it on 6 March 2019 (table 2)
+  period: 2018
+  input:
+    age: 64
+    months_since_last_birthday: 10.0
+    is_male: true
+  output:
+    state_pension_age_date: 20190306
+
+- name: Man born 5 October 1954 attains it on 6 September 2020 (table 2)
+  period: 2020
+  input:
+    age: 66
+    months_since_last_birthday: 0.03333
+    is_male: true
+  output:
+    state_pension_age_date: 20200906
+
+- name: Woman born 6 October 1954 attains it on her 66th birthday
+  period: 2020
+  input:
+    age: 66
+    months_since_last_birthday: 0.0
+    is_male: false
+  output:
+    state_pension_age_date: 20201006
+
+- name: Woman born 31 March 1955 attains it on 31 March 2021, before the Housing Benefit cutoff
+  period: 2026
+  input:
+    age: 71
+    months_since_last_birthday: 6.19355
+    is_male: false
+  output:
+    state_pension_age_date: 20210331
+
+- name: Man born 1 April 1955 attains it on 1 April 2021, the Housing Benefit cutoff
+  period: 2026
+  input:
+    age: 71
+    months_since_last_birthday: 6.1613
+    is_male: true
+  output:
+    state_pension_age_date: 20210401
+
+- name: Person born 31 July 1960 attains it on 30 November 2026 (rule 7A)
+  period: 2026
+  input:
+    age: 66
+    months_since_last_birthday: 2.19355
+    is_male: false
+  output:
+    state_pension_age_date: 20261130
+
+- name: Person born 6 March 1961 attains it on their 67th birthday
+  period: 2028
+  input:
+    age: 67
+    months_since_last_birthday: 7.0
+    is_male: true
+  output:
+    state_pension_age_date: 20280306
+
+- name: Person born 6 April 1978 attains it on their 68th birthday
+  period: 2046
+  input:
+    age: 68
+    months_since_last_birthday: 6.0
+    is_male: false
+  output:
+    state_pension_age_date: 20460406

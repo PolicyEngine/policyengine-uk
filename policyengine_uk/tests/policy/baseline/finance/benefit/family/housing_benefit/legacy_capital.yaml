@@ -12,8 +12,10 @@
         age: 30
     benunits:
       claimant_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant]
       unrelated_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [unrelated_claimant]
     households:
       household:
@@ -39,8 +41,10 @@
         age: 30
     benunits:
       claimant_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, student]
       unrelated_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [unrelated_claimant]
     households:
       household:

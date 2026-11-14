@@ -1,0 +1,12 @@
+description: Student Finance England treats a student who is at least this age on the first day of the academic year as independent, so it assesses their household income without their parents' income.
+metadata:
+  unit: year
+  period: year
+  label: Maintenance loan independent student age
+  reference:
+    - title: The Education (Student Support) Regulations 2011 - Schedule 4, paragraph 2(1)(a)
+      href: https://www.legislation.gov.uk/uksi/2011/1986/schedule/4
+values:
+  # SI 2011/1986 reg 1(3): applies to academic years beginning on or after
+  # 1 September 2012.
+  2012-09-01: 25

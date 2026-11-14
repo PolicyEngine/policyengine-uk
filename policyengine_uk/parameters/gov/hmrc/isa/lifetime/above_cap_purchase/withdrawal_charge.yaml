@@ -1,0 +1,16 @@
+description: >
+  Share of a Lifetime ISA withdrawal used towards a first home above the
+  property price cap that is charged, where the purchase meets every other
+  first-time purchase condition. Other withdrawals that are not exempt pay the
+  withdrawal charge.
+values:
+  2026-10-29: 0.2
+metadata:
+  label: Lifetime ISA withdrawal charge above the price cap
+  period: year
+  unit: /1
+  reference:
+    - title: Individual Savings Account (Amendment) (No. 3) Regulations 2026 regulation 5
+      href: https://www.legislation.gov.uk/uksi/2026/1130/regulation/5/made
+    - title: Individual Savings Account Regulations 1998, Schedule paragraphs 5 and 6A, as amended by SI 2026/1130 regulation 5
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule

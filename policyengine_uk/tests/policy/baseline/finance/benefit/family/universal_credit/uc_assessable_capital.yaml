@@ -88,7 +88,7 @@
     # Previously [0, 36,000]; each now receives 36,000 * 1/2 = 18,000.
     uc_assessable_capital: [18_000, 18_000]
 
-- name: Reported capital leaves a residual split between unreported claimants.
+- name: Reported financial capital leaves a residual split between unreported claimants.
   period: 2025
   input:
     people:
@@ -112,7 +112,7 @@
     benunits:
       reported:
         members: [reported_parent, qualifying_young_person]
-        uc_reported_capital: 8_000
+        benunit_reported_capital: 8_000
       young:
         members: [young_claimant]
       couple:
@@ -122,7 +122,7 @@
         members: [reported_parent, qualifying_young_person, young_claimant, older_claimant, partner]
         savings: 32_000
   output:
-    household_uc_reported_capital: 8_000
+    household_uc_reported_financial_capital: 8_000
     household_uc_unreported_claimants: 3
     # 32,000 - 8,000 = 24,000 residual. Shares are 24,000 / 3 = 8,000
     # and 24,000 * 2/3 = 16,000. Previously [8,000, 0, 24,000].

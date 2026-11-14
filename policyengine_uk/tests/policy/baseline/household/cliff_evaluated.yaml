@@ -1,0 +1,131 @@
+# cliff_evaluated flags the people whose marginal tax rate (and so cliff gap)
+# is simulated. marginal_tax_rate perturbs adults 1 to
+# gov.simulation.marginal_tax_rate_adults only; people under 18 have
+# adult_index 0 and are never perturbed, so they are never evaluated.
+
+- name: Children are not cliff-evaluated
+  period: 2025
+  input:
+    people:
+      parent_1:
+        age: 40
+        employment_income: 30_000
+      parent_2:
+        age: 38
+      child_1:
+        age: 17
+      child_2:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, child_1, child_2]
+    households:
+      household:
+        members: [parent_1, parent_2, child_1, child_2]
+  output:
+    adult_index: [1, 2, 0, 0]
+    cliff_evaluated: [true, true, false, false]
+
+- name: Only the two oldest adults in a household are cliff-evaluated by default
+  period: 2025
+  input:
+    people:
+      grandparent:
+        age: 70
+      parent_1:
+        age: 40
+      parent_2:
+        age: 38
+      child:
+        age: 5
+    benunits:
+      grandparent_benunit:
+        members: [grandparent]
+      family:
+        members: [parent_1, parent_2, child]
+    households:
+      household:
+        members: [grandparent, parent_1, parent_2, child]
+  output:
+    adult_index: [1, 2, 3, 0]
+    cliff_evaluated: [true, true, false, false]
+
+- name: A household with no adults has no cliff-evaluated members
+  period: 2025
+  input:
+    people:
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [young_person]
+    households:
+      household:
+        members: [young_person]
+  output:
+    adult_index: 0
+    cliff_evaluated: false
+
+- name: Nobody is cliff-evaluated when no adults are simulated
+  period: 2025
+  input:
+    gov.simulation.marginal_tax_rate_adults: 0
+    people:
+      parent:
+        age: 40
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    cliff_evaluated: [false, false]
+
+- name: Raising the simulated adult count evaluates more adults but no children
+  period: 2025
+  input:
+    gov.simulation.marginal_tax_rate_adults: 3
+    people:
+      grandparent:
+        age: 70
+      parent_1:
+        age: 40
+      parent_2:
+        age: 38
+      child:
+        age: 5
+    benunits:
+      grandparent_benunit:
+        members: [grandparent]
+      family:
+        members: [parent_1, parent_2, child]
+    households:
+      household:
+        members: [grandparent, parent_1, parent_2, child]
+  output:
+    cliff_evaluated: [true, true, true, false]
+
+- name: Unevaluated people have no simulated marginal tax rate or cliff gap
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 30_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    cliff_evaluated: [true, false]
+    marginal_tax_rate: [0.28, 0]
+    cliff_gap: [0, 0]
+    is_on_cliff: [false, false]

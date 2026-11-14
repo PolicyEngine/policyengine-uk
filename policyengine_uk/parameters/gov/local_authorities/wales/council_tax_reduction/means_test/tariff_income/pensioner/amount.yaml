@@ -1,0 +1,10 @@
+description: Weekly tariff income the Wales Council Tax Reduction pensioner scheme counts for each step of capital, or part of one, above the threshold.
+values:
+  2013-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Wales Council Tax Reduction pensioner weekly tariff income per capital step
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 31
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/31

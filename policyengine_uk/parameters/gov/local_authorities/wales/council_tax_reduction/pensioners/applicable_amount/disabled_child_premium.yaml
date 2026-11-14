@@ -1,0 +1,72 @@
+description: Weekly amount of the disabled child premium for each child or young person in the applicant's family who meets the condition in Sch. 2 para. 8, in the applicable amount of a pensioner under the Welsh Council Tax Reduction prescribed requirements. The amounts equal the Housing Benefit amounts in every year from 2015-16 to 2026-27.
+values:
+  # Each value is the weekly amount in the table of premium amounts in the
+  # version of the schedule in force on 30 April of that year.
+  2014-04-01:
+    value: 59.50
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2014
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2014-04-30
+  2015-04-01:
+    value: 60.06
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2015 (unchanged to 2016-17)
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2015-04-30
+  2017-04-01:
+    value: 60.90
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2017
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2017-04-30
+  2018-04-01:
+    value: 62.86
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2018
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2018-04-30
+  2019-04-01:
+    value: 64.19
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2019
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2019-04-30
+  2020-04-01:
+    value: 65.52
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2020
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2020-04-30
+  2021-04-01:
+    value: 65.94
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2021
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2021-04-30
+  2022-04-01:
+    value: 68.04
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2022
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2022-04-30
+  2023-04-01:
+    value: 74.69
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2023
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2023-04-30
+  2024-04-01:
+    value: 80.01
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2024
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2024-04-30
+  2025-04-01:
+    value: 81.37
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2025
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2025-04-30
+  2026-04-01:
+    value: 84.46
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 12 entry (3), as in force on 30 April 2026
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2026-04-30
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Wales Council Tax Reduction pensioner disabled child premium for a child or young person
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 1 para. 1(1)(d) and Sch. 2 paras. 8 and 12 entry (3)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2

@@ -25,8 +25,8 @@ class personal_rent(Variable):
     def formula(person, period, parameters):
         rent = person.household("rent", period)
         share = person.benunit("share_of_household_rent", period)
-        household_head = person("is_household_head", period)
-        head_family = person.benunit.any(household_head)
+        household_head = person("is_resolved_household_head", period)
+        head_family = person.benunit("benunit_contains_household_head", period)
         holder = where(head_family, household_head, person("is_benunit_head", period))
         # A licence or other permission to occupy is a rent payment (UC Regs
         # 2013 Sch 1 para 2(b); HB Regs 2006 reg 12(1)): boarders and lodgers

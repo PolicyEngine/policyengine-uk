@@ -1,0 +1,56 @@
+# Statutory paternity pay in Council Tax Reduction income. Every scheme counts
+# statutory sick, maternity and paternity pay as earnings: SI 2012/2885 Sch 1
+# para 18(1)(h) to (j) and the default scheme, SI 2012/2886 Sch para 51(1)(j);
+# WSI 2013/3029 Sch 1 para 12(1)(h) and (i) and Sch 6 para 14(1)(j); SSI
+# 2012/319 reg 32(1)(h) and (i); SSI 2021/249 regs 49(4) and 50(2)(j). ITEPA
+# 2003 s. 660 taxes them, and the schemes take the income tax and Class 1 NI
+# deducted from earnings off them (for example SI 2012/2885 Sch 1 para
+# 19(2)(a)). The model deducts all of a person's income tax and NI, and
+# counts no working-age earnings disregard.
+#
+# 2026: statutory paternity pay £194.32 a week (SI 2002/2818 reg 2(a)), so
+# two weeks is 388.64. Personal allowance 12,570 and basic rate 20%; NI
+# primary threshold 241.73 x 52 = 12,569.96 and main rate 8%.
+
+- name: Statutory paternity pay counts as working-age Council Tax Reduction income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 20_000
+        statutory_paternity_pay: 388.64
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # Income tax 0.2 x (20,388.64 - 12,570) = 1,563.728.
+    # NI 0.08 x (20,388.64 - 12,569.96) = 625.4944.
+    # 20,388.64 - 1,563.728 - 625.4944 = 18,199.4176.
+    council_tax_reduction_applicable_income: 18_199.42
+
+- name: Statutory paternity pay counts as the same amount of statutory sick pay does
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 20_000
+        statutory_sick_pay: 388.64
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    council_tax_reduction_applicable_income: 18_199.42

@@ -207,3 +207,27 @@
         country: ENGLAND
   output:
     care_to_learn_eligible: [true, false]
+
+# Care to Learn funds childcare while the young parent is on a publicly funded
+# study programme (ESFA conditions of grant, sections 1.2 and 2.3), so a young
+# parent who is not in education is not eligible.
+- name: Care to Learn - Not in education
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: NOT_IN_EDUCATION
+        is_apprentice: false
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: ["parent", "child"]
+    households:
+      household:
+        members: ["parent", "child"]
+        country: ENGLAND
+  output:
+    care_to_learn_eligible: [false, false]

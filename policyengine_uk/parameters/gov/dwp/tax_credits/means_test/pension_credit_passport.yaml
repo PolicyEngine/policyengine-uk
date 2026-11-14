@@ -1,0 +1,15 @@
+description: Whether entitlement to State Pension Credit (either credit) lifts the tax credit income test.
+values:
+  2003-04-06: false
+  # SI 2003/2815 reg 18 added reg 4(1)(d) from 26 November 2003.
+  2003-11-26: true
+metadata:
+  unit: bool
+  label: Pension Credit tax credit passport
+  reference:
+    - title: Tax Credits Act 2002 s. 7(2)
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/7
+    - title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002 reg. 4(1)(d)
+      href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/4
+    - title: The Tax Credits (Miscellaneous Amendments No.2) Regulations 2003 reg. 18
+      href: https://www.legislation.gov.uk/uksi/2003/2815/regulation/18

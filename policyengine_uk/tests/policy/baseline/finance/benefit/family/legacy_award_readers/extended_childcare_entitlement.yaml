@@ -1,0 +1,168 @@
+# SI 2022/1134 reg 15(4)(c): the partner of a parent who meets reg 14(3)
+# meets the partner condition, without working, if they are "entitled to a
+# specified benefit" (reg 14(4)(b)(iii) likewise for the parent). Reg
+# 11A(1)(e) lists employment and support allowance. The model
+# reads income-related ESA as the claimant's and partner's award
+# (claimant_or_partner_esa_income), which counts for both members of the
+# couple. "other" is a member who is neither the claimant, the partner nor a
+# child or young person they are responsible for, so an award they report is
+# their own claim and does not make the partner entitled to a specified
+# benefit. In each case the parent works and meets the income requirements,
+# the partner does not work, and the child is three.
+
+- name: Another member's income-related ESA does not let a non-working partner meet the extended childcare partner condition
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: true
+        employment_income: 30_000
+        extended_childcare_entitlement_meets_income_requirements: true
+      partner:
+        age: 34
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: false
+        extended_childcare_entitlement_meets_income_requirements: false
+      child:
+        age: 3
+        is_claimant_or_partner: false
+      other:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, partner, child, other]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, partner, child, other]
+        country: ENGLAND
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    extended_childcare_entitlement_limited_capability_or_specified_benefit: [false, false, false, false]
+    extended_childcare_entitlement_work_condition: [true, false, false, false]
+    extended_childcare_entitlement_eligible: false
+
+- name: Another member's income-related ESA does not let a non-working partner meet the condition in 2023
+  period: 2023
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: true
+        employment_income: 30_000
+        extended_childcare_entitlement_meets_income_requirements: true
+      partner:
+        age: 34
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: false
+        extended_childcare_entitlement_meets_income_requirements: false
+      child:
+        age: 3
+        is_claimant_or_partner: false
+      other:
+        age: 40
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [parent, partner, child, other]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, partner, child, other]
+        country: ENGLAND
+  output:
+    esa_income: 4_000
+    claimant_or_partner_esa_income: 0
+    extended_childcare_entitlement_work_condition: [true, false, false, false]
+    extended_childcare_entitlement_eligible: false
+
+- name: The partner's own income-related ESA lets the non-working partner meet the extended childcare partner condition
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: true
+        employment_income: 30_000
+        extended_childcare_entitlement_meets_income_requirements: true
+      partner:
+        age: 34
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        esa_income_reported: 5_000
+      child:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, partner, child]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, partner, child]
+        country: ENGLAND
+  output:
+    claimant_or_partner_esa_income: 5_000
+    extended_childcare_entitlement_work_condition: [true, true, false]
+    extended_childcare_entitlement_eligible: true
+
+- name: The partner's own income-related ESA still counts when another member also reports an award
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: true
+        employment_income: 30_000
+        extended_childcare_entitlement_meets_income_requirements: true
+      partner:
+        age: 34
+        is_parent: true
+        is_claimant_or_partner: true
+        in_work: false
+        extended_childcare_entitlement_meets_income_requirements: false
+        esa_income_reported: 5_000
+      child:
+        age: 3
+        is_claimant_or_partner: false
+      other:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, partner, child, other]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, partner, child, other]
+        country: ENGLAND
+  output:
+    esa_income: 10_000
+    claimant_or_partner_esa_income: 5_000
+    extended_childcare_entitlement_work_condition: [true, true, false, false]
+    extended_childcare_entitlement_eligible: true

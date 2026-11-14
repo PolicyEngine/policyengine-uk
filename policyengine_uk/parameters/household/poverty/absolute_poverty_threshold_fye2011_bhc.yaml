@@ -1,0 +1,53 @@
+description: Absolute poverty threshold on the FYE 2011 reference line for equivalised household net income, before housing costs, in every year.
+values:
+  # 60% of the FYE 2011 BHC median held constant in real terms, HBAI's
+  # absolute low-income line until its March 2026 release. FYE 2011 to FYE
+  # 2021 match absolute_poverty_threshold_bhc, which keeps this line for
+  # those years: 60% of DWP's published FYE 2011 median in each year's
+  # prices (UK Data Service SN 5828), to the penny. Unlike that parameter,
+  # these values do not move when HBAI rebases more years to FYE 2025.
+  2010-01-01: 251.35
+  2011-01-01: 261.9
+  2012-01-01: 268.84
+  2013-01-01: 274.95
+  2014-01-01: 277.73
+  2015-01-01: 278.01
+  2016-01-01: 280.51
+  2017-01-01: 288.01
+  2018-01-01: 294.95
+  2019-01-01: 300.23
+  2020-01-01: 301.34
+  # FYE 2022 to FYE 2025: 60% of the FYE 2011 median in that year's prices
+  # in table 1.2b of the HBAI edition for that year, to the penny:
+  # 523.5220 (FYE 2022 edition), 578.1423 (FYE 2023), 616.5617 (FYE 2024)
+  # and 634.6141 (FYE 2025). Each is the FYE 2011 median, 418.91, times HBAI's
+  # annual BHC deflator for the year over its FYE 2011 value of 90.5:
+  # 113.1, 124.9, 133.2 and 137.1. Later years uprate by headline OBR CPI,
+  # an approximation: HBAI would use its own CPI variant, which the OBR
+  # does not forecast.
+  2021-01-01: 314.11
+  2022-01-01: 346.89
+  2023-01-01: 369.94
+  2024-01-01: 380.77
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Absolute poverty threshold on the FYE 2011 reference line, before housing costs
+  reference:
+    - title: Households Below Average Income FYE 2025, background information and methodology, section 2.3 (absolute reference year moved from FYE 2011 to FYE 2025 from FYE 2022)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#update-to-the-absolute-low-income-reference-year
+    - title: DWP, HBAI harmonised dataset FYE 1995 to FYE 2025 (UK Data Service SN 5828), net absolute median household income values over time (FYE 2011 median in each year's prices, FYE 2011 to FYE 2021)
+      href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_net_absolute_median_household_income_over_time.xlsx
+    - title: HBAI FYE 2022 data tables, summary table 1.2b (FYE 2011 BHC median 523.52 a week in 2021/22 prices)
+      href: https://assets.publishing.service.gov.uk/media/64e763b51ff6f3000d70af47/hbai-2122-ods-table-pack.zip
+    - title: HBAI FYE 2023 summary tables, table 1.2b (FYE 2011 BHC median 578.14 a week in 2022/23 prices)
+      href: https://assets.publishing.service.gov.uk/media/65fae6eb703c42001a58f093/summary-hbai-1994-95-2022-23-tables.ods
+    - title: HBAI FYE 2024 data tables, summary table 1.2b (FYE 2011 BHC median 616.56 a week in 2023/24 prices)
+      href: https://assets.publishing.service.gov.uk/media/6836dae29411f0341f323689/HBAI_2324_ods_table_pack.zip
+    - title: HBAI FYE 2025 data tables, summary table 1.2b (FYE 2011 BHC median 634.61 a week in 2024/25 prices)
+      href: https://assets.publishing.service.gov.uk/media/69c2902a7e02b81c0d1c7762/hbai-data_tables-2025.zip
+    - title: HBAI harmonised dataset variables guide FYE 2025, Deflators sheet (annual BHC deflator BHCYRDEF, financial-year average rounded to 1 decimal place)
+      href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_variables_guide.xlsx
+    - title: DWP statistical notice on adjusting for inflation (CPI variant including mortgage interest payments, ground rent and dwelling insurance for BHC)
+      href: https://assets.publishing.service.gov.uk/media/5a8027f7ed915d74e622ccc2/dwp-family-household-income-stats-adjusting-for-inflation-statistical-notice.pdf#page=3
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index

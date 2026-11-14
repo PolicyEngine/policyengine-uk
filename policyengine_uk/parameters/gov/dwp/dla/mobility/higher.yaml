@@ -18,7 +18,7 @@ values:
   2022-04-01: 64.5
   2023-04-01: 71
   2024-04-01: 75.75
-  2025-04-01: 77.04
+  2025-04-01: 77.05
   2026-04-01: 80
 metadata:
   period: week
@@ -28,3 +28,11 @@ metadata:
   reference:
     - title: Benefits Uprating 2024/25 | Commons Library Briefing
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made

@@ -1,56 +1,22 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.programs import budget_variables, budget_variables_in_effect
 
-
-HOUSEHOLD_TAX_VARIABLES = [
-    "expected_sdlt",
-    "expected_ltt",
-    "expected_lbtt",
-    "corporate_sdlt",
-    "business_rates",
-    "council_tax",
-    "high_value_council_tax_surcharge",
-    "domestic_rates",
-    "fuel_duty",
-    "alcohol_duty",
-    "tobacco_duty",
-    "vehicle_excise_duty",
-    "tv_licence",
-    "wealth_tax",
-    "non_primary_residence_wealth_tax",
-    "income_tax",
-    "national_insurance",
-    "LVT",
-    "carbon_tax",
-    "vat_change",
-    "capital_gains_tax",
-    "private_school_vat",
-    "corporate_incident_tax_revenue_change",
-    "consumer_incident_tax_revenue_change",
-    "employer_ni_response_capital_incidence",
-    "employer_ni_response_consumer_incidence",
-    "student_loan_repayments",
-]
+# The terms flagged `budget: tax` in programs.yaml, in its budget_order.
+HOUSEHOLD_TAX_VARIABLES = budget_variables("tax")
 
 
 class household_tax(Variable):
     value_type = float
     entity = Household
     label = "household taxes"
-    documentation = "Total taxes owed by the household"
+    documentation = (
+        "Total taxes the household owes: each tax the model counts against "
+        "the household, less any a reform removes, such as council tax when "
+        "a reform abolishes it."
+    )
     definition_period = YEAR
     unit = GBP
 
     def formula(household, period, parameters):
-        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
-        if abolish_council_tax:
-            return add(
-                household,
-                period,
-                [
-                    tax
-                    for tax in HOUSEHOLD_TAX_VARIABLES
-                    if tax not in ["council_tax", "high_value_council_tax_surcharge"]
-                ],
-            )
-        else:
-            return add(household, period, HOUSEHOLD_TAX_VARIABLES)
+        taxes = budget_variables_in_effect("tax", parameters(period))
+        return add(household, period, taxes)

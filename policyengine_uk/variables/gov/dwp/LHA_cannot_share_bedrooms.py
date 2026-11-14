@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
-    bedrooms_for_children,
-    universal_credit_size_criteria_people,
+    universal_credit_child_bedrooms,
 )
 
 
@@ -19,7 +18,10 @@ class LHA_cannot_share_bedrooms(Variable):
         "many as that takes beyond the rooms the children would otherwise "
         "need, so none where such a child would not otherwise share. Where "
         "several such children could each have a room alone but not all at "
-        "once, the model gives them all their own rooms. Disabled person "
+        "once, the model gives them all their own rooms. That is its reading "
+        "of para 12(8) ('each such child has their own bedroom'), as of HB "
+        "reg 13D(3)(ba); the DWP guidance's examples do not settle the case. "
+        "Disabled person "
         "condition: one bedroom if the renter or a joint renter cannot share "
         "a bedroom with the other because of disability (see "
         "is_member_of_couple_who_cannot_share_bedroom). Unlike Housing "
@@ -34,25 +36,15 @@ class LHA_cannot_share_bedrooms(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        responsible, non_dependant = universal_credit_size_criteria_people(
-            benunit, period
-        )
-
-        def children(cannot_share=None):
-            return bedrooms_for_children(
-                benunit,
-                period,
-                own_child=responsible,
-                other_child=non_dependant,
-                cannot_share=cannot_share,
-            )
-
         # UC Regs 2013 Sch 4 para 12(6) and (8): as many additional bedrooms
         # as are necessary for each child in the extended benefit unit who
         # would otherwise be expected to share, and is not reasonably able
-        # to, to have their own bedroom.
+        # to, to have their own bedroom. The children are those the size
+        # criteria count (universal_credit_child_bedrooms).
         cannot_share = person("is_child_who_cannot_share_bedroom", period)
-        disabled_child_rooms = children(cannot_share) - children()
+        disabled_child_rooms = universal_credit_child_bedrooms(
+            benunit, period, cannot_share
+        ) - universal_credit_child_bedrooms(benunit, period)
         # Para 12(6A) and (9)(d): one additional bedroom if the renter or a
         # joint renter satisfies the disabled person condition.
         disabled_person_room = benunit.any(

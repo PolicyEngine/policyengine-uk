@@ -1,0 +1,71 @@
+# HBAI FYE 2025's housing-cost definition includes ground rent and service
+# charges: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#glossary
+# Input BHC income directly so these housing-cost cases remain independent
+# of how income before housing costs is calculated or floored.
+
+- name: Renters deduct service charges in addition to rent and water
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    tenure_type: RENT_PRIVATELY
+    hbai_household_net_income: 30_000
+    rent: 12_000
+    water_and_sewerage_charges: 400
+    mortgage_interest_repayment: 0
+    structural_insurance_payments: 0
+    housing_service_charges: 1_200
+    household_equivalisation_ahc: 0.58
+  output:
+    # 30,000 - 12,000 - 400 - 1,200.
+    hbai_household_net_income_ahc: 16_400
+    # 16,400 / 0.58.
+    equiv_hbai_household_net_income_ahc: 28_275.862069
+
+- name: Owner-occupiers deduct ground rent with mortgage interest and insurance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    tenure_type: OWNED_WITH_MORTGAGE
+    hbai_household_net_income: 30_000
+    rent: 0
+    water_and_sewerage_charges: 400
+    mortgage_interest_repayment: 3_000
+    structural_insurance_payments: 200
+    housing_service_charges: 600
+  output:
+    # 30,000 - 400 - 3,000 - 200 - 600.
+    hbai_household_net_income_ahc: 25_800
+
+- name: Without ground rent or service charges the other deductions are unchanged
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    tenure_type: RENT_PRIVATELY
+    hbai_household_net_income: 30_000
+    rent: 12_000
+    water_and_sewerage_charges: 400
+    mortgage_interest_repayment: 0
+    structural_insurance_payments: 0
+    housing_service_charges: 0
+  output:
+    # 30,000 - 12,000 - 400.
+    hbai_household_net_income_ahc: 17_600
+
+- name: Housing costs above BHC income leave negative AHC income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    tenure_type: RENT_PRIVATELY
+    hbai_household_net_income: 5_000
+    rent: 6_000
+    water_and_sewerage_charges: 400
+    mortgage_interest_repayment: 0
+    structural_insurance_payments: 0
+    housing_service_charges: 1_200
+  output:
+    # 5,000 - 6,000 - 400 - 1,200, without an AHC zero floor.
+    hbai_household_net_income_ahc: -2_600

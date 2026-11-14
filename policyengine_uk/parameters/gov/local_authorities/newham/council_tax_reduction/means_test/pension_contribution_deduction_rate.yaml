@@ -1,0 +1,11 @@
+description: The Newham Council Tax Reduction scheme deducts this share of pension contributions when it calculates the net earnings and self-employed net profit of a working-age applicant.
+values:
+  2026-04-01: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Newham Council Tax Reduction pension contribution deduction rate
+  economy: false
+  reference:
+    - title: Council Tax Reduction Scheme 2026, paras. 52(3)(b) and (c) and (6)(c) (employed earners) and 61 (self-employed earners)
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026
