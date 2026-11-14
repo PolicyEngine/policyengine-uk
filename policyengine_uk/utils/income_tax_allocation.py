@@ -116,11 +116,12 @@ the limit can be the only one that meets the test, so the search keeps no room
 below the limit. The test reads the income the model holds. The model holds
 incomes in float32 and sums net income and allowances in float32, so the
 income it holds can sit either side of the sum of the amounts entered. While
-net income and the allowances stay under £131,072 the gap is a fraction of a
-penny, but it grows above that: in a household with £301,100 of net income
-and £262,900 of other deductions it is 2p. A household entered at a limit can
-then sit just above it and fail, as at the model's other limits. One entered a
-penny or more over a limit can sit on it and pass.
+net income and the allowances stay under £131,072 each such gap is a fraction
+of a penny, though gaps in several amounts can add up to a penny. The gaps
+grow above that: in a household with £301,100 of net income and £262,900 of
+other deductions the gap is 2p. A household entered at a limit can then sit
+just above it and fail, as at the model's other limits. One entered a penny or
+more over a limit can sit on it and pass.
 
 The model has always applied the test in float32, to non-savings income,
 savings and dividends each held in float32. Float32 rounding there can land

@@ -5,8 +5,9 @@ the law itself (ITA 2007 ss. 10-13A, 12B, 16, 23, 25(2)/(3A), 55B), reading only
 rate and allowance values from the parameter tree. The model holds incomes in
 float32 and sums them in float32, so the income it tests can sit a fraction of
 a penny (under a penny here) either side of the amounts drawn. So the oracle
-applies the rate test twice: strictly, with every limit a penny lower, and
-loosely, with every limit a penny higher. For every drawn recipient:
+applies the rate test twice: strictly, with the basic rate limit a penny lower,
+and loosely, with it a penny higher. At the savings nil rate band and for
+dividends, both tests allow half a penny. For every drawn recipient:
 
 1. at the model's own share, the model's income tax equals the oracle's Step 5
    tax less the reduction where the model gives it; the model gives it wherever
@@ -19,8 +20,11 @@ loosely, with every limit a penny higher. For every drawn recipient:
 Check 1 bounds the tax from below: it is the law's liability at a share the
 model holds. Between the strict and loose tests the law itself lets income
 reach each limit (s. 10(2)).
-The explicit examples are recipients for whom only a share at a limit
-qualifies.
+The explicit examples are recipients for whom only one share qualifies. In
+the first three it leaves pay at the basic rate limit, where only the loose test
+passes, so neither check requires the reduction. In the fourth it leaves pay 2p
+under the limit, where the strict test passes too, so check 2 fails a model
+that denies it.
 """
 
 import numpy as np
@@ -315,5 +319,6 @@ SETTINGS = settings(
 @example(2026, [("free", 40_200.0, 9_000.0, 1_570.0, 0.0)] * K)
 @example(2026, [("free", 50_000.0, 500.0, 270.0, 0.0)] * K)
 @example(2026, [("free", 50_269.99, 500.0, 0.01, 0.0)] * K)
+@example(2026, [("free", 40_199.98, 9_000.0, 1_570.0, 0.0)] * K)
 def test_model_tax_is_the_least_liability_the_law_allows(year, drawn):
     check(year, drawn)

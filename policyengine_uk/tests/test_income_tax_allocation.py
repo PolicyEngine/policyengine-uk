@@ -32,9 +32,10 @@ reduction at Step 6:
    than the model's share.
 10. Where the search moves a share and counts it as meeting the rate test, the
     model's own variables meet the test at that share, through float32 rounding.
-    For every recipient the model's answer to the test is the one the search
-    counted on: the test in float64 on the income the stored deductions leave,
-    or in float32 as the model has always applied it.
+    The test also checks that the model's answer for every recipient is the one
+    the search priced the stored share with (``_rate_test_on_stored``). That
+    check restates the variable's formula, so it guards the wiring between the
+    variable and the search, not the law.
 11. The vertex search finds the least Step 5 tax less the reduction a share
     wins, checked against a dense grid and the thin sets on which the rate test
     can hold: no dividends left, and savings left at the savings allowance.
@@ -57,6 +58,7 @@ from policyengine_uk.utils.income_tax_allocation import (
     _least_tax_share,
     _meets_rate_test,
     _old_order_is_least,
+    _rate_test_on_stored,
     _share_left,
     _shares,
     default_order_deductions,
@@ -1117,6 +1119,45 @@ def test_search_keeps_a_recipient_the_test_passes_exactly_at_the_limit(system):
     assert to_savings[0] == 0 and to_dividends[0] == 0
 
 
+def test_rate_test_on_stored_counts_shares_that_meet_the_test_only_in_float64(
+    system,
+):
+    """Two 2026-27 recipients whose pay, savings and dividends come to £50,270,
+    so after the £12,570 Personal Allowance every share leaves income at the
+    £37,700 basic rate limit, which meets the rate test (s. 10(2)). The model
+    holds each amount in float32. For pay of £37,401.34, savings of £5,081.08
+    and dividends of £7,787.58, the old order sets the allowance against pay.
+    Taking the savings and dividends from net income in float32 leaves
+    £24,831.34375 of pay, so the float32 test reads £37,700.0039 and fails. For
+    pay of £32,747.81, savings of £7,271.86 and dividends of £10,250.33, a share
+    that sets £6,771.86 against savings and £5,798.14 against dividends leaves
+    £500 of savings. Summing what it leaves in float32 gives £37,700.0039 too.
+    On the amounts the model holds, each share leaves £37,700 in float64, so
+    ``_rate_test_on_stored`` counts both."""
+    income_tax = system.parameters("2026").gov.hmrc.income_tax
+    single = np.float32
+
+    def context(pay, savings, dividends):
+        held = [single(amount) for amount in (pay, savings, dividends)]
+        inputs, default = one_person(
+            net_income=float((held[0] + held[1]) + held[2]),
+            savings=float(held[1]),
+            dividends=float(held[2]),
+        )
+        inputs = with_marriage_allowance(income_tax, 2026, inputs, default, 0)
+        return _build(inputs, income_tax), default
+
+    c, default = context(37_401.34, 5_081.08, 7_787.58)
+    old = (default.savings[:, None], default.dividends[:, None])
+    assert not c.old_order_meets_rate_test[0, 0]
+    assert _rate_test_on_stored(c, *old, np.array([[False]]))[0, 0]
+
+    c, _ = context(32_747.81, 7_271.86, 10_250.33)
+    moved = (np.array([[single(6_771.86)]]), np.array([[single(5_798.14)]]))
+    assert not _float32_meets_rate_test(c, *moved)[0, 0]
+    assert _rate_test_on_stored(c, *moved, np.array([[True]]))[0, 0]
+
+
 def test_search_moves_a_person_whose_first_component_has_no_room(system):
     """Savings of £5,500 and dividends of £700.07 in 2026-27, with £3,569.63 of
     allowances and no non-savings income. The old order sets the allowances
@@ -1253,6 +1294,46 @@ def test_rate_test_fails_a_recipient_a_penny_over_a_limit():
     assert not meets.any() and not reduction.any()
     tax = sim.calculate("income_tax", year).astype(float)[0::2]
     assert tax[1] == pytest.approx(7_391.05, abs=0.01)
+
+
+# Whole-pence recipients in 2026-27 whose pay, savings and dividends come to
+# £50,270. After the £12,570 Personal Allowance the old order leaves income at
+# the £37,700 basic rate limit, so the law gives the reduction (s. 10(2)). The
+# model holds the amounts in float32, and the float32 test reads income
+# £0.0039 over the limit. The last row has a penny more of dividends, so the
+# law denies it.
+AT_THE_LIMIT_IN_FLOAT64 = [
+    dict(
+        employment_income=37_401.34,
+        savings_interest_income=5_081.08,
+        dividend_income=7_787.58,
+    ),
+    dict(
+        employment_income=38_696.41,
+        savings_interest_income=3_144.24,
+        dividend_income=8_429.35,
+    ),
+    dict(
+        employment_income=37_401.34,
+        savings_interest_income=5_081.08,
+        dividend_income=7_787.59,
+    ),
+]
+
+
+def test_rate_test_reads_the_old_order_in_float64_too():
+    """The first row's tax, worked by hand: £24,831.34 of pay at 20%, £4,081.08
+    of savings above the £1,000 savings allowance at 20%, and £7,287.58 of
+    dividends above the £500 dividend allowance at 10.75%: £6,565.90, or
+    £6,313.90 after the £252 reduction. ``main`` denies it. In the last row the
+    penny over the limit cuts the savings allowance to £500 (s. 12B), and the
+    tax is £6,665.90."""
+    year = 2026
+    sim = explicit_couples(year, AT_THE_LIMIT_IN_FLOAT64)
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert meets.tolist() == [True, True, False]
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax[[0, 2]] == pytest.approx([6_313.90, 6_665.90], abs=0.01)
 
 
 def test_rate_test_lets_income_reach_the_basic_rate_limit():
@@ -1466,7 +1547,9 @@ def test_search_keeps_the_nearest_rounding_where_net_income_rounds_up(
 ):
     """Scottish recipients whose other deductions exceed their pay, so from
     2027-28 the deductions take all the pay first (s. 25(3A)) and the rest
-    falls on savings. In 2028-29: savings of £212,622.26 less £176,105.20
+    falls on savings. The savings basic rate is the model's 24% from 2027-28,
+    which adds Budget 2026's announced rise to the 22% Parliament has set. In
+    2028-29: savings of £212,622.26 less £176,105.20
     leave £36,517.06, and with £1,182.93 of dividends income comes to
     £37,699.99, a penny inside the £37,700 basic rate limit. The tax is
     £30,517.06 × 24% on savings above the £5,000 starting rate band and the
