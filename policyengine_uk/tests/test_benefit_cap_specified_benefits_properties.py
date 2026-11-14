@@ -31,7 +31,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
 Each scheme applies its own exceptions. UC reg 83(1)(f) names a "child or
 qualifying young person"; HB reg 75F(1)(e) names a "child or young person".
 UC includes a 16-year-old school leaver (reg 5(1)(a)) who does not receive
-benefits in their own right (reg 5(5)) and is not looked after (reg 4(6)).
+benefits in their own right (reg 5(5); SI 2014/1230 reg. 28) and is not
+looked after (reg 4(6)).
 HB young persons follow Child Benefit (reg 19), which includes a 16-year-old
 school leaver until the 31 August after their 16th birthday (Child Benefit
 (General) Regulations 2006 reg 4), counted for the year as the model does,
@@ -88,6 +89,7 @@ from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
 from policyengine_uk.scenarios.uc_reform import REBALANCING_YEARS
+from policyengine_uk.tax_benefit_system import system as baseline_system
 from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 YEAR = 2025
@@ -279,9 +281,20 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
-def own_benefits(m):
-    # UC reg 5(5): a personal report identifies an award in the person's own right.
-    return any(m.get(report, 0) > 0 for report in OWN_RIGHT_REPORTS)
+def own_benefits(m, year=YEAR):
+    # UC reg. 5(5) (UC, contributory ESA, contribution-based JSA) and SI
+    # 2014/1230 reg. 28 (income-related ESA, and income-based JSA while it
+    # pays, as in 2025): a personal report identifies an award in the
+    # person's own right. The Secretary of State ties reg. 28's exclusion to
+    # entitlement, so the oracle counts an income-based JSA report only in a
+    # year the model pays it.
+    dwp = baseline_system.parameters(f"{year}-01-01").gov.dwp
+    reports = [
+        report
+        for report in OWN_RIGHT_REPORTS
+        if report != "jsa_income_reported" or dwp.JSA.income.active
+    ]
+    return any(m.get(report, 0) > 0 for report in reports)
 
 
 def child_benefit_own_benefits(m):
@@ -427,8 +440,9 @@ def reference_cap(members, scheme):
     # and its school-leaver terminal dates, which annual ages cannot place); it does
     # not yet apply reg 5(5) to one receiving benefits in their own right.
     # Older young persons cease to count when they report their own award:
-    # for UC any award (reg 5(5)), for Housing Benefit the awards the Child
-    # Benefit test reads (Child Benefit (General) Regulations 2006 reg 8).
+    # for UC any award (reg 5(5); SI 2014/1230 reg. 28), for Housing Benefit
+    # the awards the Child Benefit test reads (Child Benefit (General)
+    # Regulations 2006 reg 8).
     claimants = sum(m["_role"] == "claimant" for m in members)
     reports = own_benefits if scheme == "uc" else child_benefit_own_benefits
     dependants = any(
