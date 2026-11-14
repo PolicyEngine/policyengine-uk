@@ -1,3 +1,10 @@
+## [2.179.0] - 2026-11-14
+
+### Added
+
+- Simulations read three new stored inputs, `uc_new_claimant_health_element_draw`, `pip_phase_in_draw` and `would_claim_student_loan`, in Universal Credit rebalancing, the PIP phase-in scenario and student loan uprating when a dataset supplies them, and keep their own seeded draws when it does not.
+
+
 ## [2.178.8] - 2026-11-13
 
 ### Fixed
