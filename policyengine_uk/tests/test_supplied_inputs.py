@@ -593,7 +593,10 @@ def check_both_rules(sim):
         assert as_list(supplied_input(population, VARIABLE, period)) == as_list(
             expected
         ), (sim.branch_name, period)
-        # Invariant 6: the engine-read rule against the engine.
+        # Invariant 6: the engine-read rule against the engine. The
+        # comparison with holder._is_input checks consistency only, since
+        # _engine_read_storage walks the same tiers; the independent check is
+        # that a counted value equals what holder.get_array reads, below.
         storing = holder._branch_storing(period, sim.branch_name)
         if storing is None:
             continue

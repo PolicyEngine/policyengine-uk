@@ -533,6 +533,39 @@ def test_a_holder_adopted_from_another_system_is_refused():
         sim.calculate(DRAW, 2025)
 
 
+@pytest.mark.parametrize("neutralised_side", ["adopted_holder", "this_system"])
+def test_a_neutralised_definition_on_either_side_of_an_adoption_is_refused(
+    neutralised_side,
+):
+    """A holder adopted through build_from_populations keeps the other
+    system's definition, so the check reads two definitions: this system's
+    current one and the holder's. Neutralising either one alone raises."""
+
+    class neutralise(Reform):
+        def apply(self):
+            self.neutralize_variable(DRAW)
+
+    def frame(values):
+        return one_person_units_frame(
+            count=3, years=(2025,), columns={DRAW: {2025: values}}
+        )
+
+    if neutralised_side == "adopted_holder":
+        other = Simulation(dataset=frame(OTHER), reform=neutralise)
+        sim = Simulation(dataset=frame(VALUES))
+    else:
+        other = Simulation(dataset=frame(OTHER))
+        sim = Simulation(dataset=frame(VALUES), reform=neutralise)
+    sim.build_from_populations(other.populations)
+    current = sim.tax_benefit_system.variables[DRAW]
+    holder = sim.get_holder(DRAW)
+    assert holder.variable is not current
+    assert current.is_neutralized == (neutralised_side == "this_system")
+    assert holder.variable.is_neutralized == (neutralised_side == "adopted_holder")
+    with pytest.raises(StoredDrawError, match="is neutralised"):
+        sim.calculate(DRAW, 2025)
+
+
 def test_carry_off_raises_only_where_a_read_needs_it():
     sim = built({2025: VALUES})
     sim.tax_benefit_system.auto_carry_over_input_variables = False
