@@ -1402,6 +1402,39 @@ def test_search_keeps_the_nearest_rounding_where_stored_savings_sit_over_the_ban
     assert tax == pytest.approx([31_268, 31_268, 31_268], abs=0.01)
 
 
+def test_search_ranks_last_a_rounding_that_passes_only_in_float32():
+    """A 2026-27 recipient with pay of £107,739.11, savings of £46,884.52,
+    other deductions of £33,687.92, a trading loss of £126.59 and a
+    £56,111.20 gift, which raises the basic rate limit to £107,839 (s.
+    414(2)(b)). Adjusted net income is £84,358.04, so the whole £12,570
+    Personal Allowance stays. Setting the £46,384.51 of shared deductions
+    against savings leaves £500.01 of them, a penny over the £500 savings nil
+    rate band, and every other share leaves more. So no share meets the rate
+    test, and the tax is £107,739.11 × 20% plus 1p × 40%: £21,547.83. The
+    nearest float32 value of the deduction from savings fails the test in
+    both arithmetics. A rounding a step further passes the float32 test
+    alone, while the exact share fails in float64. That rounding ranks last,
+    so the model denies the reduction, as ``main`` does."""
+    year = 2026
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=107_739.11,
+                savings_interest_income=46_884.52,
+                other_deductions=33_687.92,
+                trading_loss=126.59,
+                gift_aid=56_111.20,
+                uses_trading_allowance=False,
+            )
+        ],
+    )
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert not meets.any()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax == pytest.approx([21_547.83], abs=0.01)
+
+
 @pytest.mark.parametrize(
     "year, row, expected",
     [
@@ -1444,8 +1477,8 @@ def test_search_keeps_the_nearest_rounding_where_net_income_rounds_up(
     The model sums net income in float32 a fraction of a penny high, which
     puts income at the limit and shrinks the shared amount. Only the nearest
     float32 rounding of the deduction from savings meets the rate test, and
-    against the model's shared amount it sets 0.7p more. The exact share
-    meets the test too, so that rounding keeps its rank."""
+    against the model's shared amount it sets 0.7p more. As the nearest
+    rounding, it keeps its rank."""
     sim = explicit_couples(year, [dict(row, region="SCOTLAND")])
     meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
     assert meets.all()
@@ -1453,7 +1486,7 @@ def test_search_keeps_the_nearest_rounding_where_net_income_rounds_up(
     assert tax == pytest.approx([expected], abs=0.01)
 
 
-def test_search_keeps_the_nearest_rounding_where_the_exact_share_meets_the_test():
+def test_search_keeps_the_nearest_rounding_that_puts_income_on_the_limit():
     """A 2026-27 recipient with no non-savings income: savings £3,000.01,
     dividends £175,700, other deductions £140,000 and a trading loss of
     £1,000.01. The Personal Allowance tapers to nil, and the whole £141,000.01
@@ -1464,8 +1497,8 @@ def test_search_keeps_the_nearest_rounding_where_the_exact_share_meets_the_test(
     allowance, £3,676.50, or £3,424.50 after the £252 reduction. The nearest
     float32 value of the deduction from dividends sets 0.56p more than the
     model's shared amount, and the rounding down leaves income over the
-    limit. The exact share meets the test, so the nearest rounding keeps its
-    rank."""
+    limit. The nearest rounding keeps its rank, so the model gives the
+    reduction."""
     year = 2026
     sim = explicit_couples(
         year,
@@ -1485,13 +1518,13 @@ def test_search_keeps_the_nearest_rounding_where_the_exact_share_meets_the_test(
     assert tax == pytest.approx([3_424.50], abs=0.01)
 
 
-def test_search_stores_the_nearest_rounding_where_no_reduction_turns_on_it():
+def test_search_stores_the_nearest_rounding_of_a_deduction_off_the_float32_grid():
     """A 2026-27 taxpayer with no non-savings income and shared deductions off
     the float32 grid: savings £3,000, dividends £400,000, other deductions
     £300,000 and a trading loss of £1,000.02. The whole £301,000.02 goes
     against the dividends, and float32 storage rounds it to £301,000.03125,
-    1.1p more. No reduction turns on the rounding, so the model keeps that
-    nearest value rather than the rounding down, which would tax 2p more of
+    1.1p more. The model keeps that nearest value rather than the rounding
+    down, which would tax 2p more of
     the dividends at 35.75%. The law's tax is £34,200 × 10.75% plus
     £64,299.98 × 35.75%: £26,663.74."""
     year = 2026

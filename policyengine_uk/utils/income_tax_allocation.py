@@ -133,11 +133,13 @@ and for a moved share ``_float32_meets_rate_test``, or in float64 from the
 amounts the model holds (``_meets_rate_test``). The float64 test adds the
 grossed-up gift, as the model holds it in float32, to the basic rate limit.
 The vertex search scores each candidate in float64 only, so it can miss a
-share that passes only in float32, as at a limit a Gift Aid gift raises. The
-model never denies the reduction where its float32 test gave it for the same
-share. It grants the reduction over a limit only where float32 rounding of the
-amounts it holds carries income onto the limit, as the float32 test always
-could for the old order.
+share that passes only in float32, as at a limit a Gift Aid gift raises. It
+rounds only the share with the least ``f``, so it can also miss a share that
+meets the test only once its deductions are rounded to float32. ``main``
+misses both kinds too. The model never denies the reduction where its float32
+test gave it for the same share. It grants the reduction over a limit only
+where float32 rounding of the amounts it holds carries income onto the limit,
+as the float32 test always could for the old order.
 
 The model stores the deductions from savings and dividends in float32 too. The
 search finds the least ``f`` in float64, then ``_stored_share`` rounds that
@@ -155,18 +157,27 @@ first component, or it leaves up to a step of the shared amount unset.
 A rounding that sets more than half a penny beyond the shared amount
 (``OVER_DEDUCTION``) ranks below every other, since the rate test would then
 read that much of the savings or dividends as non-savings income the person
-does not have. One rounding keeps its rank: the one nearest the exact
-deductions, which storing them in float32 gives and the model has always held.
-It can sit up to half a float32 step of each deduction beyond the shared
-amount, which can pass half a penny only where a deduction exceeds £65,536.
-Where it meets the rate test and the exact share does not, the exact share
-misses the test by at most that half step. Storing the savings or dividends
-that take the deduction, which are at least as large, can move them by as
-much. So a household entered at a limit can hold the same amounts as one
-entered just over it, and the model gives both the reduction, as it does where
-float32 rounding of net income or the allowances puts income onto a limit. Rounding both deductions down never sets
-more than the shared amount, so the model stores no other rounding more than
-half a penny beyond it. The search prices the stored share and the old order each with
+does not have. So does a rounding that meets the rate test only in float32,
+for a recipient whose exact share fails it in float64. Otherwise the search
+could pick a rounding for the slack in the float32 test alone, and give the
+reduction to a recipient entered a penny over a limit, whom ``main`` denies.
+
+Neither rule applies to the rounding nearest the exact deductions, which
+storing them in float32 gives and the model has always held. It sits up to
+half a float32 step of each deduction beyond the shared amount: 0.39p for a
+deduction from £65,536 to £131,072, 0.78p up to £262,144, and twice as much in
+each range above. Where it meets the rate test in float64 and the exact share
+does not, the exact share misses the test by at most that half step. Storing
+the savings or dividends that take the deduction, which are at least as large,
+can move them by as much. So a household entered at a limit can hold the same
+amounts as one entered just over it, and the model gives both the reduction.
+Where the nearest rounding meets the test only in float32, the slack grows
+with the float32 step of the income, as for the old order. A recipient entered
+a few pence over a limit can then get the reduction, as on ``main``. Rounding
+both deductions down never sets more than the shared amount, so the model
+stores no other rounding more than half a penny beyond it.
+
+The search prices the stored share and the old order each with
 ``_rate_test_on_stored``, and moves a person only where the stored share leaves
 less ``f``.
 ``share_meets_marriage_allowance_rate_test`` gives the model's answer from the
@@ -887,14 +898,19 @@ def _stored_share(c, s, v):
     then reads it as ``_share_left`` does, at nil where it would fall below
     nil. Such a pair still wins where it gives less ``f``, for example where
     only its rounding meets the rate test. A pair that sets more than
-    ``OVER_DEDUCTION`` beyond the shared allowances ranks below every other,
-    unless it is the pair nearest the exact deductions, which storing the
-    deductions in float32 gives, as the model always has. Deductions that are
-    float32 amounts already stay as they are. Returns the deductions, the first
+    ``OVER_DEDUCTION`` beyond the shared allowances ranks below every other.
+    So does a pair that meets the rate test only in float32, for a recipient
+    whose exact share fails it in float64. Neither rule applies to the pair
+    nearest the exact deductions, which storing the deductions in float32
+    gives, as the model always has. Deductions that are float32 amounts
+    already stay as they are. Returns the deductions, the first
     component, savings and dividends they leave, and their ``f``."""
     s, v = _exact_where_the_rate_test_reads(c, s, v)
     exact_savings = np.clip(c.savings - s, 0, c.savings)
     exact_dividends = np.clip(c.dividends - v, 0, c.dividends)
+    exact_fails = ~_meets_rate_test(
+        c, *_share_left(c, exact_savings, exact_dividends)
+    ) & (c.marriage_allowance_reduction > 0)
     nearest_savings = exact_savings.astype(np.float32).astype(np.float64)
     nearest_dividends = exact_dividends.astype(np.float32).astype(np.float64)
     highest = np.minimum(c.first, c.step_3_income)
@@ -915,8 +931,10 @@ def _stored_share(c, s, v):
             nearest = (to_savings == nearest_savings) & (
                 to_dividends == nearest_dividends
             )
+            float32_only = meets & ~_meets_rate_test(c, *share)
             option = SimpleNamespace(
-                over=(first > highest + OVER_DEDUCTION) & ~nearest,
+                last=((first > highest + OVER_DEDUCTION) | (float32_only & exact_fails))
+                & ~nearest,
                 outside=outside,
                 tax=tax,
                 to_savings=to_savings,
@@ -936,7 +954,7 @@ def _stored_share(c, s, v):
                     | ((best.outside == option.outside) & (option.tax < best.tax - TIE))
                 )
             )
-            better = (best.over & ~option.over) | ((best.over == option.over) & lower)
+            better = (best.last & ~option.last) | ((best.last == option.last) & lower)
             best = SimpleNamespace(
                 **{
                     name: np.where(better, values, vars(best)[name])
