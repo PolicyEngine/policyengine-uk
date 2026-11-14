@@ -1312,7 +1312,7 @@ def test_search_keeps_the_rounding_that_meets_the_rate_test_at_a_gift_aid_limit(
 
 
 def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
-    """Three 2026-27 recipients whose Gift Aid gifts raise the basic rate
+    """Two 2026-27 recipients whose Gift Aid gifts raise the basic rate
     limit above their pay. The first: pay £157,600, savings £140,500.3125,
     other deductions £139,000, a trading loss of £1,000.30 and a gift of
     £96,000, which lifts the limit to £157,700 (s. 414(2)(b)). The Personal
@@ -1325,10 +1325,8 @@ def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
     second does the same with a step of 3.125p: pay £307,600, savings
     £301,500.03125, other deductions £300,000, a loss of £1,000.001 and a gift
     of £216,000 leave 3.03p of savings above the band and tax of £61,520.01.
-    The third is the first with a loss of £1,000.3055, which leaves 0.7p of
-    savings above the band. There the float32 value nearest the deduction
-    from savings sets 0.7p more than the shared amount, and it meets the rate
-    test where the exact share fails it, so that rounding ranks last too."""
+    In both, the rounding that would pass is not the float32 value nearest
+    the deduction, so it ranks last."""
     year = 2026
     common = dict(uses_trading_allowance=False)
     sim = explicit_couples(
@@ -1350,20 +1348,58 @@ def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
                 gift_aid=216_000,
                 **common,
             ),
-            dict(
-                employment_income=157_600,
-                savings_interest_income=140_500.3125,
-                other_deductions=139_000,
-                trading_loss=1_000.3055,
-                gift_aid=96_000,
-                **common,
-            ),
         ],
     )
     meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
     assert not meets.any()
     tax = sim.calculate("income_tax", year).astype(float)[0::2]
-    assert tax == pytest.approx([31_520, 61_520.01, 31_520], abs=0.01)
+    assert tax == pytest.approx([31_520, 61_520.01], abs=0.01)
+
+
+def test_search_keeps_the_nearest_rounding_where_stored_savings_sit_over_the_band():
+    """2026-27 recipients whose £96,000 Gift Aid gifts raise the basic rate
+    limit to £157,700 (s. 414(2)(b)), above their pay of £157,600. The first
+    has savings of £140,500.01, other deductions of £139,000 and a trading
+    loss of £1,000.01. The Personal Allowance tapers to nil, and setting the
+    whole £140,000.01 of shared deductions against savings leaves £500 of
+    them, at the top of the savings nil rate band. So the share meets the rate
+    test, and the tax is £157,600 × 20% = £31,520, or £31,268 after the £252
+    reduction. The model holds the savings in float32 as £140,500.015625, so
+    the exact share leaves them 0.56p over the band. Only the float32 value
+    nearest the deduction from savings, 0.56p over the shared amount, puts
+    them back on it, and that rounding keeps its rank. The second and third
+    are the first with a loss of £1,000.3055 and savings of £140,500.3125 and
+    £140,500.305. The law leaves the second 0.7p of savings over the band and
+    denies it the reduction, but gives the third the reduction. Both hold the
+    same float32 amounts, so the model gives both the third's tax."""
+    year = 2026
+    common = dict(
+        employment_income=157_600,
+        other_deductions=139_000,
+        gift_aid=96_000,
+        uses_trading_allowance=False,
+    )
+    sim = explicit_couples(
+        year,
+        [
+            dict(savings_interest_income=140_500.01, trading_loss=1_000.01, **common),
+            dict(
+                savings_interest_income=140_500.3125,
+                trading_loss=1_000.3055,
+                **common,
+            ),
+            dict(
+                savings_interest_income=140_500.305,
+                trading_loss=1_000.3055,
+                **common,
+            ),
+        ],
+    )
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    assert meets.all()
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    assert tax[1] == tax[2]
+    assert tax == pytest.approx([31_268, 31_268, 31_268], abs=0.01)
 
 
 @pytest.mark.parametrize(
