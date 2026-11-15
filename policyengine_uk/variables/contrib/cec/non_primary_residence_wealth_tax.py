@@ -3,7 +3,10 @@ from policyengine_uk.model_api import *
 
 class non_primary_residence_wealth_tax(Variable):
     label = "Wealth tax (non-primary residence)"
-    documentation = "Annual tax on household net wealth excluding primary residences"
+    documentation = (
+        "Annual tax on gross household wealth excluding the primary residence. "
+        "The tax base deducts no mortgage or other debt."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float

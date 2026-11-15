@@ -12,8 +12,11 @@ class is_lha_foster_child(Variable):
         "placed under the care planning regulations, where a child is a "
         'person under 18). The model reads "foster child" in Sch 4 para '
         '9(3) and "a child" in para 12(A1)(c) the same way, so a foster '
-        "child aged 16 or 17 is not a non-dependant and has no bedroom of "
-        "their own, and their overnight care counts for the renter. The "
+        "child aged 16 or 17 is not the renter's non-dependant and has no "
+        "bedroom in the renter's claim, and their overnight care counts for "
+        "the renter. Unless they are a qualifying young person, another "
+        "claim that counts the household's non-dependants counts them as "
+        "one (see LHA_allowed_bedrooms). The "
         "narrower reading, under 16 as in the Welfare Reform Act 2012 s.40, "
         "would instead make such a person a non-dependant with a bedroom "
         "and give the renter no foster room. The guidance does not settle "

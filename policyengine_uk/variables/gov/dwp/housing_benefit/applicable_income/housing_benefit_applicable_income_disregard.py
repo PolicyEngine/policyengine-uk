@@ -1,40 +1,132 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_childcare_earnings_limit import (
+    hb_covers_additional_disregard,
+    hb_standard_earnings_disregard,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_specified_or_temporary_accommodation_disregard import (
+    hb_accommodation_segments,
+    hb_apply_defined_for,
+    hb_uses_annual_override,
+)
+from policyengine_uk.variables.gov.dwp.housing_benefit.applicable_income.housing_benefit_wtc_disregard import (
+    hb_segment_childcare_deduction,
+    hb_segment_wtc_disregard,
+)
+
+
+def hb_capped_accommodation(benunit, period, accommodation):
+    """Cap a full accommodation amount at the net earnings the standard
+    disregard leaves."""
+    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    standard = hb_standard_earnings_disregard(benunit, period)
+    return min_(max_(accommodation, 0), max_(net - standard, 0))
+
+
+def hb_segment_earnings_disregard(benunit, period, parameters, accommodation):
+    """Apply childcare and earnings limits to one full accommodation amount.
+    Return the earnings disregard and childcare deduction. Use an annual
+    override for the earnings disregard where present; otherwise apply its
+    defined_for condition. Leave WTC to hb_segment_deductions so a condition
+    on WTC can read the earnings disregard."""
+    net = max_(benunit("housing_benefit_net_earnings", period), 0)
+    standard = hb_standard_earnings_disregard(benunit, period)
+    accommodation = hb_capped_accommodation(benunit, period, accommodation)
+    childcare = hb_segment_childcare_deduction(
+        benunit, period, parameters, accommodation
+    )
+    name = "housing_benefit_applicable_income_disregard"
+    if hb_uses_annual_override(
+        benunit, period, name, housing_benefit_applicable_income_disregard.formula
+    ):
+        return benunit(name, period), childcare
+    p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
+    additional = where(
+        benunit(
+            "meets_housing_benefit_additional_earnings_disregard_conditions", period
+        )
+        & hb_covers_additional_disregard(
+            benunit, period, parameters, accommodation, childcare
+        ),
+        p.worker * WEEKS_IN_YEAR,
+        0,
+    )
+    disregard = where(
+        benunit("housing_benefit_on_passporting_benefit", period),
+        net,
+        standard + accommodation + additional,
+    )
+    return hb_apply_defined_for(benunit, period, name, disregard), childcare
+
+
+def hb_segment_deductions(benunit, period, parameters, accommodation):
+    """Return the earnings disregard, WTC disregard and childcare deduction
+    for one full accommodation amount. Use annual overrides where present;
+    otherwise apply each variable's defined_for condition."""
+    disregard, childcare = hb_segment_earnings_disregard(
+        benunit, period, parameters, accommodation
+    )
+    wtc_disregard = hb_segment_wtc_disregard(
+        benunit,
+        period,
+        parameters,
+        hb_capped_accommodation(benunit, period, accommodation),
+        childcare,
+    )
+    return disregard, wtc_disregard, childcare
 
 
 class housing_benefit_applicable_income_disregard(Variable):
     value_type = float
     entity = BenUnit
     label = "Housing Benefit applicable income disregards"
+    documentation = (
+        "Sums disregarded from the claimant's and partner's net earnings. "
+        "A lone parent has £25 a week, a couple £10 and anyone else £5, "
+        "capped at net earnings. From 5 October 2026 the working-age "
+        "Regulations add the specified or temporary accommodation disregard "
+        "(housing_benefit_specified_or_temporary_accommodation_disregard), "
+        "also capped at net earnings. The additional earnings disregard of "
+        "£17.10 is added where a work condition is met and net earnings at "
+        "least equal the other disregards (including that one), the childcare "
+        "charges deducted and £17.10. A family on Universal Credit, Income "
+        "Support, income-based Jobseeker's Allowance or income-related "
+        "Employment and Support Allowance "
+        "(housing_benefit_on_passporting_benefit) has all earnings "
+        "disregarded, at any age: the working-age Regulations then apply "
+        "(SI 2006/213 reg 5(1)(b)). The "
+        "£20 standard disregard uses established qualifying routes or an "
+        "explicit full-amount pre-assessment, without reconstructing partial "
+        "carer/occupation earnings allocations. A pre-assessed permitted-work amount "
+        "(housing_benefit_permitted_work_disregard) replaces the ordinary "
+        "standard amount, retaining a higher lone-parent disregard. It does "
+        "not replace the separate accommodation or additional disregard."
+        " The annual result combines the capped deductions calculated with "
+        "the full accommodation amount in each effective-date segment. "
+        "Entitlement applies its income threshold and taper within those "
+        "segments rather than using an averaged disregard as a weekly rule."
+    )
     definition_period = YEAR
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/2006/213/schedule/4"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/4",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/12",
+        "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
+        "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/10A",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5A",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/10A",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/5A",
+    )
 
     def formula(benunit, period, parameters):
-        WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
-        p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
-        # Hours of the claimant and partner and, as the model did before, the
-        # legacy children or young persons; anyone else in the benefit unit
-        # does not count (Sch 4 para 17 tests the claimant's or partner's work).
-        person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
+        return sum(
+            hb_segment_earnings_disregard(benunit, period, parameters, accommodation)[0]
+            * share
+            for accommodation, share in hb_accommodation_segments(
+                benunit, period, parameters
+            )
         )
-        hours = add_for_members(benunit, period, ["weekly_hours"], members)
-        # The claimant categories are mutually exclusive (Sch 4 paras 4, 7, 10).
-        # Worker disregard is additional.
-        single = benunit("is_single_person", period)
-        single_disregard = single * p.single
-        couple = benunit("is_couple", period)
-        couple_disregard = couple * p.couple
-        lone_parent = benunit("is_lone_parent", period)
-        lone_parent_disregard = lone_parent * p.lone_parent
-        hour_requirement = where(lone_parent, WTC.min_hours.lower, p.worker_hours)
-        worker = hours > hour_requirement
-        worker_disregard = worker * p.worker
-        weekly_disregard = (
-            single_disregard
-            + couple_disregard
-            + lone_parent_disregard
-            + worker_disregard
-        )
-        return weekly_disregard * WEEKS_IN_YEAR

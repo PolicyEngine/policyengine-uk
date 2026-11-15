@@ -1,0 +1,61 @@
+# The expense input is an already-allowable ITEPA Part 5 Chapter 2 amount.
+# No raw-cost or per-employment admissibility is inferred by these cases.
+- name: Qualified employment expenses reduce earnings and increase final UC cash
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 6_000
+        employment_expenses: 600
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        tenure_type: OWNED_OUTRIGHT
+        region: LONDON
+  output:
+    taxable_employment_income: 5_400
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    uc_work_allowance: 0
+    uc_individual_earned_income_before_mif: 5_400
+    uc_earned_income: 5_400
+    uc_income_reduction: 2_970
+    # Standard allowance 393.45 monthly; no child/housing elements,
+    # benefit cap reduction or debt deductions.
+    universal_credit_pre_benefit_cap: 1_751.40
+    universal_credit: 1_751.40
+
+- name: The same worker without expenses retains the original final UC cash
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 6_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        tenure_type: OWNED_OUTRIGHT
+        region: LONDON
+  output:
+    taxable_employment_income: 6_000
+    income_tax: 0
+    national_insurance: 0
+    uc_work_allowance: 0
+    uc_individual_earned_income_before_mif: 6_000
+    uc_earned_income: 6_000
+    uc_income_reduction: 3_300
+    universal_credit_pre_benefit_cap: 1_421.40
+    universal_credit: 1_421.40

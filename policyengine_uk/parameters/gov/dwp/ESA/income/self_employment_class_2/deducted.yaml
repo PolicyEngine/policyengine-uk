@@ -1,0 +1,18 @@
+description: Whether the notional deductions from a self-employed claimant's profit for income-related ESA include Class 2 National Insurance contributions.
+values:
+  2008-10-27:
+    value: true
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 99(3)(a) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99/2008-10-27
+  2024-04-06:
+    value: false
+    reference:
+      - title: Social Security (Class 2 National Insurance Contributions) (Consequential Amendments and Savings) Regulations 2024 (SI 2024/377) reg. 8(15), omitting reg. 99(3)(a)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99/2024-04-06
+metadata:
+  unit: bool
+  label: ESA self-employed earnings deduct Class 2
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 99(3)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99

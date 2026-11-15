@@ -1,0 +1,16 @@
+description: The UK levies Bingo Duty at this rate on dutiable bingo promotion profits, until its abolition on 1 April 2026.
+values:
+  '2014-07-01': 0.1
+  '2026-04-01': 0
+metadata:
+  unit: /1
+  period: year
+  label: bingo duty rate
+  preserve_calendar_dates: true
+  reference:
+  - title: Betting and Gaming Duties Act 1981, section 17, as at 6 April 2024
+    href: https://www.legislation.gov.uk/ukpga/1981/63/section/17/2024-04-06
+  - title: Finance Act 2026, section 88
+    href: https://www.legislation.gov.uk/ukpga/2026/11/section/88
+  - title: HMRC historical gambling duty rates
+    href: https://www.gov.uk/government/statistics/uk-betting-and-gaming-statistics/historical-uk-betting-and-gaming-duty-rates

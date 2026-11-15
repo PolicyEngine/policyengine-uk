@@ -92,6 +92,9 @@
         age: 19
         age_started_or_accepted_current_education_or_training: 18
         current_education: POST_SECONDARY
+        # Set explicitly: a person left unset takes the date fact's value,
+        # which is true for anyone under 20 on 6 October.
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
       under_terminal_date_age_limit:
         age: 18
         current_education: POST_SECONDARY

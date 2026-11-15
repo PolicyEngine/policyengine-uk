@@ -1,0 +1,23 @@
+# soc2020_sub_major_group is a person input with no formula: a dataset supplies
+# the SOC 2020 sub-major group, which lies within the major group, of each
+# person's main or last job, and NONE means none or unknown.
+
+- name: A supplied sub-major group is read back unchanged beside its major group
+  period: 2026
+  input:
+    age: 40
+    employment_status: FT_EMPLOYED
+    soc2020_major_group: PROFESSIONAL
+    soc2020_sub_major_group: SCIENCE_RESEARCH_ENGINEERING_AND_TECHNOLOGY_PROFESSIONALS
+  output:
+    soc2020_major_group: PROFESSIONAL
+    soc2020_sub_major_group: SCIENCE_RESEARCH_ENGINEERING_AND_TECHNOLOGY_PROFESSIONALS
+
+- name: A supplied major group does not fill in the sub-major group
+  period: 2026
+  input:
+    age: 40
+    employment_status: FT_EMPLOYED
+    soc2020_major_group: CARING_LEISURE_AND_OTHER_SERVICE
+  output:
+    soc2020_sub_major_group: NONE

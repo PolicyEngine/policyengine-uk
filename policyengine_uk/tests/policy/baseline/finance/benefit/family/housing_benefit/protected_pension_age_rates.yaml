@@ -1,0 +1,55 @@
+# Protected pre-April-2021 pension-age rates: SI 2025/295 Sch 6, table
+# paras 1(1)(b) and 1(2)(b); NI SR 2025/64 Sch 6 gives the same amounts.
+# https://www.legislation.gov.uk/uksi/2025/295/schedule/6/made
+# https://www.legislation.gov.uk/nisr/2025/64/schedule/6/made
+# Taper: SI 2006/214 reg 51 (65% of excess applicable income).
+# https://www.legislation.gov.uk/uksi/2006/214/regulation/51
+# Eligibility, assessed income, premiums and rent deductions are supplied to
+# isolate the personal allowance's effect on the tapered award.
+
+- name: Protected single pensioner receives the enacted 2025 allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    is_claimant_or_partner: true
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    benefits_premiums: 0
+    housing_benefit_applicable_income: 13_000
+    benunit_rent: 10_000
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    housing_benefit_applicable_amount: 12_708.80 # £244.40 * 52
+    housing_benefit_entitlement: 9_810.72 # £10,000 - 0.65 * (£13,000 - £12,708.80)
+
+- name: Protected pensioner couple receives the enacted 2025 allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      partner:
+        age: 80
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        benefits_premiums: 0
+        housing_benefit_applicable_income: 19_500
+        benunit_rent: 10_000
+        LHA_eligible: false
+        housing_benefit_meals_deduction: 0
+        housing_benefit_non_dep_deductions: 0
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    housing_benefit_applicable_amount: 19_032 # £366 * 52
+    housing_benefit_entitlement: 9_695.80 # £10,000 - 0.65 * (£19,500 - £19,032)

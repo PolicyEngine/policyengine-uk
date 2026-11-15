@@ -1,0 +1,49 @@
+- name: A closure claimant with an ineligible partner uses the UC single claim rules
+  # UC Regulations 2013 reg 3(3), reg 82 and Schedule 4 paragraph 29.
+  # Both claims use the same single allowance and shared accommodation rent.
+  period: 2025
+  absolute_error_margin: 0.02
+  input:
+    people:
+      closure_claimant:
+        age: 30
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+      closure_partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+      ordinary_claimant:
+        age: 30
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 2_000
+      ordinary_partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      closure:
+        members: [closure_claimant, closure_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      ordinary:
+        members: [ordinary_claimant, ordinary_partner]
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: true
+    households:
+      closure_home:
+        members: [closure_claimant, closure_partner]
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        brma: MAIDSTONE
+      ordinary_home:
+        members: [ordinary_claimant, ordinary_partner]
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        brma: MAIDSTONE
+  output:
+    claims_universal_credit: [true, true]
+    uc_member_of_couple_claims_as_single_person: [true, true]
+    is_lha_shared_accommodation_rate_specified_renter: [true, true]
+    is_uc_benefit_cap_single_claimant_rate: [true, true]
+    universal_credit: [10_139.64, 10_139.64]

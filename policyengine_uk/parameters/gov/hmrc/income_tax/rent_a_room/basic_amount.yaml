@@ -1,0 +1,26 @@
+description: Basic amount of rent-a-room receipts an individual can receive in a tax year free of income tax. An individual who does not meet the exclusive receipts condition, because someone else also receives rent from the residence, has half this amount.
+values:
+  1992-04-06:
+    value: 3_250
+    reference:
+      - title: Finance (No. 2) Act 1992 Sch. 10 paras. 6 and 13
+        href: https://www.legislation.gov.uk/ukpga/1992/48/schedule/10/enacted
+  1997-04-06:
+    value: 4_250
+    reference:
+      - title: The Income Tax (Furnished Accommodation) (Basic Amount) Order 1996 art. 2
+        href: https://www.legislation.gov.uk/uksi/1996/2953/made
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 789(4) (as enacted)
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/789/enacted
+  2016-04-06:
+    value: 7_500
+    reference:
+      - title: The Income Tax (Limit for Rent-a-Room Relief) Order 2015 arts. 1(2) and 2
+        href: https://www.legislation.gov.uk/uksi/2015/1539/made
+metadata:
+  label: Rent-a-room relief basic amount
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Income Tax (Trading and Other Income) Act 2005 s. 789
+      href: https://www.legislation.gov.uk/ukpga/2005/5/section/789

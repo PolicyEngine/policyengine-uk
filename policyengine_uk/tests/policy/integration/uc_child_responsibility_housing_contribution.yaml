@@ -1,0 +1,674 @@
+# UC Regs 2013 Sch 4 para 16(2)(i), reg 4: own-family responsibility, strict under-5 age.
+# Source-derived 2026 annual contribution: 12 x 96.55 = 1,158.60.
+# Unchanged single-over-25 standard allowance: 12 x 424.90 = 5,098.80.
+# With no earnings/capital/debt and nonbinding cap, renter UC = standard + council rent - contributions.
+# The non-dependant family does not claim UC; legal roles and membership, rather than forced awards/ages/exemptions, establish responsibility.
+
+- name: UC housing contribution - non-claiming parent of a four-year-old is exempt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 6000
+    - 0
+    universal_credit:
+    - 11098.8
+    - 0
+- name: UC housing contribution - exact fifth birthday ends the parent exemption
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 1158.6
+    - 0
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+- name: UC housing contribution - childless non-dependant retains the deduction
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 1158.6
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+- name: UC housing contribution - looked-after child does not confer responsibility
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 1158.6
+    - 0
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+- name: UC housing contribution - both partners responsible for their young child are exempt
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 28
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - partner
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - partner
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - true
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    - 0
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 6000
+    - 0
+    universal_credit:
+    - 11098.8
+    - 0
+- name: UC housing contribution - an unrelated family does not inherit parent exemption
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+      outsider:
+        age: 35
+        is_claimant_or_partner: true
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+      outsider_family:
+        members:
+        - outsider
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        - outsider
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    - 1158.6
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+    - 0
+- name: UC housing contribution - non-claimant adult in the family does not inherit responsibility
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+      outsider:
+        age: 35
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        - outsider
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        - outsider
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    - 1158.6
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+- name: UC housing contribution - reversed people and family order with final award requested
+    first
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      child:
+        age: 4
+        is_claimant_or_partner: false
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+    benunits:
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - child
+        - parent
+        - renter
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    universal_credit:
+    - 0
+    - 11098.8
+    uc_housing_costs_element:
+    - 0
+    - 6000
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+- name: UC housing contribution - existing under-21 exception remains without parent responsibility
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 20
+        is_claimant_or_partner: true
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 6000
+    - 0
+    universal_credit:
+    - 11098.8
+    - 0
+- name: UC housing contribution - responsibility starts with a newborn
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 0
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 6000
+    - 0
+    universal_credit:
+    - 11098.8
+    - 0
+
+# Configuration controls are appended after the cited parameter exists.
+- name: UC housing contribution - lowering responsibility age limit removes the exemption
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+    gov.dwp.universal_credit.elements.housing.non_dep_deduction.child_responsibility_age_limit: 4
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - false
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 1158.6
+    - 0
+    uc_non_dep_deductions:
+    - 1158.6
+    - 0
+    uc_housing_costs_element:
+    - 4841.4
+    - 0
+    universal_credit:
+    - 9940.2
+    - 0
+- name: UC housing contribution - raising responsibility age limit exempts a five-year-old
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      renter_family:
+        members:
+        - renter
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      parent_family:
+        members:
+        - parent
+        - child
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members:
+        - renter
+        - parent
+        - child
+        rent: 6000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+    gov.dwp.universal_credit.elements.housing.non_dep_deduction.child_responsibility_age_limit: 6
+  output:
+    uc_non_dep_deduction_exempt:
+    - false
+    - true
+    - false
+    uc_individual_non_dep_deduction:
+    - 0
+    - 0
+    - 0
+    uc_non_dep_deductions:
+    - 0
+    - 0
+    uc_housing_costs_element:
+    - 6000
+    - 0
+    universal_credit:
+    - 11098.8
+    - 0

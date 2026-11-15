@@ -1,0 +1,109 @@
+# The most the winter fuel payment charge could be, whatever benefits anyone
+# receives: the largest amount of each payment whose age and residence
+# conditions the person meets (SI 2025/969 reg 3; SSI 2024/351 reg 10 as
+# substituted by SSI 2025/282), when the charge has effect and total income
+# exceeds £35,000 (ITEPA 2003 s.681I(1)(b)), and nothing otherwise. The
+# charge itself is never more.
+
+- name: 2025 pensioner in England over the threshold gets the higher amount
+  # The higher Winter Fuel Payment, £300, whatever their age or household.
+  # Under 80 and not on a relevant benefit, they are paid and charged £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 35_001
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge_ceiling: [300]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 total income of exactly £35,000 has no ceiling
+  # s.681I(1)(b): total income must exceed £35,000.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 35_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge_ceiling: [0]
+
+- name: 2025 Pension Credit exempts from the charge but not the ceiling
+  # s.681I(4): Pension Credit exempts the claimant. The ceiling leaves benefit
+  # receipt out.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 40_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 100
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+  output:
+    winter_fuel_payment_charge_ceiling: [300]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 pensioner in Scotland gets the higher PAWHP amount
+  # SSI 2024/351 reg 10 as substituted: £305.10 for 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 40_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment_charge_ceiling: [305.1]
+
+- name: 2025 working-age person has no ceiling
+  # Neither payment's age condition is met.
+  period: 2025
+  input:
+    people:
+      worker:
+        age: 50
+        total_income_charged_to_tax: 60_000
+    households:
+      household:
+        members: [worker]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge_ceiling: [0]
+
+- name: 2024 has no ceiling before the charge has effect
+  # FA 2026 Sch. 10 para. 5: the charge has effect from 2025-26.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income_charged_to_tax: 60_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge_ceiling: [0]

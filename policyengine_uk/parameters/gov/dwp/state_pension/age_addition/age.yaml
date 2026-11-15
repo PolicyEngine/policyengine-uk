@@ -1,0 +1,11 @@
+description: A person entitled to a retirement pension under the Social Security Contributions and Benefits Act 1992 gets the age addition from this age.
+values:
+  1992-07-01: 80
+metadata:
+  unit: year
+  label: State Pension age addition age
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s.79(1)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/79
+    - title: Social Security Contributions and Benefits Act 1992 s.173 (a person is over an age once they have attained it)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/173

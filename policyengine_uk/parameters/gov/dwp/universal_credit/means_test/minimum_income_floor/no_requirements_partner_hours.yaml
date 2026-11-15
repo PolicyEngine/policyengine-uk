@@ -1,0 +1,24 @@
+description: >-
+  Weekly hours behind the amount that a joint claimant subject to no
+  work-related requirements, for a reason other than their earnings, adds to
+  the couple threshold for the Universal Credit minimum income floor.
+  Regulation 90(3)(a) makes the couple threshold "the sum of their individual
+  thresholds", and regulation 90(2) sets an individual threshold only for a
+  claimant who would otherwise be in the work-focused interview or work
+  preparation group (16 hours) or the all work-related requirements group (the
+  expected hours). It sets none for a claimant with limited capability for
+  work-related activity, a carer, the responsible carer of a child under 1 or
+  a claimant over State Pension Credit qualifying age, and neither the Advice
+  for Decision Making nor DWP's guidance on the floor gives one. The model
+  follows the text: such a partner adds nothing.
+values:
+  2013-04-29: 0
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit minimum income floor hours for a partner with no work-related requirements
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 90(2) and (3)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/90
+    - title: DWP, Advice for Decision Making, chapter H4, H4073-H4077
+      href: https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide

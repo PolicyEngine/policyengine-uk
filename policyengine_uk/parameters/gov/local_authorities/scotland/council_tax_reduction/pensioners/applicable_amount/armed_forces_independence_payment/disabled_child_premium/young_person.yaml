@@ -1,0 +1,14 @@
+description: Councils in Scotland count a young person (a Child Benefit qualifying young person) in a pensioner's family for the disabled child premium under the Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 when an armed forces independence payment (AFIP) is payable for them, if this is true.
+values:
+  2013-06-11:
+    value: true
+    reference:
+      - title: SSI 2013/142 regs. 1 and 12(7)(d), inserting SSI 2012/319 Sch. 1 para. 9(ba) from 11 June 2013, as the text in force on 30 April 2015 notes
+        href: https://www.legislation.gov.uk/ssi/2013/142/made
+metadata:
+  unit: bool
+  period: year
+  label: Scotland Council Tax Reduction pensioner disabled child premium AFIP route for a young person
+  reference:
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 Sch. 1 paras. 8 and 9
+      href: https://www.legislation.gov.uk/ssi/2012/319/schedule/1

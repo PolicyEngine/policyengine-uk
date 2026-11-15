@@ -1,0 +1,12 @@
+description: Percentage points added to the appropriate percentage of a company car propelled solely by diesel that does not meet the Euro 6d (RDE2) emissions standard, up to the maximum appropriate percentage.
+values:
+  2020-04-06: 0.04
+metadata:
+  unit: /1
+  period: year
+  label: Company car diesel supplement
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s. 141
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/141
+    - title: Finance Act 2018 s. 9(3)(b) (4 percentage points from 2018-19)
+      href: https://www.legislation.gov.uk/ukpga/2018/3/section/9/enacted

@@ -1,18 +1,184 @@
-- name: Care to Learn amount - Outside London
-  period: 2024
+# Care to Learn pays childcare costs up to £180 per child per week outside
+# London and £195 per child per week in London (ESFA Care to Learn 2026 to 2027
+# conditions of grant, sections 2.2 and 4.1). Over 52 weeks those caps are
+# £9,360 and £10,140 per child.
+- name: One child outside London with costs above the cap
+  period: 2025
   input:
-    region: EAST_OF_ENGLAND
-    care_to_learn_eligible: true
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
   output:
-    care_to_learn: 9_360  # 180 * 52
-    
-- name: Care to Learn amount - Inside London
-  period: 2024
+    care_to_learn: [9_360, 0]  # min(12,000, 180 x 52)
+
+# The weekly maximum is per child, so each child's costs are capped separately:
+# min(12,000, 9,360) + min(5,000, 9,360) = 14,360.
+- name: Two children outside London are each capped at the weekly maximum
+  period: 2025
   input:
-    region: LONDON
-    care_to_learn_eligible: true
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child1:
+        age: 1
+        childcare_expenses: 12_000
+      child2:
+        age: 0
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, child1, child2]
+    households:
+      household:
+        members: [parent, child1, child2]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
   output:
-    care_to_learn: 10_140  # 195 * 52
+    care_to_learn: [14_360, 0, 0]
+
+- name: Two children in London are each capped at the London weekly maximum
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 19
+        is_parent: true
+        current_education: POST_SECONDARY
+        is_apprentice: false
+      child1:
+        age: 2
+        childcare_expenses: 12_000
+      child2:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child1, child2]
+    households:
+      household:
+        members: [parent, child1, child2]
+        country: ENGLAND
+        region: LONDON
+  output:
+    care_to_learn: [20_280, 0, 0]  # 2 x min(12,000, 195 x 52)
+
+- name: Costs below the cap are paid in full
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 3_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [3_000, 0]
+
+- name: No childcare costs, no Care to Learn
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [0, 0]
+
+# Only one parent can claim for a child (section 2.2), so when both young
+# parents are eligible the child's costs are paid once, to the elder.
+- name: Two eligible young parents - the child's costs are paid once
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 18
+        is_parent: true
+        current_education: UPPER_SECONDARY
+        is_apprentice: false
+      parent2:
+        age: 19
+        is_parent: true
+        current_education: POST_SECONDARY
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn_eligible: [true, true, false]
+    care_to_learn: [0, 9_360, 0]
+
+# Care to Learn funds childcare while the young parent is on a study programme
+# (sections 1.2 and 2.3).
+- name: A young parent not in education gets no Care to Learn
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 18
+        is_parent: true
+        current_education: NOT_IN_EDUCATION
+        is_apprentice: false
+      child:
+        age: 1
+        childcare_expenses: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+        region: EAST_OF_ENGLAND
+  output:
+    care_to_learn: [0, 0]
 
 - name: Not eligible for Care to Learn
   period: 2024

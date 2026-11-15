@@ -6,5 +6,9 @@ metadata:
   period: year
   label: Wales Council Tax Reduction maximum support rate
   reference:
-    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 1 para. 2(1) (pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/2
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 4(1) (persons who are not pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/4
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 (2013-14 schemes; revoked from 1 April 2014)
       href: https://www.legislation.gov.uk/wsi/2012/3144/contents/made

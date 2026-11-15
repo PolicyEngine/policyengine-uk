@@ -1,0 +1,17 @@
+description: Carer's Allowance deducts this share of pension contributions when it calculates the net earnings and net profit that the earnings limit tests.
+values:
+  1996-11-25: 0.5
+metadata:
+  period: year
+  unit: /1
+  label: Carer's Allowance earnings pension contribution deduction rate
+  economy: false
+  reference:
+    - title: The Social Security Benefit (Computation of Earnings) Regulations 1996, regulation 10(4)(b) (employed earners)
+      href: https://www.legislation.gov.uk/uksi/1996/2745/regulation/10
+    - title: The Social Security Benefit (Computation of Earnings) Regulations 1996, regulation 13(1)(b)(ii), (4)(c) and (10)(b) (self-employed earners)
+      href: https://www.legislation.gov.uk/uksi/1996/2745/regulation/13
+    - title: The Social Security Benefit (Computation of Earnings) Regulations (Northern Ireland) 1996, regulation 10(4)(b) (employed earners)
+      href: https://www.legislation.gov.uk/nisr/1996/520/regulation/10
+    - title: The Social Security Benefit (Computation of Earnings) Regulations (Northern Ireland) 1996, regulation 13(1)(b)(ii), (4)(c) and (10)(b) (self-employed earners)
+      href: https://www.legislation.gov.uk/nisr/1996/520/regulation/13

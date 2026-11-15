@@ -8,12 +8,15 @@ class tv_licence(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = "https://www.legislation.gov.uk/ukpga/2003/21/section/363"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2003/21/section/363",
+        "https://www.legislation.gov.uk/uksi/2016/704/regulation/9/made",
+    )
     category = TAX
 
     def formula(household, period, parameters):
-        owns_tv = household("household_owns_tv", period)
+        licence_required = household("tv_licence_required", period)
         discount = household("tv_licence_discount", period)
         would_evade = household("would_evade_tv_licence_fee", period)
         fee = parameters(period).gov.dcms.bbc.tv_licence.colour
-        return (owns_tv & ~would_evade) * fee * (1 - discount)
+        return (licence_required & ~would_evade) * fee * (1 - discount)

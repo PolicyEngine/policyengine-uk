@@ -1,18 +1,35 @@
-description: Average price of unleaded petrol per litre, including fuel duty.
+description: Average pump price of unleaded petrol (ULSP) per litre, including fuel duty and VAT. Calendar-year average of DESNZ monthly typical retail prices; the same basis Microcosm UK uses to price household petrol spending.
 values:
-  2012-04-01: 1.3492
-  2014-09-15: 1.2918
-  2017-05-01: 1.2023
-  2020-05-14: 1.0669
-  2022-01-01: 1.491
-  2022-03-22: 1.6703
-  2024-01-01: 1.44
+  2010-01-01: 1.16902571
+  2011-01-01: 1.33268790
+  2012-01-01: 1.35390547
+  2013-01-01: 1.34145278
+  2014-01-01: 1.27495853
+  2015-01-01: 1.11130760
+  2016-01-01: 1.08845640
+  2017-01-01: 1.17588883
+  2018-01-01: 1.25195971
+  2019-01-01: 1.24877998
+  2020-01-01: 1.13947293
+  2021-01-01: 1.31269579
+  2022-01-01: 1.64732274
+  2023-01-01: 1.47746334
+  2024-01-01: 1.41477665
+  2025-01-01: 1.35072210
+  # Provisional: mean of the January to September 2026 monthly prices
+  # (DESNZ table 4.1.1, published 29 September 2026). Replace with the
+  # calendar-year average from table 4.1.2 when DESNZ publishes it, and
+  # re-derive the petrol_spending_litre_proxy growth series.
+  2026-01-01: 1.50814483
 metadata:
   unit: currency-GBP
   label: Price of unleaded petrol per litre
   economy: false
+  # Held flat in cash terms after the last DESNZ year. Litres and fuel duty
+  # do not depend on this projection: the spending litre proxy is derived
+  # from these prices, so later price changes cancel out of spending / price.
   reference:
-    - title: RAC latest average
-      href: https://www.rac.co.uk/drive/advice/fuel-watch/
-    - title: RAC Foundation historical averages
-      href: https://www.racfoundation.org/data/uk-pump-prices-over-time
+    - title: DESNZ, Quarterly Energy Prices table 4.1.2, annual typical retail prices of petroleum products (ULSP)
+      href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics
+    - title: DESNZ, Quarterly Energy Prices table 4.1.1, monthly typical retail prices (ULSP), January to September 2026
+      href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics

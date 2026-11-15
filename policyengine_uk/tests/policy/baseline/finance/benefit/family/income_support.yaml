@@ -144,4 +144,3 @@
   output:
     # Para 2A needs "a child", a person under 16 (SSCBA 1992 s.137(1)).
     income_support_eligible: false
-

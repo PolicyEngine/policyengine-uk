@@ -1,0 +1,10 @@
+description: Weekly tolerance for the modeled paid-amount proxy for qualifying DLA care and PIP daily living awards in the Universal Credit higher disabled child condition. This is an existing input approximation, not a statutory entitlement threshold.
+values:
+  2015-01-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: UC higher disabled child benefit amount proxy tolerance
+  reference:
+    - title: Retained PolicyEngine-UK DLA and PIP paid-amount input convention
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/b4dbaf57a4ebb1d1f0ba5f7a384795422828db75/policyengine_uk/variables/household/demographic/is_severely_disabled_for_benefits.py

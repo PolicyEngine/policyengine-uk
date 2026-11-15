@@ -9,7 +9,7 @@ class housing_benefit_LHA_category(Variable):
     documentation = (
         "The Housing Benefit category of dwelling. The shared accommodation "
         "rate applies to a young individual with no non-dependant residing "
-        "with them (see housing_benefit_claimant_has_non_dependant), and to a "
+        "with them (see housing_benefit_has_non_dependant), and to a "
         "claimant entitled to one bedroom who lacks exclusive use of "
         "self-contained accommodation, unless the severe disability premium "
         "applies. Otherwise the category follows the number of bedrooms in "
@@ -27,11 +27,13 @@ class housing_benefit_LHA_category(Variable):
     def formula(benunit, period, parameters):
         rooms = benunit("housing_benefit_LHA_allowed_bedrooms", period.this_year)
         # Schedule 3 paragraph 14 (severe disability premium) applies.
-        severe_disability = benunit("severe_disability_premium", period) > 0
+        severe_disability = benunit(
+            "housing_benefit_severe_disability_premium_applies", period
+        )
         # HB Regs 2006 reg 13D(2)(a)(i).
         young_individual = (
             benunit("is_housing_benefit_young_individual", period)
-            & ~benunit("housing_benefit_claimant_has_non_dependant", period)
+            & ~benunit("housing_benefit_has_non_dependant", period)
             & ~severe_disability
         )
         # Reg 13D(2)(a)(ii): entitled to one bedroom but neither condition in

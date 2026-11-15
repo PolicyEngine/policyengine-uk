@@ -9,29 +9,30 @@ class extended_childcare_entitlement_eligible(Variable):
     defined_for = "would_claim_extended_childcare"
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/13",
         "https://www.legislation.gov.uk/uksi/2022/1134/regulation/14",
         "https://www.legislation.gov.uk/uksi/2022/1134/regulation/15",
     )
 
     def formula(benunit, period, parameters):
-        # Check if household is in England
-        country = benunit.household("country", period)
-        countries = country.possible_values
-        in_england = country == countries.ENGLAND
-
-        # The income conditions apply to the parent and the parent's partner
-        # (Childcare Act 2016 s.1(2)(d); SI 2022/1134 regs 14, 15 and 18):
-        # the claimant and partner of the benefit unit, not their children.
         person = benunit.members
-        person_meets_income_condition = person(
-            "extended_childcare_entitlement_meets_income_requirements",
-            period,
-        ) | ~person("is_claimant_or_partner", period)
-        meets_income_condition = benunit.all(person_meets_income_condition)
 
-        # Check work condition
-        work_eligible = (
-            benunit("extended_childcare_entitlement_work_condition", period) > 0
+        # A qualifying child of working parents is a young child of the
+        # description in reg 13, under compulsory school age and in England
+        # (Childcare Act 2016 s.1(2)(a)-(c)).
+        has_qualifying_child = benunit.any(
+            person("extended_childcare_entitlement_qualifying_child", period)
         )
 
-        return in_england & meets_income_condition & work_eligible
+        # The parent and the parent's partner, if any, must meet the
+        # conditions in regs 14 and 15 (Childcare Act 2016 s.1(2)(d)): the
+        # claimant and partner of the benefit unit, not their children.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        meets_parent_and_partner_conditions = benunit.any(
+            claimant_or_partner
+        ) & benunit.all(
+            person("extended_childcare_entitlement_work_condition", period)
+            | ~claimant_or_partner
+        )
+
+        return has_qualifying_child & meets_parent_and_partner_conditions

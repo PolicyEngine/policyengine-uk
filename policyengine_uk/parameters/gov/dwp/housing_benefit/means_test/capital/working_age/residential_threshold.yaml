@@ -1,0 +1,13 @@
+description: Working-age Housing Benefit capital tariff threshold where the statutory residential exception applies.
+metadata:
+  label: Housing Benefit residential capital tariff threshold
+  unit: currency-GBP
+  period: year
+values:
+  2006-04-10:
+    value: 10000
+    reference:
+      - title: The Housing Benefit Regulations 2006, regulation 52(3)-(5), (8)-(9)
+        href: https://www.legislation.gov.uk/uksi/2006/213/regulation/52
+      - title: The Housing Benefit Regulations (Northern Ireland) 2006, regulation 49(2)-(4), (7)-(8)
+        href: https://www.legislation.gov.uk/nisr/2006/405/regulation/49

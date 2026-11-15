@@ -5,11 +5,16 @@ class extended_childcare_entitlement_meets_income_requirements(Variable):
     value_type = bool
     entity = Person
     label = "Income eligible for the extended childcare entitlement"
-    documentation = "Whether this person meets the income requirements for extended childcare entitlement based on age and income thresholds"
+    documentation = (
+        "Whether this person expects at least the minimum income from work "
+        "(SI 2022/1134 reg 18) and adjusted net income of no more than the "
+        "limit (regs 14(3)(c)(i) and 15(3)(b)(i))."
+    )
     definition_period = YEAR
-
-    # Legislation: https://www.legislation.gov.uk/ukdsi/2015/9780111127063 , part 9 and 10
-    # Also, you can check here: https://www.gov.uk/tax-free-childcare
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/14",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/18",
+    )
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dfe.extended_childcare_entitlement
@@ -21,11 +26,13 @@ class extended_childcare_entitlement_meets_income_requirements(Variable):
         # Get minimum wage rate using existing variable
         min_wage_rate = person("minimum_wage", period)
 
-        # Calculate required threshold (weekly hours * 13 weeks (a quarter) * minimum wage)
-        # Reference for the quarterly logic: part 9.3 in https://www.legislation.gov.uk/uksi/2015/448/regulation/9
+        # Reg 18(1): expected income over the three-month relevant period must
+        # be equal to or greater than the minimum weekly income (16 hours at
+        # the person's minimum wage) times the number of weeks (13).
         required_threshold = min_wage_rate * p.minimum_weekly_hours * 13
 
-        # Get adjusted net income and check against max threshold
+        # Regs 14(3)(c)(i) and 15(3)(b)(i): the person must not expect adjusted
+        # net income to exceed the limit.
         ani = person("adjusted_net_income", period)
 
-        return (quarterly_income > required_threshold) & (ani < p.income.limit)
+        return (quarterly_income >= required_threshold) & (ani <= p.income.limit)

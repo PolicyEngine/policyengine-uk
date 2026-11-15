@@ -14,19 +14,28 @@ values:
   2025-01-01: 1.217
   # 2026: FROZEN (Autumn Budget 2025 policy)
   2026-01-01: 1.217
-  # 2027: +4.2% (projected - OBR RPI ~3.2% + 1%, from frozen base)
+  # 2027: +4.2% (July 2026 RPI outturn 3.2% + 1%, ONS CZBH)
   2027-01-01: 1.268
-  # 2028: +3.9% (projected - OBR RPI ~2.9% + 1%)
-  2028-01-01: 1.318
-  # 2029: +3.9% (projected - OBR RPI ~2.9% + 1%)
-  2029-01-01: 1.369
+  # Regulated fares rise by July RPI of the year before plus 1 point. From
+  # 2028 that July is not yet published, so the projection uses the
+  # previous calendar year's growth in gov.economic_assumptions.yoy_growth
+  # .obr.rpi, rounded to 0.1 points; the index is rounded to 3 decimals.
+  # policyengine_uk/tests/test_rail_fare_index.py checks each step.
+  # 2028: +5.3% (projected: 2027 RPI growth 4.32%, OBR October 2026, + 1%)
+  2028-01-01: 1.335
+  # 2029: +4.0% (projected: 2028 RPI growth 3.03%, OBR October 2026, + 1%)
+  2029-01-01: 1.388
+  # 2030: +4.0% (projected: 2029 RPI growth 2.98%, OBR October 2026, + 1%)
+  2030-01-01: 1.444
+  # 2031: +3.3% (projected: 2030 RPI growth 2.29%, OBR October 2026, + 1%)
+  2031-01-01: 1.492
 metadata:
   unit: /1
   label: Regulated rail fare index (current law)
   reference:
     - title: GOV.UK Rail Fares Freeze Announcement - Autumn Budget 2025
       href: https://www.gov.uk/government/news/rail-fares-freeze-autumn-budget-2025
-    - title: OBR Economic and Fiscal Outlook March 2025
-      href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+    - title: OBR Economic and Fiscal Outlook October 2026 (RPI forecast, gov.economic_assumptions.yoy_growth.obr.rpi)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
     - title: Network Rail - How train fares are set
       href: https://www.networkrail.co.uk/stories/how-train-fares-set/

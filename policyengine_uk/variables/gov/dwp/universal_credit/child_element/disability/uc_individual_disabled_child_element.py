@@ -15,4 +15,5 @@ class uc_individual_disabled_child_element(Variable):
         child = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         ) & ~person("is_uc_claimant", period)
-        return (child * p.amount) * MONTHS_IN_YEAR
+        higher_condition = person("meets_uc_higher_disabled_child_condition", period)
+        return (child * ~higher_condition * p.amount) * MONTHS_IN_YEAR

@@ -2,6 +2,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    age: 80
     is_savings_credit_eligible: true
     relation_type: SINGLE
     savings_credit_income: 20_000
@@ -15,6 +16,7 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
+    age: 80
     is_savings_credit_eligible: true
     relation_type: SINGLE
     savings_credit_income: 20_000
@@ -23,3 +25,137 @@
     minimum_guarantee: 12_376
   output:
     savings_credit: 684.216
+
+- name: Case 3, 2025 single claimant uses the corrected threshold.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 11_000
+    pension_credit_income: 11_000
+  output:
+    is_pension_credit_eligible: true
+    # 0.6 * (11,000 - 198.27 * 52).
+    savings_credit: 413.976
+
+- name: Case 4, 2025 couple uses the corrected threshold.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    is_savings_credit_eligible: true
+    relation_type: COUPLE
+    savings_credit_income: 17_000
+    pension_credit_income: 17_000
+  output:
+    is_pension_credit_eligible: true
+    # 0.6 * (17,000 - 314.34 * 52).
+    savings_credit: 392.592
+
+# Explicit SI 2019/37 art.4 saving INPUT CONTRACT, not an inference from current
+# receipt or proof of the separate 2016 Savings Credit continuity conditions.
+# Current 2026 model-rate premises: married couple/default Marriage Allowance
+# of 1,260 gives tax (20,000-12,570-1,260)*0.2=1,234 and income 18,766.
+# Guarantee: 363.25*52=18,889; threshold: 329.75*52=17,147.
+# SC=min(0.6*(18,889-17,147),0.6*(18,766-17,147))=971.40; GC=123.
+# This hand control is not a new external audit of 2026 tax or uprating rates.
+- name: Protected mixed-age couple keeps the computed Savings Credit component
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 20_000
+      person2:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        savings: 0
+  output:
+    income_tax: [1_234, 0]
+    pension_credit_income: 18_766
+    savings_credit_income: 18_766
+    standard_minimum_guarantee: 18_889
+    savings_credit: 971.40
+    guarantee_credit: 123
+    pension_credit_entitlement: 1_094.40
+    pension_credit: 1_094.40
+
+# April 2027 hand controls (unrounded projections):
+# SMG single 238 * 1.039 = 247.282; couple 363.25 * 1.039 = 377.41675.
+# Maximum single 17.96 * 1.035 = 18.5886; couple 20.10 * 1.035 = 20.8035.
+# Threshold = SMG - maximum / 0.6: single 216.301; couple 342.74425.
+# Historical published thresholds remain in use through April 2026.
+- name: April 2027 single savings credit maximum rises by September CPI
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 81
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 20_000
+    pension_credit_income: 12_858.664
+  output:
+    standard_minimum_guarantee: 12_858.664
+    savings_credit: 966.6072  # 18.5886 * 52
+
+- name: April 2027 couple savings credit maximum rises by September CPI
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      partner:
+        age: 79
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_savings_credit_eligible: true
+        savings_credit_income: 25_000
+        pension_credit_income: 19_625.671
+  output:
+    standard_minimum_guarantee: 19_625.671
+    savings_credit: 1_081.782  # 20.8035 * 52
+
+- name: April 2027 single savings credit phases in above the derived threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 81
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 12_000
+    pension_credit_income: 12_000
+  output:
+    savings_credit: 451.4088  # 0.6 * (12_000 - 216.301 * 52)
+
+- name: April 2027 couple savings credit phases in above the derived threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      partner:
+        age: 79
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_savings_credit_eligible: true
+        savings_credit_income: 19_000
+        pension_credit_income: 19_000
+  output:
+    savings_credit: 706.3794  # 0.6 * (19_000 - 342.74425 * 52)

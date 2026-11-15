@@ -1,0 +1,20 @@
+description: Whether a third or later child or qualifying young person gets the Child Tax Credit individual element when all, or all but one, of the other children are adopted or cared for under a non-parental caring arrangement. Before 28 November 2018 the exception applied only through the child's own exception under regulations 10 to 14.
+values:
+  # Fiscal-year values are read at 30 April, so 2018-19 keeps the earlier
+  # rules and 2019-20 is the first year with this exception.
+  0001-01-01:
+    value: false
+    reference:
+      - title: The Child Tax Credit Regulations 2002 reg. 9(1) (as in force on 27 November 2018)
+        href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/9/2018-11-27
+  2018-11-28:
+    value: true
+    reference:
+      - title: The Child Tax Credit (Amendment) Regulations 2018 (SI 2018/1130) regs. 1 and 3(a)
+        href: https://www.legislation.gov.uk/uksi/2018/1130/regulation/3/made
+      - title: The Child Tax Credit Regulations 2002 reg. 9(1)(a)(ii)
+        href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/9/2018-11-28
+metadata:
+  unit: bool
+  period: year
+  label: Child Tax Credit exception where the other children are adopted or cared for

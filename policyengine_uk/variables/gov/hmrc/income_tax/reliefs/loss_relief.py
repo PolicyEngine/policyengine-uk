@@ -8,16 +8,19 @@ The section detailing some tax reliefs applicable is section 24 of the Act, but 
 class loss_relief(Variable):
     value_type = float
     entity = Person
-    label = "Tax relief from trading losses"
-    definition_period = YEAR
+    label = "Trade losses brought forward"
     reference = dict(
-        title="Income Tax (Trading and Other Income) Act 2005 s. 59",
-        href="https://www.legislation.gov.uk/ukpga/2005/5/section/59",
+        title="Income Tax Act 2007 s. 83",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/83",
     )
-    documentation = "Can be set against general income."
+    documentation = (
+        "Unrelieved trade losses of earlier years deducted from this year's "
+        "profits of the same trade (ITA 2007 s.83). Deducted from "
+        "self-employment income only, and never below zero. A loss made in "
+        "this year goes in trading_loss, which is relieved against general "
+        "income instead (s.64); whatever part of it this year's income cannot "
+        "absorb is carried forward by entering it here in later years."
+    )
+    definition_period = YEAR
     unit = GBP
-
-    def formula(person, period, parameters):
-        current_loss = person("trading_loss", period)
-        previous_loss = person("trading_loss", period.last_year)
-        return current_loss + previous_loss
+    quantity_type = FLOW

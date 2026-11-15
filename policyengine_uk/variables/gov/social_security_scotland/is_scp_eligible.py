@@ -38,8 +38,17 @@ class is_scp_eligible(Variable):
         receives_income_support = (
             benunit("income_support", period) > 0
         ) & qb.income_support
-        receives_jsa_income = (benunit("jsa_income", period) > 0) & qb.jsa_income
-        receives_esa_income = (benunit("esa_income", period) > 0) & qb.esa_income
+        # SSI 2020/351 reg 18(e)-(f): the individual responsible for the child
+        # (through their own or their partner's Child Benefit, Pension Credit or
+        # Universal Credit award, or as a kinship carer: regs 9, 11 and 12) has
+        # been awarded the benefit. The model takes that individual to be the
+        # claimant or partner, not another member of the benefit unit.
+        receives_jsa_income = (
+            benunit("claimant_or_partner_jsa_income", period) > 0
+        ) & qb.jsa_income
+        receives_esa_income = (
+            benunit("claimant_or_partner_esa_income", period) > 0
+        ) & qb.esa_income
         receives_pension_credit = (
             benunit("pension_credit", period) > 0
         ) & qb.pension_credit

@@ -1,0 +1,18 @@
+description: Housing Benefit gives a couple the specified or temporary accommodation earnings disregard at the minors' rate where neither member has reached this age, and at the younger couple rate where one has but neither has reached the older age threshold.
+values:
+  # Paragraph 18 has effect from 5 October 2026; its amounts are zero before.
+  2026-10-05: 18
+metadata:
+  period: year
+  unit: year
+  label: Housing benefit specified or temporary accommodation earnings disregard younger age threshold
+  economy: false
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 18(2)(c)(i) and (ii)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4
+    - title: The Housing Benefit (Earned Income Disregards) (Amendment) Regulations 2026, regulation 2(4) as substituted by the Housing Benefit (Earned Income Disregards) (Amendment) (No. 2) Regulations 2026, regulation 2(2)
+      href: https://www.legislation.gov.uk/uksi/2026/978/regulation/2
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 18(2)(c)(i) and (ii)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5
+    - title: The Housing Benefit (Earned Income Disregards) (Amendment) Regulations (Northern Ireland) 2026, regulation 2(4)
+      href: https://www.legislation.gov.uk/nisr/2026/157/regulation/2

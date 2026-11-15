@@ -24,9 +24,9 @@
 
 - name: Exempt - carers
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0
   input:
-    pension_credit: 1
+    pension_credit: 0
     dla_sc_middle_plus: false
     pip_dl: 0
     attendance_allowance: 0
@@ -34,7 +34,7 @@
   output:
     uc_non_dep_deduction_exempt: true
 
-- name: Exempt - carer by hours with underlying entitlement, no award
+- name: Caring hours without a claim do not give the carer receipt exemption
   period: 2025
   absolute_error_margin: 0
   input:
@@ -48,4 +48,37 @@
     would_claim_carers_allowance: false
   output:
     receives_carers_allowance: false
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    uc_non_dep_deduction_exempt: false
+
+# Under UC Regs 2013 Sch 4 para 16(2)(d), DWP deducts no contribution for "a
+# person in receipt of attendance allowance", and the Secretary of State defines
+# that term in reg 2 to include armed forces independence payment.
+- name: Exempt - armed forces independence payment
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    armed_forces_independence_payment: 9_000
+    receives_carers_allowance: false
+  output:
+    uc_receives_attendance_allowance: true
+    uc_non_dep_deduction_exempt: true
+
+- name: Exempt - attendance allowance
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    aa_category: LOWER
+    armed_forces_independence_payment: 0
+    receives_carers_allowance: false
+  output:
+    uc_receives_attendance_allowance: true
     uc_non_dep_deduction_exempt: true

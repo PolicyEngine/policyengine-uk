@@ -1,15 +1,44 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._national_non_dependants import (
+    household_head_family_is_pensioner,
+    individual_non_dep_deduction,
+)
 
 
 class council_tax_reduction_individual_non_dep_deduction(Variable):
     value_type = float
     entity = Person
     label = "CTR individual non-dependent deduction"
+    documentation = (
+        "The England pensioner, Scottish and Welsh schemes' own weekly scales. "
+        "For a non-dependant in remunerative work, the council deducts the amount for the band "
+        "containing their normal gross weekly income (a couple's joint income "
+        "for a claimant or partner of the non-dependant's family); bands "
+        "include their lower edge. For a non-dependant outside remunerative work, "
+        "including one on Income Support, income-based JSA or income-related "
+        "ESA, the council deducts the lowest amount; for an exempt non-dependant it deducts nothing. English working-age local schemes have their own "
+        "variables. The person-level variable reports the scheme of the household head's family; "
+        "each applicant's deductions follow their own scheme."
+    )
     definition_period = YEAR
     unit = GBP
     defined_for = "council_tax_reduction_individual_non_dep_deduction_eligible"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8",
+        "https://www.legislation.gov.uk/uksi/2012/2885/regulation/10",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/3",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/5",
+        "https://www.legislation.gov.uk/wsi/2013/3029/regulation/10",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/48",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/6",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/90",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/10",
+    )
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
-        weekly_total_income = person("total_income", period) / WEEKS_IN_YEAR
-        return p.amount.calc(weekly_total_income, right=True) * WEEKS_IN_YEAR
+        return individual_non_dep_deduction(
+            person,
+            period,
+            parameters,
+            household_head_family_is_pensioner(person, period),
+        )

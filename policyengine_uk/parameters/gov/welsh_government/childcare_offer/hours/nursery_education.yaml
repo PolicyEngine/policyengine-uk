@@ -1,0 +1,13 @@
+description: The Childcare Offer for Wales counts this many weekly hours of local authority funded nursery education towards its weekly hours in school term time.
+metadata:
+  unit: hour
+  period: week
+  label: Childcare Offer for Wales nursery education hours in term time
+  reference:
+    - title: Welsh Government, Childcare Offer for Wales guidance for local authorities, version 8.3 (April 2026), paragraphs 3, 8 and 9
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf
+values:
+  # Local authorities must provide at least 10 hours a week of nursery
+  # education in term time (para 3), and many provide more (para 9). The
+  # model uses the minimum for every authority.
+  2019-08-01: 10

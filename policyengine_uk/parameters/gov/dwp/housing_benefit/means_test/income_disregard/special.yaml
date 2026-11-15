@@ -1,0 +1,16 @@
+description: Weekly Housing Benefit special standard earnings disregard, replacing the ordinary single or couple amount.
+values:
+  2015-04-01: 20
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit special earnings disregard
+  reference:
+    - title: GB working-age earnings disregards, paragraphs 3 and 5 to 9
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4
+    - title: GB pension-age earnings disregards, paragraphs 1 to 7
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4
+    - title: NI working-age earnings disregards
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5
+    - title: NI pension-age earnings disregards
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5

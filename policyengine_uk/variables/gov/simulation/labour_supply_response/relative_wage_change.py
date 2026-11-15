@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.labour_supply_responses import measurement_branches
 
 
 class relative_wage_change(Variable):
@@ -10,21 +11,17 @@ class relative_wage_change(Variable):
     requires_computation_after = "employment_income_behavioral_response"
 
     def formula(person, period, parameters):
-        simulation = person.simulation
-        measurement_branch = simulation.get_branch("lsr_measurement")
-        baseline_branch = simulation.get_branch("baseline").get_branch(
-            "baseline_lsr_measurement"
-        )
-        baseline_branch.set_input(
-            "capital_gains_before_response",
-            period,
-            person("capital_gains_before_response", period),
-        )
-        measurement_person = measurement_branch.populations["person"]
-        baseline_person = baseline_branch.populations["person"]
-        baseline_mtr = baseline_person("marginal_tax_rate", period)
+        if person.simulation.baseline is None:
+            return 0  # No reform, no change
+        with measurement_branches(person, period) as (
+            measurement_branch,
+            baseline_branch,
+        ):
+            measurement_person = measurement_branch.populations["person"]
+            baseline_person = baseline_branch.populations["person"]
+            baseline_mtr = baseline_person("marginal_tax_rate", period)
+            mtr = measurement_person("marginal_tax_rate", period)
         baseline_wage = 1 - baseline_mtr
-        mtr = measurement_person("marginal_tax_rate", period)
         wage_rate = 1 - mtr
         # _c suffix for "clipped"
         baseline_wage_c = np.where(baseline_wage == 0, 0.01, baseline_wage)

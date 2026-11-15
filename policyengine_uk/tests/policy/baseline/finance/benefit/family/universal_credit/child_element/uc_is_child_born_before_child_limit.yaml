@@ -21,3 +21,156 @@
     age: 4
   output:
     uc_is_child_born_before_child_limit: true
+
+# UC Regs 2013 reg 24A(3) (in force 6 April 2017 to 5 April 2026): a child or
+# qualifying young person born before 6 April 2017 is transitionally protected.
+# In 2025 the child element is 292.81 * 12 = 3,513.72 and the higher amount for
+# the first child is 339 * 12 = 4,068.
+
+- name: A third child born on 5 April 2017 is protected from the child limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 10
+        date_of_birth: 20150301
+      child_2:
+        age: 9
+        date_of_birth: 20160501
+      child_3:
+        age: 8
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    uc_is_child_born_before_child_limit: [false, true, true, true]
+    uc_child_index: [-1, 1, 2, 3]
+    uc_individual_child_element: [0, 4_068, 3_513.72, 3_513.72]
+
+- name: A third child born on 6 April 2017 is not protected from the child limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 10
+        date_of_birth: 20150301
+      child_2:
+        age: 9
+        date_of_birth: 20160501
+      child_3:
+        age: 8
+        date_of_birth: 20170406
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    uc_is_child_born_before_child_limit: [false, true, true, false]
+    uc_child_index: [-1, 1, 2, 3]
+    uc_individual_child_element: [0, 4_068, 3_513.72, 0]
+
+- name: Children of the same age are ordered by date of birth (reg 24B).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 10
+        date_of_birth: 20150301
+      born_later:
+        age: 8
+        date_of_birth: 20170406
+      born_earlier:
+        age: 8
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child_1, born_later, born_earlier]
+  output:
+    # The child born on 6 April 2017 is the third child and not protected; the
+    # one born on 5 April is the second, and protected either way.
+    uc_child_index: [-1, 1, 3, 2]
+    uc_individual_child_element: [0, 4_068, 0, 3_513.72]
+
+# UC (Transitional Provisions) Regs 2014 reg 43 keeps the higher child element
+# for the first child where the claimant is responsible for a child born before
+# 6 April 2017. In 2026 the child element is 303.94 * 12 = 3,647.28 and the
+# higher amount is 351.88 * 12 = 4,222.56.
+
+- name: An only child born on 5 April 2017 keeps the higher first child amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child:
+        age: 9
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_is_child_born_before_child_limit: [false, true]
+    uc_individual_child_element: [0, 4_222.56]
+
+- name: An only child born on 6 April 2017 gets the standard child amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child:
+        age: 9
+        date_of_birth: 20170406
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_is_child_born_before_child_limit: [false, false]
+    uc_individual_child_element: [0, 3_647.28]
+
+- name: Children without a date of birth input are placed by age.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+      child_3:
+        age: 8
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    # child_2 has no input (0), so is placed on 6 April 2017: after child_3,
+    # and not protected.
+    uc_is_child_born_before_child_limit: [false, true, false, true]
+    uc_child_index: [-1, 1, 3, 2]
+    uc_individual_child_element: [0, 4_068, 0, 3_513.72]

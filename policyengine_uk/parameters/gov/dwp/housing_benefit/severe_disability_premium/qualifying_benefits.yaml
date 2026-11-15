@@ -1,0 +1,16 @@
+description: Benefits whose receipt meets the qualifying-benefit condition of the Housing Benefit severe disability premium.
+values:
+  2013-04-08:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+    - armed_forces_independence_payment
+metadata:
+  unit: list
+  label: housing benefit severe disability premium qualifying benefits
+  reference:
+    - title: Housing Benefit Regulations 2006 Sch 3 para 14(2)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14
+    - title: Housing Benefit (State Pension Credit) Regulations 2006 Sch 3 para 6
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/6
+  note: The Scottish benefits in the same list (adult disability payment, pension age disability payment, child disability payment and Scottish adult disability living allowance care components) have no separate variables in the model.

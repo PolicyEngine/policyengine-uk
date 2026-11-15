@@ -1,8 +1,15 @@
 description: Whether the triple lock should include average earnings.
 values:
-  2012-01-01: true
+  2011-01-01: true
+  # April 2022: the review for 2022-23 used prices instead of earnings, with
+  # a 2.5% minimum, under the Social Security (Up-rating of Benefits) Act
+  # 2021.
   2022-01-01: false
   2023-01-01: true
 metadata:
+  documentation: Changes take effect through Scenario(parameter_changes=...), which rebuilds the uprating rates; a reform dictionary changes this parameter but not the rates.
   unit: bool
   label: Include average earnings in triple lock
+  reference:
+    - title: Social Security (Up-rating of Benefits) Act 2021, section 1
+      href: https://www.legislation.gov.uk/ukpga/2021/32/section/1/enacted

@@ -1,6 +1,7 @@
-description: VAT rate applied to private schools.
+description: Contributed reform rate of VAT on private school fees. The fees bear VAT at the higher of this rate and the statutory rate (the standard rate from 1 January 2025, when the exemption ended), so the reform can raise the rate but never charges VAT on the fees twice.
 values:
   2000-01-01: 0
 metadata:
   unit: /1
-  label: Private school VAT rate
+  period: year
+  label: Private school VAT rate (reform)

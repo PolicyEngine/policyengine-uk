@@ -1,4 +1,9 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import net_income_from_adjusted_net_income
+from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.variables.gov.hmrc.income_tax.allowances.meets_marriage_allowance_income_conditions import (
+    liable_only_at_marriage_allowance_rates,
+)
 from typing import Union, Optional
 
 
@@ -32,23 +37,22 @@ def create_expanded_ma_reform(
 
     class meets_marriage_allowance_income_conditions(Variable):
         label = "Meets Marriage Allowance income conditions"
-        documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"
+        documentation = (
+            "Whether this person meets the statutory Marriage Allowance income "
+            "conditions or this reform's expansion conditions."
+        )
         entity = Person
         definition_period = YEAR
         value_type = bool
         reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
         def formula(person, period, parameters):
-            band = person("tax_band", period)
-            eligible_bands = parameters(
-                period
-            ).gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands
-            base_eligible = np.isin(band.decode_to_str(), eligible_bands)
-            # Expand to higher bands if the reform's expansion conditions are met.
-            bands = band.possible_values
-            expansion = person("meets_expanded_ma_conditions", period) & (
-                (band == bands.HIGHER) | (band == bands.ADDITIONAL)
+            base_eligible = liable_only_at_marriage_allowance_rates(
+                person, period, parameters
             )
+            # Expand to people liable above those rates who meet the reform's
+            # expansion conditions.
+            expansion = person("meets_expanded_ma_conditions", period) & ~base_eligible
             return base_eligible | expansion
 
     class marriage_allowance(Variable):
@@ -91,11 +95,31 @@ def create_expanded_ma_reform(
             takes_up = person("would_claim_marriage_allowance", period)
             return eligible * amount_if_eligible * takes_up
 
+    class marriage_allowance_reduction_at_stake(Variable):
+        value_type = float
+        entity = Person
+        label = "Marriage Allowance tax reduction at stake in the share of deductions"
+        documentation = (
+            "Nil for a person who meets the reform's expansion conditions, "
+            "who receives the allowance at any share of reliefs and allowances."
+        )
+        definition_period = YEAR
+        unit = GBP
+
+        def formula(person, period, parameters):
+            return where(
+                person("meets_expanded_ma_conditions", period),
+                0,
+                person("marriage_allowance_appropriate_percentage", period)
+                * person("marriage_allowance_if_income_conditions_met", period),
+            )
+
     class reform(Reform):
         def apply(self):
             self.add_variable(meets_expanded_ma_conditions)
             self.update_variable(meets_marriage_allowance_income_conditions)
             self.update_variable(marriage_allowance)
+            self.update_variable(marriage_allowance_reduction_at_stake)
 
     return reform
 
@@ -153,14 +177,22 @@ def create_marriage_neutral_income_tax_reform(
                 COMPONENTS.append("basic_income")
             return max_(0, add(person, period, COMPONENTS))
 
-    class adjusted_net_income(Variable):
-        label = "Optimised adjusted net income"
-        documentation = "Adjusted net income, but split equally between partners if they are married"
+    class net_income(Variable):
+        label = "Optimised net income"
+        documentation = (
+            "Income before pension relief and Gift Aid adjustments, split equally "
+            "between married partners"
+        )
         entity = Person
         definition_period = YEAR
         value_type = float
 
         def formula(person, period, parameters):
+            # Supplied ANI takes precedence over this reform's split. Restore
+            # gross Gift Aid and relieved pensions, as the baseline inverse does.
+            supplied_ani = supplied_input(person, "adjusted_net_income", period)
+            if supplied_ani is not None:
+                return net_income_from_adjusted_net_income(person, period, supplied_ani)
             income = person("unadjusted_net_income", period)
             # Split between the spouses or civil partners only, never their
             # children.
@@ -171,9 +203,7 @@ def create_marriage_neutral_income_tax_reform(
             originally_split_income_branch = person.simulation.get_branch(
                 "originally_split_income", clone_system=True
             )
-            originally_split_income_branch.set_input(
-                "adjusted_net_income", period, income
-            )
+            originally_split_income_branch.set_input("net_income", period, income)
             originally_split_income_tax = person.benunit.sum(
                 originally_split_income_branch.calculate("income_tax", period)
             )
@@ -186,7 +216,7 @@ def create_marriage_neutral_income_tax_reform(
             split_income_branch = person.simulation.get_branch(
                 "split_income", clone_system=True
             )
-            split_income_branch.set_input("adjusted_net_income", period, split_income)
+            split_income_branch.set_input("net_income", period, split_income)
             split_income_tax = person.benunit.sum(
                 split_income_branch.calculate("income_tax", period)
             )
@@ -200,7 +230,7 @@ def create_marriage_neutral_income_tax_reform(
     class reform(Reform):
         def apply(self):
             self.add_variable(meets_ma_neutral_tax_conditions)
-            self.update_variable(adjusted_net_income)
+            self.update_variable(net_income)
             self.add_variable(unadjusted_net_income)
 
     return reform
@@ -210,14 +240,18 @@ def create_marriage_tax_reform(parameters, period):
     cps = parameters(period).gov.contrib.cps.marriage_tax_reforms
     remove_income_condition = cps.expanded_ma.remove_income_condition
     rate = cps.expanded_ma.ma_rate
-    original_rate = parameters(
-        period
-    ).gov.hmrc.income_tax.allowances.marriage_allowance.max
+    # The expanded Marriage Allowance switches on from its own parameters
+    # only: its switch, or a rate other than its own unreformed value.
+    # Comparing the rate with the statutory rate instead would switch it on
+    # whenever the statutory rate changed, replacing that rate with the
+    # reform's and opening the allowance to higher-rate taxpayers (#2551).
+    unreformed = parameters.baseline.gov.contrib.cps.marriage_tax_reforms
+    default_rate = unreformed.expanded_ma.ma_rate(period)
     ma_max_child_age = cps.expanded_ma.max_child_age
     neutralise_income_tax = cps.marriage_neutral_it.neutralise_income_tax
     it_max_child_age = cps.marriage_neutral_it.max_child_age
 
-    if remove_income_condition or rate != original_rate:
+    if remove_income_condition or rate != default_rate:
         ma_reform = create_expanded_ma_reform(
             max_child_age=ma_max_child_age if ma_max_child_age > 0 else None,
         )

@@ -10,5 +10,5 @@ class total_national_insurance(Variable):
     unit = GBP
     adds = [
         "national_insurance",
-        "ni_class_1_employer",
+        "ni_employer",
     ]

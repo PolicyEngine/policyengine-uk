@@ -1,0 +1,372 @@
+# The income tax Income Support, Housing Benefit, Pension Credit and council
+# tax reduction deduct (legacy_means_test_deducted_income_tax): the income tax
+# before the winter fuel payment charge, less the tax that rent, interest and
+# dividends, and any Step 7 charge, would bear if nobody had employed earnings
+# or self-employment income. The tests treat income derived from capital as
+# capital (IS Regs 1987 reg 48(4) and Sch 9 para 22; HB Regs 2006 reg 46(4)
+# and Sch 5 para 17) and disregard tax only on income they take into account
+# (IS Sch 9 para 1; HB Sch 5 para 1); earnings are net of the income tax
+# deducted from them (IS reg 36(3)(a); HB reg 36(3)(a)). Earnings carry the
+# extra tax they cause.
+#
+# 2026-27 figures: personal allowance £12,570; basic rate 20% to £37,700 of
+# taxable income, higher rate 40%; starting rate for savings 0% on £5,000,
+# less taxable non-savings income; personal savings allowance £1,000 for a
+# basic-rate and £500 for a higher-rate taxpayer; employee NI 8% from £12,570
+# to £50,270. Each person is 40 and lives in England unless stated.
+
+- name: Pay of 30,000 and interest of 60,000, the tests deduct the tax the pay adds on the interest
+  # With the pay: non-savings taxable income 30,000 - 12,570 = 17,430, tax
+  # 3,486. Taxable income 77,430 exceeds 37,700, so the savings allowance is
+  # 500 and the starting rate is lost (17,430 > 5,000). Interest: 500 at nil
+  # in the band, 37,700 - 17,430 - 500 = 19,770 at 20% = 3,954, and 60,000 -
+  # 20,270 = 39,730 at 40% = 15,892. Income tax 3,486 + 19,846 = 23,332.
+  # Without the pay: taxable interest 60,000 - 12,570 = 47,430; 5,000 at the
+  # starting rate and 500 savings allowance at nil, 37,700 - 5,500 = 32,200 at
+  # 20% = 6,440, 47,430 - 37,700 = 9,730 at 40% = 3,892: 10,332, none of it on
+  # counted income. Tax deducted: 23,332 - 10,332 = 13,000, against the Step 4
+  # tax on the pay of 3,486.
+  # NI: (30,000 - 12,570) x 8% = 1,394.40.
+  # Income Support: 30,000 - 13,000 - 1,394.40 - 260 (the £5 single
+  # disregard, IS Sch 8) = 15,345.60. Housing Benefit, with its £5 disregard
+  # supplied as an input: the same. The council tax reduction general rule,
+  # with no working-age earnings disregard in the model's English default:
+  # 30,000 - 13,000 - 1,394.40 = 15,605.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 30_000
+        savings_interest_income: 60_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    income_tax_before_winter_fuel_payment_charge: 23_332
+    legacy_means_test_income_tax: 3_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 10_332
+    legacy_means_test_deducted_income_tax: 13_000
+    national_insurance: 1_394.40
+    income_support_applicable_income: 15_345.60
+    housing_benefit_applicable_income: 15_345.60
+    council_tax_reduction_applicable_income: 15_605.60
+
+- name: Pay and rent with mortgage interest, the tests deduct the rent's tax the pay causes, net of the finance-cost reduction
+  # Pay 20,000 and a property profit of 10,000 with 4,000 of mortgage
+  # interest. Non-savings taxable income 30,000 - 12,570 = 17,430; the pay
+  # takes 7,430 of it (tax 1,486) and the rent 10,000 (tax 2,000). The
+  # residential finance-cost reduction is 20% x 4,000 = 800 (ITTOIA 2005
+  # s.274A), so income tax is 3,486 - 800 = 2,686, and the Step 4 tax on
+  # counted income is 1,486. Without the pay the rent of 10,000 is within the
+  # personal allowance and bears no tax, so the whole 2,686 is tax the pay
+  # causes and is deducted: the 1,200 of tax on rent that the reduction leaves.
+  # NI: (20,000 - 12,570) x 8% = 594.40.
+  # Income Support: 20,000 - 2,686 - 594.40 - 260 = 16,459.60. Housing
+  # Benefit, with its £5 disregard as an input: the same. Council tax
+  # reduction general rule: 20,000 - 2,686 - 594.40 = 16,719.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 20_000
+        property_income: 10_000
+        property_finance_costs: 4_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    property_income_tax: 2_000
+    property_finance_cost_relief: 800
+    income_tax_before_winter_fuel_payment_charge: 2_686
+    legacy_means_test_income_tax: 1_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 0
+    legacy_means_test_deducted_income_tax: 2_686
+    income_support_applicable_income: 16_459.60
+    housing_benefit_applicable_income: 16_459.60
+    council_tax_reduction_applicable_income: 16_719.60
+
+- name: The High Income Child Benefit Charge the pay brings in is deducted
+  # A parent aged 35 with one child, pay 40,000 and interest 30,000. Child
+  # Benefit 27.05 x 52 = 1,406.60 (1,406 in whole pounds). Adjusted net income
+  # 70,000 is half-way through the 60,000 to 80,000 taper: charge 50% x 1,406
+  # = 703 (ITEPA 2003 s.681C). The least tax sets 2,300 of the personal
+  # allowance against the pay and 10,270 against the interest (ITA 2007
+  # s.25(2)). Pay: 37,700 at 20% = 7,540. Interest, higher-rate (savings
+  # allowance 500): 19,730 above the basic rate limit, 500 at nil and 19,230
+  # at 40% = 7,692. Income tax before the winter fuel payment charge: 7,540 +
+  # 7,692 + 703 = 15,935. Setting the whole allowance against the pay leaves
+  # the 500 at nil in the basic rate band and charges 100 more. Without the
+  # pay: adjusted net income 30,000, no charge; interest 17,430 taxable, 5,000
+  # at the starting rate and 1,000 savings allowance at nil, 11,430 at 20% =
+  # 2,286. Tax deducted: 15,935 - 2,286 = 13,649, which includes the whole 703
+  # charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 40_000
+        savings_interest_income: 30_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [703, 0]
+    income_tax_before_winter_fuel_payment_charge: [15_935, 0]
+    legacy_means_test_income_tax: [7_540, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [2_286, 0]
+    legacy_means_test_deducted_income_tax: [13_649, 0]
+
+- name: Only the part of the High Income Child Benefit Charge that the pay adds is deducted
+  # A parent aged 35 with one child, pay 10,000 and interest 65,000. With the
+  # pay: adjusted net income 75,000, charge 75% x 1,406 = 1,054.50, 1,054 in
+  # whole pounds. The pay is within the personal allowance and leaves 2,570 of
+  # it; taxable interest 62,430, higher-rate: 5,000 starting rate and 500
+  # savings allowance at nil, 32,200 at 20% = 6,440, 24,730 at 40% = 9,892;
+  # 16,332. Income tax 16,332 + 1,054 = 17,386. Without the pay: adjusted net
+  # income 65,000, charge 25% x 1,406 = 351.50, 351; taxable interest 52,430:
+  # 6,440 + 14,730 x 40% = 12,332; 12,683 in all. Tax deducted: 17,386 -
+  # 12,683 = 4,703: the 4,000 the pay adds on the interest and 703 of the
+  # charge. The 351 the parent would pay without the pay is not deducted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 10_000
+        savings_interest_income: 65_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [1_054, 0]
+    income_tax_before_winter_fuel_payment_charge: [17_386, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [12_683, 0]
+    legacy_means_test_deducted_income_tax: [4_703, 0]
+
+- name: Only the part of the annual allowance charge that the pay adds is deducted
+  # Pay 45,000, interest 2,000 and employer contributions of 70,000 to a
+  # money-purchase scheme: a chargeable amount of 70,000 - 60,000 = 10,000
+  # (Finance Act 2004 s.227). Pay: (45,000 - 12,570) x 20% = 6,486; interest
+  # (basic-rate, savings allowance 1,000): 1,000 x 20% = 200. The charge is
+  # the chargeable amount as the top slice of reduced net income 47,000 -
+  # 12,570 = 34,430: 3,270 at 20% = 654 and 6,730 at 40% = 2,692; 3,346.
+  # Income tax 6,486 + 200 + 3,346 = 10,032. Without the pay: the interest is
+  # within the personal allowance, reduced net income is nil, and the charge
+  # is 10,000 x 20% = 2,000. Tax deducted: 10,032 - 2,000 = 8,032: the 6,686
+  # on the pay and interest and the 1,346 of the charge the pay adds.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 45_000
+        savings_interest_income: 2_000
+        employer_pension_contributions: 70_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    pension_annual_allowance_chargeable_amount: 10_000
+    personal_pension_contributions_tax: 3_346
+    income_tax_before_winter_fuel_payment_charge: 10_032
+    legacy_means_test_income_tax: 6_486
+    legacy_means_test_uncounted_income_tax_without_earnings: 2_000
+    legacy_means_test_deducted_income_tax: 8_032
+
+- name: When one partner's pay moves the High Income Child Benefit Charge off the other, the couple's deduction nets it
+  # A couple with one child. Partner a has interest of 70,000 and partner b
+  # pay of 80,000. Child Benefit 1,406 in whole pounds. The charge falls on
+  # the partner with the higher adjusted net income (ITEPA 2003 s.681B): b,
+  # at 80,000, the whole 1,406. a's interest: 57,430 taxable, 5,000 at the
+  # starting rate and 500 savings allowance at nil, 32,200 at 20% = 6,440,
+  # 19,730 at 40% = 7,892; 14,332. b's pay: 37,700 at 20% = 7,540 and 29,730
+  # at 40% = 11,892; 19,432, plus the charge, 20,838.
+  # Without the pay, a has the higher income (70,000) and pays 50% x 1,406 =
+  # 703 of charge: 15,035 in all, none on counted income. So a's deduction is
+  # 14,332 - 15,035 = -703, and b's is 20,838. Together they deduct 20,135:
+  # the 19,432 on the pay and the 703 of charge the pay adds. The deduction is
+  # not floored per person, so the couple's total is the extra tax the pay
+  # causes.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+        savings_interest_income: 70_000
+      b:
+        age: 40
+        employment_income: 80_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [a, b, child]
+    households:
+      household:
+        members: [a, b, child]
+        region: NORTH_EAST
+  output:
+    CB_HITC: [0, 1_406, 0]
+    income_tax_before_winter_fuel_payment_charge: [14_332, 20_838, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [15_035, 0, 0]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+
+- name: Where the test counts only the member whose deduction is negative, it floors the sum at nil
+  # The couple's incomes above, with a aged 64 and b aged 44: the model
+  # presumes b, 20 years younger, to be a's child, so each test counts a
+  # alone (is_claimant_or_partner). The taxes stay as above: a's deduction is
+  # 14,332 - 15,035 = -703, b's 20,838. Each test sums the deduction over the
+  # members it counts, here -703, and floors that sum at nil, so it deducts
+  # nothing. Without the floor each would add 703 of tax a never paid on
+  # counted income.
+  # - Income Support counts none of a's interest (reg 48(4)): income 0.
+  # - Pension Credit counts none of it either (Sch IV para 18): income 0.
+  # - Council tax reduction counts the benefit unit's Child Benefit,
+  #   27.05 x 52 = 1,406.60, and nothing else of a's: income 1,406.60.
+  # The household rents at 9,000 and pays council tax of 1,500; the family
+  # claims no Universal Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 64
+        savings_interest_income: 70_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+    income_support_applicable_income: [0]
+    pension_credit_income: [0]
+    council_tax_reduction_applicable_income: [1_406.60]
+
+- name: Housing Benefit's means test floors the counted member's negative deduction at nil
+  # The same household with a child aged 5. It reports no Income Support
+  # award, which income_support_eligible requires, so it gets none
+  # (income_support 0), and it claims no Universal Credit, so Housing Benefit
+  # takes income through its own means test. Housing Benefit counts none of
+  # a's interest (reg 46(4)) and excludes Child Benefit, so a's income is
+  # nil; the sum of the deduction over the members it counts, -703, floors at
+  # nil: income 0, not 703.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 64
+        savings_interest_income: 70_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [-703, 20_838, 0]
+    income_support: [0]
+    housing_benefit_pension_age_regulations_apply: [false]
+    housing_benefit_applicable_income: [0]
+
+- name: Pension Credit floors the counted tax after taking off the actual tax on self-employed profit
+  # The floor cases' household, with a aged 70 and a self-employed profit of
+  # 2,000. The model presumes b, 26 years younger, to be a's child, so
+  # Pension Credit counts a alone. b's pay moves the 703 Child Benefit charge
+  # off a, so a's deduction is the 800 of tax the profit adds less 703: 97.
+  # The profit's actual tax (pension_credit_self_employment_income_tax) is
+  # 940: the 800, and the 140 it adds to the charge when b has no pay (843,
+  # 60% of 1,406 rounded down, against 703). The formula replaces that tax
+  # with notional tax, nil on 2,000, and deducts no other tax for a:
+  # max(0, 97 - 940) = 0. Income is the profit less the £20 weekly lone
+  # parent disregard: 2,000 - 1,040 = 960.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 70
+        savings_interest_income: 70_000
+        self_employment_income: 2_000
+      b:
+        age: 44
+        employment_income: 80_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [a, b, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [a, b, child]
+        country: ENGLAND
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+        council_tax: 1_500
+  output:
+    is_claimant_or_partner: [true, false, false]
+    legacy_means_test_deducted_income_tax: [97, 20_838, 0]
+    pension_credit_self_employment_income_tax: [940]
+    pension_credit_income: [960]

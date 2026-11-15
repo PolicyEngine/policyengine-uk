@@ -1,3 +1,0 @@
-- Updated legacy benefits to use claimant and partner roles and programme-specific child definitions for legacy benefit allowances, income disregards, capital allocation, disability premiums, Housing Benefit childcare charges, and Council Tax Reduction exemptions.
-- A child or young person placed with the family by a local authority is no longer counted as a member of the family for the legacy benefits (Income Support Regulations 1987 reg 16(4); Housing Benefit Regulations 2006 reg 21(3)).
-- Housing Benefit's pension-age route now tests the claimant and any partner (SI 2014/1230 reg 6A(4)), so a pensioner living with an 18- or 19-year-old dependant can make a new Housing Benefit claim.

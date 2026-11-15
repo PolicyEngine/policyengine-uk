@@ -1,0 +1,33 @@
+description: >
+  Weekly amount disregarded in full from the payments a claimant receives for
+  board and lodging accommodation provided in their home, for each person
+  provided with it. Payments above this amount are disregarded in part (see the
+  excess rate). Income Support, income-based Jobseeker's Allowance,
+  income-related Employment and Support Allowance, Housing Benefit, Pension
+  Credit and the council tax reduction schemes use it.
+metadata:
+  label: Legacy benefits board and lodging disregard
+  period: week
+  unit: currency-GBP
+  reference:
+    - title: The Income Support (General) Regulations 1987 Schedule 9 para. 20
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/20
+    - title: The Income Support (General) Amendment Regulations 1990 regs. 1 and 22(c)
+      href: https://www.legislation.gov.uk/uksi/1990/547/made
+    - title: The Income-related Benefits Schemes (Miscellaneous Amendments) Regulations 1994 regs. 1(1)(b), 1(3) and 9(4)
+      href: https://www.legislation.gov.uk/uksi/1994/527/made
+    - title: The Housing Benefit Regulations 2006 Schedule 5 para. 42
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/42
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 5 para. 9
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/9
+    - title: The State Pension Credit Regulations 2002 Schedule IV para. 8
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/8
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 5 para. 9
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/9
+values:
+  # Income Support Schedule 9 para. 20 has disregarded £20 and half the
+  # excess since 9 April 1990 (SI 1990/547), restated in its current words
+  # from 11 April 1994 (SI 1994/527). As made it disregarded £35 of the weekly
+  # charge where the claimant was employed in providing board and lodging;
+  # that rule is not modelled.
+  1990-04-09: 20

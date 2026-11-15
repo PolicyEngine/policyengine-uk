@@ -15,6 +15,8 @@ PRE_BUDGET_CHANGE_HOUSEHOLD_BENEFIT_VARIABLES = [
     "attendance_allowance",
     "afcs",
     "bsp",
+    "war_widows_pension",
+    "widowed_parents_allowance",
     "carers_allowance",
     "dla",
     "esa_contrib",
@@ -32,7 +34,9 @@ PRE_BUDGET_CHANGE_HOUSEHOLD_BENEFIT_VARIABLES = [
     "epg_subsidy",
     "cost_of_living_support_payment",
     "energy_bills_rebate",
+    "household_energy_payment",
     "carer_support_payment",
+    "scottish_carer_supplement",
     "disability_basic_income",
 ]
 

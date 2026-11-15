@@ -1,0 +1,14 @@
+description: Income Tax at each rate on the parts of a person's income left after allowances, which Step 5 of the Income Tax calculation adds together before tax reductions are deducted.
+metadata:
+  label: Step 5 income tax components
+  unit: list
+  period: year
+  reference:
+    - title: Income Tax Act 2007 s. 23 (Steps 4 and 5)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/23
+values:
+  0000-01-01:
+    - earned_income_tax
+    - savings_income_tax
+    - dividend_income_tax
+    - property_income_tax

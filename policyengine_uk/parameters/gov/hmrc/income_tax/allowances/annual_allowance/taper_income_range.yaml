@@ -1,0 +1,9 @@
+description: Adjusted income range over which the pension annual allowance falls from its standard amount to its minimum before 2020-21.
+values:
+  2016-04-06: 60_000
+metadata:
+  unit: currency-GBP
+  label: Pension annual allowance taper income range before 2020
+  reference:
+  - title: Finance (No. 2) Act 2015 Schedule 4 paragraph 10
+    href: https://www.legislation.gov.uk/ukpga/2015/33/schedule/4/paragraph/10

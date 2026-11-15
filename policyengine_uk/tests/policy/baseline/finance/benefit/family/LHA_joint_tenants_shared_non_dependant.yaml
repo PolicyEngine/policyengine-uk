@@ -27,8 +27,8 @@
 #
 # Universal Credit is different: a non-dependant already treated as one in
 # another UC claim for the same accommodation is not one again (UC Sch 4 para
-# 9(2)(f)), so they count in one claim only, which the model gives to the
-# household head's family.
+# 9(2)(f)), so they count in one claim only (uc_non_dependants_counted), in
+# these cases the household head's family's.
 #
 # Rent: £20,800 a year (£400 a week), split by the people liable (HB reg
 # 12B(4)). Maidstone rates (VOA, April 2024, held for 2025-26): B £172.60, C
@@ -71,7 +71,7 @@
     # not young individuals without a non-dependant (13D(2)(a)(i)), and get
     # the two-bedroom rate (C).
     housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
-    housing_benefit_claimant_has_non_dependant: [true, true, false]
+    housing_benefit_has_non_dependant: [true, true, false]
     housing_benefit_LHA_category: [C, C, A]
     # Reg 74(5): equal shares of the rent, so half of the deduction each.
     housing_benefit_non_dep_deductions: [500, 500, 0]
@@ -119,7 +119,7 @@
     # she shares the dwelling's rooms in any case (13D(2)(a)(ii)): the shared
     # accommodation rate.
     housing_benefit_LHA_allowed_bedrooms: [2, 1, 1]
-    housing_benefit_claimant_has_non_dependant: [true, false, false]
+    housing_benefit_has_non_dependant: [true, false, false]
     housing_benefit_LHA_category: [C, A, A]
     # Susan is a non-dependant of one joint occupier only, so reg 74(5) does
     # not apply and Sarah bears the whole deduction (HBGM A5 para 5.622); so
@@ -162,7 +162,7 @@
         brma: MAIDSTONE
   output:
     housing_benefit_LHA_allowed_bedrooms: [1, 2, 1]
-    housing_benefit_claimant_has_non_dependant: [false, true, false]
+    housing_benefit_has_non_dependant: [false, true, false]
     housing_benefit_LHA_category: [A, C, A]
     housing_benefit_non_dep_deductions: [0, 1_000, 0]
     council_tax_reduction_non_dep_deductions: [0, 300, 0]
@@ -192,7 +192,7 @@
         brma: MAIDSTONE
   output:
     housing_benefit_LHA_allowed_bedrooms: [1, 1]
-    housing_benefit_claimant_has_non_dependant: [false, false]
+    housing_benefit_has_non_dependant: [false, false]
     housing_benefit_LHA_category: [A, A]
 
 - name: A shared non-dependant is apportioned by the joint occupiers' shares of the rent
@@ -313,7 +313,7 @@
         brma: MAIDSTONE
   output:
     housing_benefit_LHA_allowed_bedrooms: [2, 1]
-    housing_benefit_claimant_has_non_dependant: [true, false]
+    housing_benefit_has_non_dependant: [true, false]
     housing_benefit_non_dep_deductions: [1_000, 0]
     council_tax_reduction_non_dep_deductions: [300, 0]
 
@@ -384,7 +384,7 @@
     # 1 + Peter + the child (13D(3)(e)) = 3 bedrooms each.
     housing_benefit_LHA_allowed_bedrooms: [3, 3, 2]
 
-- name: A lodger of the household head counts only for the household head
+- name: A lodger of the household head is an occupier for each joint tenant and no one's non-dependant
   period: 2026
   input:
     people:
@@ -412,9 +412,12 @@
         brma: MAIDSTONE
   output:
     # A lodger, who pays the household head, is not a non-dependant (reg
-    # 3(2)(e)) and occupies the head's dwelling only.
-    housing_benefit_LHA_allowed_bedrooms: [2, 1, 1]
-    housing_benefit_claimant_has_non_dependant: [false, false, false]
+    # 3(2)(e)), so non_dependant_normally_resides_with does not reach them.
+    # They occupy the dwelling as their home and are not a joint tenant, so
+    # they are an occupier in each claim by a family liable for the rent
+    # (reg 13D(12)), as before.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
+    housing_benefit_has_non_dependant: [false, false, false]
 
 - name: A shared non-dependant who needs overnight care gives each joint tenant an additional bedroom
   period: 2026
@@ -552,7 +555,7 @@
     # HB reg 3(2)(a), (d): neither joint occupier is a non-dependant of
     # either, whatever the rent; so each 30-year-old is a young individual
     # with no non-dependant (13D(2)(a)(i)).
-    housing_benefit_claimant_has_non_dependant: [false, false]
+    housing_benefit_has_non_dependant: [false, false]
     housing_benefit_LHA_allowed_bedrooms: [1, 1]
     housing_benefit_LHA_category: [A, A]
 
@@ -587,9 +590,13 @@
         rent: 20_800
         tenure_type: RENT_PRIVATELY
   output:
-    # Every family has every other family's deductions (only the claimant's
-    # value is used): 300 + 200, 200 and 300.
-    council_tax_reduction_non_dep_deductions: [500, 200, 300]
+    # The household head's family, the only one that claims
+    # (council_tax_reduction_claimant_benunit), has every other family's
+    # deductions: 300 + 200. A family that does not claim bears none under
+    # the national schemes. The local scheme's variable gives every family
+    # every other family's deductions (only the claimant's value is used):
+    # 300 + 200, 200 and 300.
+    council_tax_reduction_non_dep_deductions: [500, 0, 0]
     merton_council_tax_reduction_non_dep_deductions: [500, 200, 300]
 
 - name: A non-dependant of only a couple who share the rent with a sharer falls wholly on the couple's CTR claim
@@ -664,7 +671,7 @@
   output:
     # The head's family is always liable; the flag matters only for other
     # families, so this is the no-sharer case and the previous formula holds.
-    council_tax_reduction_non_dep_deductions: [500, 200, 300]
+    council_tax_reduction_non_dep_deductions: [500, 0, 0]
     merton_council_tax_reduction_non_dep_deductions: [500, 200, 300]
 
 - name: Without sharers every residence value takes the supplied rent share
@@ -695,3 +702,94 @@
     # As for the default value: the household head's family's supplied
     # share of the rent times the deduction.
     housing_benefit_non_dep_deductions: [600, 0]
+
+- name: A sharer's own adult son is every joint tenant's non-dependant while the head's friend is the head's alone
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 45
+      son:
+        age: 20
+        household_benefits_individual_non_dep_deduction: 400
+        council_tax_reduction_individual_non_dep_deduction: 200
+      friend:
+        age: 38
+        household_benefits_individual_non_dep_deduction: 1_000
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      head_family:
+        members: [head]
+      sharer_family:
+        members: [sharer, son]
+        liable_for_share_of_household_rent: true
+      friend_family:
+        members: [friend]
+        non_dependant_normally_resides_with: HOUSEHOLD_HEAD_FAMILY
+    households:
+      home:
+        members: [head, sharer, son, friend]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, false, true]
+    # The son is a non-dependant within the sharer's own benefit unit. The
+    # input is on a non-dependant's family, not a joint occupier's, so the
+    # deduction formulas keep him as every joint occupier's: half of 400 each
+    # (reg 74(5)) and half of 200 each (CTR Sch 1 para 8(5)). The friend
+    # resides with the head only, who bears all of 1,000 and of 300 (HBGM A5
+    # para 5.622).
+    housing_benefit_non_dep_deductions: [1_200, 200, 0]
+    council_tax_reduction_non_dep_deductions: [400, 100, 0]
+    # Size criteria: the head counts the friend; the sharer counts the son,
+    # a member of the sharer's own family, and not the friend.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
+    housing_benefit_has_non_dependant: [true, true, false]
+
+- name: A lodger's adult son who pays nothing follows the input while the lodger stays an occupier for each joint tenant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 45
+      lodger:
+        age: 50
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 22
+        household_benefits_individual_non_dep_deduction: 600
+    benunits:
+      head_family:
+        members: [head]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      lodger_family:
+        members: [lodger, lodger_son]
+        non_dependant_normally_resides_with: HOUSEHOLD_HEAD_FAMILY
+    households:
+      home:
+        members: [head, sharer, lodger, lodger_son]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Reg 3(2)(e) takes out only the person liable to pay the householder,
+    # so the son is a non-dependant and the lodger is not.
+    pays_rent_to_householder: [false, false, true, false]
+    is_non_dependant_of_household_head: [false, false, false, true]
+    # The lodger is an occupier in each joint tenant's claim (reg 13D(12));
+    # the son resides with the head only. The lodger's own claim counts the
+    # lodger's own family.
+    housing_benefit_LHA_allowed_bedrooms: [3, 2, 2]
+    housing_benefit_has_non_dependant: [true, false, true]
+    housing_benefit_non_dep_deductions: [600, 0, 0]

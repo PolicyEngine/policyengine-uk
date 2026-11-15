@@ -1,0 +1,21 @@
+description: Lower profits threshold for Class 2 National Insurance contributions under section 11(4)(a) of the Social Security Contributions and Benefits Act 1992. In 2022-23 and 2023-24 self-employed earners were liable for Class 2 only on profits above it. Section 11(4)(a) was omitted from 6 April 2024, when compulsory Class 2 ended; the 2023-24 value applies to reforms that restore a Class 2 rate.
+values:
+  2022-04-06:
+    value: 11_908
+    metadata:
+      reference:
+        - title: The Social Security (Class 2 National Insurance Contributions Increase of Threshold) Regulations 2022 reg 2(3)
+          href: https://www.legislation.gov.uk/uksi/2022/1329/regulation/2/made
+  2023-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2023 reg 3(b)
+          href: https://www.legislation.gov.uk/uksi/2023/236/regulation/3/made
+metadata:
+  unit: currency-GBP
+  period: year
+  label: NI class 2 lower profits threshold
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s 11(2), (4) and (5A) (as at 6 April 2023)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/11/2023-04-06

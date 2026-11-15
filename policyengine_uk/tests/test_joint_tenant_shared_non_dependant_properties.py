@@ -4,17 +4,22 @@ Benefit and Council Tax Reduction (non_dependant_normally_resides_with).
 Invariants, for any generated population of households:
 
 1. Conservation (HB reg 74(5)): in every household, the families' Housing
-   Benefit non-dependant deductions sum to the household's individual
-   deductions for its non-dependants, whichever joint occupiers each one
-   resides with.
+   Benefit non-dependant deductions sum to the household's deductions for
+   its non-dependants (one for each non-dependant couple, the higher of the
+   two members', reg 74(3)), whichever joint occupiers each one resides
+   with.
 2. Bounds (CTR Sch 1 para 8(5)): each family's Council Tax Reduction part is
-   between zero and the household's deductions; where another family shares
+   between zero and the household's deductions (for an applicant under the
+   household head's family's scheme, whose amounts the person-level
+   deduction reports); where another family shares
    the rent, the joint occupiers' parts sum to at most the household's
    deductions (a non-dependant of several jointly liable families is split
    equally per liable person, each family bearing one person's part; one of
    a single family, a couple included, is that family's whole deduction)
    and no other family bears any. Where no other family shares the rent,
-   every family's deductions equal the previous formula (differential).
+   every family's deductions equal the previous formula (differential): the
+   household head's family, the only one that claims, has every other
+   family's deductions, one for each couple.
 3. Differential: with every non-dependant shared (the default), the Housing
    Benefit deductions equal the previous formula (each family's share of the
    rent, computed or supplied, times the household's deductions) and the
@@ -22,9 +27,12 @@ Invariants, for any generated population of households:
    deductions outside the family times
    council_tax_reduction_joint_liability_share) in every household where the
    previous formulas classified the joint occupiers correctly: where every
-   joint-occupier family has rent of its own. The previous rent-based flags
-   counted a joint occupier with no rent of its own (no household rent, or a
-   supplied zero share) as a non-dependant; that is the intended correction.
+   joint-occupier family has rent of its own. The rent-based non-dependant
+   flag counts a joint occupier with no rent of its own (no household rent,
+   or a supplied zero share) as a non-dependant; leaving it out is the
+   intended correction. The Council Tax Reduction comparison covers the
+   applicants under the household head's scheme, whose amounts the
+   person-level deduction reports.
 4. Attribution: a shared non-dependant counts in the household head's
    family's size criteria exactly as when they are the head family's only,
    and in a sharer's exactly as when they are the other joint occupiers'
@@ -223,11 +231,38 @@ def person_per_household(sim, person_values):
     )
 
 
+def per_family_deduction(sim, person_values):
+    """Each family's deduction for its members' amounts: one for the claimant
+    or couple, the higher of the two members' (HB Regs 2006 reg 74(3); SI
+    2012/2885 Sch 1 para 8(3)), and one for each other member."""
+    person_benunit = sim.populations["benunit"].members_entity_id
+    count = sim.populations["benunit"].count
+    couple = calc(sim, "is_claimant_or_partner").astype(bool)
+    higher = np.zeros(count)
+    np.maximum.at(higher, person_benunit[couple], person_values[couple])
+    others = np.bincount(
+        person_benunit, weights=person_values * ~couple, minlength=count
+    )
+    return higher + others
+
+
 def in_joint_occupier_family(sim, roles):
     """Whether each person belongs to the household head's or a sharer's
     family: such people are never anyone's non-dependant."""
     person_role = roles[sim.populations["benunit"].members_entity_id]
     return (person_role == "head") | (person_role == "sharer")
+
+
+def under_head_scheme(sim, roles):
+    """Whether each family's Council Tax Reduction scheme (pensioner or
+    working-age) is the household head's family's.
+    council_tax_reduction_individual_non_dep_deduction is each person's
+    deduction under that scheme; an applicant under the other scheme has its
+    deductions recomputed, as each claim is assessed under its own family's
+    scheme."""
+    pensioner = calc(sim, "council_tax_reduction_pensioner")
+    head_scheme = per_household(sim, pensioner * (roles == "head"))
+    return pensioner == head_scheme[benunit_household(sim)]
 
 
 def has_sharer(sim, roles):
@@ -243,15 +278,17 @@ def test_housing_benefit_deductions_are_conserved(population):
     sim, roles = build(population)
     # A sharer with no rent is not rent-liable, but is still a joint
     # occupier and so no one's non-dependant (HB reg 3(2)(d)).
-    deductions = (
+    individual = (
         calc(sim, "household_benefits_individual_non_dep_deduction")
         * calc(sim, "is_non_dependant_of_household_head")
         * ~in_joint_occupier_family(sim, roles)
     )
+    # One deduction for each non-dependant couple (reg 74(3)).
+    deductions = per_family_deduction(sim, individual)
     families = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
         per_household(sim, families),
-        person_per_household(sim, deductions),
+        per_household(sim, deductions),
         atol=MONEY_TOLERANCE,
     )
     # A family that is not a joint occupier bears none.
@@ -266,12 +303,16 @@ def test_council_tax_reduction_deductions_are_bounded(population):
     in_household = person_per_household(sim, deductions)
     families = calc(sim, "council_tax_reduction_non_dep_deductions")
     assert np.all(families >= -MONEY_TOLERANCE)
-    assert np.all(families <= in_household[benunit_household(sim)] + MONEY_TOLERANCE)
+    # The household's deductions are those under the household head's
+    # family's scheme, so they bound the applicants under that scheme.
+    same_scheme = under_head_scheme(sim, roles)
+    bound = in_household[benunit_household(sim)]
+    assert np.all(families[same_scheme] <= bound[same_scheme] + MONEY_TOLERANCE)
     # Where the rent is shared, the joint occupiers' parts never exceed the
     # household's deductions, and no one else bears any.
     shared = has_sharer(sim, roles)
     joint_occupier = (roles == "head") | (roles == "sharer")
-    joint_parts = per_household(sim, families * (shared & joint_occupier))
+    joint_parts = per_household(sim, families * (shared & joint_occupier & same_scheme))
     assert np.all(joint_parts <= in_household + MONEY_TOLERANCE)
     assert np.all(families[shared & ~joint_occupier] == 0)
 
@@ -280,16 +321,16 @@ def test_council_tax_reduction_deductions_are_bounded(population):
 @given(population)
 def test_council_tax_reduction_is_unchanged_without_sharers(population):
     """Differential: where no family shares the rent, every family's CTR
-    non-dependant deductions equal the previous formula (the deductions of
-    every other family), whoever the oldest adult's claiming family is."""
+    non-dependant deductions equal the previous formula: the household
+    head's family, the only one that claims, has the deductions of every
+    other family (one for each couple, Sch 1 para 8(3)), and a family that
+    does not claim has none."""
     sim, roles = build(population)
     deductions = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
-    own = np.bincount(
-        sim.populations["benunit"].members_entity_id,
-        weights=deductions,
-        minlength=sim.populations["benunit"].count,
+    own = per_family_deduction(sim, deductions)
+    previous = (roles == "head") * (
+        per_household(sim, own)[benunit_household(sim)] - own
     )
-    previous = person_per_household(sim, deductions)[benunit_household(sim)] - own
     without_sharer = ~has_sharer(sim, roles)
     np.testing.assert_allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions")[without_sharer],
@@ -307,27 +348,30 @@ def test_shared_default_matches_the_previous_formulas(population):
         sim, "is_non_dependant_of_household_head"
     )
     share = calc(sim, "share_of_household_rent")
-    previous_hb = share * person_per_household(sim, hb_individual)[household]
-    ctr_individual = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
-    own = np.bincount(
-        sim.populations["benunit"].members_entity_id,
-        weights=ctr_individual,
-        minlength=sim.populations["benunit"].count,
+    # One deduction for each non-dependant couple (HB reg 74(3); CTR Sch 1
+    # para 8(3)).
+    previous_hb = (
+        share * per_household(sim, per_family_deduction(sim, hb_individual))[household]
     )
-    previous = (person_per_household(sim, ctr_individual)[household] - own) * calc(
+    ctr_individual = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
+    own = per_family_deduction(sim, ctr_individual)
+    previous = (per_household(sim, own)[household] - own) * calc(
         sim, "council_tax_reduction_joint_liability_share"
     )
     joint_occupier = (roles == "head") | (roles == "sharer")
-    # The previous formulas classified a joint occupier with no rent of its
-    # own (no household rent, or a supplied zero share) as a non-dependant;
-    # compare only households where every joint occupier has rent.
+    # The rent-based non-dependant flag counts a joint occupier with no rent
+    # of its own (no household rent, or a supplied zero share) as a
+    # non-dependant; compare only households where every joint occupier has
+    # rent.
     rentless = joint_occupier & (calc(sim, "benunit_rent") <= 0)
     positive_rent = per_household(sim, rentless.astype(float))[household] == 0
     hb = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
         hb[positive_rent], previous_hb[positive_rent], atol=MONEY_TOLERANCE
     )
-    compared = joint_occupier & positive_rent
+    # The person-level deductions are under the household head's family's
+    # scheme, so compare the applicants under that scheme.
+    compared = joint_occupier & positive_rent & under_head_scheme(sim, roles)
     np.testing.assert_allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions")[compared],
         previous[compared],
@@ -384,7 +428,7 @@ def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(populatio
         "housing_benefit_LHA_additional_bedrooms",
         "housing_benefit_non_dep_deductions",
         "council_tax_reduction_non_dep_deductions",
-        "housing_benefit_claimant_has_non_dependant",
+        "housing_benefit_has_non_dependant",
     ]:
         reference = calc(sims[0][0], variable)[without_sharer]
         for sim, _ in sims[1:]:

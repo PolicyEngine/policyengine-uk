@@ -200,7 +200,8 @@
   output:
     # Reg. 32(1)(b) applies to a partner regardless of age.
     # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
-    # No partner exception is modelled: failed work condition * 5,000 * 85%
-    # = 0, formerly 4,250 when the partner was excluded by the age-18 flag.
+    # The partner neither works nor meets an exception in (b)(i)-(iii):
+    # failed work condition * 5,000 * 85% = 0, formerly 4,250 when the
+    # partner was excluded by the age-18 flag.
     uc_childcare_work_condition: false
     uc_childcare_element: 0

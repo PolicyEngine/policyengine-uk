@@ -1,0 +1,11 @@
+description: Whether the final manager charge applies to cash interest in non-cash ISAs.
+values:
+  2000-01-01: false
+  2027-04-06: true
+metadata:
+  label: Non-cash ISA cash-interest charge in effect
+  period: year
+  unit: bool
+  reference:
+    - title: Individual Savings Account (Amendment) Regulations 2026 regulations 1 and 15
+      href: https://www.legislation.gov.uk/uksi/2026/1018/made

@@ -53,5 +53,7 @@ class income_support_applicable_amount(Variable):
             ],
         )
         personal_allowance = personal_allowance_weekly * WEEKS_IN_YEAR
-        premiums = benunit("benefits_premiums", period)
+        # IS Regs 1987 Sch 2 Part III: the pension-age HB and CTR schedules
+        # never apply to Income Support.
+        premiums = benunit("working_age_benefits_premiums", period)
         return personal_allowance + premiums

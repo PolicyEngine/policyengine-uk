@@ -3,7 +3,7 @@
   absolute_error_margin: 100
   input:
     housing_benefit_pre_benefit_cap: 1_000
-    benefit_cap_reduction: 400
+    housing_benefit_benefit_cap_reduction: 400
     would_claim_housing_benefit: true
   output:
     housing_benefit: 600
@@ -13,7 +13,7 @@
   absolute_error_margin: 100
   input:
     housing_benefit_pre_benefit_cap: 1_000
-    benefit_cap_reduction: 3_000
+    housing_benefit_benefit_cap_reduction: 3_000
     would_claim_housing_benefit: true
   output:
     housing_benefit: 0

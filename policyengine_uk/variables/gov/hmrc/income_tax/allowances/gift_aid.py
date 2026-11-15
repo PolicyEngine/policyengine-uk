@@ -20,8 +20,8 @@ class gift_aid_grossed_up(Variable):
     definition_period = YEAR
     unit = GBP
     reference = dict(
-        title="Income Tax Act 2007, s. 58 (2)",
-        href="https://www.legislation.gov.uk/ukpga/2007/3/section/58",
+        title="Income Tax Act 2007, ss. 414(2)(a) and 415",
+        href="https://www.legislation.gov.uk/ukpga/2007/3/section/415",
     )
 
     def formula(person, period, parameters):
