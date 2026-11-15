@@ -3,14 +3,16 @@
 A married recipient in London whose partner has no income. The oracle works
 the law itself (ITA 2007 ss. 10-13A, 12B, 16, 23, 25(2)/(3A), 55B), reading only
 rate and allowance values from the parameter tree. The model holds incomes in
-float32 and sums them in float32, so the income it tests can sit a fraction of
-a penny (under a penny here) either side of the amounts drawn. So the oracle
-applies the rate test twice: strictly, with the basic rate limit a penny lower,
-and loosely, with it a penny higher. At the model's own share (check 1), both
-tests allow half a penny at the savings nil rate band and for dividends. Over
-the other shares (check 2), the strict test also asks for the savings above the
-limit to sit a penny inside the savings nil rate band. For every drawn
-recipient:
+float32 and sums them in float32, so the income it tests can sit either side
+of the amounts drawn. For a recipient within reach of the rate test, whose
+incomes come to about £50,770, the gap is under a penny. It grows with income:
+the strategies draw up to £80,000 a component, and a draw of £263,789.16 in
+all holds net income 3.5p lower. So the oracle applies the rate test twice:
+strictly, with the basic rate limit a penny lower, and loosely, with it a
+penny higher. At the model's own share (check 1), both tests allow half a
+penny at the savings nil rate band and for dividends. Over the other shares
+(check 2), the strict test also asks for the savings above the limit to sit a
+penny inside the savings nil rate band. For every drawn recipient:
 
 1. at the model's own share, the model's income tax equals the oracle's Step 5
    tax less the reduction where the model gives it; the model gives it wherever
@@ -23,6 +25,19 @@ recipient:
 Check 1 bounds the tax from below: it is the law's liability at a share the
 model holds. Between the strict and loose tests the law itself lets income
 reach each limit (s. 10(2)).
+
+Check 1 first asks that the model's share is one the law allows: each
+deduction within its component. The model works the share from the amounts it
+holds, so a deduction can pass its component by the float32 error in those
+amounts, which ``feasibility_margin`` bounds. That bound is separate from the
+half penny the rate test allows, and reaches a few pence for the largest
+draws.
+
+From £65,536 the model holds a recipient's rate test to room below each limit
+(``LOW_PRECISION`` in ``income_tax_allocation``). The only deduction here is
+the Personal Allowance, so a recipient with that much income has Step 3 income
+over £52,966 and fails the rate test under either margin. The room never
+decides a recipient these strategies draw.
 
 Both checks leave out a recipient whose float32 net income sits on the other
 side of an allowance step from the amounts entered. The Personal Allowance
@@ -53,6 +68,16 @@ savings, the whole band. The model holds their savings and dividends 0.024p,
 0.024p and 0.049p over the £13,070 entered, and it denies all three the
 reduction, as ``main`` does. The strict test fails that share, so check 2
 does not require the reduction.
+
+The last two examples, in 2027-28, pin the feasibility bound. In the first,
+pay takes £8,542.77 of the Personal Allowance and savings the other £4,027.23.
+The model sums net income of £76,085.96 to £76,085.953125, reads pay 0.83p low
+from it, and sets £4,027.2383 against savings. In the second, with pay of
+£11,743.36, savings of £6,860.08 and dividends of £23,171.51, the model sets
+£826.6348 against savings, 0.52p under the £826.64 left. Neither has property
+income, so the oracle reads each difference as a deduction from property
+income that is not there. Each is more than the half penny the rate test
+allows, and within the float32 error ``feasibility_margin`` bounds.
 """
 
 import numpy as np
@@ -108,6 +133,28 @@ def net_income(pay, prop, sav, div):
     return np.round(pay + prop + sav + div, 2)
 
 
+def float32_step(amount):
+    """The gap between ``amount`` and the next float32 value."""
+    return np.spacing(np.abs(amount).astype(np.float32)).astype(float)
+
+
+def feasibility_margin(pay, prop, sav, div, to_s, to_v):
+    """A bound on how far float32 can carry the model's share past a component
+    of the amounts drawn. The model holds each component within half a float32
+    step of the amount drawn. It sums up to four of them into net income (three
+    additions), then takes savings and dividends back off for the non-savings
+    income the old order reads (two subtractions): each can round by half a
+    step of net income. The old order then takes that from the allowances, at
+    most a step of them. A moved share stores each deduction rounded down or
+    up, at most a step of the deduction. 1e-6 covers float64 rounding."""
+    n = pay + prop + sav + div
+    components = sum(float32_step(amount) for amount in (pay, prop, sav, div)) / 2
+    net_income_and_old_order = 5 * float32_step(n) / 2
+    allowances = float32_step(np.minimum(n, 12_570.0))
+    stored = float32_step(to_s) + float32_step(to_v)
+    return components + net_income_and_old_order + allowances + stored + 1e-6
+
+
 def banded(lo, hi, B, H, r):
     """Tax at the basic, higher and additional rates ``r`` on income from lo to hi."""
 
@@ -158,25 +205,40 @@ class Law:
         )
 
     def liability(
-        self, pay, prop, sav, div, to_s, to_v, margin=0.0, e=1e-6, inside=0.0
+        self,
+        pay,
+        prop,
+        sav,
+        div,
+        to_s,
+        to_v,
+        margin=0.0,
+        e=1e-6,
+        inside=0.0,
+        feasibility=None,
     ):
         """Step 5 tax, rate-test result with every limit moved by ``margin``,
-        and feasibility, for each share (arrays broadcast). ``e`` covers float64
-        rounding on the grid's shares and float32 rounding of the model's.
-        ``inside`` is how far under the top of the savings nil rate band the
-        savings above the limit must sit."""
+        and feasibility, for each share (arrays broadcast). ``e`` is what the
+        rate test allows at the savings nil rate band and for dividends: float64
+        rounding on the grid's shares, half a penny at the model's.
+        ``feasibility`` is how far a deduction may pass its component, ``e``
+        unless given: for the model's share, the float32 error in the amounts
+        the model works the share from (``feasibility_margin``). ``inside`` is
+        how far under the top of the savings nil rate band the savings above
+        the limit must sit."""
         n = net_income(pay, prop, sav, div)
         d = np.minimum(self.pa(n), n)
+        g = e if feasibility is None else feasibility
         if self.other_first:  # s. 25(3A): other income first
             to_other = np.minimum(pay, d)
             to_p = d - to_other - to_s - to_v
             O, P = pay - to_other, prop - to_p
-            feasible = (to_p >= -e) & (to_p <= prop + e)
+            feasible = (to_p >= -g) & (to_p <= prop + g)
         else:
             to_ns = d - to_s - to_v
             O, P = pay + prop - to_ns, 0 * pay
-            feasible = (to_ns >= -e) & (to_ns <= pay + prop + e)
-        feasible &= (to_s >= -e) & (to_s <= sav + e) & (to_v >= -e) & (to_v <= div + e)
+            feasible = (to_ns >= -g) & (to_ns <= pay + prop + g)
+        feasible &= (to_s >= -g) & (to_s <= sav + g) & (to_v >= -g) & (to_v <= div + g)
         S, V = sav - to_s, div - to_v
         X = O + P
         B, H = self.B, self.H
@@ -267,10 +329,11 @@ def check(year, drawn):
     tol = 0.02 + 1e-6 * n
     # The Personal Allowance falls a pound at a time (s. 35(2) and (3)), and the
     # savings allowance steps down at the basic and higher rate limits (s. 12B).
-    # The model sums net income in float32, a fraction of a penny off the
-    # amounts entered, and that can put it on the other side of a step. The
-    # model then works a different allowance from the law's, so the checks
-    # leave that recipient out.
+    # The model sums net income in float32, which leaves it off the amounts
+    # entered: by under a penny for incomes near the rate test's limits, and by
+    # several pence for the largest draws. That can put it on the other side of
+    # a step. The model then works a different allowance from the law's, so the
+    # checks leave that recipient out.
     held = calc("net_income")
     assert np.all(np.abs(held - n) <= tol)
     steady = (law.pa(held) == law.pa(n)) & (
@@ -283,9 +346,17 @@ def check(year, drawn):
     # the strict test passes and there is tax to reduce, and nowhere the loose
     # test fails. marriage_allowance_tax_reduction never exceeds the tax left,
     # so a person with no Step 5 tax gets none.
-    step_5, strict, ok = law.liability(pay, prop, sav, div, m_s, m_v, -PENNY, 0.005)
+    # The share must be one the law allows, within the float32 error in the
+    # amounts the model works it from. The rate test keeps its half penny.
+    within = feasibility_margin(pay, prop, sav, div, m_s, m_v)
+    step_5, strict, ok = law.liability(
+        pay, prop, sav, div, m_s, m_v, -PENNY, 0.005, feasibility=within
+    )
     _, loose, _ = law.liability(pay, prop, sav, div, m_s, m_v, PENNY, 0.005)
-    assert np.all(ok | ~steady), "model share infeasible"
+    assert np.all(ok | ~steady), (
+        "model share infeasible",
+        [data[i].tolist() for i in np.flatnonzero(~ok & steady)],
+    )
     at_share = np.maximum(0, step_5 - law.ma * granted)
     bad = steady & (
         (np.abs(model_tax - at_share) > tol)
@@ -378,5 +449,7 @@ SETTINGS = settings(
 @example(2026, [("free", 37_500.0, 11_000.03, 2_069.97, 0.0)] * K)
 @example(2026, [("free", 37_500.0, 11_001.07, 2_068.93, 0.0)] * K)
 @example(2026, [("free", 37_500.0, 11_001.98, 2_068.02, 0.0)] * K)
+@example(2027, [("free", 8_542.77, 58_071.67, 9_471.52, 0.0)] * K)
+@example(2027, [("free", 11_743.36, 6_860.08, 23_171.51, 0.0)] * K)
 def test_model_tax_is_the_least_liability_the_law_allows(year, drawn):
     check(year, drawn)
