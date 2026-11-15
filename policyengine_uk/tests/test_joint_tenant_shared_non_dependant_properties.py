@@ -42,6 +42,12 @@ Invariants, for any generated population of households:
 6. Universal Credit does not depend on the residence input.
 7. Monotonicity: marking a non-dependant as one joint occupier's only never
    raises another joint occupier's bedrooms or deductions.
+8. One residence for both Housing Benefit tests: a joint occupier who
+   receives the daily living component of Personal Independence Payment
+   meets the severe disability premium conditions (HB Regs 2006 Sch 3 para
+   14(2)(a)) exactly when no non-dependant resides with them
+   (housing_benefit_has_non_dependant), whichever joint occupiers each
+   non-dependant resides with, and whatever the other joint occupiers' rent.
 """
 
 import numpy as np
@@ -109,8 +115,10 @@ def households(draw):
 population = st.lists(households(), min_size=1, max_size=5)
 
 
-def build(population, residence_override=None):
-    """One situation for the whole population, with each family's role."""
+def build(population, residence_override=None, disabled_roles=()):
+    """One situation for the whole population, with each family's role. The
+    adults of the families in ``disabled_roles`` receive the daily living
+    component of Personal Independence Payment."""
     people, benunits, homes, roles = {}, {}, {}, []
     supplied = any(house["share_weights"] is not None for house in population)
     for h, house in enumerate(population):
@@ -126,6 +134,8 @@ def build(population, residence_override=None):
                     "is_household_head": {YEAR: False},
                     "employment_income": {YEAR: fam["income"] if i == 0 else 0},
                 }
+                if role in disabled_roles:
+                    people[pid]["pip_dl"] = {YEAR: 3_000}
                 ids.append(pid)
             if fam["child_age"] is not None:
                 pid = f"{name}_child"
@@ -445,3 +455,26 @@ def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(populatio
             np.testing.assert_allclose(
                 calc(sim, variable), reference, atol=MONEY_TOLERANCE
             )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_severe_disability_premium_reads_the_same_residence(population):
+    """A joint occupier whose claimant and partner receive the daily living
+    component of Personal Independence Payment meets the severe disability
+    premium conditions (HB Regs 2006 Sch 3 para 14(2)(a)) exactly when no
+    non-dependant resides with them (reg 3;
+    housing_benefit_has_non_dependant). Every generated non-dependant family
+    has an adult aged 18 or over with no qualifying benefit, so the two
+    tests name the same families. The household heads' families receive the
+    component in one population and the sharers' in the other. The other
+    joint occupiers then receive no qualifying benefit, which tests that
+    they are never non-dependants, whatever their rent."""
+    for role in ["head", "sharer"]:
+        sim, roles = build(population, disabled_roles=(role,))
+        disabled = roles == role
+        applies = calc(sim, "housing_benefit_severe_disability_premium_applies")
+        has_non_dependant = calc(sim, "housing_benefit_has_non_dependant")
+        np.testing.assert_array_equal(
+            applies[disabled], 1 - has_non_dependant[disabled]
+        )
