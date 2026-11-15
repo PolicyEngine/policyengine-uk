@@ -243,8 +243,9 @@ less ``f``.
 stored deductions through the same function, so the model applies the
 reduction wherever the search counted on it. For a person the test does not
 hold to room it applies the reduction nowhere else. A recipient it holds to
-room can also get it where the search did not count on it, as on ``main``: where the search moves the share for the Step 5 tax alone
-and the float32 test passes at a limit.
+room can also get it where the search did not count on it, as on ``main``:
+where the search moves the share for the Step 5 tax alone and the float32 test
+passes at a limit.
 
 The search keeps the order non-savings, savings, dividends unless another
 share lowers ``f``, so it never leaves more liability than that order.
@@ -1204,8 +1205,8 @@ def _rate_test_on_stored(c, to_savings, to_dividends, moved):
 
 def _with_room(c):
     """Marriage Allowance recipients whom the rate test holds to room below
-    each limit (``c.low_precision``). For them the search decides and stores as ``main``'s does
-    (``_moves_with_room``)."""
+    each limit (``c.low_precision``). For them the search decides and stores
+    as ``main``'s does (``_moves_with_room``)."""
     return c.low_precision & (c.marriage_allowance_reduction > 0)
 
 
