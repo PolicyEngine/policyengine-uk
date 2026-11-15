@@ -113,15 +113,41 @@ the least ``f`` again lies where two lines cross.
 The rate test lets income reach each limit (s. 10(2)): income at a limit
 passes, and income above it fails. A share that leaves non-savings income at
 the limit can be the only one that meets the test, so the search keeps no room
-below the limit. The test reads the income the model holds. The model holds
-incomes in float32 and sums net income and allowances in float32, so the
-income it holds can sit either side of the sum of the amounts entered. While
-net income and the allowances stay under £131,072 each such gap is a fraction
-of a penny, though gaps in several amounts can add up to more than a penny.
-The gaps grow above that: in a household with £301,100 of net income and
-£262,900 of other deductions the gap is 2p. A household entered at a limit can
-then sit just above it and fail, as at the model's other limits. One entered a
-penny or more over a limit can sit on it and pass.
+below the limit for a person whose amounts all sit under £65,536. The test
+reads the income the model holds. The model holds incomes in float32 and sums
+net income and allowances in float32, so the income it holds can sit either
+side of the sum of the amounts entered. A household entered at a limit can
+then sit just above it and fail, as at the model's other limits.
+
+One entered a penny over a limit can also sit on it, where the amounts are
+large enough. Each amount the model holds, and each float32 sum, sits within
+half a float32 step of the true amount. Under £65,536 the step is 0.39p or
+less, and it takes more than five roundings the same way to hide a penny. From
+£65,536 the step is 0.78p, and three can. Pay of £53,360.11, savings of
+£23,554.02 and dividends of £714.91 come to £77,629.04, and after a trade loss
+of £26,859.03 the model holds net income of £50,770.00, a penny under the
+£50,770.01 entered. From £131,072 the step is 1.56p, and two whole-pence
+amounts can store as one: the model holds pay of £190,529.99 and of
+£190,529.98 both as £190,529.984375.
+
+So where any amount the test depends on reaches £65,536 (``LOW_PRECISION``;
+``_low_precision`` lists the amounts), the test in float64 keeps room below
+each limit, as ``main``'s search does for everyone: ``RATE_TEST_ROOM`` plus
+``RATE_TEST_ROOM_FRACTION`` of the limits and of the income after the
+deductions, 3.9p at £37,700 and 13.9p at £138,255. For a recipient with such
+an amount the search does what ``main``'s does (``_moves_with_room``). It
+counts on the reduction only where the exact share meets the test with the
+room, and it stores the float32 values nearest that share's deductions. So
+the search never moves such a recipient to win the reduction at a limit
+itself. A recipient entered at a limit, with an amount that large, is denied
+the reduction where ``main`` denies it: the model cannot tell that recipient
+from one entered a penny over. Both pay amounts above, with savings of
+£9,000.02, dividends of £1,570, a trade loss of £50,275 and a Gift Aid gift of
+£80,044, leave the model £138,255 of income after the allowances, the raised
+limit plus the £500 savings allowance. The law gives the reduction for
+£190,529.98 and not for £190,529.99, and the model denies both. On 160,000
+synthetic recipients entered a penny over a limit with every amount under
+£65,536, the model gave the reduction to 31, the same 31 as ``main``.
 
 The model has always applied the test in float32, to non-savings income,
 savings and dividends each held in float32. Float32 rounding there can land
@@ -131,8 +157,9 @@ rounding of the limit or of the amounts carries them apart. So a share meets
 the test where it does in either arithmetic (``_rate_test_on_stored``): in
 float32 as before, which for the old order is ``_old_order_meets_rate_test``
 and for a moved share ``_float32_meets_rate_test``, or in float64 from the
-amounts the model holds (``_meets_rate_test``). The float64 test adds the
-grossed-up gift, as the model holds it in float32, to the basic rate limit.
+amounts the model holds (``_meets_rate_test``), with the room where an amount
+reaches £65,536. The float64 test adds the grossed-up gift, as the model holds
+it in float32, to the basic rate limit.
 The vertex search scores each candidate in float64 only, so it can miss a
 share that passes only in float32, as at a limit a Gift Aid gift raises. It
 rounds only the share with the least ``f``, so it can also miss a share that
@@ -145,7 +172,8 @@ for the same share. From 2029-30 the uprated Scottish higher rate threshold is
 not a float32 amount, so for a Scottish taxpayer with a Gift Aid gift the two
 limits can sit a float32 step apart. The model grants the reduction over a
 limit only where float32 rounding of the amounts it holds carries income onto
-the limit, as the float32 test always could for the old order.
+the limit, as the float32 test always could. With an amount of £65,536 or
+more, that happens only where it does on ``main``.
 
 The model stores the deductions from savings and dividends in float32 too. The
 search finds the least ``f`` in float64, then ``_stored_share`` rounds that
@@ -164,32 +192,36 @@ A rounding that sets more than half a penny beyond the shared amount
 (``OVER_DEDUCTION``) ranks below every other, since the rate test would then
 read that much of the savings or dividends as non-savings income the person
 does not have. So does a rounding that meets the rate test only in float32,
-for a recipient whose exact share fails it in float64. Otherwise the search
-could pick a rounding for the slack in the float32 test alone, and give the
-reduction to a recipient entered a penny over a limit, whom ``main`` denies.
+for a recipient. Otherwise the search could pick a rounding for the slack in
+the float32 test alone, and give the reduction to a recipient entered a penny
+over a limit, whom ``main`` denies. And for a recipient with an amount of
+£65,536 or more, every rounding but the nearest ranks last, so the model
+stores the nearest, as ``main`` does.
 
-Neither rule applies to the rounding nearest the exact deductions, which
-storing them in float32 gives and the model has always held. It sits up to
-half a float32 step of each deduction beyond the shared amount: 0.39p for a
+None of these rules applies to the rounding nearest the exact deductions,
+which storing them in float32 gives and the model has always held. It sits up
+to half a float32 step of each deduction beyond the shared amount: 0.39p for a
 deduction from £65,536 to £131,072, 0.78p up to £262,144, and twice as much in
-each range above. Where it meets the rate test in float64 and the exact share
-does not, the exact share misses the test by at most that half step. Storing
-the savings or dividends that take the deduction, which are at least as large,
-can move them by as much. So a household entered at a limit can hold the same
-amounts as one entered just over it, and the model gives both the reduction.
-Where the nearest rounding meets the test only in float32, the slack grows
-with the float32 step of the income, as for the old order. A recipient entered
-a few pence over a limit can then get the reduction, as on ``main``. Any other
-rounding that sets more than half a penny beyond the shared amount ranks last,
-and the nearest never does, so the model stores no other rounding more than
-half a penny beyond it.
+each range above. Storing the savings or dividends that take the deduction,
+which are at least as large, can move them by as much. So a household entered
+at a limit can hold the same amounts as one entered just over it, and the
+model gives both the same answer. Where the nearest rounding meets the test
+only in float32, the slack grows with the float32 step of the income, as for
+the old order. A recipient entered a few pence over a limit can then get the
+reduction, as on ``main``. Any other rounding that sets more than half a penny
+beyond the shared amount ranks last, and the nearest never does, so the model
+stores no other rounding more than half a penny beyond it.
 
 The search prices the stored share and the old order each with
 ``_rate_test_on_stored``, and moves a person only where the stored share leaves
 less ``f``.
 ``share_meets_marriage_allowance_rate_test`` gives the model's answer from the
 stored deductions through the same function, so the model applies the
-reduction wherever the search counted on it, and nowhere else.
+reduction wherever the search counted on it. For a person whose amounts all
+sit under £65,536 it applies the reduction nowhere else. A recipient with an
+amount of £65,536 or more can also get it where the search did not count on
+it, as on ``main``: where the search moves the share for the Step 5 tax alone
+and the float32 test passes at a limit.
 
 The search keeps the order non-savings, savings, dividends unless another
 share lowers ``f``, so it never leaves more liability than that order.
@@ -265,6 +297,18 @@ CHUNK = 2_000_000
 # is the rounding to the nearest float32 values, which storing the deductions
 # gives.
 OVER_DEDUCTION = 0.005
+# From this amount (in pounds, 2**16) the float32 step is 1/128 of a pound,
+# 0.78p, or more. Each amount the model holds, and each float32 sum of them,
+# can then sit 0.39p or more from the amount entered, so three such roundings
+# can move income a whole penny, and a person entered a penny over a limit of
+# the Marriage Allowance rate test can hold income at the limit. Where any
+# amount the test depends on reaches this, the search counts a share as
+# meeting the test only with the room below (``_low_precision``).
+LOW_PRECISION = 65_536.0
+# The room below each limit of the rate test for a person with such an amount:
+# pounds, plus a fraction of the limits and of the income after the deductions.
+RATE_TEST_ROOM = 1e-3
+RATE_TEST_ROOM_FRACTION = 1e-6
 # The variables on earned_taxable_income_exclusions that the allocation sets
 # rather than reads.
 ALLOCATED_EXCLUSIONS = (
@@ -429,19 +473,60 @@ def _build(inputs, income_tax):
     # The rate test reads all the non-savings income, so it adds what s. 25(3A)
     # leaves below the first component.
     c.non_savings_below_first = c.other_left if c.other_first else zero
-    # The statutory limit on non-savings income, where the search adds a line.
+    # The statutory limit on non-savings income.
     c.rate_test_non_savings_limit = non_savings_limit
+    c.low_precision = _low_precision(columns, non_savings_limit, basic_rate_limit)
     # The limits the test applies. Income can reach a limit (s. 10(2)), and a
     # share that leaves non-savings income at one can be the only share that
     # meets the test. TIE covers float64 rounding of a share the search puts
-    # at a limit.
+    # at a limit. For a person with an amount at or above ``LOW_PRECISION``
+    # the test keeps room below each limit, as ``main``'s search does for
+    # everyone: the amounts held can hide a penny, so income held at a limit
+    # may have been entered over it.
+    room = RATE_TEST_ROOM + RATE_TEST_ROOM_FRACTION * np.maximum(
+        np.maximum(np.abs(non_savings_limit), np.abs(basic_rate_limit)),
+        np.abs(c.non_savings_below_first + c.step_3_income),
+    )
     c.rate_test_limits = SimpleNamespace(
-        non_savings=non_savings_limit + TIE,
-        basic_rate=basic_rate_limit + TIE,
-        starting=c.starting_limit,
+        non_savings=np.where(
+            c.low_precision, non_savings_limit - room, non_savings_limit + TIE
+        ),
+        basic_rate=np.where(
+            c.low_precision, basic_rate_limit - room, basic_rate_limit + TIE
+        ),
+        starting=np.where(c.low_precision, c.starting_limit - room, c.starting_limit),
         savings_allowance=c.rate_test_savings_allowance + TIE,
     )
     return c
+
+
+def _low_precision(columns, non_savings_limit, basic_rate_limit):
+    """People with an amount the Marriage Allowance rate test depends on at or
+    above ``LOW_PRECISION``: net income, net income before the trade loss
+    relief, that relief, the allowances, savings, dividends, an exclusion from
+    earned income, the grossed-up gift or a limit the gift raises. Net income
+    before the relief counts because the relief can take net income below
+    ``LOW_PRECISION`` where the float32 sum it comes off sits above. The other
+    amounts the test reads are parts of these."""
+    relief = columns["relief"]
+    largest = np.maximum.reduce(
+        [
+            np.abs(amount) + np.zeros_like(relief)
+            for amount in (
+                columns["net_income"],
+                columns["net_income"] + relief,
+                relief,
+                columns["allowances"],
+                columns["savings"],
+                columns["dividends"],
+                columns["earned_exclusions"],
+                columns["gift"],
+                non_savings_limit,
+                basic_rate_limit,
+            )
+        ]
+    )
+    return largest >= LOW_PRECISION
 
 
 def _non_savings_tax(c, income):
@@ -530,9 +615,10 @@ def step_5_tax(c, x, s, v):
 
 def _meets_rate_test(c, x, s, v):
     """Whether the share meets the Marriage Allowance rate test. Income at a
-    limit meets it (s. 10(2)). ``TIE`` covers float64 rounding of a share that
-    leaves income at a limit, savings at the savings allowance or no
-    dividends."""
+    limit meets it (s. 10(2)), except for a person with an amount at or above
+    ``LOW_PRECISION``, whose limits carry room (``c.rate_test_limits``).
+    ``TIE`` covers float64 rounding of a share that leaves income at a limit,
+    savings at the savings allowance or no dividends."""
     return meets_marriage_allowance_rate_test(
         x + c.non_savings_below_first,
         s,
@@ -610,13 +696,13 @@ def _candidates(c):
         # else repeats the line x = 0, so the search finds them the same share
         # whoever else it searches.
         recipient = c.marriage_allowance_reduction > 0
-        vertical.append(
-            np.where(
-                recipient,
-                c.rate_test_non_savings_limit - c.non_savings_below_first,
-                zero,
-            )
+        # With room for a person the test holds below the limit.
+        limit = np.where(
+            c.low_precision,
+            c.rate_test_limits.non_savings,
+            c.rate_test_non_savings_limit,
         )
+        vertical.append(np.where(recipient, limit - c.non_savings_below_first, zero))
     xs = np.concatenate([np.broadcast_to(v, zero.shape) for v in vertical], axis=1)
     ws = np.concatenate([np.broadcast_to(h, zero.shape) for h in horizontal], axis=1)
     ds = np.concatenate([np.broadcast_to(d, zero.shape) for d in diagonal], axis=1)
@@ -873,7 +959,8 @@ def _float32_meets_rate_test(c, to_savings, to_dividends):
 def _rate_test_on_stored(c, to_savings, to_dividends, moved):
     """Whether the share the model holds as ``to_savings`` and
     ``to_dividends`` meets the rate test, in float64 from the amounts held
-    (``_meets_rate_test``) or in float32 as the model has always applied it:
+    (``_meets_rate_test``, with room for a person with an amount at or above
+    ``LOW_PRECISION``) or in float32 as the model has always applied it:
     ``_float32_meets_rate_test`` where ``moved``, and the old order's own
     answer (``_old_order_meets_rate_test``) elsewhere."""
     single = np.where(
@@ -882,6 +969,33 @@ def _rate_test_on_stored(c, to_savings, to_dividends, moved):
         c.old_order_meets_rate_test,
     )
     return _meets_rate_test(c, *_share_left(c, to_savings, to_dividends)) | single
+
+
+def _with_room(c):
+    """Marriage Allowance recipients with an amount at or above
+    ``LOW_PRECISION``, whom the rate test holds to room below each limit. For
+    them the search decides and stores as ``main``'s does
+    (``_moves_with_room``)."""
+    return c.low_precision & (c.marriage_allowance_reduction > 0)
+
+
+def _moves_with_room(c, x, s, v, to_savings, to_dividends):
+    """Whether the search moves a recipient the rate test holds to room below
+    each limit (``_with_room``) from the old order's deductions
+    (``to_savings`` and ``to_dividends``) to the share that leaves ``x``,
+    ``s`` and ``v``. The search decides as ``main``'s does. It counts on the
+    reduction for the share only where the exact share meets the test with the
+    room, and for the old order only where the old order meets it in float32
+    (``_old_order_meets_rate_test``). It prices both in float64, and reads the
+    first component the old order leaves without a floor at nil. So the search
+    never moves such a person to win the reduction at a limit itself, where
+    the amounts held may hide a penny."""
+    old_s = c.savings - to_savings
+    old_v = c.dividends - to_dividends
+    old_order_tax = step_5_tax(c, c.step_3_income - old_s - old_v, old_s, old_v) - (
+        c.marriage_allowance_reduction * c.old_order_meets_rate_test
+    )
+    return tax_after_marriage_allowance(c, x, s, v) < old_order_tax - TOLERANCE
 
 
 def _float32(values, toward):
@@ -905,24 +1019,21 @@ def _stored_share(c, s, v):
     its bounds by less than a float32 step of the deductions, and the model
     then reads it as ``_share_left`` does, at nil where it would fall below
     nil. Such a pair still wins where it gives less ``f``, for example where
-    only its rounding meets the rate test. A pair that sets more than
-    ``OVER_DEDUCTION`` beyond the shared allowances ranks below every other.
-    So does a pair that meets the rate test only in float32, for a recipient
-    whose exact share fails it in float64. Where the exact share meets the
-    test in float64, the recipient earns the reduction without the slack in
-    the float32 test, so such a pair keeps its rank. On 384,936 synthetic
-    recipients, that condition changed the pair stored for two, each time
-    between two pairs that leave the same ``f``. Neither rule applies to the
-    pair nearest the exact deductions, which storing the deductions in
-    float32 gives, as the model always has. Deductions that are float32
-    amounts already stay as they are. Returns the deductions, the first
-    component, savings and dividends they leave, and their ``f``."""
+    only its rounding meets the rate test. Three kinds of pair rank below
+    every other: one that sets more than ``OVER_DEDUCTION`` beyond the shared
+    allowances; for a recipient, one that meets the rate test only in float32;
+    and, for a recipient the rate test holds to room (``_with_room``), every
+    pair. None of that applies to the pair nearest the exact deductions,
+    which storing the deductions in float32 gives, as the model always has.
+    So a recipient the test holds to room gets the nearest pair. Deductions
+    that are float32 amounts already stay as they are. Returns the
+    deductions, the first component, savings and dividends they leave, and
+    their ``f``."""
     s, v = _exact_where_the_rate_test_reads(c, s, v)
     exact_savings = np.clip(c.savings - s, 0, c.savings)
     exact_dividends = np.clip(c.dividends - v, 0, c.dividends)
-    exact_fails = ~_meets_rate_test(
-        c, *_share_left(c, exact_savings, exact_dividends)
-    ) & (c.marriage_allowance_reduction > 0)
+    recipient = c.marriage_allowance_reduction > 0
+    with_room = _with_room(c)
     nearest_savings = exact_savings.astype(np.float32).astype(np.float64)
     nearest_dividends = exact_dividends.astype(np.float32).astype(np.float64)
     highest = np.minimum(c.first, c.step_3_income)
@@ -945,7 +1056,11 @@ def _stored_share(c, s, v):
             )
             float32_only = meets & ~_meets_rate_test(c, *share)
             option = SimpleNamespace(
-                last=((first > highest + OVER_DEDUCTION) | (float32_only & exact_fails))
+                last=(
+                    (first > highest + OVER_DEDUCTION)
+                    | (float32_only & recipient)
+                    | with_room
+                )
                 & ~nearest,
                 outside=outside,
                 tax=tax,
@@ -1035,12 +1150,12 @@ def least_tax_deductions(
     if not search.any():
         return to_savings, to_dividends
     c = _build({name: values[search] for name, values in inputs.items()}, income_tax)
-    _, s, v = _least_tax_share(c)
+    x, s, v = _least_tax_share(c)
     # Both sides as the model holds them: the share's deductions rounded to
     # float32, and the old order's as given, each with the model's own answer
     # to the rate test (``_rate_test_on_stored``, which
     # ``share_meets_marriage_allowance_rate_test`` applies). So the model gives
-    # the reduction exactly where this comparison counts it.
+    # the reduction wherever this comparison counts it.
     stored = _stored_share(c, s, v)
     old_savings = to_savings[search][:, None]
     old_dividends = to_dividends[search][:, None]
@@ -1048,9 +1163,17 @@ def least_tax_deductions(
     old_order_tax = step_5_tax(c, *old_order) - c.marriage_allowance_reduction * (
         _rate_test_on_stored(c, old_savings, old_dividends, False)
     )
+    lower = stored.tax < old_order_tax - TOLERANCE
+    # A recipient the rate test holds to room below each limit moves as on
+    # ``main``, to the nearest rounding of the exact share.
+    lower = np.where(
+        _with_room(c),
+        _moves_with_room(c, x, s, v, old_savings, old_dividends),
+        lower,
+    )
     # A stored share with the old order's deductions is the old order.
     same = (stored.to_savings == old_savings) & (stored.to_dividends == old_dividends)
-    lower = ((stored.tax < old_order_tax - TOLERANCE) & ~same)[:, 0]
+    lower = (lower & ~same)[:, 0]
     moved = np.flatnonzero(search)[lower]
     to_savings, to_dividends = to_savings.copy(), to_dividends.copy()
     to_savings[moved] = stored.to_savings[lower, 0]
