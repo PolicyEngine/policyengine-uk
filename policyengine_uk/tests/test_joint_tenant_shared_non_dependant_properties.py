@@ -9,17 +9,18 @@ Invariants, for any generated population of households:
    two members', reg 74(3)), whichever joint occupiers each one resides
    with.
 2. Bounds (CTR Sch 1 para 8(5)): each family's Council Tax Reduction part is
-   between zero and the household's deductions (for an applicant under the
-   household head's family's scheme, whose amounts the person-level
-   deduction reports); where another family shares
-   the rent, the joint occupiers' parts sum to at most the household's
-   deductions (a non-dependant of several jointly liable families is split
-   equally per liable person, each family bearing one person's part; one of
-   a single family, a couple included, is that family's whole deduction)
-   and no other family bears any. Where no other family shares the rent,
-   every family's deductions equal the previous formula (differential): the
-   household head's family, the only one that claims, has every other
-   family's deductions, one for each couple.
+   between zero and the household's deductions under the family's own
+   scheme (the person-level deduction reports the household head's family's
+   scheme; an applicant under the other scheme has the amounts recomputed
+   under its own); where another family shares the rent, the joint
+   occupiers' parts under each scheme sum to at most the household's
+   deductions under that scheme (a non-dependant of several jointly liable
+   families is split equally per liable person, each family bearing one
+   person's part; one of a single family, a couple included, is that
+   family's whole deduction) and no other family bears any. Where no other
+   family shares the rent, every family's deductions equal the previous
+   formula (differential): the household head's family, the only one that
+   claims, has every other family's deductions, one for each couple.
 3. Differential: with every non-dependant shared (the default), the Housing
    Benefit deductions equal the previous formula (each family's share of the
    rent, computed or supplied, times the household's deductions) and the
@@ -115,10 +116,13 @@ def households(draw):
 population = st.lists(households(), min_size=1, max_size=5)
 
 
-def build(population, residence_override=None, disabled_roles=()):
+def build(
+    population, residence_override=None, disabled_roles=(), pensioner_families=None
+):
     """One situation for the whole population, with each family's role. The
     adults of the families in ``disabled_roles`` receive the daily living
-    component of Personal Independence Payment."""
+    component of Personal Independence Payment. ``pensioner_families``, one
+    value for each family in order, supplies council_tax_reduction_pensioner."""
     people, benunits, homes, roles = {}, {}, {}, []
     supplied = any(house["share_weights"] is not None for house in population)
     for h, house in enumerate(population):
@@ -146,6 +150,10 @@ def build(population, residence_override=None, disabled_roles=()):
                 }
                 ids.append(pid)
             benunits[name] = {"members": ids, **extra}
+            if pensioner_families is not None:
+                benunits[name]["council_tax_reduction_pensioner"] = {
+                    YEAR: bool(pensioner_families[len(roles)])
+                }
             members.extend(ids)
             roles.append(role)
             return ids
@@ -275,6 +283,18 @@ def under_head_scheme(sim, roles):
     return pensioner == head_scheme[benunit_household(sim)]
 
 
+def other_scheme_individual_deduction(population, sim, roles):
+    """Each person's Council Tax Reduction non-dependant deduction under the
+    scheme (pensioner or working-age) that the household head's family is
+    not under: council_tax_reduction_individual_non_dep_deduction in the
+    same population with the scheme of each household head's family
+    reversed and every other family's kept."""
+    pensioner = calc(sim, "council_tax_reduction_pensioner")
+    reversed_for_head = np.where(roles == "head", 1 - pensioner, pensioner)
+    other, _ = build(population, pensioner_families=reversed_for_head)
+    return calc(other, "council_tax_reduction_individual_non_dep_deduction")
+
+
 def has_sharer(sim, roles):
     return (
         per_household(sim, (roles == "sharer").astype(float))[benunit_household(sim)]
@@ -313,17 +333,30 @@ def test_council_tax_reduction_deductions_are_bounded(population):
     in_household = person_per_household(sim, deductions)
     families = calc(sim, "council_tax_reduction_non_dep_deductions")
     assert np.all(families >= -MONEY_TOLERANCE)
-    # The household's deductions are those under the household head's
-    # family's scheme, so they bound the applicants under that scheme.
+    # The household's deductions under each scheme bound the applicants
+    # under that scheme: the person-level variable reports the household
+    # head's family's scheme, and the same population with that family's
+    # scheme reversed reports the other.
     same_scheme = under_head_scheme(sim, roles)
-    bound = in_household[benunit_household(sim)]
-    assert np.all(families[same_scheme] <= bound[same_scheme] + MONEY_TOLERANCE)
-    # Where the rent is shared, the joint occupiers' parts never exceed the
-    # household's deductions, and no one else bears any.
+    other_in_household = person_per_household(
+        sim, other_scheme_individual_deduction(population, sim, roles)
+    )
+    household = benunit_household(sim)
+    bound = np.where(
+        same_scheme, in_household[household], other_in_household[household]
+    )
+    assert np.all(families <= bound + MONEY_TOLERANCE)
+    # Where the rent is shared, the joint occupiers' parts under each scheme
+    # never exceed the household's deductions under it, and no one else
+    # bears any.
     shared = has_sharer(sim, roles)
     joint_occupier = (roles == "head") | (roles == "sharer")
-    joint_parts = per_household(sim, families * (shared & joint_occupier & same_scheme))
-    assert np.all(joint_parts <= in_household + MONEY_TOLERANCE)
+    for scheme, total in [
+        (same_scheme, in_household),
+        (~same_scheme, other_in_household),
+    ]:
+        joint_parts = per_household(sim, families * (shared & joint_occupier & scheme))
+        assert np.all(joint_parts <= total + MONEY_TOLERANCE)
     assert np.all(families[shared & ~joint_occupier] == 0)
 
 
