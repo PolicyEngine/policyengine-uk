@@ -1827,6 +1827,8 @@ def measure(
         guard_options = {}
         if guard_profile is not None:
             guard_options["probe_profile"] = guard_profile
+        if checkpoint is not None:
+            guard_options["checkpoint"] = checkpoint
         guard = counted_once(
             sim,
             partition,

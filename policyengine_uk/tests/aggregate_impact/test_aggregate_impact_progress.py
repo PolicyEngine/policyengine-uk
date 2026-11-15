@@ -89,6 +89,7 @@ def tool(monkeypatch):
 
 def _stub_world(tool, monkeypatch, *, fail_reform=False, interrupt_year=False):
     trace = []
+    guard_checkpoints = []
     parameters = object()
     partition = SimpleNamespace(
         component_variables=lambda: (),
@@ -123,6 +124,7 @@ def _stub_world(tool, monkeypatch, *, fail_reform=False, interrupt_year=False):
         return 2 if sim.name == "reformed" else 1
 
     def counted(*args, **kwargs):
+        guard_checkpoints.append(kwargs.pop("checkpoint", None))
         trace.append(("counted_once", args[2], args[3], args[4], kwargs))
         return {"status": "ran", "components": [], "double_counts": []}
 
@@ -147,6 +149,7 @@ def _stub_world(tool, monkeypatch, *, fail_reform=False, interrupt_year=False):
         spec=spec,
         reforms=[reform],
         trace=trace,
+        guard_checkpoints=guard_checkpoints,
     )
 
 
@@ -1382,3 +1385,195 @@ def test_existing_guard_probe_profiles_are_uploaded_without_private_files(
                 if path.is_file()
             )
     assert selected == expected
+
+
+def _guard_progress_logger(tool, monkeypatch, tmp_path, *, label="head"):
+    from datetime import datetime, timezone
+
+    stamp = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    class FixedDatetime:
+        @staticmethod
+        def now(tz):
+            return stamp
+
+    stream = FlushedStream()
+    monkeypatch.setattr(tool.cli, "datetime", FixedDatetime)
+    monkeypatch.setattr(tool.cli, "time", SimpleNamespace(monotonic=lambda: 100.0))
+    monkeypatch.setattr(tool.cli.sys, "stderr", stream)
+    out = tmp_path / "out"
+    checkpoint = tool.cli._phase_logger(out, label)
+    scope = dict(
+        year=2026,
+        component="PRIVATE_COMPONENT",
+        head="PRIVATE_HEAD",
+        probe_kind="held_baseline_first",
+    )
+    return SimpleNamespace(out=out, stream=stream, checkpoint=checkpoint, scope=scope)
+
+
+def test_cli_guard_progress_uses_existing_checkpoint_without_new_model_calls(
+    tool, monkeypatch
+):
+    original = _stub_world(tool, monkeypatch)
+    expected, expected_households = _measure(tool, original)
+    assert original.guard_checkpoints == [None]
+    observed = _stub_world(tool, monkeypatch)
+
+    def checkpoint(*args, **kwargs):
+        return None
+
+    actual, actual_households = _measure(tool, observed, checkpoint=checkpoint)
+    assert observed.guard_checkpoints == [checkpoint]
+    assert observed.trace == original.trace
+    assert _payload(actual) == _payload(expected)
+    assert actual_households == expected_households
+
+
+def test_guard_progress_schema_is_versioned_and_hashes_ids(tool, monkeypatch, tmp_path):
+    import hashlib
+
+    run = _guard_progress_logger(tool, monkeypatch, tmp_path)
+    run.checkpoint("start", "guard_probe", **run.scope)
+    records = _records(run.out)
+    assert len(records) == 1
+    record = records[0]
+    assert set(record) == {
+        "schema",
+        "event",
+        "phase",
+        "label",
+        "probe_kind",
+        "year",
+        "component_id_sha256",
+        "head_id_sha256",
+        "utc",
+        "elapsed_seconds",
+    }
+    assert record["schema"] == "policyengine-uk-aggregate-guard-progress/1"
+    assert (
+        record["component_id_sha256"]
+        == hashlib.sha256(b"PRIVATE_COMPONENT").hexdigest()
+    )
+    assert record["head_id_sha256"] == hashlib.sha256(b"PRIVATE_HEAD").hexdigest()
+    assert "PRIVATE_COMPONENT" not in (run.out / "timing.jsonl").read_text()
+    assert "PRIVATE_HEAD" not in run.stream.getvalue()
+    for year in (True, 1899, 2101, 2026.0):
+        run.checkpoint("start", "guard_probe", **{**run.scope, "year": year})
+    for year in (1900, 2100):
+        run.checkpoint("end", "guard_probe", **{**run.scope, "year": year})
+    assert [r["year"] for r in _records(run.out)] == [2026, 1900, 2100]
+
+
+def test_guard_progress_limits_are_byte_exact_and_stop_with_marker(
+    tool, monkeypatch, tmp_path
+):
+    run = _guard_progress_logger(tool, monkeypatch, tmp_path / "size")
+    run.checkpoint("start", "guard_probe", **run.scope)
+    line = (run.out / "timing.jsonl").read_text().splitlines()[0]
+    size = len((tool.cli.GUARD_PROGRESS_PREFIX + line + "\n").encode())
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_RECORDS", 4)
+    limited = _guard_progress_logger(tool, monkeypatch, tmp_path / "records")
+    for _ in range(10):
+        limited.checkpoint("start", "guard_probe", **limited.scope)
+    records = _records(limited.out)
+    assert len(records) == 4
+    assert [r["event"] for r in records] == ["start", "start", "start", "limit"]
+    assert records[-1]["reason"] == "record_limit"
+    limited.checkpoint("end", "year", year=2026)
+    assert _records(limited.out)[-1]["phase"] == "year"
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_RECORDS", 2048)
+    budget = 512 + size
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_BYTES", budget)
+    by_bytes = _guard_progress_logger(tool, monkeypatch, tmp_path / "bytes")
+    for _ in range(4):
+        by_bytes.checkpoint("start", "guard_probe", **by_bytes.scope)
+    records = _records(by_bytes.out)
+    assert [r["event"] for r in records] == ["start", "limit"]
+    assert records[-1]["reason"] == "byte_limit"
+    assert (
+        sum(
+            len((tool.cli.GUARD_PROGRESS_PREFIX + row + "\n").encode())
+            for row in (by_bytes.out / "timing.jsonl").read_text().splitlines()
+        )
+        <= budget
+    )
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_BYTES", 524288)
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_LINE_BYTES", size)
+    exact = _guard_progress_logger(tool, monkeypatch, tmp_path / "exact-line")
+    exact.checkpoint("start", "guard_probe", **exact.scope)
+    assert _records(exact.out)[0]["event"] == "start"
+    monkeypatch.setattr(tool.cli, "GUARD_PROGRESS_MAX_LINE_BYTES", size - 1)
+    over = _guard_progress_logger(tool, monkeypatch, tmp_path / "over-line")
+    over.checkpoint("start", "guard_probe", **over.scope)
+    assert _records(over.out)[0]["event"] == "limit"
+    assert _records(over.out)[0]["reason"] == "line_limit"
+
+
+@pytest.mark.parametrize("sink", ["file", "stderr"])
+def test_guard_progress_sinks_fail_independently_without_warnings(
+    tool, monkeypatch, tmp_path, sink
+):
+    import warnings
+
+    run = _guard_progress_logger(tool, monkeypatch, tmp_path)
+    if sink == "file":
+        run.out.mkdir(parents=True)
+        (run.out / "timing.jsonl").mkdir()
+    else:
+
+        class BrokenStream:
+            def write(self, text):
+                raise OSError("PRIVATE_SINK_FAILURE")
+
+            def flush(self):
+                raise OSError("PRIVATE_SINK_FAILURE")
+
+        monkeypatch.setattr(tool.cli.sys, "stderr", BrokenStream())
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        run.checkpoint("start", "guard_probe", **run.scope)
+    assert caught == []
+    if sink == "file":
+        assert run.stream.flushes == 1
+        assert "PRIVATE_SINK_FAILURE" not in run.stream.getvalue()
+    else:
+        assert len(_records(run.out)) == 1
+
+
+def test_guard_progress_excludes_arrays_values_and_private_error_text(
+    tool, monkeypatch, tmp_path
+):
+    run = _guard_progress_logger(tool, monkeypatch, tmp_path)
+    for extra in (
+        {"array": ["PRIVATE_ARRAY"]},
+        {"error": "PRIVATE_ERROR"},
+        {"component": ["PRIVATE_VALUE"]},
+        {"head": object()},
+        {"probe_kind": "PRIVATE_KIND"},
+        {"skip_reason": "PRIVATE_REASON"},
+    ):
+        run.checkpoint("start", "guard_probe", **{**run.scope, **extra})
+    assert _records(run.out) == []
+    assert run.stream.getvalue() == ""
+    run.checkpoint("skip", "guard_probe", **{**run.scope, "skip_reason": "non_money"})
+    assert _records(run.out)[0]["skip_reason"] == "non_money"
+
+
+def test_legacy_progress_records_remain_schema_exact(tool, monkeypatch, tmp_path):
+    run = _guard_progress_logger(tool, monkeypatch, tmp_path)
+    run.checkpoint(
+        "start", "year", year=2026, reform="stub_rate", error="PRIVATE_ERROR"
+    )
+    expected = {
+        "event": "start",
+        "phase": "year",
+        "label": "head",
+        "utc": "2026-01-01T00:00:00+00:00",
+        "elapsed_seconds": 0.0,
+        "year": 2026,
+        "reform": "stub_rate",
+    }
+    line = json.dumps(expected, sort_keys=True) + "\n"
+    assert (run.out / "timing.jsonl").read_text() == line
+    assert run.stream.getvalue() == "aggregate-impact-phase " + line

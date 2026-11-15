@@ -822,6 +822,42 @@ def _held_nan(kind, first, second, slope_held, unjudged, unjudged_at_baseline=No
 DIRECT_KINDS = ("contains", "rises", "moves")
 
 
+def _guard_checkpoint(
+    checkpoint,
+    event,
+    probe_kind,
+    year,
+    *,
+    component=None,
+    head=None,
+    skip_reason=None,
+    suppress_interrupt=False,
+    defer_interrupt=False,
+):
+    """Observe only; model errors win and final cleanup precedes interrupts."""
+    if checkpoint is None:
+        return None
+    try:
+        checkpoint(
+            event,
+            "guard_probe",
+            year=year,
+            component=component,
+            head=head,
+            probe_kind=probe_kind,
+            skip_reason=skip_reason,
+        )
+    except Exception:  # noqa: BLE001 - diagnostics cannot change a guard verdict
+        pass
+    except BaseException as error:
+        if suppress_interrupt:
+            return None
+        if defer_interrupt:
+            return error
+        raise
+    return None
+
+
 def counted_once(
     sim,
     partition: Partition,
@@ -831,6 +867,7 @@ def counted_once(
     active: Iterable[str] = (),
     variables_to_check: Optional[Iterable[str]] = None,
     probe_profile: Optional[Callable] = None,
+    checkpoint: Optional[Callable] = None,
 ) -> dict:
     """Perturb each component (or those in ``variables_to_check``).
 
@@ -841,6 +878,8 @@ def counted_once(
     the head's id and label (None for a variable that is no head), the
     households with weight where it is not finite, and a message.
     """
+    if checkpoint is not None:
+        _guard_checkpoint(checkpoint, "start", "baseline", year)
     if not discard_formula_results(sim):
         return {
             "status": "skipped",
@@ -882,10 +921,27 @@ def counted_once(
     selected = None if variables_to_check is None else set(variables_to_check)
     results, double_count_results = [], []
     touched = set()
+    if checkpoint is not None:
+        _guard_checkpoint(checkpoint, "end", "baseline", year)
     probe_pending = probe_profile is not None
+    if checkpoint is not None:
+        _guard_loop_completed = False
     try:
         for variable in partition.component_variables():
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "start", "component", year, component=variable
+                )
             if selected is not None and variable not in selected:
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "skip",
+                        "component",
+                        year,
+                        component=variable,
+                        skip_reason="selection",
+                    )
                 continue
             definition = definitions[variable]
             entity = definition.entity.key
@@ -910,6 +966,15 @@ def counted_once(
             if definition.value_type is not float:
                 record.update(status="skipped", detail="not a money variable")
                 results.append(record)
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "skip",
+                        "component",
+                        year,
+                        component=variable,
+                        skip_reason="non_money",
+                    )
                 continue
             monthly = definition.definition_period == "month"
             year_values = (
@@ -955,6 +1020,15 @@ def counted_once(
                         )
                     )
                 results.append(record)
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "skip",
+                        "component",
+                        year,
+                        component=variable,
+                        skip_reason="no_weight_or_unreadable",
+                    )
                 continue
             own = declared[variable].contained_in if variable in declared else variable
             own_head = head_by_variable[own]
@@ -968,6 +1042,10 @@ def counted_once(
                 for total in in_totals
             }
 
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "start", "unheld_first", year, component=variable
+                )
             profile_probe = probe_pending
             probe_pending = False
             probe_completed = False
@@ -1003,6 +1081,10 @@ def counted_once(
                     except BaseException:
                         if financial_error is None:
                             raise
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "end", "unheld_first", year, component=variable
+                )
             # A head that may respond (a declared reader, or any benefit when the
             # component was zero for everyone) is checked for containment at a
             # second point, which tells a slope of 1 from a step.
@@ -1018,10 +1100,18 @@ def counted_once(
             }
             heads2 = None
             if may_respond:
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint, "start", "response_second", year, component=variable
+                    )
                 _perturb(
                     sim, variable, year, settable, 2 * added, monthly, touched=touched
                 )
                 heads2 = _head_arrays(sim, year, sorted(may_respond))
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint, "end", "response_second", year, component=variable
+                    )
             problems, screens = [], []
             for total in in_totals:
                 verdict = judge_total(
@@ -1080,6 +1170,15 @@ def counted_once(
                 # out at the value it holds the heads at (see ``_moved``).
                 fixed = [v for v in held if v not in free_heads]
                 free = [v for v in held if v in free_heads]
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "start",
+                        "held_baseline_first",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 _perturb(
                     sim,
                     variable,
@@ -1092,11 +1191,29 @@ def counted_once(
                 )
                 first = _head_arrays(sim, year, [head])[head] - heads0[head]
                 moved_in = {v: _moved(sim, v, year, baseline) for v in free}
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "end",
+                        "held_baseline_first",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 second = None
                 if any(
                     p["head"] == head and p["kind"] == "contains"
                     for p in problems + screens
                 ):
+                    if checkpoint is not None:
+                        _guard_checkpoint(
+                            checkpoint,
+                            "start",
+                            "held_baseline_second",
+                            year,
+                            component=variable,
+                            head=head,
+                        )
                     _perturb(
                         sim,
                         variable,
@@ -1110,8 +1227,35 @@ def counted_once(
                     second = _head_arrays(sim, year, [head])[head] - heads0[head]
                     for v in free:
                         moved_in[v] = moved_in[v] | _moved(sim, v, year, baseline)
+                    if checkpoint is not None:
+                        _guard_checkpoint(
+                            checkpoint,
+                            "end",
+                            "held_baseline_second",
+                            year,
+                            component=variable,
+                            head=head,
+                        )
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "start",
+                        "restore_held_baseline",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 for v in fixed:
                     _restore(sim, v, snapshot)
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "end",
+                        "restore_held_baseline",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 # Second test: hold the other heads at their values after the
                 # first point, and move the component on to the second. A head
                 # gated by another head (h = c * (b > 0), with b a passport on c)
@@ -1121,6 +1265,15 @@ def counted_once(
                 # head is not finite after the first point keeps that head at its
                 # baseline value, and this test judges no household the unit
                 # belongs to.
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "start",
+                        "held_reference_first",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 _perturb(sim, variable, year, settable, added, monthly, touched=touched)
                 at_first = _capture(sim, held, year, baseline)
                 head_first = _head_arrays(sim, year, [head])[head]
@@ -1134,6 +1287,24 @@ def counted_once(
                         # that sums each head to households.
                         entity_key = definitions[v].entity.key
                         unheld_in[v] = _household(sim, units, entity_key) > 0
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "end",
+                        "held_reference_first",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "start",
+                        "held_perturbed_second",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 _perturb(
                     sim,
                     variable,
@@ -1149,8 +1320,35 @@ def counted_once(
                 # A head left to its formula is held at its value after the
                 # first point only where it stays there.
                 moved_on = {v: _moved(sim, v, year, at_first) for v in free}
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "end",
+                        "held_perturbed_second",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "start",
+                        "restore_held_perturbed",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 for v in fixed:
                     _restore(sim, v, snapshot)
+                if checkpoint is not None:
+                    _guard_checkpoint(
+                        checkpoint,
+                        "end",
+                        "restore_held_perturbed",
+                        year,
+                        component=variable,
+                        head=head,
+                    )
                 not_held = list(unheld_in)
                 unjudged = np.zeros(len(hw), dtype=bool)
                 for v in not_held:
@@ -1372,17 +1570,57 @@ def counted_once(
                     for head, heads in record["heads_not_held"].items()
                 )
             results.append(record)
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "start", "restore_component", year, component=variable
+                )
             _restore(sim, variable, snapshot)
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "end", "restore_component", year, component=variable
+                )
+            if checkpoint is not None:
+                _guard_checkpoint(
+                    checkpoint, "end", "component", year, component=variable
+                )
+        if checkpoint is not None:
+            _guard_loop_completed = True
     finally:
+        if checkpoint is not None:
+            _guard_restore_interrupt = _guard_checkpoint(
+                checkpoint,
+                "start",
+                "restore_final",
+                year,
+                suppress_interrupt=not _guard_loop_completed,
+                defer_interrupt=True,
+            )
         for variable in sorted(touched):
             _restore(sim, variable, snapshot)
+        if checkpoint is not None:
+            _guard_restore_end_interrupt = _guard_checkpoint(
+                checkpoint,
+                "end",
+                "restore_final",
+                year,
+                suppress_interrupt=not _guard_loop_completed,
+                defer_interrupt=True,
+            )
+            if _guard_restore_interrupt is not None:
+                raise _guard_restore_interrupt
+            if _guard_restore_end_interrupt is not None:
+                raise _guard_restore_end_interrupt
 
+    if checkpoint is not None:
+        _guard_checkpoint(checkpoint, "start", "baseline_reproduction", year)
     discard_formula_results(sim)
     heads_again = _head_arrays(sim, year, all_heads)
     # NaN matches NaN in the same place, and nothing else.
     reproduces = all(
         np.array_equal(heads_again[v], heads0[v], equal_nan=True) for v in all_heads
     )
+    if checkpoint is not None:
+        _guard_checkpoint(checkpoint, "end", "baseline_reproduction", year)
     result = {
         "status": "ran",
         "year": year,
