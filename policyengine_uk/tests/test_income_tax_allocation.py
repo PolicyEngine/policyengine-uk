@@ -61,6 +61,7 @@ from policyengine_uk.utils.income_tax_allocation import (
     _rate_test_on_stored,
     _share_left,
     _shares,
+    _stored_share,
     default_order_deductions,
     least_tax_deductions,
     old_order,
@@ -1435,6 +1436,83 @@ def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
     assert not meets.any()
     tax = sim.calculate("income_tax", year).astype(float)[0::2]
     assert tax == pytest.approx([31_520, 61_520.01], abs=0.01)
+
+
+def test_search_keeps_a_rounding_within_half_a_penny_of_the_shared_allowances():
+    """A 2027-28 recipient with pay of £53,841.65, savings of £141,016.82,
+    dividends of £17,661.55, other deductions of £174,818.25 and a trading
+    loss of £1.77. The Personal Allowance tapers to nil, and Step 3 income is
+    £37,700, the basic rate limit, so the law gives the reduction (s. 10(2)).
+    The deductions take all the pay first (s. 25(3A)), and with no property
+    income the other £120,978.37 falls on savings and dividends. Setting it
+    against savings leaves £20,038.45 of them: £14,038.45 above the £5,000
+    starting rate band and the £1,000 savings allowance at the model's 24%,
+    £3,369.23. The £17,161.55 of dividends above the £500 allowance bear
+    10.75%, £1,844.87. That comes to £5,214.09, or £4,962.09 after the £252
+    reduction. The model holds the shared amount as £120,978.36328125, midway
+    between two float32 values. The nearest, £120,978.359375, leaves income
+    0.39p over the limit; ``main`` stores it and charges £5,214.10. The other,
+    £120,978.3671875, sets 0.39p more than the shared amount, within
+    ``OVER_DEDUCTION``, and meets the rate test, so the search keeps it."""
+    year = 2027
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=53_841.65,
+                savings_interest_income=141_016.82,
+                dividend_income=17_661.55,
+                other_deductions=174_818.25,
+                trading_loss=1.77,
+                uses_trading_allowance=False,
+            )
+        ],
+    )
+    assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    tax = sim.calculate("income_tax", year).astype(float)[0]
+    assert tax == pytest.approx(4_962.09, abs=0.01)
+
+
+def test_stored_share_keeps_a_float32_only_rounding_where_the_exact_share_meets(
+    system,
+):
+    """Amounts as float32 holds them for a 2027-28 recipient with savings of
+    £4,512.36, dividends of £234,734.45, other deductions of £200,593.64, a
+    trading loss of £953.18 and no other income. The share that sets every
+    deduction against the dividends leaves income of £37,699.99, inside the
+    basic rate limit, and meets the rate test in float64. Its deduction from
+    dividends is £201,546.8206. The float32 value below, £201,546.8125,
+    leaves 0.81p of the deductions unset and income of £37,700.0005, which
+    meets the test in float32 alone. The nearest value, £201,546.828125, sets
+    0.75p more than the shared amount and meets the test in float64. Both
+    leave the same ``f``, and neither leaves the first component within its
+    bounds, so ``_stored_share`` keeps the one it tries first, the value
+    below. The rule that ranks last a rounding that passes only in float32
+    applies only where the exact share fails in float64. Applied here too, it
+    would rank the value below last and store the nearest value instead."""
+    income_tax = system.parameters("2027").gov.hmrc.income_tax
+    single = np.float32
+    net_income, relief = single(238_293.625), single(953.18)
+    inputs, default = one_person(
+        net_income=float(net_income),
+        savings=float(single(4_512.36)),
+        dividends=float(single(234_734.45)),
+        allowances=float(single(200_593.64)),
+        relief=float(relief),
+        before_relief=float(net_income + relief),
+    )
+    inputs = with_marriage_allowance(income_tax, 2027, inputs, default, 0)
+    inputs["marriage_allowance_reduction"] = np.array([252.0])
+    c = _build(inputs, income_tax)
+    _, s, v = _least_tax_share(c)
+    exact = (c.savings - s, c.dividends - v)
+    assert _meets_rate_test(c, *_share_left(c, *exact))[0, 0]
+    stored = _stored_share(c, s, v)
+    assert stored.to_savings[0, 0] == 0
+    assert stored.to_dividends[0, 0] == 201_546.8125
+    held = (stored.to_savings, stored.to_dividends)
+    assert not _meets_rate_test(c, *_share_left(c, *held))[0, 0]
+    assert _float32_meets_rate_test(c, *held)[0, 0]
 
 
 def test_search_keeps_the_nearest_rounding_where_stored_savings_sit_over_the_band():
