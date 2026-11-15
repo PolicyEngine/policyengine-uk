@@ -640,3 +640,36 @@
     meets_marriage_allowance_income_conditions: [true, true]
     marriage_allowance_tax_reduction: [252, 0]
     income_tax: [7_288, 0]
+
+- name: Case 27, a recipient sets a penny against dividends to stop pay at the basic rate limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 50_269.99
+        savings_interest_income: 500
+        dividend_income: 0.01
+      partner:
+        age: 40
+    benunit:
+      members: [recipient, partner]
+      is_married: true
+  output:
+    # Income after the allowance is 50,770 - 12,570 = 38,200, above the basic
+    # rate limit, so the savings allowance is £500 in every share (s. 12B).
+    # The old order leaves £37,699.99 of pay, £500 of savings at the savings
+    # nil rate and 1p of dividends within the dividend allowance, for the
+    # least Step 5 tax, 37,699.99 x 20% = 7,539.998. Its 1p of dividends ends
+    # above the basic rate limit, so it fails the rate test (s. 55B(2)(ba)).
+    # Only one share meets the test: 1p against dividends and £12,569.99
+    # against pay, which leaves £37,700 of pay and £500 of savings: 37,700 x
+    # 20% = 7,540, less 252: £7,288.
+    received_allowances_earned_income: [12_569.99, 0]
+    received_allowances_savings_income: [0, 0]
+    received_allowances_dividend_income: [0.01, 0]
+    income_tax_pre_charges: [7_540, 0]
+    meets_marriage_allowance_income_conditions: [true, true]
+    marriage_allowance_tax_reduction: [252, 0]
+    income_tax: [7_288, 0]
