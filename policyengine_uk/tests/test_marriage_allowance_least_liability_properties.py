@@ -24,6 +24,12 @@ Check 1 bounds the tax from below: it is the law's liability at a share the
 model holds. Between the strict and loose tests the law itself lets income
 reach each limit (s. 10(2)).
 
+Both checks leave out a recipient whose float32 net income sits on the other
+side of an allowance step from the amounts entered. The Personal Allowance
+falls a pound at a time (s. 35(2) and (3)), and the savings allowance steps
+down at the basic and higher rate limits (s. 12B), so the model then works a
+different allowance from the law's.
+
 Check 2's strict test stops a penny inside the band because the search can
 miss a share that meets the rate test only with savings at the top of the
 band. Float32 can hold the savings and dividends a fraction of a penny over
@@ -96,6 +102,12 @@ def scale_tax(thresholds, rates, income):
     return tax
 
 
+def net_income(pay, prop, sav, div):
+    # The amounts are whole pence, and so is their sum. Rounding it keeps
+    # float64 addition from carrying a sum at a limit over it.
+    return np.round(pay + prop + sav + div, 2)
+
+
 def banded(lo, hi, B, H, r):
     """Tax at the basic, higher and additional rates ``r`` on income from lo to hi."""
 
@@ -137,6 +149,14 @@ class Law:
         tapered = self.PA0 - np.maximum(0, n - 100_000) / 2
         return np.maximum(0, np.ceil(tapered - 1e-6))
 
+    def savings_allowance(self, n):
+        # s. 12B: by the Step 3 income above the basic and higher rate limits.
+        T = n - np.minimum(self.pa(n), n)
+        psa = self.psa
+        return np.where(
+            T > self.H, psa.additional, np.where(T > self.B, psa.higher, psa.basic)
+        )
+
     def liability(
         self, pay, prop, sav, div, to_s, to_v, margin=0.0, e=1e-6, inside=0.0
     ):
@@ -145,7 +165,7 @@ class Law:
         rounding on the grid's shares and float32 rounding of the model's.
         ``inside`` is how far under the top of the savings nil rate band the
         savings above the limit must sit."""
-        n = pay + prop + sav + div
+        n = net_income(pay, prop, sav, div)
         d = np.minimum(self.pa(n), n)
         if self.other_first:  # s. 25(3A): other income first
             to_other = np.minimum(pay, d)
@@ -159,11 +179,8 @@ class Law:
         feasible &= (to_s >= -e) & (to_s <= sav + e) & (to_v >= -e) & (to_v <= div + e)
         S, V = sav - to_s, div - to_v
         X = O + P
-        T = n - d
         B, H = self.B, self.H
-        psa = np.where(
-            T > H, self.psa.additional, np.where(T > B, self.psa.higher, self.psa.basic)
-        )
+        psa = self.savings_allowance(n)
         tax = scale_tax(*self.uk, O) + banded(O, X, B, H, self.prop)
         Z = np.minimum(X + S, np.maximum(X, self.L) + psa)  # ss. 12, 12A
         tax += banded(Z, X + S, B, H, self.sav)
@@ -246,18 +263,31 @@ def check(year, drawn):
         calc("received_allowances_savings_income"),
         calc("received_allowances_dividend_income"),
     )
-    n = pay + prop + sav + div
-    assert np.allclose(calc("allowances"), np.minimum(law.pa(n), 1e12), atol=0.02)
+    n = net_income(pay, prop, sav, div)
     tol = 0.02 + 1e-6 * n
+    # The Personal Allowance falls a pound at a time (s. 35(2) and (3)), and the
+    # savings allowance steps down at the basic and higher rate limits (s. 12B).
+    # The model sums net income in float32, a fraction of a penny off the
+    # amounts entered, and that can put it on the other side of a step. The
+    # model then works a different allowance from the law's, so the checks
+    # leave that recipient out.
+    held = calc("net_income")
+    assert np.all(np.abs(held - n) <= tol)
+    steady = (law.pa(held) == law.pa(n)) & (
+        law.savings_allowance(held) == law.savings_allowance(n)
+    )
+    assert np.allclose(
+        calc("allowances")[steady], np.minimum(law.pa(n), 1e12)[steady], atol=0.02
+    )
     # 1. At the model's own share: the Step 5 tax, and the reduction wherever
     # the strict test passes and there is tax to reduce, and nowhere the loose
     # test fails. marriage_allowance_tax_reduction never exceeds the tax left,
     # so a person with no Step 5 tax gets none.
     step_5, strict, ok = law.liability(pay, prop, sav, div, m_s, m_v, -PENNY, 0.005)
     _, loose, _ = law.liability(pay, prop, sav, div, m_s, m_v, PENNY, 0.005)
-    assert np.all(ok), "model share infeasible"
+    assert np.all(ok | ~steady), "model share infeasible"
     at_share = np.maximum(0, step_5 - law.ma * granted)
-    bad = (
+    bad = steady & (
         (np.abs(model_tax - at_share) > tol)
         | (strict & ~granted & (step_5 > tol))
         | (granted & ~loose)
@@ -270,11 +300,7 @@ def check(year, drawn):
     d = np.minimum(law.pa(n), n)
     shared = d - np.minimum(pay, d) if law.other_first else d
     f = np.linspace(0, 1, 41)
-    psa = np.where(
-        n - d > law.H,
-        law.psa.additional,
-        np.where(n - d > law.B, law.psa.higher, law.psa.basic),
-    )
+    psa = law.savings_allowance(n)
     s_opts = np.column_stack(
         [
             np.minimum(sav, shared)[:, None] * f,
@@ -323,7 +349,7 @@ def check(year, drawn):
     # model's tax from above. Check 1 bounds it from below: the model's tax is
     # the law's liability at a share the model can hold, with the reduction only
     # where the loose test passes.
-    worse = (model_tax > strict_least + tol) | (model_tax > old + tol)
+    worse = steady & ((model_tax > strict_least + tol) | (model_tax > old + tol))
     assert not worse.any(), [
         dict(
             incomes=data[i].tolist(),
