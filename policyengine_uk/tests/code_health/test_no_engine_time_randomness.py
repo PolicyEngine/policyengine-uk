@@ -272,6 +272,9 @@ EXEMPT = {
     "utils/aggregate_impact/__main__.py": {
         ("<module>", "hash library"): 1,
         ("_sha256", "hash use"): 1,
+        # Redact public component/head variable names in bounded diagnostic
+        # receipts; these fingerprints never draw from entity IDs or inputs.
+        ("_guard_progress_body", "hash use"): 1,
     },
     # Aggregate impact tool: SHA-256 content check of a pinned dataset file.
     "utils/aggregate_impact/dataset.py": {
@@ -4353,3 +4356,69 @@ def test_model_never_imports_offline_modules():
         "Offline modules are exempt from the draw check only because the "
         "model never imports them:\n" + "\n".join(importers)
     )
+
+
+def _guard_diagnostic_cli_source():
+    return (PACKAGE / "utils/aggregate_impact/__main__.py").read_text(encoding="utf-8")
+
+
+def _guard_diagnostic_cli_check(source):
+    relative = "utils/aggregate_impact/__main__.py"
+    exempt = {"cli": EXEMPT[relative]}
+    findings = _package_findings({"cli": source}, exempt=exempt)
+    counted = count_findings(findings)
+    return check_allowlists(counted, {}, exempt), counted
+
+
+def test_guard_diagnostic_hash_has_an_exact_nondraw_exemption():
+    (violations, stale), counted = _guard_diagnostic_cli_check(
+        _guard_diagnostic_cli_source()
+    )
+    assert not violations and not stale
+    assert len(counted["cli"][("_guard_progress_body", "hash use")]) == 1
+    assert not any(kind == "draw helper call" for _, kind in counted["cli"])
+
+
+def test_guard_diagnostic_duplicate_hash_in_the_same_scope_fails():
+    tree = ast.parse(_guard_diagnostic_cli_source())
+    function = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "_guard_progress_body"
+    )
+    function.body.insert(0, ast.parse("hashlib.sha256(b'extra')").body[0])
+    (violations, stale), counted = _guard_diagnostic_cli_check(ast.unparse(tree))
+    assert not stale
+    assert len(counted["cli"][("_guard_progress_body", "hash use")]) == 2
+    assert any(
+        "in _guard_progress_body: hash use (2 found, 1 allowed)" in violation
+        for violation in violations
+    )
+
+
+def test_guard_diagnostic_hash_in_an_unreviewed_scope_fails():
+    source = _guard_diagnostic_cli_source() + (
+        "\ndef _unreviewed_diagnostic_hash():\n"
+        "    return hashlib.sha256(b'extra').hexdigest()\n"
+    )
+    (violations, stale), counted = _guard_diagnostic_cli_check(source)
+    assert not stale
+    assert len(counted["cli"][("_unreviewed_diagnostic_hash", "hash use")]) == 1
+    assert any(
+        "in _unreviewed_diagnostic_hash: hash use (1 found, 0 allowed)" in violation
+        for violation in violations
+    )
+
+
+def test_guard_diagnostic_removed_hash_makes_the_entry_stale():
+    tree = ast.parse(_guard_diagnostic_cli_source())
+    function = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "_guard_progress_body"
+    )
+    function.body = [ast.Return(value=ast.Constant(value=None))]
+    (violations, stale), _ = _guard_diagnostic_cli_check(ast.unparse(tree))
+    assert not violations
+    assert len(stale) == 1
+    assert "in _guard_progress_body: hash use (1 allowed, 0 found)" in stale[0]
