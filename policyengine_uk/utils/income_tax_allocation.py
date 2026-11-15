@@ -137,10 +137,15 @@ The vertex search scores each candidate in float64 only, so it can miss a
 share that passes only in float32, as at a limit a Gift Aid gift raises. It
 rounds only the share with the least ``f``, so it can also miss a share that
 meets the test only once its deductions are rounded to float32. ``main``
-misses both kinds too. The model never denies the reduction where its float32
-test gave it for the same share. It grants the reduction over a limit only
-where float32 rounding of the amounts it holds carries income onto the limit,
-as the float32 test always could for the old order.
+misses both kinds too. The float32 test rounds each limit to float32 after it
+adds the gift, where ``main`` rounds the limit first. The two agree where the
+statutory limit is a float32 amount, as every limit up to 2028-29 is. The
+model then never denies the reduction where ``main``'s float32 test gave it
+for the same share. From 2029-30 the uprated Scottish higher rate threshold is
+not a float32 amount, so for a Scottish taxpayer with a Gift Aid gift the two
+limits can sit a float32 step apart. The model grants the reduction over a
+limit only where float32 rounding of the amounts it holds carries income onto
+the limit, as the float32 test always could for the old order.
 
 The model stores the deductions from savings and dividends in float32 too. The
 search finds the least ``f`` in float64, then ``_stored_share`` rounds that
@@ -243,8 +248,9 @@ from policyengine_uk.utils.marriage_allowance import (
 
 # A share replaces the order non-savings, savings, dividends only where it
 # saves more than this (in pounds). So float32 rounding moves a deduction only
-# where one float32 step of it, taxed at the person's rates, saves more, and
-# then by that step.
+# where one float32 step of it saves more, and then by that step. The step
+# saves tax at the person's rates. For a Marriage Allowance recipient it can
+# also carry the share across a limit of the rate test and win the reduction.
 TOLERANCE = 1e-3
 # The search treats shares whose tax differs by less than this (in pounds)
 # as equally good.
@@ -1069,7 +1075,10 @@ def _old_order_meets_rate_test(person, period, limits):
     """Whether the old order meets the Marriage Allowance rate test, in the
     arithmetic the model has always applied to that order: in float32, on net
     income less savings, dividends and allowances, against ``limits`` rounded
-    to float32 as a float32 sum of the limit and the gift rounds them."""
+    to float32. Where the statutory limit is a float32 amount, that is the
+    float32 sum of the limit and the gift, as on ``main``. The Scottish higher
+    rate threshold is not one from 2029-30, and with a gift the rounded limit
+    can then sit a float32 step from that sum."""
     default = default_order_deductions(person, period)
     savings = person("taxable_savings_interest_income", period)
     dividends = person("taxable_dividend_income", period)

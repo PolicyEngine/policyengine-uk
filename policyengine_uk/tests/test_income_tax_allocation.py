@@ -1231,8 +1231,8 @@ def explicit_couples(year, rows):
 
 # Whole-pence recipients in 2026-27, each a penny over a limit of the rate test
 # under every share, so the law gives none of them the reduction. The model
-# sums net income and allowances in float32, which puts some of them a fraction
-# of a penny under the limit; the test must still fail them.
+# sums net income and allowances in float32, which leaves them 0.2p to 0.5p
+# over the limit, not a whole penny; the test must still fail them.
 PENNY_OVER = [
     dict(
         employment_income=46_951.24,
@@ -1508,7 +1508,7 @@ def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
     meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
     assert not meets.any()
     tax = sim.calculate("income_tax", year).astype(float)[0::2]
-    assert tax == pytest.approx([31_520, 61_520.01], abs=0.01)
+    assert tax == pytest.approx([31_520.005, 61_520.01], abs=0.01)
 
 
 def test_search_keeps_a_rounding_within_half_a_penny_of_the_shared_allowances():
@@ -1708,11 +1708,11 @@ def test_search_keeps_the_nearest_rounding_where_net_income_rounds_up(
     £500 dividend allowance: £7,397.51, or £7,145.51 after the £252
     reduction. In 2027-28 a £1,899.40 gift raises the limit to £40,074.25 and
     income comes to £40,074.24: £34,073.95 × 24% = £8,177.75, or £7,925.75.
-    The model sums net income in float32 a fraction of a penny high, which
-    puts income at the limit and shrinks the shared amount. Only the nearest
-    float32 rounding of the deduction from savings meets the rate test, and
-    against the model's shared amount it sets 0.7p more. As the nearest
-    rounding, it keeps its rank."""
+    The model sums net income in float32 0.69p high in 2027-28 and 1.375p
+    high in 2028-29, which puts income at the limit and shrinks the shared
+    amount. Only the nearest float32 rounding of the deduction from savings
+    meets the rate test, and against the model's shared amount it sets 0.7p
+    more. As the nearest rounding, it keeps its rank."""
     sim = explicit_couples(year, [dict(row, region="SCOTLAND")])
     meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
     assert meets.all()
