@@ -479,8 +479,9 @@
   # 2021/249 reg. 6(1)). For a person entitled to an existing benefit, the
   # Secretary of State has reg. 5(5) apply as if it also named that benefit
   # (SI 2014/1230 reg. 28(b)). The model reads the Scottish reference as
-  # including that modification (Interpretation Act 1978 s. 20(2)), so the
-  # 19-year-old is not a young person and the applicant is single. The law
+  # including that modification (Interpretation Act 1978 s. 20(2), applied
+  # by s. 23(1)), so the 19-year-old is not a young person and the
+  # applicant is single. The law
   # is unsettled on whether the Scottish reference carries reg. 28(b).
   period: 2026
   absolute_error_margin: 0.01

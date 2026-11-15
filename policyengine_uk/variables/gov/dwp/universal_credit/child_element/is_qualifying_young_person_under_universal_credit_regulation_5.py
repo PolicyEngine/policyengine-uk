@@ -21,7 +21,9 @@ class is_qualifying_young_person_under_universal_credit_regulation_5(Variable):
         "Tax Reduction by this regulation (SSI 2021/249 reg. 6(1)). The model "
         "reads that reference with SI 2014/1230 reg. 28(b), so "
         "is_child_or_young_person_for_council_tax_reduction reads "
-        "is_qualifying_young_person_for_universal_credit, not this variable."
+        "is_child_or_qualifying_young_person_for_universal_credit, which "
+        "applies is_qualifying_young_person_for_universal_credit, not this "
+        "variable."
     )
     definition_period = YEAR
     reference = [
