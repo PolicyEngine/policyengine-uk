@@ -39,9 +39,12 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     the share (s. 25(2); policyengine_uk.utils.income_tax_allocation) counts
     the share it stores the same way, so this gives the answer the search
     counted on. Income at a limit meets the test, since Parliament lets income
-    reach each limit (s. 10(2)). Where an amount the test depends on reaches
-    £65,536, float32 can hold income entered a penny over a limit at the
-    limit, so the float64 test then keeps room below each limit.
+    reach each limit (s. 10(2)). Float32 can hold income entered over a limit
+    at the limit. So the float64 test keeps room below each limit where an
+    amount it reads reaches £65,536, or where the model cannot bound the
+    float32 error in the amounts behind it under the least amount the entries
+    can sit over a limit: a penny, or less at a limit a Gift Aid gift leaves
+    between two pence.
     """
     return share_meets_marriage_allowance_rate_test(person, period, parameters)
 

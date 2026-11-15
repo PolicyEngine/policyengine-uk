@@ -57,8 +57,11 @@ from policyengine_uk.utils.income_tax_allocation import (
     RATE_TEST_ROOM_FRACTION,
     TIE,
     _build,
+    _can_hide_an_excess,
     _context,
     _float32_meets_rate_test,
+    _held_error,
+    _inputs,
     _least_tax_share,
     _meets_rate_test,
     _old_order_is_least,
@@ -1801,7 +1804,7 @@ def test_rate_test_keeps_room_where_an_amount_reaches_65_536(
 ):
     """From £65,536 float32 holds amounts in steps of 0.78p or more, and can
     hold income entered a penny over a limit at the limit. So where any amount
-    the rate test depends on reaches £65,536, the test's limits sit below the
+    the rate test reads reaches £65,536, the test's limits sit below the
     statutory ones by the room ``main``'s search keeps: £0.001 plus a millionth
     of the limit or of the income after the deductions, whichever is more.
     Under £65,536 the limits are the statutory ones (plus ``TIE``)."""
@@ -2035,10 +2038,10 @@ def test_search_stores_the_nearest_rounding_at_low_precision():
     least tax sets it against savings. The model holds that amount midway
     between two float32 values. The nearest,
     £120,978.359375, leaves income 0.39p over the limit. The other sets 0.39p
-    more than the shared amount and puts income on the limit. With savings and
-    deductions over £65,536, the model cannot tell this recipient from one
-    entered a penny over, so the search stores the nearest value and the
-    model denies the reduction, as ``main`` does: £14,038.46 of savings above
+    more than the shared amount and puts income on the limit. Savings and
+    deductions sit over £65,536, so the rate test keeps room, the search
+    stores the nearest value and the model denies the reduction, as ``main``
+    does: £14,038.46 of savings above
     the starting rate band and the savings allowance at 24%, £3,369.23, and
     £17,161.55 of dividends above their allowance at 10.75%, £1,844.87."""
     year = 2027
@@ -2099,3 +2102,295 @@ def test_search_finds_the_share_at_the_limit_less_the_room():
     assert to_savings == 20_499.96484375
     property_left = sim.calculate("non_savings_income_after_allowances", year)[0]
     assert property_left == pytest.approx(31_092 - 0.0387, abs=0.01)
+
+
+# Whole-pence recipients in 2026-27, each a penny over a limit of the rate test
+# under every share (the last three, a quarter of a penny). The penny hides
+# behind an amount the rate test does not read: every amount the test reads
+# sits under £65,536, and the model holds each recipient at the limit. The law
+# gives none of them the reduction, and neither does ``main``. Each row ends
+# with the law's tax, to the penny.
+PENNY_HIDDEN_BEHIND_THE_INCOME_TESTED = [
+    # Pay less expenses of £40,200.01. With £9,000 of savings and £1,570 of
+    # dividends, the Personal Allowance leaves £38,200.01, a penny over £37,700
+    # plus the £500 savings allowance: £500 of savings and of dividends at
+    # their nil rates and £37,200.01 at 20%. Float32 holds pay of £148,609.46
+    # and of £148,609.45 as one value.
+    (
+        dict(
+            employment_income=148_609.46,
+            employment_expenses=108_409.45,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+        ),
+        7_440.00,
+    ),
+    (
+        dict(
+            employment_income=300_000.01,
+            employment_expenses=259_800,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+        ),
+        7_440.00,
+    ),
+    # Pay less expenses of £50,000.01, with £500 of savings and £270 of
+    # dividends at their nil rates: £37,430.01 at 20%.
+    (
+        dict(
+            employment_income=300_000.01,
+            employment_expenses=250_000,
+            savings_interest_income=500,
+            dividend_income=270,
+        ),
+        7_486.00,
+    ),
+    # An £800 gift raises the limit to £38,700, and £41,200.01 of pay less
+    # expenses leaves £39,200.01: £38,200.01 at 20%.
+    (
+        dict(
+            employment_income=300_000.01,
+            employment_expenses=258_800,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+            gift_aid=800,
+        ),
+        7_640.00,
+    ),
+    # Trading profits less capital allowances of £40,200.01.
+    (
+        dict(
+            self_employment_income=224_417.13,
+            capital_allowances=184_217.12,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+        ),
+        7_440.00,
+    ),
+    # Dividends less deficiency relief of £1,570.01, with pay of £40,200.
+    (
+        dict(
+            employment_income=40_200,
+            savings_interest_income=9_000,
+            dividend_income=201_570.01,
+            deficiency_relief=200_000,
+        ),
+        7_440.00,
+    ),
+    # A £9,995.19 gift grosses up to £12,493.9875 and raises the limit to
+    # £50,193.9875. The Personal Allowance leaves £50,693.99, a quarter of a
+    # penny over that limit plus £500: £49,693.99 at 20%. Every amount sits
+    # under £65,536, and float32 sums net income to £63,263.988, 0.2p under.
+    (
+        dict(
+            employment_income=52_693.99,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+            gift_aid=9_995.19,
+        ),
+        9_938.80,
+    ),
+    # An £8,609.19 gift raises the limit to £48,461.4875, and the allowance
+    # leaves £48,961.49, a quarter of a penny over it plus £500.
+    (
+        dict(
+            employment_income=50_961.49,
+            savings_interest_income=9_000,
+            dividend_income=1_570,
+            gift_aid=8_609.19,
+        ),
+        9_592.30,
+    ),
+    # A £100.03 gift raises the limit to £37,825.0375. Pay of £120,000 less
+    # expenses of £79,675.02 leaves £40,324.98, and the allowance leaves
+    # £38,325.04, a quarter of a penny over that limit plus £500: £37,325.04
+    # at 20%. Float32 holds the pay exactly and the expenses 0.34p over, so
+    # the bound comes from an amount the model takes off.
+    (
+        dict(
+            employment_income=120_000,
+            employment_expenses=79_675.02,
+            savings_interest_income=9_000.06,
+            dividend_income=1_570,
+            gift_aid=100.03,
+        ),
+        7_465.01,
+    ),
+]
+
+# 2026-27 recipients the model holds at the limit, for whom the amounts behind
+# the income tested give no bound under a penny, so the rate test keeps room
+# and the model denies the reduction, as ``main`` does. Each has £9,000 of
+# savings and £1,570 of dividends and is charged £7,440.
+KEEPS_ROOM_AT_THE_LIMIT = [
+    # Pay of £148,609.45 less expenses of £108,409.45 is £40,200, at the limit,
+    # so the law gives the reduction. Float32 holds that pay as it holds
+    # £148,609.46, a penny over.
+    dict(employment_income=148_609.45, employment_expenses=108_409.45),
+    # Dividends of £201,570 less deficiency relief of £200,000, at the limit.
+    # Float32 holds £201,570 and £201,570.01 as one value.
+    dict(employment_income=40_200, dividend_income=201_570, deficiency_relief=200_000),
+]
+
+# 2026-27 recipients entered at the limit, with amounts behind the income
+# tested that float32 holds to well under a penny. The law gives each the
+# reduction, and so does the model; ``main`` denies each. Each row ends with
+# the law's tax.
+REACHES_THE_LIMIT = [
+    # Pay less expenses of £40,200: 37,700 x 20% less £252.
+    (dict(employment_income=45_200, employment_expenses=5_000), 7_288.00),
+    # Float32 holds £100,000.37 0.28p under and £59,800.37 0.11p over, so
+    # taxable pay 0.39p under £40,200. The bound is 0.39p.
+    (dict(employment_income=100_000.37, employment_expenses=59_800.37), 7_288.00),
+    # Pension contributions of £5,000 under net pay.
+    (
+        dict(employment_income=45_200, employee_pension_contributions_reported=5_000),
+        7_288.00,
+    ),
+    # A trading loss of £5,000 against pay of £45,200.
+    (
+        dict(
+            employment_income=45_200, trading_loss=5_000, uses_trading_allowance=False
+        ),
+        7_288.00,
+    ),
+    # An £800 gift raises the limit to £38,700: 38,700 x 20% less £252.
+    (dict(employment_income=41_200, gift_aid=800), 7_488.00),
+]
+
+
+def test_rate_test_reads_the_amounts_behind_the_income_it_tests():
+    """Float32 can hide a penny behind amounts the rate test never reads. Pay
+    of £148,609.46 less £108,409.45 of expenses leaves £40,200.01, but float32
+    holds that pay as £148,609.453125 and the model holds £40,200.00. The
+    amounts the test reads all sit under £65,536, so ``_low_precision`` sees
+    nothing. ``_can_hide_an_excess`` bounds the float32 error from the inputs
+    up, and the test keeps room wherever the bound reaches the least amount
+    the entries can sit over a limit: a penny, or a quarter of a penny at a
+    limit a Gift Aid gift leaves between two pence. The model then denies the
+    reduction to each recipient entered over a limit, and charges the law's
+    tax. It also denies it to recipients it cannot tell from those, as
+    ``main`` does. It still gives the reduction at the limit where the bound
+    stays under a penny."""
+    year = 2026
+    over = [row for row, _ in PENNY_HIDDEN_BEHIND_THE_INCOME_TESTED]
+    common = dict(savings_interest_income=9_000, dividend_income=1_570)
+    kept = [dict(common) | row for row in KEEPS_ROOM_AT_THE_LIMIT]
+    reaches = [dict(common, **row) for row, _ in REACHES_THE_LIMIT]
+    sim = explicit_couples(year, over + kept + reaches)
+    reduction = sim.calculate("marriage_allowance_tax_reduction", year)[0::2]
+    meets = sim.calculate("meets_marriage_allowance_income_conditions", year)[0::2]
+    tax = sim.calculate("income_tax", year).astype(float)[0::2]
+    denied = len(over) + len(kept)
+    assert not meets[:denied].any() and not reduction[:denied].any()
+    law_tax = [amount for _, amount in PENNY_HIDDEN_BEHIND_THE_INCOME_TESTED]
+    assert tax[: len(over)] == pytest.approx(law_tax, abs=0.01)
+    assert tax[len(over) : denied] == pytest.approx(7_440.00, abs=0.01)
+    assert meets[denied:].all()
+    assert reduction[denied:] == pytest.approx(252)
+    assert tax[denied:] == pytest.approx(
+        [amount for _, amount in REACHES_THE_LIMIT], abs=0.01
+    )
+    # The search and the model's answer read the same flag.
+    period = periods.period(year)
+    income_tax = sim.tax_benefit_system.parameters(str(year)).gov.hmrc.income_tax
+    person = sim.populations["person"]
+    flagged = _inputs(person, period, income_tax)["can_hide_an_excess"][0::2]
+    assert flagged[:denied].all() and not flagged[denied:].any()
+    assert _context(person, period, sim.tax_benefit_system.parameters).low_precision[
+        0::2, 0
+    ].tolist() == [True] * denied + [False] * len(reaches)
+
+
+def test_held_error_follows_the_formulas_behind_the_rate_test():
+    """``_held_error`` checks each amount the model holds against the float64
+    sum of the amounts its formula reads (``SUMS``), so its bound stays small
+    only while those sums match the formulas. The first person below enters
+    every input the sums read, each in whole pence under £65,536, and the
+    bound on net income and on the allowances stays under a penny. The second
+    has pay of £131,072 or more, which gives no bound. The third has a company
+    car, whose benefit the function does not follow, the fourth a trading loss
+    over the £50,000 cap of s. 24A, and the fifth pension contributions over
+    the earnings that limit their relief."""
+    year = 2026
+    busy = dict(
+        employment_income=21_003.17,
+        employment_expenses=412.39,
+        statutory_sick_pay=318.44,
+        self_employment_income=9_871.03,
+        capital_allowances=611.27,
+        loss_relief=205.11,
+        private_pension_income=4_102.59,
+        property_income=3_950.41,
+        savings_interest_income=2_210.83,
+        other_investment_income=97.21,
+        dividend_income=1_733.69,
+        deficiency_relief=12.07,
+        trading_loss=1_044.63,
+        other_deductions=310.19,
+        covenanted_payments=55.43,
+        charitable_investment_gifts=120.77,
+        employee_pension_contributions_reported=1_250.33,
+        personal_pension_contributions=480.21,
+        gift_aid=163.24,
+        uses_trading_allowance=False,
+    )
+    sim = explicit_couples(
+        year,
+        [
+            busy,
+            dict(employment_income=131_072),
+            dict(employment_income=30_000, company_car_list_price=20_000),
+            dict(
+                employment_income=60_000,
+                trading_loss=50_000.01,
+                uses_trading_allowance=False,
+            ),
+            dict(employment_income=45_200, personal_pension_contributions=45_200.01),
+        ],
+    )
+    period = periods.period(year)
+    income_tax = sim.tax_benefit_system.parameters(str(year)).gov.hmrc.income_tax
+    person = sim.populations["person"]
+    known = {}
+    net_income = _held_error(person, period, income_tax, "net_income", known)[0::2]
+    allowances = _held_error(person, period, income_tax, "allowances", known)[0::2]
+    assert sim.calculate("net_income", year)[0] == pytest.approx(41_001.90, abs=0.01)
+    assert sim.calculate("allowances", year)[0] == pytest.approx(14_786.93, abs=0.01)
+    assert net_income[0] < 0.01 and allowances[0] < 0.01
+    # Each input's bound is its distance from whole pence.
+    pay = np.float64(np.float32(21_003.17))
+    assert known["employment_income"][0] == pytest.approx(abs(pay - 21_003.17))
+    assert np.isinf(net_income[1:4]).all() and np.isinf(allowances[4])
+    limits = marriage_allowance_rate_limits(person, period, income_tax)
+    flagged = _can_hide_an_excess(person, period, income_tax, limits, np.zeros(10))
+    assert flagged[0::2].tolist() == [False, True, True, True, True]
+
+
+def test_rate_test_keeps_room_for_an_amount_supplied_in_place_of_its_formula():
+    """Taxable pay of £40,200 supplied as an input, with £9,000 of savings and
+    £1,570 of dividends in 2026-27, sits at the limit. ``_held_error`` checks
+    taxable pay against the pay, benefits and expenses its formula reads. Here
+    the model did not work it from them, so the check leaves £40,200
+    unexplained and gives no bound under a penny. The rate test keeps room,
+    and the model denies the reduction and charges £7,440, as ``main`` does.
+    The same check keeps the room where a reform replaces a formula in
+    ``SUMS``."""
+    year = 2026
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                taxable_employment_income=40_200,
+                savings_interest_income=9_000,
+                dividend_income=1_570,
+            )
+        ],
+    )
+    assert not sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    assert sim.calculate("marriage_allowance_tax_reduction", year)[0] == 0
+    assert sim.calculate("income_tax", year)[0] == pytest.approx(7_440.00, abs=0.01)
+    period = periods.period(year)
+    income_tax = sim.tax_benefit_system.parameters(str(year)).gov.hmrc.income_tax
+    bound = _held_error(sim.populations["person"], period, income_tax, "net_income", {})
+    assert bound[0] == pytest.approx(40_200)

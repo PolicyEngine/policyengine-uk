@@ -36,7 +36,11 @@ draws.
 From £65,536 the model holds a recipient's rate test to room below each limit
 (``LOW_PRECISION`` in ``income_tax_allocation``). The only deduction here is
 the Personal Allowance, so a recipient with that much income has Step 3 income
-over £52,966 and fails the rate test under either margin. The room never
+over £52,966 and fails the rate test under either margin. The model also keeps
+the room where its bound on the float32 error in a recipient's amounts reaches
+a penny (``_can_hide_an_excess``). A recipient here has at most four amounts.
+Under £65,536 in all, their float32 errors come to under 0.39p and the three
+float32 sums to under 0.59p, so the bound stays under a penny. The room never
 decides a recipient these strategies draw.
 
 Both checks leave out a recipient whose float32 net income sits on the other
