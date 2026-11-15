@@ -1743,31 +1743,38 @@ def test_search_keeps_the_nearest_rounding_that_puts_income_on_the_limit():
 
 
 def test_search_stores_the_nearest_rounding_of_a_deduction_off_the_float32_grid():
-    """A 2026-27 taxpayer with no non-savings income and shared deductions off
-    the float32 grid: savings £3,000, dividends £400,000, other deductions
-    £300,000 and a trading loss of £1,000.02. The whole £301,000.02 goes
-    against the dividends, and float32 storage rounds it to £301,000.03125,
-    1.1p more. The model keeps that nearest value rather than the rounding
-    down, which would tax 2p more of
-    the dividends at 35.75%. The law's tax is £34,200 × 10.75% plus
-    £64,299.98 × 35.75%: £26,663.74."""
+    """Two 2026-27 recipients with no non-savings income and shared deductions
+    off the float32 grid. The first: savings £3,000, dividends £400,000, other
+    deductions £300,000 and a trading loss of £1,000.02. The whole £301,000.02
+    goes against the dividends, and float32 storage rounds it to
+    £301,000.03125, 1.1p more. The model keeps that nearest value rather than
+    the rounding down, which would tax 2p more of the dividends at 35.75%.
+    The law's tax is £34,200 × 10.75% plus £64,299.98 × 35.75%: £26,663.74.
+
+    The second has other deductions of £99,000 and a loss of £1,000.30. The
+    nearest float32 value of the £100,000.30 is £100,000.296875, 0.3p under.
+    The value above, £100,000.3046875, sets 0.47p more than the deductions,
+    within ``OVER_DEDUCTION``, and would save 0.3p of tax. With dividends over
+    £65,536, the search stores the nearest value for a recipient, as ``main``
+    does. The law's tax is £34,200 × 10.75%, £87,440 × 35.75% and £177,859.70
+    × 39.35%: £104,924.09."""
     year = 2026
+    common = dict(
+        savings_interest_income=3_000,
+        dividend_income=400_000,
+        uses_trading_allowance=False,
+    )
     sim = explicit_couples(
         year,
         [
-            dict(
-                savings_interest_income=3_000,
-                dividend_income=400_000,
-                other_deductions=300_000,
-                trading_loss=1_000.02,
-                uses_trading_allowance=False,
-            )
+            dict(other_deductions=300_000, trading_loss=1_000.02, **common),
+            dict(other_deductions=99_000, trading_loss=1_000.30, **common),
         ],
     )
     to_dividends = sim.calculate("received_allowances_dividend_income", year)[0::2]
-    assert to_dividends[0] == 301_000.03125
+    assert to_dividends.tolist() == [301_000.03125, 100_000.296875]
     tax = sim.calculate("income_tax", year).astype(float)[0::2]
-    assert tax == pytest.approx([26_663.74], abs=0.01)
+    assert tax == pytest.approx([26_663.74, 104_924.09], abs=0.01)
 
 
 @pytest.mark.parametrize(
@@ -2053,3 +2060,42 @@ def test_search_stores_the_nearest_rounding_at_low_precision():
     assert to_savings == 120_978.359375
     tax = sim.calculate("income_tax", year).astype(float)[0]
     assert tax == pytest.approx(5_214.10, abs=0.01)
+
+
+def test_search_finds_the_share_at_the_limit_less_the_room():
+    """A Scottish recipient in 2027-28 with pay of £41,941.71, property income
+    of £33,570.74, savings of £21,500, other deductions of £33,208.09 and a
+    trading loss of £19,142.37. Net income of £77,870.08 less allowances of
+    £45,778.09 leaves £32,091.99. The deductions take all the pay first
+    (s. 25(3A)), and the other £22,978.75 falls on property income and
+    savings. Savings above the £1,000 savings allowance bear the model's 24%,
+    and property income under the Scottish higher rate threshold of £31,092
+    bears 21% at most. So the least tax leaves as much property income as the
+    rate test allows. Net income is over £65,536, so the test keeps 3.9p of
+    room under the threshold. The share that leaves £31,091.96 of property
+    income and £1,000.03 of savings lies on the line the search adds at the
+    limit less the room, and it sets £20,499.96 against savings. Without that
+    line the search sets £20,000 against savings, which leaves £500 more of
+    savings at 24% and £500 less of property income at 21%, and the tax is
+    £15 more. The test pins the share and not the tax, since the model
+    projects the Scottish starter and basic rate thresholds for 2027-28."""
+    year = 2027
+    sim = explicit_couples(
+        year,
+        [
+            dict(
+                employment_income=41_941.71,
+                property_income=33_570.74,
+                savings_interest_income=21_500,
+                other_deductions=33_208.09,
+                trading_loss=19_142.37,
+                uses_trading_allowance=False,
+                region="SCOTLAND",
+            )
+        ],
+    )
+    assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    to_savings = sim.calculate("received_allowances_savings_income", year)[0]
+    assert to_savings == 20_499.96484375
+    property_left = sim.calculate("non_savings_income_after_allowances", year)[0]
+    assert property_left == pytest.approx(31_092 - 0.0387, abs=0.01)
