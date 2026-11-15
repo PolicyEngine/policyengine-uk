@@ -4,24 +4,16 @@ from policyengine_uk.model_api import *
 class corporate_land_value(Variable):
     entity = Household
     label = "Land value"
-    documentation = "Estimated total land value indirectly owned by the household from corporate holdings"
+    documentation = (
+        "Estimated total land value indirectly owned by the household from "
+        "corporate holdings: its shareholding of the land UK corporations "
+        "hold. A household situation holds none unless shareholding is set."
+    )
     unit = GBP
     definition_period = YEAR
     value_type = float
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        corporate_wealth = household("corporate_sector_wealth", period)
-        household_weight = household("household_weight", period)
-        total_weighted_corporate_wealth = (corporate_wealth * household_weight).sum()
-        if total_weighted_corporate_wealth == 0:
-            return corporate_wealth * 0
-
-        aggregate_corporate_land_value = parameters(
-            period
-        ).household.wealth.land.value.aggregate_corporate_land_value
-        return (
-            corporate_wealth
-            / total_weighted_corporate_wealth
-            * aggregate_corporate_land_value
-        )
+        land = parameters(period).household.wealth.land.value
+        return household("shareholding", period) * land.aggregate_corporate_land_value

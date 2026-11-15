@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 
 
 class education_budget_change(Variable):
@@ -12,6 +13,10 @@ class education_budget_change(Variable):
             parameters(period).gov.contrib.policyengine.budget.education * 1e9
         )
         if budget_increase == 0:
+            return 0
+        if not built_from_data(household.simulation):
+            # A household situation has no population to share the budget
+            # over, so it takes none of it.
             return 0
         decile = household("pre_budget_change_ons_household_income_decile", period)
         weight = household("household_weight", period)
@@ -32,10 +37,7 @@ class education_budget_change(Variable):
         budget_increase_per_decile = {
             i: budget_increase * DECILE_INCIDENCE[i] for i in range(1, 11)
         }
-        if household.simulation.dataset is not None:
-            households_per_decile = pd.Series(weight).groupby(decile).sum().to_dict()
-        else:
-            households_per_decile = {i: 28e5 for i in range(1, 11)}
+        households_per_decile = pd.Series(weight).groupby(decile).sum().to_dict()
 
         # A decile with no weighted households in the data, as in a small
         # sample, has nobody to receive its share.

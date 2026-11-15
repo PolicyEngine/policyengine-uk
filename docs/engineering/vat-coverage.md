@@ -344,6 +344,40 @@ themselves (`raw / obr / 0.7`). For Enhanced FRS 1.56.16 or 1.58.0, download
 `enhanced_frs_2024_25.h5` at that release tag (for example
 `revision="1.58.0"`).
 
+## VAT on road fuel duty changes
+
+[HMRC VATVAL02300](https://www.gov.uk/hmrc-internal-manuals/vat-valuation/vatval02300)
+includes excise duty in the value charged to VAT. The
+[OBR fuel duties explainer](https://obr.uk/forecasts-in-depth/tax-by-tax-spend-by-spend/fuel-duties/)
+illustrates this with 52.95p of petrol duty attracting 10.59p of VAT at 20%.
+With quantities and the non-tax price held fixed, a 5p duty change therefore
+changes VAT by 1p per litre.
+
+`fuel_duty_vat_change` calculates only this signed change relative to the
+simulation's unreformed native duty schedule. It uses petrol and diesel
+litres, deducts rural relief where eligible, and includes supplied road-fuel
+LPG and natural gas kilograms. It multiplies the duty difference by the
+current statutory standard VAT rate, so a simultaneous VAT reform uses its
+new rate. It leaves the model's existing quantity and price assumptions
+unchanged and introduces no demand response.
+
+`vat` adds this component after the general VAT grossing and private-school
+allocation. Neither grossing factor nor the school share applies to it.
+Existing consumption VAT already includes VAT on baseline fuel duty; adding
+the whole duty-related VAT liability again would double-count it. An
+unchanged duty schedule consequently adds zero, including years with dated
+native rate changes. `baseline_vat` needs no extra component.
+
+The component covers the native reform timeline from 2015. Its default zero
+before that date marks unmodelled reform incidence, not an exemption. It
+reconstructs baseline duty rates from the unannualised `parameters.baseline`
+tree: `fiscal_year_blend` rates use the day-weighted 6 April–5 April average,
+including leap years, and other rates use 30 April, with the same fallback as
+the native fiscal conversion. The standard VAT rate retains the model's
+existing annual convention; this calculation does not add a joint daily
+duty-and-VAT-rate integration rule. Missing fuel quantities still default
+to zero; this change supplies no population data or new calibration.
+
 ## Energy bills are not grossed up
 
 

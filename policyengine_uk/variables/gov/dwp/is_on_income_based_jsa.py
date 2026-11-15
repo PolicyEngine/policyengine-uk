@@ -55,7 +55,7 @@ class is_on_income_based_jsa(Variable):
             person,
             period,
             "jsa_income",
-            works=hours >= JSA.remunerative_work.claimant_hours,
+            barred=hours >= JSA.remunerative_work.claimant_hours,
             capital_limit=JSA.income.capital.limit,
         )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

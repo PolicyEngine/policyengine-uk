@@ -228,3 +228,21 @@ gov.economic_assumptions.yoy_growth.orr.per_capita.rail_passenger_journeys:
 - rail_usage
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight
+# UK totals of the keys' components, which grow like the column they sum,
+# times population as household weights do (policyengine-uk#2896).
+gov.economic_assumptions.yoy_growth.uk_totals.per_capita_gdp:
+- uk_total_corporate_wealth
+- uk_total_private_pension_wealth
+gov.economic_assumptions.yoy_growth.uk_totals.consumer_price_index:
+- uk_total_food_and_non_alcoholic_beverages_consumption
+- uk_total_alcohol_and_tobacco_consumption
+- uk_total_clothing_and_footwear_consumption
+- uk_total_housing_water_and_electricity_consumption
+- uk_total_household_furnishings_consumption
+- uk_total_health_consumption
+- uk_total_transport_consumption
+- uk_total_communication_consumption
+- uk_total_recreation_consumption
+- uk_total_education_consumption
+- uk_total_restaurants_and_hotels_consumption
+- uk_total_miscellaneous_consumption

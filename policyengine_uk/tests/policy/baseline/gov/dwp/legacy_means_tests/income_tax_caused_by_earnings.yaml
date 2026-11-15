@@ -103,14 +103,17 @@
   # A parent aged 35 with one child, pay 40,000 and interest 30,000. Child
   # Benefit 27.05 x 52 = 1,406.60 (1,406 in whole pounds). Adjusted net income
   # 70,000 is half-way through the 60,000 to 80,000 taper: charge 50% x 1,406
-  # = 703 (ITEPA 2003 s.681C). Pay: (40,000 - 12,570) x 20% = 5,486. Interest,
-  # higher-rate (savings allowance 500): 500 at nil, 37,700 - 27,430 - 500 =
-  # 9,770 at 20% = 1,954, 30,000 - 10,270 = 19,730 at 40% = 7,892; 9,846.
-  # Income tax before the winter fuel payment charge: 5,486 + 9,846 + 703 =
-  # 16,035. Without the pay: adjusted net income 30,000, no charge; interest
-  # 17,430 taxable, 5,000 at the starting rate and 1,000 savings allowance at
-  # nil, 11,430 at 20% = 2,286. Tax deducted: 16,035 - 2,286 = 13,749, which
-  # includes the whole 703 charge.
+  # = 703 (ITEPA 2003 s.681C). The least tax sets 2,300 of the personal
+  # allowance against the pay and 10,270 against the interest (ITA 2007
+  # s.25(2)). Pay: 37,700 at 20% = 7,540. Interest, higher-rate (savings
+  # allowance 500): 19,730 above the basic rate limit, 500 at nil and 19,230
+  # at 40% = 7,692. Income tax before the winter fuel payment charge: 7,540 +
+  # 7,692 + 703 = 15,935. Setting the whole allowance against the pay leaves
+  # the 500 at nil in the basic rate band and charges 100 more. Without the
+  # pay: adjusted net income 30,000, no charge; interest 17,430 taxable, 5,000
+  # at the starting rate and 1,000 savings allowance at nil, 11,430 at 20% =
+  # 2,286. Tax deducted: 15,935 - 2,286 = 13,649, which includes the whole 703
+  # charge.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -130,10 +133,10 @@
         region: NORTH_EAST
   output:
     CB_HITC: [703, 0]
-    income_tax_before_winter_fuel_payment_charge: [16_035, 0]
-    legacy_means_test_income_tax: [5_486, 0]
+    income_tax_before_winter_fuel_payment_charge: [15_935, 0]
+    legacy_means_test_income_tax: [7_540, 0]
     legacy_means_test_uncounted_income_tax_without_earnings: [2_286, 0]
-    legacy_means_test_deducted_income_tax: [13_749, 0]
+    legacy_means_test_deducted_income_tax: [13_649, 0]
 
 - name: Only the part of the High Income Child Benefit Charge that the pay adds is deducted
   # A parent aged 35 with one child, pay 10,000 and interest 65,000. With the

@@ -43,18 +43,32 @@ class council_tax_reduction_applicable_income(Variable):
         "children or young persons. We disregard war pensions and Armed "
         "Forces Compensation Scheme payments in full: Scottish councils count "
         "none of them, and English and Welsh councils may relieve them beyond "
-        "the prescribed £10 a week. No scheme "
-        "counts income derived from capital, such as rent from property, "
-        "interest and dividends, as income, so it is not listed and tax on it "
-        "is not deducted (legacy_means_test_income_tax). The pensioner schemes "
-        "disregard any actual income from capital; the Welsh working-age "
-        "scheme and the English default scheme treat it as capital; the "
-        "Scottish working-age scheme counts only the unearned income it "
-        "lists, which includes the assumed yield from capital but not actual "
-        "rent, interest or dividends. Instead, the national schemes (England "
-        "for pensioners, Wales and Scotland) count the tariff income they "
-        "treat capital as yielding (council_tax_reduction_tariff_income); the "
-        "English local schemes for people under pension age add their own. "
+        "the prescribed £10 a week. "
+        "The formula counts no income derived from capital, such as rent "
+        "from property other than the home, interest and dividends. In each "
+        "pensioner scheme, a council disregards any actual income from "
+        "capital, except income from the capital that Part 2 of the capital "
+        "Schedule lists: life interests and liferents, rights to rent where "
+        "the applicant has no reversionary interest, annuities, and property "
+        "held under a trust that pays or may pay the applicant or partner. It "
+        "disregards that income too while such capital totals £10,000 or "
+        "less. The model has no input that marks capital as Part 2 capital, "
+        "and other_investment_income takes in interest from trusts and "
+        "settlements, so on the pensioner route the formula counts none of "
+        "the interest, other investment income, dividends or rent from "
+        "property, and council_tax_reduction_tax_deduction deducts no tax on "
+        "any of it. The model makes that general approximation of the income "
+        "rules: where Part 2 capital above £10,000 yields such income, a "
+        "council counts it and the model doesn't. The Welsh working-age "
+        "scheme and the English default scheme treat income from capital as "
+        "capital; the Scottish working-age scheme counts only the unearned "
+        "income it lists, which includes the assumed yield from capital but "
+        "not actual rent, interest or dividends. Instead, the national "
+        "schemes (England for pensioners, Wales and Scotland) count the "
+        "tariff income they treat capital as yielding "
+        "(council_tax_reduction_tariff_income), and in the pensioner schemes "
+        "a council leaves Part 2 capital out of it. The English local schemes "
+        "for people under pension age add their own tariff income. "
         "Rent the applicant and partner receive for letting part of the home "
         "counts, less the sub-tenant disregard, on the schemes' own income "
         "rules (council_tax_reduction_home_letting_income), with rent from "
@@ -64,10 +78,14 @@ class council_tax_reduction_applicable_income(Variable):
         "whose income the schemes take from the Secretary of State's "
         "Universal Credit assessment (which does not count it), or in the "
         "Scottish scheme for people under pension age from April 2022, which "
-        "does not list it. There the rent is uncounted income like income "
-        "from capital: the tax deducted leaves out the tax the rent would "
-        "bear without earnings (rent_a_room_income_tax_without_earnings) and "
-        "keeps the extra tax earnings cause on it."
+        "does not list it. "
+        "The formula deducts the income tax and National Insurance each "
+        "scheme allows (council_tax_reduction_tax_deduction): on earnings "
+        "only in Scotland's working-age scheme, on income taken into account "
+        "in the pensioner schemes, and in the other schemes the income tax "
+        "the legacy means tests deduct (legacy_means_test_deducted_income_tax), "
+        "less, on the Universal Credit route, the tax uncounted rent would "
+        "bear without earnings (rent_a_room_income_tax_without_earnings)."
     )
     definition_period = YEAR
     unit = GBP
@@ -111,6 +129,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/9",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/4/part/2",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/6/part/2",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/5/part/2",
         "https://www.legislation.gov.uk/ssi/2012/303/regulation/26",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/3",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
@@ -371,25 +392,11 @@ class council_tax_reduction_applicable_income(Variable):
         pension_contributions = add_for_members(
             benunit, period, ["pension_contributions"], members
         ) * benunit("council_tax_reduction_pension_contribution_deduction_rate", period)
-        # Where the scheme does not count the rent, the formula treats it as
-        # uncounted income like income from capital: it leaves out of the
-        # deduction the tax the rent would bear without earnings, and keeps
-        # the extra tax earnings cause on it.
-        income_tax = add_for_members(
-            benunit, period, ["legacy_means_test_deducted_income_tax"], members
-        ) - where(
-            counts_home_letting,
-            0,
-            add_for_members(
-                benunit, period, ["rent_a_room_income_tax_without_earnings"], members
-            ),
-        )
-        # The deduction can be negative for one person, where another
-        # member's earnings move a Step 7 charge off them; the test deducts the
-        # counted members' sum, floored at nil, so it never adds tax to income.
-        tax = max_(0, income_tax) + add_for_members(
-            benunit, period, ["national_insurance"], members
-        )
+        # The income tax and National Insurance each scheme allows: on earnings
+        # only in Scotland's working-age scheme, on income taken into account
+        # in the pensioner schemes, and in the other schemes what the legacy
+        # means tests deduct (council_tax_reduction_tax_deduction).
+        tax = benunit("council_tax_reduction_tax_deduction", period)
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
         # earnings disregards, capped at net earnings. Zero for working-age

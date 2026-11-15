@@ -1,3 +1,125 @@
+## [2.179.0] - 2026-11-14
+
+### Added
+
+- Simulations read three new stored inputs, `uc_new_claimant_health_element_draw`, `pip_phase_in_draw` and `would_claim_student_loan`, in Universal Credit rebalancing, the PIP phase-in scenario and student loan uprating when a dataset supplies them, and keep their own seeded draws when it does not.
+
+
+## [2.178.8] - 2026-11-13
+
+### Fixed
+
+- The model now deducts from Council Tax Reduction income only the income tax and National Insurance each scheme allows: in Scotland's working-age scheme the extra tax earnings cause and the notional tax on self-employed profit, and in the pensioner schemes of England, Wales and Scotland that same earnings tax, the tax on the other counted income and the notional tax on profit, with no tax on savings, dividends, rent from property or the Scottish Carer Supplement, and no High Income Child Benefit Charge, where earnings do not raise them.
+
+
+## [2.178.7] - 2026-11-13
+
+### Fixed
+
+- The LHA size criteria now count other families' children, give foster children no bedroom of their own and add the foster-parent, adopter and overnight-care bedrooms (UC Regs 2013 Sch 4 paras 9-12 and 29(9A); HB Regs 2006 reg 13D(3)-(3B)), with new inputs for adoption placements, foster parents between placements, non-resident overnight carers and adopters who are a foster parent or close relative of the child (UC reg 89(3)(a)). Housing Benefit counts a child placed with a non-dependant, boarder or lodger in the claimant's size criteria (reg 21(3) names only the claimant or partner), and the legacy household, Income Support (Sch 1B paras 2 and 2A) and Tax-Free Childcare leave out a child placed for adoption. A Universal Credit renter whose claim counts a non-dependant from another family, such as a sharer's foster child aged 16 or 17 who is not a qualifying young person, no longer gets the shared accommodation rate (Sch 4 para 28(4)).
+
+
+## [2.178.6] - 2026-11-12
+
+### Fixed
+
+- Included the VAT effect of road fuel duty reforms without grossing up the additional household VAT or double-counting VAT already embedded in consumption.
+
+
+## [2.178.5] - 2026-11-12
+
+### Fixed
+
+- Tested that Pension Credit, Child Benefit and Child Tax Credit each stop counting a young person who receives Income Support in their own right as a qualifying young person, and Universal Credit does not (SPC Regs 2002 reg. 4A(5); Child Benefit (General) Regulations 2006 reg. 8(2)(a); CTC Regs 2002 reg. 5(4)(c); UC Regs 2013 reg. 5(5)), in the baseline and under reforms that remove Income Support. Pension Credit and Child Tax Credit read the benefit unit's calculated Income Support for whichever of the claimant and partner receives it, so a reform that pays no Income Support ends the exclusion for that person; Child Benefit reads the young person's own report while Income Support is in payment.
+
+
+## [2.178.4] - 2026-11-12
+
+### Changed
+
+- The test suite fails on any new random draw, sampling call or hash of entity ids in the package. It lists today's draws in a ratchet and `Simulation.subsample`'s draw as a reviewed sampling tool.
+
+
+## [2.178.3] - 2026-11-12
+
+### Changed
+
+- The CI shard durations table now comes from 11 November's logs, to keep Python shard 4/8 inside its 90-minute limit.
+
+### Fixed
+
+- Added the Child Benefit qualifying young person conditions for young people who have left education (Child Benefit (General) Regulations 2006 regs 4, 5 and 7), which the Housing Benefit, legacy benefit and Council Tax Reduction young persons follow: a 16-year-old counts until the 31 August after their 16th birthday, in any year that starts before it, two new inputs place the 20-week extension period and the terminal date, and the model pays no Child Benefit for a young person who qualifies only through the terminal date and works 24 hours or more a week (reg. 7(3)). A young person who reports their own Universal Credit, Employment and Support Allowance or income-based Jobseeker's Allowance, or their own Income Support while DWP pays it, is not one, on any route (reg. 8).
+- Counted a 16-year-old who has left education as a Child Tax Credit qualifying young person until the 31 August after their 16th birthday, in any year that starts before it (Child Tax Credit Regulations 2002 reg. 4), and added an input for the 20 weeks after leaving while registered for work or training (reg. 5(3)(b)). Remunerative work of 24 hours a week ends both for a young person who has left education (reg. 5(4)(a)), and Income Support received by the young person ends every route (reg. 5(4)(c)).
+
+
+## [2.178.2] - 2026-11-11
+
+### Changed
+
+- The enhanced disability premium property test now checks a Kingston upon Thames claimant whose highest-rate DLA care award carries £1,000 a year, below 52 times the top weekly rate.
+
+
+## [2.178.1] - 2026-11-11
+
+### Fixed
+
+- The model now adds the disabled child premium and the enhanced disability premium to a pensioner's Council Tax Reduction applicable amount for each qualifying child or young person in England, Wales and Scotland, with each nation's armed forces independence payment routes by year.
+
+
+## [2.178.0] - 2026-11-10
+
+### Added
+
+- Added inputs for the UK totals of the components of corporate_sector_wealth and consumption (uk_total_*), and policyengine_uk.utils.uk_totals.add_uk_totals to write them: where the data carries them, shareholding, consumption_shareholding and carbon tax's corporate part give each household its national share in any simulation of part of the UK, such as a region, an extract or one block of a build, and filter_dataset's extracts carry them.
+
+### Fixed
+
+- A household situation no longer takes the whole UK total of business rates, corporate Stamp Duty Land Tax, corporate land and the other amounts shared out by shareholding, consumption_shareholding or income decile; whatever its weight or axes, it takes no share unless one is set.
+
+### Removed
+
+- Removed the household financial net worth parameter (household.wealth.national_balance_sheet), whose only reader was the shareholding fallback for household situations.
+
+
+## [2.177.9] - 2026-11-10
+
+### Fixed
+
+- The model now counts a carer's Universal Credit award with the carer element, where the award comes to at least one penny, when deciding the severe disability premium and the Pension Credit severe disability addition, and in Scotland's working-age council tax reduction it counts such an award for the carer premium from 1 April 2022 (#2120, #2124).
+
+
+## [2.177.8] - 2026-11-10
+
+### Changed
+
+- `is_benefit_unit_non_dependant_for_universal_credit` now cites Universal Credit Regulations 2013 Sch 4 para 9(2)(b) and reg 3 for the partner of a renter who claims as a single person. Two Council Tax Reduction test comments now cite reg 9(1) of SI 2012/2885 beside reg 9(2)(a).
+
+### Fixed
+
+- Corrected Scottish income tax rates and limits for 2018-19 to 2021-22 to match Parliament's annual resolutions, including the 41% higher rate from 2018-19.
+
+
+## [2.177.7] - 2026-11-10
+
+### Fixed
+
+- The model now sets the Personal Allowance, other allowances and trade loss relief against non-savings, savings and dividend income in the way that gives the least tax (ITA 2007 s. 25(2)), and from 2027-28 against other income before property, savings and dividend income (s. 25(3A)), where it previously always took them from non-savings income first. When it compares ways, it counts the Marriage Allowance tax reduction that each wins or loses (s. 55B(2)). Pension relief stays on non-savings income, and the income tax that Universal Credit deducts from earnings still follows the order non-savings, savings, dividends.
+
+
+## [2.177.6] - 2026-11-10
+
+### Fixed
+
+- Pay the legacy enhanced disability premium for an award of enhanced PIP daily living or armed forces independence payment as well as the highest DLA care rate, and apply its State Pension Credit age limit. Count an award only where its amount is positive, and count an amount entered without its category when it reaches `52 × (top weekly rate − £1)`. Give four working-age Council Tax Reduction schemes their own lists. Scottish councils count attendance allowance at either rate from April 2023, and the Scottish Ministers removed the age limit from June 2022. Merton and Westminster count either PIP daily living rate and omit armed forces independence payment; Newham counts either PIP daily living rate and armed forces independence payment. In Kingston upon Thames the model keeps reading `is_enhanced_disabled_for_benefits`, with no age limit, until it can apply the council's own list.
+
+
+## [2.177.5] - 2026-11-10
+
+### Fixed
+
+- The model no longer pays income-related ESA to a claimant who has reached pensionable age, or to a couple that would get State Pension Credit without that award, whether the model's formulas, an input or a reform set that Pension Credit, and it pays no Pension Credit to a couple while it pays the couple income-related ESA (Welfare Reform Act 2007 s.1(3)(c) and Sch 1 para 6(1)(c) and (d)).
+
+
 ## [2.177.4] - 2026-11-09
 
 ### Changed

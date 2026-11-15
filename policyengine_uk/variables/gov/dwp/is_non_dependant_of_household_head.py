@@ -22,8 +22,13 @@ class is_non_dependant_of_household_head(Variable):
         "non-dependant in one claim only "
         "(uc_non_dependants_counted); Housing Benefit and Council Tax "
         "Reduction apportion a non-dependant of several joint occupiers "
-        "between them. Foster children and carers engaged through a charity "
-        "are not identified."
+        "between them. Apart from a boarder's or lodger's payer and partner, "
+        "the flag covers every member of a family outside those liable for "
+        "the rent, children included. A non-dependant's own children are "
+        "non-dependants too, but a child or qualifying young person looked "
+        "after by a local authority is not (UC Sch 4 para 9(2)(g)); the "
+        "size criteria apply that exclusion (see LHA_allowed_bedrooms). "
+        "Carers engaged through a charity are not identified."
     )
     definition_period = YEAR
     reference = (

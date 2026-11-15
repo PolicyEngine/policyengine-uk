@@ -350,6 +350,9 @@ DIFFERENTIAL_OUTPUTS = (
 # tariff income, over the personal allowance and child amounts. For example, the
 # Welsh family with savings of 8,000 in 2026 has 9,000 - 5 * 52 + 416 = 9,156
 # against 101.85 * 52 = 5,296.20, so an award of 1,228.04.
+#
+# Three 2019 Scottish rows use 2019-20's Scottish limits, which main lacked;
+# the notes beside them give the arithmetic.
 ORIGIN_MAIN = {
     2019: [
         (9_412, 12_000, 1_482.4),
@@ -359,15 +362,22 @@ ORIGIN_MAIN = {
         (5_972.2, 22_574.64, 0),
         (3_801.2, 8_955.84, 0),
         (9_412, 12_000, 1_482.4),
-        (14_071.2, 17_170, 1_380.24),
+        # Scottish taxpayers pay 19% on the first 2,049 of taxable income in
+        # 2019-20 and 20% up to 12,444 (S5M-15879), where main used 2018-19's
+        # 2,000 and 12,150. This couple's 5,500 of taxable income pays 19%
+        # rather than 20% on 49 more, so the tax falls by 0.49 and the award
+        # by 20% of that.
+        (14_071.2, 17_170.49, 1_380.14),
         (9_412, 9_592.34, 1_963.93),
-        (3_801.2, 16_080.24, 889.22),
+        # The same 0.49 on this parent's 2,500 of taxable income.
+        (3_801.2, 16_080.73, 889.13),
         # The Scottish couple on 25,000 of pay. The Marriage Allowance comes
         # off the tax at Step 6, so taxable income stays 12,500 and its last
-        # 350 reach the 21% band from 12,150: 380 + 2,030 + 73.50 - 250 =
-        # 2,233.50 of tax. With the allowance off taxable income the tax was
-        # 2,230, so income falls by 3.50 and the award rises by 20% of that.
-        (5_972.2, 24_671.14, 461.48),
+        # 56 reach the 21% band from 12,444: 389.31 + 2,079 + 11.76 - 250 =
+        # 2,230.07 of tax. At 2018-19's limits the tax was 2,233.50, so income
+        # rises by 3.43 and the award falls by 20% of that. With the allowance
+        # off taxable income the tax would be 2,229.51.
+        (5_972.2, 24_674.57, 460.79),
         (3_801.2, 9_371.84, 937.87),
         (9_412, 12_000, 1_482.4),
         (14_071.2, 17_150, 1_384.24),

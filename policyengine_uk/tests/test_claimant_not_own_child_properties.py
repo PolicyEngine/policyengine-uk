@@ -20,9 +20,9 @@ Invariants, for Child Benefit, Child Tax Credit and Pension Credit:
 3. Every other member keeps the programme's status test: they are the
    unit's child or qualifying young person exactly when they are a child or
    qualifying young person for the programme (and, for CTC and Pension
-   Credit, not looked after by a local authority). This restates the
-   formula from the status variables, to hold the composition in place;
-   invariants 2 and 4 and the oracle in
+   Credit, not a child under 18 whom a local authority looks after). This
+   restates the formula from the status variables, to hold the composition
+   in place; invariants 2 and 4 and the oracle in
    test_child_and_adult_definitions_properties.py are the independent
    checks.
 4. Child Benefit entitlement equals an independent count: the eldest such
@@ -51,7 +51,7 @@ from itertools import product
 from unittest.mock import patch
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -141,6 +141,12 @@ def simulate(units, year):
     return sim
 
 
+def looked_after_child(p):
+    # A local authority can look after only a person under 18:
+    # https://www.legislation.gov.uk/ukpga/1989/41/section/105
+    return p["is_looked_after_by_local_authority"] and p["age"] < 18
+
+
 def split(values, units):
     out, offset = [], 0
     for unit in units:
@@ -149,14 +155,47 @@ def split(values, units):
     return out
 
 
+LOOKED_AFTER_18_IN_TRAINING = [
+    [
+        dict(
+            age=40,
+            current_education="NOT_IN_EDUCATION",
+            is_in_approved_training=False,
+            receives_benefits_in_own_right=False,
+            is_looked_after_by_local_authority=False,
+            is_disabled_for_benefits=False,
+            is_severely_disabled_for_benefits=False,
+            dla=0,
+            receives_highest_dla_sc=False,
+            age_started_or_accepted_current_education_or_training=1000,
+            is_claimant_or_partner=True,
+        ),
+        dict(
+            age=18,
+            current_education="NOT_IN_EDUCATION",
+            is_in_approved_training=True,
+            receives_benefits_in_own_right=False,
+            is_looked_after_by_local_authority=True,
+            is_disabled_for_benefits=False,
+            is_severely_disabled_for_benefits=False,
+            dla=0,
+            receives_highest_dla_sc=False,
+            age_started_or_accepted_current_education_or_training=17,
+            is_claimant_or_partner=False,
+        ),
+    ]
+]
+
+
 @SETTINGS
 @given(st.lists(benefit_units(), min_size=1, max_size=6), st.sampled_from(YEARS))
+# An 18-year-old in approved training with the looked-after flag is a CTC
+# qualifying young person, as no local authority can look after them.
+@example(LOOKED_AFTER_18_IN_TRAINING, 2024)
 def test_claimants_are_never_their_units_children_and_others_keep_status(units, year):
     sim = simulate(units, year)
     claimant = np.array([p["is_claimant_or_partner"] for u in units for p in u])
-    looked_after = np.array(
-        [p["is_looked_after_by_local_authority"] for u in units for p in u]
-    )
+    looked_after = np.array([looked_after_child(p) for u in units for p in u])
     for programme in PROGRAMMES:
         family = sim.calculate(
             f"is_child_or_qualifying_young_person_for_{programme}", year

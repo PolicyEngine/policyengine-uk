@@ -31,6 +31,9 @@ Invariants, for every household and parameter value drawn:
 4. The allowance never falls when the statutory rate rises.
 5. Switched on by its own parameters, the reform gives the allowance to the
    higher-rate earner too, worth the basic rate of the allowance.
+6. A couple who meet the reform's expansion conditions have the allowance at
+   any share of reliefs and allowances, so the share follows the Step 5 tax
+   alone, and a couple who don't still have the reduction at stake.
 """
 
 import functools
@@ -451,3 +454,54 @@ def test_the_switched_on_reform_is_the_expanded_reform(simulation_for, drawn):
     explicit = run(simulation_for(reform=expanded_ma_reform), drawn)
     for variable in ("allowance", "meets_income_conditions", "income_tax"):
         np.testing.assert_array_equal(switched[variable], explicit[variable])
+
+
+# Invariant 6, by hand in 2025-26 (dividend rates 8.75% and 33.75%). Pay of
+# £40,000, savings of £9,000 and dividends of £1,570. The whole allowance
+# against pay gives the least Step 5 tax: 27,430 x 20% = 5,486, 8,500 of savings
+# above the £500 savings allowance x 20% = 1,700, and 770 x 8.75% + 300 x 33.75%
+# = 168.625, or 7,354.625. Without the reform that share fails the rate test,
+# and a share leaving £37,500 of pay and £500 of savings passes it: 7,500 less
+# the £252 reduction, 7,248. With the income condition removed, the couple have
+# the £252 at any share and keep the lower Step 5 tax: 7,102.625.
+SHARE_COUPLE = {
+    "people": {
+        "recipient": {
+            "age": {YEAR: 40},
+            "employment_income": {YEAR: 40_000},
+            "savings_interest_income": {YEAR: 9_000},
+            "dividend_income": {YEAR: 1_570},
+        },
+        "partner": {"age": {YEAR: 40}},
+    },
+    "benunits": {
+        "benunit": {"members": ["recipient", "partner"], "is_married": {YEAR: True}}
+    },
+    "households": {"household": {"members": ["recipient", "partner"]}},
+}
+
+
+@pytest.mark.parametrize(
+    "reform, at_stake, to_savings, income_tax",
+    [
+        (None, 252, 8_500, 7_248),
+        (change((REMOVE_INCOME_CONDITION, True)), 0, 0, 7_102.625),
+    ],
+    ids=["current-law", "income-condition-removed"],
+)
+def test_the_share_weighs_the_allowance_only_where_the_share_decides_it(
+    reform, at_stake, to_savings, income_tax
+):
+    simulation = Simulation(situation=SHARE_COUPLE, reform=reform)
+    assert (
+        simulation.calculate("marriage_allowance_reduction_at_stake", YEAR)[0]
+        == at_stake
+    )
+    assert simulation.calculate("marriage_allowance", YEAR)[0] == 1_260
+    assert (
+        simulation.calculate("received_allowances_savings_income", YEAR)[0]
+        == to_savings
+    )
+    assert simulation.calculate("income_tax", YEAR)[0] == pytest.approx(
+        income_tax, abs=0.01
+    )

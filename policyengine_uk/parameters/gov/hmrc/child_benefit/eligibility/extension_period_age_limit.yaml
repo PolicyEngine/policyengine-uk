@@ -1,0 +1,9 @@
+description: Age limit below which a person who has left education or training may be a Child Benefit qualifying young person during an extension period.
+values:
+  0001-01-01: 18
+metadata:
+  unit: year
+  label: Child Benefit extension period age limit
+  reference:
+    - title: Child Benefit (General) Regulations 2006 reg. 5(1)
+      href: https://www.legislation.gov.uk/uksi/2006/223/regulation/5

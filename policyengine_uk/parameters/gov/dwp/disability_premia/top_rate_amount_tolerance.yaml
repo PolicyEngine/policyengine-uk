@@ -1,0 +1,11 @@
+description: The model counts a DLA care or PIP daily living amount as a top-rate award for the enhanced disability premium when the amount reaches 52 × (top weekly rate − this weekly tolerance). policyengine-uk-data uses the same weekly tolerance when it derives award categories from reported amounts.
+values:
+  2015-01-01: 1
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Enhanced disability premium top-rate amount tolerance
+  economy: false
+  reference:
+    - title: policyengine-uk-data, disability_benefits.py, CATEGORY_THRESHOLD_WEEKLY_TOLERANCE
+      href: https://github.com/PolicyEngine/policyengine-uk-data/blob/575ae3764cf0823ccf4c302fe7b640824cdb32c1/policyengine_uk_data/datasets/disability_benefits.py#L58

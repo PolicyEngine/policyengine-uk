@@ -13,15 +13,16 @@ class rent_a_room_income_tax_without_earnings(Variable):
     documentation = (
         "rent_a_room_income_tax_after_reductions if nobody in the simulation "
         "had employed earnings (employment income and statutory sick, "
-        "maternity and paternity pay) or self-employment income. Where a "
-        "council tax reduction scheme does not count rent from boarders, "
-        "lodgers and sub-tenants in the home (the Universal Credit route, and "
-        "the Scottish working-age scheme while it does not list that income), "
-        "council_tax_reduction_applicable_income treats the rent as uncounted "
-        "income, as legacy_means_test_uncounted_income_tax_without_earnings "
-        "treats income from capital: it leaves out of the deducted tax the "
-        "tax this rent would bear without earnings, and keeps the extra tax "
-        "that earnings cause on it. " + DECISION
+        "maternity and paternity pay) or self-employment income. Where an "
+        "award of Universal Credit keeps rent from boarders, lodgers and "
+        "sub-tenants in the home out of a council tax reduction scheme's "
+        "income, council_tax_reduction_tax_deduction treats the rent as "
+        "uncounted income, as legacy_means_test_uncounted_income_tax_without_"
+        "earnings treats income from capital: it leaves out of the deducted "
+        "tax the tax this rent would bear without earnings, and keeps the "
+        "extra tax that earnings cause on it. Scotland's working-age scheme "
+        "deducts tax from earnings only, which leaves that tax out without "
+        "this variable. " + DECISION
     )
     definition_period = YEAR
     unit = GBP

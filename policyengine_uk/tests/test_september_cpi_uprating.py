@@ -137,16 +137,10 @@ def last_published_year(raw, name):
     return max(int(value.instant_str[:4]) for value in raw.get_child(name).values_list)
 
 
-# An older, unrelated omission: the national financial wealth total is meant
-# to project by GDP per capita, but its node metadata never reaches this leaf.
-# Keep its existing corporate-incidence fallback unchanged in this benefit fix.
-# Limit the exception to this exact leaf so new omissions still fail.
-KNOWN_UNPROPAGATED_UPRATING = {
-    (
-        "household.wealth.national_balance_sheet.household",
-        "household.wealth.national_balance_sheet.household.financial_net_worth",
-    ),
-}
+# Exceptions, each limited to an exact (node, leaf) pair so that new omissions
+# still fail. None remain: the last, the national balance sheet's financial
+# wealth total, went with shareholding's fallback (policyengine-uk#2896).
+KNOWN_UNPROPAGATED_UPRATING = set()
 
 
 def test_node_uprating_reaches_every_leaf():

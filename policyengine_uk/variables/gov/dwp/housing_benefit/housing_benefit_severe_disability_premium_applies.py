@@ -45,7 +45,12 @@ class housing_benefit_severe_disability_premium_applies(Variable):
         # housing_benefit_has_non_dependant.
         age = person("age", period)
         adult_non_dependant = (age >= 18) & ~qualifying & ~blind
-        young_person = person("is_child_or_young_person_for_legacy_benefits", period)
+        # A child or young person placed with the family as a foster child or
+        # for adoption is not a non-dependant either (reg 3(2)(c) with reg
+        # 21(3)).
+        young_person = person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        ) | person("is_child_or_young_person_placed_with_family", period)
         within = benunit.any(adult_non_dependant & ~claimant_or_partner & ~young_person)
         liable_family = benunit.any(person("is_liable_for_household_rent", period))
         outside = benunit.max(

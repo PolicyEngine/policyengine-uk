@@ -25,6 +25,17 @@
   output:
     tax_free_childcare_qualifying_child: false
 
+- name: A child placed for adoption is not a qualifying child
+  period: 2025
+  input:
+    tax_free_childcare_child_age_eligible: true
+    is_parent: false
+    is_looked_after_by_local_authority: false
+    is_placed_for_adoption: true
+  output:
+    # Childcare Payments (Eligibility) Regs 2015 reg 4(2)(d).
+    tax_free_childcare_qualifying_child: false
+
 - name: Age-ineligible child is not qualifying
   period: 2025
   input:

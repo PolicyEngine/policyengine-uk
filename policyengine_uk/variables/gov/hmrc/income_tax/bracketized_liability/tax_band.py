@@ -65,9 +65,9 @@ def scottish_tax_band(person, period, parameters):
             TaxBand.HIGHER,
         ] + [TaxBand.ADDITIONAL] * (len(scale.thresholds) - 4)
     labels = np.array([band.index for band in [TaxBand.NONE] + scottish_bands])
-    # Allowances go to this income first, as in earned_income_tax. Parliament
-    # gives the Marriage Allowance as a tax reduction (s. 55B(1)), so it does
-    # not move the band.
+    # Income after the allowances set against it (s. 25(2)), as in
+    # earned_income_tax. Parliament gives the Marriage Allowance as a tax
+    # reduction (s. 55B(1)), so it does not move the band.
     non_savings = person("non_savings_income_after_allowances", period)
     # Parliament raises the Scottish basic rate's upper limit and every limit
     # above it by the grossed-up gift (s. 414(2)(b)).
