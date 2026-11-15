@@ -1371,9 +1371,21 @@ def test_search_keeps_the_rounding_that_meets_the_rate_test_at_a_gift_aid_limit(
     against pay and property income and £13,478.13 against dividends leaves
     savings in the starting rate band and dividends of £38,733.99, all the
     income at the limit: 10.75% above the £500 allowance, £4,110.15, less the
-    £252 reduction, £3,858.15. Of the float32 roundings of that share, only
-    the one that leaves the first component a fraction of a penny below nil
-    meets the rate test."""
+    £252 reduction, £3,858.15.
+
+    The model sums net income to £52,697.58203125, 0.2p over the amounts
+    entered, and holds the grossed-up gift as £1,209.2999267578125. So it
+    holds Step 3 income 0.18p over the limit, and no share meets the rate
+    test in float64. The float32 value nearest the deduction from dividends,
+    £13,478.12890625, leaves the first component a fraction of a penny below
+    nil. The float32 amounts it leaves sum to £38,909.30078125, the float32
+    value of the limit, so it meets the test in float32 alone
+    (``_rate_test_on_stored``). The next float32 value up fails the test in
+    both arithmetics. A rounding that passes only in float32 ranks last
+    where the exact share fails in float64, but not the nearest rounding, so
+    ``_stored_share`` keeps it. The two tests below pin each step on the
+    amounts the model holds, so a change in the parameters that moves the
+    float32 tie fails them rather than this test's expected tax alone."""
     year = 2028
     sim = explicit_couples(
         year,
@@ -1391,6 +1403,67 @@ def test_search_keeps_the_rounding_that_meets_the_rate_test_at_a_gift_aid_limit(
     assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
     tax = sim.calculate("income_tax", year).astype(float)[0]
     assert tax == pytest.approx(3_858.15, abs=0.01)
+
+
+def gift_aid_limit_context(system):
+    """The search's context for the recipient of the test above, from the
+    amounts the model holds for them: net income as the model sums it, the
+    grossed-up gift as the model holds it, and the rest in float32."""
+    income_tax = system.parameters("2028").gov.hmrc.income_tax
+    single = np.float32
+    inputs, default = one_person(
+        net_income=52_697.58203125,
+        savings=float(single(175.31)),
+        dividends=float(single(52_212.12)),
+        property=float(single(121.87)),
+        allowances=float(single(13_788.28)),
+        gift=1_209.2999267578125,
+    )
+    inputs = with_marriage_allowance(income_tax, 2028, inputs, default, 0)
+    inputs["marriage_allowance_reduction"] = np.array([252.0])
+    return _build(inputs, income_tax)
+
+
+def test_rate_test_on_stored_counts_a_moved_share_that_meets_the_test_only_in_float32(
+    system,
+):
+    """The Gift Aid recipient above. The model holds Step 3 income of
+    £38,909.3017578125 against a limit of £38,909.29992675781, so the share
+    that sets £13,478.12890625 against dividends fails the rate test in
+    float64. In float32 the amounts it leaves sum to the float32 value of the
+    limit, and the test passes. ``_rate_test_on_stored`` counts a moved share
+    that meets the test in either arithmetic, so it counts this one."""
+    c = gift_aid_limit_context(system)
+    over = c.step_3_income[0, 0] - c.bands[1][0, 0]
+    assert over == pytest.approx(0.0018, abs=1e-4)
+    moved = (np.array([[0.0]]), np.array([[13_478.12890625]]))
+    assert not _meets_rate_test(c, *_share_left(c, *moved))[0, 0]
+    assert _float32_meets_rate_test(c, *moved)[0, 0]
+    assert _rate_test_on_stored(c, *moved, np.array([[True]]))[0, 0]
+
+
+def test_stored_share_keeps_the_nearest_rounding_that_meets_the_test_only_in_float32(
+    system,
+):
+    """The Gift Aid recipient above. The share with the least ``f`` sets
+    £13,478.1293 against dividends and fails the rate test in float64, as
+    every share does. The float32 value nearest that deduction meets the
+    test in float32 alone. A rounding that passes only in float32 ranks last
+    where the exact share fails, unless it is the nearest, so
+    ``_stored_share`` keeps this one and counts the £252 reduction: an ``f``
+    of £3,858.15. The other rounding fails the test and leaves £4,110.15."""
+    c = gift_aid_limit_context(system)
+    _, s, v = _least_tax_share(c)
+    exact = (c.savings - s, c.dividends - v)
+    assert not _meets_rate_test(c, *_share_left(c, *exact))[0, 0]
+    stored = _stored_share(c, s, v)
+    assert stored.to_savings[0, 0] == 0
+    assert stored.to_dividends[0, 0] == np.float32(exact[1][0, 0])
+    assert stored.to_dividends[0, 0] == 13_478.12890625
+    held = (stored.to_savings, stored.to_dividends)
+    assert not _meets_rate_test(c, *_share_left(c, *held))[0, 0]
+    assert _float32_meets_rate_test(c, *held)[0, 0]
+    assert stored.tax[0, 0] == pytest.approx(3_858.15, abs=0.01)
 
 
 def test_rate_test_fails_a_rounding_that_sets_more_than_the_shared_allowances():
