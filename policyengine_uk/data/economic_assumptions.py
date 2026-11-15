@@ -31,6 +31,10 @@ import pandas as pd
 import logging
 
 from policyengine_uk.utils.stochastic import splitmix64_uniform
+from policyengine_uk.utils.stored_draws import (
+    STUDENT_LOAN_TAKE_UP,
+    check_boolean_input,
+)
 
 # Approximate take-up rate for assigning loans to tertiary-educated NONE people.
 # This represents P(has loan AND earning above threshold | tertiary educated).
@@ -824,6 +828,20 @@ def uprate_rent(
     return current_year
 
 
+def stored_student_loan_take_up(person: pd.DataFrame) -> np.ndarray | None:
+    """The dataset's stored ``would_claim_student_loan`` for each row of
+    ``person``, or None where the dataset does not supply the column.
+
+    Raises if a value is missing or is not a boolean or the integer 0 or 1:
+    cast to a boolean, a missing value would read as True.
+    """
+    if STUDENT_LOAN_TAKE_UP not in person.columns:
+        return None
+    values = person[STUDENT_LOAN_TAKE_UP]
+    check_boolean_input(STUDENT_LOAN_TAKE_UP, values)
+    return np.asarray(values, dtype=bool)
+
+
 def uprate_student_loan_plans(
     current_year: UKSingleYearDataset,
     previous_year: UKSingleYearDataset,
@@ -925,13 +943,20 @@ def uprate_student_loan_plans(
     new_plan = base_plan.copy()
     repayments = person["student_loan_repayments"].values.copy()
 
-    # One draw per person, the same in every year.
-    draws = splitmix64_uniform(person["person_id"].values, salt=_STUDENT_LOAN_DRAW_SALT)
+    # Whether each person takes up a loan as a new borrower: the dataset's
+    # stored decision where it supplies one, else one draw per person, the
+    # same in every year, below the take-up rate.
+    would_claim = stored_student_loan_take_up(person)
+    if would_claim is None:
+        draws = splitmix64_uniform(
+            person["person_id"].values, salt=_STUDENT_LOAN_DRAW_SALT
+        )
+        would_claim = draws < _GRADUATE_LOAN_TAKE_UP
 
     # Helper to assign plans to eligible people
-    def assign_with_probability(mask, prob=_GRADUATE_LOAN_TAKE_UP):
-        """Assign the funding-nation plan to sampled new borrowers."""
-        sampled = mask & (draws < prob) & (new_borrower_plan != "NONE")
+    def assign_new_borrowers(mask):
+        """Assign the funding-nation plan to new borrowers who take it up."""
+        sampled = mask & would_claim & (new_borrower_plan != "NONE")
         new_plan[sampled] = new_borrower_plan[sampled]
         repayments[sampled] = 0.0
 
@@ -962,7 +987,7 @@ def uprate_student_loan_plans(
         & (uni_start_year < _PLAN2_FIRST_UNI_START)
         & ~plan1_written_off
     )
-    assign_with_probability(plan1_new_cohort)
+    assign_new_borrowers(plan1_new_cohort)
 
     # === Step 3: Add holders in the extended 2012-2022 age bands ===
     # In the base year Plan 2 holders are at most the age of the 2012 intake
@@ -977,7 +1002,7 @@ def uprate_student_loan_plans(
         & (uni_start_year >= _PLAN2_FIRST_UNI_START)
         & (uni_start_year < _PLAN5_FIRST_UNI_START)
     )
-    assign_with_probability(plan2_new_cohort)
+    assign_new_borrowers(plan2_new_cohort)
 
     # === Step 4: Add Plan 5 holders (new plan from 2023) ===
     # Plan 5 is England's, and did not exist in the base year. The other
@@ -993,7 +1018,7 @@ def uprate_student_loan_plans(
         & (uni_start_year >= _PLAN5_FIRST_UNI_START)
         & (age >= 21)
     )
-    assign_with_probability(plan5_eligible)
+    assign_new_borrowers(plan5_eligible)
 
     # Write back to the person table (without the merged region column).
     person_out = current_year.person.copy()
