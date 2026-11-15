@@ -18,7 +18,10 @@ class is_qualifying_young_person_under_universal_credit_regulation_5(Variable):
         "applies. Northern Ireland's twin is reg. 6 of the Universal Credit "
         "Regulations (Northern Ireland) 2016 (SR 2016/216). The Scottish "
         "Ministers define the young person for Scotland's working-age Council "
-        "Tax Reduction by this regulation (SSI 2021/249 reg. 6(1))."
+        "Tax Reduction by this regulation (SSI 2021/249 reg. 6(1)). The model "
+        "reads that reference with SI 2014/1230 reg. 28(b), so "
+        "is_child_or_young_person_for_council_tax_reduction reads "
+        "is_qualifying_young_person_for_universal_credit, not this variable."
     )
     definition_period = YEAR
     reference = [
