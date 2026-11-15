@@ -20,6 +20,12 @@ TOOL = Path(
         Path(__file__).resolve().parents[2] / "utils" / "aggregate_impact",
     )
 )
+WORKFLOW_PATH = (
+    Path(os.environ.get("GITHUB_WORKSPACE") or TOOL.parents[2])
+    / ".github"
+    / "workflows"
+    / "aggregate-impact.yaml"
+)
 PREFIX = "aggregate-impact-phase "
 
 
@@ -340,7 +346,7 @@ def test_observer_exception_does_not_change_the_measurement(tool, monkeypatch):
 
 
 def test_workflow_uploads_only_report_and_timing_sidecars():
-    path = TOOL.parents[2] / ".github" / "workflows" / "aggregate-impact.yaml"
+    path = WORKFLOW_PATH
     workflow = yaml.safe_load(path.read_text())
     job = next(
         job
@@ -1359,11 +1365,7 @@ def test_existing_guard_probe_profiles_are_uploaded_without_private_files(
         forbidden.parent.mkdir(parents=True, exist_ok=True)
         forbidden.write_bytes(b"Excluded public fixture; never survey data.")
 
-    workflow = yaml.safe_load(
-        (
-            TOOL.parents[2] / ".github" / "workflows" / "aggregate-impact.yaml"
-        ).read_text()
-    )
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text())
     upload = next(
         step
         for job in workflow["jobs"].values()
