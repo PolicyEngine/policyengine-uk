@@ -6,8 +6,11 @@ rate and allowance values from the parameter tree. The model holds incomes in
 float32 and sums them in float32, so the income it tests can sit a fraction of
 a penny (under a penny here) either side of the amounts drawn. So the oracle
 applies the rate test twice: strictly, with the basic rate limit a penny lower,
-and loosely, with it a penny higher. At the savings nil rate band and for
-dividends, both tests allow half a penny. For every drawn recipient:
+and loosely, with it a penny higher. At the model's own share (check 1), both
+tests allow half a penny at the savings nil rate band and for dividends. Over
+the other shares (check 2), the strict test also asks for the savings above the
+limit to sit a penny inside the savings nil rate band. For every drawn
+recipient:
 
 1. at the model's own share, the model's income tax equals the oracle's Step 5
    tax less the reduction where the model gives it; the model gives it wherever
@@ -20,11 +23,30 @@ dividends, both tests allow half a penny. For every drawn recipient:
 Check 1 bounds the tax from below: it is the law's liability at a share the
 model holds. Between the strict and loose tests the law itself lets income
 reach each limit (s. 10(2)).
-The explicit examples are recipients for whom only one share qualifies. In
-the first three it leaves pay at the basic rate limit, where only the loose test
-passes, so neither check requires the reduction. In the fourth it leaves pay 2p
-under the limit, where the strict test passes too, so check 2 fails a model
-that denies it.
+
+Check 2's strict test stops a penny inside the band because the search can
+miss a share that meets the rate test only with savings at the top of the
+band. Float32 can hold the savings and dividends a fraction of a penny over
+the amounts entered. The share the search scores then leaves the savings that
+much over the band, and it fails the test. A float32 rounding of that share's
+deductions would put the savings back on the band, but the search rounds only
+the share it scores lowest, which is then another. ``main`` misses the same
+shares. So check 2 requires the reduction only where a share leaves the
+savings a penny inside the band, as it does only where one leaves pay a penny
+under the limit.
+
+In the first three explicit examples one share qualifies, and it leaves pay at
+the basic rate limit, where only the loose test passes, so neither check
+requires the reduction. In the fourth, the qualifying shares leave pay from 2p
+under the limit up to it, and savings from the top of the band down to 2p
+inside it. The strict test passes the one that leaves pay a penny under the
+limit and savings a penny inside the band, so check 2 fails a model that
+denies the reduction, which ``main`` does. In the last three, one share
+qualifies: it sets nothing against the £37,500 of pay and leaves £500 of
+savings, the whole band. The model holds their savings and dividends 0.024p,
+0.024p and 0.049p over the £13,070 entered, and it denies all three the
+reduction, as ``main`` does. The strict test fails that share, so check 2
+does not require the reduction.
 """
 
 import numpy as np
@@ -115,10 +137,14 @@ class Law:
         tapered = self.PA0 - np.maximum(0, n - 100_000) / 2
         return np.maximum(0, np.ceil(tapered - 1e-6))
 
-    def liability(self, pay, prop, sav, div, to_s, to_v, margin=0.0, e=1e-6):
+    def liability(
+        self, pay, prop, sav, div, to_s, to_v, margin=0.0, e=1e-6, inside=0.0
+    ):
         """Step 5 tax, rate-test result with every limit moved by ``margin``,
         and feasibility, for each share (arrays broadcast). ``e`` covers float64
-        rounding on the grid's shares and float32 rounding of the model's."""
+        rounding on the grid's shares and float32 rounding of the model's.
+        ``inside`` is how far under the top of the savings nil rate band the
+        savings above the limit must sit."""
         n = pay + prop + sav + div
         d = np.minimum(self.pa(n), n)
         if self.other_first:  # s. 25(3A): other income first
@@ -144,9 +170,10 @@ class Law:
         top_nil = X + S + np.minimum(self.DA, V)  # s. 13A
         tax += scale_tax(*self.div, X + S + V) - scale_tax(*self.div, top_nil)
         limit = B + margin
+        band_top = np.maximum(X, self.L) + psa  # ss. 12, 12A
         meets = (
             (X <= limit)
-            & ~((X + S > limit) & (X + S > Z + e))
+            & ~((X + S > limit) & (X + S > band_top - inside + e))
             & ~((V > e) & (X + S + V > limit))
         )
         return tax, meets, feasible
@@ -154,7 +181,9 @@ class Law:
     def least(self, pay, prop, sav, div, to_s, to_v, margin):
         """The least liability over the shares given, with the rate test's limits
         moved by ``margin``."""
-        tax, meets, ok = self.liability(pay, prop, sav, div, to_s, to_v, margin)
+        tax, meets, ok = self.liability(
+            pay, prop, sav, div, to_s, to_v, margin, inside=max(0.0, -margin)
+        )
         liability = np.maximum(0, tax - self.ma * meets)
         return np.where(ok, liability, np.inf), liability
 
@@ -320,5 +349,8 @@ SETTINGS = settings(
 @example(2026, [("free", 50_000.0, 500.0, 270.0, 0.0)] * K)
 @example(2026, [("free", 50_269.99, 500.0, 0.01, 0.0)] * K)
 @example(2026, [("free", 40_199.98, 9_000.0, 1_570.0, 0.0)] * K)
+@example(2026, [("free", 37_500.0, 11_000.03, 2_069.97, 0.0)] * K)
+@example(2026, [("free", 37_500.0, 11_001.07, 2_068.93, 0.0)] * K)
+@example(2026, [("free", 37_500.0, 11_001.98, 2_068.02, 0.0)] * K)
 def test_model_tax_is_the_least_liability_the_law_allows(year, drawn):
     check(year, drawn)
