@@ -218,8 +218,8 @@ def test_stored_household_totals_grow_past_the_projection_horizon():
             )
     # Savings, the cash ISA and the stocks-and-shares ISA make up the capital,
     # each at its value. A decision maker values an ISA at what its holder
-    # would get by withdrawing it, with no deduction for expenses of sale (ADM
-    # H1656), so the stored stocks-and-shares ISA reaches the capital through
+    # would get by withdrawing it (ADM H1656), which says nothing about costs
+    # of sale, so the stored stocks-and-shares ISA reaches the capital through
     # share_like_capital_without_sale_expenses. The parts grow alike, so
     # capital keeps the same ratio to savings in every year: 6 for this
     # household.

@@ -26,7 +26,8 @@ Invariants:
 7. Valuation by type: given only itemised holdings, with the ISAs held as the
    person's own balances, all six means tests count savings, cash ISAs, unit
    trusts and stocks and shares ISAs in full and directly held shares less
-   10%, rounded by each programme's rule, to within a penny.
+   10%, rounded by each programme's rule, to within a penny plus float32's
+   step at that size.
 """
 
 import numpy as np

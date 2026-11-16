@@ -63,8 +63,8 @@ def test_stored_household_totals_without_person_balances_project_with_savings():
     assert shares == pytest.approx(2_000.0 * growth)
     # Savings, the cash ISA and the stocks-and-shares ISA all reach the
     # capital pool at their value: an ISA is valued at what its holder would
-    # get by withdrawing it, with no deduction for expenses of sale (ADM
-    # H1656), so the itemised ISA sits in the part of share_like_capital
+    # get by withdrawing it (ADM H1656), which says nothing about costs of
+    # sale, so the itemised ISA sits in the part of share_like_capital
     # without them.
     without = simulation.calculate("share_like_capital_without_sale_expenses", 2027)
     with_expenses = simulation.calculate("share_like_capital_with_sale_expenses", 2027)

@@ -9,8 +9,9 @@
 # have no costs of sale (ADM H1673-H1674; DMG 29680-29681, 52680-52681,
 # 84771-84772; HBGM W1.530-W1.531), and the survey bucket of unit and
 # investment trusts is treated the same. An ISA is valued at what the person
-# would get by withdrawing it, with no 10% (ADM H1656; DMG 29662, 52662,
-# 84748). Expected values are worked by hand from those rules.
+# would get by withdrawing it (ADM H1656; DMG 29662, 52662, 84748), and the
+# model takes no 10% from it because H1656 says nothing about costs of sale.
+# Expected values are worked by hand from those rules.
 
 - name: UC unsplit corporate_wealth keeps the flat 10% treatment
   period: 2026

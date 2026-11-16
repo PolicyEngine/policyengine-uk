@@ -229,8 +229,9 @@ def check_valuation(units):
         assert "savings" in node.sources
         counted = set(node.sources)
         # Every name on the sale-expense list must be a counted source:
-        # valued_capital reads only node.sources, so a listed name outside
-        # them is never valued, and the intersection check below can't see it.
+        # valued_capital values only the names in node.sources, so it never
+        # values a listed name outside them, and the intersection check below
+        # can't see one.
         assert set(node.sale_expenses.sources) <= counted, (
             variable,
             sorted(set(node.sale_expenses.sources) - counted),

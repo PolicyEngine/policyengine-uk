@@ -14,7 +14,7 @@ description: >
   Everything else in share_like_capital takes the deduction: directly held
   shares, and on datasets that do not itemise it, all of corporate_wealth.
   Directly held shares include employee shares and share options, which the
-  Wealth and Assets Survey asks about together, so share options also take
+  Wealth and Assets Survey records as one total, so share options also take
   the deduction, an approximation.
 metadata:
   label: Share-like holdings without expenses of sale

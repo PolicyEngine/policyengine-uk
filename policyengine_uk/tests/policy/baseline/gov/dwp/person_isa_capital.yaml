@@ -15,8 +15,9 @@
 # ESA Regs 2008 reg 113; SPC Regs 2002 reg 19). It counts savings, cash ISAs
 # and each stocks and shares ISA balance the formula moves out of
 # share_like_capital at face value: an ISA is valued at what the holder would
-# get by withdrawing it, with no deduction for expenses of sale (ADM
-# H1656-H1658; DMG 29662-29664, 52662, 84748-84750).
+# get by withdrawing it (ADM H1656-H1658; DMG 29662-29664, 52662,
+# 84748-84750), and the model reads H1656's silence on costs of sale as no
+# deduction.
 
 - name: Case 1, a lodger's cash ISA stays out of the main benefit unit's capital.
   period: 2025

@@ -5,6 +5,8 @@ from policyengine_uk.model_api import *
 # gov.dwp.share_like_capital.without_sale_expenses must be in this list. A
 # reform that adds a holding outside it would leave a household that itemises
 # only that holding with all of its share-like capital under the deduction.
+# share_like_capital sums the same three names, so such a reform must add
+# the holding there too.
 COMPONENTS = [
     "directly_held_shares",
     "unit_and_investment_trusts",
