@@ -18,15 +18,16 @@ class share_like_capital_with_sale_expenses(Variable):
     label = "share-like capital with expenses of sale"
     documentation = (
         "The part of share_like_capital whose sale would incur expenses, so "
-        "that the means tests value it less 10%: share_like_capital less the "
-        "itemised holdings listed in gov.dwp.share_like_capital."
+        "that the six DWP capital assessments value it less 10%. Where the "
+        "itemised holdings sum to more than nil, it is share_like_capital less "
+        "the itemised holdings listed in gov.dwp.share_like_capital."
         "without_sale_expenses (unit and investment trusts, stocks and shares "
-        "ISAs), held between nil and share_like_capital, so that the two parts "
-        "add up to share_like_capital, to within float32 rounding, whatever the "
-        "signs of the holdings. A "
-        "household whose itemised holdings sum to nil or less has all of its "
-        "share-like capital here, so datasets that carry only corporate_wealth "
-        "keep the flat 10% on it, whatever its sign."
+        "ISAs), held between nil and share_like_capital, which is then "
+        "nonnegative, so that the two parts add up to share_like_capital, to "
+        "within float32 rounding, whatever the signs of the holdings. Where "
+        "they sum to nil or less, it is all of share_like_capital, whatever "
+        "its sign, so datasets that carry only corporate_wealth keep the flat "
+        "10% on it."
     )
     entity = Household
     definition_period = YEAR
@@ -36,14 +37,7 @@ class share_like_capital_with_sale_expenses(Variable):
 
     def formula(household, period, parameters):
         share_like = household("share_like_capital", period)
-        itemised = add(household, period, COMPONENTS)
-        # Summed from a numeric zero so that an empty list (every holding
-        # taking the deduction) still works.
-        without = 0 * share_like
-        for variable in parameters(
-            period
-        ).gov.dwp.share_like_capital.without_sale_expenses:
-            without = without + household(variable, period)
+        itemised, without = _itemised_and_listed(household, period, parameters)
         # share_like_capital is nonnegative wherever the itemised sum is
         # positive. Holding this part between nil and that total keeps the
         # other part, the difference, between nil and the total too, so
@@ -54,3 +48,34 @@ class share_like_capital_with_sale_expenses(Variable):
             min_(share_like, max_(0, share_like - without)),
             share_like,
         )
+
+
+def _itemised_and_listed(household, period, parameters):
+    """share_like_capital's itemised sum, and the sum of the holdings
+    gov.dwp.share_like_capital.without_sale_expenses lists, each added in
+    float32 as the engine adds it: COMPONENTS left to right, and the listed
+    holdings in list order from nil."""
+    itemised = add(household, period, COMPONENTS)
+    # Summed from a numeric zero so that an empty list (every holding taking
+    # the deduction) still works.
+    listed = 0 * household("share_like_capital", period)
+    for variable in parameters(period).gov.dwp.share_like_capital.without_sale_expenses:
+        listed = listed + household(variable, period)
+    return itemised, listed
+
+
+def holdings_without_sale_expenses(household, period, parameters):
+    """The holdings share_like_capital_without_sale_expenses stands for.
+
+    Where the itemised holdings sum to more than nil, the float32 sum of the
+    holdings gov.dwp.share_like_capital.without_sale_expenses lists, held
+    between nil and share_like_capital as share_like_capital_with_sale_expenses
+    holds its complement; otherwise nil. The part itself is share_like_capital
+    less share_like_capital_with_sale_expenses, whose float32 subtractions can
+    leave it less than share_like_capital's float32 spacing either side of this
+    sum. No subtraction enters the sum: a balance it covers keeps its whole
+    value, however the part rounds.
+    """
+    share_like = household("share_like_capital", period)
+    itemised, listed = _itemised_and_listed(household, period, parameters)
+    return where(itemised > 0, min_(share_like, max_(0, listed)), 0)

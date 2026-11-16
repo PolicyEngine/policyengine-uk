@@ -109,11 +109,15 @@ changes what the total sums or stops a person balance reading its inputs. A
 household input in a situation applies only to its own year; the person
 balances carry the variable-level uprating to later years.
 
-Each means-test formula counts the claimant's and partner's cash and stocks and
-shares ISA balances in their own benefit unit, through
-`cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital` in
-its `person_sources`, and excludes a dependant's balance, a child's junior ISA
-among them. The formulas subtract a household's counted balances from `cash_isa`
+Each of the six DWP capital assessments (Universal Credit, Pension Credit,
+Housing Benefit, Income Support, income-based JSA and income-related ESA) counts
+the claimant's and partner's cash and stocks and shares ISA balances in their
+own benefit unit, through `cash_isa_countable_capital` and
+`stocks_and_shares_isa_countable_capital` in its `person_sources`, and excludes
+a dependant's balance, a child's junior ISA among them. Council Tax Reduction
+uses these valuations only through its Universal Credit and Pension Credit
+routes; its own household route counts neither ISAs nor share-like capital.
+The formulas subtract a household's counted balances from `cash_isa`
 and from the part of `share_like_capital` that holds the household's stocks and
 shares ISAs before they allocate the remainder between benefit units, and value
 each balance as they value that part. The part is
@@ -129,14 +133,22 @@ spacing and gives the steps left over, one each, to the members whose shares
 lost most in rounding. The pool then keeps nothing of that total; for totals
 under £268 million, each holding passes a capital limit only where its
 proportional share does; and a sole holder whose balance reaches the total
-counts exactly the total. For stocks and shares ISAs the model takes the smaller
-of `stocks_and_shares_isa` and `share_like_capital` as the total, or the part
-that holds the ISAs where that part falls short of it by more than
-`share_like_capital`'s float32 spacing. Rounding alone leaves the part short by
-at most half that spacing; a larger shortfall comes from negative holdings
-beside the ISAs, itemised holdings that sum to nil or less, or a reform. Data
-that store only household totals hold no balances, so the pool keeps the whole
-total.
+counts exactly the total. For stocks and shares ISAs the model takes as the
+total the smallest of `stocks_and_shares_isa`, `share_like_capital` and the
+holdings behind the part that holds the ISAs. Behind
+`share_like_capital_without_sale_expenses` stand the listed holdings: their
+float32 sum, held between nil and `share_like_capital` where the itemised
+holdings sum to more than nil, and otherwise nil. The model bounds the
+balances by that sum rather than by the part, which it forms by subtracting
+the other part and which can round to less than `share_like_capital`'s
+float32 spacing either side of the sum, so a balance the sum covers keeps its
+whole value. `share_like_capital_with_sale_expenses` rounds once from
+`share_like_capital` less that clamped sum, so it never falls below a
+balance the difference covers, and it bounds the balances itself. Negative
+holdings beside the ISAs, itemised holdings that sum to nil or less, or a
+reform can leave these holdings short of the ISAs; the balances then share
+what the holdings hold. Data that store only household totals hold no
+balances, so the pool keeps the whole total.
 The formulas count a balance only while the programme's `sources` lists the
 household source that includes it, so a reform that drops `cash_isa`, or the
 share-like part that holds the ISAs, from `sources` drops the balances with it.

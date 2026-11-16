@@ -36,6 +36,12 @@ Invariants:
    member's stocks and shares ISA balance with the household's ISAs into the
    part with sale expenses: the formulas net the balance out of that part
    and count it in the holder's unit less 10%.
+9. A person's stocks and shares ISA balance holds no more than the holdings
+   behind the part that holds the ISAs (trusts and ISAs while listed, held
+   between nil and share_like_capital; the rest of share_like_capital for the
+   part with sale expenses), allowing for the one float32 rounding that forms
+   them, and all of a balance those holdings cover. Each programme counts
+   each part on its lists within rounding of the holdings behind it.
 """
 
 from fractions import Fraction
@@ -341,14 +347,16 @@ def test_the_part_holding_the_isas_bounds_balances_only_beyond_rounding():
     """A sole holder's £100.01 ISA balance inside £20,000.01 of
     corporate_wealth: the part with sale expenses is £19,900.00 in float32,
     and the part without it, the difference, 100.009765625, a quarter of a
-    thousandth short of the 100.01000214 balance. That is rounding, so the
-    holder keeps the whole balance, as before the part bounded it: UC counts
+    thousandth short of the 100.01000214 balance. That is rounding: the
+    listed holdings behind the part, the £100.01 ISA, cover the balance, so
+    the holder keeps the whole balance, as before the part bounded it: UC counts
     90% of £19,900, £17,910, plus the part less the balance, plus the
     balance, £18,010.01.
 
     Trusts of -£5,000 beside £6,000 of shares and a lodger's £5,000 ISA
     leave share_like_capital at £6,000, all in the part with sale expenses,
-    and nil in the part that would hold the ISA. The balance can't take
+    and nil in the part that would hold the ISA: trusts and ISA sum to nil.
+    The balance can't take
     £5,000 out of nil, so the lodger holds nil, and the pool counts 90% of
     £6,000, £5,400, shared by two units: [£2,700, £2,700]. Netting £5,000 out
     of the empty part would give [£200, £5,200]."""
@@ -387,6 +395,213 @@ def test_the_part_holding_the_isas_bounds_balances_only_beyond_rounding():
     assert list(held) == [np.float32(100.01), 0, 0]
     uc = sim.calculate("uc_assessable_capital", YEAR)
     assert list(uc) == [np.float32(18_010.01), 2_700, 2_700]
+
+
+UC_NODE = NODES["uc_assessable_capital"]
+
+
+def _uc_lists_without(part):
+    """A reform that drops ``part`` from UC's capital and sale-expense lists."""
+    return {
+        f"{UC_NODE}.{name}": {
+            str(YEAR): [
+                source for source in _parameter(f"{UC_NODE}.{name}") if source != part
+            ]
+        }
+        for name in ("sources", "sale_expenses.sources")
+    }
+
+
+def _sole_isa_holders(rows):
+    """One working-age adult per household and benefit unit, with
+    corporate_wealth, directly held shares and unit trusts on the household
+    and a stocks and shares ISA balance on the person, no household ISA total
+    stored, so stocks_and_shares_isa is the balance."""
+    people, benunits, homes = {}, {}, {}
+    for i, (corporate_wealth, shares, trusts, balance) in enumerate(rows):
+        people[f"p{i}"] = {
+            "age": {YEAR: 30},
+            "stocks_and_shares_isa_balance": {YEAR: float(balance)},
+        }
+        benunits[f"b{i}"] = {"members": [f"p{i}"]}
+        homes[f"h{i}"] = {
+            "members": [f"p{i}"],
+            "corporate_wealth": {YEAR: float(corporate_wealth)},
+            "directly_held_shares": {YEAR: float(shares)},
+            "unit_and_investment_trusts": {YEAR: float(trusts)},
+        }
+    return {"people": people, "benunits": benunits, "households": homes}
+
+
+def test_a_balance_counts_nothing_the_holdings_behind_its_part_do_not_hold():
+    """Review r2's witness and two like it, where the holdings behind the
+    part that holds the ISAs come to nil although share_like_capital's
+    float32 spacing is at least the £1 balance.
+
+    1. Shares of £8,388,608 (2**23), trusts of -£1 and a £1 ISA balance:
+       the itemised sum is £8,388,608, so share_like_capital is £8,388,608.
+       Trusts and ISA sum to exactly nil, so the part with sale expenses is
+       £8,388,608, the part without nil, and the balance holds nil. With the
+       part with sale expenses off UC's lists, UC counts nothing; bounded by
+       the smaller of the ISA total and share_like_capital, the £1 would be
+       netted from the empty part, floored at nil, and counted: £1.
+    2. corporate_wealth of £16,777,216 (2**24), shares of -£2 and a £1 ISA
+       balance: the itemised sum is -£1, so share_like_capital is the
+       £16,777,216, all of it in the part with sale expenses, and the
+       balance holds nil. With that part off UC's lists, UC counts nothing.
+    3. With stocks_and_shares_isa off the exempt list, shares of -£1, trusts
+       of £8,388,608 and a £1 ISA balance: share_like_capital is £8,388,608,
+       all of it trusts, so the part with sale expenses, which now holds the
+       ISAs, is nil, and the balance holds nil. With the part without sale
+       expenses off UC's lists, UC counts nothing, not 90% of £1.
+
+    UC at baseline is 90% of share_like_capital in cases 1 and 2,
+    £7,549,747.20 and £15,099,494.40, which float32 holds as £7,549,747 and
+    £15,099,494, and in case 3 under the exempt-list reform alone the
+    £8,388,608 of trusts in full."""
+    rows = [(0, 2**23, -1, 1), (2**24, -2, 0, 1)]
+    baseline = Simulation(situation=_sole_isa_holders(rows))
+    reformed = Simulation(
+        situation=_sole_isa_holders(rows), reform=_uc_lists_without(WITH)
+    )
+    for sim in (baseline, reformed):
+        assert list(sim.calculate("share_like_capital", YEAR)) == [2**23, 2**24]
+        assert list(sim.calculate(WITH, YEAR)) == [2**23, 2**24]
+        assert list(sim.calculate(WITHOUT, YEAR)) == [0, 0]
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        assert list(held) == [0, 0]
+    assert list(baseline.calculate("uc_assessable_capital", YEAR)) == [
+        np.float32(7_549_747.2),
+        np.float32(15_099_494.4),
+    ]
+    assert list(reformed.calculate("uc_assessable_capital", YEAR)) == [0, 0]
+
+    mirror = _sole_isa_holders([(0, -1, 2**23, 1)])
+    exempt_list = ISAS_WITH_SALE_EXPENSES
+    for reform, uc in (
+        (exempt_list, 2**23),
+        ({**exempt_list, **_uc_lists_without(WITHOUT)}, 0),
+    ):
+        sim = Simulation(situation=mirror, reform=reform)
+        assert sim.calculate(WITH, YEAR)[0] == 0
+        assert sim.calculate(WITHOUT, YEAR)[0] == 2**23
+        assert sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)[0] == 0
+        assert sim.calculate("uc_assessable_capital", YEAR)[0] == uc
+
+
+def _exact(value):
+    return Fraction(float(value))
+
+
+# Signed holdings at and beside powers of two, where share_like_capital's
+# float32 spacing is a hundredth of a penny (2**10), £1 (2**23), £2 (2**24)
+# and £4 (2**25), and balances of a few pounds up to the power itself.
+SWEEP = [
+    (corporate_wealth, shares, trusts, balance)
+    for power in (2.0, 2.0**10, 2.0**23, 2.0**24, 2.0**25)
+    for corporate_wealth in (0, power)
+    for shares in (0, power, power - 1, -1, -2, -power)
+    for trusts in (0, power, power - 1, -1, -2, -power)
+    for balance in (1, 2, 3, power)
+]
+
+
+@pytest.mark.parametrize("isas_exempt", [True, False])
+def test_isa_balances_stay_within_the_holdings_behind_their_part(isas_exempt):
+    """Invariant 9, swept over SWEEP with the ISAs in each part, and UC
+    counting both parts, only the part without sale expenses, and only the
+    part with them.
+
+    Worked in exact arithmetic from the float32 holdings: the holdings behind
+    the part that holds the ISAs are, where the itemised sum is positive, the
+    listed holdings' sum (trusts, and the ISA while it is listed) held
+    between nil and share_like_capital, or for the part with sale expenses
+    share_like_capital less that; otherwise nil, or all of
+    share_like_capital. The engine forms them with one float32 rounding, of
+    the listed sum or of share_like_capital less it. Then:
+    - the balance holds between nil and the smaller of itself and
+      share_like_capital, and within that rounding of the smaller of those
+      and the holdings, so it holds all of a balance the holdings cover;
+    - each part lies within share_like_capital's float32 spacing plus the
+      listed sum's rounding of the holdings behind it;
+    - UC counts each part on its lists at its value there, within the parts'
+      and the balance's rounding, a penny for each valuation, and float32's
+      step at the result.
+    """
+    exempt = {} if isas_exempt else ISAS_WITH_SALE_EXPENSES
+    situation = _sole_isa_holders(SWEEP)
+    holder_part = WITHOUT if isas_exempt else WITH
+    for counted in ((WITH, WITHOUT), (WITHOUT,), (WITH,)):
+        dropped = {WITH, WITHOUT} - set(counted)
+        reform = dict(exempt)
+        for part in dropped:
+            reform |= _uc_lists_without(part)
+        sim = Simulation(situation=situation, reform=reform or None)
+        share_like = sim.calculate("share_like_capital", YEAR)
+        isa_total = sim.calculate("stocks_and_shares_isa", YEAR)
+        parts = {name: sim.calculate(name, YEAR) for name in (WITH, WITHOUT)}
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        uc = sim.calculate("uc_assessable_capital", YEAR)
+        for i, (_, shares, trusts, balance) in enumerate(SWEEP):
+            row = (SWEEP[i], isas_exempt, counted)
+            values = [np.float32(v) for v in (shares, trusts, balance)]
+            itemised = np.float32(np.float32(values[0] + values[1]) + values[2])
+            listed = values[1:] if isas_exempt else values[1:2]
+            listed_sum = sum(_exact(v) for v in listed)
+            # The engine adds the listed holdings from nil, left to right.
+            engine_sum = np.float32(0)
+            for value in listed:
+                engine_sum = np.float32(engine_sum + value)
+            sum_rounding = abs(_exact(engine_sum) - listed_sum)
+            total = _exact(share_like[i])
+            if itemised > 0:
+                behind = {WITHOUT: min(total, max(0, listed_sum))}
+                behind[WITH] = total - behind[WITHOUT]
+                rounding = (
+                    sum_rounding
+                    if isas_exempt
+                    else abs(
+                        _exact(np.float32(share_like[i] - engine_sum))
+                        - (total - _exact(engine_sum))
+                    )
+                    + sum_rounding
+                )
+            else:
+                behind = {WITHOUT: Fraction(0), WITH: total}
+                rounding = Fraction(0)
+            cap = max(Fraction(0), min(_exact(isa_total[i]), total))
+            holding = _exact(held[i])
+            assert 0 <= holding <= cap, row
+            assert abs(holding - min(cap, max(0, behind[holder_part]))) <= rounding, row
+            if behind[holder_part] >= cap:
+                assert holding == cap, row
+            spacing = _exact(np.spacing(np.abs(share_like[i])))
+            # The part without sale expenses is share_like_capital less the
+            # other part: less than share_like_capital's spacing either side
+            # of the engine's clamped listed sum, which bounds the balances.
+            engine_behind = (
+                min(total, max(0, _exact(engine_sum))) if itemised > 0 else 0
+            )
+            assert abs(_exact(parts[WITHOUT][i]) - engine_behind) < max(
+                spacing, Fraction(2) ** -149
+            ), row
+            for name in (WITH, WITHOUT):
+                assert abs(_exact(parts[name][i]) - behind[name]) <= (
+                    spacing + sum_rounding
+                ), (row, name)
+            sale = set(_parameter(f"{UC_NODE}.sale_expenses.sources")) - dropped
+            value = {
+                name: Fraction(9, 10) if name in sale else Fraction(1)
+                for name in counted
+            }
+            expected = sum(value[name] * behind[name] for name in counted)
+            tolerance = (
+                sum(abs(_exact(parts[name][i]) - behind[name]) for name in counted)
+                + rounding
+                + Fraction(3, 100)
+                + _exact(np.spacing(np.float32(float(expected))))
+            )
+            assert abs(_exact(uc[i]) - expected) <= tolerance, (row, uc[i], expected)
 
 
 def test_the_exempt_list_starts_with_the_first_capital_list():

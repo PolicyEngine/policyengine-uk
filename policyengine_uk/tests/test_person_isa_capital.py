@@ -1,10 +1,10 @@
 """Person cash and stocks and shares ISAs count in the holder's benefit unit (#2729).
 
-Each means-test formula counts cash_isa_countable_capital and
-stocks_and_shares_isa_countable_capital through person_sources, for the
-claimant and partner. The formulas subtract them from the household source
-that includes them (cash_isa and share_like_capital) and allocate the
-remainder between benefit units.
+Each of the six DWP capital assessments (CAPITAL) counts
+cash_isa_countable_capital and stocks_and_shares_isa_countable_capital
+through person_sources, for the claimant and partner. The formulas subtract
+them from the household source that includes them (cash_isa and
+share_like_capital) and allocate the remainder between benefit units.
 
 For the households below, with no reported capital, the formulas allocate the
 remainder by claimant weights or, for Pension Credit, pension-age adult
