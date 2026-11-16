@@ -4,28 +4,22 @@ from policyengine_uk.model_api import *
 class is_responsible_for_child_or_young_person_for_uc_or_housing_benefit(Variable):
     """Responsible for a child or young person under UC or Housing Benefit rules.
 
+    A union of the two schemes' tests that no formula reads. UC counts a
+    child or qualifying young person (UC Regs 2013 regs 4-5); Housing Benefit
+    counts a child or young person, whose young-person test follows Child
+    Benefit (HB Regs 2006 regs 2, 19). Each scheme's rules read its own test:
     Universal Credit's LHA shared accommodation test
-    (is_lha_shared_accommodation_rate_specified_renter) reads this. UC counts
-    a child or qualifying young person (UC Regs 2013 regs 4-5); Housing
-    Benefit counts a child or young person, whose young-person test follows
-    Child Benefit (HB Regs 2006 regs 2, 19). A Housing Benefit young person
-    who is not a UC qualifying young person is, under UC, a non-dependant
-    (UC Sch 4 para 9), which the household composition proxy
-    (lha_renter_has_non_dependant) does not identify. Either way the renter
-    is not limited to the shared accommodation rate (UC Sch 4 para
-    28(3)-(4)), so the UC test reads responsibility under either scheme.
-    Housing Benefit's own test does not read this: housing_benefit_LHA_category
-    reads is_housing_benefit_young_individual (is_single_person and age) and
-    housing_benefit_has_non_dependant (HB reg 13D(2)(a)(i)). The benefit
-    cap rates, where a non-dependant does not matter, read each scheme's own
-    responsibility test.
+    (is_lha_shared_accommodation_rate_specified_renter) reads
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit
+    (UC Sch 4 para 28(3)), and counts a Housing Benefit young person who is
+    not a UC qualifying young person as a non-dependant
+    (lha_renter_has_non_dependant; para 28(4)). Housing Benefit's test,
+    housing_benefit_LHA_category, reads is_housing_benefit_young_individual
+    and housing_benefit_has_non_dependant (HB reg 13D(2)(a)(i)). The benefit
+    cap rates read each scheme's own responsibility test.
 
-    The UC test includes reg 5(1)(a), which makes a 16-year-old a qualifying
-    young person until the 1 September after their 16th birthday, whatever
-    their education. Housing Benefit's young person follows Child Benefit,
-    whose school-leaver rules (Child Benefit (General) Regulations 2006 regs 4,
-    5 and 7) are not modelled, so a 16-year-old in the benefit unit who is not
-    a claimant or partner also counts here for the year.
+    The union also counts every 16-year-old in the benefit unit who is not a
+    claimant or partner, for the year.
     """
 
     value_type = bool
