@@ -15,6 +15,10 @@
 # and 1 April 2017 (couples); attendance allowance counted only at the
 # higher rate until 27 January 2025 (SI 2025/3).
 #
+# A member of a couple who claims as a single person (UC Regs 2013 reg 3(3))
+# has no joint renter, since joint renters are joint claimants (Sch 4 para
+# 1(2)), and so does not meet the disabled person condition.
+#
 # Housing Benefit (HB Regs 2006 and HB (SPC) Regs 2006 reg 13D(3)): the
 # categories are, in order, (za) a member of a couple who cannot share a
 # bedroom, (zb) a member of a couple who can share a bedroom (the partner of
@@ -225,6 +229,118 @@
     # UC para 12(9)(d): one bedroom if one or both joint renters satisfy the
     # condition. HB (za): one bedroom each.
     LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: A member of a couple who claims as a single person has no Universal Credit bedroom for not sharing
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        # The roles are supplied: entered without them, a member 20 or more
+        # years younger than the claimant is presumed to be their child.
+        is_claimant_or_partner: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The partner is under 18 with no reg 8 circumstance, so cannot be a
+    # joint claimant, and the claimant claims as a single person (UC Regs
+    # 2013 reg 3(3)(a)).
+    meets_uc_minimum_age_condition: [true, false]
+    uc_is_ineligible_partner: [false, true]
+    uc_member_of_couple_claims_as_single_person: true
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    # UC Sch 4 para 12(6A) needs a joint renter to share with, and joint
+    # renters are joint claimants (para 1(2)). The claimant has none, so
+    # one bedroom (para 10(1)(a)) and the one-bedroom rate.
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 1
+    LHA_category: B
+    # HB has no single claim: reg 13D(3)(za) and (zb) give a bedroom each.
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: The same couple claiming jointly because the partner is a carer have the second bedroom
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        care_hours: 35
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Caring 35 hours a week, the partner meets the minimum age of 16 (UC
+    # Regs 2013 reg 8(1)(c)), so the couple are joint claimants and joint
+    # renters.
+    meets_uc_minimum_age_condition: [true, true]
+    uc_is_ineligible_partner: [false, false]
+    uc_member_of_couple_claims_as_single_person: false
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    # UC Sch 4 para 12(6A) and (9)(d): one additional bedroom.
+    LHA_cannot_share_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: A single claim supplied as an input also removes the Universal Credit bedroom for not sharing
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 38
+    benunits:
+      couple:
+        members: [claimant, partner]
+        # Supplied on the benefit unit. The model derives a single claim
+        # only from the partner's age (reg 3(3)(a)), and this partner meets
+        # the minimum age, so the input alone makes the claim single.
+        uc_member_of_couple_claims_as_single_person: true
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 1
+    LHA_category: B
+    housing_benefit_LHA_cannot_share_bedrooms: 1
     housing_benefit_LHA_allowed_bedrooms: 2
 
 - name: ADM F3138, the disabled person and overnight care conditions each give a bedroom

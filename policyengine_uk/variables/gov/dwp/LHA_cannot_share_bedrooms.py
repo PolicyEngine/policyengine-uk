@@ -24,7 +24,14 @@ class LHA_cannot_share_bedrooms(Variable):
         "Disabled person "
         "condition: one bedroom if the renter or a joint renter cannot share "
         "a bedroom with the other because of disability (see "
-        "is_member_of_couple_who_cannot_share_bedroom). Unlike Housing "
+        "is_member_of_couple_who_cannot_share_bedroom). The condition needs "
+        "a joint renter to share with (para 12(6A)), and joint renters are "
+        "joint claimants (para 1(2)). A member of a couple who claims as a "
+        "single person (uc_member_of_couple_claims_as_single_person; UC Regs "
+        "2013 reg 3(3)) has no joint claimant, so no joint renter, and gets "
+        "no such bedroom. Housing Benefit has no such claim and still gives "
+        "the couple a bedroom each (see "
+        "housing_benefit_LHA_cannot_share_bedrooms). Unlike Housing "
         "Benefit, Universal Credit does not require the home to have the "
         "extra bedroom."
     )
@@ -32,6 +39,8 @@ class LHA_cannot_share_bedrooms(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/12",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/10",
+        "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/1",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
     )
 
     def formula(benunit, period, parameters):
@@ -46,8 +55,19 @@ class LHA_cannot_share_bedrooms(Variable):
             benunit, period, cannot_share
         ) - universal_credit_child_bedrooms(benunit, period)
         # Para 12(6A) and (9)(d): one additional bedroom if the renter or a
-        # joint renter satisfies the disabled person condition.
-        disabled_person_room = benunit.any(
+        # joint renter satisfies the disabled person condition. The renter
+        # must otherwise be expected to share a bedroom "with a joint
+        # renter", and para 1(2) defines joint renters as joint claimants
+        # to whom reg 26(2) applies. A member of a couple who claims as a
+        # single person (reg 3(3)) has no joint claimant, so no joint renter
+        # and no such bedroom. The mask is applied here rather than in
+        # is_member_of_couple_who_cannot_share_bedroom, which Housing
+        # Benefit also reads: Housing Benefit has no single claim.
+        couple_member_cannot_share = benunit.any(
             person("is_member_of_couple_who_cannot_share_bedroom", period)
         )
+        claims_as_single_person = benunit(
+            "uc_member_of_couple_claims_as_single_person", period
+        )
+        disabled_person_room = couple_member_cannot_share & ~claims_as_single_person
         return disabled_child_rooms + 1.0 * disabled_person_room
