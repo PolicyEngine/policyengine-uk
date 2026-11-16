@@ -2367,15 +2367,18 @@ def test_held_error_follows_the_formulas_behind_the_rate_test():
     assert flagged[0::2].tolist() == [False, True, True, True, True]
 
 
-def test_rate_test_keeps_room_for_an_amount_supplied_in_place_of_its_formula():
+def test_rate_test_reads_an_amount_supplied_in_place_of_its_formula_as_an_entry():
     """Taxable pay of £40,200 supplied as an input, with £9,000 of savings and
-    £1,570 of dividends in 2026-27, sits at the limit. ``_held_error`` checks
-    taxable pay against the pay, benefits and expenses its formula reads. Here
-    the model did not work it from them, so the check leaves £40,200
-    unexplained and gives no bound under a penny. The rate test keeps room,
-    and the model denies the reduction and charges £7,440, as ``main`` does.
-    The same check keeps the room where a reform replaces a formula in
-    ``SUMS``."""
+    £1,570 of dividends in 2026-27, sits at the limit. The model reads the
+    supplied amount in place of the formula, so it is an entry.
+    ``_held_error`` bounds it by its distance from whole pence, nil here, and
+    reads none of the pay, benefits and expenses the formula would. The rate
+    test keeps no room, and one share meets it: £2,500 of the £12,570
+    Personal Allowance against pay, £8,500 against savings and £1,570 against
+    dividends. That leaves £37,700 of pay at 20%, £7,540, and £500 of savings
+    at the savings nil rate: £7,288 after the £252 reduction (ITA 2007
+    ss. 10, 12B, 25 and 55B). ``main`` denies the reduction and charges
+    £7,440."""
     year = 2026
     sim = explicit_couples(
         year,
@@ -2387,10 +2390,17 @@ def test_rate_test_keeps_room_for_an_amount_supplied_in_place_of_its_formula():
             )
         ],
     )
-    assert not sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
-    assert sim.calculate("marriage_allowance_tax_reduction", year)[0] == 0
-    assert sim.calculate("income_tax", year)[0] == pytest.approx(7_440.00, abs=0.01)
+    assert sim.calculate("meets_marriage_allowance_income_conditions", year)[0]
+    reduction = sim.calculate("marriage_allowance_tax_reduction", year)[0]
+    assert reduction == pytest.approx(252)
+    assert sim.calculate("income_tax", year)[0] == pytest.approx(7_288.00, abs=0.01)
     period = periods.period(year)
     income_tax = sim.tax_benefit_system.parameters(str(year)).gov.hmrc.income_tax
-    bound = _held_error(sim.populations["person"], period, income_tax, "net_income", {})
-    assert bound[0] == pytest.approx(40_200)
+    known = {}
+    bound = _held_error(
+        sim.populations["person"], period, income_tax, "net_income", known
+    )
+    assert bound[0] == pytest.approx(0, abs=1e-9)
+    assert known["taxable_employment_income"][0] == pytest.approx(0, abs=1e-9)
+    # The function stopped at the supplied amount.
+    assert "employment_income" not in known

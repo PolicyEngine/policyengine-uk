@@ -302,6 +302,7 @@ from policyengine_uk.utils.marriage_allowance import (
     marriage_allowance_rate_limits,
     meets_marriage_allowance_rate_test,
 )
+from policyengine_uk.utils.supplied_inputs import is_supplied_input
 
 # A share replaces the order non-savings, savings, dividends only where it
 # saves more than this (in pounds). So float32 rounding moves a deduction only
@@ -638,16 +639,22 @@ def _held_error(person, period, income_tax, name, known):
     ``name`` can sit from the amount the entries give, or infinity where the
     function cannot give one.
 
-    - An input: the distance from the amount held to the nearest whole penny,
+    - An entry: the distance from the amount held to the nearest whole penny,
       which is the amount entered where the entry is in whole pence and under
       ``INDISTINCT``. From ``INDISTINCT`` two entries can store as one, so the
-      function gives no bound.
+      function gives no bound. An entry is a variable with no formula, or any
+      amount supplied as an input for the year (``is_supplied_input``): from
+      a situation, a dataset or ``Simulation.set_input``. The model reads a
+      supplied amount in place of the variable's formula or sum, so the
+      function applies this rule before the rules below and reads none of the
+      amounts that formula or sum would. A value the model stored itself
+      (``set_model_value``) is not supplied.
     - A sum of other variables (``adds`` and ``subtracts``, or an entry in
       ``SUMS``): the bounds of its parts, plus the distance from the amount
       held to the float64 sum of the parts as held. That distance is the
       float32 rounding inside the sum. It is also large where the model did
-      not work the amount from those parts, as for an amount supplied as an
-      input or a formula a reform replaces.
+      not work the amount from those parts, as for a formula a reform
+      replaces.
     - The trade loss relief: the bound of the loss, where the relief is the
       whole loss. Pension relief: the bound of the contributions, where the
       relief is all of them. A capped relief gets no bound.
@@ -675,6 +682,12 @@ def _held_error(person, period, income_tax, name, known):
 
     variable = person.simulation.tax_benefit_system.variables[name]
     held = values(name)
+    if is_supplied_input(person, name, period, held):
+        # The model reads this amount as supplied and never works out its
+        # parts, so neither does this function: a part can be a formula the
+        # tax calculation would not otherwise run.
+        known[name] = entry_error(held)
+        return known[name]
     plus, minus, floored, after = (), (), False, ()
     if name == "net_income_before_trade_loss_relief":
         plus = tuple(income_tax.adjusted_net_income_components)
