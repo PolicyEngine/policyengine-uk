@@ -26,10 +26,15 @@ class LHA_cannot_share_bedrooms(Variable):
         "a bedroom with the other because of disability (see "
         "is_member_of_couple_who_cannot_share_bedroom). The condition needs "
         "a joint renter to share with (para 12(6A)), and joint renters are "
-        "joint claimants (para 1(2)). A member of a couple who claims as a "
-        "single person (uc_member_of_couple_claims_as_single_person; UC Regs "
-        "2013 reg 3(3)) has no joint claimant, so no joint renter, and gets "
-        "no such bedroom. Housing Benefit has no such claim and still gives "
+        "joint claimants (para 1(2)). So the bedroom needs two Universal "
+        "Credit claimants (is_uc_single_or_joint_claimant) and no single "
+        "claim (uc_member_of_couple_claims_as_single_person, which can also "
+        "be supplied). A member of a couple who claims as a single person "
+        "(UC Regs 2013 reg 3(3)) has no joint claimant, so no joint renter, "
+        "and gets no such bedroom. That includes a claimant over the "
+        "qualifying age for State Pension Credit on the SI 2014/1230 reg 60A "
+        "route, whom the single-claim flag does not mark. Housing Benefit "
+        "has no such claim and still gives "
         "the couple a bedroom each (see "
         "housing_benefit_LHA_cannot_share_bedrooms). Unlike Housing "
         "Benefit, Universal Credit does not require the home to have the "
@@ -60,7 +65,12 @@ class LHA_cannot_share_bedrooms(Variable):
         # renter", and para 1(2) defines joint renters as joint claimants
         # to whom reg 26(2) applies. A member of a couple who claims as a
         # single person (reg 3(3)) has no joint claimant, so no joint renter
-        # and no such bedroom. The mask is applied here rather than in
+        # and no such bedroom. Two tests mark that claim. The claimant count
+        # covers every single claim the model derives, including a claimant
+        # over the State Pension Credit age on the SI 2014/1230 reg 60A
+        # route, whom uc_member_of_couple_claims_as_single_person leaves
+        # false. The flag covers a single claim supplied as an input. The
+        # mask is applied here rather than in
         # is_member_of_couple_who_cannot_share_bedroom, which Housing
         # Benefit also reads: Housing Benefit has no single claim.
         couple_member_cannot_share = benunit.any(
@@ -69,5 +79,10 @@ class LHA_cannot_share_bedrooms(Variable):
         claims_as_single_person = benunit(
             "uc_member_of_couple_claims_as_single_person", period
         )
-        disabled_person_room = couple_member_cannot_share & ~claims_as_single_person
+        joint_claimants = (
+            benunit.sum(person("is_uc_single_or_joint_claimant", period)) == 2
+        )
+        disabled_person_room = (
+            couple_member_cannot_share & ~claims_as_single_person & joint_claimants
+        )
         return disabled_child_rooms + 1.0 * disabled_person_room

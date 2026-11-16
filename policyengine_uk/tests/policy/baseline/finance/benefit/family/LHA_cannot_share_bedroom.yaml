@@ -1041,3 +1041,49 @@
     is_child_who_cannot_share_bedroom: [false, false, false]
     LHA_allowed_bedrooms: 3
     housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A claimant over pension age who claims alone on the reg 60A route has no Universal Credit bedroom for not sharing
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        attendance_allowance: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        working_tax_credit_reported: 1_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        claims_uc_at_legacy_closure: true
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The couple's Working Tax Credit opens the SI 2014/1230 reg 60A route
+    # for the claimant aged 70. The partner is under 18 with no reg 8
+    # circumstance, so cannot be a joint claimant, and the claimant claims
+    # as a single person (UC Regs 2013 reg 3(3)(a)). The single-claim flag
+    # stays false because the claimant has reached the qualifying age for
+    # State Pension Credit; the claimant count still marks the claim.
+    is_uc_single_or_joint_claimant: [true, false]
+    is_uc_eligible: true
+    uc_member_of_couple_claims_as_single_person: false
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    # UC Sch 4 para 12(6A) needs a joint renter, and joint renters are
+    # joint claimants (para 1(2)). One claimant, so one bedroom (para
+    # 10(1)(a)) and the one-bedroom rate.
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 1
+    LHA_category: B
+    # HB has no single claim: reg 13D(3)(za) and (zb) of the HB (State
+    # Pension Credit) Regs 2006 give a bedroom each.
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
