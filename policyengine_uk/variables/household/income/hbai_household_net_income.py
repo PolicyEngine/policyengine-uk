@@ -18,6 +18,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     # property, reported after the mortgage payments and loan interest on
     # show card K6. property_income is before those finance costs.
     "property_income_after_finance_costs",
+    "sublet_income",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",

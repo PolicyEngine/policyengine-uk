@@ -1068,8 +1068,16 @@ def test_neutralized_supplied_gains_report_default_without_unused_warning(
         simulation.apply_reform(
             {"gov.abolitions.capital_gains_before_response": {"2026": False}}
         )
+    # Core ignores inputs to a neutralized variable
+    # (TaxBenefitSystem.neutralize_variable), so it drops the 555 set under
+    # NeutralizeGains and the restored variable reads the situation's 120,000.
+    # The abolition parameter leaves the variable's definition in place, so
+    # core stores that 555.
+    expected = 120_000 if route == "neutralize_variable" else 555
     with pytest.warns(UserWarning, match="supplied"):
-        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 555
+        assert (
+            simulation.calculate("capital_gains_before_response", 2026)[0] == expected
+        )
     restored_record = simulation.capital_gains_projection_metadata["application"][
         "by_variable"
     ]["capital_gains_before_response"]["2026"]

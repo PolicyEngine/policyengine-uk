@@ -159,7 +159,7 @@ reforms:
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
 - name: Raise VAT standard rate by 2pp
-  expected_impact: 27.6
+  expected_impact: 27.1
   tolerance: 1.5
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
@@ -194,6 +194,9 @@ reforms:
   - impact: 27.581
     data: 1.58.1 enhanced_frs_2024_25
     model: 2.135.7 (merged 7717438bf, main 7ad002f54, 2026-10-18)
+  - impact: 27.071
+    data: 1.58.1 enhanced_frs_2024_25
+    model: 2.172.1 (merged af0b602ca, main 1d4d020aa, 2026-11-03)
 - name: Raise additional rate by 3pp
   expected_impact: 3.7
   parameters:

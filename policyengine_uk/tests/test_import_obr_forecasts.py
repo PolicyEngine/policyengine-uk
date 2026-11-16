@@ -1,9 +1,10 @@
 import math
 import os
+import re
 from contextlib import contextmanager
 from dataclasses import replace
 from datetime import date, timedelta
-from functools import partial
+from functools import lru_cache, partial
 from pathlib import Path
 from io import BytesIO
 from textwrap import indent
@@ -12,7 +13,7 @@ import xml.etree.ElementTree as ET
 
 import pytest
 import yaml
-from hypothesis import event, example, given, settings
+from hypothesis import assume, event, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.parameters import ParameterNode, config
 from policyengine_core.parameters.operations.uprate_parameters import (
@@ -27,18 +28,27 @@ from policyengine_uk.tax_benefit_system import statutory_parameters
 from policyengine_uk.utils import import_obr_forecasts
 
 from policyengine_uk.utils.import_obr_forecasts import (
+    ALCOHOL_CLEARANCES,
+    CLEARANCE_SERIES_SPECS,
+    CLEARANCE_TABLE_ENDS,
+    CLEARANCE_TABLE_TEXTS,
+    TOBACCO_CLEARANCES,
     RECEIPTS_SERIES_SPECS,
     SERIES_SPECS,
     STATUTORY_GAP_SPECS,
     _sheet_paths,
+    ClearanceSeriesSpec,
     ForecastGap,
     LevelAnchor,
     MACHINE_GAMES_HIGHER_STAKE_SHARE,
+    ReceiptsGrowth,
+    ReceiptsLine,
     ReceiptsSeriesSpec,
     machine_games_spec,
     average_earnings_path,
     average_earnings_years,
     build_model_index,
+    check_index,
     compute_level_growth,
     compute_receipts_growth,
     compound_model_index,
@@ -46,13 +56,18 @@ from policyengine_uk.utils.import_obr_forecasts import (
     format_gap,
     format_growth,
     get_yoy_growth_path,
+    growth_in_effect,
     infer_workbook_release,
     level_text,
     main,
     nearest_units,
+    per_head_growth,
+    population_growth,
     projected_rate_units,
     read_calendar_values,
     read_level_anchor,
+    read_sheet_rows,
+    receipts_label,
     read_workbook_sheets,
     render_forecast_gap_yaml,
     render_level_series_yaml,
@@ -64,8 +79,6 @@ from policyengine_uk.utils.import_obr_forecasts import (
     extract_september_cpi_from_receipts,
     infer_forecast_start_year,
     infer_release,
-    per_head_growth,
-    population_growth,
     update_forecast_gap_yaml,
     update_yoy_growth_yaml,
 )
@@ -526,6 +539,135 @@ GAMBLING_LABELS = {
     "bingo": "Bingo duty",
     "pool_betting": "Pool betting duty",
 }
+# Synthetic clearances from each EFO's first (outturn) year, in each line's
+# own unit: million sticks, thousand kg or thousand hectolitres of alcohol.
+CLEARANCE_LEVELS = {
+    "cigarettes": (12_000.0, 10_800.0, 9_720.0),
+    "hand_rolling_tobacco": (3_300.0, 3_135.0, 2_978.25),
+    "other_tobacco_products": (600.0, 588.0, 576.24),
+    "beer_and_cider": (2_100.0, 2_079.0, 2_058.21),
+    "wine": (1_570.0, 1_585.7, 1_569.843),
+    "spirits": (1_270.0, 1_257.3, 1_244.727),
+}
+PREVIOUS_CLEARANCE_LEVELS = {
+    "cigarettes": (13_500.0, 12_150.0, 11_000.0),
+    "hand_rolling_tobacco": (4_000.0, 3_600.0, 3_400.0),
+    "other_tobacco_products": (700.0, 650.0, 640.0),
+    "beer_and_cider": (2_150.0, 2_120.0, 2_100.0),
+    "wine": (1_600.0, 1_590.0, 1_580.0),
+    "spirits": (1_300.0, 1_280.0, 1_270.0),
+}
+
+
+def clearance_table(
+    title: str,
+    first_year: int,
+    rows: list[tuple[str, tuple]],
+    notes: tuple[str, ...] = (),
+    outturn_years: int = 1,
+    start: int = 2,
+    unit: str | None = None,
+) -> dict[int, list[str]]:
+    """Build a table in the layout of the OBR's Tables 4.11 and 4.12: title
+    in column B, the "Outturn" and "Forecast" markers on the next row,
+    fiscal years on the row after, then one row per line and any notes. A
+    clearance table has no unit cell, since the OBR states the unit in a
+    label or a note; ``unit`` adds one on a row of its own below the title,
+    as a receipts table has."""
+    years = max(len(levels) for _, levels in rows)
+    columns = [column_letter(3 + i) for i in range(years)]
+    sheet = {start: [make_inline_cell(f"B{start}", title)]}
+    if unit is not None:
+        start += 1
+        sheet[start] = [make_inline_cell(f"C{start}", unit)]
+    sheet[start + 1] = [
+        *([make_inline_cell(f"C{start + 1}", "Outturn")] if outturn_years else []),
+        *(
+            [make_inline_cell(f"{columns[outturn_years]}{start + 1}", "Forecast")]
+            if outturn_years < years
+            else []
+        ),
+    ]
+    sheet[start + 2] = [
+        make_inline_cell(
+            f"{column}{start + 2}", f"{first_year + i}-{str(first_year + i + 1)[2:]}"
+        )
+        for i, column in enumerate(columns)
+    ]
+    row = start + 3
+    for label, levels in rows:
+        sheet[row] = [make_inline_cell(f"B{row}", label)] + [
+            make_number_cell(f"{column}{row}", level)
+            for column, level in zip(columns, levels)
+        ]
+        row += 1
+    for note in notes:
+        sheet[row] = [make_inline_cell(f"B{row}", note)]
+        row += 1
+    return sheet
+
+
+def tobacco_table(chapter, first_year, levels, outturn_years=1):
+    """Build Table 4.11 (3.11 to March 2026): cigarettes in million sticks,
+    then non-cigarette clearances in thousand kg and their "of which" split."""
+    non_cigarette = tuple(
+        float(hand_rolled) + float(other)
+        for hand_rolled, other in zip(
+            levels["hand_rolling_tobacco"], levels["other_tobacco_products"]
+        )
+    )
+    return make_sheet(
+        {
+            1: [make_inline_cell("A1", "Back to contents")],
+            **clearance_table(
+                f" {chapter}.11 Tobacco clearances",
+                first_year,
+                [
+                    ("Cigarette clearances (million sticks)", levels["cigarettes"]),
+                    ("Non-cigarette clearances ('000s kg)", non_cigarette),
+                    ("of which:", ()),
+                    ("Hand rolled tobacco clearances", levels["hand_rolling_tobacco"]),
+                    ("Other tobacco products", levels["other_tobacco_products"]),
+                ],
+                outturn_years=outturn_years,
+            ),
+        }
+    )
+
+
+def alcohol_table(chapter, first_year, levels, outturn_years=1, note=None):
+    """Build Table 4.12 (3.12 to March 2026): clearances in thousand
+    hectolitres of alcohol, which the OBR states in a note, then the duties'
+    receipts in £ billion under the same labels, which the importer must not
+    read for the clearance lines."""
+    labels = {
+        "beer_and_cider": " Beer and cider",
+        "wine": " Wine1",
+        "spirits": " Spirits2",
+    }
+    clearances = clearance_table(
+        f"{chapter}.12 Alcohol clearance forecasts",
+        first_year,
+        [(labels[key], levels[key]) for key in labels],
+        notes=(
+            note or "Note: All clearances are in thousands of hectolitres of alcohol.",
+            "1 Includes other fermented products such as fruit ciders.",
+            "2 Includes spirit-based ‘ready-to-drinks’ such as alcopops.",
+        ),
+        outturn_years=outturn_years,
+    )
+    receipts = clearance_table(
+        f"{chapter}.12 Alcohol receipts forecasts",
+        first_year,
+        [(labels[key], (4.0,) * len(levels[key])) for key in labels],
+        notes=("Note: All taxes are on an accrued basis.",),
+        outturn_years=outturn_years,
+        start=max(clearances) + 2,
+        unit="£ billion",
+    )
+    return make_sheet(
+        {1: [make_inline_cell("A1", "Back to contents")], **clearances, **receipts}
+    )
 
 
 def make_receipts_xlsx(
@@ -538,11 +680,14 @@ def make_receipts_xlsx(
     sdlt_rows: list[tuple[str, tuple]] | None = None,
     chapter: int = 3,
     gambling_levels: dict[str, tuple] | None = None,
+    clearance_levels: dict[str, tuple] | None = None,
+    alcohol_note: str | None = None,
 ) -> bytes:
     """Receipts tables numbered in ``chapter``: 3 to March 2026, 4 from
     October 2026."""
     levels = levels or RECEIPTS_LEVELS
     gambling_levels = gambling_levels or GAMBLING_LEVELS
+    clearance_levels = clearance_levels or CLEARANCE_LEVELS
     sheet_318 = make_sheet({2: [make_inline_cell("B2", "Other table")]})
     sheet_319 = make_sheet(
         {
@@ -645,6 +790,12 @@ def make_receipts_xlsx(
         ],
         outturn_years=0,
     )
+    sheets[f"{chapter}.11"] = tobacco_table(
+        chapter, first_year, clearance_levels, outturn_years
+    )
+    sheets[f"{chapter}.12"] = alcohol_table(
+        chapter, first_year, clearance_levels, outturn_years, alcohol_note
+    )
     sheets[f"{chapter}.18"] = sheet_318
     sheets[f"{chapter}.19"] = sheet_319
     return make_workbook(sheets)
@@ -660,6 +811,7 @@ def make_previous_receipts_xlsx(**overrides) -> bytes:
             "levels": PREVIOUS_RECEIPTS_LEVELS,
             "cash_table": "3.9",
             "northern_ireland_label": "Northern Ireland Business Rates",
+            "clearance_levels": PREVIOUS_CLEARANCE_LEVELS,
             **overrides,
         }
     )
@@ -863,6 +1015,33 @@ LEVEL_SERIES_FIXTURE = """  national_living_wage:
         - title: Kept
           href: https://example.com/kept
 """
+CLEARANCE_SERIES_FIXTURE = """      {key}:
+        description: {key} clearances growth per person.
+        values:
+          # Base year, which every run keeps
+          2023-01-01: 0.0000
+          # Older forecast
+          2024-01-01: 0.0100
+          2031-01-01: 0.0200
+        metadata:
+          unit: /1
+          label: {key} clearances growth per person
+          reference:
+            - title: Old
+              href: https://example.com/old
+"""
+CLEARANCE_FIXTURE = (
+    "".join(
+        f"    {group}:\n"
+        + "".join(
+            CLEARANCE_SERIES_FIXTURE.format(key=spec.path[-1])
+            for spec in CLEARANCE_SERIES_SPECS
+            if spec.path[1] == group
+        )
+        for group in ("tobacco_clearances", "alcohol_clearances")
+    )
+    + "\n"
+)
 # Population growth changes in 2026 and 2030, so each year's per-head growth
 # must take that year's population growth out.
 POPULATION_FIXTURE = """ons:
@@ -878,6 +1057,7 @@ YOY_GROWTH_FIXTURE = (
     + LEVEL_SERIES_FIXTURE
     + RECEIPTS_FIXTURE
     + PER_CAPITA_FIXTURE
+    + CLEARANCE_FIXTURE
     + "".join(FLAT_SERIES_FIXTURE.format(key=key) for key in SERIES_KEYS[2:])
     + POPULATION_FIXTURE
 )
@@ -1085,18 +1265,24 @@ def test_a_failed_restore_keeps_the_original_and_never_empties_a_file(
 
 
 # Receipts growth series: stamp_duty_land_tax and business_rates under obr,
-# which link their first year to the previous EFO's outturn, and the
-# gambling_duty_bases under per_capita, which grow a duty's base per head
-# from HMRC's outturn.
+# which link their first year to the previous EFO's outturn, and under
+# per_capita the gambling_duty_bases, which grow a duty's base per head from
+# HMRC's outturn, and the clearance series, which link their first year as
+# receipts do.
 
-RECEIPTS_SPECS = tuple(spec for spec in RECEIPTS_SERIES_SPECS if spec.outturn is None)
+RECEIPTS_SPECS = tuple(
+    spec
+    for spec in RECEIPTS_SERIES_SPECS
+    if spec.outturn is None and not isinstance(spec, ClearanceSeriesSpec)
+)
 RECEIPTS_PATHS = {spec.path[-1]: spec.path for spec in RECEIPTS_SPECS}
 GAMBLING_PATHS = {
     spec.path[-1]: spec.path
     for spec in RECEIPTS_SERIES_SPECS
     if spec.outturn is not None
 }
-ALL_RECEIPTS_PATHS = {**RECEIPTS_PATHS, **GAMBLING_PATHS}
+CLEARANCE_PATHS = {spec.path[-1]: spec.path for spec in CLEARANCE_SERIES_SPECS}
+ALL_RECEIPTS_PATHS = {**RECEIPTS_PATHS, **GAMBLING_PATHS, **CLEARANCE_PATHS}
 
 
 def _series(tree, path):
@@ -1634,13 +1820,32 @@ MARCH_2026_RECEIPTS = {
     "great_britain": ("32.376814327646052", "34.051963932489258", "37.413586572144581", "38.240930947824609", "39.111850954748434", "42.419067764546902", "42.463193622519263"),
     "northern_ireland": ("0.38233350730688931", "0.39471664406441903", "0.40263364127921164", "0.41045270712298504", "0.41810894612429189", "0.42590403232705243", "0.43449009714292341"),
 }  # fmt: skip
+# Clearances as the OBR publishes them in the workbooks, from each EFO's outturn
+# year: October 2026 Tables 4.11 (rows 5, 8 and 9) and 4.12 (rows 5 to 7)
+# from 2025-26, and March 2026 Tables 3.11 and 3.12 from 2024-25.
+OCTOBER_2026_CLEARANCES = {
+    "cigarettes": ("12224.568453264392", "10962.756413840059", "9853.5452739735829", "9042.8621730867635", "8222.5673694138313", "7677.1786518547042", "7165.065963684312"),
+    "hand_rolling_tobacco": ("3338.0207129187247", "3112.6781722236924", "2886.8250342433803", "2649.2381871262742", "2482.242556381048", "2384.6513795861088", "2273.4315215751089"),
+    "other_tobacco_products": ("601.72119516629675", "570.78371235846851", "547.48868265410397", "502.43014658034485", "478.01479115950667", "460.50663098211788", "434.81308397816122"),
+    "beer_and_cider": ("2108.7303043893562", "2069.8474469367434", "2027.3458030333193", "2012.6406194934405", "2001.8700847628832", "1982.9201100206114", "1962.5485885566063"),
+    "wine": ("1569.041217813324", "1567.7826624097067", "1540.2033043369458", "1530.2485351419407", "1520.7475110216285", "1505.5439058920508", "1491.4031570887553"),
+    "spirits": ("1272.4562775587838", "1262.3692523269856", "1241.1318815407608", "1235.8250379612948", "1230.5012764962146", "1218.4826638265554", "1209.5688671337984"),
+}  # fmt: skip
+MARCH_2026_CLEARANCES = {
+    "cigarettes": ("13578.199084269218", "12254.443899171421", "10935.71615536125", "9796.6640404179016", "8866.6130178015883", "7995.729597841897", "7564.6566739628925"),
+    "hand_rolling_tobacco": ("4028.4786869103718", "3526.3857151341385", "3293.6576388022659", "2892.1697163272493", "2753.8285838812085", "2585.2813720012768", "2487.166773432516"),
+    "other_tobacco_products": ("696.58878604045401", "669.27631225428354", "677.85087256392069", "583.39376884631531", "632.00622388116062", "635.62283867654082", "648.80354856597478"),
+    "beer_and_cider": ("2168.2921615793966", "2083.3332688432952", "2047.9991564911497", "2055.0663286925724", "2069.6074004097741", "2085.2376704507528", "2101.0702511760765"),
+    "wine": ("1619.9398031719702", "1534.8113403538073", "1521.0993234521127", "1529.4264001780152", "1542.2932290667245", "1555.708517982323", "1569.3328887285095"),
+    "spirits": ("1289.5543778979199", "1239.4917691306655", "1236.8062704924209", "1240.0908662025893", "1247.2437066467319", "1254.8362045261438", "1262.8339376703782"),
+}  # fmt: skip
 
 
 def test_october_2026_tables_reproduce_the_committed_series():
-    """yoy_growth.yaml holds exactly what the importer writes from the
-    October 2026 receipts tables (Tables 4.7, 4.8, 4.2 and 4.10) and the
-    March 2026 ones (3.7, 3.8 and 3.2): rerunning it on the committed file
-    changes nothing."""
+    """yoy_growth.yaml holds, byte for byte, what the importer writes from the
+    October 2026 receipts tables (Tables 4.7, 4.8, 4.2, 4.10, 4.11 and 4.12)
+    and the March 2026 ones (3.7, 3.8, 3.2, 3.11 and 3.12): rerunning it on
+    the committed file changes nothing."""
     committed = get_yoy_growth_path().read_text()
     rendered = render(
         committed,
@@ -1651,6 +1856,7 @@ def test_october_2026_tables_reproduce_the_committed_series():
             cash_table="4.8",
             chapter=4,
             gambling_levels=OCTOBER_2026_GAMBLING,
+            clearance_levels=OCTOBER_2026_CLEARANCES,
         ),
         previous=make_previous_receipts_xlsx(
             release="March 2026",
@@ -1658,6 +1864,7 @@ def test_october_2026_tables_reproduce_the_committed_series():
             levels=MARCH_2026_RECEIPTS,
             cash_table="3.8",
             northern_ireland_label="Northern Ireland business rates",
+            clearance_levels=MARCH_2026_CLEARANCES,
         ),
         release=("October", 2026),
         previous_release=("March", 2026),
@@ -1676,6 +1883,7 @@ REAL_OCTOBER_2026_RECEIPTS = (
 COMMITTED_RELEASES = {"release": ("October", 2026), "previous_release": ("March", 2026)}
 XLSX_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 XLSX_NS = {"m": XLSX_MAIN}
+XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 
 
 def mutate_real_receipts(workbook, table, unit, scale=1):
@@ -4382,3 +4590,1702 @@ def test_a_written_level_series_keeps_every_index_positive(levels, earnings):
     assert rendered == unchecked
     model = model_index(written)
     assert {year: finished[year] for year in model} == model
+
+
+# Alcohol and tobacco clearances per head (#2596): Tables 4.11 and 4.12 (3.11
+# and 3.12 to March 2026), whose growth over ons.population growth projects
+# the household quantity inputs.
+
+CLEARANCE_SPECS = {spec.path[-1]: spec for spec in CLEARANCE_SERIES_SPECS}
+# ons.population as POPULATION_FIXTURE holds it, in effect in each year.
+FIXTURE_POPULATION = {2024: 0.01, 2025: 0.01, 2026: 0.02, 2027: 0.02, 2030: -0.005}
+
+
+def test_clearance_lines_are_read_from_their_own_tables():
+    """Each line comes from its clearance table, in its unit, not from the
+    receipts table below Table 3.12 under the same labels."""
+    current = read_workbook_sheets(make_receipts_xlsx())
+    previous = read_workbook_sheets(make_previous_receipts_xlsx())
+    for key, spec in CLEARANCE_SPECS.items():
+        line = find_receipts_line(current, spec)
+        before = find_receipts_line(previous, spec)
+        table = "3.11" if "tobacco" in spec.path[1] else "3.12"
+        assert (line.table, before.table) == (table, table)
+        assert line.levels == dict(zip((2024, 2025, 2026), CLEARANCE_LEVELS[key]))
+        assert before.levels[2023] == PREVIOUS_CLEARANCE_LEVELS[key][0]
+        assert (line.outturn_years, before.outturn_years) == ({2024}, {2023})
+    assert find_receipts_line(current, CLEARANCE_SPECS["wine"]).label == "Wine"
+
+
+def test_clearance_growth_is_per_head_of_the_population_the_file_holds():
+    """The importer writes each year's value as one plus the clearances'
+    growth, over one plus that year's ons.population growth in the file it
+    writes, minus one; after the forecast it holds the clearances flat and
+    writes 1 / (1 + population) - 1."""
+    rendered = render()
+    for key, path in CLEARANCE_PATHS.items():
+        published = {
+            2023: PREVIOUS_CLEARANCE_LEVELS[key][0],
+            **dict(zip((2024, 2025, 2026), CLEARANCE_LEVELS[key])),
+        }
+        expected = {
+            year: round(
+                published[year]
+                / published[year - 1]
+                / (1 + _in_effect(FIXTURE_POPULATION, year))
+                - 1,
+                6,
+            )
+            for year in (2024, 2025, 2026)
+        }
+        assert _values(rendered, path) == {
+            2023: 0.0,
+            **expected,
+            2027: round(1 / 1.02 - 1, 6),
+            2030: round(1 / 0.995 - 1, 6),
+        }, key
+    # Cigarettes fall 10% a year, 10.9% per head once population grows 1%.
+    assert _values(rendered, CLEARANCE_PATHS["cigarettes"])[2025] == -0.108911
+
+
+def test_clearance_comments_and_references_name_both_efos_and_the_population():
+    rendered = render()
+    block = rendered[rendered.index("      cigarettes:") :]
+    block = block[: block.index("      hand_rolling_tobacco:")]
+    assert (
+        "          # Base year, which every run keeps\n"
+        "          2023-01-01: 0.0000\n"
+        "          # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over "
+        'March 2025, receipts Table 3.11 "Cigarette clearances (million '
+        'sticks)"; per head: clearance growth over one plus ons.population '
+        "growth\n"
+    ) in block
+    assert (
+        "          # Beyond the OBR forecast: clearances held flat: "
+        "1 / (1 + ons.population growth) - 1\n"
+        # Per head the series falls while population grows and rises once it
+        # falls (2030 in the fixture).
+        "          2027-01-01: -0.019608\n"
+        "          2030-01-01: 0.005025\n"
+    ) in block
+    references = _series(yaml.safe_load(rendered), CLEARANCE_PATHS["wine"])["metadata"][
+        "reference"
+    ]
+    assert [reference["title"] for reference in references] == [
+        "OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.12)",
+        "OBR EFO March 2025 (detailed forecast tables, receipts, Table 3.12; "
+        "2023-24 outturn)",
+    ]
+
+
+TOBACCO_TITLE = {"B": "4.11 Tobacco clearances"}
+TOBACCO_HEADER = [
+    {"C": "Outturn", "D": "Forecast"},
+    {"C": "2025-26", "D": "2026-27"},
+]
+
+
+def test_a_cigarette_line_in_another_unit_is_not_read():
+    # The OBR states the unit in the cigarette label, so a new unit renames
+    # the row.
+    rows = [TOBACCO_TITLE, *TOBACCO_HEADER]
+    rows.append({"B": "Cigarette clearances (billion sticks)", "C": "12", "D": "11"})
+    with pytest.raises(ValueError, match="found none"):
+        find_receipts_line({"4.11": rows}, CLEARANCE_SPECS["cigarettes"])
+
+
+def test_an_alcohol_table_in_another_unit_is_refused_before_any_write(tmp_path):
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+    note = "Note: All clearances are in millions of litres of alcohol."
+    receipts = make_receipts_xlsx(alcohol_note=note)
+    with pytest.raises(ValueError, match=re.escape(f"not read: {note!r} in column B")):
+        run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy), receipts=receipts)
+    assert {path: path.read_bytes() for path in before} == before
+
+
+def test_a_clearance_spec_needs_a_read_unit_cell_and_takes_no_rates_or_outturn():
+    spec = CLEARANCE_SPECS["wine"]
+    with pytest.raises(ValueError, match="needs the cell that states its unit"):
+        ClearanceSeriesSpec(path=("per_capita", "x"), title=ALCOHOL_CLEARANCES, row="r")
+    with pytest.raises(ValueError, match=r"texts lack '\(tonnes\)'"):
+        replace(spec, unit_cell="(tonnes)")
+    # Each table's list holds its own cells.
+    with pytest.raises(ValueError, match="texts lack 'cigarette clearances"):
+        replace(spec, unit_cell=CLEARANCE_SPECS["cigarettes"].unit_cell)
+    with pytest.raises(ValueError, match="needs the cell that states its unit"):
+        replace(spec, title="alcohol receipts forecasts")
+    with pytest.raises(ValueError, match="takes no rates"):
+        replace(spec, rates=GAMBLING_SPECS[0].rates)
+    with pytest.raises(ValueError, match="takes no rates"):
+        replace(spec, outturn=GAMBLING_SPECS[0].outturn)
+
+
+def test_real_october_2026_clearance_series():
+    """Check the committed series by hand: the real October 2026 Tables
+    4.11 and 4.12 over the real March 2026 Tables 3.11 and 3.12, per head of
+    the committed ons.population."""
+    population = population_growth(get_yoy_growth_path().read_text())
+    assert (population[2025], population[2026]) == (0.0033, 0.002)
+    growth = compute_receipts_growth(
+        REAL_OCTOBER_2026_RECEIPTS,
+        REAL_RECEIPTS[2026],
+        specs=CLEARANCE_SERIES_SPECS,
+    )
+    per_head = {
+        path[-1]: per_head_growth(series, population).values
+        for path, series in growth.items()
+    }
+    # Cigarettes: 2025-26 outturn (October 2026) over 2024-25 outturn (March
+    # 2026), 10.0% fewer sticks, 10.3% fewer per head.
+    assert per_head["cigarettes"][2025] == round(
+        12224.568453264392 / 13578.199084269218 / 1.0033 - 1, 6
+    )
+    assert per_head["cigarettes"][2025] == -0.102653
+    assert per_head["hand_rolling_tobacco"][2025] == -0.17412
+    # Beer and cider: 2026-27 over 2025-26, both from October 2026.
+    assert per_head["beer_and_cider"][2026] == round(
+        2069.8474469367434 / 2108.7303043893562 / 1.002 - 1, 6
+    )
+    committed = get_yoy_growth_path().read_text()
+    for key, values in per_head.items():
+        assert sorted(values) == list(range(2025, 2032)), key
+        stored = _values(committed, CLEARANCE_PATHS[key])
+        assert stored[2024] == 0.0
+        assert {year: stored[year] for year in values} == values, key
+
+
+def test_a_population_change_moves_the_per_head_series_once_the_importer_reruns():
+    """Editing ons.population leaves every per-head series as the importer
+    wrote it for the old population, so from 2026 the weighted cigarette
+    total runs 1.003 / 1.002 = 1.000998 times the clearances' path, and the
+    byte-for-byte test fails until someone reruns the importer. Rerunning
+    rewrites each per-head series' 2026 value, the six clearance series and
+    the seven gambling bases alike, and nothing else."""
+    committed = get_yoy_growth_path().read_text()
+    edited = committed.replace(
+        "      2026-01-01: 0.0020\n      2027-01-01: 0.0013\n",
+        "      2026-01-01: 0.0030\n      2027-01-01: 0.0013\n",
+    )
+    assert population_growth(edited)[2026] == 0.003
+    for path in ALL_RECEIPTS_PATHS.values():
+        assert _values(edited, path) == _values(committed, path), path
+    levels = [float(level) for level in OCTOBER_2026_CLEARANCES["cigarettes"]]
+    cigarettes = _values(edited, CLEARANCE_PATHS["cigarettes"])[2026]
+    weighted = (1 + cigarettes) * 1.003 / (levels[1] / levels[0])
+    assert weighted == pytest.approx(1.003 / 1.002, abs=1e-6)
+    assert round(1.003 / 1.002, 6) == 1.000998
+
+    rendered = render(
+        edited,
+        current=REAL_OCTOBER_2026_RECEIPTS,
+        previous=REAL_RECEIPTS[2026],
+        **COMMITTED_RELEASES,
+    )
+    growth = compute_receipts_growth(REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026])
+    moved = set()
+    for path in ALL_RECEIPTS_PATHS.values():
+        before, after = _values(committed, path), _values(rendered, path)
+        if growth[path].spec.per_head:
+            assert after[2026] == round(growth[path].ratios[2026] / 1.003 - 1, 6)
+            assert after[2026] != before[2026]
+            assert {y: v for y, v in after.items() if y != 2026} == {
+                y: v for y, v in before.items() if y != 2026
+            }
+            moved.add(path)
+        else:
+            assert after == before, path
+    assert moved == set(CLEARANCE_PATHS.values()) | set(GAMBLING_PATHS.values())
+    assert len(moved) == 13
+
+
+CLEARANCE_LEVEL = st.floats(min_value=1, max_value=20_000, allow_nan=False)
+# A year's clearances from half to twice the year before's, so the index stays
+# well above the five decimals the model rounds it to.
+CLEARANCE_GROWTH = st.floats(min_value=0.5, max_value=2, allow_nan=False)
+POPULATION_GROWTH = st.floats(min_value=-0.02, max_value=0.03, allow_nan=False).map(
+    lambda value: round(value, 4)
+)
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(years=st.integers(2, 7), data=st.data())
+def test_rendered_clearances_grow_the_weighted_total_with_the_clearances(years, data):
+    """For any clearances and population growth: in every year the household
+    quantity's growth times the household weight's growth equals the
+    clearances' growth, to the series' six decimals, and equals 1 after the
+    forecast; the series stays above -100%, so its index stays positive; a
+    second run changes nothing."""
+    base, levels = {}, {}
+    for key in CLEARANCE_LEVELS:
+        level = data.draw(CLEARANCE_LEVEL)
+        base[key] = (level,)
+        series = []
+        for _ in range(years):
+            level *= data.draw(CLEARANCE_GROWTH)
+            series.append(level)
+        levels[key] = tuple(series)
+    population = {
+        year: data.draw(POPULATION_GROWTH, label=f"population {year}")
+        for year in range(2024, 2036)
+    }
+    content = YOY_GROWTH_FIXTURE.replace(
+        POPULATION_FIXTURE,
+        "ons:\n  population:\n    values:\n"
+        + "".join(
+            f"      {year}-01-01: {format_growth(value)}\n"
+            for year, value in population.items()
+        ),
+    )
+    current = make_receipts_xlsx(clearance_levels=levels)
+    previous = make_previous_receipts_xlsx(clearance_levels=base)
+    rendered = render(content, current=current, previous=previous)
+    last = 2024 + years - 1
+    for key, path in CLEARANCE_PATHS.items():
+        values = _values(rendered, path)
+        published = {
+            2023: base[key][0],
+            **dict(zip(range(2024, last + 1), levels[key])),
+        }
+        for year in range(2024, 2036):
+            growth = _in_effect(values, year)
+            assert growth > -1
+            weighted = (1 + growth) * (1 + population[year])
+            target = published[year] / published[year - 1] if year <= last else 1
+            # Six-decimal rounding moves the product by at most 5e-7 times
+            # one plus the population growth.
+            assert abs(weighted - target) <= 5e-7 * (1 + population[year]) + 1e-12
+        assert values[2023] == 0.0
+    assert render(rendered, current=current, previous=previous) == rendered
+
+
+# A unit beside a line must stop the run: the importer would otherwise read
+# the line's values in the unit another cell states.
+
+
+def mixed_unit_workbook(rows):
+    """Build a one-sheet workbook of inline strings."""
+    table = rows[0]["B"].split()[0]
+    return make_workbook(
+        {
+            table: make_sheet(
+                {
+                    number: [
+                        make_inline_cell(f"{column}{number}", str(value))
+                        for column, value in row.items()
+                    ]
+                    for number, row in enumerate(rows, start=1)
+                }
+            )
+        }
+    )
+
+
+def test_a_unit_beside_a_clearance_line_is_refused_not_borrowed():
+    """The previous release holds other tobacco in thousand kg, the current
+    one in kg in a cell beside the line, while its non-cigarette total still
+    states thousand kg. Read as one unit, the line has growth of 999.0; the
+    importer refuses it."""
+    previous = mixed_unit_workbook(
+        [
+            {"B": "3.11 Tobacco clearances"},
+            {"C": "Outturn"},
+            {"C": "2024-25"},
+            {"B": "Non-cigarette clearances ('000s kg)", "C": 4000},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "C": 600},
+        ]
+    )
+    current = mixed_unit_workbook(
+        [
+            {"B": "4.11 Tobacco clearances"},
+            {"D": "Outturn", "E": "Forecast"},
+            {"D": "2025-26", "E": "2026-27"},
+            {"B": "Non-cigarette clearances ('000s kg)", "D": 4000, "E": 3900},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "C": "kg", "D": 600000, "E": 570000},
+        ]
+    )
+    spec = CLEARANCE_SPECS["other_tobacco_products"]
+    with pytest.raises(ValueError, match="not read: 'kg' in column C"):
+        compute_receipts_growth(current, previous, specs=(spec,))
+    # Without the kg cell the same layout reads.
+    reconciled = mixed_unit_workbook(
+        [
+            {"B": "4.11 Tobacco clearances"},
+            {"D": "Outturn", "E": "Forecast"},
+            {"D": "2025-26", "E": "2026-27"},
+            {"B": "Non-cigarette clearances ('000s kg)", "D": 4000, "E": 3900},
+            {"B": "of which:"},
+            {"B": "Other tobacco products", "D": 600, "E": 570},
+        ]
+    )
+    growth = compute_receipts_growth(reconciled, previous, specs=(spec,))[spec.path]
+    assert growth.values == {2025: 0.0, 2026: -0.05}
+    assert per_head_growth(growth, {2025: 0.01, 2026: 0.01}).values[2025] == round(
+        1 / 1.01 - 1, 6
+    )
+
+
+def test_a_unit_note_beside_a_receipts_line_is_refused():
+    """The importer refuses a cell beside a pound line's label and values too:
+    a "£ million" cell there would put its values in another magnitude."""
+    rows = [
+        {"B": "4.7 Property transactions taxes: receipts by sector"},
+        {"C": "£ billion"},
+        {"C": "Outturn", "D": "Forecast"},
+        {"C": "2025-26", "D": "2026-27"},
+        {
+            "B": "SDLT from residential property",
+            "C": "11.5",
+            "D": "12.0",
+            "E": "£ million",
+        },
+    ]
+    spec = next(spec for spec in RECEIPTS_SPECS if spec.path[-1] == "residential")
+    with pytest.raises(ValueError, match=r"holds \{'E': '£ million'\} beside"):
+        find_receipts_line({"4.7": rows}, spec)
+
+
+def put_unit_beside_real_line(workbook, table, label, unit, scale=1000):
+    """Shift the sheet's cells from column C, row 3, one column right, put
+    ``unit`` in C beside the line labelled ``label`` and scale that line's
+    values. Every other archive entry, including the shared strings, stays."""
+    output = BytesIO()
+    with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
+        path = _sheet_paths(source)[table]
+        strings = [
+            "".join(node.itertext())
+            for node in ET.fromstring(source.read("xl/sharedStrings.xml"))
+        ]
+        sheet = ET.fromstring(source.read(path))
+        lines = 0
+        for row in sheet.findall("m:sheetData/m:row", XLSX_NS):
+            number = int(row.get("r"))
+            text = row.find("m:c[@t='s']/m:v", XLSX_NS)
+            line = text is not None and strings[int(text.text)] == label
+            lines += line
+            if number < 3:
+                continue
+            for cell in row.findall("m:c", XLSX_NS):
+                column = cell.get("r").rstrip("0123456789")
+                if len(column) == 1 and column >= "C":
+                    cell.set("r", f"{chr(ord(column) + 1)}{number}")
+                    value = cell.find("m:v", XLSX_NS)
+                    if line and value is not None and cell.get("t") != "s":
+                        value.text = repr(float(value.text) * scale)
+            if line:
+                cell = ET.SubElement(
+                    row, f"{{{XLSX_MAIN}}}c", {"r": f"C{number}", "t": "inlineStr"}
+                )
+                ET.SubElement(
+                    ET.SubElement(cell, f"{{{XLSX_MAIN}}}is"), f"{{{XLSX_MAIN}}}t"
+                ).text = unit
+        assert lines == 1, (table, label, lines)
+        for entry in source.infolist():
+            dest.writestr(
+                entry,
+                ET.tostring(sheet) if entry.filename == path else source.read(entry),
+            )
+    return output.getvalue()
+
+
+def test_real_tables_with_a_kg_cell_beside_a_line_are_refused(tmp_path):
+    """The helper writes other tobacco in kg beside its line in the real
+    October 2026 Table 4.11 and multiplies its values by 1,000. Reading them
+    in the total's thousand kg gives growth of 862.8112. The renderer refuses
+    it, and a run on the real March 2026 tables, changed the same way, stops
+    before it writes anything."""
+    changed = put_unit_beside_real_line(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", "Other tobacco products", "kg"
+    )
+    (line,) = [
+        row
+        for row in read_workbook_sheets(changed)["4.11"]
+        if receipts_label(row.get("B")) == "other tobacco products"
+    ]
+    assert line["C"] == "kg"
+    assert line["D"] == repr(
+        float(OCTOBER_2026_CLEARANCES["other_tobacco_products"][0]) * 1000
+    )
+    with pytest.raises(ValueError, match="not read: 'kg' in column C"):
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+    with pytest.raises(ValueError, match="not read: 'kg' in column C"):
+        run_main(
+            tmp_path,
+            make_test_xlsx(),
+            "--yaml-path",
+            str(yoy),
+            receipts=put_unit_beside_real_line(
+                REAL_RECEIPTS[2026], "3.11", "Other tobacco products", "kg"
+            ),
+            previous_receipts=REAL_RECEIPTS[2025],
+        )
+    assert {path: path.read_bytes() for path in before} == before
+    assert not list(yoy.parent.rglob("*.staged"))
+    # Shifted without the kg cell, the real table reads as before.
+    shifted = put_unit_beside_real_line(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", "Other tobacco products", "", scale=1
+    )
+    path = CLEARANCE_SPECS["other_tobacco_products"].path
+    assert (
+        compute_receipts_growth(
+            shifted, REAL_RECEIPTS[2026], specs=CLEARANCE_SERIES_SPECS
+        )[path].values
+        == compute_receipts_growth(
+            REAL_OCTOBER_2026_RECEIPTS,
+            REAL_RECEIPTS[2026],
+            specs=CLEARANCE_SERIES_SPECS,
+        )[path].values
+    )
+
+
+REAL_OCTOBER_2026_SHEETS = read_workbook_sheets(REAL_OCTOBER_2026_RECEIPTS)
+
+
+def edit_real_table(workbook, table, cells=(), scale=(), notes=()):
+    """Set each cell in ``cells`` to its text, number or, for None, nothing;
+    a tuple of texts gives one string with a formatting run for each, and an
+    element the inline string it holds. Add the cell and its row where the
+    sheet lacks them. Multiply the cells in ``scale`` by their factors, then
+    append ``notes`` in column B below the sheet's last row. Preserve every
+    other archive entry, including the shared strings."""
+    cells, scale = dict(cells), dict(scale)
+    output = BytesIO()
+    with ZipFile(BytesIO(workbook)) as source, ZipFile(output, "w") as dest:
+        path = _sheet_paths(source)[table]
+        sheet = ET.fromstring(source.read(path))
+        data = sheet.find("m:sheetData", XLSX_NS)
+        last = max(int(row.get("r")) for row in data)
+        for offset, note in enumerate(notes, start=1):
+            cells[f"B{last + offset}"] = note
+
+        def cell(reference):
+            number = int(reference.lstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+            rows = {int(row.get("r")): row for row in data}
+            if number not in rows:
+                rows[number] = ET.Element(f"{{{XLSX_MAIN}}}row", {"r": str(number)})
+                data.insert(sum(other < number for other in rows), rows[number])
+            found = rows[number].find(f"m:c[@r='{reference}']", XLSX_NS)
+            if found is None:
+                found = ET.SubElement(
+                    rows[number], f"{{{XLSX_MAIN}}}c", {"r": reference}
+                )
+            return found
+
+        for reference, factor in scale.items():
+            target = cell(reference)
+            assert target.get("t") is None, reference
+            value = target.find("m:v", XLSX_NS)
+            value.text = repr(float(value.text) * factor)
+        for reference, value in cells.items():
+            target = cell(reference)
+            for child in list(target):
+                target.remove(child)
+            target.attrib.pop("t", None)
+            if isinstance(value, str):
+                target.set("t", "inlineStr")
+                ET.SubElement(
+                    ET.SubElement(target, f"{{{XLSX_MAIN}}}is"), f"{{{XLSX_MAIN}}}t"
+                ).text = value
+            elif isinstance(value, tuple):
+                target.set("t", "inlineStr")
+                target.append(formatting_runs("is", value))
+            elif isinstance(value, ET.Element):
+                target.set("t", "inlineStr")
+                target.append(value)
+            elif value is not None:
+                ET.SubElement(target, f"{{{XLSX_MAIN}}}v").text = repr(float(value))
+        for entry in source.infolist():
+            dest.writestr(
+                entry,
+                ET.tostring(sheet) if entry.filename == path else source.read(entry),
+            )
+    return output.getvalue()
+
+
+def formatting_runs(tag, texts, reading=None):
+    """Build a ``tag`` string element, ``is`` or ``si``, with a formatting
+    run for each of ``texts``, the later runs bold, and with ``reading``, a
+    phonetic run (``<rPh>``) that holds it."""
+    string = ET.Element(f"{{{XLSX_MAIN}}}{tag}")
+    for index, part in enumerate(texts):
+        run = ET.SubElement(string, f"{{{XLSX_MAIN}}}r")
+        if index:
+            ET.SubElement(
+                ET.SubElement(run, f"{{{XLSX_MAIN}}}rPr"), f"{{{XLSX_MAIN}}}b"
+            )
+        ET.SubElement(
+            run, f"{{{XLSX_MAIN}}}t", {f"{{{XML_NAMESPACE}}}space": "preserve"}
+        ).text = part
+    if reading is not None:
+        string.append(phonetic_run(reading, len("".join(texts))))
+    return string
+
+
+def phonetic_run(reading, length):
+    """Build a phonetic run (``<rPh>``) that holds ``reading`` over the
+    first ``length`` characters of its string."""
+    run = ET.Element(f"{{{XLSX_MAIN}}}rPh", {"sb": "0", "eb": str(length)})
+    ET.SubElement(run, f"{{{XLSX_MAIN}}}t").text = reading
+    return run
+
+
+def real_levels(workbook, key):
+    """Read the levels of ``key`` from its table alone in ``workbook``, and
+    from the real October 2026 table."""
+    spec = CLEARANCE_SPECS[key]
+    table = "4.11" if spec.title == TOBACCO_CLEARANCES else "4.12"
+    return (
+        find_receipts_line({table: read_sheet_rows(workbook, table)}, spec).levels,
+        find_receipts_line(REAL_OCTOBER_2026_SHEETS, spec).levels,
+    )
+
+
+# The importer interprets no words in a clearance table: each cell must hold a
+# number, a fiscal year or a text someone has read (CLEARANCE_TABLE_TEXTS).
+
+TOBACCO_LINES = ("cigarettes", "hand_rolling_tobacco", "other_tobacco_products")
+ALCOHOL_LINES = ("beer_and_cider", "wine", "spirits")
+REAL_CLEARANCE_TABLES = {
+    (release, title): (workbook, f"{chapter}.{number}")
+    for release, workbook, chapter in (
+        ("March 2025", REAL_RECEIPTS[2025], 3),
+        ("March 2026", REAL_RECEIPTS[2026], 3),
+        ("October 2026", REAL_OCTOBER_2026_RECEIPTS, 4),
+    )
+    for title, number in ((TOBACCO_CLEARANCES, 11), (ALCOHOL_CLEARANCES, 12))
+}
+
+
+@lru_cache(maxsize=None)
+def real_clearance_rows(release, title):
+    """Read a real clearance table's sheet and find the table: its title's
+    row, the row of the next table's title or the sheet's end, and that
+    title in lower case without its number."""
+    workbook, sheet = REAL_CLEARANCE_TABLES[release, title]
+    rows = read_sheet_rows(workbook, sheet)
+    titles = [" ".join(str(row.get("B") or "").split()) for row in rows]
+    (start,) = [
+        i for i, text in enumerate(titles) if text.lower() == f"{sheet} {title}"
+    ]
+    for end in range(start + 1, len(rows)):
+        if re.match(r"\d+\.\d+ ", titles[end]):
+            return rows, start, end, titles[end].split(" ", 1)[1].lower()
+    return rows, start, len(rows), None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def release_real_clearance_rows():
+    # Drop the cached sheets once this module's tests are done, instead of
+    # keeping them for the rest of the test process.
+    yield
+    real_clearance_rows.cache_clear()
+
+
+def unread(table, title, *cells):
+    """Write out the importer's refusal of real Table ``table`` for the
+    unread ``cells``, each as (text, column)."""
+    return (
+        f"Table {table} (sheet {table}) holds text the importer has not read: "
+        + "; ".join(f"{text!r} in column {column}" for text, column in cells)
+        + ". Read each one. If it states another unit, convert the table's "
+        "figures to the units the read texts state. Then add the text, as "
+        f'receipts_label gives it, to CLEARANCE_TABLE_TEXTS["{title}"], or the '
+        "title of a table that follows the clearances to CLEARANCE_TABLE_ENDS."
+    )
+
+
+def test_both_real_release_pairs_read_every_series():
+    """The importer reads all 17 series, the six clearance lines among
+    them, from each real pair: March 2026 over March 2025 and October 2026
+    over March 2026."""
+    for current, previous in (
+        (REAL_RECEIPTS[2026], REAL_RECEIPTS[2025]),
+        (REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026]),
+    ):
+        growth = compute_receipts_growth(current, previous)
+        assert len(growth) == len(RECEIPTS_SERIES_SPECS) == 17
+        assert set(CLEARANCE_PATHS.values()) <= set(growth)
+
+
+def test_the_read_texts_are_the_texts_of_the_three_releases():
+    """Each clearance table's list holds the text of every cell in the three
+    releases' tables, below the title and above the next table's title, but
+    numbers and fiscal years, and nothing else. The list of ends holds the
+    titles that follow them: the alcohol receipts forecasts, on Table 4.12's
+    sheet (3.12's in March), and nothing on Table 4.11's."""
+    texts = {title: set() for title in CLEARANCE_TABLE_TEXTS}
+    ends = {title: set() for title in CLEARANCE_TABLE_TEXTS}
+    for release, title in REAL_CLEARANCE_TABLES:
+        rows, start, end, following = real_clearance_rows(release, title)
+        assert [value for value in rows[start].values() if value][1:] == []
+        if following is not None:
+            ends[title].add(following)
+        for row in rows[start + 1 : end]:
+            for value in row.values():
+                cell = " ".join(str(value or "").split())
+                if not cell or re.fullmatch(r"\d{4}-\d{2}", cell):
+                    continue
+                try:
+                    float(cell)
+                except ValueError:
+                    texts[title].add(receipts_label(cell))
+    assert texts == {
+        title: set(listed) for title, listed in CLEARANCE_TABLE_TEXTS.items()
+    }
+    assert ends == {
+        title: set(listed) for title, listed in CLEARANCE_TABLE_ENDS.items()
+    }
+    assert ends[ALCOHOL_CLEARANCES] == {"alcohol receipts forecasts"}
+
+
+# Each edit to the real October 2026 Table 4.11 or 4.12 below puts text no
+# one has read in the table. Table 4.11 runs from row 2 to the sheet's end,
+# so a note below the sheet's last row falls in it; Table 4.12's clearances
+# run from row 2 to row 11, above the receipts forecasts' title.
+OTHER_TOBACCO_NOTE = "Note: Other tobacco products {}"
+FULL_NOTE = (
+    "Note: Hand rolled tobacco clearances are in ('000s kg); other tobacco "
+    "products are in kg."
+)
+UNREAD_EDITS = {
+    # The OBR's cigarette forecasts in ten million sticks, and other tobacco
+    # in kilotonnes, with the figures to match.
+    "spelled-scale-real-release": (
+        "4.11",
+        {},
+        {f"{column}5": 0.1 for column in "DEFGHI"},
+        ["Note: Cigarette forecasts shown in ten million sticks."],
+    ),
+    "new-unit-real-release": (
+        "4.11",
+        {},
+        {f"{column}9": 0.001 for column in "CDEFGHI"},
+        [OTHER_TOBACCO_NOTE.format("shown in kilotonnes.")],
+    ),
+    **{
+        f"unknown-note-{ending}": ("4.11", {}, {}, [OTHER_TOBACCO_NOTE.format(ending)])
+        for ending in (
+            "are in milligrams.",
+            "are in (milligrams).",
+            "shown in milligrams.",
+            "(milligrams).",
+            "shown in kilotonnes.",
+            "shown in tens of thousands of kilograms.",
+        )
+    },
+    "unknown-label-brackets": (
+        "4.11",
+        {"B6": "Non-cigarette clearances (milligrams)"},
+        {},
+        [],
+    ),
+    **{
+        f"product-negation-{product}": (
+            "4.11",
+            {},
+            {},
+            [f"Note: {product} are in million sticks."],
+        )
+        for product in ("Non-cigarette products", "Non-cigarettes")
+    },
+    **{
+        f"product-only-note-{product}": (
+            "4.12",
+            {
+                "B8": f"Note: {product} clearances are in thousands of "
+                "hectolitres of alcohol."
+            },
+            {},
+            [],
+        )
+        for product in ("Wine", "Sake", "swine")
+    },
+    "full-note": (
+        "4.11",
+        {"B6": "Non-cigarette clearances (kg)"},
+        {f"{column}{row}": 1000 for column in "CDEFGHI" for row in (6, 9)},
+        [FULL_NOTE],
+    ),
+    "competing-cigarettes": (
+        "4.11",
+        {},
+        {},
+        [
+            "Note: Outturn clearances use the unit in the label; forecasts are "
+            "in thousand sticks."
+        ],
+    ),
+    "competing-other-tobacco": (
+        "4.11",
+        {},
+        {},
+        [OTHER_TOBACCO_NOTE.format("are in kg.")],
+    ),
+    # The listed units spelt another way.
+    "same-unit-thousand-kg": (
+        "4.11",
+        {"B6": "Non-cigarette clearances (thousand kg)"},
+        {},
+        [],
+    ),
+    "same-unit-000s-hectolitres": (
+        "4.12",
+        {"B8": "Note: All clearances are in '000s hectolitres of alcohol."},
+        {},
+        [],
+    ),
+    # A listed text with more words.
+    "extra-words-label": (
+        "4.11",
+        {"B6": "Non-cigarette clearances ('000s kg) in tens"},
+        {},
+        [],
+    ),
+    "extra-words-note": (
+        "4.12",
+        {
+            "B8": "Note: All clearances are in thousands of hectolitres of "
+            "alcohol. Spirits are in litres."
+        },
+        {},
+        [],
+    ),
+    # Units outside column B: in a new row, the "of which:" row, beside a
+    # line after its years, and in the title, marker and year rows.
+    "non-first-column-note": (
+        "4.11",
+        {"E40": "Note: Cigarette forecasts shown in ten million sticks."},
+        {},
+        [],
+    ),
+    "non-first-column-of-which": ("4.11", {"K7": "kg"}, {}, []),
+    "after-the-years": ("4.11", {"J5": "ten million sticks"}, {}, []),
+    "title-row": ("4.11", {"D2": "Cigarettes in ten million sticks"}, {}, []),
+    "marker-row": ("4.11", {"K3": "Million sticks"}, {}, []),
+    "year-row": ("4.11", {"J4": "Unit"}, {}, []),
+    "alcohol-last-row": (
+        "4.12",
+        {"B11": "Note: Spirits clearances are in litres."},
+        {},
+        [],
+    ),
+    # New lines: a product neither list names, and wine in Table 4.11.
+    "new-line-heated-tobacco": (
+        "4.11",
+        {"B10": "Heated tobacco clearances", **{f"{c}10": 50 for c in "CDEFGHI"}},
+        {},
+        [],
+    ),
+    "new-line-sake": (
+        "4.12",
+        {"B11": "Sake", **{f"{c}11": 10 for c in "CDEFGHI"}},
+        {},
+        [],
+    ),
+    "other-table-text": ("4.11", {"B10": "Wine"}, {}, []),
+    # Text where a number belongs.
+    "not-a-number": ("4.11", {"D5": "nan"}, {}, []),
+    # A note shaped like a table's title, which sheet_tables reads as one.
+    "title-shaped-note": (
+        "4.11",
+        {},
+        {},
+        ["1.1 Note: Cigarette forecasts shown in ten million sticks."],
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(UNREAD_EDITS))
+def test_text_no_one_has_read_stops_the_real_tables(name):
+    """For each edit, the importer refuses every line of the edited table,
+    naming each unread cell, and the run stops before it renders anything;
+    the importer reads the other table's lines as before."""
+    table, cells, scale, notes = UNREAD_EDITS[name]
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS, table, cells=cells, scale=scale, notes=notes
+    )
+    title = TOBACCO_CLEARANCES if table == "4.11" else ALCOHOL_CLEARANCES
+    added = [(text, reference[0]) for reference, text in cells.items()]
+    expected = unread(
+        table,
+        title,
+        *[(text, column) for text, column in added if isinstance(text, str)],
+        *[(note, "B") for note in notes],
+    )
+    sheets = {sheet: read_sheet_rows(changed, sheet) for sheet in ("4.11", "4.12")}
+    for key, spec in CLEARANCE_SPECS.items():
+        if spec.title != title:
+            assert (
+                find_receipts_line(sheets, spec).levels
+                == find_receipts_line(REAL_OCTOBER_2026_SHEETS, spec).levels
+            ), key
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line(sheets, spec)
+        assert str(refused.value) == expected, key
+    with pytest.raises(ValueError) as refused:
+        compute_receipts_growth(
+            changed, REAL_RECEIPTS[2026], specs=CLEARANCE_SERIES_SPECS
+        )
+    assert str(refused.value) == expected
+
+
+def test_the_scale_edits_change_the_growth_the_figures_give():
+    """In the units the real tables state, the two rescaled tables' figures
+    give cigarette clearances growth of -91.0% in 2026-27, where the
+    published figures give -10.3%, and other tobacco growth of -99.9% in
+    2025-26, where they give -13.6%."""
+
+    def growth(levels, key):
+        # 2025-26 over March 2026's 2024-25 outturn, then 2026-27 over 2025-26.
+        before = float(MARCH_2026_CLEARANCES[key][0])
+        return [round(levels[0] / before - 1, 6), round(levels[1] / levels[0] - 1, 6)]
+
+    for name, key, year, scaled, real in (
+        ("spelled-scale-real-release", "cigarettes", 1, -0.910322, -0.103219),
+        ("new-unit-real-release", "other_tobacco_products", 0, -0.999136, -0.136189),
+    ):
+        table, _, scale, _ = UNREAD_EDITS[name]
+        changed = edit_real_table(REAL_OCTOBER_2026_RECEIPTS, table, scale=scale)
+        (line,) = [
+            row
+            for row in read_sheet_rows(changed, table)
+            if receipts_label(row.get("B")) == CLEARANCE_SPECS[key].row
+        ]
+        levels = [float(line[column]) for column in "CD"]
+        published = [float(level) for level in OCTOBER_2026_CLEARANCES[key][:2]]
+        assert growth(levels, key)[year] == scaled, name
+        assert growth(published, key)[year] == real, name
+
+
+def test_a_real_table_without_its_unit_cell_refuses_the_lines_it_describes():
+    """The helper clears the non-cigarette total's label and, separately,
+    Table 4.12's note. Each leaves its lines, hand-rolled and other tobacco
+    or the three alcohol lines, without the cell that states their unit,
+    and the importer refuses them; it reads cigarettes as before."""
+    for table, cell in (("4.11", "B6"), ("4.12", "B8")):
+        changed = edit_real_table(REAL_OCTOBER_2026_RECEIPTS, table, cells={cell: None})
+        for key, spec in CLEARANCE_SPECS.items():
+            if spec.title != (
+                TOBACCO_CLEARANCES if table == "4.11" else ALCOHOL_CLEARANCES
+            ):
+                continue
+            if key == "cigarettes":
+                read, real = real_levels(changed, key)
+                assert read == real
+                continue
+            with pytest.raises(ValueError) as refused:
+                real_levels(changed, key)
+            assert str(refused.value) == (
+                f"Table {table} (sheet {table}) lacks {spec.unit_cell!r}, the cell "
+                f"in which the OBR states the unit of {'.'.join(spec.path)}"
+            )
+
+
+def in_year_row(table, heading, key):
+    """Write out the importer's refusal of the ``key`` line of real Table
+    ``table`` with ``heading`` in the fiscal-year row over the line."""
+    return (
+        f"Table {table} (sheet {table}) holds {heading} in the fiscal-year row "
+        f"over the {'.'.join(CLEARANCE_SPECS[key].path)} line. A text beside "
+        "the years could give the line another unit, so the importer refuses "
+        "any text there."
+    )
+
+
+def not_under_total(table, key):
+    """Write out the importer's refusal of the ``key`` line of real Table
+    ``table``, a part that does not sit under its total."""
+    spec = CLEARANCE_SPECS[key]
+    return (
+        f"Table {table} (sheet {table}) lacks the layout that gives the "
+        f'{".".join(spec.path)} line its unit: an "of which:" row with no other '
+        "cell directly above the line and the total's other parts, and directly "
+        "above that row the non-cigarette total's row, which holds its label "
+        f"({spec.unit_cell!r}, as receipts_label gives it), its figures and "
+        "nothing else. The line takes its unit from that total's label, so the "
+        "importer refuses any other layout."
+    )
+
+
+# A table of listed texts can still put a unit over the wrong lines. Each
+# layout maps rows of the real October 2026 Table 4.11, columns B to I, to
+# the real rows they take: "heading" for the cigarette label beside row 4's
+# fiscal years, None for nothing. The helper halves the hand-rolled and
+# other tobacco figures (real rows 8 and 9) wherever they land, so the two
+# parts sit under the cigarette label's million sticks.
+REAL_TOBACCO_ROWS = {row.number: row for row in REAL_OCTOBER_2026_SHEETS["4.11"]}
+TOBACCO_LAYOUTS = {
+    # The cigarette label heads a second row of years over the parts, in
+    # place of "of which:", and the non-cigarette total moves below them.
+    "cigarette-unit-year-header": ({6: None, 7: "heading", 10: 6}, "year row"),
+    # The cigarette line moves directly above "of which:", and the
+    # non-cigarette total below the parts.
+    "cigarette-unit-of-which": ({5: None, 6: 5, 10: 6}, "total"),
+    # A second row of years, which the cigarette label heads, sits over the
+    # non-cigarette total, "of which:" and the parts, each a row lower.
+    "cigarette-unit-second-year-row": (
+        {6: "heading", 7: 6, 8: 7, 9: 8, 10: 9},
+        "year row",
+    ),
+}
+
+
+def tobacco_layout(name):
+    """Rewrite the real October 2026 Table 4.11 in the layout ``name``."""
+    layout, _ = TOBACCO_LAYOUTS[name]
+    cells = {}
+    for target, source in layout.items():
+        for column in "BCDEFGHI":
+            if source == "heading":
+                value = REAL_TOBACCO_ROWS[5 if column == "B" else 4][column]
+            elif source is None or REAL_TOBACCO_ROWS[source].get(column) is None:
+                value = None
+            elif column == "B":
+                value = REAL_TOBACCO_ROWS[source][column]
+            else:
+                value = float(REAL_TOBACCO_ROWS[source][column])
+                value /= 2 if source in (8, 9) else 1
+            cells[f"{column}{target}"] = value
+    halved = {
+        f"{column}{row}": 0.5
+        for row in (8, 9)
+        if row not in layout
+        for column in "CDEFGHI"
+    }
+    return edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS, "4.11", cells=cells, scale=halved
+    )
+
+
+@pytest.mark.parametrize("name", sorted(TOBACCO_LAYOUTS))
+def test_a_layout_that_puts_the_parts_under_another_unit_stops_the_run(name):
+    """Each layout keeps every text on the list and the non-cigarette
+    total's label in the table, but sets the hand-rolled and other tobacco
+    lines under the cigarette label's million sticks. In thousand kg, the
+    unit March 2026 states for them, the halved figures give 2025-26 growth
+    of -58.6% for hand-rolled tobacco and -56.8% for other tobacco, and the
+    published figures -17.1% and -13.6%. The importer reads cigarettes as
+    before and refuses both parts. It names the fiscal-year row when that
+    row holds the label, and the missing total otherwise. The run stops
+    before it renders anything."""
+    _, check = TOBACCO_LAYOUTS[name]
+    changed = tobacco_layout(name)
+    rows = read_sheet_rows(changed, "4.11")
+    texts = {
+        receipts_label(value)
+        for row in rows[2:]
+        for value in row.values()
+        if receipts_label(value)
+        and not re.fullmatch(r"\d{4}-\d{2}|[\d.]+", receipts_label(value))
+    }
+    assert texts <= CLEARANCE_TABLE_TEXTS[TOBACCO_CLEARANCES]
+    assert CLEARANCE_SPECS["hand_rolling_tobacco"].unit_cell in texts
+    for key, read, real in (
+        ("hand_rolling_tobacco", -0.585697, -0.171394),
+        ("other_tobacco_products", -0.568094, -0.136189),
+    ):
+        (line,) = [
+            row
+            for row in rows
+            if receipts_label(row.get("B")) == CLEARANCE_SPECS[key].row
+        ]
+        before = float(MARCH_2026_CLEARANCES[key][0])
+        assert round(float(line["C"]) / before - 1, 6) == read, key
+        published = float(OCTOBER_2026_CLEARANCES[key][0])
+        assert round(published / before - 1, 6) == real, key
+    sheets = {"4.11": rows, "4.12": REAL_OCTOBER_2026_SHEETS["4.12"]}
+    expected = {}
+    for key in TOBACCO_LINES:
+        if key == "cigarettes":
+            assert (
+                find_receipts_line(sheets, CLEARANCE_SPECS[key]).levels
+                == find_receipts_line(
+                    REAL_OCTOBER_2026_SHEETS, CLEARANCE_SPECS[key]
+                ).levels
+            )
+            continue
+        expected[key] = (
+            in_year_row("4.11", {"B": REAL_TOBACCO_ROWS[5]["B"]}, key)
+            if check == "year row"
+            else not_under_total("4.11", key)
+        )
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line(sheets, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected[key], key
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == expected["hand_rolling_tobacco"]
+
+
+# Ways to change the rows over the parts of a real tobacco clearances table,
+# each given the rows and the place of the "of which:" row. In all three
+# releases, column N of the total's row and column C of the "of which:" row
+# are empty, so each layout adds a text and overwrites none.
+TOTAL_LAYOUTS = {
+    # A row that holds the total's label and none of its figures.
+    "label-without-figures": lambda rows, of_which: rows.insert(
+        of_which, {"B": "Non-cigarette clearances ('000s kg)"}
+    ),
+    # The total's row holds another text after its figures.
+    "text-on-total-row": lambda rows, of_which: rows[of_which - 1].update(
+        {"N": "Cigarette clearances (million sticks)"}
+    ),
+    # The "of which:" row holds another cell.
+    "text-on-of-which-row": lambda rows, of_which: rows[of_which].update(
+        {"C": "Cigarette clearances (million sticks)"}
+    ),
+    "empty-row-above-of-which": lambda rows, of_which: rows.insert(of_which, {}),
+    "empty-row-below-of-which": lambda rows, of_which: rows.insert(of_which + 1, {}),
+}
+
+
+@pytest.mark.parametrize("layout", sorted(TOTAL_LAYOUTS))
+@pytest.mark.parametrize("release", ["March 2025", "March 2026", "October 2026"])
+def test_a_part_needs_its_total_directly_above_of_which(release, layout):
+    """Change the rows over the parts of the real tobacco clearances in one
+    way. The importer refuses hand-rolled and other tobacco with the part
+    check's message and reads cigarettes as before."""
+    _, sheet = REAL_CLEARANCE_TABLES[release, TOBACCO_CLEARANCES]
+    real, start, end, _ = real_clearance_rows(release, TOBACCO_CLEARANCES)
+    (of_which,) = [
+        i for i in range(start, end) if receipts_label(real[i].get("B")) == "of which:"
+    ]
+    rows = [dict(row) for row in real]
+    TOTAL_LAYOUTS[layout](rows, of_which)
+    for key in TOBACCO_LINES:
+        spec = CLEARANCE_SPECS[key]
+        if key == "cigarettes":
+            assert (
+                find_receipts_line({sheet: rows}, spec).levels
+                == find_receipts_line({sheet: real}, spec).levels
+            )
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({sheet: rows}, spec)
+        assert str(refused.value) == not_under_total(sheet, key), key
+
+
+def test_the_alcohol_receipts_table_stays_outside_the_clearance_table():
+    """On the real October 2026 sheet 4.12 the OBR follows the alcohol
+    clearances with the alcohol receipts forecasts, which hold "£ billion"
+    and "Note: All taxes are on an accrued basis.". The importer ends the
+    clearance table at their title. It reads the clearance lines with a note
+    or "£ million" in the receipts table, and refuses them with the same
+    note in the clearance table's last row, or under a receipts title
+    CLEARANCE_TABLE_ENDS does not name, since the clearance table then runs
+    to the sheet's end."""
+    rows, start, end, following = real_clearance_rows(
+        "October 2026", ALCOHOL_CLEARANCES
+    )
+    assert (start, end, following) == (1, 11, "alcohol receipts forecasts")
+    assert rows[12]["C"] == "£ billion"
+    assert rows[18]["B"] == "Note: All taxes are on an accrued basis."
+    note = "Note: Spirits clearances are in litres."
+    for cells in ({"B22": note}, {"J13": note}, {"C13": "£ million"}):
+        changed = edit_real_table(REAL_OCTOBER_2026_RECEIPTS, "4.12", cells=cells)
+        for key in ALCOHOL_LINES:
+            read, real = real_levels(changed, key)
+            assert read == real, (cells, key)
+    changed = edit_real_table(REAL_OCTOBER_2026_RECEIPTS, "4.12", cells={"B11": note})
+    with pytest.raises(ValueError) as refused:
+        real_levels(changed, "wine")
+    assert str(refused.value) == unread("4.12", ALCOHOL_CLEARANCES, (note, "B"))
+    retitled = "4.12 Alcohol receipts forecasts (accrued)"
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS, "4.12", cells={"B12": retitled}
+    )
+    with pytest.raises(ValueError) as refused:
+        real_levels(changed, "wine")
+    assert str(refused.value) == unread(
+        "4.12",
+        ALCOHOL_CLEARANCES,
+        (retitled, "B"),
+        ("£ billion", "C"),
+        ("Note: All taxes are on an accrued basis.", "B"),
+    )
+
+
+def unread_text(text, title):
+    """Decide from the lists, without the importer, whether it must refuse
+    ``text`` in a clearance table titled ``title``. The test leaves out
+    blanks, numbers, fiscal years and table titles a list names."""
+    label = receipts_label(text)
+    if not label or label in CLEARANCE_TABLE_TEXTS[title]:
+        return False
+    if re.fullmatch(r"\d{4}-\d{2}", label):
+        return False
+    try:
+        float(label)
+        return False
+    except ValueError:
+        pass
+    heading = re.match(r"(\d+\.\d+)\s+(.+)$", " ".join(text.split()))
+    return not (
+        heading
+        and receipts_label(heading.group(2))
+        in {*CLEARANCE_TABLE_ENDS[title], TOBACCO_CLEARANCES, ALCOHOL_CLEARANCES}
+    )
+
+
+UNIT_SHAPED = st.one_of(
+    st.sampled_from(
+        [
+            "kg",
+            "'000s kg",
+            "(kg)",
+            "(tonnes)",
+            "Unit",
+            "£ billion",
+            "million sticks",
+            "(million sticks)",
+            "thousands of hectolitres of alcohol",
+            "Of which: cigars",
+            "Cigarette clearances (billion sticks)",
+            "Non-cigarette clearances (thousand kg)",
+            "Heated tobacco clearances",
+            "Note: Non-cigarettes are in million sticks.",
+            "Note: Sake clearances are in thousands of hectolitres of alcohol.",
+            "Note: All clearances are in millions of litres of alcohol.",
+            # Shaped like a table's title, so sheet_tables starts a table there.
+            "1.1 Note: Cigarette forecasts shown in ten million sticks.",
+            "4.13 Tobacco clearances in ten million sticks",
+        ]
+    ),
+    st.builds(
+        "{}{}{}{}".format,
+        st.sampled_from(
+            [
+                "",
+                "(",
+                "Note: ",
+                "Note: All clearances are in ",
+                "Note: Cigarette forecasts shown in ",
+                "Note: Other tobacco products are in ",
+            ]
+        ),
+        st.sampled_from(["", "ten ", "tens of ", "thousand ", "'000s ", "million "]),
+        st.sampled_from(
+            [
+                "kg",
+                "sticks",
+                "million sticks",
+                "kilotonnes",
+                "tonnes",
+                "litres",
+                "hectolitres of alcohol",
+                "litres of product",
+            ]
+        ),
+        st.sampled_from(["", ".", ")"]),
+    ),
+)
+
+
+@settings(max_examples=200, deadline=None, derandomize=True)
+@given(table=st.sampled_from(sorted(REAL_CLEARANCE_TABLES)), data=st.data())
+def test_any_text_no_one_has_read_stops_a_real_clearance_table(table, data):
+    """Put one text in a real table, in an empty cell of any row from its
+    title through the table's end, in any column, or on a new row. Any text
+    outside the table's list, from st.text() or shaped like a unit, stops
+    every line of the table: the importer names the cell, or finds no line
+    or table where the text took a label's or the title's place. A text from
+    the list, other than a line's label or a marker, in a cell outside the
+    lines, stops every line when it sits in the fiscal-year row, and a part
+    of a total when it sits between the part and the total's row; the
+    importer names the year row or the missing total. Anywhere else it
+    changes nothing: the importer reads every line as before."""
+    release, title = table
+    _, sheet = REAL_CLEARANCE_TABLES[table]
+    real, start, end, _ = real_clearance_rows(release, title)
+    rows = [dict(row) for row in real]
+    keys = [key for key, spec in CLEARANCE_SPECS.items() if spec.title == title]
+    listed = data.draw(st.booleans(), label="listed")
+    if listed:
+        labels = {CLEARANCE_SPECS[key].row for key in keys} | {"outturn", "forecast"}
+        text = data.draw(
+            st.sampled_from(sorted(CLEARANCE_TABLE_TEXTS[title] - labels)), label="text"
+        )
+    else:
+        text = data.draw(st.one_of(st.text(min_size=1, max_size=40), UNIT_SHAPED))
+        assume(unread_text(text, title))
+    year_row = next(
+        i
+        for i in range(start, end)
+        if any(re.fullmatch(r"\d{4}-\d{2}", str(v or "")) for v in rows[i].values())
+    )
+    line_rows = {
+        i
+        for i in range(year_row + 1, end)
+        if any(re.fullmatch(r"[\d.]+", str(v or "")) for v in rows[i].values())
+    }
+    column = data.draw(st.sampled_from("ABCDEFGHIJKLM"), label="column")
+    if data.draw(st.booleans(), label="new row"):
+        lowest = year_row + 1 if listed else start + 1
+        place = data.draw(st.integers(lowest, end), label="row")
+        rows.insert(place, {column: text})
+    else:
+        empty = [
+            i for i in range(start, end) if not str(rows[i].get(column) or "").strip()
+        ]
+        if listed:
+            empty = [
+                i for i in empty if i not in line_rows and (i != start or column > "B")
+            ]
+        assume(empty)
+        place = data.draw(st.sampled_from(empty), label="row")
+        rows[place][column] = text
+    # The real rows of each line and of the total that states a part's unit.
+    # A new row at ``place`` sits above the real row there.
+    real_row = {
+        receipts_label(real[i].get("B")): i
+        for i in range(start, end)
+        if real[i].get("B")
+    }
+    for key in keys:
+        spec = CLEARANCE_SPECS[key]
+        if listed:
+            if place == year_row:
+                event("listed: fiscal-year row")
+                expected = in_year_row(sheet, {column: text}, key)
+            elif (
+                spec.part_of_total
+                and real_row[spec.unit_cell] < place <= real_row[spec.row]
+            ):
+                event("listed: between a part and its total")
+                expected = not_under_total(sheet, key)
+            else:
+                event("listed: read")
+                assert (
+                    find_receipts_line({sheet: rows}, spec).levels
+                    == find_receipts_line({sheet: real}, spec).levels
+                )
+                continue
+            with pytest.raises(ValueError) as refused:
+                find_receipts_line({sheet: rows}, spec)
+            assert str(refused.value) == expected
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({sheet: rows}, spec)
+        if str(refused.value).startswith(f'Expected one "{spec.row}" row'):
+            event("unread: no line or table")
+        else:
+            event("unread: named")
+            assert str(refused.value) == unread(sheet, title, (text, column))
+
+
+# A spreadsheet can split a cell's text into formatting runs. The check must
+# see the whole text: each first run below passes alone, as a listed text, a
+# number or a fiscal year.
+TEN_MILLION_STICKS = "Note: Cigarette forecasts shown in ten million sticks."
+FIRST_RUNS = {
+    "rich-listed-prefix": "of which:",
+    "rich-numeric-prefix": "1",
+    "rich-fiscal-year-prefix": "2026-27",
+}
+
+
+@pytest.mark.parametrize("name", sorted(FIRST_RUNS))
+def test_the_check_reads_every_formatting_run_of_a_cell(name):
+    """The helper divides the real October 2026 cigarette forecasts by ten
+    and writes B10 of Table 4.11 as one inline string in two runs: the
+    first ("of which:", "1" or "2026-27"), then " Note: Cigarette forecasts
+    shown in ten million sticks." The reader returns both runs, and the
+    importer refuses every tobacco line, naming the whole cell, and stops
+    before it renders anything."""
+    runs = (FIRST_RUNS[name], " " + TEN_MILLION_STICKS)
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS,
+        "4.11",
+        cells={"B10": runs},
+        scale={f"{column}5": 0.1 for column in "DEFGHI"},
+    )
+    with ZipFile(BytesIO(changed)) as archive:
+        sheet = ET.fromstring(archive.read(_sheet_paths(archive)["4.11"]))
+    cell = sheet.find("m:sheetData/m:row/m:c[@r='B10']", XLSX_NS)
+    assert [
+        run.findtext("m:t", namespaces=XLSX_NS)
+        for run in cell.findall("m:is/m:r", XLSX_NS)
+    ] == list(runs)
+    rows = read_sheet_rows(changed, "4.11")
+    (note,) = [row["B"] for row in rows if row.number == 10]
+    assert note == "".join(runs)
+    expected = unread("4.11", TOBACCO_CLEARANCES, (note, "B"))
+    for key in TOBACCO_LINES:
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({"4.11": rows}, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected, key
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == expected
+
+
+def runs_workbook(texts, reading=None):
+    """Build a one-sheet workbook that holds ``texts`` in A1 as an inline
+    string and in A2 as a shared string, each with a formatting run for each
+    text, and their join in A3 as an inline string of one ``<t>``. With
+    ``reading``, each string ends in a phonetic run that holds it."""
+    sheet = make_sheet(
+        {
+            1: [
+                '<c r="A1" t="inlineStr">'
+                + ET.tostring(formatting_runs("is", texts, reading), encoding="unicode")
+                + "</c>"
+            ],
+            2: ['<c r="A2" t="s"><v>0</v></c>'],
+            3: [make_inline_cell("A3", "")],
+        }
+    )
+    sheet = ET.fromstring(sheet)
+    joined = sheet.find("m:sheetData/m:row/m:c[@r='A3']/m:is/m:t", XLSX_NS)
+    joined.text = "".join(texts)
+    if reading is not None:
+        sheet.find("m:sheetData/m:row/m:c[@r='A3']/m:is", XLSX_NS).append(
+            phonetic_run(reading, len(joined.text))
+        )
+    strings = ET.Element(f"{{{XLSX_MAIN}}}sst")
+    strings.append(formatting_runs("si", texts, reading))
+    output = BytesIO()
+    with ZipFile(BytesIO(make_workbook({"1": ET.tostring(sheet)}))) as source:
+        with ZipFile(output, "w") as dest:
+            for entry in source.infolist():
+                dest.writestr(entry, source.read(entry))
+            dest.writestr("xl/sharedStrings.xml", ET.tostring(strings))
+    return output.getvalue()
+
+
+STRING_TEXT = st.text(st.characters(min_codepoint=0x20, max_codepoint=0xD7FF))
+
+
+@settings(max_examples=100, deadline=None, derandomize=True)
+@given(
+    texts=st.lists(STRING_TEXT, min_size=1, max_size=4),
+    reading=st.one_of(st.none(), STRING_TEXT),
+)
+def test_a_string_reads_whole_in_any_formatting_runs(texts, reading):
+    """However a spreadsheet splits a text into formatting runs, the reader
+    returns the whole text, from an inline string and from a shared string
+    alike, as it does from one ``<t>``. It leaves out the text of any
+    phonetic run (``<rPh>``) the string holds."""
+    rows = read_sheet_rows(runs_workbook(texts, reading), "1")
+    assert [(row.number, row["A"]) for row in rows] == [
+        (number, "".join(texts)) for number in (1, 2, 3)
+    ]
+
+
+TEN_THOUSAND_HECTOLITRES = (
+    "Note: Spirits forecasts shown in ten thousand hectolitres of alcohol."
+)
+
+
+def test_a_phonetic_run_cannot_end_a_clearance_table():
+    """The helper writes B11 of the real October 2026 sheet 4.12, empty in
+    the published sheet, as an inline string with no text of its own and a
+    phonetic run that holds "4.12 Alcohol receipts forecasts". It puts a
+    note in ten thousand hectolitres in C11 and divides the spirits
+    forecasts by ten. A reader that kept the phonetic run would end the
+    clearance table at B11, above the note, and the importer would read
+    2026-27 spirits growth of -90.1% in place of -0.8%. This reader returns
+    B11 empty, so the table runs to the real title in row 12, and the
+    importer refuses every alcohol line and names the note."""
+    changed = edit_real_table(
+        REAL_OCTOBER_2026_RECEIPTS,
+        "4.12",
+        cells={
+            "B11": formatting_runs("is", ("",), "4.12 Alcohol receipts forecasts"),
+            "C11": TEN_THOUSAND_HECTOLITRES,
+        },
+        scale={f"{column}7": 0.1 for column in "DEFGHI"},
+    )
+    rows = read_sheet_rows(changed, "4.12")
+    (row,) = [row for row in rows if row.number == 11]
+    assert (row["B"], row["C"]) == ("", TEN_THOUSAND_HECTOLITRES)
+    (spirits,) = [line for line in rows if line.number == 7]
+    assert round(float(spirits["D"]) / float(spirits["C"]) - 1, 6) == -0.900793
+    expected = unread("4.12", ALCOHOL_CLEARANCES, (TEN_THOUSAND_HECTOLITRES, "C"))
+    for key in ALCOHOL_LINES:
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line({"4.12": rows}, CLEARANCE_SPECS[key])
+        assert str(refused.value) == expected, key
+    with pytest.raises(ValueError) as refused:
+        compute_receipts_growth(
+            changed, REAL_RECEIPTS[2026], specs=CLEARANCE_SERIES_SPECS
+        )
+    assert str(refused.value) == expected
+
+
+# A sheet that repeats a clearance table's heading must stop the run: the
+# importer would check the text under one and could read a line under the
+# other.
+def repeat_alcohol_heading(workbook, sheet):
+    """Clear the lines of the real alcohol clearance table on ``sheet``, rows
+    5 to 7, and repeat its rows 2 to 10 below the sheet's last row, so a
+    second copy of its heading follows the alcohol receipts forecasts.
+    Divide the repeated spirits forecasts by ten and put a note in ten
+    thousand hectolitres below the repeated rows. Return the workbook and
+    the second heading's row."""
+    rows = read_sheet_rows(workbook, sheet)
+    shift = rows[-1].number + 1
+    cells = {f"{column}{number}": None for column in "BCDEFGHI" for number in (5, 6, 7)}
+    for row in rows:
+        if not 2 <= row.number <= 10:
+            continue
+        for column, value in row.items():
+            if not str(value or "").strip():
+                continue
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            else:
+                if row.number == 7 and column > "C":
+                    value /= 10
+            cells[f"{column}{row.number + shift}"] = value
+    cells[f"B{11 + shift}"] = TEN_THOUSAND_HECTOLITRES
+    return edit_real_table(workbook, sheet, cells=cells), 2 + shift
+
+
+def repeated(table, row):
+    """Write out the importer's refusal of real Table ``table`` with its
+    heading in rows 2 and ``row``."""
+    return (
+        f"Table {table} (sheet {table}) repeats its heading, in rows 2 and "
+        f"{row}. The importer would check the text under one and could read a "
+        "line under another, so keep one heading."
+    )
+
+
+def test_a_repeated_clearance_heading_stops_the_run(tmp_path):
+    """The helper clears the lines of the real October 2026 Table 4.12 and
+    repeats the table below the alcohol receipts forecasts, under a second
+    "4.12 Alcohol clearance forecasts" heading in row 53. It divides the
+    repeated spirits forecasts by ten and states ten thousand hectolitres in
+    a note below them. Each line then sits once, under the second heading,
+    and the first keeps the table's listed note. In thousand hectolitres,
+    the repeated figures give 2026-27 spirits growth of -90.1%, and the
+    published figures -0.8%. The importer refuses every alcohol line and
+    names both headings' rows, and the renderer gets no growth. A run on the
+    real March 2026 tables, changed the same way, stops before it writes
+    anything. The importer reads the tobacco lines as before."""
+    changed, row = repeat_alcohol_heading(REAL_OCTOBER_2026_RECEIPTS, "4.12")
+    assert row == 53
+    rows = read_sheet_rows(changed, "4.12")
+    (spirits,) = [line for line in rows if line.number == 58]
+    assert receipts_label(spirits["B"]) == "spirits"
+    published = [float(level) for level in OCTOBER_2026_CLEARANCES["spirits"][:2]]
+    assert round(float(spirits["D"]) / float(spirits["C"]) - 1, 6) == -0.900793
+    assert round(published[1] / published[0] - 1, 6) == -0.007927
+    sheets = {"4.11": REAL_OCTOBER_2026_SHEETS["4.11"], "4.12": rows}
+    for key, spec in CLEARANCE_SPECS.items():
+        if spec.title == TOBACCO_CLEARANCES:
+            assert (
+                find_receipts_line(sheets, spec).levels
+                == find_receipts_line(REAL_OCTOBER_2026_SHEETS, spec).levels
+            ), key
+            continue
+        with pytest.raises(ValueError) as refused:
+            find_receipts_line(sheets, spec)
+        assert str(refused.value) == repeated("4.12", 53), key
+    # Rows built as plain dicts carry no number, so the refusal counts their
+    # places: row 53 sits 47th among the rows the sheet stores.
+    with pytest.raises(ValueError) as refused:
+        find_receipts_line(
+            {"4.12": [dict(line) for line in rows]}, CLEARANCE_SPECS["spirits"]
+        )
+    assert str(refused.value) == repeated("4.12", 47)
+    with pytest.raises(ValueError) as refused:
+        render(
+            get_yoy_growth_path().read_text(),
+            current=changed,
+            previous=REAL_RECEIPTS[2026],
+            **COMMITTED_RELEASES,
+        )
+    assert str(refused.value) == repeated("4.12", 53)
+    march, row = repeat_alcohol_heading(REAL_RECEIPTS[2026], "3.12")
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_bytes() for path in [yoy, *gap_dir.iterdir()]}
+    with pytest.raises(ValueError) as refused:
+        run_main(
+            tmp_path,
+            make_test_xlsx(),
+            "--yaml-path",
+            str(yoy),
+            receipts=march,
+            previous_receipts=REAL_RECEIPTS[2025],
+        )
+    assert str(refused.value) == repeated("3.12", row)
+    assert row == 38
+    assert {path: path.read_bytes() for path in before} == before
+    assert not list(yoy.parent.rglob("*.staged"))
+
+
+# per_head_growth divides each series' own growth, a duty's base for a line
+# with rates, whether the importer links the line to the previous EFO or to
+# its own outturn.
+
+REMOTE_GAMING = next(
+    spec for spec in RECEIPTS_SERIES_SPECS if spec.path[-1] == "remote_gaming"
+)
+
+
+def test_per_head_growth_divides_the_base_growth_the_series_holds():
+    """Remote Gaming Duty receipts double and its base, receipts over the
+    rate, grows 10%, while population grows 1%. per_head_growth returns
+    1.10 / 1.01 - 1 for the base's growth per head, with or without a
+    previous line, not 2 / 1.01 - 1 (receipts) or the growth the levels and
+    the model's rates give."""
+    line = ReceiptsLine(
+        table="4.10",
+        label="Remote Gaming Duty",
+        levels={2025: 100.0, 2026: 200.0},
+        outturn_years=frozenset(),
+    )
+    series = ReceiptsGrowth(
+        values={2025: 0.0, 2026: 0.10},
+        line=line,
+        previous_line=None,
+        spec=REMOTE_GAMING,
+    )
+    population = {2025: 0.01, 2026: 0.01}
+    assert per_head_growth(series, population).values == {
+        2025: round(1 / 1.01 - 1, 6),
+        2026: 0.089109,
+    }
+    previous = ReceiptsLine(
+        table="3.10",
+        label="Remote Gaming Duty",
+        levels={2024: 100.0},
+        outturn_years=frozenset({2024}),
+    )
+    assert (
+        per_head_growth(replace(series, previous_line=previous), population).values[
+            2026
+        ]
+        == 0.089109
+    )
+
+
+def test_real_remote_gaming_base_per_head_rounds_once():
+    """The real line has its own outturn and no previous line. Each year the
+    importer divides one plus the base's growth before rounding by one plus
+    population growth, subtracts one and rounds once, as the committed
+    series holds it."""
+    growth = compute_receipts_growth(
+        REAL_OCTOBER_2026_RECEIPTS, REAL_RECEIPTS[2026], specs=(REMOTE_GAMING,)
+    )[REMOTE_GAMING.path]
+    assert growth.previous_line is None
+    population = population_growth(get_yoy_growth_path().read_text())
+    per_head = per_head_growth(growth, population)
+    for year, ratio in growth.ratios.items():
+        assert per_head.values[year] == round(
+            ratio / (1 + growth_in_effect(population, year)) - 1, 6
+        )
+        assert per_head.ratios[year] == ratio / (1 + growth_in_effect(population, year))
+    stored = _values(get_yoy_growth_path().read_text(), REMOTE_GAMING.path)
+    assert {year: stored[year] for year in per_head.values} == per_head.values
+
+
+@settings(max_examples=60, deadline=None, derandomize=True)
+@given(
+    ratios=st.lists(
+        st.floats(min_value=0.5, max_value=2, allow_nan=False), min_size=1, max_size=8
+    ),
+    population=st.lists(POPULATION_GROWTH, min_size=8, max_size=8),
+)
+def test_per_head_growth_times_population_growth_is_the_series_growth(
+    ratios, population
+):
+    """For any growth before rounding and any population growth,
+    (1 + per-head growth) × (1 + population growth) matches one plus the
+    aggregate growth to within the six-decimal rounding, 5e-7 ×
+    (1 + population growth). The per-head series rounds its own ratios, and
+    for a series without its ratios per_head_growth divides one plus its
+    six-decimal values instead."""
+    years = range(2025, 2025 + len(ratios))
+    by_year = dict(zip(years, ratios))
+    population_by_year = dict(zip(range(2025, 2033), population))
+    values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in by_year.items()}
+    line = ReceiptsLine("4.12", "Wine", {}, frozenset())
+    spec = CLEARANCE_SPECS["wine"]
+    series = ReceiptsGrowth(values, line, None, spec, by_year)
+    per_head = per_head_growth(series, population_by_year)
+    for year, ratio in by_year.items():
+        growth = 1 + population_by_year[year]
+        assert (
+            abs((1 + per_head.values[year]) * growth - ratio) <= 5e-7 * growth + 1e-12
+        )
+        assert per_head.values[year] == round(per_head.ratios[year] - 1, 6) + 0.0
+    rounded = per_head_growth(replace(series, ratios=None), population_by_year)
+    assert rounded.values == {
+        year: round((1 + value) / (1 + population_by_year[year]) - 1, 6) + 0.0
+        for year, value in values.items()
+    }
+
+
+def test_a_series_growth_before_rounding_must_round_to_its_values():
+    line = ReceiptsLine("4.12", "Wine", {}, frozenset())
+    with pytest.raises(ValueError, match="does not round to the growth"):
+        ReceiptsGrowth({2025: 0.01}, line, None, CLEARANCE_SPECS["wine"], {2025: 1.02})
+    with pytest.raises(ValueError, match="does not round to the growth"):
+        ReceiptsGrowth(
+            {2025: 0.01},
+            line,
+            None,
+            CLEARANCE_SPECS["wine"],
+            {2025: 1.01, 2026: 1.0},
+        )
+
+
+def test_population_growth_before_its_first_entry_is_that_entry():
+    """The model backdates a parameter's first value, so a year before
+    ons.population's first entry takes that entry, not zero: wine flat in
+    2025 falls 1 / 1.02 - 1 per head when population grows 2% in its first
+    entry, 2026."""
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2025) == 0.02
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2029) == 0.02
+    assert growth_in_effect({2026: 0.02, 2030: -0.005}, 2031) == -0.005
+    before = ReceiptsLine("3.12", "Wine", {2024: 100.0}, frozenset({2024}))
+    current = ReceiptsLine("4.12", "Wine", {2025: 100.0}, frozenset({2025}))
+    series = ReceiptsGrowth(
+        {2025: 0.0}, current, before, CLEARANCE_SPECS["wine"], {2025: 1.0}
+    )
+    assert per_head_growth(series, {2026: 0.02}).values == {2025: -0.019608}
+
+
+def test_per_head_growth_refuses_an_index_that_rounds_to_zero():
+    """Clearances that fall from 1,000,000 to 4.55 leave a raw index of
+    0.00001 at five decimals; divided by 1.03 for population, the per-head
+    index rounds to zero, so the importer refuses the series."""
+    before = ReceiptsLine("3.12", "Wine", {2024: 1e6}, frozenset({2024}))
+    current = ReceiptsLine("4.12", "Wine", {2025: 4.55}, frozenset({2025}))
+    ratio = 4.55 / 1e6
+    series = ReceiptsGrowth(
+        {2025: round(ratio - 1, 6) + 0.0},
+        current,
+        before,
+        CLEARANCE_SPECS["wine"],
+        {2025: ratio},
+    )
+    check_index("raw", series.values)
+    assert round(1 + series.values[2025], 5) == 0.00001
+    with pytest.raises(ValueError, match="too small to grow from"):
+        per_head_growth(series, {2025: 0.03})

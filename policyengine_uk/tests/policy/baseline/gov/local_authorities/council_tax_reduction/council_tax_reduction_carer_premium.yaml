@@ -1,0 +1,423 @@
+# Scottish councils include the carer premium in the working-age council tax
+# reduction where the applicant or partner has regular and substantial caring
+# responsibilities for a severely disabled person (SSI 2021/249 Sch 1 para
+# 5(2)), and the Scottish Ministers count among those responsibilities "an
+# award of universal credit which includes the carer element described in
+# regulation 29 of the 2013 Regulations" (para 6(1)(c)). No other scheme's
+# carer premium has that limb: under the Housing Benefit, English and Welsh
+# schedules, DWP and councils test entitlement to Carer's Allowance or Carer
+# Support Payment (HB Regs 2006 Sch 3 para 17; WSI 2013/3029 Sch 7 para 14),
+# as Scottish councils did for persons under pension age before 1 April 2022
+# (SSI 2012/303 Sch 1 para 14). From 1 April 2022 to 31 March
+# 2025 an "award of universal credit" included "a universal credit award with
+# a value of zero" (reg 4, as amended by SSI 2022/52 reg 3); from 1 April 2025
+# it "means an award of universal credit made under Part 1 of the 2012 Act"
+# (SSI 2025/24 reg 8), and an income that tapers the award to nil leaves no
+# award (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17). An income
+# that tapers the amount payable below one penny leaves no award to have a
+# value of zero in any year: DWP makes no award or the award ends (UC Claims
+# and Payments Regs 2013 reg 32A(1)), and the Scottish Government's policy
+# note to SSI 2025/24 confines the earlier words to an award a sanction
+# reduces to zero. So the model needs an award of at least one penny in every
+# year from 2022-23.
+#
+# Amounts: carer premium £48.15 a week from 1 April 2026 (SSI 2021/249 Sch 1
+# para 5(1), substituted by SSI 2026/56), £46.40 in 2025-26, £45.60 in
+# 2024-25 and £38.85 in 2022-23 (para 17, as substituted by SSI 2022/52 reg
+# 25(c)(ii); para 5(1) kept £37.70 until SSI 2023/38 amended both from
+# 1 April 2023); personal allowance for a single person aged 25 or over
+# £95.55 (2026-27) and £77.00 (2022-23); Universal Credit carer element
+# £209.34 a month (2026-27), £201.68 (2025-26), £198.31 (2024-25) and £168.81
+# (2022-23), standard allowance £424.90, £400.14, £393.45 and £334.91.
+
+- name: The issue's Scottish carer aged 40 with 35 hours and no Carer's Allowance claim gets the carer premium
+  # The award includes the carer element, 209.34 x 12 = 2,512.08, so the
+  # council includes the carer premium (para 6(1)(c)) and the applicable
+  # amount comes to (95.55 + 48.15) x 52 = 7,472.40, not 95.55 x 52 =
+  # 4,968.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 209.34 * 12
+    universal_credit: (424.90 + 209.34) * 12
+    receives_uc_carer_element: true
+    is_entitled_to_carer_benefit: false
+    carer_premium: 0
+    council_tax_reduction_carer_premium: 48.15 * 52
+    council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_adult_premiums: 48.15 * 52
+
+- name: The Scottish carer premium for a carer element starts with the 2021 Regulations on 1 April 2022
+  # The model reads model year 2022 (2022-23) at 30 April 2022. Carer element
+  # 168.81 x 12 = 2,025.72; carer premium 38.85 x 52 = 2,020.20; applicable
+  # amount (77.00 + 38.85) x 52.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 168.81 * 12
+    council_tax_reduction_carer_premium: 38.85 * 52
+    council_tax_reduction_applicable_amount: (77.00 + 38.85) * 52
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_adult_premiums: 38.85 * 52
+
+- name: Before 1 April 2022 the Scottish scheme for persons under pension age tested Carer's Allowance only
+  # Under SSI 2012/303 Sch 1 para 14, councils included the premium for an
+  # applicant or partner "entitled to a carer's allowance". The model reads
+  # model year 2021 (2021-22) at 30 April 2021, so the carer element, 163.73
+  # x 12 = 1,964.76, brings no premium.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 163.73 * 12
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
+    council_tax_reduction_working_age_adult_premiums: 0
+
+- name: The same carer in England gets no carer premium for the carer element
+  # In England the model takes the working-age premiums from the Housing
+  # Benefit schedule, whose carer premium needs entitlement to Carer's
+  # Allowance (HB Regs 2006 Sch 3 para 17(1)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    uc_carer_element: 209.34 * 12
+    receives_uc_carer_element: true
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_applicable_amount: 95.55 * 52
+    council_tax_reduction_working_age_carers: 0
+
+- name: The same carer in Wales gets no carer premium for the carer element
+  # Welsh councils include the premium for an applicant or partner "entitled
+  # to a carer's allowance" (WSI 2013/3029 Sch 7 para 14(1)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: WALES
+  output:
+    uc_carer_element: 209.34 * 12
+    receives_uc_carer_element: true
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_applicable_amount: 95.55 * 52
+    council_tax_reduction_working_age_carers: 0
+
+- name: A Scottish carer whose income tapers the award to nil has no award and no carer premium
+  # With £20,000 of earnings the award comes to nil, which in 2026 leaves no
+  # award (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17), and para
+  # 6(1)(c) does not apply, though the maximum amount still includes the
+  # carer element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 20_000
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 209.34 * 12
+    universal_credit: 0
+    receives_uc_carer_element: false
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
+
+- name: In 2024 a Scottish carer whose earnings taper the award to nil has no award and no carer premium
+  # The same carer in 2024-25. The maximum amount comes to (393.45 + 198.31)
+  # x 12 = 7,101.12, and the taper, 0.55 x 17,942.66 = 9,868.46 on £20,000
+  # of earnings less income tax and National Insurance, takes more, so the
+  # award comes to nil. Until 31 March 2025 an "award of universal credit"
+  # included "a universal credit award with a value of zero" (reg 4), but an
+  # income that fails the financial condition leaves no award to have that
+  # value (Welfare Reform Act 2012 s.5(1)(b); UC Regs 2013 reg 17), so para
+  # 6(1)(c) does not apply: no carer premium, where the model would
+  # otherwise include 45.60 x 52 = 2,371.20.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 20_000
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 198.31 * 12
+    uc_maximum_amount: 7_101.12
+    uc_earned_income: 17_942.66
+    universal_credit: 0
+    receives_uc_carer_element: false
+    is_entitled_to_carer_benefit: false
+    carer_premium: 0
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
+
+- name: From 1 April 2025 the same Scottish carer's nil award leaves no award
+  # The same carer in 2025-26. The maximum amount comes to (400.14 + 201.68)
+  # x 12 = 7,221.84, and the taper again takes more, so the award comes to
+  # nil. From 1 April 2025 reg 4 defines an award of universal credit as one
+  # "made under Part 1 of the 2012 Act" (SSI 2025/24 reg 8), and an income
+  # that tapers it to nil leaves no award, so para 6(1)(c) does not apply: no
+  # carer premium. Neither of reg 10A's nil awards (a sanction, or a reclaim
+  # under the UC Claims and Payments Regs 2013 reg 32A) arises.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+        employment_income: 20_000
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    uc_carer_element: 201.68 * 12
+    universal_credit: 0
+    receives_uc_carer_element: false
+    is_entitled_to_carer_benefit: false
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_working_age_carers: 0
+
+- name: A Scottish carer with both Carer Support Payment and the carer element gets one premium
+  # The applicant has regular and substantial caring responsibilities under
+  # both para 6(1)(a) and (c), and councils include the premium once for an
+  # applicant with those responsibilities (para 5(2)): 48.15 x 52 =
+  # 2,503.80, not twice that.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    receives_carer_benefit: true
+    receives_uc_carer_element: true
+    carer_premium: 48.15 * 52
+    council_tax_reduction_carer_premium: 48.15 * 52
+    council_tax_reduction_working_age_carers: 1
+
+- name: Scottish partners caring for the same person get one premium, whichever holds the carer element
+  # Both care 35 hours. The younger receives Carer Support Payment and the
+  # joint award includes the carer element for the elder (UC Regs 2013 reg
+  # 29(3)). Councils include one premium under para 5(3) and (4), in respect
+  # of the one whose award includes the carer element: 48.15 x 52 =
+  # 2,503.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 45
+        care_hours: 35
+        would_claim_carers_allowance: false
+      younger:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+    benunits:
+      couple:
+        members: [elder, younger]
+    households:
+      household:
+        members: [elder, younger]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    partners_care_for_same_severely_disabled_person: true
+    receives_carer_benefit: [false, true]
+    receives_uc_carer_element: [true, false]
+    council_tax_reduction_carer_premium: 48.15 * 52
+    council_tax_reduction_working_age_carers: 1
+
+- name: Scottish partners caring for different people get a premium each, one on Carer Support Payment and one with the carer element
+  # Both care 35 hours, for different people. The younger receives Carer
+  # Support Payment, and the award includes a carer element for each (UC Regs
+  # 2013 reg 29(2)). Councils include the premium for each (para 5(2)): the
+  # elder under para 6(1)(c), the younger under para 6(1)(a), so 2 x 48.15 x
+  # 52 = 5,007.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 45
+        care_hours: 35
+        would_claim_carers_allowance: false
+      younger:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+    benunits:
+      couple:
+        members: [elder, younger]
+        partners_care_for_same_severely_disabled_person: false
+    households:
+      household:
+        members: [elder, younger]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    is_entitled_to_carer_benefit: [false, true]
+    receives_uc_carer_element: [true, true]
+    council_tax_reduction_working_age_carers: 2
+    council_tax_reduction_working_age_adult_premiums: 2 * 48.15 * 52
+
+- name: A Scottish pensioner's schedule has no carer element limb
+  # Under Scotland's pension-age scheme, councils test entitlement to Carer's
+  # Allowance or Carer Support Payment (SSI 2012/319 Sch 1 para 10(1)), and
+  # the working-age variable keeps the shared premium.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_carer_premium: 0
+    council_tax_reduction_premiums: 0
+
+- name: A dependant's caring does not raise the Scottish carer premium
+  # Councils include the premium where "an applicant or the applicant's
+  # partner" has caring responsibilities (para 5(2)). The son receives Carer
+  # Support Payment for caring for his grandmother, but councils count only
+  # the applicant and partner, so his parent's family gets no carer premium
+  # (48.15 x 52 = 2,503.80 if his caring counted).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+      son:
+        age: 17
+        care_hours: 35
+        would_claim_carers_allowance: true
+      grandmother:
+        age: 80
+        aa_category: HIGHER
+    benunits:
+      family:
+        members: [parent, son]
+      grandmother_unit:
+        members: [grandmother]
+    households:
+      household:
+        members: [parent, son, grandmother]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    is_claimant_or_partner: [true, false, true]
+    receives_carer_benefit: [false, true, false]
+    carer_premium: [0, 0]
+    council_tax_reduction_carer_premium: [0, 0]
+    council_tax_reduction_working_age_carers: [0, 0]

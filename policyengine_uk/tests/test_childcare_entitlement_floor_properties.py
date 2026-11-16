@@ -169,10 +169,19 @@ def new_simulation(**kwargs):
         return Simulation(**kwargs)
 
 
-def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
-    """One Simulation: each family appears once per value in ``eligible``."""
+def simulate(families, year, eligible=(), variants=None):
+    """One Simulation: each family appears once per value in ``eligible``.
+
+    ``variants`` instead lists one ``(eligible, cap_bump, hours_bump)`` for
+    each copy, which adds ``cap_bump`` to the family's maximum hours used and
+    ``hours_bump`` to each child's hours used. Every copy's families have
+    their own benefit units and households, and every copy supplies the same
+    inputs, so no copy reads another's.
+    """
+    if variants is None:
+        variants = [(is_eligible, 0, 0) for is_eligible in eligible]
     situation = {"people": {}, "benunits": {}, "households": {}}
-    for copy, is_eligible in enumerate(eligible):
+    for copy, (is_eligible, cap_bump, hours_bump) in enumerate(variants):
         for i, f in enumerate(families):
             members = []
             for j, c in enumerate(f["children"]):
@@ -667,13 +676,43 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
 
 @PROPERTY_SETTINGS
 @given(years, st.lists(family, min_size=1, max_size=5), st.sampled_from([1, 5, 15]))
+@example(
+    2025,
+    [
+        # A 3-year-old in a family whose maximum hours used, 40, exceed the
+        # working parent total: raising them must not lower that total.
+        {
+            "children": [{"age": 3, "hours_used": 45, "looked_after": False}],
+            "cap": 40,
+            "claims_universal": True,
+            "claims_targeted": False,
+            "targeted": False,
+            "england": True,
+        },
+        # A 3-year-old whose own hours used bind, below the family's maximum.
+        {
+            "children": [{"age": 3, "hours_used": 20, "looked_after": False}],
+            "cap": 30,
+            "claims_universal": True,
+            "claims_targeted": False,
+            "targeted": False,
+            "england": True,
+        },
+    ],
+    5,
+)
 def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
-    lower = split(simulate(families, year, eligible=[True]), families, 1)[0]
-    for cap_bump, hours_bump in ((bump, 0), (0, bump)):
-        raised = simulate(
-            families, year, eligible=[True], cap_bump=cap_bump, hours_bump=hours_bump
-        )
-        higher = split(raised, families, 1)[0]
+    raises = ((bump, 0), (0, bump))
+    lower, *raised = split(
+        simulate(
+            families,
+            year,
+            variants=[(True, 0, 0)] + [(True, *raise_) for raise_ in raises],
+        ),
+        families,
+        1 + len(raises),
+    )
+    for (cap_bump, hours_bump), higher in zip(raises, raised):
         for f, lo, hi in zip(families, lower, higher):
             for c, a, b in zip(f["children"], lo, hi):
                 assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
@@ -730,8 +769,10 @@ def test_raising_the_income_limit_never_lowers_support_or_income(h):
         },
         "households": {"hh": {"members": members, "country": {year: "ENGLAND"}}},
     }
-    base = new_simulation(situation=situation)
     reform = new_simulation(situation=situation, reform={INCOME_LIMIT: math.inf})
+    # A reformed Simulation builds its baseline as a current-law Simulation of
+    # the same situation.
+    base = reform.baseline
 
     def total(sim, variable):
         return float(sim.calculate(variable, year).sum())
@@ -745,3 +786,38 @@ def test_raising_the_income_limit_never_lowers_support_or_income(h):
     )
     assert d_income >= -0.05, h
     assert abs(d_income - (after - before)) <= 0.05, h
+
+
+@pytest.mark.parametrize("high, funded", [(100_000, True), (100_001, False)])
+def test_income_limit_admits_exactly_the_couples_within_it(high, funded):
+    """A working couple's 3-year-old gets working parent hours exactly when
+    both parents' adjusted net income is at most £100,000 (SI 2022/1134 regs
+    14(3)(c)(i) and 15(3)(b)(i))."""
+    year = 2026
+    people = {
+        "parent1": {
+            "age": {year: 35},
+            "employment_income": {year: high},
+            "is_parent": {year: True},
+        },
+        "parent2": {
+            "age": {year: 35},
+            "employment_income": {year: 20_000},
+            "is_parent": {year: True},
+        },
+        "child0": {"age": {year: 3}},
+    }
+    members = list(people)
+    situation = {
+        "people": people,
+        "benunits": {
+            "bu": {
+                "members": members,
+                "maximum_extended_childcare_hours_usage": {year: 30},
+            }
+        },
+        "households": {"hh": {"members": members, "country": {year: "ENGLAND"}}},
+    }
+    sim = new_simulation(situation=situation)
+    extended = float(sim.calculate("extended_childcare_entitlement", year).sum())
+    assert (extended > 0) == funded, (high, extended)

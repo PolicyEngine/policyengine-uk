@@ -8,15 +8,19 @@ class claims_universal_credit(Variable):
     documentation = (
         "Whether this family claims Universal Credit: it would claim it "
         "anyway (would_claim_uc), or it claims when DWP moves it off its "
-        "legacy benefits (claims_uc_at_legacy_closure). Universal Credit is "
+        "legacy benefits or the abolition of income-related ESA reaches its "
+        "award (claims_uc_at_legacy_closure). Universal Credit is "
         "paid only to claiming families. A claim ends the family's Housing "
         "Benefit continuing award and Child Tax Credit, and the claimant's "
         "and partner's income-related ESA (esa_income_report_closed). Once "
         "DWP moves a family off legacy benefits (legacy_benefits_closed) all "
-        "its legacy awards end; for other claimants the overlap of Universal "
-        "Credit with Working Tax Credit, Income Support and income-based JSA "
-        "is not modelled, nor is Housing Benefit for specified or temporary "
-        "accommodation."
+        "its legacy awards end. Housing Benefit for specified or temporary "
+        "accommodation survives both a claim and the move (SI 2014/1230 regs "
+        "8(3) and 46(2); housing_benefit_eligible), and Universal Credit "
+        "then leaves that rent out (uc_housing_costs_element). For other "
+        "claimants the model doesn't represent the overlap of Universal "
+        "Credit with Working Tax Credit, Income Support and income-based "
+        "JSA."
     )
     definition_period = YEAR
     reference = (

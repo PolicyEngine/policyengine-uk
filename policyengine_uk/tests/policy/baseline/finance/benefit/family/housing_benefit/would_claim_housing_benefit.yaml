@@ -27,3 +27,33 @@
     housing_benefit_entitlement: 0
   output:
     would_claim_housing_benefit: false
+
+- name: Ineligible with the accommodation status set false
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    in_specified_or_temporary_accommodation: false
+  output:
+    would_claim_housing_benefit: false
+
+# The accommodation status doesn't change take-up: a hand-entered family
+# claims Housing Benefit when claims_all_entitled_benefits is true or it
+# reports Housing Benefit.
+- name: The accommodation status doesn't make a family claim without a report
+  period: 2025
+  input:
+    claims_all_entitled_benefits: false
+    housing_benefit_reported: 0
+    in_specified_or_temporary_accommodation: true
+  output:
+    would_claim_housing_benefit: false
+
+- name: A family with the accommodation status claims when it claims all entitled benefits
+  period: 2025
+  input:
+    claims_all_entitled_benefits: true
+    housing_benefit_reported: 0
+    in_specified_or_temporary_accommodation: true
+  output:
+    would_claim_housing_benefit: true

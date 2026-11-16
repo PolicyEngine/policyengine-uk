@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 
 
 class pre_budget_change_ons_household_income_decile(Variable):
@@ -11,7 +12,7 @@ class pre_budget_change_ons_household_income_decile(Variable):
     def formula(household, period, parameters):
         income = household("pre_budget_change_household_net_income", period)
         equivalisation = household("household_equivalisation_bhc", period)
-        if household.simulation.dataset is not None:
+        if built_from_data(household.simulation):
             household_weight = household("household_weight", period)
             weighted_income = MicroSeries(
                 income / equivalisation, weights=household_weight

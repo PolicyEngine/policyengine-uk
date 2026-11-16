@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.legacy_means_test_tax import legacy_means_test_tax_split
 
 
 class legacy_means_test_income_tax(Variable):
@@ -17,8 +18,13 @@ class legacy_means_test_income_tax(Variable):
         "out. Income Support, Housing Benefit, Pension Credit and council tax "
         "reduction treat savings interest, dividends and property income as "
         "capital, not income, so the counted income here is the person's "
-        "other income (earned_income_tax, which covers earnings, pensions and "
-        "taxable benefits). Its share of the Step 6 reductions (the married "
+        "other income: earned_income_tax, which covers earnings, pensions and "
+        "taxable benefits, and rent_a_room_income_tax, the tax on taxable "
+        "rent from boarders, lodgers and sub-tenants in the home. The tests "
+        "count that rent as income (HB Regs 2006 Sch 5 paras 22 and 42; HB "
+        "(SPC) Regs 2006 reg 29(1)(p) and (v); SPC Regs 2002 reg 15(5)(e) and "
+        "(i)), so its tax moves from the property income tax on the capital "
+        "side to the counted side. Its share of the Step 6 reductions (the married "
         "couple's allowance, other tax credits, the residential finance-cost "
         "reduction and the Pension Tax Allowance) follows two rules. Most "
         "reductions are not tied to any income: s.27 orders them only to "
@@ -30,7 +36,11 @@ class legacy_means_test_income_tax(Variable):
         "amounts and within the adjusted total income limit (Income Tax "
         "(Trading and Other Income) Act 2005 ss.274A and 274AA). The "
         "finance-cost reduction (property_finance_cost_relief) therefore "
-        "comes off the tax on property income first. The model's "
+        "comes off the tax on property income first. As a stated convention, "
+        "it comes off only the property income tax left on the capital side "
+        "(property_income_tax less rent_a_room_income_tax), so the capital "
+        "side never goes negative; any excess joins the reductions shared in "
+        "proportion to the Step 4 tax. The model's "
         "other_tax_credits input mixes foreign tax credit relief with other "
         "reductions (venture capital trust, enterprise investment and "
         "maintenance relief, among others) and records no source, so those "
@@ -62,49 +72,23 @@ class legacy_means_test_income_tax(Variable):
         "https://www.legislation.gov.uk/ukpga/2010/8/section/36",
         "https://www.legislation.gov.uk/ukpga/2005/5/section/274A",
         "https://www.legislation.gov.uk/ukpga/2005/5/section/274AA",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/22",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/42",
     ]
 
     def formula(person, period, parameters):
-        # Step 4 tax on the income the means tests count, and on the income
-        # they treat as capital.
-        counted = person("earned_income_tax", period)
-        capital = add(
-            person,
-            period,
-            ["savings_income_tax", "dividend_income_tax", "property_income_tax"],
-        )
-        before_reductions = counted + capital
+        # Step 4 tax and Step 6 reductions, split between counted income and
+        # income from capital (see legacy_means_test_tax_split).
+        split = legacy_means_test_tax_split(person, period)
         # Step 7 charges other than the winter fuel payment charge, which the
         # starting value below already leaves out.
         charges = person("income_tax_charges", period)
-        # Step 6 reductions, limited to the Step 5 tax. The residential
-        # finance-cost reduction is relief for the property business's costs,
-        # given on at most its profits (ITTOIA 2005 ss.274A-274AA), so it
-        # comes off the tax on property income first. The rest have no
-        # recorded source and are shared in proportion to the Step 4 tax left.
-        reductions = min_(person("income_tax_reductions", period), before_reductions)
-        finance_cost_relief = min_(
-            person("property_finance_cost_relief", period),
-            min_(person("property_income_tax", period), reductions),
-        )
-        general_reductions = reductions - finance_cost_relief
-        capital_after_relief = capital - finance_cost_relief
-        tax_after_relief = before_reductions - finance_cost_relief
-        capital_share = np.divide(
-            capital_after_relief,
-            tax_after_relief,
-            out=np.zeros_like(capital_after_relief, dtype=float),
-            where=tax_after_relief > 0,
-        )
-        capital_after_reductions = (
-            capital_after_relief - general_reductions * capital_share
-        )
         # Starting from the income tax the means tests deduct keeps any
         # supplied value: the result is the tax on counted income less its
         # share of reductions whenever that tax is calculated.
         return max_(
             0,
             person("income_tax_before_winter_fuel_payment_charge", period)
-            - capital_after_reductions
+            - split["capital_after_reductions"]
             - charges,
         )

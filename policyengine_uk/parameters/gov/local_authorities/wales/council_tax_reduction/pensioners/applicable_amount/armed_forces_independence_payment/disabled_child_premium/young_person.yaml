@@ -1,0 +1,19 @@
+description: Councils in Wales count a young person (a Child Benefit qualifying young person) in a pensioner's family for the disabled child premium under the Welsh Council Tax Reduction prescribed requirements when an armed forces independence payment (AFIP) is payable for them, if this is true.
+values:
+  2015-04-01:
+    value: false
+    reference:
+      - title: WSI 2013/3029 Sch. 2 para. 8, as in force on 30 April 2015
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2015-04-30
+  2024-04-01:
+    value: true
+    reference:
+      - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Amendment) (Wales) Regulations 2024 (WSI 2024/56) regs. 1(3) and 5(d), inserting Sch. 2 para. 8(d) for schemes for financial years from 1 April 2024
+        href: https://www.legislation.gov.uk/wsi/2024/56/made
+metadata:
+  unit: bool
+  period: year
+  label: Wales Council Tax Reduction pensioner disabled child premium AFIP route for a young person
+  reference:
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 2 paras. 7 and 8
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2

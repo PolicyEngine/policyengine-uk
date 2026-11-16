@@ -1,6 +1,6 @@
 # Creating policy scenarios
 
-The `Scenario` class lets you define policy reforms and apply them to simulations. This guide shows you how to create everything from simple parameter changes to complex reform packages, and how to combine different policy ideas together.
+Use `Scenario` to change policy parameters, apply structural reforms and combine them in a simulation.
 
 ## Your first policy scenario
 
@@ -60,10 +60,6 @@ You can find parameter paths by exploring the PolicyEngine web app or looking in
 
 Real policy proposals often involve multiple changes. Here's how to create a comprehensive reform:
 
-```{important}
-This represents the kind of coordinated policy change you might see in a budget - real reforms often involve multiple interacting changes.
-```
-
 ```python
 # A comprehensive package that increases Universal Credit support while adjusting income tax
 welfare_reform = Scenario(
@@ -76,7 +72,7 @@ welfare_reform = Scenario(
         "gov.dwp.universal_credit.means_test.reduction_rate": 0.55,
         # Increase income tax personal allowance
         "gov.hmrc.income_tax.personal_allowance": 15_000,
-        # Reduce basic rate slightly to help fund UC increases
+        # Set the basic income tax rate to 22%
         "gov.hmrc.income_tax.rates.uk[0].rate": 0.22,
     }
 )
@@ -396,12 +392,11 @@ static_reform = Simulation(
 Some reforms phase in over time:
 
 ```{note}
-A scenario that gradually increases the personal allowance over four years - this kind of phasing helps manage fiscal costs and economic adjustment.
+Increase the personal allowance from £13,000 in 2025 to £16,000 in 2028.
 ```
 
 ```python
-# A scenario that gradually increases the personal allowance over four years
-# This kind of phasing helps manage fiscal costs and economic adjustment
+# Increase the personal allowance from £13,000 in 2025 to £16,000 in 2028
 phased_scenario = Scenario(
     parameter_changes={
         "gov.hmrc.income_tax.allowances.personal_allowance.amount": {
@@ -664,11 +659,10 @@ Use microsimulation to understand the broader impact of your scenarios:
 from policyengine_uk import Microsimulation
 
 # Create a major scenario package combining tax cuts and benefit increases
-# This represents a significant fiscal intervention
 major_scenario = Scenario(
     parameter_changes={
         "gov.hmrc.income_tax.rates.uk[0].rate": 0.15,  # Cut basic rate from 20% to 15%
-        "gov.hmrc.income_tax.personal_allowance": 16_000,  # Raise allowance significantly
+        "gov.hmrc.income_tax.personal_allowance": 16_000,  # Set the personal allowance to £16,000
         "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 600,  # Increase UC by £100/month
         "gov.dwp.universal_credit.means_test.reduction_rate": 0.45,  # Reduce taper from 55% to 45%
     }
@@ -776,5 +770,3 @@ for name, scenario in scenarios:
 - Always check the fiscal impact of major reforms
 - Consider unintended interactions between different policy areas
 ```
-
-These techniques let you model complex policy changes that go beyond simple parameter adjustments. Simulation modifiers give you complete control over how the tax-benefit system works, allowing you to implement everything from gradual phase-outs to dynamic eligibility changes. The key is to understand the underlying data structures and use them thoughtfully to represent real policy proposals.

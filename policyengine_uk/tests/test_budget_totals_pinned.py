@@ -4,6 +4,11 @@ household_tax and household_benefits read their terms from programs.yaml.
 EXPECTED holds the three totals for thirteen hand-built households in four
 years under four reforms, computed with the lists that the formula modules
 held as literals at commit 46a60678ff52d829253572393abdcc6a03ceb6a7. The
+baseline and uprating totals for scottish_lone_parent instead include what
+Scotland's working-age Council Tax Reduction route pays (SSI 2021/249 regs 13,
+35, 42 and 57). In 2026 it pays £1,100 less 20% of £666.48, the income of
+£11,347.28 (£7,700 of pay after the £25 a week disregard, plus the £3,647.28
+Universal Credit child element) above the £10,680.80 applicable amount. The
 reforms switch on gov.contrib.abolish_council_tax, the two
 gov.contrib.benefit_uprating rates, and a flat basic income, which the
 uprating leaves out. The test compares with exact equality, because the
@@ -191,7 +196,7 @@ def situation(year):
 
 
 # (reform, year, household): (household_tax, household_benefits,
-# household_net_income), from commit 46a60678.
+# household_net_income), from commit 46a60678, except as the docstring says.
 EXPECTED = {
     ("baseline", 2023, "single_renter_london"): (
         5636.60498046875,
@@ -206,8 +211,8 @@ EXPECTED = {
     ("baseline", 2023, "pensioner_couple"): (2259.0, 22177.880859375, 19918.880859375),
     ("baseline", 2023, "scottish_lone_parent"): (
         1259.0,
-        14060.240234375,
-        21801.240234375,
+        14866.3603515625,
+        22607.359375,
     ),
     ("baseline", 2023, "welsh_working_family"): (
         14074.208984375,
@@ -251,8 +256,8 @@ EXPECTED = {
     ("baseline", 2025, "pensioner_couple"): (2274.5, 22106.400390625, 19831.900390625),
     ("baseline", 2025, "scottish_lone_parent"): (
         1274.5,
-        14044.3994140625,
-        21769.8984375,
+        14959.81640625,
+        22685.31640625,
     ),
     ("baseline", 2025, "welsh_working_family"): (
         12575.306640625,
@@ -294,7 +299,7 @@ EXPECTED = {
         35014.81640625,
     ),
     ("baseline", 2026, "pensioner_couple"): (2280.0, 22386.83984375, 20106.83984375),
-    ("baseline", 2026, "scottish_lone_parent"): (1280.0, 14687.2802734375, 22407.28125),
+    ("baseline", 2026, "scottish_lone_parent"): (1280.0, 15653.984375, 23373.984375),
     ("baseline", 2026, "welsh_working_family"): (
         12580.806640625,
         8410.099609375,
@@ -333,8 +338,8 @@ EXPECTED = {
     ("baseline", 2028, "pensioner_couple"): (2280.0, 22573.318359375, 20293.318359375),
     ("baseline", 2028, "scottish_lone_parent"): (
         1280.0,
-        15792.3837890625,
-        23512.3828125,
+        16857.82421875,
+        24577.82421875,
     ),
     ("baseline", 2028, "welsh_working_family"): (
         12580.806640625,
@@ -626,8 +631,8 @@ EXPECTED = {
     ("uprating", 2023, "pensioner_couple"): (2259.0, 23504.5625, 21245.5625),
     ("uprating", 2023, "scottish_lone_parent"): (
         1259.0,
-        16169.2763671875,
-        23910.27734375,
+        17096.314453125,
+        24837.314453125,
     ),
     ("uprating", 2023, "welsh_working_family"): (
         14074.208984375,
@@ -675,8 +680,8 @@ EXPECTED = {
     ("uprating", 2025, "pensioner_couple"): (2274.5, 23422.359375, 21147.859375),
     ("uprating", 2025, "scottish_lone_parent"): (
         1274.5,
-        16151.0595703125,
-        23876.55859375,
+        17203.7890625,
+        24929.2890625,
     ),
     ("uprating", 2025, "welsh_working_family"): (
         12575.306640625,
@@ -716,8 +721,8 @@ EXPECTED = {
     ("uprating", 2026, "pensioner_couple"): (2280.0, 23744.865234375, 21464.865234375),
     ("uprating", 2026, "scottish_lone_parent"): (
         1280.0,
-        16890.373046875,
-        24610.373046875,
+        18002.08203125,
+        25722.08203125,
     ),
     ("uprating", 2026, "welsh_working_family"): (
         12580.806640625,
@@ -761,8 +766,8 @@ EXPECTED = {
     ("uprating", 2028, "pensioner_couple"): (2280.0, 23959.31640625, 21679.31640625),
     ("uprating", 2028, "scottish_lone_parent"): (
         1280.0,
-        18161.240234375,
-        25881.240234375,
+        19386.498046875,
+        27106.498046875,
     ),
     ("uprating", 2028, "welsh_working_family"): (
         12580.806640625,

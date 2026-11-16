@@ -49,9 +49,9 @@ description: Stamp Duty Land Tax progressive rates for cumulative rents on resid
   property.
 metadata:
   economy: false
-  label: Stamp Duty on cumulative rent
+  label: SDLT residential lease rent rates
   propagate_metadata_to_children: true
-  rate_unit: currency-GBP
+  rate_unit: /1
   reference:
   - href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/5
     title: Finance Act 2003 schedule 5

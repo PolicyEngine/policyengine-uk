@@ -63,8 +63,9 @@ adult) claims in their own right, so:
   (esa_income_eligible and jsa_income_eligible, read independently from the
   law in legacy_award_work_reference). The screens also end the award once
   the family's legacy benefits have closed (legacy_benefits_closed, #2119),
-  for their own award only; no family here reaches that in 2025, when
-  Income Support and income-based JSA are open and nobody reports tax credits;
+  and the model then ends every member's status too; no family here reaches
+  that in 2025, when Income Support and income-based JSA are open and
+  nobody reports tax credits;
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
   or, for anyone else, when their own claim passes: they are not engaged in
@@ -103,8 +104,11 @@ from policyengine_uk.tax_benefit_system import system
 YEAR = 2025
 # Merton's working-age council tax reduction scheme has parameters from
 # April 2026, so the non-dependant property runs in 2027 (income-related ESA
-# only: Income Support and income-based JSA closed in April 2026).
+# only: Income Support and income-based JSA closed in April 2026). Its ESA
+# reporters keep their awards through the appointee saving (SI 2025/1148 art.
+# 3A(2)), since the abolition ends every other award from 1 July 2026.
 NON_DEP_YEAR = 2027
+SAVED = {"esa_income_appointee_saving": {NON_DEP_YEAR: True}}
 
 FAMILY_READERS = [
     "claimant_or_partner_esa_income",
@@ -981,6 +985,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: True},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: award},
+                    **SAVED,
                 }
                 unit.append(name)
             if existing_award is not None:
@@ -990,6 +995,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: False},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: existing_award},
+                    **SAVED,
                 }
                 unit.append(name)
             if other_present:
@@ -999,6 +1005,7 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: False},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: other_award},
+                    **SAVED,
                 }
                 unit.append(name)
             people[names[0]]["is_claimant_or_partner"] = {year: True}
@@ -1320,6 +1327,7 @@ def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
                 "is_claimant_or_partner": {year: role},
                 "current_education": {year: "NOT_IN_EDUCATION"},
                 "esa_income_reported": {year: report},
+                **SAVED,
             }
             if works:
                 inputs.update({k: {year: v} for k, v in FULL_TIME_PAY.items()})

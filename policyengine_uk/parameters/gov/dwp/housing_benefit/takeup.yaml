@@ -1,9 +1,10 @@
-description: Share of eligible Housing Benefit recipients that participate. Not used by
-  the model. Data-built simulations default to positive reported Housing Benefit claims
-  only (d1455 following d1390). Hand-entered households use positive reported Housing
-  Benefit or their per-benefit-unit claims_all_entitled_benefits flag. Direct take-up
-  inputs override either default. Pension-age families can make new claims;
-  working-age families only continue existing awards.
+description: Share of eligible Housing Benefit recipients that participate. The model
+  doesn't read this parameter. In simulations built from data, take-up defaults to
+  true only for families that report Housing Benefit, the rule Council Tax Reduction
+  also follows (PolicyEngine UK pull request 1831). Hand-entered households use
+  reported Housing Benefit or their per-benefit-unit claims_all_entitled_benefits
+  flag. Direct take-up inputs override either default. Pension-age families can
+  make new claims; working-age families only continue existing awards.
 metadata:
   economy: false
   label: Housing benefit take-up rate

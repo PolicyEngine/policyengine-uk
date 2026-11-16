@@ -228,16 +228,33 @@ def extract_economy_workbook_bytes(
         return Path(workbook_name).name, archive.read(workbook_name)
 
 
+STRING_TEXT = f"{{{WORKBOOK_NS['main']}}}t"
+STRING_RUN = f"{{{WORKBOOK_NS['main']}}}r"
+
+
+def _string_text(item: ET.Element) -> str:
+    """Join a shared or inline string's own ``<t>`` and the ``<t>`` of each
+    formatting run (``<r>``), in order, so the reader returns the whole text
+    of a string split into runs. It skips any other child, such as a
+    phonetic run (``<rPh>``), whose ``<t>`` holds a reading of the text, not
+    more of it."""
+    parts = []
+    for child in item:
+        if child.tag == STRING_TEXT:
+            parts.append(child.text or "")
+        elif child.tag == STRING_RUN:
+            parts.extend(
+                node.text or "" for node in child.findall("main:t", WORKBOOK_NS)
+            )
+    return "".join(parts)
+
+
 def _load_shared_strings(archive: ZipFile) -> list[str]:
     if "xl/sharedStrings.xml" not in archive.namelist():
         return []
 
     root = ET.fromstring(archive.read("xl/sharedStrings.xml"))
-    values: list[str] = []
-    for item in root.findall("main:si", WORKBOOK_NS):
-        parts = [node.text or "" for node in item.iterfind(".//main:t", WORKBOOK_NS)]
-        values.append("".join(parts))
-    return values
+    return [_string_text(item) for item in root.findall("main:si", WORKBOOK_NS)]
 
 
 def _sheet_paths(archive: ZipFile) -> dict[str, str]:
@@ -265,22 +282,37 @@ def _cell_value(cell: ET.Element, shared_strings: list[str]) -> str | None:
     if cell_type == "s" and value_node is not None:
         return shared_strings[int(value_node.text)]
     if cell_type == "inlineStr" and inline_node is not None:
-        text_node = inline_node.find(".//main:t", WORKBOOK_NS)
-        return text_node.text if text_node is not None else ""
+        return _string_text(inline_node)
     if value_node is not None:
         return value_node.text
     return None
 
 
-def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[dict[str, str | None]]:
+class SheetRow(dict):
+    """Hold a worksheet row as ``read_sheet_rows`` reads it: each cell's
+    text by column letter, and ``number``, the row's number on the
+    worksheet."""
+
+    def __init__(self, number: int):
+        super().__init__()
+        self.number = number
+
+
+def read_sheet_rows(xlsx_bytes: bytes, sheet_name: str) -> list[SheetRow]:
+    """Read the rows a worksheet stores, in order. A worksheet can skip
+    rows, as October 2026's sheet 4.12 skips row 33, so a row's place in the
+    list can differ from its number."""
     with ZipFile(BytesIO(xlsx_bytes)) as archive:
         shared_strings = _load_shared_strings(archive)
         sheet_path = _sheet_paths(archive)[sheet_name]
         sheet = ET.fromstring(archive.read(sheet_path))
 
     rows = []
+    number = 0
     for row in sheet.findall(".//main:sheetData/main:row", WORKBOOK_NS):
-        values: dict[str, str | None] = {}
+        # A row without a number takes the one after the row before it.
+        number = int(row.attrib.get("r", number + 1))
+        values = SheetRow(number)
         for cell in row.findall("main:c", WORKBOOK_NS):
             ref = cell.attrib["r"]
             column = "".join(ch for ch in ref if ch.isalpha())
@@ -677,13 +709,154 @@ class ReceiptsSeriesSpec:
 
     @property
     def per_head(self) -> bool:
-        """Whether the series sits under ``per_capita``. Dataset projection
-        grows household weights by ``ons.population``, so
-        ``render_receipts_growth_yaml`` writes such a series' growth over one
-        plus that growth (``per_head_growth``, ``per_head_tail``), and the
-        weighted total grows with the line in every year."""
+        """Return whether the renderer writes this series under
+        ``per_capita``. Dataset projection grows household weights by
+        ``ons.population``, so ``render_receipts_growth_yaml`` writes such a
+        series as (1 + aggregate growth) / (1 + ons.population growth) - 1
+        (``per_head_growth``, ``per_head_tail``), and the weighted total grows
+        with the line in every year."""
         return self.path[0] == "per_capita"
 
+
+@dataclass(frozen=True)
+class ClearanceSeriesSpec(ReceiptsSeriesSpec):
+    """Describe a clearance line the importer uses to grow household
+    quantity inputs per head (#2596).
+
+    The OBR counts clearances in quantities, not pounds, so a clearance
+    table has no "£ billion" cell. ``unit_cell`` holds the text of the cell
+    in which the OBR states the line's unit, as ``CLEARANCE_TABLE_TEXTS``
+    lists it. In both EFOs the importer requires that cell and refuses any
+    text in the table that the list lacks (``validate_clearance_table``).
+    For a part of a total (``part_of_total``), the OBR states the unit in
+    the total's label, and the importer requires that label and the total's
+    figures on the row directly above the "of which:" row over the line
+    (``validate_clearance_part``).
+    Dataset projection grows household weights by ``ons.population``, so
+    ``render_receipts_growth_yaml`` writes
+    (1 + aggregate clearance growth) / (1 + ons.population growth) - 1
+    (``per_head_growth``), and the weighted total grows with the
+    clearances. After the OBR's forecast the importer holds the clearances
+    flat, as ``road_fuel_volume`` holds road fuel volume.
+    """
+
+    unit_cell: str = ""
+    part_of_total: bool = False
+
+    def __post_init__(self):
+        name = ".".join(self.path)
+        if self.unit_cell not in CLEARANCE_TABLE_TEXTS.get(self.title, ()):
+            raise ValueError(
+                f"{name}: a clearance line needs the cell that states its "
+                f"unit, and its table's read texts lack {self.unit_cell!r}"
+            )
+        # The importer links clearance outturns to the previous EFO's outturn.
+        if self.rates or self.outturn is not None:
+            raise ValueError(
+                f"{name}: the OBR counts clearances in quantities, so a "
+                "clearance line takes no rates and links to the previous EFO, "
+                "not its own outturn"
+            )
+
+
+TOBACCO_CLEARANCES = "tobacco clearances"
+ALCOHOL_CLEARANCES = "alcohol clearance forecasts"
+# The cells in which the OBR states each clearance unit: the cigarette label
+# for cigarettes, the label of the non-cigarette total that Table 4.11 (3.11
+# in March 2026) splits into hand-rolled and other tobacco, and Table 4.12's
+# (3.12's) note for alcohol.
+TOBACCO_STICKS = "cigarette clearances (million sticks)"
+TOBACCO_KILOGRAMS = "non-cigarette clearances ('000s kg)"
+ALCOHOL_HECTOLITRES = "note: all clearances are in thousands of hectolitres of alcohol."
+# The text of every cell from each clearance table's title down to the next
+# table's title, in Tables 3.11 and 3.12 of the March 2025 and March 2026
+# EFOs and Tables 4.11 and 4.12 of October 2026, but the title, numbers and
+# fiscal years. Someone read each one. The importer compares a cell's text as
+# receipts_label gives it: lower case, in single spaces and without a
+# footnote number after a label's last letter, so " Wine1" gives "wine". It
+# refuses any other text (validate_clearance_table), so it reads no unit or
+# product from words no one has read. Add a text only after reading it, and
+# when it states another unit, convert the table's figures to the units these
+# texts state first.
+CLEARANCE_TABLE_TEXTS = {
+    TOBACCO_CLEARANCES: frozenset(
+        {
+            "outturn",
+            "forecast",
+            TOBACCO_STICKS,
+            TOBACCO_KILOGRAMS,
+            "of which:",
+            "hand rolled tobacco clearances",
+            "other tobacco products",
+        }
+    ),
+    ALCOHOL_CLEARANCES: frozenset(
+        {
+            "outturn",
+            "forecast",
+            "beer and cider",
+            "wine",
+            "spirits",
+            ALCOHOL_HECTOLITRES,
+            "1 includes spirit-based ‘ready-to-drinks’ such as alcopops.",
+            "1 includes other fermented products such as fruit ciders.",
+            "2 includes spirit-based ‘ready-to-drinks’ such as alcopops.",
+        }
+    ),
+}
+# The titles, as row_title gives them, of the tables that may follow each
+# clearance table on its sheet. The importer checks a clearance table from
+# its title down to the row above one of these titles, or to the sheet's
+# end. In all three EFOs the alcohol receipts forecasts follow the alcohol
+# clearances, and no table follows the tobacco clearances.
+CLEARANCE_TABLE_ENDS = {
+    TOBACCO_CLEARANCES: frozenset(),
+    ALCOHOL_CLEARANCES: frozenset({"alcohol receipts forecasts"}),
+}
+
+# The product groups the OBR forecasts. The OBR includes other fermented
+# products in Table 4.12's wine line and spirit-based ready-to-drinks in its
+# spirits line (the table's footnotes 1 and 2).
+CLEARANCE_SERIES_SPECS = (
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "cigarettes"),
+        title=TOBACCO_CLEARANCES,
+        row="cigarette clearances (million sticks)",
+        unit_cell=TOBACCO_STICKS,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "hand_rolling_tobacco"),
+        title=TOBACCO_CLEARANCES,
+        row="hand rolled tobacco clearances",
+        unit_cell=TOBACCO_KILOGRAMS,
+        part_of_total=True,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "tobacco_clearances", "other_tobacco_products"),
+        title=TOBACCO_CLEARANCES,
+        row="other tobacco products",
+        unit_cell=TOBACCO_KILOGRAMS,
+        part_of_total=True,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "beer_and_cider"),
+        title=ALCOHOL_CLEARANCES,
+        row="beer and cider",
+        unit_cell=ALCOHOL_HECTOLITRES,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "wine"),
+        title=ALCOHOL_CLEARANCES,
+        row="wine",
+        unit_cell=ALCOHOL_HECTOLITRES,
+    ),
+    ClearanceSeriesSpec(
+        path=("per_capita", "alcohol_clearances", "spirits"),
+        title=ALCOHOL_CLEARANCES,
+        row="spirits",
+        unit_cell=ALCOHOL_HECTOLITRES,
+    ),
+)
 
 GAMBLING_RATES = "gov.hmrc.gambling_duty"
 MACHINE_GAMES = f"{GAMBLING_RATES}.machine_games"
@@ -865,6 +1038,8 @@ RECEIPTS_SERIES_SPECS = (
         (RateComponent(f"{GAMBLING_RATES}.pool_betting.rate"),),
         ((2024, 8_125), (2025, 3_970)),
     ),
+    # The alcohol and tobacco quantity inputs (#2596).
+    *CLEARANCE_SERIES_SPECS,
 )
 
 
@@ -952,8 +1127,9 @@ def growth_ratio(
 
 @dataclass(frozen=True)
 class ReceiptsLine:
-    """A receipts line as one EFO publishes it: £bn by the calendar year in
-    which each fiscal year starts, and which of those years are outturn."""
+    """Hold a receipts line as the OBR publishes it in one EFO: £bn, or a
+    clearance line's own unit, by the calendar year in which each fiscal year
+    starts, and which of those years the OBR marks as outturn."""
 
     table: str
     label: str
@@ -965,17 +1141,37 @@ class ReceiptsLine:
 class ReceiptsGrowth:
     """Growth in a receipts line, by year, rounded to six decimals.
 
-    The first year is outturn growth: this EFO's first (outturn) year over
-    the year before in the previous EFO, where it is outturn. Each later
-    year is the ratio of this EFO's consecutive levels. A line with its own
-    outturn starts at that outturn's second year and has no previous line;
-    one with rates grows its base instead (see ``ReceiptsSeriesSpec``).
+    The first year holds outturn growth: this EFO's first (outturn) year
+    over the year before in the previous EFO, which marks that year as
+    outturn. Each later year holds the ratio of this EFO's consecutive
+    levels. A line with its own outturn starts at that outturn's second year
+    and has no previous line; one with rates grows its base instead (see
+    ``ReceiptsSeriesSpec``). A clearance line holds the clearances' growth,
+    which ``render_receipts_growth_yaml`` writes per head
+    (``per_head_growth``).
+
+    ``ratios`` holds one plus each year's growth before rounding, as
+    ``compute_receipts_growth`` finds it, so ``per_head_growth`` rounds the
+    per-head series once. Each ratio must round to its year's value.
     """
 
     values: dict[int, float]
     line: ReceiptsLine
     previous_line: ReceiptsLine | None
     spec: ReceiptsSeriesSpec | None = None
+    ratios: dict[int, float] | None = None
+
+    def __post_init__(self):
+        if self.ratios is None:
+            return
+        if sorted(self.ratios) != sorted(self.values) or any(
+            round(ratio - 1, 6) + 0.0 != self.values[year]
+            for year, ratio in self.ratios.items()
+        ):
+            raise ValueError(
+                f"{self.line.label}: the growth before rounding {self.ratios} "
+                f"does not round to the growth {self.values}"
+            )
 
 
 def fiscal_year_label(year: int) -> str:
@@ -1085,13 +1281,156 @@ def validate_receipts_unit(
         )
 
 
+# A number as a worksheet stores it, such as "1272.4562775587838" or "1E-3".
+NUMBER_RE = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?")
+
+
+def validate_clearance_table(
+    rows: list[dict[str, str | None]],
+    number: str,
+    spec: ClearanceSeriesSpec,
+    where: str,
+) -> None:
+    """Refuse a clearance table that holds text no one has read.
+
+    The importer checks every cell of the table numbered ``number`` and
+    titled ``spec.title`` on a sheet's ``rows``, in every column, from the
+    title's row down to the row above a title ``CLEARANCE_TABLE_ENDS``
+    lists, or to the sheet's end. It skips the title, numbers and fiscal
+    years, and needs every other text in ``CLEARANCE_TABLE_TEXTS`` and the
+    line's ``unit_cell`` among them. It interprets no words, so a note that
+    states another unit, a line for another product or a unit column stops
+    the run until someone reads the text and lists it.
+
+    The importer also refuses a sheet that repeats the table's number and
+    title, and names the rows (``SheetRow.number``, or a row's place in
+    ``rows`` counted from 1 for a row built as a plain dict). It would check
+    the text under one heading and could read the line under another.
+    """
+    starts = [
+        index
+        for index, row in enumerate(rows)
+        if row_title(row) == (number, spec.title)
+    ]
+    if len(starts) > 1:
+        numbers = [str(getattr(rows[index], "number", index + 1)) for index in starts]
+        raise ValueError(
+            f"{where} repeats its heading, in rows "
+            f"{', '.join(numbers[:-1])} and {numbers[-1]}. The importer would "
+            "check the text under one and could read a line under another, so "
+            "keep one heading."
+        )
+    start = starts[0]
+    block = [rows[start]]
+    for row in rows[start + 1 :]:
+        title = row_title(row)
+        if title is not None and title[1] in CLEARANCE_TABLE_ENDS[spec.title]:
+            break
+        block.append(row)
+    read, unread = set(), []
+    for index, row in enumerate(block):
+        years = _fiscal_year_columns(row)
+        cells = [
+            (column, value)
+            for column, value in sorted(
+                row.items(), key=lambda item: column_index(item[0])
+            )
+            if receipts_label(value)
+        ]
+        # Skip the title, the first text on the title's row.
+        for column, value in cells[1:] if index == 0 else cells:
+            text = receipts_label(value)
+            if column in years or NUMBER_RE.fullmatch(text):
+                continue
+            read.add(text)
+            if text not in CLEARANCE_TABLE_TEXTS[spec.title]:
+                unread.append(f"{value!r} in column {column}")
+    if unread:
+        raise ValueError(
+            f"{where} holds text the importer has not read: "
+            + "; ".join(unread)
+            + ". Read each one. If it states another unit, convert the "
+            "table's figures to the units the read texts state. Then add the "
+            "text, as receipts_label gives it, to "
+            f'CLEARANCE_TABLE_TEXTS["{spec.title}"], or the title of a table '
+            "that follows the clearances to CLEARANCE_TABLE_ENDS."
+        )
+    if spec.unit_cell not in read:
+        raise ValueError(
+            f"{where} lacks {spec.unit_cell!r}, the cell in which the OBR "
+            f"states the unit of {'.'.join(spec.path)}"
+        )
+
+
+def validate_clearance_part(
+    table_rows: list[dict[str, str | None]],
+    line_index: int,
+    spec: ClearanceSeriesSpec,
+    where: str,
+) -> None:
+    """Refuse a part of a total that does not sit under the total.
+
+    The OBR states the unit of hand-rolled and other tobacco only in the
+    label of the total they break down, "Non-cigarette clearances ('000s
+    kg)", on the row directly above an "of which:" row. Going up from the
+    line in ``table_rows`` (the rows below the table's title), past the
+    total's other parts, the importer needs an "of which:" row with no other
+    cell, then a row that holds ``spec.unit_cell`` as its first text and one
+    or more numbers after it, and nothing else. A table of listed texts
+    could otherwise put the parts under another line, such as "Cigarette
+    clearances (million sticks)", and the importer would read them in the
+    wrong unit.
+    """
+
+    def texts(row: dict[str, str | None]) -> list[str]:
+        return [
+            receipts_label(value)
+            for _, value in sorted(row.items(), key=lambda item: column_index(item[0]))
+            if receipts_label(value)
+        ]
+
+    parts = {
+        other.row
+        for other in CLEARANCE_SERIES_SPECS
+        if other.part_of_total
+        and (other.title, other.unit_cell) == (spec.title, spec.unit_cell)
+    }
+    above = [texts(row) for row in table_rows[:line_index]]
+    while above and above[-1][:1] and above[-1][0] in parts:
+        above.pop()
+    # The two rows above the line and its fellow parts, empty past the top.
+    total, of_which = ([[], []] + above)[-2:]
+    if (
+        of_which != ["of which:"]
+        or total[:1] != [spec.unit_cell]
+        or not total[1:]
+        or not all(NUMBER_RE.fullmatch(text) for text in total[1:])
+    ):
+        raise ValueError(
+            f"{where} lacks the layout that gives the {'.'.join(spec.path)} line "
+            'its unit: an "of which:" row with no other cell directly above the '
+            "line and the total's other parts, and directly above that row the "
+            f"non-cigarette total's row, which holds its label ({spec.unit_cell!r}, "
+            "as receipts_label gives it), its figures and nothing else. The line "
+            "takes its unit from that total's label, so the importer refuses any "
+            "other layout."
+        )
+
+
 def find_receipts_line(
     sheets: dict[str, list[dict[str, str | None]]], spec: ReceiptsSeriesSpec
 ) -> ReceiptsLine:
-    """The one row labelled ``spec.row`` in a table titled ``spec.title``.
+    """Find the row labelled ``spec.row`` in the table titled
+    ``spec.title``.
 
-    Only that table's rows are read: its cash unit, year headers and its
-    "Outturn" and "Forecast" markers, which may sit on one row or several.
+    The importer reads only that table's rows: its cash unit, its year
+    headers and its "Outturn" and "Forecast" markers, which may sit on one
+    row or several. Before it reads a clearance line's values, it checks the
+    line's table, from its title through its end, against the texts someone
+    has read (``validate_clearance_table``). It then refuses any text beside
+    the years in the fiscal-year row over the line, and a part of a total
+    that does not sit under the total (``validate_clearance_part``): a
+    table of listed texts can still put a unit over the wrong lines.
     """
     matches = []
     for sheet, rows in sheets.items():
@@ -1100,12 +1439,14 @@ def find_receipts_line(
                 continue
             where = f"Table {table} (sheet {sheet})"
             years: dict[str, int] = {}
+            year_row: dict[str, str | None] = {}
             markers: dict[str, int] = {}
             header_rows = []
-            for row in table_rows:
+            for index, row in enumerate(table_rows):
                 row_years = _fiscal_year_columns(row)
                 if row_years:
                     years = row_years
+                    year_row = row
                     continue
                 if not years:
                     header_rows.append(row)
@@ -1126,16 +1467,25 @@ def find_receipts_line(
                     continue
                 first_year_column = min(column_index(column) for column in years)
                 labels = [
-                    value
+                    (column, value)
                     for column, value in sorted(
                         row.items(), key=lambda item: column_index(item[0])
                     )
                     if column_index(column) < first_year_column
                     and normalise_label(value)
                 ]
-                if labels and receipts_label(labels[0]) == spec.row:
+                if labels and receipts_label(labels[0][1]) == spec.row:
                     matches.append(
-                        (table, sheet, labels[0], row, years, markers, header_rows)
+                        (
+                            table,
+                            sheet,
+                            labels[0],
+                            row,
+                            years,
+                            markers,
+                            header_rows,
+                            (year_row, table_rows, index),
+                        )
                     )
 
     name = ".".join(spec.path)
@@ -1145,15 +1495,57 @@ def find_receipts_line(
             f'Expected one "{spec.row}" row in the "{spec.title}" table for '
             f"{name}; found {found}"
         )
-    table, sheet, label, row, years, markers, header_rows = matches[0]
+    (
+        table,
+        sheet,
+        (label_column, label),
+        row,
+        years,
+        markers,
+        header_rows,
+        (year_row, table_rows, line_index),
+    ) = matches[0]
     where = f"Table {table} (sheet {sheet})"
+    if isinstance(spec, ClearanceSeriesSpec):
+        validate_clearance_table(sheets[sheet], table, spec, where)
     repeated = sorted({y for y in years.values() if list(years.values()).count(y) > 1})
     if repeated:
         raise ValueError(
             f"{where} heads more than one column "
             + ", ".join(fiscal_year_label(y) for y in repeated)
         )
-    validate_receipts_unit(header_rows, where)
+    # The importer reads a line's label and a value under each year and
+    # refuses anything else on the row: a unit or note beside the label would
+    # describe the values, which the importer would read in the table's unit.
+    beside = {
+        column: value
+        for column, value in row.items()
+        if normalise_label(value) and column != label_column and column not in years
+    }
+    if beside:
+        raise ValueError(
+            f"{where} holds {beside} beside the {name} row's label and values; "
+            "a unit or note on the row needs deliberate importer support"
+        )
+    if isinstance(spec, ClearanceSeriesSpec):
+        # The OBR states each clearance unit in a label or a note. A text
+        # beside the years, such as a unit column's heading or a line's label,
+        # could head the values below it with another unit.
+        heading = {
+            column: value
+            for column, value in year_row.items()
+            if normalise_label(value) and column not in years
+        }
+        if heading:
+            raise ValueError(
+                f"{where} holds {heading} in the fiscal-year row over the {name} "
+                "line. A text beside the years could give the line another "
+                "unit, so the importer refuses any text there."
+            )
+        if spec.part_of_total:
+            validate_clearance_part(table_rows, line_index, spec, where)
+    else:
+        validate_receipts_unit(header_rows, where)
     levels = {}
     for column, year in years.items():
         text = row.get(column)
@@ -1244,12 +1636,10 @@ def compute_receipts_growth(
                     f"{name}: {fiscal_year_label(year)} receipts of {level} are "
                     "not positive, so there is no growth to or from them"
                 )
-        values = {
-            year: round(growth_ratio(spec, levels, year) - 1, 6) + 0.0
-            for year in sorted(levels)[1:]
-        }
+        ratios = {year: growth_ratio(spec, levels, year) for year in sorted(levels)[1:]}
+        values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in ratios.items()}
         check_index(name, values)
-        result[spec.path] = ReceiptsGrowth(values, line, previous, spec)
+        result[spec.path] = ReceiptsGrowth(values, line, previous, spec, ratios)
     return result
 
 
@@ -1293,36 +1683,27 @@ def growth_in_effect(series: dict[int, float], year: int) -> float:
 def per_head_growth(
     growth: ReceiptsGrowth, population: dict[int, float]
 ) -> ReceiptsGrowth:
-    """A series' growth per head, to six decimals: each year's growth before
-    rounding (``growth_ratio``), over one plus that year's ``ons.population``
-    growth, minus one.
+    """Return a series' growth per head, to six decimals: one plus each
+    year's growth, over one plus that year's ``ons.population`` growth,
+    minus one.
 
+    It divides the series' own growth, before rounding where
+    ``growth.ratios`` holds it: a duty's base for a line with rates, whether
+    the importer links the line to the previous EFO or to its own outturn.
     Dataset projection grows each household's input by this and its weight
     by the population growth, so the weighted input grows by their product,
-    the line's growth: a duty's base, for a line with rates.
+    the series' growth.
     """
-    spec = growth.spec
-    first = min(growth.line.levels)
-    if growth.previous_line is None:
-        earlier = {
-            year: value / 1e6
-            for year, value in spec.outturn.receipts_thousands
-            if year < first
-        }
-    else:
-        earlier = {first - 1: growth.previous_line.levels[first - 1]}
-    levels = {**earlier, **growth.line.levels}
-    values = {
-        year: round(
-            growth_ratio(spec, levels, year) / (1 + growth_in_effect(population, year))
-            - 1,
-            6,
-        )
-        + 0.0
-        for year in growth.values
+    ratios = growth.ratios
+    if ratios is None:
+        ratios = {year: 1 + value for year, value in growth.values.items()}
+    per_head = {
+        year: ratio / (1 + growth_in_effect(population, year))
+        for year, ratio in ratios.items()
     }
+    values = {year: round(ratio - 1, 6) + 0.0 for year, ratio in per_head.items()}
     check_index(".".join(growth.spec.path), values)
-    return replace(growth, values=values)
+    return replace(growth, values=values, ratios=per_head)
 
 
 def format_growth(value: float) -> str:
@@ -1471,9 +1852,11 @@ def render_receipts_values(
 
 
 def receipts_basis(spec: ReceiptsSeriesSpec | None) -> str:
-    """How a line's growth is measured, for its comments: nothing for
-    receipts, the rates taken out for a base, and population for a base per
-    head."""
+    """Return what the importer takes out of a line's growth, for its
+    comments: nothing for receipts, the rates for a base, and population for
+    clearances and for a base per head."""
+    if isinstance(spec, ClearanceSeriesSpec):
+        return "; per head: clearance growth over one plus ons.population growth"
     if spec is None or not spec.rates:
         return ""
     if spec.per_head:
@@ -1519,8 +1902,10 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
     comes from. A base under ``per_capita`` divides that growth by one plus
     ``ons.population`` growth (``per_head_tail``)."""
     last = max(growth.values)
-    path = average_earnings_path(content, last)
     spec = growth.spec
+    if isinstance(spec, ClearanceSeriesSpec):
+        return clearance_tail(content, last)
+    path = average_earnings_path(content, last)
     if spec is None or not spec.rates:
         return path, "the average_earnings long-run path above"
     # Rates hold their last value after their last change, as the path does.
@@ -1553,6 +1938,25 @@ def receipts_tail(content: str, growth: ReceiptsGrowth) -> tuple[dict[int, float
     if spec.per_head:
         return per_head_tail(tail, comment, population_growth(content))
     return tail, comment
+
+
+def clearance_tail(content: str, last: int) -> tuple[dict[int, float], str]:
+    """Return a clearance series after the OBR's forecast, and its
+    comment. The importer holds the clearances flat, so per head they grow
+    by 1 / (1 + population) - 1, to six decimals, in each year to
+    ``ons.population``'s last. It writes a year only where the value
+    changes."""
+    population = population_growth(content)
+    yearly = {
+        year: round(1 / (1 + growth_in_effect(population, year)) - 1, 6) + 0.0
+        for year in range(last + 1, max(max(population), last + 1) + 1)
+    }
+    tail = {
+        year: value
+        for year, value in yearly.items()
+        if year == last + 1 or value != yearly[year - 1]
+    }
+    return tail, "clearances held flat: 1 / (1 + ons.population growth) - 1"
 
 
 def receipts_references(
@@ -1614,12 +2018,13 @@ def render_receipts_growth_yaml(
     """Rewrite each receipts series' values and references in a
     yoy_growth.yaml.
 
-    Years before this EFO's first year are kept, so a series' index keeps
-    its base year. Years after the OBR's receipts forecast follow
-    average_earnings as ``content`` holds it. A series under ``per_capita``
-    is written per head of ``ons.population`` as ``content`` holds it, in
-    every year to the last that population or the tail states. The result is
-    checked to differ from ``content`` only in those values and references.
+    It keeps the years before this EFO's first year, so a series' index
+    keeps its base year, and follows average_earnings as ``content`` holds
+    it after the OBR's receipts forecast. It writes a series under
+    ``per_capita`` per head of ``ons.population`` as ``content`` holds it,
+    in every year to the last that population or the tail states, and holds
+    a clearance series' clearances flat after the forecast. It checks that
+    the result differs from ``content`` only in those values and references.
     """
     before = yaml.safe_load(content)
     expected = copy.deepcopy(before)
@@ -2819,8 +3224,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help=(
             "Do not update the receipts growth series (stamp_duty_land_tax, "
             "business_rates) that project corporate SDLT and business rates, "
-            "or the gambling_duty_bases series that project the gambling "
-            "duty inputs"
+            "the gambling_duty_bases series that project the gambling duty "
+            "inputs, or the per_capita clearance series that project the "
+            "alcohol and tobacco quantity inputs"
         ),
     )
     parser.add_argument(

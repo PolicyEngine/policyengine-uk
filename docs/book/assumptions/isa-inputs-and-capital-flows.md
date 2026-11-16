@@ -114,21 +114,22 @@ shares ISA balances in their own benefit unit, through
 `cash_isa_countable_capital` and `stocks_and_shares_isa_countable_capital` in
 its `person_sources`, and excludes a dependant's balance, a child's junior ISA
 among them. The formulas subtract a household's counted balances from `cash_isa`
-and `share_like_capital` before they allocate the remainder between benefit
-units. Where the balances sum to less than the total the model holds for the
-year, the remainder stays in the pool. Where their stored sum exceeds the total,
-the model scales them to sum to the total exactly: it rounds each proportional
-share down to a whole step of the total's float32 spacing and gives the steps
-left over, one each, to the members whose shares lost most in rounding. The pool
-then keeps nothing of that total; for totals under £268 million, each holding
-passes a capital limit only where its proportional share does; and a sole holder
-whose balance reaches the total counts exactly the total. For stocks and shares
-ISAs the model takes the smaller of `stocks_and_shares_isa` and
-`share_like_capital` as the total. Data that store only household totals hold no
-balances, so the pool keeps the whole total. The formulas count a balance only
-while the programme's `sources` lists the household source that includes it, so
-a reform that drops `cash_isa` or `share_like_capital` from `sources` drops the
-balances with it. For a Universal Credit unit that reports its capital
+and `share_like_capital_without_sale_expenses` before they allocate the
+remainder between benefit units. Where the balances sum to less than the total
+the model holds for the year, the remainder stays in the pool. Where their
+stored sum exceeds the total, the model scales them to sum to the total exactly:
+it rounds each proportional share down to a whole step of the total's float32
+spacing and gives the steps left over, one each, to the members whose shares
+lost most in rounding. The pool then keeps nothing of that total; for totals
+under £268 million, each holding passes a capital limit only where its
+proportional share does; and a sole holder whose balance reaches the total
+counts exactly the total. For stocks and shares ISAs the model takes the smaller
+of `stocks_and_shares_isa` and `share_like_capital` as the total. Data that
+store only household totals hold no balances, so the pool keeps the whole total.
+The formulas count a balance only while the programme's `sources` lists the
+household source that includes it, so a reform that drops `cash_isa` or
+`share_like_capital_without_sale_expenses` from `sources` drops the balances
+with it. For a Universal Credit unit that reports its capital
 (`benunit_reported_capital` or `uc_reported_capital`, zero or more), the formula
 leaves the unit's claimant's and partner's ISAs in the pool and subtracts the
 report, as it does for their company holdings. A nonnegative
@@ -146,10 +147,11 @@ replaces covered components rather than adding them again.
 For example, £5,000 savings and a £3,000 ordinary cash ISA give £8,000 UC
 capital. [UC regulation 72](https://www.legislation.gov.uk/uksi/2013/376/regulation/72)
 then gives eight £4.35 monthly tariff units, or £34.80 a month. Stocks-and-shares
-ISA holdings remain within `share_like_capital`. The separate existing
-`lifetime_isa_countable_capital` valuation is unchanged. It does not gain
-transaction-level first-home or terminal-illness valuation from the new flow
-inputs.
+ISA holdings remain within `share_like_capital`, in its part without sale
+expenses, which every means test counts at withdrawal value. The separate
+existing `lifetime_isa_countable_capital` valuation is unchanged. It does not
+gain transaction-level first-home or terminal-illness valuation from the new
+flow inputs.
 
 Population estimates depend on the input balances, reported-capital
 overrides, benefit take-up and calibrated weights as well as the capital

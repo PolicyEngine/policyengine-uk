@@ -1,0 +1,18 @@
+description: Plan 5 student loan borrowers owe repayments if this is true. A borrower need not repay any part of a Plan 5 loan on or before 5 April 2026, so from 6 April 2026 the student loan repayment formula charges Plan 5 borrowers.
+values:
+  2015-04-06: false
+  2026-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: SI 2009/470 reg. 15(2BB) (omits paragraph (2BA) on 6 April 2026)
+          href: https://www.legislation.gov.uk/uksi/2009/470/regulation/15
+metadata:
+  unit: bool
+  period: year
+  label: Plan 5 student loan repayments due
+  reference:
+    - title: SI 2009/470 reg. 15(2BA) and (2BB), inserted by SI 2022/1335 reg. 15(9)
+      href: https://www.legislation.gov.uk/uksi/2009/470/regulation/15
+    - title: SI 2022/1335 reg. 15(9)
+      href: https://www.legislation.gov.uk/uksi/2022/1335/regulation/15/made

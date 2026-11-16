@@ -12,12 +12,20 @@ not share holders.
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 from policyengine_core.experimental.memory_config import MemoryConfig
 from policyengine_core.periods import period
+from policyengine_core.reforms import Reform
 
-from policyengine_uk import Simulation
-from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
+from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.data import UKSingleYearDataset
+from policyengine_uk.utils.supplied_inputs import (
+    is_model_value,
+    set_model_value,
+    stored_supplied_value,
+    supplied_input,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -176,3 +184,88 @@ def test_rebuilt_populations_forget_the_inputs_they_replace():
     holder.put_in_cache(np.array([123.0]), period(2026))
     person = sim.populations["person"]
     assert supplied_input(person, "adjusted_net_income", period(2026)) is None
+
+
+@pytest.mark.parametrize("model", [False, True], ids=["supplied", "model"])
+@pytest.mark.parametrize(
+    "subsampled",
+    [pytest.param(False, id="direct"), pytest.param(True, id="subsampled")],
+)
+def test_restoring_reform_can_replace_a_neutralized_input(model, subsampled):
+    """A write after restoration replaces the hidden value and its ownership."""
+    if subsampled:
+        dataset = UKSingleYearDataset(
+            person=pd.DataFrame(
+                {
+                    "person_id": [1],
+                    "person_benunit_id": [1],
+                    "person_household_id": [1],
+                    "age": [40],
+                    "employment_income": [30_000.0],
+                }
+            ),
+            benunit=pd.DataFrame({"benunit_id": [1]}),
+            household=pd.DataFrame(
+                {
+                    "household_id": [1],
+                    "household_weight": [1.0],
+                    "region": ["LONDON"],
+                    "tenure_type": ["OWNED_OUTRIGHT"],
+                    "rent": [0.0],
+                    "council_tax": [0.0],
+                }
+            ),
+            fiscal_year=2025,
+        )
+        simulation = Microsimulation(dataset=dataset)
+    else:
+        simulation = Simulation(situation={"age": 40, "employment_income": 30_000})
+    name = "adjusted_net_income"
+    input_period = period(2025)
+    original_variable = simulation.tax_benefit_system.get_variable(name).__class__
+    if model:
+        set_model_value(simulation, name, input_period, [10_000])
+    else:
+        simulation.set_input(name, input_period, [10_000])
+
+    class NeutralizeIncome(Reform):
+        def apply(self):
+            self.neutralize_variable(name)
+
+    class RestoreAndReplaceIncome(Reform):
+        def apply(self):
+            self.replace_variable(original_variable)
+            assert not self.get_variable(name).is_neutralized
+            assert self.get_variable(name).__class__ is original_variable
+            self.simulation.set_input(name, input_period, [20_000])
+            stored = stored_supplied_value(
+                self.simulation.get_holder(name),
+                input_period,
+                self.simulation.branch_name,
+            )
+            np.testing.assert_array_equal(stored, [20_000])
+            np.testing.assert_array_equal(
+                self.simulation.calculate(name, input_period), [20_000]
+            )
+            assert not is_model_value(self.simulation, name, input_period, stored)
+            np.testing.assert_array_equal(
+                supplied_input(
+                    self.simulation.populations["person"], name, input_period
+                ),
+                [20_000],
+            )
+
+    simulation.apply_reform(NeutralizeIncome)
+    if subsampled:
+        simulation.subsample(n=1, seed=0, time_period=2025)
+    simulation.apply_reform(RestoreAndReplaceIncome)
+
+    stored = stored_supplied_value(
+        simulation.get_holder(name), input_period, simulation.branch_name
+    )
+    np.testing.assert_array_equal(stored, [20_000])
+    np.testing.assert_array_equal(simulation.calculate(name, input_period), [20_000])
+    assert not is_model_value(simulation, name, input_period, stored)
+    np.testing.assert_array_equal(
+        supplied_input(simulation.populations["person"], name, input_period), [20_000]
+    )

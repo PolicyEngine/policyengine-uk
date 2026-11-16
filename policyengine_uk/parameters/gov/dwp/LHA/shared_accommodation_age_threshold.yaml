@@ -4,7 +4,7 @@ values:
 metadata:
   period: year
   unit: year
-  label: Lha shared accommodation age threshold
+  label: LHA shared accommodation age threshold
   reference:
     - title: Universal Credit Regulations 2013 Sch 4 para 28(2)(a)
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28

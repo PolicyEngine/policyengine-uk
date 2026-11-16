@@ -53,6 +53,13 @@ modes = ["wheel"]
 why = "Tests of the CI scripts in .github skip themselves in an installed wheel, which does not contain .github; they run against the source tree on every PR."
 
 [[allow]]
+nodeid = "policyengine_uk/tests/code_health/test_docs_toc.py"
+outcome = "collect-skipped"
+reason = 'myst\.yml'
+modes = ["wheel"]
+why = "The installed wheel holds neither myst.yml nor the docs, so the documentation table of contents test skips itself there; it runs against the source tree on every PR."
+
+[[allow]]
 nodeid = "policyengine_uk/tests/*"
 outcome = "skipped"
 reason = "^Requires POLICYENGINE_UK_DEFAULT_DATASET or HUGGING_FACE_TOKEN"

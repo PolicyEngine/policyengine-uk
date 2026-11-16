@@ -196,9 +196,16 @@ def test_property_capital_lists_preserve_each_source_once(
             )
         assert "main_residence_value" not in names
         assert "private_pension_wealth" not in names
-        assert names.count("share_like_capital") == 1
+        # Both lists name share_like_capital's part with sale expenses once,
+        # in place of share_like_capital or corporate_wealth.
+        assert "share_like_capital" not in names
+        assert names.count("share_like_capital_with_sale_expenses") == 1
         assert "corporate_wealth" not in names
         assert "buy_to_let_value" not in names
+    # The part without sale expenses (unit and investment trusts and stocks
+    # and shares ISAs) is counted once, at full value.
+    assert sources.count("share_like_capital_without_sale_expenses") == 1
+    assert "share_like_capital_without_sale_expenses" not in sale_sources
     # Preserve UC's existing omission; the aggregate change does not decide it.
     if "universal_credit" in capital_path:
         assert "owned_land" not in sources
@@ -552,12 +559,13 @@ def test_legacy_stored_total_overrides_formula_until_removed_by_data_release():
 # wealth, land and Universal Credit capital; row 9 pins wealth and land only.
 # Unlike main at 2da212ab, the Housing Benefit, JSA, ESA and Income Support
 # formulas here take sale expenses off other residential and non-residential
-# property and off share_like_capital, which holds row 9's corporate_wealth,
-# and the Universal Credit formula takes them off share_like_capital. These
-# formulas therefore change the Housing Benefit, JSA, ESA and Income Support
-# capital of both rows, and row 9's Universal Credit capital, independently
-# of the new inputs. Rows 8 and 9 stop before Pension Credit capital, which
-# the formula sets to nil while no member has reached the qualifying age.
+# property and off share_like_capital_with_sale_expenses, which holds all of
+# row 9's unitemised corporate_wealth, and the Universal Credit formula takes
+# them off that part. These formulas therefore change the Housing Benefit,
+# JSA, ESA and Income Support capital of both rows, and row 9's Universal
+# Credit capital, independently of the new inputs. Rows 8 and 9 stop before
+# Pension Credit capital, which the formula sets to nil while no member has
+# reached the qualifying age.
 WEALTH_AND_LAND = ("property_wealth", "total_wealth", "household_land_value")
 CAPITAL = (
     "uc_assessable_capital",

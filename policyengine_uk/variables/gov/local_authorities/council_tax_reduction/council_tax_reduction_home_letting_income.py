@@ -11,12 +11,18 @@ class council_tax_reduction_home_letting_income(Variable):
     documentation = (
         "Rent the Council Tax Reduction applicant and any partner "
         "(is_council_tax_reduction_applicant_or_partner) receive for letting "
-        "part of the home they live in (sublet_income), after the weekly "
-        "sub-tenant disregard for one occupier. Where the household head "
-        "applies alone, the head is the applicant, so the head's own rent "
-        "counts and the benefit unit's claimant's and partner's does not. The "
-        "pension-age disregard applies where the applicant falls under the "
-        "pension-age scheme (council_tax_reduction_pensioner). "
+        "part of the home they live in, after the weekly disregards: rent "
+        "from a sub-tenant outside the household (sublet_income), less the "
+        "sub-tenant disregard for one occupier, and, where the household "
+        "head is the applicant or partner, rent from boarders and lodgers in "
+        "the household, less the board and lodging disregard for each "
+        "boarder and the lodger disregard. Where the household head applies "
+        "alone, the head is the applicant, so the head's own rent counts and "
+        "the benefit unit's claimant's and partner's does not. The "
+        "pension-age disregards apply where the applicant falls under the "
+        "pension-age scheme (council_tax_reduction_pensioner): there the "
+        "lodger disregard applies per person, and under the working-age "
+        "scheme per lodger family. "
         "council_tax_reduction_applicable_income decides on which routes it "
         "counts."
     )
@@ -26,6 +32,7 @@ class council_tax_reduction_home_letting_income(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/regulation/2",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/11",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/9",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/10",
     ]
 

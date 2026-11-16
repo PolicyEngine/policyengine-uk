@@ -57,6 +57,8 @@ TRIPLE_LOCK = f"{GROWTH}.triple_lock"
 LAGGED_CPI = f"{GROWTH}.obr.lagged_cpi"
 INDICES = "gov.economic_assumptions.indices"
 ENERGY_PRICES = "gov.economic_assumptions.energy_prices"
+# The calendar-year series on the gov tree (invariant 2).
+CALENDAR_YEAR_SERIES = (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.")
 CPI_INDEX = f"{INDICES}.obr.consumer_price_index"
 INPUTS = "gov.economic_assumptions.statutory_uprating_inputs"
 AWE = f"{INPUTS}.awe_total_pay_may_july"
@@ -324,9 +326,7 @@ def test_calendar_year_series_are_the_growth_rates_indices_and_household_tree():
     for path in paths:
         if path.startswith("baseline."):
             continue
-        expected = path.startswith(
-            (f"{GROWTH}.", f"{INDICES}.", f"{ENERGY_PRICES}.", "household.")
-        )
+        expected = path.startswith(CALENDAR_YEAR_SERIES + ("household.",))
         assert reads(path) is expected, path
     assert not reads("gov.not.a.parameter")
 
@@ -600,8 +600,7 @@ def statutory_leaves():
 ORDINARY = [
     path
     for path in statutory_leaves()
-    if path.startswith("gov.")
-    and not path.startswith(("gov.economic_assumptions.yoy_growth.",))
+    if path.startswith("gov.") and not path.startswith(CALENDAR_YEAR_SERIES)
 ]
 KEYS = st.one_of(
     st.integers(2016, 2040),
@@ -611,6 +610,12 @@ KEYS = st.one_of(
     st.integers(2016, 2040).map(lambda y: f"year:{y}-01-01:1"),
     st.integers(2016, 2040).map(lambda y: f"{y}-04-06.{y + 1}-04-05"),
 )
+
+
+def test_no_ordinary_parameter_reads_calendar_years():
+    reads = tbs_module.parameter_reads_calendar_years()
+    assert ORDINARY
+    assert [path for path in ORDINARY if reads(path)] == []
 
 
 @settings(max_examples=200, deadline=None, derandomize=True)

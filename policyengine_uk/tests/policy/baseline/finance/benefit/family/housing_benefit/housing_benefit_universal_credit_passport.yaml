@@ -11,9 +11,10 @@
 # In law working-age Housing Benefit is paid alongside Universal Credit for
 # specified or temporary accommodation (UC (Transitional Provisions) Regs 2014
 # reg 5(2)(a)), whose rent is excluded from the Universal Credit housing costs
-# element (UC Regs 2013 Sch 1 para 3(h)-(i)). The model has no such route yet
-# (PolicyEngine/policyengine-uk#1910 adds one), so these cases supply
-# housing_benefit_eligible and a nil uc_housing_costs_element as inputs.
+# element (UC Regs 2013 Sch 1 para 3(h)-(i)). The model takes that route for a
+# family with in_specified_or_temporary_accommodation; these cases supply
+# housing_benefit_eligible and a nil uc_housing_costs_element as inputs instead,
+# so that they test the passport alone.
 #
 # Expected values are hand-computed from the regulations: council tenancies
 # (no LHA), no non-dependants, 2025-26 amounts. Universal Credit: standard

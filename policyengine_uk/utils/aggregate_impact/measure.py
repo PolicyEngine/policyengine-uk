@@ -95,13 +95,23 @@ class Recorder:
             record["values"][str(year)] = float(value)
 
     def check(
-        self, check_id, label, ok, detail="", severity="fail", section="", scope=None
+        self,
+        check_id,
+        label,
+        ok,
+        detail="",
+        severity="fail",
+        section="",
+        scope=None,
+        note="",
     ):
         """Record a check; repeated ids (one per year) merge into one result.
 
         ``failing`` maps each scope the check failed in (a year, or "" for a
         check that is not per year) to its detail. ``ok=None`` records that
-        the check did not apply (``skipped``), which is not a pass.
+        the check did not apply (``skipped``), which is not a pass. ``note``
+        joins the details whatever the outcome, so a pass can say what the
+        check could not test.
         """
         if ok is None:
             status = "skipped"
@@ -131,6 +141,8 @@ class Recorder:
             record["failing"][scope] = detail
             if detail:
                 record["details"].append(detail)
+        if note and note not in record["details"]:
+            record["details"].append(note)
 
 
 def array(sim, variable: str, period, map_to: Optional[str] = None) -> np.ndarray:
@@ -1165,7 +1177,13 @@ def publishable_guard(guard: dict) -> dict:
     A component perturbed in fewer than ``MIN_CELL`` units keeps no count, no
     responses or coefficients, and no weighted shares in its problems. A
     problem or mediated response in fewer than ``MIN_CELL`` households keeps
-    no count and no share. Messages already say "fewer than 10".
+    no count and no share. A count of households where the check could not
+    hold a head (``households_not_held``) below ``MIN_CELL`` goes too.
+    Messages already say "fewer than 10". The heads the check could not hold
+    (``heads_not_held``, ``heads_not_held_at_baseline``) and the
+    ``not_finite`` flags hold no figures, so they stay. A count below
+    ``MIN_CELL`` of households where a variable is not finite at baseline
+    (``not_finite_at_baseline``) goes too.
     """
     out = dict(guard)
     components = []
@@ -1187,8 +1205,15 @@ def publishable_guard(guard: dict) -> dict:
                     item.pop("share", None)
                 if small(item.get("households") or 0):
                     item["households"] = None
+                if small(item.get("households_not_held") or 0):
+                    item["households_not_held"] = None
                 cleaned.append(item)
             row[key] = cleaned
+        if "households_not_held" in row:
+            row["households_not_held"] = {
+                head: None if small(count or 0) else count
+                for head, count in row["households_not_held"].items()
+            }
         components.append(row)
     if "components" in guard:
         out["components"] = components
@@ -1203,7 +1228,9 @@ def publishable_guard(guard: dict) -> dict:
         row = dict(row)
         if small(units.get(row.get("variable")) or 0):
             row["coefficient"] = None
-            if row.get("status") != "pass":
+            # A container that is not finite, or a double count the check
+            # skipped, has a detail with no figures.
+            if row.get("status") == "fail" and not row.get("not_finite"):
                 row["detail"] = (
                     f"{row['contained_in']} no longer moves one for one with "
                     f"{row['variable']} (fewer than {MIN_CELL} units): the model "
@@ -1213,7 +1240,91 @@ def publishable_guard(guard: dict) -> dict:
         double_counts.append(row)
     if "double_counts" in guard:
         out["double_counts"] = double_counts
+    if "not_finite_at_baseline" in guard:
+        out["not_finite_at_baseline"] = [
+            {
+                **item,
+                "households": None if small(item["households"]) else item["households"],
+            }
+            for item in guard["not_finite_at_baseline"]
+        ]
     return out
+
+
+def record_guard_checks(rec: Recorder, guard: dict) -> None:
+    """Record the counted-once result (``guard.counted_once``) as checks."""
+    for result in guard.get("components", []):
+        check_id = f"counted_once:{result['variable']}"
+        label = (
+            f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
+            "other tax head and raises no other benefit"
+        )
+        if result["status"] == "skipped":
+            rec.check(
+                check_id,
+                label,
+                None,
+                result["detail"],
+                section="counted_once",
+                scope="",
+            )
+        elif result["status"] == "pass":
+            # The detail of a pass names any head the check could not hold.
+            rec.check(
+                check_id,
+                label,
+                True,
+                section="counted_once",
+                scope="",
+                note=result["detail"],
+            )
+        # One scope per failing (total, head, kind), so a comparison sees
+        # a head that newly contains the component, not just "still fails".
+        for item in result.get("problems") or []:
+            rec.check(
+                check_id,
+                label,
+                False,
+                item["message"],
+                section="counted_once",
+                scope=f"{item['total']}:{item['head']}:{item['kind']}",
+            )
+    # Details from the published guard, with small cells removed.
+    for result in publishable_guard(guard).get("double_counts", []):
+        rec.check(
+            f"double_count_present:{result['variable']}",
+            f"{result['variable']} is still contained in {result['contained_in']}",
+            None if result["status"] == "skipped" else result["status"] == "pass",
+            result["detail"],
+            section="counted_once",
+        )
+    # A variable not finite at baseline fails a finite: check, which blocks
+    # whatever the base did: its own for a head, else finite:metrics.
+    for item in guard.get("not_finite_at_baseline") or []:
+        detail = f"{fiscal_year_label(guard['year'])}: {item['message']}"
+        scope = f"counted_once:{guard['year']}:{item['variable']}"
+        if item["head"] is None:
+            check_id, label = "finite:metrics", "Every reported figure is finite"
+        else:
+            check_id = f"finite:{item['head']}"
+            label = f"{item['label']} is finite for every unit"
+        rec.check(check_id, label, False, detail, section="finite", scope=scope)
+    if "reset_reproduces_baseline" in guard:
+        rec.check(
+            "counted_once:reset_reproduces_baseline",
+            "The counted-once check leaves the baseline unchanged",
+            bool(guard["reset_reproduces_baseline"]),
+            "recomputed baseline totals differ from the first run",
+            section="counted_once",
+        )
+    rec.check(
+        "counted_once:ran",
+        "The counted-once check ran",
+        guard.get("status") == "ran",
+        guard.get("reason", ""),
+        severity="warn",
+        section="counted_once",
+    )
 
 
 def _finite_metrics_check(rec: Recorder):
@@ -1664,57 +1775,7 @@ def measure(
             variables_to_check=guard_variables,
         )
         timings["counted_once"] = round(time.time() - t, 2)
-        for result in guard.get("components", []):
-            check_id = f"counted_once:{result['variable']}"
-            label = (
-                f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
-                "other tax head and raises no other benefit"
-            )
-            if result["status"] != "fail":
-                rec.check(
-                    check_id,
-                    label,
-                    None if result["status"] == "skipped" else True,
-                    result["detail"],
-                    section="counted_once",
-                    scope="",
-                )
-            # One scope per failing (total, head, kind), so a comparison sees
-            # a head that newly contains the component, not just "still fails".
-            for item in result.get("problems") or []:
-                rec.check(
-                    check_id,
-                    label,
-                    False,
-                    item["message"],
-                    section="counted_once",
-                    scope=f"{item['total']}:{item['head']}:{item['kind']}",
-                )
-        # Details from the published guard, with small cells removed.
-        for result in publishable_guard(guard).get("double_counts", []):
-            rec.check(
-                f"double_count_present:{result['variable']}",
-                f"{result['variable']} is still contained in {result['contained_in']}",
-                result["status"] == "pass",
-                result["detail"],
-                section="counted_once",
-            )
-        if "reset_reproduces_baseline" in guard:
-            rec.check(
-                "counted_once:reset_reproduces_baseline",
-                "The counted-once check leaves the baseline unchanged",
-                bool(guard["reset_reproduces_baseline"]),
-                "recomputed baseline totals differ from the first run",
-                section="counted_once",
-            )
-        rec.check(
-            "counted_once:ran",
-            "The counted-once check ran",
-            guard.get("status") == "ran",
-            guard.get("reason", ""),
-            severity="warn",
-            section="counted_once",
-        )
+        record_guard_checks(rec, guard)
 
     t = time.time()
     reform_outcomes = measure_reforms(

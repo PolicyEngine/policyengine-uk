@@ -161,10 +161,18 @@ household's land or property for that unit. The data producer must move such a
 total to `benunit_reported_capital` before the formula can count the property.
 Ordinary Housing Benefit, Income Support, income-based JSA and income-related
 ESA do not replace their source pools with a financial-only report, so their
-existing routing is retained. `share_like_capital` retains the component-aware financial fallback,
-so the new property sources do not restore `corporate_wealth` lists or add
-the underlying share components twice. Main residence and the separately
-identified private-pension input remain excluded from countable sources.
+existing routing is retained. Each of the six programmes' capital sources
+names `share_like_capital`'s two parts,
+`share_like_capital_with_sale_expenses` and
+`share_like_capital_without_sale_expenses`, which split its component-aware
+financial fallback, so the new property sources do not restore
+`corporate_wealth` lists or add the underlying share components twice. Each
+programme's sale-expense list names the part with sale expenses and not the
+part without, so unit and investment trusts and stocks and shares ISAs that a
+dataset itemises count at full value, while a `corporate_wealth` the dataset
+does not itemise stays in the part with sale expenses. Main residence and the
+separately identified private-pension input remain excluded from countable
+sources.
 
 These broad asset categories do not identify every statutory disregard or
 individual's beneficial ownership. Their allocation is a model assumption,

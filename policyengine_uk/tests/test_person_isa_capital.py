@@ -18,10 +18,14 @@ invariants:
    Credit holders outside a pension-age unit), equals savings, cash_isa and
    share_like_capital together, up to float32 rounding of the remainder's
    shares and each programme's penny rounding. Each programme values
-   share_like_capital, and each stocks and shares ISA it moves out of it, at
-   its sale-expense share (90%), and savings and cash ISAs at face value. Where balances exceed a total, the holdings sum to it exactly, so
-   that source leaves nothing in the remainder: an adult with no ISA counts
-   exactly the capital they count without the other members' ISAs.
+   share_like_capital_with_sale_expenses (directly held shares, and all of
+   an unitemised corporate_wealth) at its sale-expense share (90%), and
+   share_like_capital_without_sale_expenses (unit and investment trusts and
+   stocks and shares ISAs), each stocks and shares ISA it moves out of that
+   part, savings and cash ISAs at face value. Where balances exceed a total,
+   the holdings sum to it exactly, so that source leaves nothing in the
+   remainder: an adult with no ISA counts exactly the capital they count
+   without the other members' ISAs.
 2. Where the balances' stored sum exceeds the total, the holdings sum to
    the total exactly, each in proportion to its balance within the step
    invariant 7 gives; otherwise each member counts their balance exactly.
@@ -83,6 +87,10 @@ CAPITAL = {
 }
 MEANS_TEST_CAPITAL = (*CAPITAL, "council_tax_reduction_assessable_capital")
 ISA_SOURCES = tuple(HOUSEHOLD_SOURCE_OF)
+SHARE_LIKE_PARTS = (
+    "share_like_capital_with_sale_expenses",
+    "share_like_capital_without_sale_expenses",
+)
 BALANCE = {
     "cash_isa_countable_capital": "cash_isa_balance",
     "stocks_and_shares_isa_countable_capital": "stocks_and_shares_isa_balance",
@@ -394,12 +402,12 @@ def test_household_only_data_keep_todays_capital():
             assert np.array_equal(
                 simulation.calculate(name, year), before.calculate(name, year)
             ), (name, year)
-    # The first household's pool: savings 3,000, cash_isa 4,000 and
-    # corporate_wealth 5,000 (which holds the 2,000 ISA) less 10%, 4,500,
-    # shared by three claimants, two of them the couple. UC rounds each to
-    # the nearest penny.
+    # The first household's pool: savings 3,000, cash_isa 4,000, and
+    # corporate_wealth 5,000, which holds the 2,000 ISA at face value and
+    # 3,000 of other shares less 10%, 2,700: 11,700 shared by three
+    # claimants, two of them the couple.
     uc = simulation.calculate("uc_assessable_capital", YEAR)
-    assert list(uc[:2]) == pytest.approx([7_666.67, 3_833.33], abs=0.001)
+    assert list(uc[:2]) == pytest.approx([7_800, 3_900], abs=0.001)
 
 
 def test_both_forms_in_one_dataset_add_up_to_the_stored_total():
@@ -492,11 +500,20 @@ PRODUCER_SHAPE = [
 ]
 
 
-def _household_capital(simulation, year, share=1):
+def _household_capital(simulation, year, variable=None):
+    """Savings, cash ISAs and share-like capital, as ``variable`` values them.
+
+    With no ``variable``, at market value.
+    """
+    share_like = sum(
+        (_share_counted(variable, part) if variable else 1)
+        * simulation.calculate(part, year)
+        for part in SHARE_LIKE_PARTS
+    )
     return (
         simulation.calculate("savings", year)
         + simulation.calculate("cash_isa", year)
-        + share * simulation.calculate("share_like_capital", year)
+        + share_like
     )
 
 
@@ -522,23 +539,20 @@ def test_person_balances_without_household_totals_count_with_their_holders():
             simulation.calculate("share_like_capital", year),
             simulation.calculate("corporate_wealth", year),
         )
-        holdings = _household_capital(
-            simulation, year, _share_counted("uc_assessable_capital")
-        )
+        holdings = _household_capital(simulation, year, "uc_assessable_capital")
         uc = simulation.calculate("uc_assessable_capital", year)
         assert np.bincount(benunit_household, weights=uc) == pytest.approx(
             holdings, rel=1e-6
         )
-    # Savings 7,000 and 2,000 of non-ISA shares less 10%, 1,800, make the
-    # first pool, 2,933.33 for each claimant. The couple adds a 3,000 cash ISA
-    # and a 2,000 stocks and shares ISA less 10% (1,800), and the other unit a
-    # 5,000 cash ISA and a 1,000 one less 10% (900). The second pool, savings
-    # 12,000 and 3,000 of trusts less 10% (2,700), gives the parents 9,800
-    # and their son 4,900 in UC, to which they add 4,000 and 5,400 of ISAs;
-    # the pension-age parents count all 14,700 and their 4,000 in Pension
-    # Credit. UC rounds to the nearest penny, and the legacy programmes
-    # round down.
-    expected_uc = [10_666.67, 8_833.33, 13_800, 10_300]
+    # Savings 7,000, 1,500 of directly held shares less 10%, 1,350, and 500
+    # of trusts at face value make the first pool, 2,950 for each claimant.
+    # The couple adds a 3,000 cash ISA and a 2,000 stocks and shares ISA, and
+    # the other unit a 5,000 cash ISA and a 1,000 stocks and shares ISA, all
+    # at face value. The second pool, savings 12,000 and 3,000 of trusts,
+    # gives the parents 10,000 and their son 5,000 in UC, to which they add
+    # 4,000 and 6,000 of ISAs; the pension-age parents count all 15,000 and
+    # their 4,000 in Pension Credit.
+    expected_uc = [10_900, 8_950, 14_000, 11_000]
     assert list(simulation.calculate("uc_assessable_capital", YEAR)) == pytest.approx(
         expected_uc, abs=0.001
     )
@@ -548,7 +562,7 @@ def test_person_balances_without_household_totals_count_with_their_holders():
             assert list(capital[:2]) == pytest.approx(expected_uc[:2], abs=0.011), name
     assert list(
         simulation.calculate("pension_credit_assessable_capital", YEAR)
-    ) == pytest.approx([0, 0, 18_700, 0], abs=0.001)
+    ) == pytest.approx([0, 0, 19_000, 0], abs=0.001)
 
 
 # One benefit unit each, with a child: the adults' cash and stocks and shares
@@ -726,35 +740,31 @@ def _check_counted_isas(simulation):
     return counted
 
 
-def _share_counted(variable):
-    """The share of share_like_capital's market value ``variable`` counts.
+def _share_counted(variable, source):
+    """The share of household ``source``'s market value ``variable`` counts.
 
-    The programme counts share_like_capital, and each stocks and shares ISA
-    balance it moves out of it, less its sale-expense rate where its
-    ``sale_expenses.sources`` lists share_like_capital.
+    The programme counts ``source``, and each person ISA it moves out of it,
+    less its sale-expense rate where its ``sale_expenses.sources`` lists
+    ``source``.
     """
     capital = _node(CAPITAL[variable])
     date = f"{YEAR}-01-01"
-    if "share_like_capital" in capital.sale_expenses.sources(date):
+    if source in capital.sale_expenses.sources(date):
         return 1 - capital.sale_expenses.rate(date)
     return 1
 
 
-# The share of each ISA person source's value a programme counts, given the
-# share it counts of share_like_capital.
-def _isa_shares(share):
+# The share of each ISA person source's value a programme counts: the share
+# it counts of the household source that holds it.
+def _isa_shares(variable):
     return {
-        "cash_isa_countable_capital": 1,
-        "stocks_and_shares_isa_countable_capital": share,
+        source: _share_counted(variable, HOUSEHOLD_SOURCE_OF[source])
+        for source in ISA_SOURCES
     }
 
 
-def _holdings(simulation, share=1):
-    return (
-        simulation.calculate("savings", YEAR)
-        + simulation.calculate("cash_isa", YEAR)
-        + share * simulation.calculate("share_like_capital", YEAR)
-    )
+def _holdings(simulation, variable=None):
+    return _household_capital(simulation, YEAR, variable)
 
 
 @SITUATION_SETTINGS
@@ -775,8 +785,7 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
         "jsa_income_assessable_capital",
         "esa_income_assessable_capital",
     ):
-        share = _share_counted(name)
-        weights = _isa_shares(share)
+        weights = _isa_shares(name)
         uncounted = sum(
             (weights[source] * amount * dependants).sum()
             for source, amount in counted.items()
@@ -785,7 +794,7 @@ def test_a_pound_counts_once_in_working_age_means_tests(units, holdings):
         # Float32 shares of the remainder, and each valuation's penny
         # rounding, come to within a few pence.
         assert capital.sum() + uncounted == pytest.approx(
-            _holdings(simulation, share)[0], rel=1e-5, abs=0.05
+            _holdings(simulation, name)[0], rel=1e-5, abs=0.05
         ), name
         # Each unit counts at least its own claimant's and partner's ISAs.
         own = sum(
@@ -901,8 +910,7 @@ def test_a_pound_counts_once_in_pension_credit(households):
         > 0
     )
     counts = simulation.calculate("is_claimant_or_partner", YEAR) & in_pension_unit
-    share = _share_counted("pension_credit_assessable_capital")
-    weights = _isa_shares(share)
+    weights = _isa_shares("pension_credit_assessable_capital")
     uncounted = sum(
         _by_household(simulation, "person", weights[source] * amount * ~counts)
         for source, amount in counted.items()
@@ -911,7 +919,9 @@ def test_a_pound_counts_once_in_pension_credit(households):
     # Float32 shares of the remainder, and each valuation's penny rounding,
     # come to within a few pence.
     assert _by_household(simulation, "benunit", capital) + uncounted == pytest.approx(
-        _holdings(simulation, share), rel=1e-5, abs=0.05
+        _holdings(simulation, "pension_credit_assessable_capital"),
+        rel=1e-5,
+        abs=0.05,
     )
     if households is STORED_TOTALS:
         # The last household's ISA holdings sum exactly to its totals, so its
@@ -1075,28 +1085,30 @@ def test_reforms_to_either_list_keep_each_isa_with_its_household_source():
     def capital(name):
         return list(simulation.calculate(name, YEAR))
 
-    # The lodger's unit counts the 10,000 cash ISA and the 4,000 stocks and
-    # shares ISA less 10% (3,600), and half the 2,000 of savings.
-    assert capital("uc_assessable_capital") == [1_000, 14_600]
-    assert capital("housing_benefit_assessable_capital") == [1_000, 14_600]
+    # The lodger's unit counts the 10,000 cash ISA, the 4,000 stocks and
+    # shares ISA at face value, and half the 2,000 of savings.
+    assert capital("uc_assessable_capital") == [1_000, 15_000]
+    assert capital("housing_benefit_assessable_capital") == [1_000, 15_000]
     sources = list(_node(uc_path + ".sources")(f"{YEAR}-01-01"))
     # Dropping cash_isa from UC's sources: savings 2,000 shared, and the
-    # lodger keeps their stocks and shares ISA less 10%. Dropping
-    # share_like_capital: the 10,000 cash ISA stays theirs.
+    # lodger keeps their stocks and shares ISA. Dropping
+    # share_like_capital_without_sale_expenses, which holds that ISA: the
+    # 10,000 cash ISA stays theirs.
     for dropped, expected in (
-        ("cash_isa", [1_000, 4_600]),
-        ("share_like_capital", [1_000, 11_000]),
+        ("cash_isa", [1_000, 5_000]),
+        ("share_like_capital_without_sale_expenses", [1_000, 11_000]),
     ):
+        assert dropped in sources, dropped
         kept = [name for name in sources if name != dropped]
         with _law(simulation, uc_path + ".sources", kept):
             assert capital("uc_assessable_capital") == expected, dropped
     # Emptying UC's person_sources returns both ISAs to the pool: savings
-    # 2,000, the cash ISA and the stocks and shares ISA less 10%, 15,600 in
-    # all, shared by two claimants. Housing Benefit keeps its own lists.
+    # 2,000 and the two ISAs, 16,000 in all, shared by two claimants.
+    # Housing Benefit keeps its own lists.
     with _law(simulation, uc_path + ".person_sources", []):
-        assert capital("uc_assessable_capital") == [7_800, 7_800]
-        assert capital("housing_benefit_assessable_capital") == [1_000, 14_600]
-    assert capital("uc_assessable_capital") == [1_000, 14_600]
+        assert capital("uc_assessable_capital") == [8_000, 8_000]
+        assert capital("housing_benefit_assessable_capital") == [1_000, 15_000]
+    assert capital("uc_assessable_capital") == [1_000, 15_000]
 
 
 @pytest.mark.parametrize("variable", CAPITAL)

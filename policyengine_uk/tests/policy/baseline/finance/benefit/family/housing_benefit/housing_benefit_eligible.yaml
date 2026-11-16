@@ -37,3 +37,345 @@
     LHA_eligible: false
   output:
     housing_benefit_eligible: false
+
+- name: The tax credit closure keeps Housing Benefit for specified or temporary accommodation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    # Tax credits ended on 5 April 2025, so DWP has moved the family. This
+    # Housing Benefit award doesn't terminate, whichever legacy benefit
+    # closed (SI 2014/1230 reg 46(2)). The closure ends Working Tax Credit,
+    # so the family has no income and the means test pays the whole
+    # eligible rent.
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    working_tax_credit: 0
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+
+- name: The tax credit closure ends Housing Benefit outside that accommodation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+  output:
+    legacy_benefits_closed: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+# SI 2014/1230 reg 6A(2): the bar on new Housing Benefit claims doesn't apply
+# to a claim in respect of specified or temporary accommodation. The
+# Secretary of State excludes that rent from rent payments (UC Regs 2013 Sch 1
+# paras 3(h) and (i)), so Universal Credit has no housing costs element for
+# it. In 2026-27 the standard allowance for a single claimant aged 25 or over
+# comes to 12 x £424.90 = £5,098.80.
+- name: A family in temporary accommodation with no award makes a new Housing Benefit claim beside Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+  output:
+    # Universal Credit passports the Housing Benefit means test, so Housing
+    # Benefit pays the whole £10,000 rent, and the council applies no
+    # Housing Benefit cap to a claimant receiving Universal Credit (reg
+    # 75F(1)(g)).
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 10_000
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+
+- name: The same family that doesn't take Housing Benefit up gets no help with the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+  output:
+    # The family can claim (housing_benefit_eligible), but the user says it
+    # doesn't (would_claim_housing_benefit), and Universal Credit still
+    # leaves the rent out.
+    housing_benefit_eligible: true
+    would_claim_housing_benefit: false
+    housing_benefit: 0
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+
+# Northern Ireland: a Universal Credit claim doesn't end Housing Benefit for
+# specified or temporary accommodation (SR 2016/226 reg 6(3)), and the
+# Department for Communities excludes that rent from rent payments (SR
+# 2016/216 Sch 1 paras 3(e) and (ea)).
+- name: Northern Ireland, a Housing Benefit award in temporary accommodation continues after a Universal Credit claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 6_000
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+
+- name: Northern Ireland, the same claim outside that accommodation ends Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    # The claim ends the award (SR 2016/226 reg 6(2A)); Universal Credit pays
+    # the social rent: £5,098.80 + £6,000 = £11,098.80, under the £14,753 single cap
+    # outside London.
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    uc_housing_costs_element: 6_000
+    universal_credit: 11_098.80
+
+# A hand-entered family that reports Universal Credit but not Housing Benefit
+# reports at least £1 across the seven means-tested benefits, so
+# claims_all_entitled_benefits is false and the family claims only what it
+# reports: would_claim_housing_benefit is false, and the accommodation status
+# doesn't change that. Universal Credit leaves the rent out, so it pays the
+# standard allowance alone, 12 x £424.90 = £5,098.80, and nothing helps with
+# the £10,000 rent. Household net income: £5,098.80 + £100 Household Energy
+# Payment - £180 TV licence - £1,500 council tax = £3,518.80.
+- name: A family in temporary accommodation that reports only Universal Credit claims no Housing Benefit and gets no help with the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+        council_tax: 1_500
+  output:
+    claims_all_entitled_benefits: false
+    would_claim_housing_benefit: false
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 0
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+    household_net_income: 3_518.80
+
+# The same family with would_claim_housing_benefit set by the user. Universal
+# Credit passports the Housing Benefit means test, so Housing Benefit pays the
+# whole £10,000 rent, and the council applies no Housing Benefit cap to a
+# claimant receiving Universal Credit (HB Regs 2006 reg 75F(1)(g)). Universal
+# Credit: £5,098.80. Household net income: £10,000 + £5,098.80 + £100 - £180 -
+# £1,500 = £13,518.80, the same as the control outside that accommodation.
+- name: The same family gets Housing Benefit for the rent when the user sets would_claim_housing_benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        in_specified_or_temporary_accommodation: true
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+        council_tax: 1_500
+  output:
+    claims_universal_credit: true
+    housing_benefit_eligible: true
+    housing_benefit: 10_000
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.80
+    household_net_income: 13_518.80
+
+# The control without the status: Universal Credit pays the social rent,
+# £5,098.80 + £10,000 = £15,098.80, under London's £16,967 single cap.
+# Household net income: £15,098.80 + £100 - £180 - £1,500 = £13,518.80, the
+# same as with the status and would_claim_housing_benefit set.
+- name: The same family outside that accommodation gets the rent through Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        universal_credit_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        in_specified_or_temporary_accommodation: false
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+        council_tax: 1_500
+  output:
+    would_claim_housing_benefit: false
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    uc_housing_costs_element: 10_000
+    universal_credit: 15_098.80
+    household_net_income: 13_518.80
+
+# Capital above the limit: the status lifts the transitional bars on the
+# claim, not the working-age capital limit the formula reads
+# (gov.dwp.housing_benefit.means_test.capital), so £20,000 of savings leaves
+# the family without Housing Benefit, and Universal Credit still leaves the
+# rent out.
+- name: A family in temporary accommodation with capital above the limit gets no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+        savings: 20_000
+  output:
+    would_claim_housing_benefit: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    uc_housing_costs_element: 0
+
+# Tenure: an owner occupier is neither a social nor a Local Housing Allowance
+# renter, so the status doesn't open Housing Benefit.
+- name: An owner occupier with the status gets no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    would_claim_housing_benefit: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    uc_housing_costs_element: 0

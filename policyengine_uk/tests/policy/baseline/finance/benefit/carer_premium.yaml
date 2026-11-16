@@ -19,9 +19,10 @@
 # partners are treated as caring for the same person unless both are entitled
 # with an award: a reported Carer's Allowance or Carer Support Payment award
 # (carers_allowance_reported carries both), or an entitlement that caring
-# hours do not explain (fewer than 35 a week, or no claim), which was supplied
-# directly. Most cases below with two premiums therefore give both partners a
-# reported award.
+# hours do not explain (fewer than 35 a week, care of someone who isn't
+# severely disabled (cares_for_severely_disabled_person false), or no claim),
+# which an input supplied directly. Most cases below with two premiums
+# therefore give both partners a reported award.
 
 - name: Carer premium for a single claimant entitled to Carer's Allowance
   period: 2026

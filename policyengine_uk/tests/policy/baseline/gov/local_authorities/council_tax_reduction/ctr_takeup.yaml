@@ -140,6 +140,11 @@
     council_tax_reduction: 1_800
 
 - name: Scottish working-age calculator household retains CTR without reports
+  # The household claims Universal Credit by default. The Scottish
+  # working-age scheme counts only an award's child and childcare elements
+  # (council_tax_reduction_relevant_universal_credit_payments, SSI 2021/249
+  # reg 57), so with no children income is nil and the reduction is the full
+  # council tax.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -153,4 +158,4 @@
     council_tax_benefit_reported: 0
     claims_all_entitled_benefits: true
     would_claim_council_tax_reduction: true
-    council_tax_reduction: 633.96
+    council_tax_reduction: 1_800

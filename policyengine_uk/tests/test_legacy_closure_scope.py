@@ -10,6 +10,11 @@ import pytest
 
 from policyengine_uk import Simulation
 
+# The 2027 cases keep their income-related ESA awards through the appointee
+# saving (SI 2025/1148 art. 3A(2)), so only the legacy closure can end them;
+# the abolition ends every other award from 1 July 2026.
+SAVED = {"esa_income_appointee_saving": True}
+
 
 def household(year, claimant=None, partner=None, outside=None, child=False):
     members = {
@@ -54,7 +59,7 @@ def household(year, claimant=None, partner=None, outside=None, child=False):
 @pytest.mark.parametrize("report", ["income_support_reported", "jsa_income_reported"])
 @pytest.mark.parametrize("payee", ["claimant", "partner"])
 def test_outside_closed_report_does_not_close_couple_award(report, payee):
-    inputs = {payee: {"esa_income_reported": 5_000}}
+    inputs = {payee: {"esa_income_reported": 5_000, **SAVED}}
     sim = Simulation(situation=household(2027, **inputs, outside={report: 1_000}))
     assert not sim.calculate("legacy_benefits_closed", 2027)[0]
     assert sim.calculate("claimant_or_partner_esa_income", 2027)[0] == 5_000
@@ -65,7 +70,11 @@ def test_outside_pension_credit_report_does_not_shield_couple_closure():
     sim = Simulation(
         situation=household(
             2027,
-            claimant={"income_support_reported": 1_000, "esa_income_reported": 5_000},
+            claimant={
+                "income_support_reported": 1_000,
+                "esa_income_reported": 5_000,
+                **SAVED,
+            },
             outside={"age": 70, "pension_credit_reported": 1_000},
         )
     )
@@ -99,8 +108,12 @@ def test_outside_own_closed_report_still_ends_only_their_own_claim():
     sim = Simulation(
         situation=household(
             2027,
-            claimant={"esa_income_reported": 5_000},
-            outside={"esa_income_reported": 5_000, "income_support_reported": 1_000},
+            claimant={"esa_income_reported": 5_000, **SAVED},
+            outside={
+                "esa_income_reported": 5_000,
+                "income_support_reported": 1_000,
+                **SAVED,
+            },
         )
     )
     assert not sim.calculate("legacy_benefits_closed", 2027)[0]

@@ -1,0 +1,27 @@
+description: Whether HMRC charges a purchase of an additional dwelling at the higher rates for additional dwellings. When false, HMRC charges that purchase at the main residential rates, gov.hmrc.stamp_duty.residential.purchase.main.subsequent.
+values:
+  2003-07-10:
+    value: false
+    metadata:
+      note: From 4 December 2014 (Stamp Duty Land Tax Act 2015 s. 2(2)) to 31 March 2016, HMRC charged a buyer of an additional dwelling the main rates in s. 55(1B) Table A at any price. Before 4 December 2014 that buyer paid the rates any other buyer paid.
+      reference:
+        - title: Finance Act 2003 s. 55(1B) Table A, as at 30 April 2015
+          href: https://www.legislation.gov.uk/ukpga/2003/14/section/55/2015-04-30
+        - title: Stamp Duty Land Tax Act 2015 s. 2(2)
+          href: https://www.legislation.gov.uk/ukpga/2015/1/section/2
+  2016-04-01:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2016 s. 128(5)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/128/enacted
+        - title: Finance Act 2003 schedule 4ZA paragraph 1(2)
+          href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA
+metadata:
+  unit: bool
+  label: Stamp Duty higher rates for additional dwellings apply
+  reference:
+    - title: Finance Act 2016 s. 128(5)
+      href: https://www.legislation.gov.uk/ukpga/2016/24/section/128/enacted
+    - title: Finance Act 2003 schedule 4ZA paragraph 1(2)
+      href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/4ZA

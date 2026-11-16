@@ -8,8 +8,8 @@ from policyengine_uk.variables.household.demographic.country import Country
 
 def tariff_amount(capital, tariff, capital_limit):
     # `amount` for each complete `step` of capital above `threshold`, and
-    # `amount` for any part of a step. Capital above the limit leaves no
-    # entitlement, so it is not counted.
+    # `amount` for any part of a step, counting capital up to
+    # `capital_limit`.
     excess = max_(0, min_(capital, capital_limit) - tariff.threshold)
     return np.ceil(excess / tariff.step) * tariff.amount
 
@@ -22,7 +22,10 @@ class council_tax_reduction_tariff_income(Variable):
         "Income the national Council Tax Reduction schemes (England for "
         "pensioners, Wales and Scotland) treat capital as yielding, annualised. "
         "Pensioners: £1 a week for each £500, or part of £500, of capital over "
-        "£10,000. People under pension age in Wales and Scotland: £1 a week "
+        "£10,000. The Secretary of State and the Welsh Ministers count capital "
+        "up to £16,000, the capital limit; the Scottish Ministers set no "
+        "ceiling (SSI 2012/319 reg 27(2)) and bar a reduction where capital "
+        "exceeds £16,000 (reg 40). People under pension age in Wales and Scotland: £1 a week "
         "for each £250, or part of £250, over £6,000; with an award of "
         "Universal Credit (council_tax_reduction_universal_credit_award, "
         "including an award the benefit cap or deductions reduce to nil), the "
@@ -48,6 +51,7 @@ class council_tax_reduction_tariff_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/10/paragraph/8",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/40",
         "https://www.legislation.gov.uk/ssi/2012/303/regulation/26",
         "https://www.legislation.gov.uk/ssi/2012/303/regulation/51",
         "https://www.legislation.gov.uk/ssi/2012/303/schedule/5/paragraph/7",
@@ -82,11 +86,9 @@ class council_tax_reduction_tariff_income(Variable):
                     wales_p.tariff_income.pensioner,
                     wales_p.capital_limit,
                 ),
-                tariff_amount(
-                    capital,
-                    scotland_p.tariff_income.pensioner,
-                    scotland_p.capital_limit,
-                ),
+                # SSI 2012/319 reg 27(2) sets no ceiling; reg 40 bars a
+                # reduction where capital exceeds £16,000.
+                tariff_amount(capital, scotland_p.tariff_income.pensioner, np.inf),
             ],
             default=0,
         )

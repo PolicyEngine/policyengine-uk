@@ -25,6 +25,7 @@ class market_income(Variable):
             "miscellaneous_income",
             # Landlords' profit after mortgage interest, as in HBAI income.
             "property_income_after_finance_costs",
+            "sublet_income",
             "private_pension_income",
             "private_transfer_income",
             "maintenance_income",

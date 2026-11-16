@@ -13,7 +13,9 @@ class student_loan_repayment(Variable):
         "Annual student loan repayment calculated from income and plan type. "
         "Repayments are 9% of income above threshold for Plans 1/2/4/5, "
         "and 6% for Postgraduate loans, capped by the outstanding balance "
-        "when that balance is available."
+        "when that balance is available. Plan 5 borrowers repay nothing "
+        "before 6 April 2026 (SI 2009/470 reg. 15(2BA) and (2BB)), so the "
+        "formula charges them nil for 2025-26 and earlier years."
     )
     definition_period = YEAR
     unit = GBP
@@ -46,6 +48,10 @@ class student_loan_repayment(Variable):
 
         rate = person("student_loan_repayment_rate", period)
         uncapped_repayment = rate * max_(0, income - threshold)
+        # SI 2009/470 reg. 15(2BA) and (2BB): no Plan 5 repayment is due on or
+        # before 5 April 2026.
+        repayment_due = (plan != StudentLoanPlan.PLAN_5) | p.repayments_due.plan_5
+        uncapped_repayment = where(repayment_due, uncapped_repayment, 0)
         return where(balance > 0, min_(uncapped_repayment, balance), uncapped_repayment)
 
 

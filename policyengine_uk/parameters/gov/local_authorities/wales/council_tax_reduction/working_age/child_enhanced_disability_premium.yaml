@@ -1,0 +1,82 @@
+description: Weekly enhanced disability premium for each child or young person in the family of an applicant
+  who is not a pensioner and who gets the highest rate of the care component of disability living allowance
+  or the enhanced daily living component of personal independence payment, under the Welsh council tax
+  reduction schemes.
+values:
+  2013-04-01:
+    value: 23.45
+    reference:
+    - title: W.S.I. 2013/112 reg 10(c)(v)
+      href: https://www.legislation.gov.uk/wsi/2013/112/regulation/10
+  2014-04-01:
+    value: 24.08
+    reference:
+    - title: W.S.I. 2014/66 reg 10(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2014/66/regulation/10/made
+  2015-04-01:
+    value: 24.43
+    reference:
+    - title: W.S.I. 2015/44 reg 11(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2015/44/regulation/11
+  2017-04-01:
+    value: 24.78
+    reference:
+    - title: W.S.I. 2017/46 reg 6(c)(ii)(ee)
+      href: https://www.legislation.gov.uk/wsi/2017/46/regulation/6
+  2018-04-01:
+    value: 25.48
+    reference:
+    - title: W.S.I. 2018/14 reg 10(c)(v)
+      href: https://www.legislation.gov.uk/wsi/2018/14/regulation/10
+  2019-04-01:
+    value: 26.04
+    reference:
+    - title: W.S.I. 2019/11 reg 7(b)(v)
+      href: https://www.legislation.gov.uk/wsi/2019/11/regulation/7
+  2020-04-01:
+    value: 26.6
+    reference:
+    - title: W.S.I. 2020/16 reg 10(b)(v)
+      href: https://www.legislation.gov.uk/wsi/2020/16/regulation/10
+  2021-04-01:
+    value: 26.67
+    reference:
+    - title: W.S.I. 2021/34 reg 8(b)(v)
+      href: https://www.legislation.gov.uk/wsi/2021/34/regulation/8
+  2022-04-01:
+    value: 27.44
+    reference:
+    - title: W.S.I. 2022/51 reg 8(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2022/51/regulation/8
+  2023-04-01:
+    value: 30.17
+    reference:
+    - title: W.S.I. 2023/47 reg 9(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2023/47/regulation/9
+  2024-04-01:
+    value: 32.2
+    reference:
+    - title: W.S.I. 2024/56 reg 8(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2024/56/regulation/8
+  2025-04-01:
+    value: 32.75
+    reference:
+    - title: W.S.I. 2025/59 reg 9(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2025/59/regulation/9
+  2026-04-01:
+    value: 33.99
+    reference:
+    - title: W.S.I. 2026/13 reg 11(d)(v)
+      href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+metadata:
+  label: Wales working-age CTR child enhanced disability premium
+  unit: currency-GBP
+  period: week
+  reference:
+  - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+      7 paras. 12 and 17(5)
+    href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/7
+  - title: The Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (Miscellaneous
+      Amendments) (Wales) Regulations 2026 reg. 11(d)
+    href: https://www.legislation.gov.uk/wsi/2026/13/regulation/11
+  uprating: gov.benefit_uprating_cpi

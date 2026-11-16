@@ -25,6 +25,26 @@ reported awards.
   against pay (reg 98(11)).
 - ESA partner (para 6(1)(f), reg 42(1)): 24 hours or more, unless a carer
   (reg 43(2)(c)).
+- ESA age (WRA 2007 s.1(3)(c)): no claimant may have reached pensionable age,
+  their own State Pension age (s.1(6); Pensions Act 1995 Sch 4 para 1). A
+  caller that reads the model's pensionable age passes it as is_SP_age;
+  otherwise ages avoid 65 to 69. In the years tested (2025 and 2026) anyone
+  aged 64 or under was born after 5 October 1960, reaches pensionable age at
+  66 or later, and so falls below it; anyone aged 70 or over was born before
+  6 April 1960 and reached it at 66 or earlier.
+- ESA and State Pension Credit (para 6(1)(c) and (d)): neither the claimant
+  nor the other member of the couple may be entitled to it. A caller that
+  knows passes whether the couple is entitled (on_pension_credit): it would
+  claim, and it would get Pension Credit with no income-related ESA in the
+  family. Otherwise no member reports Pension Credit or Housing Benefit, so
+  no mixed-age couple keeps the SI 2019/37 art 4 saving and the
+  exclusion of mixed-age couples is in force (SPCA 2002 s.4(1A)). Only a
+  couple every member of which has reached the qualifying age can then be
+  entitled, and from 2019-20 that is pensionable age for everyone (SPCA 2002
+  s.1(6)), so each of them has reached pensionable age and has no claim
+  under s.1(3)(c), whether or not DWP pays the couple Pension Credit. A
+  member outside the couple keeps their own claim even when the couple has
+  an entitlement to Pension Credit.
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
   exception for carers doing unrelated paid work. The other member of the
   couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim
@@ -153,17 +173,40 @@ def esa_claimant_in_remunerative_work(adult, parameters):
     return not (within_lower_limit or permitted_work)
 
 
+def reached_pensionable_age(adult):
+    """WRA 2007 s.1(3)(c): whether the adult has reached pensionable age."""
+    if "is_SP_age" in adult:
+        return bool(adult["is_SP_age"])
+    assert not 65 <= adult["age"] < 70, adult
+    return adult["age"] >= 70
+
+
+def couple_on_pension_credit(couple):
+    """Para 6(1)(c) and (d), for a couple with no Pension Credit or Housing
+    Benefit reports in 2025 or 2026: a couple every member of which has
+    reached the qualifying age, each of whom has also reached pensionable
+    age and so has no claim under s.1(3)(c), whether or not DWP pays the
+    couple Pension Credit."""
+    assert not any(
+        adult.get("pension_credit_reported", 0)
+        or adult.get("housing_benefit_reported", 0)
+        for adult in couple
+    ), couple
+    return len(couple) > 0 and all(reached_pensionable_age(a) for a in couple)
+
+
 def legacy_benefits_closed(couple, others, parameters):
     """Annual closure proxy for the claimant's and partner's own award.
 
     Reports by other members neither close nor shield it (SI 2014/1230
     regs 44(1), (4) and 46(1)). This is the existing annual proxy, not a
-    notice/deadline model. No tax-credit reports are generated here. Ages
-    avoid the changing Pension Credit qualifying-age boundary.
+    notice/deadline model. The generators draw tax-credit reports only in
+    years with tax credits, in which they close nothing. Ages avoid the
+    changing Pension Credit qualifying-age boundary.
     """
     dwp = parameters.gov.dwp
     members = couple + others
-    assert not any(
+    assert dwp.tax_credits.active or not any(
         member.get("child_tax_credit_reported", 0)
         or member.get("working_tax_credit_reported", 0)
         for member in members
@@ -181,10 +224,46 @@ def legacy_benefits_closed(couple, others, parameters):
     return not all(adult["age"] >= 70 for adult in couple)
 
 
+def esa_abolition_claim(couple, parameters):
+    """Whether the claimant and partner claim Universal Credit when the
+    abolition of income-related ESA reaches their award, which ends their
+    reports (esa_income_report_closed).
+
+    The abolition reaches every remaining award on 1 July 2026 in England
+    (SI 2025/1148 art. 3A), the households' default country, so it reaches
+    any award reported in a year with less than all of it payable. Where a
+    member who reports the award has an appointee saving
+    (esa_income_appointee_saving), DWP keeps the whole claim payable (art.
+    3A(2)); like esa_income_payable_share, this function ignores a saving
+    held only by a member who reports nothing.
+    would_claim_uc_at_legacy_closure keeps its default, true. The conditions
+    are those of the other working-age closures: no Pension Credit report,
+    and not all pension age.
+    """
+    payable = parameters.gov.dwp.ESA.income.awards_payable.great_britain
+    reporters = [m for m in couple if m.get("esa_income_reported", 0) > 0]
+    saved = any(m.get("esa_income_appointee_saving", False) for m in reporters)
+    on_pension_credit = any(m.get("pension_credit_reported", 0) > 0 for m in couple)
+    if not reporters or saved or payable >= 1 or on_pension_credit:
+        return False
+    assert all(not 65 <= adult["age"] < 70 for adult in couple), couple
+    return not all(adult["age"] >= 70 for adult in couple)
+
+
+def couple_report_closed(couple, reported, parameters):
+    """Whether the claimant's and partner's own reports of an award have
+    closed: their legacy benefits have closed, or, for income-related ESA,
+    they claim Universal Credit when its abolition reaches the award."""
+    closed = legacy_benefits_closed(couple, [], parameters)
+    if reported == "esa_income_reported":
+        closed = closed or esa_abolition_claim(couple, parameters)
+    return closed
+
+
 def candidates(couple, others, reported, parameters):
     """Indexes (into couple + others) of members who could be the claimant."""
     members = couple + others
-    couple_closed = legacy_benefits_closed(couple, [], parameters)
+    couple_closed = couple_report_closed(couple, reported, parameters)
     open_reports = [
         member.get(reported, 0) > 0
         and not (
@@ -202,11 +281,24 @@ def candidates(couple, others, reported, parameters):
     ]
 
 
-def esa_screen(couple, others, capital, parameters):
+def esa_screen(couple, others, capital, parameters, on_pension_credit=None):
     """esa_income_eligible for a claimant and partner (couple) and other
-    members of the benefit unit outside the family (others)."""
+    members of the benefit unit outside the family (others). on_pension_credit
+    is whether the couple is entitled to State Pension Credit, if the caller
+    knows it."""
     ESA = parameters.gov.dwp.ESA.income
     members = couple + others
+
+    def barred(i):
+        # WRA 2007 s.1(3)(c), for every claimant.
+        if reached_pensionable_age(members[i]):
+            return True
+        # Sch 1 para 6(1)(c) and (d), for the couple's claim only.
+        if i >= len(couple):
+            return False
+        if on_pension_credit is not None:
+            return bool(on_pension_credit)
+        return couple_on_pension_credit(couple)
 
     def other_member_works(i):
         if i >= len(couple):
@@ -219,7 +311,8 @@ def esa_screen(couple, others, capital, parameters):
         )
 
     passes = any(
-        not esa_claimant_in_remunerative_work(members[i], parameters)
+        not barred(i)
+        and not esa_claimant_in_remunerative_work(members[i], parameters)
         and not other_member_works(i)
         for i in candidates(couple, others, "esa_income_reported", parameters)
     )

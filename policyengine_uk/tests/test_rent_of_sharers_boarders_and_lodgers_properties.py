@@ -19,10 +19,16 @@ Invariants, for any generated population of households:
    most one family per household counts the household's non-dependants for
    Universal Credit, it is liable for the household's rent, and only it has
    Universal Credit deductions; Housing Benefit deductions over the families
-   liable for the rent sum to the household's non-dependants' deductions; a
+   liable for the rent sum to the household's non-dependant deductions (one
+   per couple, the higher: HB Regs 2006 reg 74(3)) times the share of the
+   rent borne by families whose claimant or partner is not exempt (reg
+   74(6)), and never exceed the sum of individual deductions, with a sharer
+   never a non-dependant, even where the rent is nil (reg 3(2)(d)); a
    boarder's or lodger's family has no Universal Credit or Housing Benefit
    deductions; no sharer, boarder or lodger is a Council Tax Reduction
    non-dependant.
+   (The generated families have no non-dependants within their own
+   benefit unit, which test_benefit_unit_non_dependant_properties covers.)
 5. Category: the Universal Credit LHA category does not depend on the
    household input is_shared_accommodation; the Housing Benefit category is
    the shared rate for any family entitled to one bedroom that lacks
@@ -259,7 +265,24 @@ def test_non_dependants(population):
     payer = np.isin(roles, ["boarder", "lodger"])
     liable_for_rent = calc(sim, "benunit_is_rent_liable")
     non_dependant = calc(sim, "is_non_dependant_of_household_head")
-    person_liable = sim.map_result(liable_for_rent, "benunit", "person") > 0
+    # Liability to the householder is person by person: a boarder's or
+    # lodger's non-paying child or adult relative can be a non-dependant,
+    # while the payer and the payer's partner cannot.
+    pays = (calc(sim, "rent_paid_as_boarder") + calc(sim, "rent_paid_as_lodger")) > 0
+    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    partner_pays = (
+        sim.map_result(
+            sim.map_result(pays & claimant_or_partner, "person", "benunit") > 0,
+            "benunit",
+            "person",
+        )
+        > 0
+    )
+    liable_to_householder = pays | (claimant_or_partner & partner_pays)
+    family_pays = np.isin(roles, ["boarder", "lodger"])
+    person_liable = (
+        sim.map_result(liable_for_rent & ~family_pays, "benunit", "person") > 0
+    ) | liable_to_householder
     assert not np.any(non_dependant & person_liable)
     assert non_dependant.any()
     # Universal Credit: one claim per household counts the non-dependants.
@@ -277,12 +300,31 @@ def test_non_dependants(population):
     assert np.all(per_household(sim, uc) <= total + 0.01)
     # Housing Benefit: apportioned over the families liable for the rent.
     hb = calc(sim, "housing_benefit_non_dep_deductions")
-    hb_individual = (
-        calc(sim, "household_benefits_individual_non_dep_deduction") * non_dependant
+    # A sharer's family is a joint occupier, never a non-dependant (HB Regs
+    # 2006 reg 3(2)(d)), even where the rent is nil and so the family is not
+    # benunit_is_rent_liable.
+    sharer = sim.map_result((roles == "sharer").astype(float), "benunit", "person") > 0
+    hb_individual = calc(sim, "household_benefits_individual_non_dep_deduction") * (
+        non_dependant & ~sharer
     )
     hb_total = sim.map_result(hb_individual, "person", "household")
     assert hb_total.max() > 0
-    assert np.allclose(per_household(sim, hb), hb_total, rtol=1e-5, atol=0.01)
+    # The council deducts once for each non-dependant couple, the higher amount
+    # (HB Regs 2006 reg 74(3)), and once for each other member. The pool is
+    # apportioned over the families liable for the rent, and none falls on a
+    # family whose claimant or partner is exempt (reg 74(6)).
+    families = sim.populations["benunit"]
+    couple = calc(sim, "is_claimant_or_partner").astype(bool)
+    family_amount = families.max(hb_individual * couple) + families.sum(
+        hb_individual * ~couple
+    )
+    pool = per_household(sim, family_amount)
+    exempt = calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt").astype(
+        bool
+    )
+    borne = per_household(sim, calc(sim, "share_of_household_rent") * ~exempt)
+    assert np.allclose(per_household(sim, hb), pool * borne, rtol=1e-5, atol=0.01)
+    assert np.all(per_household(sim, hb) <= hb_total + 0.01)
     assert np.all(hb[payer] == 0)
     assert np.all(uc[payer] == 0)
     # Council Tax Reduction: sharers, boarders and lodgers are not

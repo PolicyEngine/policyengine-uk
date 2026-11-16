@@ -1,0 +1,139 @@
+# The example table on docs/book/programs/gov/dfe/universal-childcare-entitlement.ipynb.
+# The year 2024 has terms beginning 1 April 2024, 1 September 2024 and
+# 1 January 2025. Universal hours start with the term after the third birthday
+# (SI 2014/2147 reg 3) and stop when the child starts reception, in the
+# September after the fourth birthday. Each term carries 570 / 3 = 190 hours
+# at the 2024-25 rate for the child's age band (£5.88 at 3 and over).
+# Age is the child's age on 6 October 2024, as date_of_birth requires.
+- name: A 2-year-old born 1 January 2022 has no universal term
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 2
+        date_of_birth: 20220101
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: false
+    universal_childcare_entitlement: 0
+
+- name: A 3-year-old born 7 October 2020 gets all three terms
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 3
+        date_of_birth: 20201007
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    early_years_term_share_before_school: 1
+    universal_childcare_entitlement_eligible: true
+    universal_childcare_entitlement: 3_351.60
+
+- name: A 3-year-old born 31 March 2021 gets all three terms
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 3
+        date_of_birth: 20210331
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement: 3_351.60
+
+- name: A 3-year-old born 1 April 2021 starts in September and gets two terms
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 3
+        date_of_birth: 20210401
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement: 2_234.40
+
+- name: A 4-year-old born 1 September 2020 starts reception in September 2025 and gets all three terms
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 4
+        date_of_birth: 20200901
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    early_years_term_share_before_school: 1
+    universal_childcare_entitlement: 3_351.60
+
+- name: A 4-year-old born 31 August 2020 starts reception in September 2024 and keeps the summer term
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 4
+        date_of_birth: 20200831
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    early_years_term_share_before_school: 0.3333
+    universal_childcare_entitlement: 1_117.20
+
+- name: A 5-year-old born 1 September 2019 has reached compulsory school age
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 5
+        date_of_birth: 20190901
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    is_of_compulsory_school_age: true
+    universal_childcare_entitlement_eligible: false
+    universal_childcare_entitlement: 0

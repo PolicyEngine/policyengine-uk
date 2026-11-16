@@ -26,6 +26,9 @@ hold it to:
    index serves another file or other bytes.
 7. The release workflow's PyPI checks read the manifest written before the
    publish step, which adds attestation files to ``dist`` (pe-uk#2461).
+8. Hatchling's wheel and sdist builders select every file git tracks under
+   ``policyengine_uk/``, so ``check-dist`` finds none missing at release.
+   ``.gitignore`` decides what hatchling leaves out, whatever git tracks.
 """
 
 import hashlib
@@ -771,3 +774,26 @@ def test_the_release_workflow_checks_pypi_against_the_manifest():
         assert "--dist" not in run(name), name
     # Written before the publish step adds anything to dist.
     assert names.index(written) < names.index("Publish to PyPI")
+
+
+# Invariant 8: hatchling packages every tracked file.
+
+
+def test_hatchling_packages_every_tracked_package_file():
+    from hatchling.builders.sdist import SdistBuilder
+    from hatchling.builders.wheel import WheelBuilder
+
+    tracked = set(
+        git(REPO_ROOT, "ls-files", "-z", "--", "policyengine_uk").split("\0")
+    ) - {""}
+    assert tracked
+    wheel = {
+        file.distribution_path
+        for file in WheelBuilder(str(REPO_ROOT)).recurse_included_files()
+    }
+    sdist = {
+        file.relative_path
+        for file in SdistBuilder(str(REPO_ROOT)).recurse_included_files()
+    }
+    assert sorted(tracked - wheel) == []
+    assert sorted(tracked - sdist) == []

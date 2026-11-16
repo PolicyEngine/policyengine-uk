@@ -19,7 +19,7 @@ class gross_taxable_inputs(Variable):
         "The historical total_income input sum, retained explicitly for "
         "post_tax_income and UBI phase-outs. Includes gross wages, private "
         "pensions, the tax model's social security income, trading and "
-        "property income, savings and other investment income, dividends "
+        "property income, taxable rent-a-room income, savings and other investment income, dividends "
         "and non-negative miscellaneous income. Excludes statutory pay, "
         "maintenance and tax-exempt benefits; it is not ITA 2007 s.23 total "
         "income or programme-specific gross income."
@@ -33,6 +33,7 @@ class gross_taxable_inputs(Variable):
         "social_security_income",
         "self_employment_income",
         "property_income",
+        "taxable_rent_a_room_income",
         "savings_interest_income",
         "other_investment_income",
         "dividend_income",

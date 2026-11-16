@@ -21,13 +21,13 @@ class household_uc_reported_financial_capital(Variable):
         "replaces ordinary sources before regulation 77 company substitution, "
         "so it includes its claimant's and partner's disregarded holdings. "
         "Consume the larger of the override and those holdings after applying "
-        "household_uc_company_holding_pool_scale and valuing them as "
-        "share_like_capital is valued (90% under regulation 49(1)). Each "
-        "person's holding is "
-        "first clipped to [0, max(0, share_like_capital)], with positive infinity "
+        "household_uc_company_holding_pool_scale and valuing them as the "
+        "shares that hold them are valued (90% under regulation 49(1)). Each "
+        "person's holding is first clipped to [0, max(0, "
+        "share_like_capital_with_sale_expenses)], with positive infinity "
         "mapped to the upper bound and negative infinity to zero before any "
-        "multiplication. All household holdings share "
-        "one nonnegative share_like_capital budget: if their total exceeds it, "
+        "multiplication. All household holdings share one nonnegative "
+        "share_like_capital_with_sale_expenses budget: if their total exceeds it, "
         "scale each person's holding proportionally before either this "
         "override floor or the separate pool deduction. This is a defensive "
         "rule for inconsistent inputs, not a statutory determination. "
@@ -63,7 +63,7 @@ class household_uc_reported_financial_capital(Variable):
         own_holdings = person.benunit.sum(
             bounded_holdings * person("is_uc_claimant", period)
         ) * person.household("household_uc_company_holding_pool_scale", period)
-        # The pool counts share_like_capital, and the holdings in it, at the reg.
+        # The pool counts the shares, and the holdings in them, at the reg.
         # 49(1) value, rounded to the nearest penny (reg. 6(1)). A complete
         # override is a countable figure, so the holdings it must at least
         # cover are counted at that value. A recorded financial total is used

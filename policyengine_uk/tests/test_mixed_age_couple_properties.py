@@ -188,6 +188,10 @@ def cases(draw):
         "benunit": {
             "would_claim_uc": draw(st.booleans()),
             "would_claim_pc": draw(st.booleans()),
+            # The reference formulas read would_claim_uc alone, so no family
+            # here claims when the abolition of income-related ESA reaches
+            # the older member's award in 2026-27.
+            "would_claim_uc_at_legacy_closure": False,
         },
         "household": {
             "tenure_type": tenure,

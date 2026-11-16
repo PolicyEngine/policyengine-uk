@@ -21,10 +21,12 @@ class uc_unable_to_provide_childcare(Variable):
         "Limb (ii), defined in regulation 30, reads "
         "is_carer_for_benefits: receipt of Carer's Allowance or Carer Support "
         "Payment, or at least the Carer's Allowance qualifying hours of care "
-        "a week. Its hours branch does not check that the person cared for "
-        "is severely disabled (a Carer's Allowance condition, SSCBA 1992 "
-        "s. 70(1)-(2), that regulation 30(1)(a) imports) or exclude a carer "
-        "paid for the caring (regulation 30(3)). Limb (iii) is the input "
+        "a week. Its hours branch checks that the person cared for is "
+        "severely disabled (a Carer's Allowance condition, SSCBA 1992 "
+        "s. 70(1)-(2), that regulation 30(1)(a) imports) only through the "
+        "input cares_for_severely_disabled_person, which defaults to true, "
+        "and does not exclude a carer paid for the caring (regulation "
+        "30(3)). Limb (iii) is the input "
         "uc_is_temporarily_absent_from_claimant_household."
     )
     definition_period = YEAR
