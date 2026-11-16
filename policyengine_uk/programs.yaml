@@ -330,7 +330,7 @@ programs:
     budget: benefit
     parameter_prefix: gov.dwp.housing_benefit
     verified_start_year: 2022
-    notes: Legacy benefit replaced by Universal Credit. Working-age abolition applies from 1 July 2026 (GB) and 1 October 2026 (NI). An explicit specified-or-temporary-accommodation input preserves payable awards and new claims alongside UC without UC rent support; datasets do not supply it. The protected mixed-age saving is inferred from current receipt. Other historical savings and accommodation-specific eligible-rent and benefit-cap rules are not modelled.
+    notes: Legacy benefit replaced by Universal Credit. Working-age abolition applies from 1 July 2026 (GB) and 1 October 2026 (NI). An explicit specified-or-temporary-accommodation input preserves payable awards and new claims alongside UC without UC rent support; datasets do not supply it. The protected mixed-age saving is inferred from current receipt. The income-related ESA appointee saving reads esa_income_appointee_saving, which datasets do not supply either. Other historical savings and accommodation-specific eligible-rent and benefit-cap rules are not modelled.
 
   - id: income_support
     name: Income Support

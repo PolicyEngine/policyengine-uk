@@ -639,3 +639,181 @@
     benefit_cap_welfare_benefits: 57_794.21
     uc_benefit_cap: 25_323
     uc_benefit_cap_reduction: 2_471.21
+
+# Art. 7(4)(b) (NI: SR 2025/176 art. 7(4)(b)) saves an award where,
+# immediately before the abolition date, the claimant is entitled to
+# income-related ESA that the art. 3A(2) appointee saving keeps. The claimant
+# and partner share one ESA claim, so either one's saved report keeps the
+# family's award; an adult claiming ESA in their own right does not.
+
+- name: GB award with an appointee's income-related ESA is paid in full in 2026 and prompts no claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    esa_income_payable_share: 1
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+
+- name: Without the appointee saving the same family claims Universal Credit at the abolition
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: false
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    # 86 / 365
+    housing_benefit_payable_share: 0.235616
+    claims_uc_at_legacy_closure: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: GB award with an appointee's income-related ESA continues after the abolition year
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    legacy_benefits_closed: false
+    claims_uc_at_legacy_closure: false
+    housing_benefit: 5_200
+
+- name: A partner's saved income-related ESA claim keeps the couple's award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+      partner:
+        age: 40
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant, partner]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+    housing_benefit: 5_200
+
+- name: An adult's saved income-related ESA claim in their own right does not keep the family's award
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      outside:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant, outside]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant, outside]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    # The adult's own claim stays payable; the family's award does not.
+    esa_income_payable_share: [0.235616, 1]
+    housing_benefit_payable_share: 0.235616
+
+- name: NI award with an appointee's income-related ESA is paid in full in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+    housing_benefit: 5_200

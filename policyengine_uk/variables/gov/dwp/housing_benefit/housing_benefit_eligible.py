@@ -42,8 +42,11 @@ class housing_benefit_eligible(Variable):
         "Universal Credit then claims it when the abolition reaches its award "
         "(claims_uc_at_legacy_closure), and the claim ends the award for the "
         "whole year. A family meeting the Pension Credit age conditions keeps "
-        "a share of 1 (art. 7(4)(a)). Other statutory savings are not "
-        "modelled; housing_benefit_payable_share lists them. "
+        "a share of 1 (art. 7(4)(a)), and so does one whose claimant or "
+        "partner reports an income-related ESA award that the appointee "
+        "saving keeps (esa_income_appointee_saving; art. 7(4)(b)). Other "
+        "statutory savings are not modelled; housing_benefit_payable_share "
+        "lists them. "
         "Accommodation-specific eligible rent and benefit-cap rules are not "
         "modelled."
     )

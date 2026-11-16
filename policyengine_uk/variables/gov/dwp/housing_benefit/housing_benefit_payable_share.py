@@ -10,22 +10,32 @@ class housing_benefit_payable_share(Variable):
         "payable. Unprotected working-age awards outside specified and temporary "
         "accommodation were abolished from 1 July 2026 in Great Britain and "
         "1 October 2026 in Northern Ireland, so for a family outside the "
-        "pension-age savings this is the share of the year before that "
-        "date, unless in_specified_or_temporary_accommodation is True. "
-        "That input preserves a share of 1 in every year. A family meeting "
+        "modelled savings this is the share of the year before that date. "
+        "Three savings give a share of 1 in every year. "
+        "in_specified_or_temporary_accommodation is the first (reg 6A(2), "
+        "through art. 7(4)(a)). A family meeting "
         "the Pension Credit age conditions (meets_pension_credit_age_conditions: "
         "a single claimant, or both members of a couple, over the qualifying "
-        "age, or a mixed-age couple with the SI 2019/37 art. 4 saving) also "
-        "has a share of 1; a mixed-age couple without the saving does not. "
+        "age, or a mixed-age couple with the SI 2019/37 art. 4 saving; reg "
+        "6A(4) and (5), through art. 7(4)(a)) is the second; a mixed-age "
+        "couple without the saving does not keep its award. The third is a "
+        "family whose claimant or partner reports an income-related ESA award "
+        "that the art. 3A(2) appointee saving keeps (esa_income_appointee_saving; "
+        "art. 7(4)(b)). The claimant and partner share one income-related ESA "
+        "claim and the model doesn't know which of them claims Housing Benefit, "
+        "so either one's saved report keeps the family's award, as it keeps "
+        "the whole ESA claim (esa_income_payable_share). The model reads the "
+        "report, not a calculated award, so it infers the entitlement "
+        "immediately before the abolition date from current receipt. An adult "
+        "claiming ESA in their own right is not the Housing Benefit claimant "
+        "and does not keep the family's award. A Universal Credit claim still "
+        "ends a saved award (housing_benefit_eligible). "
         "Other saved working-age awards are not modelled, so their awards "
         "wrongly end on the abolition date: qualifying HB claims during the "
         "final UC assessment period on reaching pension-credit age, with "
         "entitlement from reaching that age and the relevant Decisions and "
         "Appeals Schedule 1 paragraph 26 applying (reg 6A(3); NI reg 4A(3)); "
-        "income-related "
-        "ESA entitlement immediately before abolition with an appointee then, "
-        "or a determination in the preceding six months that one was likely "
-        "needed (art 7(4)(b) and 3A(2)); and the delayed termination for "
+        "and the delayed termination for "
         "claimants excluded from UC immediately before abolition under UC "
         "reg 19(1)(b) or (c), until the day after the last day of that "
         "exclusion (art 7(2)). These need award history, decisions or dates "
@@ -35,8 +45,10 @@ class housing_benefit_payable_share(Variable):
     unit = "/1"
     reference = (
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
+        "https://www.legislation.gov.uk/uksi/2025/1148/article/3A",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
         "https://www.legislation.gov.uk/nisr/2025/176/article/7",
+        "https://www.legislation.gov.uk/nisr/2025/176/article/3A",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
     )
 
@@ -58,10 +70,23 @@ class housing_benefit_payable_share(Variable):
         # conditions; the art. 4 saving is inferred from current receipt
         # (has_mixed_age_couple_pension_credit_saving). Specified and
         # temporary accommodation is supplied explicitly under reg 6A(2) (NI
-        # reg 4A(2)). The other savings described in the variable
-        # documentation have no inputs for their history and date conditions.
+        # reg 4A(2)).
         pension_age_saving = benunit("meets_pension_credit_age_conditions", period)
         protected_accommodation = benunit(
             "in_specified_or_temporary_accommodation", period
         )
-        return where(pension_age_saving | protected_accommodation, 1, working_age_share)
+        # Art. 7(4)(b) (NI: art. 7(4)(b)) saves an award where, immediately
+        # before the abolition date, the claimant is entitled to
+        # income-related ESA and the art. 3A(2) appointee saving applies. As
+        # esa_income_payable_share does, the model applies the claimant's or
+        # partner's saved report to the family. It reads reports and the
+        # saving, never a calculated ESA award, which itself depends on
+        # whether the family claims Universal Credit at the abolition.
+        person = benunit.members
+        esa_income_saving = benunit.any(
+            person("is_claimant_or_partner", period)
+            & (person("esa_income_reported", period) > 0)
+            & person("esa_income_appointee_saving", period)
+        )
+        saved = pension_age_saving | protected_accommodation | esa_income_saving
+        return where(saved, 1, working_age_share)
