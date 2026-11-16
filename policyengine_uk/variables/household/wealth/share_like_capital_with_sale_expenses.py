@@ -22,7 +22,8 @@ class share_like_capital_with_sale_expenses(Variable):
         "itemised holdings listed in gov.dwp.share_like_capital."
         "without_sale_expenses (unit and investment trusts, stocks and shares "
         "ISAs), held between nil and share_like_capital, so that the two parts "
-        "add up to share_like_capital whatever the signs of the holdings. A "
+        "add up to share_like_capital, to within float32 rounding, whatever the "
+        "signs of the holdings. A "
         "household whose itemised holdings sum to nil or less has all of its "
         "share-like capital here, so datasets that carry only corporate_wealth "
         "keep the flat 10% on it, whatever its sign."
@@ -44,9 +45,10 @@ class share_like_capital_with_sale_expenses(Variable):
         ).gov.dwp.share_like_capital.without_sale_expenses:
             without = without + household(variable, period)
         # share_like_capital is nonnegative wherever the itemised sum is
-        # positive. Held at or below it, this part leaves the other part
-        # between nil and share_like_capital, so negative trusts beside
-        # positive shares can't push the parts apart.
+        # positive. Holding this part between nil and that total keeps the
+        # other part, the difference, between nil and the total too, so
+        # negative trusts beside positive shares can't push the two parts
+        # apart.
         return where(
             itemised > 0,
             min_(share_like, max_(0, share_like - without)),

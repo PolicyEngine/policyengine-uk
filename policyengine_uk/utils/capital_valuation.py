@@ -80,8 +80,8 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
     ``capital.sale_expenses.sources`` lists the household source. A reform
     that takes stocks_and_shares_isa off
     gov.dwp.share_like_capital.without_sale_expenses moves the stocks and
-    shares ISAs into share_like_capital_with_sale_expenses, so it values the
-    balances less the rate as well."""
+    shares ISAs into share_like_capital_with_sale_expenses, so the function
+    then values the balances less the rate too."""
     person = benunit.members
     law = parameters(period)
     held_in = household_sources(law)

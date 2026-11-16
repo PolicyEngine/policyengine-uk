@@ -24,8 +24,8 @@ class stocks_and_shares_isa_countable_capital(Variable):
         "share_like_capital, so the household never counts more stocks and shares ISA "
         "than it holds. It bounds them instead by the part that holds the ISAs where "
         "that part falls short of this bound by more than share_like_capital's float32 "
-        "spacing. Rounding in the subtraction that forms the part falls short by at "
-        "most half that spacing, so the part takes over only where negative holdings "
+        "spacing. Rounding in the subtraction that forms the part leaves it short by "
+        "at most half that spacing, so the part takes over only where negative holdings "
         "beside the ISAs, itemised holdings that sum to nil or less, or a reform leave "
         "it short of the ISAs. When the household's stored balance sum exceeds the "
         "bound, the formula scales the balances to sum to it exactly, rounding each "
@@ -55,10 +55,10 @@ class stocks_and_shares_isa_countable_capital(Variable):
         )
         # The part without sale expenses is share_like_capital less the part
         # with them, so it can miss the holdings it stands for by half of
-        # share_like_capital's float32 spacing. A larger shortfall is real:
-        # the part holds less than the ISAs, and the balances can't take
-        # more out of it than it holds. An infinite share_like_capital gives
-        # no spacing, and keeps the bound.
+        # share_like_capital's float32 spacing. A larger shortfall means the
+        # part holds less than the ISAs, and the balances can't take more out
+        # of it than it holds. An infinite share_like_capital has no spacing,
+        # and keeps the bound.
         with np.errstate(invalid="ignore"):
             slack = np.spacing(np.abs(share_like)).astype(np.float64)
             short = household_total.astype(np.float64) - part.astype(np.float64) > slack

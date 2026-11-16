@@ -23,8 +23,8 @@ class household_uc_company_holding_pool_scale(Variable):
         "inconsistent inputs, not a statutory determination. Where a reform "
         "takes share_like_capital_with_sale_expenses out of the Universal "
         "Credit capital sources, the pool holds no part of a holding, so the "
-        "scale is nil and no holding leaves the pool or a report's share of "
-        "it. It does not change regulation 77 substitution in the owner's own "
+        "scale is nil: no holding leaves the pool, and a report consumes only "
+        "itself. It does not change regulation 77 substitution in the owner's own "
         "assessment, which still takes the holding off the owner's report."
     )
     definition_period = YEAR
