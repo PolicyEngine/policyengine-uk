@@ -9,13 +9,16 @@ description: >
   the Scottish pension-age scheme (regulation 41(1)) and the Scottish
   working-age schemes (SSI 2012/303 regulation 43(1) to 31 March 2022, then
   SSI 2021/249 regulations 67 and 69). `main_residence_value` is left out
-  because the home is disregarded. `corporate_wealth` is also left out for
-  now: in the data it is mostly imputed pension wealth, which the schemes
-  disregard, and it cannot yet be separated (issue 1936). Land and property
-  are valued less sale expenses (`sale_expenses`). Councils value land and
-  property outside the United Kingdom (`overseas_property_value`) at its market
-  value in that country or, where that country prohibits transferring that
-  value to the United Kingdom, at the price it would realise if sold in the
+  because the home is disregarded. `corporate_wealth` and the itemised
+  share-like holdings are also left out for now, although the schemes count
+  shares and other investments: this route does not yet count them, even
+  where a dataset supplies them apart from pension wealth, and older datasets
+  can mix them with pension wealth, which the schemes disregard (issue 1936).
+  Land and property are valued less sale expenses (`sale_expenses`). Councils
+  value land and property outside the United Kingdom
+  (`overseas_property_value`) at its market value in that country or, where
+  that country prohibits transferring that value to the United Kingdom, at
+  the price it would realise if sold in the
   United Kingdom to a willing buyer (the English pensioner rules, Schedule 1
   paragraph 33; the English default scheme, paragraph 66; the Welsh rules,
   Schedule 1 paragraph 27 and Schedule 6 paragraph 29; the Scottish

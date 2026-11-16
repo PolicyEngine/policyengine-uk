@@ -129,6 +129,7 @@ Capital parameters are under these paths relative to
 | Income-based JSA | `gov/dwp/JSA/income/capital/` |
 | Income-related ESA | `gov/dwp/ESA/income/capital/` |
 | Pension Credit | `gov/dwp/pension_credit/income/capital/` |
+| Council Tax Reduction | `gov/local_authorities/council_tax_reduction/capital/` |
 
 Universal Credit keeps financial `sources.yaml` separate from
 `property_sources.yaml` and `uc_property_capital`. Its existing domestic
@@ -213,7 +214,7 @@ citations. Paths are relative to `policyengine_uk/variables/`.
 | Domestic property purchases | `household/consumption/main_residential_property_purchased.py`, `additional_residential_property_purchased.py` and `non_residential_property_purchased.py` retain their separate transaction routing |
 | SDLT | `gov/hmrc/sdlt_on_residential_property_transactions.py` and `sdlt_on_non_residential_property_transactions.py` read transactions; `stamp_duty_land_tax.py` aggregates liabilities and `expected_sdlt.py` carries the household liability |
 | High Value Council Tax Surcharge | `gov/hmrc/high_value_council_tax_surcharge.py` reads main residence and ownership tenure directly |
-| Benefit capital | `gov/dwp/universal_credit/uc_assessable_capital.py` and `uc_property_capital.py`; the assessable-capital variables for Housing Benefit, Pension Credit, Income Support, JSA and ESA use the configured programme sources |
+| Benefit capital | `gov/dwp/universal_credit/uc_assessable_capital.py` and `uc_property_capital.py`; the assessable-capital variables for Housing Benefit, Pension Credit, Income Support, JSA and ESA use the configured programme sources; `gov/local_authorities/council_tax_reduction/council_tax_reduction_assessable_capital.py` uses the Secretary of State's Universal Credit or Pension Credit assessment where the schemes require it, and otherwise values the household's savings, land and property from the council tax reduction capital sources |
 | UC unearned income | `gov/dwp/universal_credit/income/uc_unearned_income.py` reads configured claimant income sources, without a property-income gate |
 
 Changing the aggregate alone does not directly change benefit capital,
