@@ -20,13 +20,23 @@ class household_uc_company_holding_pool_scale(Variable):
         "capital the pool counts) across override "
         "floors and separate pool deductions. This allocation is independent "
         "of row order and treats holders equally. It is a defensive rule for "
-        "inconsistent inputs, not a statutory determination. It does not "
-        "change regulation 77 substitution in the owner's own assessment."
+        "inconsistent inputs, not a statutory determination. Where a reform "
+        "takes share_like_capital_with_sale_expenses out of the Universal "
+        "Credit capital sources, the pool holds no part of a holding, so the "
+        "scale is nil and no holding leaves the pool or a report's share of "
+        "it. It does not change regulation 77 substitution in the owner's own "
+        "assessment, which still takes the holding off the owner's report."
     )
     definition_period = YEAR
     unit = "/1"
 
     def formula(household, period, parameters):
+        capital = parameters(period).gov.dwp.universal_credit.means_test.capital
+        if HOLDINGS_SOURCE not in capital.sources:
+            # The pool doesn't count the shares that hold the holdings, so
+            # deducting them would take other capital, such as unit trusts,
+            # out of it.
+            return np.zeros(household.count)
         share_like = max_(0, household(HOLDINGS_SOURCE, period))
         person = household.members
         holding = person("uc_company_holding_disregard", period)

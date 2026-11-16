@@ -3,8 +3,8 @@
 Datasets built before the per-person balances existed store only the
 household totals. Those totals must keep their stored values, projected with
 savings, rather than fall to the sum of balances the dataset does not have.
-Every means test counts both kinds of ISA at their withdrawal value, without
-the 10% for expenses of sale.
+The six DWP capital assessments count both kinds of ISA at their withdrawal
+value, without the 10% for expenses of sale.
 """
 
 import pandas as pd

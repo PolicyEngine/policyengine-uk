@@ -69,8 +69,8 @@ from policyengine_uk.data.economic_assumptions import PROJECTION_END_YEAR
 from policyengine_uk.entities import Household, Person
 from policyengine_uk.system import system
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
-    HOUSEHOLD_SOURCE_OF,
     bounded_holdings,
+    household_sources,
 )
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -86,7 +86,10 @@ CAPITAL = {
     "esa_income_assessable_capital": "gov.dwp.ESA.income.capital",
 }
 MEANS_TEST_CAPITAL = (*CAPITAL, "council_tax_reduction_assessable_capital")
-ISA_SOURCES = tuple(HOUSEHOLD_SOURCE_OF)
+# Each ISA person source, mapped to the household source that holds it under
+# YEAR's law.
+HELD_IN = household_sources(system.parameters(f"{YEAR}-01-01"))
+ISA_SOURCES = tuple(HELD_IN)
 SHARE_LIKE_PARTS = (
     "share_like_capital_with_sale_expenses",
     "share_like_capital_without_sale_expenses",
@@ -757,10 +760,7 @@ def _share_counted(variable, source):
 # The share of each ISA person source's value a programme counts: the share
 # it counts of the household source that holds it.
 def _isa_shares(variable):
-    return {
-        source: _share_counted(variable, HOUSEHOLD_SOURCE_OF[source])
-        for source in ISA_SOURCES
-    }
+    return {source: _share_counted(variable, HELD_IN[source]) for source in ISA_SOURCES}
 
 
 def _holdings(simulation, variable=None):
@@ -1123,7 +1123,7 @@ def test_lists_count_each_isa_once(variable, date):
         date >= "2017-04-06"
     )
     for name in ISA_SOURCES:
-        assert HOUSEHOLD_SOURCE_OF[name] in sources
+        assert household_sources(system.parameters(date))[name] in sources
         assert name in system.variables
     # The household pool never names the balances or the ISA total itself.
     assert not {*BALANCE.values(), "stocks_and_shares_isa"} & set(sources)

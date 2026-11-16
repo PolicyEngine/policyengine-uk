@@ -43,8 +43,13 @@ class uc_assessable_capital(Variable):
         "values the financial pool's sources whose sale would incur expenses "
         "(sale_expenses.sources: directly held shares, and all of an "
         "unitemised corporate_wealth) at 90%. The formula counts a stocks and "
-        "shares ISA balance it moves out of share_like_capital_without_sale_expenses "
-        "at its withdrawal value (ADM H1656-H1658). A disregarded holding comes off at the value at which the formula "
+        "shares ISA balance as it counts the part of share_like_capital it moves "
+        "the balance out of: at its withdrawal value (ADM H1656-H1658) from "
+        "share_like_capital_without_sale_expenses, and at 90% under a reform that "
+        "takes stocks_and_shares_isa off "
+        "gov.dwp.share_like_capital.without_sale_expenses, which moves the ISAs "
+        "into share_like_capital_with_sale_expenses. A disregarded holding comes "
+        "off at the value at which the formula "
         "counted it: 90% in the pool and in a complete override, which is a "
         "countable figure, and in full from a recorded financial total, which the "
         "formula uses without valuation. The formula rounds every amount it "
@@ -76,7 +81,9 @@ class uc_assessable_capital(Variable):
         household_financial_capital = valued_capital(
             lambda source: (
                 household(source, period)
-                - pooled_person_capital(benunit, source, period, p, ~covered)
+                - pooled_person_capital(
+                    benunit, source, period, parameters, p, ~covered
+                )
             ),
             p,
         )

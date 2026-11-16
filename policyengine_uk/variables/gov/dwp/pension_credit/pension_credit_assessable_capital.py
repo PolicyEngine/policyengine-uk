@@ -44,7 +44,7 @@ class pension_credit_assessable_capital(Variable):
         household_capital = valued_capital(
             lambda source: (
                 household(source, period)
-                - pooled_person_capital(benunit, source, period, p)
+                - pooled_person_capital(benunit, source, period, parameters, p)
             ),
             p,
         )

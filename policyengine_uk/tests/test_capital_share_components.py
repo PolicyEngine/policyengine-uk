@@ -10,10 +10,12 @@ Invariants:
 1. share_like_capital is corporate_wealth as supplied (any sign, any fraction)
    unless the itemised components exceed it beyond the rounding tolerance, in
    which case it is their sum.
-2. With no itemised holdings, the part with sale expenses is all of
-   share_like_capital and the other part is exactly nil; otherwise the part
-   with sale expenses is share_like_capital less trusts and ISAs, floored at
-   nil, and the two parts add up to share_like_capital.
+2. Where the itemised holdings sum to nil or less, the part with sale
+   expenses is all of share_like_capital and the other part is exactly nil;
+   otherwise the part with sale expenses is share_like_capital less trusts
+   and ISAs, held between nil and share_like_capital. Whatever the signs of
+   the holdings, the two parts add up to share_like_capital within half its
+   float32 spacing.
 3. Differential: for identical unitemised inputs, every programme's assessable
    capital and UC eligibility equal those under the lists before itemising
    (corporate_wealth valued less 10%), exactly, annually and monthly.
@@ -21,14 +23,22 @@ Invariants:
    capital by 10% of trusts plus ISAs, against the unitemised lists.
 5. A disregarded company holding (UC reg 77(2)) leaves the UC capital pool
    from the part with sale expenses, whether it was entered within
-   corporate_wealth or as directly held shares.
+   corporate_wealth or as directly held shares. A reform that stops UC
+   counting that part takes no holding out of the pool, and the owner's own
+   assessment still takes the holding off a report.
 6. The exempt list exists from the first date any capital list does.
 7. Valuation by type: given only itemised holdings, with the ISAs held as the
-   person's own balances, all six means tests count savings, cash ISAs, unit
-   trusts and stocks and shares ISAs in full and directly held shares less
-   10%, rounded by each programme's rule, to within a penny plus float32's
-   step at that size.
+   person's own balances, the six DWP means tests count savings, cash ISAs,
+   unit trusts and stocks and shares ISAs in full and directly held shares
+   less 10%, rounded by each programme's rule, to within a penny plus
+   float32's step at that size.
+8. A reform that removes stocks_and_shares_isa from the exempt list moves a
+   member's stocks and shares ISA balance with the household's ISAs into the
+   part with sale expenses: the formulas net the balance out of that part
+   and count it in the holder's unit less 10%.
 """
+
+from fractions import Fraction
 
 import numpy as np
 import pytest
@@ -141,7 +151,11 @@ def test_lists_name_the_two_parts(variable):
 @SETTINGS
 @given(
     st.lists(
-        st.tuples(signed_money, st.tuples(money, money, money), st.booleans()),
+        st.tuples(
+            signed_money,
+            st.tuples(signed_money, signed_money, signed_money),
+            st.booleans(),
+        ),
         min_size=1,
         max_size=40,
     )
@@ -150,6 +164,11 @@ def test_lists_name_the_two_parts(variable):
 @example([(399_999.984375, (0.0, 200_000.0, 199_999.984375), True)])
 # Trusts and ISA exceed corporate_wealth by float32 rounding: floored at nil.
 @example([(16_000.0, (0.0, 8_000.01, 8_000.0), True)])
+# Shares of £1 billion, trusts of -£1 billion and a £1 ISA itemise £1, and
+# trusts and ISA come to -£1 billion in float32. Floored at nil alone, the
+# part with sale expenses would hold £1 billion and the other -£1 billion,
+# which add up to nil; capped at the £1 total, it holds £1 and the other nil.
+@example([(0.0, (1_000_000_000.0, -1_000_000_000.0, 1.0), True)])
 def test_share_like_capital_and_its_parts(rows):
     households = []
     for corporate_wealth, components, itemise in rows:
@@ -171,11 +190,22 @@ def test_share_like_capital_and_its_parts(rows):
             assert share_like == itemised
         else:
             assert share_like == cw
-        if itemised == 0:
+        if itemised <= 0:
             assert got[WITH][i] == share_like and got[WITHOUT][i] == 0
         else:
-            assert got[WITH][i] == max(np.float32(0), np.float32(share_like - exempt))
+            assert got[WITH][i] == min(
+                share_like, max(np.float32(0), np.float32(share_like - exempt))
+            )
             assert got[WITHOUT][i] == np.float32(share_like - got[WITH][i])
+        # The parts add up to the total within half its float32 spacing:
+        # the part without sale expenses rounds once, and it is no larger
+        # than the total.
+        gap = (
+            Fraction(float(got[WITH][i]))
+            + Fraction(float(got[WITHOUT][i]))
+            - Fraction(float(share_like))
+        )
+        assert abs(gap) <= Fraction(float(np.spacing(np.abs(share_like)))) / 2
 
 
 def test_float32_grouping_of_the_exempt_holdings():
@@ -229,6 +259,134 @@ def test_an_empty_exempt_list_values_everything_less_10_percent():
     assert list(got[WITHOUT]) == [0, 0]
     # £1,000 + 90% of £12,000 either way.
     assert got["uc_assessable_capital"] == pytest.approx([11_800, 11_800])
+
+
+# The ISAs take the deduction; unit and investment trusts keep full value.
+ISAS_WITH_SALE_EXPENSES = {
+    "gov.dwp.share_like_capital.without_sale_expenses": {
+        str(YEAR): ["unit_and_investment_trusts"]
+    }
+}
+WORKING_AGE = [name for name in NODES if name != "pension_credit_assessable_capital"]
+
+
+def _isa_holders():
+    """A sole working-age holder of a £5,000 stocks and shares ISA; a tenant
+    and a lodger in separate benefit units sharing £1,000 of savings, the
+    lodger holding a £5,000 ISA; and a sole pension-age holder of a £5,000
+    ISA. The ISAs are person balances, with no household total stored, and
+    no unit claims a passporting benefit."""
+    people = {
+        "holder": {"age": {YEAR: 30}},
+        "tenant": {"age": {YEAR: 30}},
+        "lodger": {"age": {YEAR: 30}},
+        "pensioner": {"age": {YEAR: 70}},
+    }
+    for name in ("holder", "lodger", "pensioner"):
+        people[name]["stocks_and_shares_isa_balance"] = {YEAR: 5_000}
+    no_claims = {
+        "would_claim_uc": {YEAR: False},
+        "would_claim_IS": {YEAR: False},
+        "would_claim_pc": {YEAR: False},
+    }
+    return {
+        "people": people,
+        "benunits": {
+            f"{name}_unit": {"members": [name], **no_claims} for name in people
+        },
+        "households": {
+            "alone": {"members": ["holder"]},
+            "shared": {"members": ["tenant", "lodger"], "savings": {YEAR: 1_000}},
+            "retired": {"members": ["pensioner"]},
+        },
+    }
+
+
+def test_a_reform_that_takes_isas_out_of_the_exempt_list_values_person_isas_less_10_percent():
+    """Each household's share_like_capital is its £5,000 of ISAs, the sum of
+    the balances. At baseline the part without sale expenses holds it, and
+    the holder counts the balance in full: £5,000 alone, and in the shared
+    household £500 of the savings each and the lodger's £5,000, so
+    [£500, £5,500].
+
+    Without stocks_and_shares_isa on the exempt list, the part with sale
+    expenses holds the £5,000 and the balance leaves that part, so the pool
+    keeps nil of it. The holder counts 90% of the £5,000, £4,500. In the
+    shared household the pool keeps the £1,000 of savings, £500 for each
+    unit, and the lodger adds £4,500: [£500, £5,000]. Netting the balance
+    out of the empty part without sale expenses instead would give the sole
+    holder £5,000 (a pool of £4,500 less £5,000, floored at nil, plus the
+    balance in full) and the shared household [£250, £5,250] (a pool of
+    £1,000 + £4,500 - £5,000 = £500, then the balance in full).
+    """
+    baseline = Simulation(situation=_isa_holders())
+    reformed = Simulation(situation=_isa_holders(), reform=ISAS_WITH_SALE_EXPENSES)
+    assert list(baseline.calculate(WITHOUT, YEAR)) == [5_000, 5_000, 5_000]
+    assert list(reformed.calculate(WITH, YEAR)) == [5_000, 5_000, 5_000]
+    assert list(reformed.calculate(WITHOUT, YEAR)) == [0, 0, 0]
+    for simulation in (baseline, reformed):
+        assert list(
+            simulation.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        ) == [5_000, 0, 5_000, 5_000]
+    # Units: holder, tenant, lodger, pensioner.
+    for name in WORKING_AGE:
+        assert list(baseline.calculate(name, YEAR)[:3]) == [5_000, 500, 5_500], name
+        assert list(reformed.calculate(name, YEAR)[:3]) == [4_500, 500, 5_000], name
+    pension_credit = "pension_credit_assessable_capital"
+    assert baseline.calculate(pension_credit, YEAR)[3] == 5_000
+    assert reformed.calculate(pension_credit, YEAR)[3] == 4_500
+
+
+def test_the_part_holding_the_isas_bounds_balances_only_beyond_rounding():
+    """A sole holder's £100.01 ISA balance inside £20,000.01 of
+    corporate_wealth: the part with sale expenses is £19,900.00 in float32,
+    and the part without it, the difference, 100.009765625, a quarter of a
+    thousandth short of the 100.01000214 balance. That is rounding, so the
+    holder keeps the whole balance, as before the part bounded it: UC counts
+    90% of £19,900, £17,910, plus the part less the balance, plus the
+    balance, £18,010.01.
+
+    Trusts of -£5,000 beside £6,000 of shares and a lodger's £5,000 ISA
+    leave share_like_capital at £6,000, all in the part with sale expenses,
+    and nil in the part that would hold the ISA. The balance can't take
+    £5,000 out of nil, so the lodger holds nil, and the pool counts 90% of
+    £6,000, £5,400, shared by two units: [£2,700, £2,700]. Netting £5,000 out
+    of the empty part would give [£200, £5,200]."""
+    situation = {
+        "people": {
+            "holder": {
+                "age": {YEAR: 30},
+                "stocks_and_shares_isa_balance": {YEAR: 100.01},
+            },
+            "tenant": {"age": {YEAR: 30}},
+            "lodger": {
+                "age": {YEAR: 30},
+                "stocks_and_shares_isa_balance": {YEAR: 5_000},
+            },
+        },
+        "benunits": {
+            f"{name}_unit": {"members": [name]}
+            for name in ("holder", "tenant", "lodger")
+        },
+        "households": {
+            "rounding": {
+                "members": ["holder"],
+                "corporate_wealth": {YEAR: 20_000.01},
+            },
+            "signed": {
+                "members": ["tenant", "lodger"],
+                "directly_held_shares": {YEAR: 6_000},
+                "unit_and_investment_trusts": {YEAR: -5_000},
+            },
+        },
+    }
+    sim = Simulation(situation=situation)
+    assert list(sim.calculate(WITH, YEAR)) == [19_900, 6_000]
+    assert list(sim.calculate(WITHOUT, YEAR)) == [np.float32(100.009765625), 0]
+    held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(held) == [np.float32(100.01), 0, 0]
+    uc = sim.calculate("uc_assessable_capital", YEAR)
+    assert list(uc) == [np.float32(18_010.01), 2_700, 2_700]
 
 
 def test_the_exempt_list_starts_with_the_first_capital_list():
@@ -432,6 +590,63 @@ def test_a_disregarded_company_holding_leaves_the_part_with_sale_expenses():
         assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
 
 
+def test_a_holding_leaves_no_pool_that_stops_counting_the_part_with_sale_expenses():
+    """UC reg 77(2), after a reform drops share_like_capital_with_sale_expenses
+    from UC's sources and sale-expense list. The household holds £30,000 of
+    directly held shares and £10,000 of unit trusts, so the part with sale
+    expenses is £30,000 and the part without £10,000. The owner's £30,000
+    holding is shares, inside the part the pool no longer counts, so none of
+    it leaves the pool: the pool is the £10,000 of trusts at full value,
+    £5,000 for the owner's unit and £5,000 for the lodger's. Budgeted against
+    the uncounted part, the holding would take all £10,000 of trusts out of
+    the pool and leave both units nil.
+
+    With a £40,000 report for the owner's unit, the owner's own assessment
+    still takes the £30,000 holding off it, £10,000, and the report consumes
+    the £10,000 pool, leaving the lodger nil."""
+    node = NODES["uc_assessable_capital"]
+    reform = {
+        f"{node}.{name}": {
+            str(YEAR): [
+                source for source in _parameter(f"{node}.{name}") if source != WITH
+            ]
+        }
+        for name in ("sources", "sale_expenses.sources")
+    }
+    for report, expected in ((None, [5_000, 5_000]), (40_000, [10_000, 0])):
+        owner_unit = {"members": ["owner"]}
+        if report is not None:
+            owner_unit["benunit_reported_capital"] = {YEAR: report}
+        situation = {
+            "people": {
+                "owner": {
+                    "age": {YEAR: 40},
+                    "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+                    "owned_company_carries_on_trade": {YEAR: True},
+                    "owned_company_holding_value": {YEAR: 30_000},
+                },
+                "lodger": {"age": {YEAR: 30}},
+            },
+            "benunits": {
+                "owner_unit": owner_unit,
+                "lodger_unit": {"members": ["lodger"]},
+            },
+            "households": {
+                "household": {
+                    "members": ["owner", "lodger"],
+                    "directly_held_shares": {YEAR: 30_000},
+                    "unit_and_investment_trusts": {YEAR: 10_000},
+                }
+            },
+        }
+        sim = Simulation(situation=situation, reform=reform)
+        assert sim.calculate(WITH, YEAR)[0] == 30_000
+        assert sim.calculate(WITHOUT, YEAR)[0] == 10_000
+        assert sim.calculate("household_uc_company_holding_pool_scale", YEAR)[0] == 0
+        assert sim.calculate("household_uc_pool_company_holdings", YEAR)[0] == 0
+        assert list(sim.calculate("uc_assessable_capital", YEAR)) == expected, report
+
+
 ROUNDS_DOWN = {
     "uc_assessable_capital": False,
     "housing_benefit_assessable_capital": False,
@@ -477,12 +692,12 @@ pennies = st.integers(min_value=0, max_value=2_000_000)
 @example([(1_813_184, 40_164, 988_571, 7_260, 1_024_413, 30, False)])
 def test_itemised_holdings_are_valued_by_type_in_every_means_test(rows):
     """Given only itemised holdings, with the ISAs held as the person's own
-    balances, every means test counts savings, a cash ISA, unit trusts and a
-    stocks-and-shares ISA in full and directly held shares less 10%, rounded
-    by the programme's rule. The engine adds the holdings in float32, which
-    can move the shares' value by a fraction of a penny before valuation, so
-    each total is checked to within a penny plus float32's step at that
-    size."""
+    balances, each of the six DWP means tests counts savings, a cash ISA, unit
+    trusts and a stocks-and-shares ISA in full and directly held shares less
+    10%, rounded by the programme's rule. The engine adds the holdings in
+    float32, which can move the shares' value by a fraction of a penny before
+    valuation, so each total is checked to within a penny plus float32's step
+    at that size."""
     people, benunits, homes = {}, {}, {}
     for i, (savings, cash_isa, shares, trusts, isa, age, claims_uc) in enumerate(rows):
         people[f"p{i}"] = {

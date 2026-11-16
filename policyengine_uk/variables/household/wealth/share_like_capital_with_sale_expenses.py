@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 # The share-like holdings a dataset can itemise. The formula treats a
-# household as itemising only when one of these is positive, so every name in
+# household as itemising only when their sum is positive, so every name in
 # gov.dwp.share_like_capital.without_sale_expenses must be in this list. A
 # reform that adds a holding outside it would leave a household that itemises
 # only that holding with all of its share-like capital under the deduction.
@@ -21,9 +21,11 @@ class share_like_capital_with_sale_expenses(Variable):
         "that the means tests value it less 10%: share_like_capital less the "
         "itemised holdings listed in gov.dwp.share_like_capital."
         "without_sale_expenses (unit and investment trusts, stocks and shares "
-        "ISAs), floored at nil. A household with no itemised holdings has all "
-        "of its share-like capital here, so datasets that carry only "
-        "corporate_wealth keep the flat 10% on it."
+        "ISAs), held between nil and share_like_capital, so that the two parts "
+        "add up to share_like_capital whatever the signs of the holdings. A "
+        "household whose itemised holdings sum to nil or less has all of its "
+        "share-like capital here, so datasets that carry only corporate_wealth "
+        "keep the flat 10% on it, whatever its sign."
     )
     entity = Household
     definition_period = YEAR
@@ -41,4 +43,12 @@ class share_like_capital_with_sale_expenses(Variable):
             period
         ).gov.dwp.share_like_capital.without_sale_expenses:
             without = without + household(variable, period)
-        return where(itemised > 0, max_(0, share_like - without), share_like)
+        # share_like_capital is nonnegative wherever the itemised sum is
+        # positive. Held at or below it, this part leaves the other part
+        # between nil and share_like_capital, so negative trusts beside
+        # positive shares can't push the parts apart.
+        return where(
+            itemised > 0,
+            min_(share_like, max_(0, share_like - without)),
+            share_like,
+        )

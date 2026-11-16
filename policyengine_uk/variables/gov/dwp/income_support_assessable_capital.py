@@ -49,7 +49,9 @@ class income_support_assessable_capital(Variable):
         household_capital = valued_capital(
             lambda source: (
                 benunit.max(person.household(source, period))
-                - pooled_person_capital(benunit, source, period, IS.means_test.capital)
+                - pooled_person_capital(
+                    benunit, source, period, parameters, IS.means_test.capital
+                )
             ),
             IS.means_test.capital,
         )

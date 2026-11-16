@@ -44,7 +44,9 @@ class jsa_income_assessable_capital(Variable):
         household_capital = valued_capital(
             lambda source: (
                 benunit.max(person.household(source, period))
-                - pooled_person_capital(benunit, source, period, JSA.capital)
+                - pooled_person_capital(
+                    benunit, source, period, parameters, JSA.capital
+                )
             ),
             JSA.capital,
         )

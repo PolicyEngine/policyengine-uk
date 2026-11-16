@@ -42,9 +42,10 @@ class council_tax_reduction_assessable_capital(Variable):
         "land and property valued at market value less 10% for the expenses "
         "of sale, then less any debt secured on that land or property (which "
         "defaults to nil because the survey does not record it). The schemes also "
-        "count shares and other investments, which in the data are mixed "
-        "with pension wealth the schemes disregard, so they are left out for "
-        "now. The recalculation when capital rises above the limit during an "
+        "count shares and other investments, but this household route does not "
+        "yet count share_like_capital; older datasets may mix it with "
+        "disregarded pension wealth. The recalculation when capital rises above "
+        "the limit during an "
         "assessed income period is not modelled."
     )
     definition_period = YEAR
