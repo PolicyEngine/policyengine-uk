@@ -15,11 +15,5 @@ class income_support(Variable):
         # Once one of the family's legacy benefits has closed, DWP's
         # migration notice ends this award too: on a Universal Credit claim
         # (SI 2014/1230 reg 8(2A)) or at the notice's deadline (reg 46(1)(a)).
-        # A family that claims Universal Credit when its Housing Benefit is
-        # abolished ends this award by that claim too. A family already
-        # claiming Universal Credit is left to the overlap rules (#1914).
-        closed = benunit("legacy_benefits_closed", period) | (
-            benunit("claims_uc_at_legacy_closure", period)
-            & ~benunit("would_claim_uc", period)
-        )
+        closed = benunit("legacy_benefits_closed", period)
         return where(closed, 0, benunit("income_support_entitlement", period))

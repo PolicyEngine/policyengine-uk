@@ -399,14 +399,27 @@ def test_a_family_claiming_at_the_abolition_moves_to_universal_credit(
     assert np.all(staying["universal_credit"] == 0)
 
 
+# Keeps every income-related ESA award payable, so the only abolition that
+# reaches the family in the test below is Housing Benefit's.
+KEEP_ESA_INCOME_AWARDS = {
+    f"gov.dwp.ESA.income.awards_payable.{jurisdiction}": {"2015-01-01.2040-12-31": 1}
+    for jurisdiction in ABOLITION_DATES
+}
+
+
 @pytest.mark.parametrize("year", [2025, 2026, 2027])
 @pytest.mark.parametrize("claims", [True, False])
 def test_the_abolition_claim_ends_only_the_couples_legacy_awards(year, claims):
     # A family that claims Universal Credit when its working-age Housing
     # Benefit is abolished ends the claimant's and partner's income-related
-    # ESA by that claim. An adult claiming ESA in their own right is not part
-    # of that claim and keeps their award (#2395), and a family that does not
-    # claim keeps both. Before the abolition nothing changes.
+    # ESA by that claim (esa_income_report_closed), as a claim when the
+    # abolition of income-related ESA reaches the award does. An adult
+    # claiming ESA in their own right is not part of that claim and keeps
+    # their award (#2395), and a family that does not claim keeps both. The
+    # claim is not DWP's move off legacy benefits. A reform keeps
+    # income-related ESA payable, so its own abolition neither prompts the
+    # claim nor ends the awards. Before the Housing Benefit abolition nothing
+    # changes.
     members = {
         "claimant": {
             "age": 30,
@@ -444,11 +457,13 @@ def test_the_abolition_claim_ends_only_the_couples_legacy_awards(year, claims):
             }
         },
     }
-    sim = Simulation(situation=situation)
+    sim = Simulation(situation=situation, reform=KEEP_ESA_INCOME_AWARDS)
     moved = claims and year >= 2026
     assert not sim.calculate("legacy_benefits_closed", year)[0]
+    assert not sim.calculate("esa_income_abolition_reached", year)[0]
     assert bool(sim.calculate("claims_uc_at_legacy_closure", year)[0]) == moved
-    assert sim.calculate("person_legacy_benefits_closed", year).tolist() == [
+    assert not sim.calculate("person_legacy_benefits_closed", year).any()
+    assert sim.calculate("esa_income_report_closed", year).tolist() == [
         moved,
         moved,
         False,
