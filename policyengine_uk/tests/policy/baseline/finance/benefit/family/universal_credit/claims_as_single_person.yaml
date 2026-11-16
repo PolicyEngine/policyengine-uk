@@ -751,7 +751,7 @@
         region: NORTH_EAST
   output:
     # The partner is not a non-dependant (para 9(2)(b)).
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: true
     LHA_category: A
     # HB: a claimant with a partner is not a young individual (HB reg 2(1));

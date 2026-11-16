@@ -46,7 +46,7 @@
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
     # UC: not a qualifying young person, so a non-dependant (para 9(2)).
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: true
+    universal_credit_renter_has_non_dependant: true
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: C
     # HB: not a Child Benefit qualifying young person, so the parent is a
@@ -80,7 +80,7 @@
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
     # UC: responsible for a qualifying young person (para 28(3)).
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: C
     # HB: a lone parent, not a single claimant, so not a young individual.
@@ -114,7 +114,7 @@
     # after the 19th birthday, which has passed: a non-dependant.
     is_benefit_unit_non_dependant_for_universal_credit: [false, true]
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: true
+    universal_credit_renter_has_non_dependant: true
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: C
     # Child Benefit (General) Regs 2006 reg 3(4): in non-advanced education
@@ -152,7 +152,7 @@
     is_child_or_young_person_placed_with_family: [false, true]
     is_benefit_unit_non_dependant_for_universal_credit: [false, false]
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     lha_renter_meets_foster_parent_condition: true
     is_lha_shared_accommodation_rate_specified_renter: false
     # HB: a young person placed by a local authority is not a member of the
@@ -191,7 +191,7 @@
     is_child_or_young_person_placed_with_family: [false, false]
     is_benefit_unit_non_dependant_for_universal_credit: [false, false]
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     housing_benefit_has_non_dependant: true
 
 - name: A foster child under 16 is a non-dependant under neither scheme
@@ -216,7 +216,7 @@
     # UC Sch 4 para 9(2)(c); HB reg 3(2)(c) with reg 21(3)(a).
     is_benefit_unit_non_dependant_for_universal_credit: [false, false]
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     housing_benefit_has_non_dependant: false
 
 - name: A joint tenant's adult son counts for that tenant only in the HB shared rate test and in one UC claim
@@ -251,7 +251,7 @@
     # UC: the son is the head's non-dependant and already counted in the
     # head's claim, so not the sharer's (Sch 4 para 9(2)(f)). The sharer is a
     # specified renter: A. Head: 1 + son = 2: C.
-    lha_renter_has_non_dependant: [true, false]
+    universal_credit_renter_has_non_dependant: [true, false]
     is_lha_shared_accommodation_rate_specified_renter: [false, true]
     LHA_category: [C, A]
     # HB: housing_benefit_has_non_dependant counts a non-dependant within a
@@ -300,7 +300,7 @@
     # UC: the lodger is liable on a commercial basis (Sch 4 para 9(2)(d));
     # the son is a non-dependant in the lodger's claim, so not the
     # householder's (para 9(2)(f)). The householder is a specified renter: A.
-    lha_renter_has_non_dependant: [false, true]
+    universal_credit_renter_has_non_dependant: [false, true]
     is_lha_shared_accommodation_rate_specified_renter: [true, false]
     # HB: reg 3(2)(e)(i) excludes only the lodger, who pays the householder,
     # so the son resides with the householder as a non-dependant (reg 3(1),
@@ -347,5 +347,5 @@
     # UC: the renter's foster child (para 9(2)(c)), and the renter meets the
     # foster parent condition (para 29(9A)): not a specified renter.
     is_lha_foster_child: [false, true]
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false

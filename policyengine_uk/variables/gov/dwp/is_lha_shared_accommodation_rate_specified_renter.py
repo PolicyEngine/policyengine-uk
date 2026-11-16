@@ -17,7 +17,7 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "allowance, reg. 2) or as a foster parent or adopter (para 29(9A)); "
         "not responsible for a child or qualifying young person under UC "
         "regs 4 and 5; and with no non-dependant (see "
-        "lha_renter_has_non_dependant). The age and "
+        "universal_credit_renter_has_non_dependant). The age and "
         "the exceptions are the renter's own: the other member of a couple "
         "claiming as a single person is neither the renter nor a "
         "non-dependant (para 9(2)(b)). Other paragraph 29 exceptions are not "
@@ -71,12 +71,12 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
             # person under UC regs 4 and 5, and the para 9 non-dependant. A
             # Housing Benefit young person who is not a Universal Credit
             # qualifying young person is a non-dependant (para 9(2)), which
-            # lha_renter_has_non_dependant counts.
+            # universal_credit_renter_has_non_dependant counts.
             & ~benunit(
                 "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
                 period,
             )
-            & ~benunit("lha_renter_has_non_dependant", period)
+            & ~benunit("universal_credit_renter_has_non_dependant", period)
             & ~excepted_disabled_renter
             & ~excepted_foster_parent
         )

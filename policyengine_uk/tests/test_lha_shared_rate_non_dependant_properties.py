@@ -2,7 +2,7 @@
 condition, which each scheme applies with its own definitions:
 
 - Universal Credit: UC Regs 2013 Sch 4 para 28(3)-(4), with para 9 and regs
-  4-5 (lha_renter_has_non_dependant).
+  4-5 (universal_credit_renter_has_non_dependant).
 - Housing Benefit: HB Regs 2006 reg 13D(2)(a)(i), with regs 2(1), 3 and 19
   (housing_benefit_has_non_dependant).
 
@@ -288,7 +288,7 @@ def test_a_non_dependant_deduction_implies_a_non_dependant(pop):
     sim, people, rows = build(pop)
     # Invariant 3.
     uc = calc(sim, "uc_non_dep_deductions")
-    uc_has = calc(sim, "lha_renter_has_non_dependant")
+    uc_has = calc(sim, "universal_credit_renter_has_non_dependant")
     hb = calc(sim, "housing_benefit_non_dep_deductions")
     hb_has = calc(sim, "housing_benefit_has_non_dependant")
     excepted = shares_another_joint_occupiers_own_non_dependant(sim, people, rows)
@@ -318,12 +318,12 @@ def test_the_examples_decide_each_invariant():
     """The explicit examples exercise what each invariant turns on, so a
     regression in either scheme's definition cannot pass vacuously."""
     sim, people, rows = build(SCHOOL_LEAVER)
-    assert calc(sim, "lha_renter_has_non_dependant")[0]
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
     assert calc(sim, "housing_benefit_has_non_dependant")[0]
     assert calc(sim, "is_housing_benefit_young_individual")[0]
 
     sim, people, rows = build(NINETEEN_IN_EDUCATION)
-    assert calc(sim, "lha_renter_has_non_dependant")[0]
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
     assert not calc(
         sim, "is_responsible_for_child_or_qualifying_young_person_for_universal_credit"
     )[0]
@@ -343,7 +343,7 @@ def test_the_examples_decide_each_invariant():
     excepted = shares_another_joint_occupiers_own_non_dependant(sim, people, rows)
     assert hb[3] > 0 and not has[3] and excepted[3]
     # Only the head's claim counts him under UC (Sch 4 para 9(2)(f)).
-    assert uc[3] == 0 and not calc(sim, "lha_renter_has_non_dependant")[3]
+    assert uc[3] == 0 and not calc(sim, "universal_credit_renter_has_non_dependant")[3]
 
 
 def test_a_deduction_implies_a_non_dependant_when_a_family_has_no_claimant():
@@ -378,6 +378,6 @@ def test_a_deduction_implies_a_non_dependant_when_a_family_has_no_claimant():
     }
     sim = Simulation(situation=situation)
     assert calc(sim, "uc_non_dep_deductions")[0] > 0
-    assert calc(sim, "lha_renter_has_non_dependant")[0]
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
     assert calc(sim, "housing_benefit_non_dep_deductions")[0] > 0
     assert calc(sim, "housing_benefit_has_non_dependant")[0]

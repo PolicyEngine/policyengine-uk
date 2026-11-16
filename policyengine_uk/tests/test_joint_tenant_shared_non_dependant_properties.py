@@ -481,7 +481,7 @@ def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(populatio
     for variable in [
         "LHA_allowed_bedrooms",
         "uc_non_dep_deductions",
-        "lha_renter_has_non_dependant",
+        "universal_credit_renter_has_non_dependant",
     ]:
         reference = calc(sims[0][0], variable)
         for sim, _ in sims[1:]:

@@ -4,10 +4,10 @@ from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
 )
 
 
-class lha_renter_has_non_dependant(Variable):
+class universal_credit_renter_has_non_dependant(Variable):
     value_type = bool
     entity = BenUnit
-    label = "LHA renter has a non-dependant (Universal Credit)"
+    label = "Universal Credit renter has a non-dependant"
     documentation = (
         "Universal Credit: someone in this benefit unit who is a Universal "
         "Credit non-dependant (is_benefit_unit_non_dependant_for_universal_credit: "

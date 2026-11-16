@@ -402,7 +402,7 @@
     # non-dependant (para 9(2)(c)), but excepted as a renter who satisfies
     # the foster parent condition (para 29(9A)).
     is_responsible_for_child_or_young_person_for_uc_or_housing_benefit: false
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
     housing_benefit_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_allowed_bedrooms: 2
@@ -1600,7 +1600,7 @@
     # under 35, is not a specified renter (para 27): category C, not A. The
     # foster child is not a non-dependant of the sharer, their foster parent
     # (para 9(2)(c)); the sharer, aged 40, is no specified renter anyway.
-    lha_renter_has_non_dependant: [true, false]
+    universal_credit_renter_has_non_dependant: [true, false]
     is_lha_shared_accommodation_rate_specified_renter: [false, false]
     LHA_category: [C, C]
     # The head's £13,000 share of the rent exceeds Maidstone's two-bedroom

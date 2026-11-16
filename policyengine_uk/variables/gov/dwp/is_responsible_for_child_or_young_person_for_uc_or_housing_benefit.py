@@ -13,10 +13,11 @@ class is_responsible_for_child_or_young_person_for_uc_or_housing_benefit(Variabl
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit
     (UC Sch 4 para 28(3)), and counts a Housing Benefit young person who is
     not a UC qualifying young person as a non-dependant
-    (lha_renter_has_non_dependant; para 28(4)). Housing Benefit's test,
-    housing_benefit_LHA_category, reads is_housing_benefit_young_individual
-    and housing_benefit_has_non_dependant (HB reg 13D(2)(a)(i)). The benefit
-    cap rates read each scheme's own responsibility test.
+    (universal_credit_renter_has_non_dependant; para 28(4)). Housing
+    Benefit's test, housing_benefit_LHA_category, reads
+    is_housing_benefit_young_individual and housing_benefit_has_non_dependant
+    (HB reg 13D(2)(a)(i)). The benefit cap rates read each scheme's own
+    responsibility test.
 
     The union also counts every 16-year-old in the benefit unit who is not a
     claimant or partner, for the year.

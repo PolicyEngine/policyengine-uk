@@ -306,7 +306,7 @@ class reference_is_lha_shared_accommodation_rate_specified_renter(Variable):
                 "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
                 period,
             )
-            & ~benunit("lha_renter_has_non_dependant", period)
+            & ~benunit("universal_credit_renter_has_non_dependant", period)
             & ~excepted_disabled_renter
         )
 
