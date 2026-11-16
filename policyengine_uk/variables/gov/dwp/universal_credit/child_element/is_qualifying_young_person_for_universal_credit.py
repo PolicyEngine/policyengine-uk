@@ -111,11 +111,14 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     (reg. 8(2A); esa_income_report_closed's run-on), so the formula leaves
     out those two claim limbs. The claim has already ended a tax credit
     award (reg. 8(2)(a)), so the formula keeps the Child Tax Credit limb.
-    In Northern Ireland the claim has also already ended a rate rebate (SR
-    2016/226 reg. 6(2)), and only a rent rebate or allowance runs on (reg.
-    6(2A)), so there the formula keeps the Housing Benefit limb for a report
-    of a rate rebate alone (housing_benefit_report_is_rate_rebate_only). The
-    year gates and the legacy closures apply either way."""
+    Reg. 8(2) ends a Working Tax Credit award too, but is_WTC_eligible keeps
+    that award beside a Universal Credit claim, so the Working Tax Credit
+    limb follows the model (policyengine-uk#2918). In Northern Ireland the
+    claim has also already ended a rate rebate (SR 2016/226 reg. 6(2)), and
+    only a rent rebate or allowance runs on (reg. 6(2A)), so there the
+    formula keeps the Housing Benefit limb for a report of a rate rebate
+    alone (housing_benefit_report_is_rate_rebate_only). The year gates and
+    the legacy closures apply either way."""
     # The Secretary of State excludes a person entitled to an existing
     # benefit (TP regs. 2(1) and 28). The formula reads raw person-level
     # reports, the model's legacy closure proxy and the family's Universal
@@ -222,6 +225,9 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
         & family_award_open
         & ~claim_ends_own_award
     )
+    # Reg. 8(2) also ends a Working Tax Credit award on a Universal Credit
+    # claim, but is_WTC_eligible keeps paying it (policyengine-uk#2918), so
+    # this limb has no claim term and follows the model.
     working_tax_credit_paying = (
         paying(dwp.tax_credits.active, "working_tax_credit", "tax_credits")
         & family_award_open
