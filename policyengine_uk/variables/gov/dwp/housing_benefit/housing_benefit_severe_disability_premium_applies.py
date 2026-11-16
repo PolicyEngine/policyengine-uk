@@ -13,7 +13,10 @@ class housing_benefit_severe_disability_premium_applies(Variable):
         "Benefit severe disability premium: the claimant (and any partner) "
         "receives a qualifying disability benefit, and no non-dependant aged "
         "18 or over normally resides with them, other than one who receives "
-        "a qualifying benefit or is blind. Where the rent is shared, another "
+        "a qualifying benefit or is blind. The household head, and a member "
+        "who pays the household head for their own occupation, are not "
+        "non-dependants (HB reg 3(2)(d), (e) and (4)), as for "
+        "housing_benefit_has_non_dependant. Where the rent is shared, another "
         "family's non-dependant resides with each joint occupier that "
         "non_dependant_normally_resides_with gives, by default every one, "
         "and a joint occupier's own family is never another's "
@@ -55,13 +58,13 @@ class housing_benefit_severe_disability_premium_applies(Variable):
         # housing_benefit_has_non_dependant.
         age = person("age", period)
         adult_non_dependant = (age >= 18) & ~qualifying & ~blind
-        # A child or young person placed with the family as a foster child or
-        # for adoption is not a non-dependant either (reg 3(2)(c) with reg
-        # 21(3)).
-        young_person = person(
-            "is_child_or_young_person_for_legacy_benefits", period
-        ) | person("is_child_or_young_person_placed_with_family", period)
-        within = benunit.any(adult_non_dependant & ~claimant_or_partner & ~young_person)
+        # Reg 3(2)(a), (c)-(e) and (4), as housing_benefit_has_non_dependant:
+        # the household head and a member who pays the household head are not
+        # non-dependants.
+        within = benunit.any(
+            adult_non_dependant
+            & person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
+        )
         liable_family = benunit.any(person("is_liable_for_household_rent", period))
         # Outside the family, reg 3(1), (2)(d) and (4): the non-dependants
         # who normally reside with this joint occupier

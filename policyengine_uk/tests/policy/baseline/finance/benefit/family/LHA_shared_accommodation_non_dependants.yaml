@@ -462,6 +462,88 @@
     uc_non_dep_deductions: 0
     housing_benefit_non_dep_deductions: 0
 
+- name: A lodger on attendance allowance whose adult son pays the householder keeps the severe disability premium
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 25
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 4_000
+        attendance_allowance: 5_000
+      lodger_son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_lodger: 2_000
+        employment_income: 20_000
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger, lodger_son]
+    households:
+      home:
+        members: [householder, lodger, lodger_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # As the case of the lodger's son who pays the householder, but the
+    # lodger receives attendance allowance. The son pays the householder
+    # (HB reg 3(2)(e)(i), 3(4)), so he is not a non-dependant aged 18 or
+    # over for the severe disability premium either (Sch 3 para
+    # 14(2)(a)(ii)). The premium applies, so the shared rate does not
+    # (13D(2)(a)): the lodger's category follows the size criteria, C. UC's
+    # own exception for attendance allowance (Sch 4 para 29(5)) makes the
+    # lodger's UC category B.
+    housing_benefit_has_non_dependant: [false, false]
+    housing_benefit_severe_disability_premium_applies: [false, true]
+    housing_benefit_LHA_category: [A, C]
+    is_lha_shared_accommodation_rate_specified_renter: [true, false]
+    LHA_category: [A, B]
+
+- name: A claimant on PIP daily living with the household head in their benefit unit keeps the severe disability premium
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 25
+        is_claimant_or_partner: true
+        pip_dl: 5_000
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        employment_income: 20_000
+    benunits:
+      family:
+        members: [claimant, head]
+    households:
+      home:
+        members: [claimant, head]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # As the case of the household head in the claimant's benefit unit, but
+    # the claimant receives the PIP daily living component. The head is not
+    # the claimant's non-dependant (HB reg 3(2)(d) or (e)(ii)), so no
+    # non-dependant aged 18 or over resides with the claimant and the
+    # severe disability premium applies (Sch 3 para 14). The shared rate
+    # does not (13D(2)(a)): HB category C. UC's own exception for the PIP
+    # daily living component (Sch 4 para 29(5)) makes the UC category B.
+    housing_benefit_has_non_dependant: false
+    housing_benefit_severe_disability_premium_applies: true
+    housing_benefit_LHA_category: C
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+
 - name: A looked-after 16-year-old school leaver stops a young single HB claimant's shared rate
   period: 2026
   input:
