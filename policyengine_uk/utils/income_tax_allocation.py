@@ -147,7 +147,7 @@ deductions, 3.9p at £37,700 and 13.9p at £138,255. Two rules keep it
   excess is then a quarter, a half or three quarters of a penny.
 
 The second rule reads the amounts behind the income the test reads.
-``_held_error`` works the bound from the inputs up. An input under £131,072
+``_held_error`` works the bound from the entries up. An entry under £131,072
 sits within 0.39p of the whole-pence amount entered, so its distance from
 whole pence is its error; from £131,072 the function gives no bound. For each
 sum the model makes on the way to net income and the allowances, it adds the
@@ -156,9 +156,24 @@ which is the float32 rounding in that sum. So pay of £148,609.46 less
 £108,409.45 of expenses, which the model holds as £40,200.00, gets no bound,
 though no amount the test reads reaches £65,536. An amount the function
 cannot follow gets no bound either: a formula it does not list, such as the
-State Pension or a company car benefit, a relief the law caps, or an amount
-supplied in place of its formula. The function assumes entries in whole pence.
-An entry in fractions of a penny reads as an error and adds to the bound.
+State Pension or a company car benefit, a relief the law caps, or a formula a
+reform replaces, whose amount stops matching the parts listed here. The
+function assumes entries in whole pence. An entry in fractions of a penny
+reads as an error and adds to the bound.
+
+An entry is an amount with no formula, or any amount supplied as an input for
+the year: in a situation, a dataset or a YAML test, or through
+``Simulation.set_input``. The model reads a supplied amount in place of the
+variable's formula, so ``_held_error`` bounds it as an entry and reads none of
+the amounts the formula would. Pay set through ``Simulation.set_input`` sits
+in employment_income itself, with nothing in the amounts that variable adds
+up. It gets the same bound as pay the constructor moves into
+employment_income_before_lsr. A value the model stored itself
+(``set_model_value``) is not an entry and keeps its variable's rule. Where
+``_held_error`` stops at a supplied net income or supplied allowances,
+``_can_hide_an_excess`` bounds on their own the other amounts the test reads:
+savings, dividends, property income, the trade loss relief and pension
+relief. A grossed-up gift supplied as an input is an entry too.
 
 For a recipient the test holds to room, the search does what ``main``'s does
 (``_moves_with_room``). It counts on the reduction only where the exact share
@@ -752,10 +767,16 @@ def _can_hide_an_excess(person, period, income_tax, limits, earned_exclusions):
 
     The test compares sums and differences of net income, the allowances,
     savings and dividends with the limits. ``_held_error`` bounds how far the
-    model's net income and allowances sit from the entries. Savings and
-    dividends are parts of net income, so their rounding counts there. A Gift
-    Aid gift raises the limits by its gross amount (s. 414(2)(b)), five
-    quarters of the gift, which float32 also rounds.
+    model's net income and allowances sit from the entries. Savings,
+    dividends, property income and the trade loss relief are parts of net
+    income, and pension relief is part of the allowances, so their rounding
+    counts there. Where ``_held_error`` does not reach one of them, the
+    function adds its bound (``READ_WITH_NET_INCOME``). That happens where it
+    stops at an amount supplied as an input above them, or a reform takes
+    them out of the parts of net income. A Gift Aid gift raises the limits by
+    its gross amount (s. 414(2)(b)), five quarters of the gift, which float32
+    also rounds. A gross amount supplied as an input is an entry: its bound
+    is its distance from whole pence.
 
     Amounts entered in whole pence sit at least a penny over a whole-pence
     limit they exceed. A gift whose gross amount is not in whole pence leaves

@@ -38,7 +38,8 @@ From £65,536 the model holds a recipient's rate test to room below each limit
 the Personal Allowance, so a recipient with that much income has Step 3 income
 over £52,966 and fails the rate test under either margin. The model also keeps
 the room where its bound on the float32 error in a recipient's amounts reaches
-a penny (``_can_hide_an_excess``). A recipient here has at most four amounts.
+a penny (``_can_hide_an_excess``). A recipient here has at most four amounts,
+set through ``Simulation.set_input``, which the bound reads as entries.
 Under £65,536 in all, their float32 errors come to under 0.39p and the three
 float32 sums to under 0.59p, so the bound stays under a penny. The room never
 decides a recipient these strategies draw.

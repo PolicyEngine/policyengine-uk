@@ -48,10 +48,11 @@ the record.
 engine has already returned and says whether that value is the input supplied
 for its period. It needs no entry in ``SUPPLIED_INPUT_VARIABLES``, because it
 cannot read a record whose value is gone as supplied. It reads the stored
-input as ``supplied_input`` does. policyengine-core stores every value the
-engine fills in (a formula result, or a carried-over, uprated or default
-value) as derived, and ``stored_supplied_value`` never reads a derived value.
-And the stored input must equal the value the engine returned.
+input as ``supplied_input`` does. policyengine-core, from the version
+pyproject.toml requires, stores every value the engine fills in (a formula
+result, or a carried-over, uprated or default value) as derived, and
+``stored_supplied_value`` never reads a derived value. And the stored input
+must equal the value the engine returned.
 """
 
 from functools import cache
