@@ -4,6 +4,7 @@ from policyengine_uk.variables.gov.dwp._person_capital_pool import (
     household_sources,
 )
 from policyengine_uk.variables.household.wealth.share_like_capital_with_sale_expenses import (
+    holdings_with_sale_expenses,
     holdings_without_sale_expenses,
 )
 
@@ -34,11 +35,20 @@ class stocks_and_shares_isa_countable_capital(Variable):
         "itemised holdings sum to more than nil, and otherwise nil. The part itself is "
         "share_like_capital less the other part, and its float32 subtractions can "
         "leave it less than share_like_capital's float32 spacing either side of that "
-        "sum. "
-        "Bounding by the sum keeps the whole of a balance the sum covers, and the "
-        "pool absorbs the part's rounding. share_like_capital_with_sale_expenses "
-        "rounds once from share_like_capital less that clamped sum, so it never falls "
-        "below a balance the difference covers, and it bounds the balances itself. "
+        "sum. The holdings behind share_like_capital_with_sale_expenses are "
+        "share_like_capital less the listed holdings, held between nil and "
+        "share_like_capital where the itemised holdings sum to more than nil, and "
+        "otherwise all of share_like_capital, computed in float64; the part itself "
+        "rounds the listed sum and then the subtraction. For a list of two "
+        "holdings, each of these holdings rounds at most once, to float32 (for the "
+        "float64 complement, unless one amount is more than 2**29 times another), "
+        "so bounding by them keeps the whole of a balance they cover, and the pool "
+        "absorbs the part's "
+        "rounding. While the list names at most two holdings, the parts' formulas "
+        "stay within share_like_capital's float32 spacing of these holdings. Where "
+        "the stored part falls further short, as a direct input or a reformed "
+        "formula of either part can make it, the stored part bounds the balances "
+        "instead, so the pool keeps what the part holds. "
         "Negative holdings beside the ISAs, itemised holdings that sum to nil or less, "
         "or a reform can leave these holdings short of the ISAs; the balances then "
         "share what the holdings hold. When the household's stored "
@@ -65,17 +75,27 @@ class stocks_and_shares_isa_countable_capital(Variable):
             "stocks_and_shares_isa_countable_capital"
         ]
         # Bound the balances by the holdings behind the part that holds the
-        # ISAs. The part without sale expenses is share_like_capital less the
-        # other part, so its subtractions can round it below the listed
-        # holdings it stands for; their float32 sum, clamped as the part with
-        # sale expenses clamps it, has no such rounding, and a balance that
-        # sum covers keeps its whole value. The part with sale expenses
-        # rounds once from share_like_capital less that clamped sum, so it
-        # never falls below a balance the difference covers.
+        # ISAs, formed with one rounding, so that a balance they cover keeps
+        # its whole value. The part without sale expenses is
+        # share_like_capital less the other part, so its subtractions can
+        # round it below the listed holdings it stands for; their float32
+        # sum, clamped as the part with sale expenses clamps it, has no such
+        # rounding. The part with sale expenses subtracts that float32 sum
+        # and rounds again; its complement in float64 rounds at most once.
         if part == "share_like_capital_without_sale_expenses":
             backing = holdings_without_sale_expenses(household, period, parameters)
         else:
-            backing = household(part, period)
+            backing = holdings_with_sale_expenses(household, period, parameters)
+        # The formulas net the balances out of the stored part. While the
+        # list names at most two holdings, the parts' formulas stay within
+        # share_like_capital's float32 spacing of these holdings. A direct
+        # input or a reformed formula can leave the stored part further
+        # short, and the stored part then bounds the balances, so the pool
+        # keeps what the part holds.
+        stored = household(part, period)
+        with np.errstate(invalid="ignore"):
+            short = backing - stored > np.spacing(np.abs(share_like))
+        backing = where(short, stored, backing)
         # A missing (NaN) backing leaves the bound unchanged.
         return bounded_person_holding(
             person,

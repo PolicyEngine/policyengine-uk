@@ -142,9 +142,19 @@ holdings sum to more than nil, and otherwise nil. The model bounds the
 balances by that sum rather than by the part, which it forms by subtracting
 the other part and which can round to less than `share_like_capital`'s
 float32 spacing either side of the sum, so a balance the sum covers keeps its
-whole value. `share_like_capital_with_sale_expenses` rounds once from
-`share_like_capital` less that clamped sum, so it never falls below a
-balance the difference covers, and it bounds the balances itself. Negative
+whole value. Behind `share_like_capital_with_sale_expenses`, under a reform
+that moves the ISAs there, stands `share_like_capital` less the listed
+holdings, held between nil and `share_like_capital` where the itemised
+holdings sum to more than nil, and otherwise all of `share_like_capital`.
+The model computes that complement in float64, because the part itself
+rounds the listed holdings' float32 sum and then the subtraction, and could
+fall below a balance the holdings cover. For a list of two holdings each of
+these holdings rounds at most once, to float32 (for the float64 complement,
+unless one amount is more than 2^29 times another), and the parts' formulas
+stay within `share_like_capital`'s float32 spacing of them. Where the stored
+part falls further short, as a direct input or a reformed formula of either
+part can make it, the stored part bounds the balances instead, so the pool
+keeps what the part holds. Negative
 holdings beside the ISAs, itemised holdings that sum to nil or less, or a
 reform can leave these holdings short of the ISAs; the balances then share
 what the holdings hold. Data that store only household totals hold no
