@@ -16,8 +16,8 @@ from policyengine_core.model_api import max_
 
 from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.variables.gov.dwp._person_capital_pool import (
-    HOUSEHOLD_SOURCE_OF,
     counted_person_sources,
+    household_sources,
 )
 
 # Household inputs holding the debt secured on each capital source, such as a
@@ -79,17 +79,23 @@ def valued_person_capital(benunit, period, parameters, capital, counted):
     amount.
 
     The function counts only the sources ``counted_person_sources`` keeps. A
-    person source that a household source includes (``HOUSEHOLD_SOURCE_OF``)
-    holds pounds the formulas moved out of that household source, so the
-    function values it as ``valued_capital`` values the household source:
-    less the sale-expense rate where ``capital.sale_expenses.sources`` lists
-    the household source."""
+    person source that a household source includes (``household_sources``,
+    under the law at ``period``) holds pounds the formulas moved out of that
+    household source, so the function values it as ``valued_capital`` values
+    the household source: less the sale-expense rate where
+    ``capital.sale_expenses.sources`` lists the household source. A reform
+    that takes stocks_and_shares_isa off
+    gov.dwp.share_like_capital.without_sale_expenses moves the stocks and
+    shares ISAs into share_like_capital_with_sale_expenses, so the function
+    then values the balances less the rate too."""
     person = benunit.members
+    law = parameters(period)
+    held_in = household_sources(law)
     total = 0
-    for source in counted_person_sources(capital):
+    for source in counted_person_sources(capital, law):
         stored = person(source, period)
         value = exact_amount(stored)
-        if HOUSEHOLD_SOURCE_OF.get(source) in capital.sale_expenses.sources:
+        if held_in.get(source) in capital.sale_expenses.sources:
             value = less_sale_expenses(
                 value, capital.sale_expenses.rate, capital.round_down
             )

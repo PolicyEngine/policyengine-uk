@@ -2,51 +2,71 @@
 
 from policyengine_uk.model_api import *
 
-# The formulas map each person source to the household source that already
-# includes it, subtract its stored household sum, and allocate the remainder.
-# cash_isa includes each cash ISA balance, and
-# share_like_capital_without_sale_expenses each stocks and shares ISA balance
-# (through stocks_and_shares_isa, which gov.dwp.share_like_capital
-# .without_sale_expenses lists, and which share_like_capital holds inside
-# corporate_wealth or the itemised sum). No household source includes a person
-# source missing here, such as a Lifetime ISA.
-HOUSEHOLD_SOURCE_OF = {
-    "cash_isa_countable_capital": "cash_isa",
-    "stocks_and_shares_isa_countable_capital": "share_like_capital_without_sale_expenses",
-}
+
+def household_sources(law) -> dict:
+    """Each person source a household source includes, mapped to that source.
+
+    The formulas subtract each such person source's stored household sum
+    from its household source and allocate the remainder. No household
+    source includes a person source missing here, such as a Lifetime ISA.
+    ``law`` is the parameter tree at the period, as ``parameters(period)``
+    gives it. cash_isa includes each cash ISA balance. share_like_capital
+    includes each stocks and shares ISA balance, through stocks_and_shares_isa
+    inside corporate_wealth or the itemised sum, and its part that holds the
+    ISAs depends on the law: share_like_capital_without_sale_expenses while
+    gov.dwp.share_like_capital.without_sale_expenses lists
+    stocks_and_shares_isa, and share_like_capital_with_sale_expenses once a
+    reform removes it. Every formula that subtracts, values or bounds a
+    person source reads its household source here.
+    """
+    exempt = law.gov.dwp.share_like_capital.without_sale_expenses
+    return {
+        "cash_isa_countable_capital": "cash_isa",
+        "stocks_and_shares_isa_countable_capital": (
+            "share_like_capital_without_sale_expenses"
+            if "stocks_and_shares_isa" in exempt
+            else "share_like_capital_with_sale_expenses"
+        ),
+    }
 
 
-def counted_person_sources(capital) -> list:
+def counted_person_sources(capital, law) -> list:
     """The person sources in ``capital.person_sources`` the formulas count.
 
-    The formulas count a person source that a household source includes only
-    while ``capital.sources`` lists that household source. They move the part
-    of the household source the data tie to a person into the holder's own
-    benefit unit, so when the list drops the household source they count
-    neither.
+    The formulas count a person source that a household source includes
+    (``household_sources(law)``) only while ``capital.sources`` lists that
+    household source. They move the part of the household source the data
+    tie to a person into the holder's own benefit unit, so when the list
+    drops the household source they count neither.
     """
     sources = set(capital.sources)
+    held_in = household_sources(law)
     return [
         source
         for source in capital.person_sources
-        if source not in HOUSEHOLD_SOURCE_OF or HOUSEHOLD_SOURCE_OF[source] in sources
+        if source not in held_in or held_in[source] in sources
     ]
 
 
-def pooled_person_capital(benunit, source, period, capital, leaves_pool=None):
+def pooled_person_capital(
+    benunit, source, period, parameters, capital, leaves_pool=None
+):
     """The part of the household ``source`` that counted person sources make up.
 
     The household sum, for each benefit unit, of the counted person sources
-    in ``capital.person_sources`` that ``source`` includes, over the members
-    ``leaves_pool`` selects (all members by default), as Core stores a total.
-    The formulas subtract it from ``source`` before they allocate the
-    remainder between benefit units, so they count each of those pounds only
-    in its holder's own unit.
+    in ``capital.person_sources`` that ``source`` includes under the law at
+    ``period`` (``household_sources``), over the members ``leaves_pool``
+    selects (all members by default), as Core stores a total. The formulas
+    subtract it from ``source`` before they allocate the remainder between
+    benefit units, so they count each of those pounds only in its holder's
+    own unit.
     """
     person = benunit.members
+    law = parameters(period)
+    held_in = household_sources(law)
     amount = 0
-    for person_source in counted_person_sources(capital):
-        if HOUSEHOLD_SOURCE_OF.get(person_source) == source:
+    for person_source in counted_person_sources(capital, law):
+        if held_in.get(person_source) == source:
             held = person(person_source, period)
             if leaves_pool is not None:
                 held = held * leaves_pool
