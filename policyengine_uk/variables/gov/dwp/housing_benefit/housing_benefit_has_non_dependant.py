@@ -9,9 +9,12 @@ class housing_benefit_has_non_dependant(Variable):
     entity = BenUnit
     label = "Has a non-dependant residing with them (Housing Benefit)"
     documentation = (
-        "Someone in this benefit unit who is neither a claimant or partner "
-        "nor a child or young person (including one placed with the family "
-        "as a foster child or for adoption), or, for a family liable for the "
+        "Someone in this benefit unit who is a Housing Benefit non-dependant "
+        "(is_benefit_unit_non_dependant_for_legacy_benefits: neither a "
+        "claimant or partner nor a child or young person, including one "
+        "placed with the family as a foster child or for adoption; a "
+        "16-year-old outside the Child Benefit young person test is one), "
+        "or, for a family liable for the "
         "household's rent (the household head's or a sharer's), anyone in "
         "the household who is a non-dependant (see "
         "is_non_dependant_of_household_head) and normally resides with it. "
@@ -33,18 +36,18 @@ class housing_benefit_has_non_dependant(Variable):
     def formula(benunit, period, parameters):
         # HB Regs 2006 reg 3(1)-(2), (4) and reg 74(5).
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        age = person("age", period)
-        # Reg 3(2)(c): a child or young person living with the claimant who
-        # is not a member of the household by virtue of reg 21, such as one
-        # placed with the claimant or partner as a foster child or for
-        # adoption (reg 21(3)), is not a non-dependant.
-        child_or_young_person = (
-            person("is_child_or_young_person_for_legacy_benefits", period)
-            | person("is_child_or_young_person_placed_with_family", period)
-            | ((age >= 16) & (age < 17))
+        # Reg 3(2)(a) and (c) with regs 19 and 21(3): a member of the benefit
+        # unit who is neither the claimant or partner nor a child or young
+        # person, whether in the claimant's family or placed with the
+        # claimant or partner. The young person test is Child Benefit's (reg
+        # 19), with no separate rule for 16-year-olds: one outside it is a
+        # non-dependant, and one within it who is not placed makes the
+        # claimant a lone parent rather than a single claimant (reg 2(1)), so
+        # either way the claimant is not a young individual with no
+        # non-dependant (reg 13D(2)(a)(i)).
+        within_benefit_unit = benunit.any(
+            person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
         )
-        within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_young_person)
         liable_family = benunit.any(person("is_liable_for_household_rent", period))
         # Reg 3(1), (2)(d) and (4): a non-dependant of several joint
         # occupiers resides with each of them (LHA Guidance Manual paras
