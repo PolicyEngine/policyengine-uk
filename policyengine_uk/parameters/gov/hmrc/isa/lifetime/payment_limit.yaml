@@ -1,0 +1,10 @@
+description: Maximum qualifying Lifetime ISA payments in the tax year.
+values:
+  2017-04-06: 4000
+metadata:
+  label: Lifetime ISA annual qualifying payment limit
+  period: year
+  unit: currency-GBP
+  reference:
+    - title: Individual Savings Account Regulations 1998 regulation 4ZA(1A)
+      href: https://www.legislation.gov.uk/uksi/1998/1870/regulation/4ZA

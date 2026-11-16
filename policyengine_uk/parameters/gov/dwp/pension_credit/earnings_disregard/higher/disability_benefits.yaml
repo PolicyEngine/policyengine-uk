@@ -1,8 +1,8 @@
 description: >
   Person-level benefits whose receipt by the claimant or partner qualifies the
   benefit unit for the higher Pension Credit earnings disregard (Sch. VI para.
-  4(1)(a)). Income-related employment and support allowance, a benefit-unit
-  award, is in `disability_benefit_unit_benefits`.
+  4(1)(a)). The claimant's or partner's income-related employment and support
+  allowance, a benefit-unit award, is in `disability_benefit_unit_benefits`.
   `incapacity_benefit` stands for long-term incapacity benefit (para.
   4(1)(a)(i)); the model does not separate the short-term rates. Not modelled:
   the war pensions mobility supplement (v), which has no variable; pension age

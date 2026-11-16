@@ -16,19 +16,19 @@ class ni_class_4(Variable):
         # the para 3 loss reliefs; Class 1 contributions are not a deduction.
         profits = person("ni_class_4_profits", period)
         add_rate_income = max_(
-            profits - class_4.thresholds.upper_profits_limit,
+            profits - class_4.contribution_scale.components[2].threshold,
             0,
         )
         main_rate_income = (
             max_(
-                profits - class_4.thresholds.lower_profits_limit,
+                profits - class_4.contribution_scale.components[1].threshold,
                 0,
             )
             - add_rate_income
         )
         pre_maximum_amount = (
-            main_rate_income * class_4.rates.main
-            + add_rate_income * class_4.rates.additional
+            main_rate_income * class_4.contribution_scale.components[1].rate
+            + add_rate_income * class_4.contribution_scale.components[2].rate
         )
         maximum_amount = person("ni_class_4_maximum", period)
         # Regulation 100(1): the annual maximum applies only where primary

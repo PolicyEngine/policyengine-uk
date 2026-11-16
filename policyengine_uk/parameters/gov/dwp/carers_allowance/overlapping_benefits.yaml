@@ -23,9 +23,10 @@ values:
   # reg. 4(1)(a), and Schedule 1 adjusts Carer's Allowance only by
   # unemployability supplement, death benefits paid to a surviving spouse and
   # training allowance, so war disablement pensions and AFCS payments do not
-  # reduce it. Benefits the model does not hold (widow's benefits,
-  # bereavement allowance, unemployability supplement, training allowance)
-  # are not listed.
+  # reduce it. Widowed parent's allowance, a Part II benefit, is listed as
+  # the whole payment: its additional pension is not separated. Benefits the
+  # model does not hold (the other widow's benefits, bereavement allowance,
+  # unemployability supplement, training allowance) are not listed.
   2008-10-27:
     - overlapping_state_pension
     - incapacity_benefit
@@ -33,3 +34,4 @@ values:
     - maternity_allowance
     - jsa_contrib
     - esa_contrib
+    - widowed_parents_allowance

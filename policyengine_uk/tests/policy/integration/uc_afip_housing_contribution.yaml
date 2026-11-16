@@ -1,0 +1,326 @@
+# Under UC Regs 2013 Sch 4 para 16(2)(d), DWP deducts no housing cost
+# contribution for a non-dependant "in receipt of attendance allowance", and
+# the Secretary of State defines that term in reg 2 to include armed forces
+# independence payment (head (f)). Under para 16(2)(e), DWP deducts none for a
+# non-dependant who receives the PIP daily living component.
+# 2026-27 amounts, from legislation.gov.uk:
+# - Standard allowance, single claimant aged 25 or over (reg 36): 12 x 424.90 = 5,098.80.
+# - Housing cost contribution (Sch 4 para 14(1)), one flat amount with no
+#   earnings bands: 12 x 96.55 = 1,158.60.
+# The renter has no earnings or capital and pays the council 6,000 a year, so
+# UC = 5,098.80 + 6,000 - contributions.
+# The non-dependant's own family does not claim UC. Any amount of AFIP in
+# payment qualifies: £9,000 stands for any positive amount.
+
+- name: Case 1, a non-dependant with no qualifying benefit bears a contribution.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt: [false, false]
+    uc_individual_non_dep_deduction: [0, 1_158.6]
+    uc_non_dep_deductions: [1_158.6, 0]
+    uc_housing_costs_element: [4_841.4, 0]
+    universal_credit: [9_940.2, 0]
+
+- name: Case 2, a non-dependant receiving the PIP daily living component bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        pip_dl_category: STANDARD
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_individual_non_dep_deduction: [0, 0]
+    uc_non_dep_deductions: [0, 0]
+    uc_housing_costs_element: [6_000, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 3, a non-dependant receiving armed forces independence payment bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        armed_forces_independence_payment: 9_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_receives_attendance_allowance: [false, true]
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_individual_non_dep_deduction: [0, 0]
+    uc_non_dep_deductions: [0, 0]
+    uc_housing_costs_element: [6_000, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 4, a non-dependant with no earnings and armed forces independence payment bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 0
+        armed_forces_independence_payment: 9_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_non_dep_deductions: [0, 0]
+    uc_housing_costs_element: [6_000, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 5, a non-dependant earning 100,000 with armed forces independence payment bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 100_000
+        armed_forces_independence_payment: 9_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_non_dep_deductions: [0, 0]
+    uc_housing_costs_element: [6_000, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 6, in a non-dependant couple only the partner without armed forces independence payment bears a contribution.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        armed_forces_independence_payment: 9_000
+      non_dependant_partner:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant, non_dependant_partner]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant, non_dependant_partner]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_non_dep_deduction_exempt: [false, true, false]
+    uc_individual_non_dep_deduction: [0, 0, 1_158.6]
+    uc_non_dep_deductions: [1_158.6, 0]
+    uc_housing_costs_element: [4_841.4, 0]
+    universal_credit: [9_940.2, 0]
+
+- name: Case 7, a non-dependant couple without a qualifying benefit bears two contributions.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+      non_dependant_partner:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant, non_dependant_partner]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant, non_dependant_partner]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    # 2 x 1,158.60 = 2,317.20; 6,000 - 2,317.20 = 3,682.80; 5,098.80 + 3,682.80 = 8,781.60.
+    uc_non_dep_deductions: [2_317.2, 0]
+    uc_housing_costs_element: [3_682.8, 0]
+    universal_credit: [8_781.6, 0]
+
+- name: Case 8, a non-dependant with a penny of armed forces independence payment bears none.
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 20_000
+        armed_forces_independence_payment: 0.01
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+      non_dependant_family:
+        members: [non_dependant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter, non_dependant]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTH_WEST
+  output:
+    uc_receives_attendance_allowance: [false, true]
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_non_dep_deductions: [0, 0]
+    universal_credit: [11_098.8, 0]
+
+- name: Case 9, DWP excepts a private renter aged 30 with a penny of armed forces independence payment from the shared accommodation rate.
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_household_head: true
+        armed_forces_independence_payment: 0.01
+    benunits:
+      renter_family:
+        members: [renter]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [renter]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_WEST
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false

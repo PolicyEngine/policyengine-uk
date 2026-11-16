@@ -20,11 +20,12 @@ class is_responsible_for_child_or_young_person_for_uc_or_housing_benefit(Variabl
     cap rates, where a non-dependant does not matter, read each scheme's own
     responsibility test.
 
-    UC reg 5(1)(a) also makes every 16-year-old a qualifying young person until
-    the 1 September after their 16th birthday, whatever their education. Annual
-    ages cannot place that date, so a 16-year-old in the benefit unit who is not
-    a claimant or partner counts here; the UC child element does not yet model
-    reg 5(1)(a).
+    The UC test includes reg 5(1)(a), which makes a 16-year-old a qualifying
+    young person until the 1 September after their 16th birthday, whatever
+    their education. Housing Benefit's young person follows Child Benefit,
+    whose school-leaver rules (Child Benefit (General) Regulations 2006 regs 4,
+    5 and 7) are not modelled, so a 16-year-old in the benefit unit who is not
+    a claimant or partner also counts here for the year.
     """
 
     value_type = bool

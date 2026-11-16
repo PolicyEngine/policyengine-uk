@@ -24,6 +24,10 @@ def make_situation(**benunit_overrides):
         "uc_benefit_cap_reduction": {YEAR: 0},
         **benunit_overrides,
     }
+    if "uc_latent_deduction_rate" in benunit:
+        # A latent rate counts only for a unit flagged as having deductions
+        # (#2739); these units describe families that have them.
+        benunit.setdefault("uc_has_deduction", {YEAR: True})
     return {
         "people": {"person": {"age": {YEAR: 30}}},
         "benunits": {"benunit": benunit},
@@ -218,9 +222,13 @@ class TestReformLevers:
         universal_credit = reform.calculate("universal_credit", YEAR)[0]
         assert deductions + cap_reduction == pytest.approx(0.15 * sa)
         assert deductions + cap_reduction == pytest.approx(6_000 - universal_credit)
-        # The gross regulation 81 reduction is unchanged: benefit_cap_reduction
-        # and the deduction incidence read it.
+        # The gross regulation 81 reduction is unchanged: the deduction
+        # incidence reads it. benefit_cap_reduction reports what the floor
+        # leaves of it.
         assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 1_000
+        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == pytest.approx(
+            cap_reduction
+        )
 
     def test_the_benefit_cap_reduction_absorbs_the_floor_first(self):
         # Deductions of 10% of the standard allowance fit inside a 15% floor
@@ -415,3 +423,38 @@ class TestReformLevers:
             },
         )
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
+
+
+def test_allowance_scenario_preserves_the_legacy_advance_cash_reference():
+    """The actual UK dated-reform route must retain the unreformed cash anchor.
+
+    SI 2013/383 reg 10 does not index an advance instalment to the allowance.
+    The existing latent 10% is £40.014/month at the published 2025-26
+    single 25+ allowance, £400.14; both demands are below the 15% cap.
+    """
+    situation = make_situation(
+        uc_latent_deduction_rate={YEAR: 0.1},
+        uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+    )
+    baseline = Simulation(situation=situation)
+    reformed = Simulation(
+        situation=situation,
+        reform={
+            "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+                "2025-01-01.2025-12-31": 440
+            }
+        },
+    )
+    assert baseline.calculate("uc_standard_allowance", YEAR)[0] == pytest.approx(
+        400.14 * 12
+    )
+    assert reformed.calculate("uc_standard_allowance", YEAR)[0] == pytest.approx(
+        440 * 12
+    )
+    for simulation in (baseline, reformed):
+        assert simulation.calculate("uc_advance_repayment_amount", YEAR)[
+            0
+        ] == pytest.approx(0.1 * 400.14 * 12)
+        assert simulation.calculate("uc_deductions", YEAR)[0] == pytest.approx(
+            0.1 * 400.14 * 12
+        )

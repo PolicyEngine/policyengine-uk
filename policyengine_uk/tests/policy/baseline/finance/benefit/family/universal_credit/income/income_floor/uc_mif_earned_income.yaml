@@ -531,15 +531,18 @@
         age: 70
         employment_income: 6_000
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
       self_employed:
         age: 40
         self_employment_income: 3_600
         would_claim_marriage_allowance: false
+        is_claimant_or_partner: true
     households:
       household:
         members: [older, self_employed]
         region: NORTH_EAST
   output:
+    relation_type: COUPLE
     uc_mif_applies: [false, true]
     uc_minimum_income_floor: [0, 20_386.03]
     # 20,386.03 - 6,000.

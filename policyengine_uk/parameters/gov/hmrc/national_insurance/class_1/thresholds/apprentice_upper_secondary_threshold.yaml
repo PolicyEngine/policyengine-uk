@@ -1,0 +1,106 @@
+description: Apprentice upper secondary threshold, up to which secondary Class 1 contributions are zero-rated for a relevant apprentice under 25.
+# The threshold has equalled the upper earnings limit (UEL) in every year since
+# it was introduced. From 2021-22 the model stores the annual earnings period
+# amount divided by 52 (50,270 / 52, rounded to 966.73), as for the UEL; reg
+# 10 states £967 a week and reg 11(3C) £50,270 for an annual earnings period.
+# Legal status: SI 2001/1004 reg 10 sets the amount for 2026-27 only. The
+# 2027-28 to 2030-31 values are announced policy: HMRC's Budget 2025 note says
+# the UST and AUST "will remain aligned to the National Insurance
+# contributions UEL at £967 per week up until the 2030 to 2031 tax year".
+# From 2031-32 the model keeps the threshold equal to the UEL
+# (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py), a
+# modelling assumption consistent with that alignment. The file has no
+# uprating.
+# s.9B took effect from 6 April 2016 (National Insurance Contributions Act
+# 2015 s.1). The 2015-16 value of 0 gives no zero-rate band in that year: the
+# model backdates a parameter's earliest value, so it is stated explicitly.
+values:
+  2015-04-06:
+    value: 0
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2015 s.1 (inserting SSCBA 1992 s.9B), in force from 6 April 2016
+          href: https://www.legislation.gov.uk/ukpga/2015/5/section/1
+  2016-04-06:
+    value: 827
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2016-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2016-04-06
+  2017-04-06:
+    value: 866
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2017-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2017-04-06
+  2018-04-06:
+    value: 892
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2018-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2018-04-06
+  2019-04-06:
+    value: 962
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2019-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2019-04-06
+  2020-04-06:
+    value: 962
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2020-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2020-04-06
+  2021-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f), as at 2021-04-06
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2021-04-06
+  2026-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(f) and reg 11(3C), for 2026-27 (reg 10's tax year set by SI 2026/231 reg 5(2)(a))
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2026-04-06
+  2027-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+  2028-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+  2029-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+  2030-04-06:
+    value: 966.73
+    metadata:
+      reference:
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+metadata:
+  label: NI apprentice upper secondary threshold
+  unit: currency-GBP
+  period: week
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s.9B
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/9B
+    - title: The Social Security (Contributions) Regulations 2001 reg 10(f)
+      href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10

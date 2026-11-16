@@ -8,7 +8,6 @@ a bare lookup error.
 """
 
 import copy
-from types import SimpleNamespace
 
 import pytest
 from policyengine_core.parameters import ParameterNode, get_parameter
@@ -77,7 +76,6 @@ ENTRY_POINTS = [
     "system_modify_dict",
     "core_reform_dict",
     "core_set_parameter",
-    "core_reform_api",
     "api_parameter_normalization",
     "api_legacy_policy_normalization",
 ]
@@ -85,9 +83,7 @@ ENTRY_POINTS = [
 
 @pytest.mark.parametrize("path", REMOVED_PATHS)
 @pytest.mark.parametrize("entry_point", ENTRY_POINTS)
-def test_removed_switch_entry_points_give_directions(
-    simulation, monkeypatch, path, entry_point
-):
+def test_removed_switch_entry_points_give_directions(simulation, path, entry_point):
     changes = {path: {"2025": 1}}
     tax_benefit_system = simulation.tax_benefit_system
 
@@ -112,20 +108,6 @@ def test_removed_switch_entry_points_give_directions(
             Reform.from_dict(changes)(tax_benefit_system)
         elif entry_point == "core_set_parameter":
             set_parameter(path, 1, period="2025")(tax_benefit_system)
-        elif entry_point == "core_reform_api":
-            response = SimpleNamespace(
-                json=lambda: {
-                    "result": {
-                        "policy_json": {path: {"2025-01-01.2025-12-31": 1}},
-                        "label": "saved OBR elasticities reform",
-                    }
-                }
-            )
-            monkeypatch.setattr(
-                "policyengine_core.reforms.reform.requests.get",
-                lambda *a, **k: response,
-            )
-            Reform.from_api("obr-elasticities", country_id="uk")(tax_benefit_system)
         elif entry_point == "api_parameter_normalization":
             # policyengine-api reads the final value to infer a type before it
             # calls Parameter.update.

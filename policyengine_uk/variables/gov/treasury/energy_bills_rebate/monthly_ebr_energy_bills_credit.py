@@ -4,8 +4,9 @@ from policyengine_uk.model_api import *
 class monthly_ebr_energy_bills_credit(Variable):
     label = "Monthly Energy Bills Support Scheme credit"
     documentation = (
-        "Main-scheme entitlement for the month. Alternative-funding payments and "
-        "Northern Ireland's separate Alternative Fuel Payment are not included."
+        "Main-scheme entitlement for the month. Alternative-funding payments are "
+        "not included, and Northern Ireland's Alternative Fuel Payment is "
+        "monthly_ebr_alternative_fuel_payment."
     )
     entity = Household
     definition_period = MONTH

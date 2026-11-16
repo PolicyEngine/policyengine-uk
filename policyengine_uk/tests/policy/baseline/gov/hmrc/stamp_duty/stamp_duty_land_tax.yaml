@@ -14,12 +14,15 @@
   output:
     stamp_duty_land_tax: 0
 - name: £445k first-time buyer
+  # 2021 samples 30 April 2021. The SDLT (Temporary Relief) Act 2020 s1(5)
+  # omits first-time buyers' relief to 30 June 2021, and s1(2) charges 0% up
+  # to £500,000.
   period: 2021
   input:
     main_residential_property_purchased: 445_000
     main_residential_property_purchased_is_first_home: true
   output:
-    stamp_duty_land_tax: 7_250
+    stamp_duty_land_tax: 0
 - name: £500,020 first-time buyer (over the £500k limit)
   period: 2022
   input:

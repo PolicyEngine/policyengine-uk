@@ -90,6 +90,59 @@ marginal_tax_rate = sim.calculate("marginal_tax_rate", 2025)
 These calculations return arrays because simulations can handle multiple people, benefit units or households simultaneously. Each variable gives you results at the appropriate level - income tax is calculated per person, Universal Credit per benefit unit, and council tax per household.
 ```
 
+## Apprenticeship inputs
+
+Apprentice status and entitlement to the apprentice minimum wage use separate
+annual person inputs:
+
+- `is_apprentice` records apprentice status and continues to determine the
+  apprentice employer National Insurance relief, subject to its age limit.
+- `is_in_first_year_of_apprenticeship` records whether the person is within
+  the first 12 months of the current apprenticeship employment. It defaults
+  to `False`; it does not establish apprentice status on its own.
+
+The apprentice minimum wage applies when `is_apprentice` is true and the
+person is either under 19 or has the first-year input set to true. Both
+`minimum_wage` and `minimum_wage_category` use this rule. At age 19 or over,
+an apprentice with a false or omitted first-year input uses the ordinary
+age-related rate. A later-year apprentice under 25 can therefore retain
+employer National Insurance relief while using the ordinary minimum wage.
+
+The first 12 months refer to the current apprenticeship employment, rather
+than an academic or training-provider year. Employment with a previous
+employer counts where statutory continuity is preserved. A genuinely
+separate apprenticeship contract starts a new period, as explained in
+[HMRC's apprenticeship contract guidance](https://www.gov.uk/hmrc-internal-manuals/national-minimum-wage-manual/nmwm05300)
+and [regulation 5](https://www.legislation.gov.uk/uksi/2015/621/regulation/5).
+
+For example, the person inputs for a 22-year-old in the first 12 months are:
+
+```python
+"parent": {
+    "age": {2026: 22},
+    "is_apprentice": {2026: True},
+    "is_in_first_year_of_apprenticeship": {2026: True},
+    "employment_income": {2026: 8_000},
+}
+```
+
+Previously, setting only `is_apprentice` selected the apprentice minimum
+wage at every age. Existing callers must now supply the first-year input
+for apprentices aged 19 or over who qualify for that rate. Missing tenure
+does not establish that someone has completed 12 months; the false default
+avoids assuming eligibility for the lower rate. The distinction also affects
+the minimum-income conditions for Tax-Free Childcare, extended childcare
+entitlement and the Childcare Offer for Wales.
+
+These inputs classify the model's annual period. The model does not infer
+an apprenticeship start date, change the classification at a birthday or
+anniversary within the year, or advance apprenticeship tenure during dataset
+projection. Callers must supply the classification for each modelled year.
+Annual minimum-wage calculations retain the existing fiscal-year conversion:
+the model uses the rate in force on 30 April for the whole labelled year.
+This change does not introduce a pay-reference-period calculation or alter
+the dated rate parameters.
+
 ## Simulating policy scenarios
 
 To test policy changes, create a scenario and apply it to your simulation. This example shows what happens when we increase Universal Credit's standard allowance for single people over 25 from the current rate to £500 per month:
@@ -207,6 +260,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   simulation was given inputs for years outside its data, such as the
   Universal Credit health element status the rebalancing records for 2026 to
   2029.
+- Inputs carry forward to later years but not back to earlier ones. So when
+  `set_input` gives a simulation an input for a year before every year it
+  holds the identifiers for, it also gives the identifiers for that year.
+  Formulas that read identifiers, such as the draws that place each person in
+  their year of age, then read the same people and groups there as in the
+  simulation its exported frame loads back to.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
@@ -270,6 +329,13 @@ Each table should contain the ID columns needed to link entities together:
 - `person`: `person_id`, `person_benunit_id`, `person_household_id`, plus any person-level variables
 - `benunit`: `benunit_id`, plus any benefit-unit variables
 - `household`: `household_id`, plus any household-level variables
+
+Whatever the data source, keep identifiers to whole numbers from
+-2,147,483,648 to 2,147,483,647. A simulation stores them as 32-bit integers,
+so within that range the identifiers it returns (for example
+`sim.calculate("person_household_id", 2025)`) are the ones in your tables.
+Outside it, the simulation gives an `EntityIdWarning`: the identifiers it
+returns differ from yours, and so may anything rebuilt from them.
 
 Benefit-unit and household rows can be in any order. The loader aligns each
 year's group inputs by its ID column to the simulation's sorted group IDs;
@@ -478,6 +544,21 @@ unweighted_values = sim.calculate("income_tax", 2025, use_weights=False)
 weighted_total = (unweighted_values * modified_weights).sum()
 print(f"Total with 10% higher weights: £{weighted_total / 1e9:.1f}bn")
 ```
+
+### Subsampling a microsimulation
+
+`subsample` cuts a simulation built from a dataset down to a weighted random sample of its households:
+
+```python
+sim = Microsimulation(
+    dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+)
+sim.subsample(n=10_000, seed=0, time_period=2026)
+```
+
+It draws `n` households with replacement, each with probability proportional to its weight in `time_period` (with the default `quantize_weights=True`), and keeps every household drawn at least once, with its benefit units and people. So the sample holds at most `n` households. A household's new weight is proportional to the number of times it was drawn, and the total household weight of every year is unchanged. The values the simulation was given are kept for the sampled records; results are calculated again on the sample, so population estimates then carry sampling error.
+
+The simulation's `baseline` and `dataset` are replaced with copies cut down to the same households; the objects they held before are left as they were. The `dataset` holds the rows of the dataset the simulation was built from, so it holds whole years only and does not include values set with `set_input` after the simulation was built. The same `seed` always draws the same households.
 
 ## Debugging simulations
 

@@ -1,0 +1,135 @@
+# Budget 2026 savings and property income rates (Table 6.1, items 61 and 62).
+#
+# Budget 2025 (Finance Act 2026) set the savings and property rates at 22%,
+# 42% and 47% from 6 April 2027. Budget 2026 adds a further 2 percentage
+# points from the same date (paragraphs 6.246 and 6.247):
+# - property: 24%, 44% and 49% across England, Wales and Northern Ireland;
+#   Scottish taxpayers' property income stays on the Scottish rates;
+# - savings: 24%, 44% and 49% across the UK;
+# - finance cost relief stays at the property basic rate (policy costings,
+#   page 74), so it rises to 24%.
+
+- name: 2026-27 savings rates are unchanged at 40% for a higher-rate taxpayer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    savings_interest_income: 2_000
+  output:
+    # 500 Personal Savings Allowance, then 1,500 x 40%
+    savings_income_tax: 600
+
+- name: 2027-28 savings basic rate is 24%
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 20_000
+    savings_interest_income: 3_000
+  output:
+    # Non-savings income above the starter-rate limit, 1,000 Personal Savings
+    # Allowance, then 2,000 x 24%
+    savings_income_tax: 480
+
+- name: 2027-28 savings higher rate is 44%
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    savings_interest_income: 2_000
+  output:
+    # 500 Personal Savings Allowance, then 1,500 x 44%
+    savings_income_tax: 660
+
+- name: 2027-28 savings additional rate is 49%
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 200_000
+    savings_interest_income: 2_000
+  output:
+    # No Personal Savings Allowance for additional-rate taxpayers: 2,000 x 49%
+    savings_income_tax: 980
+
+- name: 2027-28 savings rates apply to Scottish taxpayers too
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    savings_interest_income: 2_000
+    region: SCOTLAND
+  output:
+    pays_scottish_income_tax: true
+    # Savings bands follow the UK thresholds: 1,000 Personal Savings
+    # Allowance, then 1,000 x 24%
+    savings_income_tax: 240
+
+- name: 2027-28 property basic rate is 24% in England
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 20_000
+    property_rental_income: 5_000
+    property_income: 5_000
+    region: LONDON
+  output:
+    # (5,000 - 1,000 property allowance) x 24%
+    property_income_tax: 960
+
+- name: 2027-28 property basic rate is 24% in Wales
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 20_000
+    property_rental_income: 5_000
+    property_income: 5_000
+    region: WALES
+  output:
+    property_income_tax: 960
+
+- name: 2027-28 property basic rate is 24% in Northern Ireland
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 20_000
+    property_rental_income: 5_000
+    property_income: 5_000
+    region: NORTHERN_IRELAND
+  output:
+    property_income_tax: 960
+
+- name: 2027-28 property higher and additional rates are 44% and 49%
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 200_000
+    property_rental_income: 2_000
+    property_income: 2_000
+  output:
+    # Earnings already fill the additional-rate band: 1,000 x 49%
+    property_income_tax: 490
+
+- name: 2027-28 property income straddling the higher-rate threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 45_000
+    property_income: 10_000
+  output:
+    # Earnings use 32,430 of the 37,700 basic-rate band, leaving 5,270.
+    # 10,000 profit with receipts unknown: no property allowance on top.
+    # 5,270 x 24% + 4,730 x 44% = 1,264.80 + 2,081.20
+    property_income_tax: 3_346
+
+- name: 2027-28 finance cost relief rises with the property basic rate
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 20_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    # 24% x 8,000
+    property_finance_cost_relief: 1_920
+    # (30,000 - 12,570) x 20% + 14,000 x 24% - 1,920
+    income_tax: 4_926

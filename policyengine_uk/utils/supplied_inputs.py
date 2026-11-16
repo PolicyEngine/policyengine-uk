@@ -7,53 +7,141 @@ inputs. A holder's known periods include both. policyengine-core records each
 (variable, branch, period) that ``set_input`` stores in
 ``Simulation._user_input_keys``. From 3.32.27 (policyengine-core#561), core
 forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
-clone gets its own copy of the record. The helpers also require a stored
-value, so missing arrays do not count as supplied inputs.
+clone gets its own copy of the record.
 
-``build_from_situation`` installs fresh populations, and so fresh holders,
-through ``Simulation.build_from_populations``, which keeps the record
+The record can still outlive the value it names. A value cached over an input
+takes that storage tier (memory or disk) off the holder's record of where the
+input is (``Holder._user_input_storage``), but leaves the entry in
+``_user_input_keys``. So every helper here reads a supplied value only if it is
+still stored, and only from a tier in which ``Holder._stores_user_input``
+finds the input: one that the holder records the input in and that holds a
+value the engine did not calculate (see ``stored_supplied_value``). A missing
+value, or one carried over, calculated or cached into the same tier, is not
+supplied; an input stored on disk under a value cached in memory still is.
+
+``Simulation.build_from_populations`` installs new populations, and so new
+holders, but core keeps the record of the values they replace
 (policyengine-core#605). The engine could then carry an earlier value into a
 period whose input the rebuild dropped, and the stale record would pass it off
-as supplied. So ``Simulation.calculate`` forgets the records of a variable in
-``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
-refill it, and the helpers only answer for those variables.
-``Simulation.delete_arrays`` forgets such records too, for any variable it
-deletes.
+as supplied. So ``Simulation.build_from_populations`` keeps only the records of
+values the new holders store. It copies populations from another simulation,
+with that simulation's records of the inputs they hold, rather than share them
+(``copy_other_populations``, ``keep_population_records``). ``Simulation.calculate``
+forgets the records of a variable in ``SUPPLIED_INPUT_VARIABLES`` whose stored
+value is gone before the engine can refill it, and the helpers only answer for
+those variables. ``Simulation.delete_arrays`` forgets such records too, for any
+variable it deletes.
+
+Stored draws ask a narrower question: not whether an input survives, but
+whether a calculation reads it. ``_counted_input`` answers it for
+``policyengine_uk.utils.stored_draws``. For a period, the engine reads the
+first branch, of this one and those it was made from, that stores a value,
+and in that branch memory before disk (``Holder._branch_storing``,
+``Holder._get_array_from_storage``). So ``_counted_input`` counts a recorded
+input only on that branch, and only while the tier the engine reads there
+holds it (``_engine_read_storage``). A child branch's value over a parent's
+input, or a value cached in memory over an input on disk, leaves the input
+supplied (``supplied_input`` returns it) but unread, and ``_counted_input``
+does not count it. For a variable that is not neutralised, an input
+``_counted_input`` counts is the value ``Holder.get_array`` reads, and
+``supplied_input`` returns it too.
 
 A scenario that stores a value the model calculated (``set_model_value``)
 records it as the model's, and the helpers do not return it. The record of
 such a value lasts only while it is the value stored: ``Simulation`` forgets
 it when ``set_input`` stores a value for its period, whatever the value (an
 input set for a longer or shorter period that stores nothing there leaves
-it), when ``delete_arrays`` removes it, and when the populations are
-rebuilt, and a clone or branch gets its own copy of the record.
+it), when ``delete_arrays`` removes it, and when a rebuild installs
+populations that do not hold it, and a clone or branch gets its own copy of
+the record.
+
+``supplied_input_arrays`` answers for every variable. It includes values
+``set_model_value`` stored, which ``is_model_value`` tells apart.
 """
 
-from typing import List, Optional
+from functools import cache
+from typing import List, Optional, Tuple
 
 import numpy as np
 from policyengine_core import periods
+from policyengine_core.holders.helpers import _is_input as _stored_as_input_in
+from policyengine_core.holders.helpers import get_stored_input
 from policyengine_core.periods import Period
+from policyengine_core.simulations.simulation import _latest_input_key
 
 
 # Variables that formulas ask about through the helpers below.
 SUPPLIED_INPUT_VARIABLES = frozenset(
     {
         "adjusted_net_income",
+        "benefit_cap_welfare_benefits",
+        "carers_allowance",
+        "carers_allowance_pre_couple_limit",
+        "carers_allowance_pre_overlap",
+        "carer_support_payment",
+        "carer_support_payment_pre_overlap",
+        "is_entitled_to_carer_benefit",
+        "receives_carer_benefit",
+        "receives_carers_allowance",
+        "receives_carer_support_payment",
+        "self_employment_income",
         "bus_fare_spending",
         "bus_in_london_trips",
+        "current_education",
+        "early_years_term_share_before_school",
+        "electricity_consumption_kwh",
+        "extended_childcare_entitlement_term_share",
+        "extended_childcare_entitlement_total_per_child",
+        "gas_consumption_kwh",
+        "guarantee_credit",
+        "housing_benefit_applicable_income",
+        "housing_benefit_applicable_income_childcare_element",
+        "housing_benefit_applicable_income_disregard",
+        "housing_benefit_childcare_earnings_limit",
+        "housing_benefit_pre_benefit_cap",
+        "housing_benefit_specified_or_temporary_accommodation_disregard",
+        "housing_benefit_wtc_disregard",
+        "in_HE",
+        "is_pension_credit_eligible",
         "other_local_bus_trips",
+        "pension_credit",
+        "pension_credit_entitlement",
         "pip_dl_category",
         "pip_dl_points",
         "pip_m_category",
         "pip_m_points",
         "local_bus_trips",
         "local_bus_uncapped_single_fare",
+        "miscellaneous_income_trading_allowance_deduction",
+        "monthly_domestic_energy_consumption",
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
+        "ni_epg_full_rate_applies",
+        "savings_credit",
+        "tenure_type",
+        "targeted_childcare_entitlement",
+        "trading_allowance_deduction",
         "trading_loss",
         "uc_carer_element",
         "uc_LCWRA_element",
+        "universal_credit",
+        "universal_childcare_entitlement",
+        # Stored inputs the dataset build assigns. Their readers ask whether a
+        # dataset supplied them before they read them.
+        "pip_phase_in_draw",
+        "uc_new_claimant_health_element_draw",
+        "would_claim_student_loan",
+    }
+)
+
+# Stored inputs only a dataset or a user supplies: set_model_value refuses
+# them, so the model never stores its own value where the engine would read
+# one of these.
+REQUIRED_STORED_INPUTS = frozenset(
+    {
+        "pip_phase_in_draw",
+        "uc_new_claimant_health_element_draw",
+        "would_claim_student_loan",
     }
 )
 
@@ -98,9 +186,56 @@ def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
     )
 
 
+def _engine_read_storage(holder, period: Period, branch_name: str):
+    """The storage tier (memory or disk) the engine reads for ``period`` on
+    ``branch_name``, if it holds the input recorded there; otherwise None.
+
+    The engine reads memory before disk. That tier must hold a value the
+    engine did not calculate, the simulation must record the input
+    (``Simulation._user_input_keys``), and the holder's record of where the
+    input went (``Holder._user_input_storage``) must list the tier, as
+    ``policyengine_core.holders.helpers._is_input`` decides. A slot restored
+    with no such record uses its tier's mark instead. Unlike
+    ``_supplied_value_storage``, an input on disk under a value cached in
+    memory does not count: the engine reads the cache.
+    """
+    for storage_name, storage in (
+        ("memory", holder._memory_storage),
+        ("disk", holder._disk_storage),
+    ):
+        if storage is not None and storage.has(period, branch_name):
+            if _stored_as_input_in(holder, period, branch_name, storage_name):
+                return storage
+            return None
+    return None
+
+
+def _counted_input(simulation, holder, key) -> Optional[np.ndarray]:
+    """The value of the recorded input ``key`` if the engine reads it for its
+    period on this simulation's branch, and it is not the model's own value
+    (``set_model_value``); otherwise None.
+
+    ``stored_draws`` names a draw's source with this, so it counts only the
+    input a calculation reads (see the module docstring). ``supplied_input``
+    and the other general helpers count every recorded input that survives.
+    """
+    name, branch_name, period = key
+    if holder._branch_storing(period, simulation.branch_name) != branch_name:
+        return None
+    storage = _engine_read_storage(holder, period, branch_name)
+    if storage is None:
+        return None
+    value = storage.get(period, branch_name)
+    if value is None or _is_model_value(simulation, key, value):
+        return None
+    return value
+
+
 def supplied_input_periods(population, variable_name: str) -> List[Period]:
     """Periods for which ``variable_name`` was supplied as an input, on this
-    branch or one it was made from, earliest first."""
+    branch or one it was made from, and the supplied value is still stored,
+    earliest first. A period whose input a value carried over, calculated or
+    cached in its place has replaced is left out."""
     _check_registered(variable_name)
     simulation = population.simulation
     branch_names = set(_visible_branch_names(simulation))
@@ -112,24 +247,140 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             for name, branch_name, period in input_keys
             if name == variable_name
             and branch_name in branch_names
-            and holder._get_array_from_storage(period, branch_name) is not None
-            and not _is_model_value(
-                simulation,
-                (name, branch_name, period),
-                holder._get_array_from_storage(period, branch_name),
+            # Checked without reading the value, which may be on disk, unless
+            # the model stored a value for the period (set_model_value).
+            and _supplied_without_reading(
+                simulation, holder, (name, branch_name, period)
             )
         },
         key=lambda period: period.start,
     )
 
 
+def latest_supplied_input_period(
+    population, variable_name: str, before: Period
+) -> Optional[Period]:
+    """The latest period starting before ``before`` for which
+    ``variable_name`` was supplied as an input (see
+    ``supplied_input_periods``), or None. policyengine-core's carry-over
+    order picks the latest (``_latest_input_key``): a period of the
+    variable's own unit before one of another unit, then the one that starts
+    last, then the one that ends last, so two periods that start on the same
+    day never leave the choice to the order they were stored in."""
+    definition_period = population.simulation.tax_benefit_system.get_variable(
+        variable_name
+    ).definition_period
+    earlier = [
+        period
+        for period in supplied_input_periods(population, variable_name)
+        if period.start < before.start
+    ]
+    return max(
+        earlier,
+        key=lambda period: _latest_input_key(period, definition_period),
+        default=None,
+    )
+
+
+def supplied_by(population, variable_name: str, period: Period) -> bool:
+    """Whether ``variable_name`` was supplied as an input for ``period`` or an
+    earlier period, so that the value read for ``period`` is supplied data
+    (carried forward from the latest earlier input if need be), not a
+    default."""
+    return any(
+        supplied_period.start <= period.start
+        for supplied_period in supplied_input_periods(population, variable_name)
+    )
+
+
+def stored_as_input(population, variable_name: str, period: Period) -> bool:
+    """Whether the value stored for ``variable_name`` and ``period``, on this
+    branch or one it was made from, was set as an input: supplied, or the
+    model's own (``set_model_value``). A value the engine carried over from
+    an earlier period, or cached after a calculation, is not.
+
+    The holder answers from the input record of the simulation bound to it,
+    which also tells a tier's input from a cache in the other tier.
+    ``Simulation.build_from_populations`` copies holders from another
+    simulation into this one with their records (``copy_other_populations``),
+    so a value the other simulation calculated stays calculated, and one
+    supplied there stays supplied, in this simulation and its clones and
+    branches."""
+    _check_registered(variable_name)
+    holder = population.get_holder(variable_name)
+    return any(
+        holder._is_input(period, branch_name)
+        for branch_name in _visible_branch_names(population.simulation)
+    )
+
+
+# Variable attributes that describe a variable without changing what Core
+# calculates for it.
+DESCRIPTIVE_ATTRIBUTES = frozenset(
+    {
+        "_explicit_attribute_names",
+        "baseline_variable",
+        "category",
+        "cerfa_field",
+        "documentation",
+        "hidden_input",
+        "index_in_module",
+        "label",
+        "metadata",
+        "module_name",
+        "reference",
+        "unit",
+    }
+)
+
+
+def calculation_definition(variable, period: Period) -> dict:
+    """Every attribute Core calculates ``variable`` from for ``period``: all
+    but the descriptive ones, with the formula for the period, by its code,
+    in place of the formulas, and the entity by its key."""
+    definition = {
+        name: value
+        for name, value in vars(variable).items()
+        if name not in DESCRIPTIVE_ATTRIBUTES | {"entity", "formulas"}
+    }
+    formula = variable.get_formula(period)
+    definition["formula"] = None if formula is None else formula.__code__
+    definition["entity"] = variable.entity.key
+    return definition
+
+
+@cache
+def _model_variable(variable_class):
+    return variable_class()
+
+
+def replaces_definition(population, variable_class, period: Period) -> bool:
+    """Whether the simulation can give the variable that ``variable_class``
+    defines a value for ``period`` other than the one that definition
+    calculates. A reform can change anything Core calculates it from:
+    neutralize it, give it another formula for the period or none, or change
+    its default, its defined_for, what it sums or its period. A caller can
+    also set an input for the period (``stored_as_input``), as a scenario
+    does with its own value (``set_model_value``). A cached formula result is
+    not an input, even in populations taken from another simulation or in
+    their clones and branches."""
+    name = variable_class.__name__
+    variable = population.simulation.tax_benefit_system.get_variable(name)
+    if calculation_definition(variable, period) != calculation_definition(
+        _model_variable(variable_class), period
+    ):
+        return True
+    return stored_as_input(population, name, period)
+
+
 def supplied_input(
     population, variable_name: str, period: Period
 ) -> Optional[np.ndarray]:
     """The value of ``variable_name`` for ``period`` if it was supplied as an
-    input, on this branch or the nearest one it was made from; otherwise
-    None. A value the engine carried over from an earlier period, or cached
-    after a calculation, is not an input."""
+    input, on this branch or the nearest one it was made from, and is still
+    stored; otherwise None. A value the engine carried over from an earlier
+    period, or cached after a calculation, is not an input, including one
+    cached over the input."""
     _check_registered(variable_name)
     simulation = population.simulation
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
@@ -137,10 +388,12 @@ def supplied_input(
     for branch_name in _visible_branch_names(simulation):
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
-            # to other branches' values, including cached calculations.
-            # A record can outlive its stored array (see above); a missing
-            # stored array must be ignored even if its key remains.
-            value = holder._get_array_from_storage(period, branch_name)
+            # to other branches' values, including cached calculations, and
+            # reads memory before disk whatever each holds. A record can
+            # outlive its input (see above); then look on the branch this one
+            # was made from, as policyengine-core's
+            # Simulation._get_recorded_input_array does.
+            value = stored_supplied_value(holder, period, branch_name)
             if value is not None:
                 # A value the model stored itself (set_model_value) is not
                 # supplied, though the engine keeps it like an input.
@@ -159,10 +412,82 @@ def supplied_input(
     return None
 
 
+def supplied_input_arrays(simulation) -> List[Tuple[str, Period, np.ndarray]]:
+    """Every value ``simulation`` was given as an input and still stores, on
+    its own branch, with its variable and the period it is stored for.
+
+    Ordered by variable and period, so that the same simulation always gives
+    the same list.
+    """
+    input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    arrays = []
+    for variable_name, branch_name, period in input_keys:
+        if branch_name != simulation.branch_name:
+            continue
+        value = stored_supplied_value(
+            simulation.get_holder(variable_name), period, branch_name
+        )
+        if value is not None:
+            arrays.append((variable_name, period, value))
+    return sorted(arrays, key=lambda item: (item[0], item[1].start, str(item[1])))
+
+
+def stored_supplied_value(holder, period: Period, branch_name: str):
+    """The supplied value ``holder`` still stores for ``period``, or None.
+
+    A record can outlive its stored value (see above), and a value calculated
+    later can take its place in one tier while the input survives in the
+    other. So read only a tier in which ``Holder._stores_user_input`` finds
+    the input: one that the holder records the input in (either tier when it
+    records none) and that holds a value it did not calculate, memory first.
+    Reading memory before disk regardless could return a value cached over an
+    input stored on disk.
+    """
+    storage = _supplied_value_storage(holder, period, branch_name)
+    return None if storage is None else storage.get(period, branch_name)
+
+
+def _supplied_value_storage(holder, period: Period, branch_name: str):
+    """The storage (memory or disk) from which ``stored_supplied_value``
+    reads, or None if the supplied value is gone."""
+    for location, storage in (
+        ("memory", holder._memory_storage),
+        ("disk", holder._disk_storage),
+    ):
+        if storage is not None and holder._stores_user_input(
+            period, branch_name, location
+        ):
+            return storage
+    return None
+
+
+def _supplied_without_reading(simulation, holder, key) -> bool:
+    """Whether ``supplied_input`` finds a supplied value for ``key`` on its
+    own branch. Reads the value only if the model stored one for the period
+    (``set_model_value``), to tell the two apart."""
+    _, branch_name, period = key
+    storage = _supplied_value_storage(holder, period, branch_name)
+    if storage is None:
+        return False
+    model_values = getattr(simulation, "_model_values", None) or {}
+    if key not in model_values:
+        return True
+    return not _is_model_value(simulation, key, storage.get(period, branch_name))
+
+
 def _is_model_value(simulation, key, value) -> bool:
     model_values = getattr(simulation, "_model_values", None) or {}
     written = model_values.get(key)
     return written is not None and np.array_equal(written, value)
+
+
+def is_model_value(simulation, variable_name: str, period: Period, value) -> bool:
+    """Whether ``value``, stored for ``variable_name`` and ``period`` on this
+    simulation's branch, is the model's own value (``set_model_value``)
+    rather than a supplied one."""
+    return _is_model_value(
+        simulation, (variable_name, simulation.branch_name, period), value
+    )
 
 
 def set_model_value(simulation, variable_name: str, period, value) -> None:
@@ -176,11 +501,21 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
     ``supplied_input_periods`` do not return the stored value while it is
     the one stored here. A later ``Simulation.set_input`` for the period is
     supplied, whatever its value, and so is any value stored after
-    ``delete_arrays`` removes this one or the populations are rebuilt (see
-    ``forget_replaced_model_values``, ``drop_missing_model_values`` and
-    ``forget_model_values``). If the value was supplied before (a scenario
-    adjusting a user's entry), the new value stays supplied."""
+    ``delete_arrays`` removes this one or a rebuild installs populations that
+    do not hold it (see ``forget_replaced_model_values``,
+    ``drop_missing_model_values`` and ``keep_population_records``). If the
+    value was supplied before (a scenario adjusting a user's entry), the new
+    value stays supplied.
+
+    A variable in ``REQUIRED_STORED_INPUTS`` holds only what a dataset or a
+    user supplies, so this refuses it."""
     _check_registered(variable_name)
+    if variable_name in REQUIRED_STORED_INPUTS:
+        raise ValueError(
+            f"{variable_name} holds only values a dataset or a user supplies, "
+            "so set_model_value refuses it. Store a supplied value with "
+            "Simulation.set_input."
+        )
     period = periods.period(period)
     population = simulation.get_variable_population(variable_name)
     already_supplied = supplied_input(population, variable_name, period) is not None
@@ -276,10 +611,157 @@ def drop_missing_model_values(simulation, variable_name: str) -> None:
         del model_values[key]
 
 
-def forget_model_values(simulation) -> None:
-    """Forget every model value: rebuilt populations hold none of them."""
-    if getattr(simulation, "_model_values", None):
-        simulation._model_values = {}
+def _made_elsewhere(simulation, owner) -> bool:
+    return owner is not None and owner is not simulation
+
+
+def _records_of(holder):
+    """What the simulation bound to ``holder`` records of the values it holds:
+    the input keys whose input survives in either storage tier, the model
+    values (``set_model_value``) still stored, and whether that simulation
+    keeps no input record (core's legacy mode, which no ``Simulation``
+    constructor leaves, where every stored value counts as an input)."""
+    name = holder.variable.name
+    source = holder.simulation
+    source_keys = getattr(source, "_user_input_keys", None)
+    if source_keys is None:
+        keys = {
+            (name, branch_name, holder._storage_period(period))
+            for branch_name, period in holder.get_known_branch_periods()
+        }
+        return keys, {}, True
+    # Ask each tier: a cache in memory can hide an input on disk.
+    keys = {
+        key
+        for key in source_keys
+        if key[0] == name
+        and any(
+            _stored_as_input_in(holder, key[2], key[1], tier)
+            for tier in ("memory", "disk")
+        )
+    }
+    # Compare each model value with the stored input, not with what storage
+    # returns first, which can be that cache.
+    source_model_values = getattr(source, "_model_values", None) or {}
+    model_values = {
+        key: value
+        for key, value in source_model_values.items()
+        if key[0] == name
+        and _is_model_value(source, key, get_stored_input(holder, key[2], key[1]))
+    }
+    return keys, model_values, False
+
+
+def copy_other_populations(simulation, populations):
+    """Return the populations ``simulation`` builds from: ``populations``,
+    with a copy bound to ``simulation`` of each population and holder another
+    simulation made. Also return, for each copied holder, what that
+    simulation recorded of the inputs and model values it holds.
+
+    Core installs the populations it is given and points each at the new
+    simulation, but leaves each holder bound to the simulation that made it,
+    and keeps the new simulation's record of the values they replace
+    (policyengine-core#605). Two live simulations would then share holders,
+    and the holder's records and storage settings would be those of one of
+    them: an input either stores goes into that one's record, and the other
+    neither records it nor recalculates what depends on it. So each
+    simulation gets its own copy, as ``Simulation.clone`` makes, and the
+    other simulation keeps its populations, values and records. A copy holds
+    what the original held when the copy was made, and inputs either stores
+    later do not reach the other. The copy shares each in-memory array with
+    the original until it first reads it (``share_arrays``, see core's
+    ``InMemoryStorage.clone``), so writing in place into the original's
+    array before then changes what the copy reads. Populations no simulation
+    has taken yet (from ``instantiate_entities``) are installed as they
+    are."""
+    person_key = simulation.tax_benefit_system.person_entity.key
+    copy_all = _made_elsewhere(simulation, populations[person_key].simulation)
+    copied = {
+        key
+        for key, population in populations.items()
+        if copy_all or _made_elsewhere(simulation, population.simulation)
+    }
+    # Read each record while the holder is bound to the simulation that
+    # made it, before copying.
+    records = {
+        (key, name): _records_of(holder)
+        for key, population in populations.items()
+        for name, holder in population._holders.items()
+        if key in copied or _made_elsewhere(simulation, holder.simulation)
+    }
+    result = dict(populations)
+    if person_key in copied:
+        result[person_key] = populations[person_key].clone(
+            simulation, share_arrays=True
+        )
+    for key in copied - {person_key}:
+        result[key] = populations[key].clone(
+            simulation, result[person_key], share_arrays=True
+        )
+    adopted = []
+    for (key, name), record in records.items():
+        population = result[key]
+        holder = population._holders[name]
+        if key not in copied:
+            holder = holder.clone(population, share_arrays=True)
+            population._holders[name] = holder
+        holder.simulation = simulation
+        adopted.append((holder, *record))
+    return result, adopted
+
+
+def _match_storage(holder, simulation) -> None:
+    """Give a copied holder the storage settings ``simulation`` gives the
+    holders it makes (``Holder.__init__``), keeping what it stores: a holder
+    copied from a simulation with another ``memory_config`` would otherwise
+    read this simulation's missing one when it stores a value."""
+    config = getattr(simulation, "memory_config", None)
+    name = holder.variable.name
+    on_disk = bool(config) and name not in config.priority_variables
+    if on_disk and holder._disk_storage is None:
+        holder._disk_storage = holder.create_disk_storage()
+    holder._on_disk_storable = on_disk
+    holder._do_not_store = bool(config) and name in config.variables_to_drop
+
+
+def keep_population_records(simulation, adopted) -> None:
+    """Keep ``simulation``'s records of inputs and model values for the values
+    its populations hold, and only those, after ``copy_other_populations``.
+
+    A copied holder brings each input and model value the simulation that
+    made it recorded and it still stores, and drops every other value: that
+    simulation may have calculated or carried it over before an input
+    changed, or under another tax-benefit system, so this simulation
+    calculates it again. A holder this simulation made keeps this
+    simulation's records. Records of values the new populations do not hold
+    go, as do the values. A holder copied from a simulation with no input
+    record (core's legacy mode, where every stored value counts as an input)
+    keeps every value it stores, with a record of each."""
+    adopted_ids = {id(holder) for holder, *_ in adopted}
+    own_names = {
+        name
+        for population in simulation.populations.values()
+        for name, holder in population._holders.items()
+        if holder.simulation is simulation and id(holder) not in adopted_ids
+    }
+    input_keys = getattr(simulation, "_user_input_keys", None)
+    own_model_values = getattr(simulation, "_model_values", None) or {}
+    kept_keys = {key for key in input_keys or () if key[0] in own_names}
+    model_values = {
+        key: value for key, value in own_model_values.items() if key[0] in own_names
+    }
+    for holder, keys, values, legacy in adopted:
+        kept_keys.update(keys)
+        model_values.update(values)
+    # Install new containers rather than edit the old ones, so that nothing
+    # still holding an old one sees the change.
+    if input_keys is not None:
+        simulation._user_input_keys = kept_keys
+    simulation._model_values = model_values
+    for holder, keys, values, legacy in adopted:
+        if not legacy:
+            holder._drop_computed()
+        _match_storage(holder, simulation)
 
 
 def copy_model_values(simulation, clone) -> None:

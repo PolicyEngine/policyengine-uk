@@ -1,0 +1,441 @@
+# Carer benefits for caring for a severely disabled person.
+# SSCBA 1992 s.70(1): "A person shall be entitled to a carer’s allowance for
+# any day on which he is engaged in caring for a severely disabled person".
+# s.70(2) defines a "severely disabled person" by the benefit payable for them:
+# attendance allowance, the disability living allowance care component at the
+# highest or middle rate, the personal independence payment daily living
+# component, armed forces independence payment, the Scottish disability
+# payments it lists, or a payment that SI 1976/409 reg 3 prescribes.
+# SSI 2023/302 reg 5(1): "Carer Support Payment may only be paid to an
+# individual in respect of a period during which that individual provides
+# regular and substantial care to a person to whom a qualifying disability
+# benefit is normally payable". DWP includes the Universal Credit carer
+# element (UC Regs 2013 reg 29) for a claimant with regular and substantial
+# caring responsibilities for a severely disabled person, which a claimant
+# has if "they satisfy the conditions for entitlement to a carer’s
+# allowance", or would but for the earnings limit or residence in Scotland
+# (reg 30(1)(a)), whether or not they claim the allowance (reg 30(2)).
+#
+# cares_for_severely_disabled_person records whether the person cared for
+# gets such a benefit. It defaults to true. False removes the route through
+# caring hours; a reported award (carers_allowance_reported) still counts.
+#
+# The model reads these parameters at 30 April of the simulation year and
+# counts 52 weeks or 12 months in a year. For 2026:
+# - Carer's Allowance (gov.dwp.carers_allowance.rate, from 2026-04-01):
+#   86.45 a week, 86.45 * 52 = 4,495.40;
+# - Carer Support Payment (gov.social_security_scotland.carer_support_payment
+#   .rate, from 2026-04-05): 86.45 a week, 86.45 * 52 = 4,495.40;
+# - Scottish Carer Supplement (gov.social_security_scotland
+#   .carer_support_payment.supplement, from 2026-04-05): 11.70 a week,
+#   11.70 * 52 = 608.40;
+# - Universal Credit carer element (gov.dwp.universal_credit.elements.carer
+#   .amount, from 2026-04-01): 209.34 a month, 209.34 * 12 = 2,512.08;
+# - Universal Credit standard allowance for a single claimant aged 25 or over
+#   (gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD, from
+#   2026-04-01): 424.90 a month, 424.90 * 12 = 5,098.80;
+# - Pension Credit carer addition (gov.dwp.pension_credit.guarantee_credit
+#   .carer.addition, from 2026-04-01) and the legacy carer premium
+#   (gov.dwp.carer_premium.single, from 2026-04-01): 48.15 a week each,
+#   48.15 * 52 = 2,503.80.
+# The minimum caring hours are 35 a week for both benefits
+# (gov.dwp.carers_allowance.min_hours and
+# gov.social_security_scotland.carer_support_payment.min_hours), so 40 hours
+# meet them.
+
+- name: England carer of a partner with no qualifying disability benefit gets no Carer's Allowance
+  # The carer cares 40 hours a week for their partner, who has no s.70(2)
+  # benefit, so the partner is not a severely disabled person and DWP pays
+  # no allowance (s.70(1)): 0 for both. Without a carer benefit or the hours
+  # route, the carer is not a carer for benefits either.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+    is_carer_for_benefits: [false, false]
+
+- name: England carer with the input left out gets Carer's Allowance on caring hours
+  # The model takes the person cared for to be severely disabled unless an
+  # input says otherwise: 40 hours meet the 35-hour minimum, so the carer gets
+  # the weekly rate all year, 86.45 * 52 = 4,495.40. The partner does not
+  # care: 0.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: ENGLAND
+  output:
+    carers_allowance: [4_495.40, 0]
+    is_entitled_to_carer_benefit: [true, false]
+    is_carer_for_benefits: [true, false]
+
+- name: Scotland carer of a partner with no qualifying disability benefit gets no Carer Support Payment
+  # Social Security Scotland pays Carer Support Payment only for care of a
+  # person to whom a qualifying disability benefit is normally payable (reg
+  # 5(1)), and the partner has none: 0. The model pays the supplement only
+  # with a payable Carer Support Payment: 0. From 2025 Carer Support Payment
+  # replaces Carer's Allowance in Scotland, so Carer's Allowance is 0 too.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: SCOTLAND
+  output:
+    carer_support_payment: [0, 0]
+    scottish_carer_supplement: [0, 0]
+    carers_allowance: [0, 0]
+
+- name: Scotland carer with the input left out gets Carer Support Payment and the supplement
+  # 40 hours meet the 35-hour minimum: 86.45 * 52 = 4,495.40 of Carer
+  # Support Payment and 11.70 * 52 = 608.40 of supplement.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: SCOTLAND
+  output:
+    carer_support_payment: [4_495.40, 0]
+    scottish_carer_supplement: [608.40, 0]
+    carers_allowance: [0, 0]
+
+- name: Universal Credit claimant caring for someone with no qualifying disability benefit has no carer element
+  # The claimant would not claim Carer's Allowance, so no allowance enters
+  # the award as income, and the carer element needs no claim (reg 30(2)).
+  # The person cared for is not severely disabled, so the claimant fails the
+  # Carer's Allowance conditions in reg 30(1)(a): no carer element. The award
+  # is the standard allowance alone, 424.90 * 12 = 5,098.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: false
+        cares_for_severely_disabled_person: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    uc_carer_element: 0
+    universal_credit: 5_098.80
+
+- name: Universal Credit claimant with the input left out has the carer element
+  # The same claimant, with the person cared for taken to be severely
+  # disabled: the carer element, 209.34 * 12 = 2,512.08, and an award of
+  # 5,098.80 + 2,512.08 = 7,610.88.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    uc_carer_element: 2_512.08
+    universal_credit: 7_610.88
+
+- name: A reported Carer's Allowance award counts whatever the input says
+  # The Department for Work and Pensions pays a reported award, so the input
+  # false leaves it: the carer gets the weekly rate all year, 86.45 * 52 =
+  # 4,495.40, not the reported amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+        carers_allowance_reported: 4_000
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: ENGLAND
+  output:
+    carers_allowance: [4_495.40, 0]
+    is_entitled_to_carer_benefit: [true, false]
+    is_carer_for_benefits: [true, false]
+
+- name: A reported award in Scotland keeps Carer Support Payment whatever the input says
+  # carers_allowance_reported carries a reported Carer Support Payment award
+  # too, which Social Security Scotland pays: 86.45 * 52 = 4,495.40 and the
+  # supplement, 11.70 * 52 = 608.40.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+        carers_allowance_reported: 4_000
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: SCOTLAND
+  output:
+    carer_support_payment: [4_495.40, 0]
+    scottish_carer_supplement: [608.40, 0]
+
+- name: A reported award above the earnings limit keeps the carer element whatever the input says
+  # The claimant reports a Carer's Allowance award but earns 20,000 a year.
+  # Income tax takes 20% (gov.hmrc.income_tax.rates.uk) of 20,000 less the
+  # 12,570 personal allowance, 0.2 * 7,430 = 1,486, and employee National
+  # Insurance takes 8% (gov.hmrc.national_insurance.class_1.rates.employee
+  # .main) above the primary threshold of 241.73 a week (12,569.96 a year),
+  # 0.08 * 7,430.04 = 594.40. Net earnings come to (20,000 - 1,486 - 594.40)
+  # / 52 = 344.61 a week, above the 204 earnings limit
+  # (gov.dwp.carers_allowance.earnings_limit, from 2026-04-06), so the
+  # claimant is gainfully employed and DWP pays no allowance (s.70(1)(b)):
+  # 0. The reported award still counts as caring for a severely disabled
+  # person whatever the input says, and a claimant over the earnings limit
+  # still has the caring responsibilities the carer element needs (reg
+  # 30(1)(a)(i)), so the claimant is a carer for benefits and the element is
+  # 209.34 * 12 = 2,512.08.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 40
+        employment_income: 20_000
+        cares_for_severely_disabled_person: false
+        carers_allowance_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    uc_carer_element: 2_512.08
+
+- name: Couple who both care give the allowance only to the partner who cares for a severely disabled person
+  # Both care 40 hours a week. The elder, the benefit unit head, cares for
+  # someone with no qualifying disability benefit, so only the younger meets
+  # the caring condition and has the allowance, 86.45 * 52 = 4,495.40. With
+  # the input left out the elder would have the couple's one award. With one
+  # partner entitled, the couple restriction has no choice to make, whatever
+  # partners_care_for_same_severely_disabled_person says. One carer premium:
+  # 48.15 * 52 = 2,503.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 40
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+      younger:
+        age: 38
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [elder, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [elder, younger]
+        country: ENGLAND
+  output:
+    is_claimant_or_partner: [true, true]
+    carers_allowance_pre_couple_limit: [0, 4_495.40]
+    carers_allowance: [0, 4_495.40]
+    is_entitled_to_carer_benefit: [false, true]
+    carer_premium: 2_503.80
+
+- name: A supplied entitlement whose caring hours go to someone not severely disabled counts as a second award
+  # The elder has a reported award. The younger cares 40 hours a week for
+  # someone with no qualifying disability benefit, and an input supplies the
+  # younger's entitlement to a carer benefit. The hours can't explain that
+  # entitlement, so it counts as an award: two awards mean two people cared
+  # for, and the default is false. Each partner then has the carer premium,
+  # 2 * 48.15 * 52 = 5,007.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 40
+        care_hours: 40
+        carers_allowance_reported: 4_000
+        is_entitled_to_carer_benefit: true
+      younger:
+        age: 38
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [elder, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [elder, younger]
+        country: ENGLAND
+  output:
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 5_007.60
+
+- name: The same couple with the input left out has one carer premium
+  # The model's same-person default reads an entitlement that caring hours
+  # explain as no award, since hours can't show whom a carer cares for. Now
+  # the younger's 40 hours, for someone the model takes to be severely
+  # disabled, explain the younger's entitlement. One award leaves the
+  # default true, and caring for the same person caps the premium at one
+  # amount: 48.15 * 52 = 2,503.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      elder:
+        age: 40
+        care_hours: 40
+        carers_allowance_reported: 4_000
+        is_entitled_to_carer_benefit: true
+      younger:
+        age: 38
+        care_hours: 40
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [elder, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [elder, younger]
+        country: ENGLAND
+  output:
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 2_503.80
+
+- name: Pension-age carer of someone with no qualifying disability benefit gets no Pension Credit carer addition
+  # A claimant aged 70 cares 40 hours a week for someone outside the
+  # household who has no qualifying disability benefit. With no entitlement
+  # to Carer's Allowance, the claimant has neither the Pension Credit carer
+  # addition nor the legacy carer premium: 0.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 40
+        cares_for_severely_disabled_person: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    carer_minimum_guarantee_addition: 0
+    carer_premium: 0
+
+- name: Pension-age carer with the input left out gets the Pension Credit carer addition
+  # The same claimant, entitled to Carer's Allowance on caring hours: 86.45
+  # * 52 = 4,495.40 of allowance, and the carer addition and the carer
+  # premium, 48.15 * 52 = 2,503.80 each.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 4_495.40
+    is_entitled_to_carer_benefit: true
+    carer_minimum_guarantee_addition: 2_503.80
+    carer_premium: 2_503.80

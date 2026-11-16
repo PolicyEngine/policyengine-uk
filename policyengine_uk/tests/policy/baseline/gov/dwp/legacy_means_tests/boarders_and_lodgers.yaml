@@ -1,0 +1,794 @@
+# Rent from boarders and lodgers living in the household, in the legacy means
+# tests (legacy_benefits_home_letting_income, counted by Income Support,
+# Housing Benefit, Pension Credit and council tax reduction).
+#
+# Board and lodging, per boarder: the first £20 a week is disregarded and half
+# the excess (IS Sch 9 para 20; HB Sch 5 para 42; HB (SPC) Sch 5 para 9; SPC Sch
+# IV para 8; CTR (England) Sch 5 para 9). Lodging only: £20 a week is
+# disregarded. Claimants over the qualifying age for State Pension Credit
+# disregard it from "the amount paid by that person" (HB (SPC) Sch 5 para 10;
+# SPC Sch IV para 9); working-age claimants from the aggregate paid by "that
+# person or a member of his family" (HB Sch 5 para 22; IS Sch 9 para 19), £4
+# before 7 April 2008. Universal Credit does not count this rent (UC Regs 2013
+# reg 66(1); ADM H5112).
+
+- name: Pension-age householder, one lodger paying £100 a week
+  # (100 - 20) x 52 = 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+
+- name: One boarder paying £100 a week
+  # 0.5 x (100 - 20) x 52 = 2,080.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, boarder]
+  output:
+    legacy_benefits_home_letting_income: [2_080, 0]
+
+- name: A boarder paying £15 a week is disregarded in full
+  # 780 / 52 = 15 < 20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 780
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, boarder]
+  output:
+    legacy_benefits_home_letting_income: [0, 0]
+
+- name: Pension-age householder, a lodger couple each paying £60 a week
+  # Per person: (60 - 20) + (60 - 20) = 80 a week; x 52 = 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      lodger_1:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+      lodger_2:
+        age: 32
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_couple:
+        members: [lodger_1, lodger_2]
+    households:
+      household:
+        members: [householder, lodger_1, lodger_2]
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+
+- name: Working-age householder, the same lodger couple
+  # Aggregate for the family: 120 - 20 = 100 a week; x 52 = 5,200.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger_1:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+      lodger_2:
+        age: 32
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_couple:
+        members: [lodger_1, lodger_2]
+    households:
+      household:
+        members: [householder, lodger_1, lodger_2]
+  output:
+    legacy_benefits_home_letting_income: [5_200, 0]
+
+- name: A boarder and a lodger, each paying £100 a week
+  # Boarder 0.5 x 80 = 40; lodger 80; 120 a week; x 52 = 6,240.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+      lodger:
+        age: 40
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, boarder, lodger]
+  output:
+    legacy_benefits_home_letting_income: [6_240, 0, 0]
+
+- name: Working-age lodger disregard was £4 before April 2008
+  # 2007-08: lodger (100 - 4) x 52 = 4,992; a boarder at £100 would give
+  # 0.5 x 80 x 52 = 2,080, here alongside: total 7,072.
+  period: 2007
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+      boarder:
+        age: 31
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, lodger, boarder]
+  output:
+    legacy_benefits_home_letting_income: [7_072, 0, 0]
+
+- name: Universal Credit does not count rent from a lodger
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 35
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    uc_unearned_income: [0, 0]
+
+- name: Rent between members of a household is not household income
+  # The lodger's earnings are the household's only market income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 35
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        employment_income: 20_000
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    household_market_income: 20_000
+
+- name: Tax on counted rent from a lodger is deducted in the legacy means tests
+  # 2026-27. Private pension 15,000: (15,000 - 12,570) x 20% = 486. Lodger rent
+  # 10,400 is rent-a-room receipts; 10,400 - 7,500 = 2,900 taxable, x 20% =
+  # 580. Income tax 1,066, all of it on income the means tests count (IS Sch 9
+  # para 1; HB Sch 5 para 1; SPC reg 17), so all of it is deducted. Counted
+  # rent: (200 - 20) x 52 = 9,360.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        private_pension_income: 15_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_400
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    income_tax: [1_066, 0]
+    property_income_tax: [580, 0]
+    rent_a_room_income_tax: [580, 0]
+    legacy_means_test_income_tax: [1_066, 0]
+    legacy_benefits_home_letting_income: [9_360, 0]
+
+- name: Tax on counted rent-a-room income shares a tax reduction pro rata
+  # 2026-27. Step 4 tax: private pension (36,000 - 12,570) x 20% = 4,686;
+  # rent-a-room income (10,400 - 7,500) x 20% = 580; savings interest
+  # (3,000 - 1,000 personal savings allowance) x 20% = 400, with no starting
+  # rate for savings because non-savings income exceeds the allowances by more
+  # than £5,000; total 5,666. The married couple's allowance reduction
+  # (11,000 x 10% = 1,100, set as an input) leaves income tax of 4,566
+  # before the winter fuel payment charge, which the means tests never deduct.
+  # The tests count the pension and the rent but treat interest as capital: the
+  # capital tax of 400 keeps its share of the reduction,
+  # 1,100 x 400 / 5,666 = 77.66, so 322.34 is not deducted, and the tax
+  # deducted is 4,566 - 322.34 = 4,243.66.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        private_pension_income: 36_000
+        savings_interest_income: 3_000
+        married_couples_allowance: 11_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_400
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    rent_a_room_income_tax: [580, 0]
+    savings_income_tax: [400, 0]
+    capped_mcad: [1_100, 0]
+    income_tax_before_winter_fuel_payment_charge: [4_566, 0]
+    legacy_means_test_income_tax: [4_243.66, 0]
+
+- name: UC does not deduct the tax on rent it does not count
+  # 2026-27, England. Earnings 20,000: tax (20,000 - 12,570) x 20% = 1,486,
+  # NI 7,430 x 8% = 594.40. Lodger rent 10,000 gives taxable rent-a-room income
+  # 2,500 and tax 500, so income tax is 1,986. UC counts neither the rent
+  # (reg 66(1)) nor its tax (reg 55(5)(b)). uc_income_tax_on_earnings takes
+  # earnings as the lowest slice, so the taxable rent raises
+  # earned_taxable_income and the other income above earnings alike and the
+  # tax on earnings stays 1,486: earned income 20,000 - 1,486 - 594.40 =
+  # 17,919.60, as without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 20_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    income_tax: [1_986, 0]
+    rent_a_room_income_tax_after_reductions: [500, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
+    uc_earned_income: [17_919.60, 0]
+
+- name: Welsh CTR for a UC recipient does not add rent from a lodger
+  # WSI 2013/3029 Sch 6 para 9: with a UC award, income is the UC assessment,
+  # which excludes this rent. Here UC (5,000, set as an input) is the only
+  # income, so CTR applicable income is 5,000, not 5,000 + 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+        universal_credit: 5_000
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: WALES
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+    council_tax_reduction_applicable_income: [5_000, 0]
+
+- name: The finance-cost reduction comes off no more than the property tax on income from capital
+  # 2026-27, England. Private pension 30,000: tax (30,000 - 12,570) x 20% =
+  # 3,486. Property income 2,000 with finance costs 10,000, and a lodger
+  # paying 15,000: taxable rent-a-room income 15,000 - 7,500 = 7,500, so
+  # taxable property income 9,500 and property income tax 1,900, of which
+  # 7,500 / 9,500 x 1,900 = 1,500 falls on the rent-a-room income. The
+  # finance-cost reduction is 20% x min(10,000, 9,500) = 1,900. Counted tax
+  # 3,486 + 1,500 = 4,986; capital tax 1,900 - 1,500 = 400. The reduction
+  # comes off the capital side's 400 only; the other 1,500 is shared in
+  # proportion to the Step 4 tax left (4,986 counted, 0 capital). So the
+  # capital side keeps nil and the tax on counted income is
+  # 4,986 - 1,500 = 3,486, which is the whole income tax. The rent-a-room
+  # tax keeps 1,500 - 1,500 x 1,500 / 4,986 = 1,048.74.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+        private_pension_income: 30_000
+        property_income: 2_000
+        property_finance_costs: 10_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: LONDON
+  output:
+    taxable_property_income: [9_500, 0]
+    property_income_tax: [1_900, 0]
+    rent_a_room_income_tax: [1_500, 0]
+    property_finance_cost_relief: [1_900, 0]
+    income_tax_before_winter_fuel_payment_charge: [3_486, 0]
+    legacy_means_test_income_tax: [3_486, 0]
+    rent_a_room_income_tax_after_reductions: [1_048.74, 0]
+
+- name: Taxable rent-a-room income reaches total income and adjusted net income once
+  # 2026-27, England. Earnings 20,000 and a lodger paying 10,000: taxable
+  # rent-a-room income 2,500. Total income and adjusted net income both take
+  # it through taxable_property_income only: 20,000 + 2,500 = 22,500.
+  # Household post-tax income adds it once through gross_taxable_inputs:
+  # 22,500 less income tax (1,486 + 500 = 1,986) and NI 594.40 = 19,919.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 20_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    taxable_rent_a_room_income: [2_500, 0]
+    taxable_property_income: [2_500, 0]
+    total_income: [22_500, 0]
+    adjusted_net_income: [22_500, 0]
+    gross_taxable_inputs: [22_500, 0]
+    post_tax_income: 19_919.60
+
+- name: CTR on the Universal Credit route with pay deducts the extra tax earnings cause on uncounted rent
+  # 2026-27, England, working age, with a Universal Credit award (set as an
+  # input; Universal Credit itself is nil at this income). Pay 30,000: tax
+  # (30,000 - 12,570) x 20% = 3,486, NI 17,430 x 8% = 1,394.40. A lodger pays
+  # 15,000: taxable rent-a-room income 7,500, taxed at 20%: 1,500. The route
+  # does not count the rent. Without the pay, 7,500 falls inside the 12,570
+  # personal allowance, so the rent bears no tax and nil comes off; the
+  # 1,500 that earnings cause stays deducted. Income: 30,000 - (3,486 +
+  # 1,500) - 1,394.40 = 23,619.60, which is 1,500 below the 25,119.60
+  # without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    rent_a_room_income_tax: [1_500, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [4_986, 0]
+    council_tax_reduction_applicable_income: [23_619.60, 0]
+
+- name: CTR on the Universal Credit route without pay keeps uncounted rent out of income
+  # The same household without the pay. Taxable rent-a-room income 7,500
+  # falls inside the personal allowance, so there is no tax, and the route
+  # counts neither the rent nor any tax on it. Income is the Universal Credit
+  # award alone, the single standard allowance of 424.90 a month: 424.90 x 12
+  # = 5,098.80. The general rules would have added
+  # (15,000 / 52 - 20) x 52 = 13,960.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    legacy_benefits_home_letting_income: [13_960, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    universal_credit: [5_098.80, 0]
+    council_tax_reduction_applicable_income: [5_098.80, 0]
+
+- name: Scottish working-age CTR with pay deducts the extra tax earnings cause on uncounted rent
+  # 2026-27, Scotland, working age, no Universal Credit. Scottish rates above
+  # the 12,570 personal allowance: 19% to 3,967, 20% to 16,956, 21% to
+  # 31,092. Pay 30,000 leaves 17,430 taxable: 3,967 x 19% + 12,989 x 20% +
+  # 474 x 21% = 753.73 + 2,597.80 + 99.54 = 3,451.07. The rent's 7,500
+  # taxable falls at 21%: 1,575. NI 17,430 x 8% = 1,394.40. The scheme does
+  # not list the rent (SSI 2021/249 reg 57(1)). Without the pay the rent
+  # bears no tax, so nil comes off; the deduction keeps the rent's whole
+  # 1,575 at Scottish rates. Income: 30,000 - (3,451.07 + 1,575) - 1,394.40
+  # = 23,579.53, which is 1,575 below the 25,154.53 without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: SCOTLAND
+  output:
+    earned_income_tax: [3_451.07, 0]
+    rent_a_room_income_tax: [1_575, 0]
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [5_026.07, 0]
+    council_tax_reduction_applicable_income: [23_579.53, 0]
+
+- name: Scottish working-age CTR without pay keeps uncounted rent out of income
+  # The same household without the pay: no tax, and the scheme counts
+  # neither the rent nor any tax on it: income nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 15_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: SCOTLAND
+  output:
+    rent_a_room_income_tax_without_earnings: [0, 0]
+    council_tax_reduction_applicable_income: [0, 0]
+
+- name: CTR on the Universal Credit route leaves out the tax uncounted rent bears without earnings
+  # 2026-27, England, working age, with a Universal Credit award (set as an
+  # input). Pay 30,000 and a lodger paying 30,000: taxable rent-a-room income
+  # 30,000 - 7,500 = 22,500. With the pay, taxable income 52,500 - 12,570 =
+  # 39,930: 37,700 x 20% + 2,230 x 40% = 7,540 + 892 = 8,432, of which the
+  # pay alone bears (30,000 - 12,570) x 20% = 3,486 and the rent 4,946.
+  # Without the pay, the rent bears (22,500 - 12,570) x 20% = 1,986, which
+  # the route leaves out of the deducted tax; the other 2,960 is the extra
+  # tax earnings cause on the rent, and stays deducted. NI 17,430 x 8% =
+  # 1,394.40. Income: 30,000 - (8,432 - 1,986) - 1,394.40 = 22,159.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 30_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        council_tax_reduction_universal_credit_award: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    income_tax_before_winter_fuel_payment_charge: [8_432, 0]
+    rent_a_room_income_tax: [4_946, 0]
+    rent_a_room_income_tax_without_earnings: [1_986, 0]
+    legacy_means_test_deducted_income_tax: [8_432, 0]
+    council_tax_reduction_applicable_income: [22_159.60, 0]
+
+# Councils count rent from letting part of the home for the council tax
+# reduction applicant and partner (council_tax_reduction_home_letting_income),
+# under the scheme's own pension-age test (council_tax_reduction_pensioner).
+# Where the household head applies alone, the head is the applicant, so the
+# rent boarders and lodgers pay the head counts in council tax reduction,
+# though the benefit unit's own legacy measure, which follows its claimant and
+# partner, holds none of it.
+
+- name: A household head applying alone counts a lodger couple's rent in council tax reduction
+  # England (Maidstone), 2026-27. The household head (70) has a private
+  # pension of 12,000 and shares a benefit unit with a young couple (16 and
+  # 16, its claimant and partner) and their baby, so she applies alone. An
+  # unrelated lodger couple (40 and 40), in their own benefit unit, each pay
+  # her 3,640 a year (70 a week): 7,280 in all, within the 7,500 rent-a-room
+  # limit, so no tax. She falls under the pension-age scheme, so the council
+  # disregards 20 a week of "the amount paid by that person" (SI 2012/2885
+  # Sch 5 para 10): (70 - 20) x 2 x 52 = 5,200. Income 12,000 + 5,200 = 17,200.
+  # CTR 2,000 - 20% x (17,200 - 12,376) = 2,000 - 964.80 = 1,035.20. The
+  # couple's legacy measure holds none of the rent, which they do not
+  # receive.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: false
+        private_pension_income: 12_000
+      mother:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      father:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      baby:
+        age: 0
+        is_household_head: false
+        is_claimant_or_partner: false
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+      lodger_partner:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+    benunits:
+      family:
+        members: [head, mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, lodger_partner]
+    households:
+      home:
+        members: [head, mother, father, baby, lodger, lodger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [true, false]
+    council_tax_reduction_pensioner: [true, false]
+    rent_from_boarders_and_lodgers: [7_280, 0, 0, 0, 0, 0]
+    legacy_benefits_home_letting_income: [0, 0]
+    council_tax_reduction_home_letting_income: [5_200, 0]
+    council_tax_reduction: 1_035.20
+    benunits:
+      family:
+        council_tax_reduction_applicable_income: 17_200
+
+- name: The same head in her own benefit unit counts the lodger couple's rent in both measures
+  # The control: the head is her own benefit unit's claimant, over State
+  # Pension age, so the legacy measure and council tax reduction both
+  # disregard 20 a week per person: 5,200, and CTR 1,035.20 as above.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+        private_pension_income: 12_000
+      mother:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      father:
+        age: 16
+        is_parent: true
+        is_household_head: false
+        is_claimant_or_partner: true
+      baby:
+        age: 0
+        is_household_head: false
+        is_claimant_or_partner: false
+      lodger:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+      lodger_partner:
+        age: 40
+        is_household_head: false
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_640
+    benunits:
+      head_unit:
+        members: [head]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      couple_unit:
+        members: [mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      lodger_unit:
+        members: [lodger, lodger_partner]
+    households:
+      home:
+        members: [head, mother, father, baby, lodger, lodger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [false, false, false]
+    legacy_benefits_home_letting_income: [5_200, 0, 0]
+    council_tax_reduction_home_letting_income: [5_200, 0, 0]
+    council_tax_reduction: 1_035.20
+    benunits:
+      head_unit:
+        council_tax_reduction_applicable_income: 17_200

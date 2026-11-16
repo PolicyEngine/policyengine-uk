@@ -9,6 +9,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -29,9 +30,13 @@
       claimant:
         age: 40
         esa_income_reported: 1_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -48,9 +53,13 @@
       claimant:
         age: 40
         esa_income_reported: 1_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -68,9 +77,13 @@
       claimant:
         age: 40
         esa_income_reported: 3_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -91,6 +104,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant
@@ -135,6 +149,7 @@
     benunits:
       claimant_benunit:
         members: claimant
+        would_claim_uc: false
       unrelated_benunit:
         members: unrelated_adult
     households:
@@ -158,8 +173,10 @@
     benunits:
       benunit_1:
         members: claimant_1
+        would_claim_uc: false
       benunit_2:
         members: claimant_2
+        would_claim_uc: false
     households:
       household:
         members: [claimant_1, claimant_2]
@@ -182,6 +199,7 @@
       benunit:
         members: [claimant, child]
         would_claim_IS: true
+        would_claim_uc: false
     households:
       household:
         members: [claimant, child]
@@ -189,7 +207,10 @@
   output:
     esa_income: 0
     income_support_eligible: true
-    income_support: 4_786.60  # 92.05 a week (2025-26)
+    # £92.05 x 52 = £4,786.60 (2025-26), less £1 x 52 tariff income.
+    # No earnings: no Schedule 8 earnings disregard. £4,786.60 - £52.
+    income_support_applicable_income: 52
+    income_support: 4_734.60
 
 - name: Income-related ESA capital test disregards private pension wealth
   period: 2026
@@ -202,6 +223,7 @@
     benunits:
       benunit:
         members: claimant
+        would_claim_uc: false
     households:
       household:
         members: claimant

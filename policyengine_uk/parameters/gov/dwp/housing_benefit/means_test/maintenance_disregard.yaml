@@ -1,0 +1,14 @@
+description: Housing Benefit disregards this much of the weekly maintenance paid to the claimant or partner by a spouse, civil partner or former partner, where the family includes a child or young person.
+values:
+  2006-03-06: 15
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing Benefit maintenance disregard
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 5 paragraph 47
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, Schedule 5 paragraph 20
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/20
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, regulation 27(4)(c)(ii)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/27

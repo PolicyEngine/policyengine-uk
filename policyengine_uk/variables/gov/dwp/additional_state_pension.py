@@ -24,7 +24,12 @@ class additional_state_pension(Variable):
                 data_year = period.start.year
         else:
             data_year = period.start.year
-        reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
+        # The age addition is paid by state_pension_age_addition, so split
+        # the reported amount without it.
+        reported = (
+            person("state_pension_reported_excluding_age_addition", data_year)
+            / WEEKS_IN_YEAR
+        )
         # Split by the period's type, as basic_state_pension and
         # new_state_pension do, so the three components add up to the
         # reported amount. Survey ages are held fixed across years, so a

@@ -1,0 +1,211 @@
+# Rent-a-room relief (ITTOIA 2005 Part 7 Chapter 1). Receipts up to the
+# individual's limit are not charged (s. 793). Above it the model assumes the
+# s. 800 election: the limit is deducted and no expenses are allowed (s. 797).
+# The basic amount is £4,250 (s. 789(4) as enacted) and £7,500 from 2016-17
+# (SI 2015/1539 arts. 1(2), 2), halved where someone else also receives rent
+# from the residence (ss. 789(3), 790). Rent-a-room receipts are not relievable
+# receipts for the £1,000 property allowance (s. 783BB(2)).
+#
+# Tax figures, 2026-27: personal allowance £12,570; basic rate 20%.
+
+- name: Rent from a lodger within the limit is not taxed
+  # Receipts 6,000 <= 7,500, so nothing is charged. Earnings tax:
+  # (30,000 - 12,570) x 20% = 3,486.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 6_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    rent_from_boarders_and_lodgers: [6_000, 0]
+    rent_a_room_receipts: [6_000, 0]
+    rent_a_room_relief: [6_000, 0]
+    taxable_rent_a_room_income: [0, 0]
+    taxable_property_income: [0, 0]
+    income_tax: [3_486, 0]
+
+- name: Rent from a lodger above the limit is taxed on the excess
+  # Taxable: 10,000 - 7,500 = 2,500, taxed at 20% = 500 on top of 3,486.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    rent_a_room_relief: [7_500, 0]
+    taxable_rent_a_room_income: [2_500, 0]
+    taxable_property_income: [2_500, 0]
+    rent_a_room_income_tax: [500, 0]
+    income_tax: [3_986, 0]
+
+- name: The property allowance does not reduce taxable rent-a-room income
+  # Other property income 500 is covered by the property allowance
+  # (min(500, 1,000)); the rent-a-room excess of 2,500 is not.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+        property_income: 500
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, boarder]
+  output:
+    property_allowance_deduction: [500, 0]
+    taxable_rent_a_room_income: [2_500, 0]
+    taxable_property_income: [2_500, 0]
+
+- name: The limit was 4,250 before 2016-17
+  # 6,000 - 4,250 = 1,750.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 6_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    rent_a_room_limit: [4_250, 4_250]
+    rent_a_room_relief: [4_250, 0]
+    taxable_rent_a_room_income: [1_750, 0]
+
+- name: Two people receiving rent from the home each have half the limit
+  # The householder receives the lodger's 6,000; the partner sublets part of
+  # the home for 2,000. Each limit is 7,500 / 2 = 3,750. Householder:
+  # 6,000 - 3,750 = 2,250 taxable; partner: 2,000 < 3,750, nothing taxable.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      partner:
+        age: 44
+        is_household_head: false
+        sublet_income: 2_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 6_000
+    benunits:
+      couple:
+        members: [householder, partner]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, partner, lodger]
+  output:
+    rent_a_room_receipts: [6_000, 2_000, 0]
+    # The lodger receives nothing, so keeps the basic amount.
+    rent_a_room_limit: [3_750, 3_750, 7_500]
+    taxable_rent_a_room_income: [2_250, 0, 0]
+
+- name: Rent paid by someone in the householder's own benefit unit is not received
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      partner:
+        age: 44
+        is_household_head: false
+        rent_paid_as_lodger: 6_000
+    benunits:
+      couple:
+        members: [householder, partner]
+    households:
+      household:
+        members: [householder, partner]
+  output:
+    rent_from_boarders_and_lodgers: [0, 0]
+    pays_rent_to_householder: [false, false]
+
+- name: Tax credits count only the taxable rent-a-room income
+  # 2023-24. Taxable rent-a-room income: 10,000 - 7,500 = 2,500. Step 1 income
+  # (pensions, savings, dividends, property): 2,500 less the £300 disregard =
+  # 2,200. Step 2: earnings 10,000. Total 12,200.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 10_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    taxable_rent_a_room_income: [2_500, 0]
+    tax_credits_applicable_income: [12_200, 0]

@@ -1,0 +1,11 @@
+description: Age below which an apprentice is a relevant apprentice, whose secondary Class 1 contributions are zero-rated up to the apprentice upper secondary threshold.
+values:
+  2015-04-06:
+    value: 25
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.9B(2)(a)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/9B
+metadata:
+  label: NI relevant apprentice age limit
+  unit: year

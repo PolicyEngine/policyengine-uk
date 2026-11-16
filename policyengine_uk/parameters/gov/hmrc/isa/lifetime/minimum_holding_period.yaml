@@ -1,0 +1,10 @@
+description: Minimum completed months since the first Lifetime ISA payment for an exempt first-home withdrawal, including qualifying transfer continuity.
+values:
+  2017-04-06: 12
+metadata:
+  label: Lifetime ISA minimum first-home holding period
+  period: year
+  unit: month
+  reference:
+    - title: Individual Savings Account Regulations 1998 Schedule paragraph 6
+      href: https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/6

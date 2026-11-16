@@ -12,14 +12,13 @@ class uc_limited_capability_for_WRA(Variable):
         "benefit receipt, ESA included. A determination of limited capability "
         "for work-related activity is what gives ESA its support component, "
         "and Universal Credit takes the ESA determination (UC Regs 2013 reg "
-        "40(1)(a)(ii)). So a person whose own ESA award (has_own_esa_award) "
-        "does not include the support component (esa_includes_support_"
-        "component) is taken not to have it, whatever the flag, though someone "
+        "40(1)(a)(ii)). So a person whose own ESA award (has_own_esa_award), "
+        "current or ended, did not include the support component "
+        "(esa_includes_support_component) counts as not having it, whatever "
+        "the flag, though someone "
         "still in the ESA assessment phase may yet be found to. The model does "
-        "not infer it the other way, from the support component alone: the "
-        "Universal Credit LCWRA element and work allowance still read every "
-        "member of the benefit unit, not only the claimants. Users can set it "
-        "directly."
+        "not infer it the other way, from the support component alone. Users "
+        "can set it directly."
     )
     definition_period = YEAR
     reference = (

@@ -32,6 +32,7 @@
         universal_credit_pre_benefit_cap: 6_000
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
     households:
       household:
@@ -56,6 +57,7 @@
         universal_credit_pre_benefit_cap: 6_000
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
     households:
       household:
@@ -79,6 +81,7 @@
         universal_credit_pre_benefit_cap: 6_000
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.28
+        uc_has_deduction: true
         uc_deduction_combination: GOVERNMENT_ONLY
     households:
       household:
@@ -102,6 +105,7 @@
         universal_credit_pre_benefit_cap: 500
         uc_benefit_cap_reduction: 0
         uc_latent_deduction_rate: 0.25
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
     households:
       household:
@@ -165,6 +169,7 @@
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
         uc_latent_deduction_rate: 0.25
+        uc_has_deduction: true
         uc_deduction_combination: ADVANCE_ONLY
     households:
       household:
@@ -179,3 +184,199 @@
     uc_benefit_cap_reduction_after_floor: 27_355.24
     uc_deductions: 1_130.58
     universal_credit: 20_146.82
+
+- name: A supplied latent rate alone gives a household situation no deductions
+  # The latent rate counts only where uc_has_deduction is true (#2739). A
+  # household situation's incidence draw defaults to 1.0, so the flag is
+  # false unless set.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        uc_benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.25
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    uc_has_deduction: false
+    uc_deduction_rate: 0
+    uc_deductions: 0
+    universal_credit: 6_000
+
+- name: A supplied latent rate gives no deductions without the flag under a protected floor
+  # The example from #2739. The benefit cap takes the whole £1,000 award, so
+  # an 85% floor binds. With the flag false, the latent rate counts as zero,
+  # and the cap reduction takes the whole floor allowance:
+  # 0.15 x 400.14 x 12 = 720.25, leaving 1,000 - 720.25 = 279.75.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction: 1_000
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+        uc_has_deduction: false
+    households:
+      household:
+        members: person
+  output:
+    uc_maximum_reduction: 720.25
+    uc_deduction_rate: 0
+    uc_deductions: 0
+    uc_benefit_cap_reduction_after_floor: 720.25
+    universal_credit: 279.75
+
+- name: The same family with the flag set repays its deductions first under the floor
+  # Demand is the 15% cap on 25% plus a 5% last resort excess: 0.20 x 4,801.68
+  # = 960.34. The floor allowance of 720.25 limits it, and the cap reduction
+  # takes nothing more. The award is 279.75 either way.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction: 1_000
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+        uc_has_deduction: true
+    households:
+      household:
+        members: person
+  output:
+    uc_deduction_rate: 0.20
+    uc_deductions: 720.25
+    uc_benefit_cap_reduction_after_floor: 0
+    universal_credit: 279.75
+
+- name: Under a protected floor a family the cap takes to nil can be flagged for deductions
+  # An incidence draw of 0.1 falls below London's incidence (0.467 x 0.94).
+  # The 85% floor limits the cap to 720.25, which leaves 279.75 of the
+  # £1,000 award for deductions to come from, so the flag is true.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction: 1_000
+        uc_deduction_random_draw: 0.1
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    uc_has_deduction: true
+    uc_deductions: 720.25
+    uc_benefit_cap_reduction_after_floor: 0
+    universal_credit: 279.75
+
+- name: Under current law the cap leaves that family no award and no deductions
+  # Without a floor the cap takes the whole award, so the flag is false.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_benefit_cap_reduction: 1_000
+        uc_deduction_random_draw: 0.1
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    uc_has_deduction: false
+    uc_deductions: 0
+    uc_benefit_cap_reduction_after_floor: 1_000
+    universal_credit: 0
+
+- name: A floor that leaves a family the cap takes to nil no award leaves it without the flag
+  # The 85% floor allowance, 0.15 x 400.14 x 12 = 720.25, exceeds the £500
+  # award, so the cap still takes all of it and the floor does not bind.
+  # Nothing is left for deductions to come from.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.universal_credit.deductions.protected_floor: 0.85
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 500
+        uc_benefit_cap_reduction: 1_000
+        uc_deduction_random_draw: 0.1
+        uc_latent_deduction_rate: 0.30
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    uc_maximum_reduction: 720.25
+    uc_has_deduction: false
+    uc_deductions: 0
+    uc_benefit_cap_reduction_after_floor: 500
+    universal_credit: 0
+
+- name: An explicitly supplied advance amount applies whatever the flag says
+  # uc_advance_repayment_amount describes a known advance, so the flag does
+  # not gate it.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        uc_benefit_cap_reduction: 0
+        uc_advance_repayment_amount: 360
+        uc_has_deduction: false
+    households:
+      household:
+        members: person
+  output:
+    uc_deductions: 360
+    universal_credit: 5_640

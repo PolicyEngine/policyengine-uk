@@ -1,0 +1,23 @@
+description: >-
+  Maximum VAT-exclusive electricity unit discount under Northern Ireland's
+  Energy Price Guarantee. The November 2022 to March 2023 totals include the
+  temporary backdated support; the full rate requires qualifying tariffs and
+  contract conditions.
+values:
+  0001-01-01: 0
+  2022-11-01: 0.199083
+  2023-01-01: 0.136083
+  2023-04-01: 0.037697
+  2023-07-01: 0
+metadata:
+  unit: currency-GBP/kWh
+  period: year
+  label: Northern Ireland Energy Price Guarantee maximum electricity discount
+  preserve_calendar_dates: true
+  reference:
+    - title: The Energy Price Guarantee Scheme and Northern Ireland's regulated energy tariffs, 16 March 2023
+      href: https://www.uregni.gov.uk/news-centre/energy-price-guarantee-scheme-and-what-it-means-northern-irelands-regulated-energy
+    - title: Energy Price Guarantee up to 30 June 2023, Northern Ireland
+      href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023#how-the-epg-applied-in-northern-ireland
+    - title: Energy Price Guarantee from 1 July 2023, Northern Ireland
+      href: https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022#households-in-northern-ireland

@@ -7,7 +7,8 @@ the invariants reviewers rely on:
    or a bug/bug-fix label, classifies a PR as a fix.
 2. Deleted tests never count as changed executable tests or reproducers.
 3. Formatting reproducer ids with supported separators and quoting round
-   trips through the body parser.
+   trips through the body parser, including a sentence's period after a
+   closing backtick.
 4. A pytest reproducer requires a changed file and a directly defined test
    function or class method that pytest collects, checked against real pytest
    collection, ignoring parametrisation suffixes. A collected test marked to
@@ -205,12 +206,15 @@ def test_deleted_tests_never_count_as_executable_or_reproducers(tmp_path, paths)
 @given(ids=st.lists(_valid_id, max_size=8), data=st.data())
 def test_reproducer_line_round_trips_supported_formatting(ids, data):
     pieces = []
+    quoted = False
     for index, nodeid in enumerate(ids):
         if index:
             pieces.append(data.draw(st.sampled_from([",", ";", ", ", " ; ", "\t;\t"])))
         spaces = data.draw(st.sampled_from(["", " ", "\t", "  "]))
         quoted = data.draw(st.booleans())
         pieces.append(spaces + (f"`{nodeid}`" if quoted else nodeid) + spaces)
+    if quoted and data.draw(st.booleans()):
+        pieces[-1] = pieces[-1].rstrip() + "."
     key = data.draw(
         st.sampled_from(["Reproducer", "reproducer", "REPRODUCER", "RePrOdUcEr"])
     )
@@ -473,6 +477,33 @@ def test_yaml_reproducer_fails_closed_without_pyyaml(tmp_path, monkeypatch):
 
 def test_backticked_na_reason_can_include_commas_and_semicolons(tmp_path):
     assert _report(tmp_path, "Reproducer: `n/a: CI, docs; no model source`", []).passed
+
+
+def test_a_period_after_a_closing_backtick_ends_the_sentence(tmp_path):
+    python_path = "policyengine_uk/tests/test_regression.py"
+    yaml_path = "policyengine_uk/tests/policy/regression.yaml"
+    _write(tmp_path, python_path, "def test_regression():\n    pass\n")
+    _write(
+        tmp_path,
+        yaml_path,
+        '- name: "A case, with a comma"\n  output: {x: 1}\n'
+        "- name: Ends with a period.\n  output: {x: 1}\n",
+    )
+    changes = [("A", python_path), ("A", yaml_path)]
+    for body in (
+        f"Reproducer: `{python_path}::test_regression`, "
+        f"`{yaml_path}::A case, with a comma`.",
+        f"Reproducer: `{yaml_path}::Ends with a period.`.",
+        # Unquoted, the period belongs to the id.
+        f"Reproducer: {yaml_path}::Ends with a period.",
+    ):
+        assert _report(tmp_path, body, changes).passed, body
+    # Unquoted, a comma splits the name, and the message says to quote it.
+    report = _report(
+        tmp_path, f"Reproducer: {yaml_path}::A case, with a comma", changes
+    )
+    assert not report.passed
+    assert "in backticks when its name contains" in " ".join(report.messages)
 
 
 @pytest.mark.parametrize(

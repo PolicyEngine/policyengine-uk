@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.data_source import built_from_data
+from policyengine_uk.utils.household_subset import whole_population_value
 from policyengine_uk.utils.stochastic import splitmix64_uniform, stratified_uniform
 
 
@@ -18,8 +19,10 @@ class months_since_last_birthday(Variable):
         "years, so in simulations built from data each single year of age and "
         "sex is spread evenly over the year: records are ordered by a "
         "deterministic hash of the person id and placed by their share of the "
-        "group's weight. Datasets and situations can set this directly, and "
-        "filter_dataset carries it into a household extracted from the data."
+        "group's weight. Datasets and situations can set this directly, "
+        "filter_dataset carries it into a household extracted from the data, "
+        "and a branch holding only some households takes it from the whole "
+        "population (utils.household_subset)."
     )
     definition_period = YEAR
     unit = "month"
@@ -28,6 +31,11 @@ class months_since_last_birthday(Variable):
     default_value = 6
 
     def formula(person, period, parameters):
+        # A branch holding only some households (utils.household_subset)
+        # keeps each person's place in the whole population's spread.
+        whole = whole_population_value(person, "months_since_last_birthday", period)
+        if whole is not None:
+            return whole
         age = person("age", period)
         whole_years = np.floor(age)
         fraction = age - whole_years

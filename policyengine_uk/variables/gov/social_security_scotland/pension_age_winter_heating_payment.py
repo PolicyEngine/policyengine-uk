@@ -12,7 +12,8 @@ class pension_age_winter_heating_payment(Variable):
         "(the higher amount if they or their partner have reached 80), once "
         "per couple. From the 2025 qualifying week anyone else receives the "
         "full amount if they do not live with another entitled individual, "
-        "and a shared amount otherwise."
+        "and a shared amount otherwise. This is the amount paid, before any "
+        "winter fuel payment charge (winter_fuel_payment_charge)."
     )
     definition_period = YEAR
     unit = GBP

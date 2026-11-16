@@ -16,7 +16,18 @@ from typing import Callable, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .privacy import MIN_CELL, count_text, small
+from .privacy import (
+    MIN_CELL,
+    NO_BASELINE,
+    SMALL_BALANCE_CHANGE,
+    SMALL_COMPONENT_LEFT,
+    SMALL_TARGET_CHANGE,
+    SUPPRESSED_COMPONENT_CHANGED,
+    count_text,
+    small,
+    withheld_reason,
+    withheld_text,
+)
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
@@ -84,13 +95,23 @@ class Recorder:
             record["values"][str(year)] = float(value)
 
     def check(
-        self, check_id, label, ok, detail="", severity="fail", section="", scope=None
+        self,
+        check_id,
+        label,
+        ok,
+        detail="",
+        severity="fail",
+        section="",
+        scope=None,
+        note="",
     ):
         """Record a check; repeated ids (one per year) merge into one result.
 
         ``failing`` maps each scope the check failed in (a year, or "" for a
         check that is not per year) to its detail. ``ok=None`` records that
-        the check did not apply (``skipped``), which is not a pass.
+        the check did not apply (``skipped``), which is not a pass. ``note``
+        joins the details whatever the outcome, so a pass can say what the
+        check could not test.
         """
         if ok is None:
             status = "skipped"
@@ -120,6 +141,8 @@ class Recorder:
             record["failing"][scope] = detail
             if detail:
                 record["details"].append(detail)
+        if note and note not in record["details"]:
+            record["details"].append(note)
 
 
 def array(sim, variable: str, period, map_to: Optional[str] = None) -> np.ndarray:
@@ -1154,7 +1177,13 @@ def publishable_guard(guard: dict) -> dict:
     A component perturbed in fewer than ``MIN_CELL`` units keeps no count, no
     responses or coefficients, and no weighted shares in its problems. A
     problem or mediated response in fewer than ``MIN_CELL`` households keeps
-    no count and no share. Messages already say "fewer than 10".
+    no count and no share. A count of households where the check could not
+    hold a head (``households_not_held``) below ``MIN_CELL`` goes too.
+    Messages already say "fewer than 10". The heads the check could not hold
+    (``heads_not_held``, ``heads_not_held_at_baseline``) and the
+    ``not_finite`` flags hold no figures, so they stay. A count below
+    ``MIN_CELL`` of households where a variable is not finite at baseline
+    (``not_finite_at_baseline``) goes too.
     """
     out = dict(guard)
     components = []
@@ -1176,8 +1205,15 @@ def publishable_guard(guard: dict) -> dict:
                     item.pop("share", None)
                 if small(item.get("households") or 0):
                     item["households"] = None
+                if small(item.get("households_not_held") or 0):
+                    item["households_not_held"] = None
                 cleaned.append(item)
             row[key] = cleaned
+        if "households_not_held" in row:
+            row["households_not_held"] = {
+                head: None if small(count or 0) else count
+                for head, count in row["households_not_held"].items()
+            }
         components.append(row)
     if "components" in guard:
         out["components"] = components
@@ -1192,7 +1228,9 @@ def publishable_guard(guard: dict) -> dict:
         row = dict(row)
         if small(units.get(row.get("variable")) or 0):
             row["coefficient"] = None
-            if row.get("status") != "pass":
+            # A container that is not finite, or a double count the check
+            # skipped, has a detail with no figures.
+            if row.get("status") == "fail" and not row.get("not_finite"):
                 row["detail"] = (
                     f"{row['contained_in']} no longer moves one for one with "
                     f"{row['variable']} (fewer than {MIN_CELL} units): the model "
@@ -1202,7 +1240,91 @@ def publishable_guard(guard: dict) -> dict:
         double_counts.append(row)
     if "double_counts" in guard:
         out["double_counts"] = double_counts
+    if "not_finite_at_baseline" in guard:
+        out["not_finite_at_baseline"] = [
+            {
+                **item,
+                "households": None if small(item["households"]) else item["households"],
+            }
+            for item in guard["not_finite_at_baseline"]
+        ]
     return out
+
+
+def record_guard_checks(rec: Recorder, guard: dict) -> None:
+    """Record the counted-once result (``guard.counted_once``) as checks."""
+    for result in guard.get("components", []):
+        check_id = f"counted_once:{result['variable']}"
+        label = (
+            f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
+            "other tax head and raises no other benefit"
+        )
+        if result["status"] == "skipped":
+            rec.check(
+                check_id,
+                label,
+                None,
+                result["detail"],
+                section="counted_once",
+                scope="",
+            )
+        elif result["status"] == "pass":
+            # The detail of a pass names any head the check could not hold.
+            rec.check(
+                check_id,
+                label,
+                True,
+                section="counted_once",
+                scope="",
+                note=result["detail"],
+            )
+        # One scope per failing (total, head, kind), so a comparison sees
+        # a head that newly contains the component, not just "still fails".
+        for item in result.get("problems") or []:
+            rec.check(
+                check_id,
+                label,
+                False,
+                item["message"],
+                section="counted_once",
+                scope=f"{item['total']}:{item['head']}:{item['kind']}",
+            )
+    # Details from the published guard, with small cells removed.
+    for result in publishable_guard(guard).get("double_counts", []):
+        rec.check(
+            f"double_count_present:{result['variable']}",
+            f"{result['variable']} is still contained in {result['contained_in']}",
+            None if result["status"] == "skipped" else result["status"] == "pass",
+            result["detail"],
+            section="counted_once",
+        )
+    # A variable not finite at baseline fails a finite: check, which blocks
+    # whatever the base did: its own for a head, else finite:metrics.
+    for item in guard.get("not_finite_at_baseline") or []:
+        detail = f"{fiscal_year_label(guard['year'])}: {item['message']}"
+        scope = f"counted_once:{guard['year']}:{item['variable']}"
+        if item["head"] is None:
+            check_id, label = "finite:metrics", "Every reported figure is finite"
+        else:
+            check_id = f"finite:{item['head']}"
+            label = f"{item['label']} is finite for every unit"
+        rec.check(check_id, label, False, detail, section="finite", scope=scope)
+    if "reset_reproduces_baseline" in guard:
+        rec.check(
+            "counted_once:reset_reproduces_baseline",
+            "The counted-once check leaves the baseline unchanged",
+            bool(guard["reset_reproduces_baseline"]),
+            "recomputed baseline totals differ from the first run",
+            section="counted_once",
+        )
+    rec.check(
+        "counted_once:ran",
+        "The counted-once check ran",
+        guard.get("status") == "ran",
+        guard.get("reason", ""),
+        severity="warn",
+        section="counted_once",
+    )
 
 
 def _finite_metrics_check(rec: Recorder):
@@ -1233,14 +1355,33 @@ def weighted_total(sim, variable: str, year: int) -> float:
 CHANGE_GBP = 0.005
 
 
+def component_metric_ids(partition: Partition) -> dict:
+    """``{variable: published metric id}`` for each head and declared double
+    count."""
+    out = {}
+    for head in partition.heads:
+        section = "receipts" if head.kind == "tax" else "spending"
+        out.setdefault(head.variable, f"{section}.{head.id}")
+    for dc in partition.double_counts:
+        out.setdefault(dc.variable, f"double_counts.{dc.variable}")
+    return out
+
+
 def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targets):
     """What the reform checks need from the baseline run in ``year``: each
     suppressed component's values, each household's gov_balance and each
-    target variable's values. Kept in memory only, never written."""
+    target variable's values, and each component's published metric id, so
+    that a reason for withholding can name it. Kept in memory only, never
+    written."""
+    hidden = suppressed_components(rec, partition, year)
     return {
         "hidden": {
             variable: array(sim, variable, year).astype(np.float64).copy()
-            for variable in suppressed_components(rec, partition, year)
+            for variable in hidden
+        },
+        "metric_ids": {
+            **component_metric_ids(partition),
+            **{variable: metric_id for variable, (metric_id, _) in hidden.items()},
         },
         "household_weight": array(sim, "household_weight", year)
         .astype(np.float64)
@@ -1257,12 +1398,19 @@ def baseline_records(sim, partition: Partition, rec: "Recorder", year: int, targ
     }
 
 
-def reform_withheld(
-    reformed, year: int, baseline: Optional[Mapping], components
-) -> bool:
-    """Whether a reform's costing and target change for ``year`` are withheld.
+def withheld_reasons(
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
+) -> list:
+    """Why the tool withholds a reform's costing and target change for
+    ``year``: one reason per condition that holds, none when it publishes
+    them.
 
-    They would be built from a small cell (Sol re-review 7 of #2335) when the
+    They would come from a small cell (Sol re-review 7 of #2335) when the
     reform:
 
     - changes any record of a component suppressed in the baseline, by any
@@ -1270,22 +1418,41 @@ def reform_withheld(
       figures (the tax on one recipient's pension, say). An unchanged record
       compares equal, because a rebuilt baseline reproduces the first run
       exactly (``determinism:rebuilt_baseline``); noise could only withhold
-      more;
+      more (``suppressed_component_changed``);
     - leaves any other component with 1 to 9 records (``privacy.small``),
-      whose change would give that new small cell back;
-    - changes gov_balance in 1 to 9 households, or a target variable in 1 to
-      9 records, by more than ``CHANGE_GBP``: the change is theirs alone, as
-      for a decile row.
+      whose change would give that new small cell back
+      (``small_component_left``);
+    - changes gov_balance in 1 to 9 households (``small_balance_change``), or
+      its own target, ``target``, in 1 to 9 records (``small_target_change``),
+      by more than ``CHANGE_GBP``: the change is theirs alone, as for a
+      decile row. ``target`` is the variable the reform's ``responds`` names,
+      or None for a reform that names none. Another reform's target counts
+      here as it would if no reform aimed at it: in gov_balance, and in the
+      component conditions above when it is a component (#2775).
 
-    Withheld too when there is no baseline record for the year.
+    Withheld too when there is no baseline record for the year
+    (``no_baseline``). With nothing to compare against, the function tests
+    no other condition, so that reason says nothing about how many records
+    the reform changes. Otherwise the function tests every condition and
+    gives one reason for each component or variable a condition holds for
+    (``privacy.withheld_reason``): the reason names it and gives no count or
+    amount (#2654). A variable that fails to compute under the reform in
+    any year therefore fails the reform, whichever conditions hold that
+    year.
     """
     if baseline is None:
-        return True
+        return [withheld_reason(NO_BASELINE)]
+    metric_ids = baseline.get("metric_ids") or {}
+    reasons = []
     for variable, before in baseline["hidden"].items():
         if not np.array_equal(
             array(reformed, variable, year).astype(np.float64), before
         ):
-            return True
+            reasons.append(
+                withheld_reason(
+                    SUPPRESSED_COMPONENT_CHANGED, variable, metric_ids.get(variable)
+                )
+            )
     weights = {}
 
     def weight(variable):
@@ -1301,7 +1468,11 @@ def reform_withheld(
             continue
         values = array(reformed, variable, year).astype(np.float64)
         if small(_weighted_records(values != 0, weight(variable))):
-            return True
+            reasons.append(
+                withheld_reason(
+                    SMALL_COMPONENT_LEFT, variable, metric_ids.get(variable)
+                )
+            )
     balance = to_household(
         reformed,
         array(reformed, "gov_balance", year).astype(np.float64),
@@ -1309,14 +1480,42 @@ def reform_withheld(
     )
     changed = np.abs(balance - baseline["balance"]) > CHANGE_GBP
     if small(_weighted_records(changed, baseline["household_weight"])):
-        return True
-    for variable, before in baseline["targets"].items():
-        after = array(reformed, variable, year).astype(np.float64)
+        reasons.append(withheld_reason(SMALL_BALANCE_CHANGE, "gov_balance"))
+    if target is not None:
+        after = array(reformed, target, year).astype(np.float64)
+        before = baseline["targets"][target]
         if small(
-            _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(variable))
+            _weighted_records(np.abs(after - before) > CHANGE_GBP, weight(target))
         ):
-            return True
-    return False
+            reasons.append(withheld_reason(SMALL_TARGET_CHANGE, target))
+    return reasons
+
+
+def reform_withheld(
+    reformed,
+    year: int,
+    baseline: Optional[Mapping],
+    components,
+    *,
+    target: Optional[str],
+) -> bool:
+    """Whether the tool withholds a reform's costing and target change for
+    ``year``: whether any condition of ``withheld_reasons`` holds."""
+    return bool(withheld_reasons(reformed, year, baseline, components, target=target))
+
+
+def _record_reasons(record: dict, year: int, reasons: list) -> None:
+    """Keep a withheld year's reasons on a reform figure's record.
+
+    Every reform figure carries ``withheld_because``; it lists exactly the
+    years its ``suppressed`` lists, so the tool withholds a year exactly when
+    it records a reason.
+    """
+    # Rebinds rather than writes through, as _exclude does.
+    record["withheld_because"] = {
+        **(record.get("withheld_because") or {}),
+        **({str(year): list(reasons)} if reasons else {}),
+    }
 
 
 def as_standard_reforms(reforms) -> list:
@@ -1350,7 +1549,9 @@ def measure_reforms(
     (``reform_withheld``) publishes neither the costing nor the target
     change, and its responsiveness detail gives no amount: a 10% uplift's
     cost of £100 would give back a suppressed £1,000 (Sol re-reviews 6 and 7
-    of #2335). Without ``baseline``, every year is withheld.
+    of #2335). Without ``baseline``, every year is withheld. Both figures
+    keep each withheld year's reasons (``withheld_reasons``) under
+    ``withheld_because``, and a failing responsiveness detail gives them.
 
     First rebuilds an unreformed simulation the same way, which must
     reproduce the baseline exactly: otherwise reform costings would include
@@ -1391,19 +1592,25 @@ def measure_reforms(
             "error": None,
         }
         target_changes = {}
-        hidden_years = set()
+        # The reasons for each withheld year (withheld_reasons).
+        hidden_years = {}
         try:
             parameters = reform_parameters(reform, baseline_parameters, years)
             outcome["parameters"] = parameters
             reformed = factory(reform=parameters)
+            target = None if reform.responds is None else reform.responds.variable
             for year in years:
-                withheld = reform_withheld(
-                    reformed, year, (baseline or {}).get(year), components
+                reasons = withheld_reasons(
+                    reformed,
+                    year,
+                    (baseline or {}).get(year),
+                    components,
+                    target=target,
                 )
-                if withheld:
-                    hidden_years.add(year)
+                if reasons:
+                    hidden_years[year] = reasons
                 # records=1 publishes the figure as suppressed (privacy.py).
-                records = 1 if withheld else None
+                records = 1 if reasons else None
                 rec.metric(
                     f"reforms.{reform.id}",
                     reform.name,
@@ -1414,21 +1621,24 @@ def measure_reforms(
                     - baseline_balance[year],
                     records=records,
                 )
-                if reform.responds is not None:
-                    variable = reform.responds.variable
+                _record_reasons(rec.metrics[f"reforms.{reform.id}"], year, reasons)
+                if target is not None:
                     change = (
-                        weighted_total(reformed, variable, year)
-                        - baseline_targets[year][variable]
+                        weighted_total(reformed, target, year)
+                        - baseline_targets[year][target]
                     )
                     target_changes[year] = change
                     rec.metric(
                         f"reform_targets.{reform.id}",
-                        f"{reform.name}: change in {variable}",
+                        f"{reform.name}: change in {target}",
                         "reform_targets",
                         "gbp",
                         year,
                         change,
                         records=records,
+                    )
+                    _record_reasons(
+                        rec.metrics[f"reform_targets.{reform.id}"], year, reasons
                     )
             del reformed
         except Exception as error:  # noqa: BLE001 - one reform's failure is reported, not fatal
@@ -1464,8 +1674,8 @@ def measure_reforms(
                     if year in hidden_years and not ok:
                         detail = (
                             f"{fiscal_year_label(year)}: {reform.responds.variable} did "
-                            "not move enough (the amount is withheld: it comes from "
-                            f"fewer than {MIN_CELL} records)"
+                            "not move enough (the amount is withheld: "
+                            f"{withheld_text(hidden_years[year])})"
                         )
                     rec.check(
                         f"responsive:{reform.id}",
@@ -1565,57 +1775,7 @@ def measure(
             variables_to_check=guard_variables,
         )
         timings["counted_once"] = round(time.time() - t, 2)
-        for result in guard.get("components", []):
-            check_id = f"counted_once:{result['variable']}"
-            label = (
-                f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
-                "other tax head and raises no other benefit"
-            )
-            if result["status"] != "fail":
-                rec.check(
-                    check_id,
-                    label,
-                    None if result["status"] == "skipped" else True,
-                    result["detail"],
-                    section="counted_once",
-                    scope="",
-                )
-            # One scope per failing (total, head, kind), so a comparison sees
-            # a head that newly contains the component, not just "still fails".
-            for item in result.get("problems") or []:
-                rec.check(
-                    check_id,
-                    label,
-                    False,
-                    item["message"],
-                    section="counted_once",
-                    scope=f"{item['total']}:{item['head']}:{item['kind']}",
-                )
-        # Details from the published guard, with small cells removed.
-        for result in publishable_guard(guard).get("double_counts", []):
-            rec.check(
-                f"double_count_present:{result['variable']}",
-                f"{result['variable']} is still contained in {result['contained_in']}",
-                result["status"] == "pass",
-                result["detail"],
-                section="counted_once",
-            )
-        if "reset_reproduces_baseline" in guard:
-            rec.check(
-                "counted_once:reset_reproduces_baseline",
-                "The counted-once check leaves the baseline unchanged",
-                bool(guard["reset_reproduces_baseline"]),
-                "recomputed baseline totals differ from the first run",
-                section="counted_once",
-            )
-        rec.check(
-            "counted_once:ran",
-            "The counted-once check ran",
-            guard.get("status") == "ran",
-            guard.get("reason", ""),
-            severity="warn",
-            section="counted_once",
-        )
+        record_guard_checks(rec, guard)
 
     t = time.time()
     reform_outcomes = measure_reforms(

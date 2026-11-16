@@ -56,8 +56,11 @@ class ni_class_4_trading_loss(Variable):
         if loss is None:
             return person.empty_array()
         # Class 4 uses the same year's recomputed trade profit or loss as
-        # Income Tax. A positive allowance deduction means the taxpayer
-        # chose allowance treatment and gave up ordinary current losses.
+        # Income Tax. A taxpayer who chose allowance treatment gave up
+        # ordinary current losses: one with a positive allowance deduction,
+        # on trade profits or on income not otherwise charged, or a claimant
+        # (trading_allowance_claim_status) who chose it with a deduction of
+        # nil or less (uses_trading_allowance).
         # This leaves independently carried earlier Class 4 losses intact.
-        allowance_chosen = person("trading_allowance_deduction", period) > 0
+        allowance_chosen = person("uses_trading_allowance", period)
         return where(allowance_chosen, 0, max_(loss, 0))

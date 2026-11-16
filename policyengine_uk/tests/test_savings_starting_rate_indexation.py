@@ -15,6 +15,9 @@ from policyengine_core.reforms import Reform
 
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
+    growth_horizon,
+)
 from policyengine_uk.parameters.gov.hmrc import create_threshold_indexation
 from policyengine_uk.utils.scenario import Scenario
 
@@ -82,7 +85,9 @@ def test_starting_rate_uses_the_previous_rounded_annual_limit(system):
         assert limit(indexed, year) == expected
         if year > 2030:
             assert limit(indexed, year, baseline=True) == expected
-    assert limit(indexed, 2040) == limit(indexed, 2039)
+    horizon = growth_horizon(indexed.parameters.gov.economic_assumptions.yoy_growth)
+    assert limit(indexed, horizon) > limit(indexed, 2040) > limit(indexed, 2039)
+    assert limit(indexed, horizon + 1) == limit(indexed, horizon)
     # Reapplying the helper does not append another year's increase.
     create_threshold_indexation.add_threshold_indexation(indexed.parameters)
     assert limit(indexed, 2031) == 5_100
@@ -118,7 +123,8 @@ def savings_situation():
 def test_indexed_starting_rate_reaches_final_savings_income_tax(route):
     # Hold the PA at £12,570 to isolate this band's effect. With £20,000
     # interest and the unchanged £1,000 PSA, £6,430 remains before the
-    # starting rate. The unchanged post-2027 basic savings rate is 22%.
+    # starting rate. The basic savings rate from 2027-28 is 24% (22% from
+    # Budget 2025 plus 2 points from Budget 2026).
     changes = {
         CPI: {"2030-09-01.2038-08-31": 0.02},
         PA: {"2030-04-06.2034-04-05": 12_570},
@@ -132,10 +138,10 @@ def test_indexed_starting_rate_reaches_final_savings_income_tax(route):
         reform = changes if route == "dict" else Reform.from_dict(changes)
         simulation = Simulation(situation=savings_situation(), reform=reform)
     for year, starter, tax in [
-        (2030, 5_000, 314.60),
-        (2031, 5_100, 292.60),
-        (2032, 5_210, 268.40),
-        (2033, 5_320, 244.20),
+        (2030, 5_000, 343.20),
+        (2031, 5_100, 319.20),
+        (2032, 5_210, 292.80),
+        (2033, 5_320, 266.40),
     ]:
         assert simulation.calculate("personal_allowance", year)[0] == 12_570
         assert simulation.calculate("savings_allowance", year)[0] == 1_000
@@ -176,11 +182,11 @@ def test_dated_limit_override_resumes_indexation_from_the_changed_limit(route):
     assert limit(simulation.tax_benefit_system, 2032) == 6_120
     assert limit(control.tax_benefit_system, 2032) == 5_210
     # With genuine £20,000 interest, the held PA and natural PSA leave
-    # £6,430 before the starting rate: (6,430 - limit) x 22%.
+    # £6,430 before the starting rate: (6,430 - limit) x 24%.
     for current, year, tax in [
-        (simulation, 2031, 94.60),
-        (simulation, 2032, 68.20),
-        (control, 2032, 268.40),
+        (simulation, 2031, 103.20),
+        (simulation, 2032, 74.40),
+        (control, 2032, 292.80),
     ]:
         assert current.calculate("personal_allowance", year)[0] == 12_570
         assert current.calculate("savings_allowance", year)[0] == 1_000
@@ -242,5 +248,5 @@ def test_reset_and_reprocessing_keep_the_changed_savings_indexation_path():
     assert simulation.calculate("savings_allowance", 2032)[0] == 1_000
     for variable in ("savings_income_tax", "income_tax"):
         np.testing.assert_allclose(
-            simulation.calculate(variable, 2032), [68.20], rtol=0, atol=0.001
+            simulation.calculate(variable, 2032), [74.40], rtol=0, atol=0.001
         )

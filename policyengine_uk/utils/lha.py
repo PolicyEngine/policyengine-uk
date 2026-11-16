@@ -313,19 +313,19 @@ def determination(
     determined: int,
     universal_credit: bool = False,
     adjustment: np.ndarray | None = None,
-    percentile_parameter=None,
+    lha=None,
 ):
     """The rates determined in ``determined`` for every BRMA and category.
 
     ``adjustment`` is added to the percentile rents before the rules apply
-    (see ``restatement``). ``percentile_parameter`` is the percentile to
-    determine at, ``gov.dwp.LHA.percentile`` (Great Britain) by default.
+    (see ``restatement``). ``lha`` is the parameter node holding the
+    percentile, maxima and minimum to determine under: ``gov.dwp.LHA``
+    (Great Britain, the default) or ``gov.dfc.LHA`` (Northern Ireland).
     Returns (percentile, rate) as [BRMA, category] arrays, weekly for Housing
     Benefit and monthly for Universal Credit.
     """
-    lha = parameters.gov.dwp.LHA
-    if percentile_parameter is None:
-        percentile_parameter = lha.percentile
+    if lha is None:
+        lha = parameters.gov.dwp.LHA
     rates = published_rates()
 
     if determined < FIRST_RULES_YEAR:
@@ -366,7 +366,7 @@ def determination(
             growth[base_year == value] = index(str(determined)) / index(str(value))
     percentile = percentile * growth
 
-    share = percentile_parameter(str(determined))
+    share = lha.percentile(str(determined))
     if abs(share - PUBLISHED_PERCENTILE) > 1e-9:
         percentile = percentile * _percentile_ratios(float(share))
     if adjustment is not None:
@@ -414,11 +414,9 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
     # under Northern Ireland regulations, which gov.dfc.LHA follows. Where
     # the two would give the same determination, the Great Britain table
     # already holds Northern Ireland's rates.
-    gb_year = determination_year(great_britain, year)
-    ni_year = determination_year(northern_ireland, year)
-    if ni_year != gb_year or great_britain.percentile(
-        str(gb_year)
-    ) != northern_ireland.percentile(str(ni_year)):
+    if _determination_rules(great_britain, year, universal_credit) != (
+        _determination_rules(northern_ireland, year, universal_credit)
+    ):
         ni_percentile, ni_rate = _rates_in_force(
             parameters, year, universal_credit, northern_ireland
         )
@@ -428,10 +426,31 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
     return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
 
 
+def _determination_rules(lha, year: int, universal_credit: bool) -> tuple:
+    """Everything one nation's parameters set for the rates in force in ``year``.
+
+    The determination year, and the percentile, maxima and minimum it is made
+    under. Two nations with the same rules have the same rates.
+    """
+    determined = determination_year(lha, year)
+    if determined < FIRST_RULES_YEAR:
+        # Taken as published, whatever the parameters say.
+        return (determined,)
+    instant = str(determined)
+    maxima = lha.maximum_monthly if universal_credit else lha.maximum
+    return (
+        determined,
+        lha.percentile(instant),
+        tuple(maxima.children[category](instant) for category in CATEGORIES),
+        bool(lha.march_2020_minimum(instant)),
+    )
+
+
 def _rates_in_force(parameters, year: int, universal_credit: bool, lha) -> tuple:
     """(percentile, rate) in force in ``year`` under one nation's parameters.
 
-    ``lha`` is the parameter node holding ``freeze`` and ``percentile``:
+    ``lha`` is the parameter node holding ``freeze``, ``percentile``,
+    ``maximum``, ``maximum_monthly`` and ``march_2020_minimum``:
     ``gov.dwp.LHA`` for Great Britain or ``gov.dfc.LHA`` for Northern Ireland.
     """
     determined = determination_year(lha, year)
@@ -439,9 +458,7 @@ def _rates_in_force(parameters, year: int, universal_credit: bool, lha) -> tuple
     if determined != year and determined >= FIRST_RULES_YEAR:
         measure = "uc_rate" if universal_credit else "rate"
         adjustment = restatement(measure, determined, year)
-    return determination(
-        parameters, determined, universal_credit, adjustment, lha.percentile
-    )
+    return determination(parameters, determined, universal_credit, adjustment, lha)
 
 
 @lru_cache(maxsize=1)

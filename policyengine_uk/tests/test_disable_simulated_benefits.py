@@ -43,7 +43,9 @@ from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
 )
 from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
 from policyengine_uk.utils.scenario import Scenario
-from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.esa_income import (
+    income_related_esa_award_on_reports,
+)
 
 DATASET_YEAR = 2025
 # The dataset year and two later years.
@@ -243,7 +245,7 @@ def test_later_years_need_the_awards_set_explicitly(reformed, year):
         period(year),
         "esa_income",
         "esa_income_reported",
-        income_related_esa_award,
+        income_related_esa_award_on_reports,
     )
     assert by_value_alone[excluded] == 3_000
 
@@ -341,6 +343,21 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
     assert by_family(reformed, "legacy_benefits_closed", year) == dict.fromkeys(
         NAMES, False
     )
+    # The abolition of income-related ESA reaches the claimant's own award
+    # from 2026-27 (SI 2025/1148 art. 3A), which would prompt a Universal
+    # Credit claim; the reform holds that too, so it prompts no claim.
+    reached = year > DATASET_YEAR
+    assert by_family(unreformed, "esa_income_abolition_reached", year) == {
+        "excluded_adult": False,
+        "excluded_adult_no_award": False,
+        "own_esa": reached,
+        "own_jsa": False,
+        "own_esa_over_tariff": reached,
+        "excluded_income_support": False,
+    }
+    assert by_family(reformed, "claims_uc_at_legacy_closure", year) == dict.fromkeys(
+        NAMES, False
+    )
     ten_years = list(range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
     for variable in NOT_MOVED:
         assert known_years(reformed, variable) == ten_years, variable
@@ -361,6 +378,11 @@ def test_each_person_is_on_their_own_award(reformed, year):
         str(year)
     ).gov.dwp.JSA.income.active
     assert jsa_open == (year == DATASET_YEAR)
+    # The reform pays their income-related ESA in every year too, after its
+    # abolition on 1 July 2026 (SI 2025/1148 art. 3A) included.
+    # own_report_is_paid uses the reform's held award, not the abolition's
+    # closure of their report, to determine their receipt status, as it does
+    # for the claimant and partner.
     assert not on_esa["excluded_adult_no_award_0"]
     assert on_esa["excluded_adult_no_award_1"]
     assert not on_jsa["excluded_adult_no_award_0"]

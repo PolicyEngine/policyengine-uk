@@ -33,18 +33,25 @@ independently.
 3. Simulated reductions: no family outside the claimants gets one, and a
    household's total never exceeds its council tax. (Reported reductions,
    used where a scheme is not modelled, are outside this test.)
-4. Non-dependants: no claimant or partner of a claimant family is a
-   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no
-   member of a sharer family is one, and every adult outside the claimant
-   families, the sharer families and boarders' and lodgers' families is one.
+4. Non-dependants: no applicant or partner of a claimant family
+   (is_council_tax_reduction_applicant_or_partner) is a non-dependant (the
+   applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no member of a sharer
+   family is one except a member outside its applicant's family
+   (is_benefit_unit_non_dependant_for_council_tax_reduction), and every
+   adult outside the claimant families, the sharer families and boarders'
+   and lodgers' families is one.
 5. Differential: where the input flags exactly one member of a household,
    or no household in the simulation has the input (so the flag's formula
    picks the eldest), the family holding the head is the one holding the
    person-level is_household_head flag.
    (Every programme reads the same head; see
    test_household_head_agreement_properties.py.)
-6. Not age: with one head flagged, raising every other member's age above
-   the head's does not change who claims.
+6. Not age: with one head flagged, raising every other adult's age above
+   the head's does not change who claims. Each person's claimant-or-partner
+   role is held at the model's reading of the drawn ages: the age
+   presumption (a member 20 or more years younger than the claimant is their
+   child) would otherwise read the head, or an adult of another family, as
+   a raised member's child.
 7. No-op: where the flagged head is strictly the eldest member and the rent
    is not shared, the claimant family is the eldest adult's family, the
    previous rule.
@@ -314,8 +321,10 @@ def test_claimant_invariants(population):
     person_sharer = sharer[facts["benunit"]]
     lodger = calc(sim, "pays_rent_to_householder")
     adult = age >= 18
-    assert not np.any(non_dep & person_claimant & claimant_or_partner)
-    assert not np.any(non_dep & person_sharer)
+    applicant_or_partner = calc(sim, "is_council_tax_reduction_applicant_or_partner")
+    in_unit = calc(sim, "is_benefit_unit_non_dependant_for_council_tax_reduction")
+    assert not np.any(non_dep & person_claimant & applicant_or_partner)
+    assert not np.any(non_dep & person_sharer & ~in_unit)
     assert np.all(non_dep[adult & ~person_claimant & ~person_sharer & ~lodger])
 
     # 5. Differential with the person-level household head flag. Once anyone in
@@ -352,9 +361,11 @@ def test_claimant_does_not_follow_age(population):
 
     raised, _ = build(population, age_override=older_than_head)
     # 6. Not age.
-    before = calc(
-        Simulation(situation=situation), "council_tax_reduction_claimant_benunit"
-    )
+    drawn = Simulation(situation=situation)
+    before = calc(drawn, "council_tax_reduction_claimant_benunit")
+    roles = calc(drawn, "is_claimant_or_partner")
+    for person, role in zip(raised["people"].values(), roles):
+        person["is_claimant_or_partner"] = {YEAR: bool(role)}
     after = calc(Simulation(situation=raised), "council_tax_reduction_claimant_benunit")
     assert np.array_equal(before, after)
 

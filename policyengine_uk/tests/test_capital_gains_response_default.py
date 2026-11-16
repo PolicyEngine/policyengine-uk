@@ -463,7 +463,7 @@ def test_the_rate_on_gains_is_the_share_net_income_does_not_keep(earnings, gains
 # Marginal tax rates hold realisations fixed.
 
 
-def test_pay_rise_branches_hold_the_realisation_response():
+def test_pay_rise_branches_hold_the_realisation_response(monkeypatch):
     """A pay rise is not a reform for the response to answer.
 
     The marginal tax rate's pay-rise branch measured the reform's rate on
@@ -479,15 +479,27 @@ def test_pay_rise_branches_hold_the_realisation_response():
         situation=single(40_000, realised),
         reform={**EQUALISED_RATES, **elasticities(elasticity=0)},
     )
+    owned = []
+    original_get_branch = Simulation.get_branch
+
+    def capture(owner, name="branch", *args, **kwargs):
+        branch = original_get_branch(owner, name, *args, **kwargs)
+        if owner is reform and name.startswith("adult_") and "pay_rise" in name:
+            owned.append((name, branch))
+        return branch
+
+    monkeypatch.setattr(Simulation, "get_branch", capture)
 
     rate = values(reform, "marginal_tax_rate")[0]
     assert realised < 12_770
     assert rate == pytest.approx(values(static, "marginal_tax_rate")[0], abs=1e-6)
     assert 0 < rate < 1
-    branch = reform.branches["adult_1_pay_rise"]
+    assert owned
+    branch = owned[0][1]
     assert list(values(branch, "capital_gains_behavioural_response")) == list(
         values(reform, "capital_gains_behavioural_response")
     )
+    assert all(reform.branches.get(name) is not branch for name, branch in owned)
 
 
 def test_employer_cost_branches_hold_the_realisation_response():

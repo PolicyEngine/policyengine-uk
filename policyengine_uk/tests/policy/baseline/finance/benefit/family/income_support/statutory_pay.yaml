@@ -1,0 +1,345 @@
+# IS Regs 1987 reg 35(2)(b) excludes sickness and parental-leave remuneration
+# from earnings; reg 40(1) treats it as other income. Schedule 9 paras 1
+# and 4 permit tax, primary Class 1 NI and half of pension contributions.
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/40
+# https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/4
+#
+# Ordinary earnings independently consume the Schedule 8 disregard in these
+# targeted cases: £20 x 52 = £1,040 for lone parents, £10 x 52 = £520 for a
+# couple. Statutory pay then counts in full. The disregard is capped at net
+# earnings, so it never reaches statutory pay; earnings_disregard.yaml covers
+# statutory pay with no earnings, or with earnings below the disregard.
+# The 2025/26 lone-parent allowance is £92.05 x 52 = £4,786.60 (DWP rates).
+# https://www.legislation.gov.uk/uksi/1987/1967/schedule/8/paragraph/5
+# https://www.legislation.gov.uk/uksi/1987/1967/schedule/8/paragraph/6
+# https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+
+- name: Case 1, a claimant's statutory sick pay reduces a lone-parent award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_sick_pay: 1_000
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £1,040 earnings - £1,040 earnings disregard + £1,000 SSP = £1,000.
+    employment_income: [1_040, 0]
+    statutory_sick_pay: [1_000, 0]
+    income_tax: [0, 0]
+    national_insurance: [0, 0]
+    income_support_tariff_income: 0
+    income_support_applicable_amount: 4_786.60
+    income_support_applicable_income: 1_000
+    income_support_entitlement: 3_786.60
+    income_support: 3_786.60
+
+- name: Case 2, a claimant's statutory maternity pay reduces a lone-parent award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_maternity_pay: 2_000
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £4,786.60 - £2,000 SMP = £2,786.60.
+    income_support_applicable_income: 2_000
+    income_support_entitlement: 2_786.60
+    income_support: 2_786.60
+
+- name: Case 3, a claimant's statutory paternity pay reduces a lone-parent award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_paternity_pay: 300
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £4,786.60 - £300 SPP = £4,486.60.
+    income_support_applicable_income: 300
+    income_support_entitlement: 4_486.60
+    income_support: 4_486.60
+
+- name: Case 4, the partner's statutory sick pay counts in the couple's income.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 520
+        social_security_income: 0
+      person2:
+        age: 32
+        is_claimant_or_partner: true
+        statutory_sick_pay: 1_000
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [person1, person2]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # Reg 23(1): £520 ordinary earnings - £520 disregard + £1,000 SSP.
+    income_support_applicable_income: 1_000
+
+- name: Case 5, statutory payments add across the claimant and partner.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 520
+        statutory_sick_pay: 500
+        statutory_paternity_pay: 300
+        social_security_income: 0
+      person2:
+        age: 32
+        is_claimant_or_partner: true
+        statutory_maternity_pay: 700
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [person1, person2]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £520 - £520 + £500 SSP + £300 SPP + £700 SMP = £1,500.
+    income_support_applicable_income: 1_500
+
+- name: Case 6, another adult's statutory pay does not reduce the claimant's award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_sick_pay: 1_000
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+      person3:
+        age: 38
+        is_claimant_or_partner: false
+        statutory_maternity_pay: 1_500
+        income_tax_before_winter_fuel_payment_charge: 300
+        national_insurance: 100
+        pension_contributions: 200
+        social_security_income: 0
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    # Only the claimant and partner count (reg 23(1)); the excluded adult's
+    # £1,500 SMP and deductions do not change Case 1's income or award.
+    income_support_applicable_income: 1_000
+    income_support: 3_786.60
+
+- name: Case 7, zero statutory pay leaves the ordinary earnings disregard unchanged.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_sick_pay: 0
+        statutory_maternity_pay: 0
+        statutory_paternity_pay: 0
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    income_support_applicable_income: 0
+    income_support: 4_786.60
+
+- name: Case 8, statutory pay retains the tax NI and half-pension deductions.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 3_040
+        statutory_sick_pay: 1_000
+        # Enter actual deductions to isolate the IS calculation. This case
+        # does not assert how the annual tax and NI models calculate them.
+        # Income Support deducts income tax before the winter fuel payment
+        # charge.
+        income_tax_before_winter_fuel_payment_charge: 100
+        national_insurance: 50
+        pension_contributions: 200
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £3,040 + £1,000 - £100 - £50 - (0.5 x £200) - £1,040 = £2,750.
+    # Ordinary earnings still exceed the disregard after all deductions.
+    income_support_applicable_income: 2_750
+    income_support: 2_036.60
+
+- name: Case 9, earnings and statutory sick pay above the allowance leave no award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 6_040
+        statutory_sick_pay: 1_000
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # £6,040 - £1,040 earnings disregard + £1,000 SSP = £6,000.
+    income_support_applicable_income: 6_000
+    income_support_entitlement: 0
+    income_support: 0
+
+- name: Case 10, statutory pay does not reopen Income Support after closure.
+  # 2027 is wholly after 31 March 2026. This avoids assuming that an annual
+  # 2026 formula selects the parameter after its 1 April closure boundary.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+        hours_worked: 0
+        employment_income: 1_040
+        statutory_sick_pay: 1_000
+        social_security_income: 0
+      person2:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_IS: true
+        would_claim_uc: false
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    income_support: 0

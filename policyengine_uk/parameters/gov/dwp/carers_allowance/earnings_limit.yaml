@@ -1,4 +1,10 @@
 description: Weekly earnings above which a person is treated as gainfully employed and so is not entitled to Carer's Allowance. The test uses net earnings in the preceding week.
+# Each value is the amount the up-rating regulations set. From April 2025 the
+# Government sets it at 16 times the hourly national living wage, rounded up
+# to the nearest pound (Explanatory Memorandum to SI 2025/352, paragraph 5.6).
+# Years after the last value here are projected that way, from the national
+# living wage and gov.dwp.carers_allowance.earnings_limit_national_living_wage_hours,
+# by create_earnings_limit_projection.py.
 metadata:
   economy: false
   period: week
@@ -9,6 +15,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/1976/409/regulation/8
     - title: Social Security Contributions and Benefits Act 1992 s. 70(1)(b)
       href: https://www.legislation.gov.uk/ukpga/1992/4/section/70
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Regulations 2025 (SI 2025/352), paragraphs 5.3 and 5.6
+      href: https://www.legislation.gov.uk/uksi/2025/352/pdfs/uksiem_20250352_en_001.pdf
 values:
   2015-04-06:
     value: 110

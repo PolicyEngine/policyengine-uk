@@ -1,0 +1,16 @@
+description: The UK levies Remote Gaming Duty at this rate on chargeable non-exempt remote gaming profits.
+values:
+  '2019-04-01': 0.21
+  '2026-04-01': 0.4
+metadata:
+  unit: /1
+  period: year
+  label: remote gaming duty rate
+  reference:
+  - title: Finance Act 2014, section 155
+    href: https://www.legislation.gov.uk/ukpga/2014/26/section/155
+  - title: Finance Act 2026, section 86
+    href: https://www.legislation.gov.uk/ukpga/2026/11/section/86
+  - title: HMRC historical gambling duty rates
+    href: https://www.gov.uk/government/statistics/uk-betting-and-gaming-statistics/historical-uk-betting-and-gaming-duty-rates
+  preserve_calendar_dates: true

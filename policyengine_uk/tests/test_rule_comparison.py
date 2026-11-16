@@ -62,7 +62,9 @@ def test_a_neutralised_variable_differs(system):
 
 def test_a_replaced_formula_differs(system):
     copy = system.clone()
-    formulas = copy.variables["income_tax"].formulas
+    # A variable with a formula: income_tax itself only adds this and the
+    # winter fuel payment charge.
+    formulas = copy.variables["income_tax_before_winter_fuel_payment_charge"].formulas
     formulas[next(iter(formulas))] = lambda person, period, parameters: 0
 
     assert not same_rules(system, copy)

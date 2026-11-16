@@ -1,6 +1,35 @@
 description: Maximum value for a first-property purchase to receive the Stamp Duty relief for first-time buyers. Increasing this value will underestimate the number of claims for FTBR, as the model will not add new claims.
 values:
-  2018-03-15: 500_000
+  2003-07-10:
+    value: 0
+    metadata:
+      note: Parliament gave Schedule 6ZA effect from 22 November 2017 (Finance Act 2018 s. 41(8)). Before then a first-time buyer paid the main rates, so no purchase qualifies for the relief. The model applies no first-time buyers' relief other than Schedule 6ZA.
+      reference:
+        - title: Finance Act 2018 s. 41(8)
+          href: https://www.legislation.gov.uk/ukpga/2018/3/section/41/enacted
+  2017-11-22:
+    value: 500_000
+    metadata:
+      reference:
+        - title: Finance Act 2018 s. 41(8)
+          href: https://www.legislation.gov.uk/ukpga/2018/3/section/41/enacted
+        - title: Finance Act 2003 schedule 6ZA(1)(3)
+          href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15
+  2020-07-08:
+    value: 0
+    metadata:
+      note: The Stamp Duty Land Tax (Temporary Relief) Act 2020 omits the relief for the initial temporary relief period, so no purchase qualifies and first-time buyers pay the main rates.
+      reference:
+        - title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1(1), (5)
+          href: https://www.legislation.gov.uk/ukpga/2020/15/section/1
+  2021-07-01:
+    value: 500_000
+    metadata:
+      reference:
+        - title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1(1)(b), as amended by Finance Act 2021 s. 87(2)(a)
+          href: https://www.legislation.gov.uk/ukpga/2020/15/section/1
+        - title: Finance Act 2003 schedule 6ZA(1)(3)
+          href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA
   2022-09-23: 625_000
   2025-04-01: 500_000
 metadata:
@@ -9,5 +38,11 @@ metadata:
   reference:
     - title: Finance Act 2003 schedule 6ZA(1)(3)
       href: https://www.legislation.gov.uk/ukpga/2003/14/schedule/6ZA/2018-03-15
+    - title: Finance Act 2018 s. 41(8)
+      href: https://www.legislation.gov.uk/ukpga/2018/3/section/41/enacted
+    - title: Stamp Duty Land Tax (Temporary Relief) Act 2020 s. 1(5)
+      href: https://www.legislation.gov.uk/ukpga/2020/15/section/1
+    - title: Finance Act 2021 s. 87
+      href: https://www.legislation.gov.uk/ukpga/2021/26/section/87/enacted
     - title: Stamp Duty Land Tax (Temporary Relief) Act 2023 s. 1(5)
       href: https://www.legislation.gov.uk/ukpga/2023/2/section/1/enacted

@@ -8,22 +8,43 @@ class housing_benefit_eligible(Variable):
     documentation = (
         "Whether this family can receive Housing Benefit. A family whose "
         "claimant and any partner have reached the qualifying age for State "
-        "Pension Credit can make a new claim; it claims Universal Credit only "
-        "if DWP moved it there from Working Tax Credit "
-        "(left_pension_route_at_legacy_closure). "
-        "in_specified_or_temporary_accommodation also opens "
-        "the new-claim route at any age, including alongside Universal Credit, "
-        "and preserves existing awards. Other families keep Housing Benefit "
-        "only while they continue an existing award (reported Housing "
-        "Benefit), do not claim Universal Credit and have not been moved off "
-        "a closed legacy benefit (legacy_benefits_closed). Unprotected working-age "
-        "awards ended on 1 July 2026 in Great Britain and 1 October 2026 in "
-        "Northern Ireland, so from then only families meeting the Pension "
-        "Credit age conditions or with the accommodation input continue one. "
-        "Other unmodelled "
-        "statutory savings are listed in housing_benefit_payable_share's "
-        "documentation. Rental, capital and take-up rules still apply; "
-        "accommodation-specific eligible rent and benefit-cap rules are not "
+        "Pension Credit can make a new claim, unless DWP moved it to "
+        "Universal Credit when its legacy benefits closed and it claimed and "
+        "is entitled before benefit-cap reductions and deductions "
+        "(left_pension_route_at_legacy_closure). SI 2014/1230 reg 60A "
+        "disapplies the Universal Credit upper age condition for that claim "
+        "if, when the migration notice was issued, the claimant, or each "
+        "joint claimant, was entitled to Working Tax Credit and not to "
+        "Pension Credit; the model reads reported Working Tax Credit and "
+        "Pension Credit. Any "
+        "other family keeps Housing Benefit only while it continues an "
+        "existing award (reported Housing Benefit) and does not claim "
+        "Universal Credit. When DWP moves the family off a closed legacy "
+        "benefit (legacy_benefits_closed), the move also ends that award. "
+        "A family in specified or temporary accommodation "
+        "(in_specified_or_temporary_accommodation) can receive Housing "
+        "Benefit for it whatever its age, its Universal Credit claim or "
+        "DWP's move: it can make a new claim (SI 2014/1230 reg 6A(2); NI: "
+        "SR 2016/226 reg 4A(2)), and an existing award doesn't terminate on a "
+        "Universal Credit claim (reg 8(3); NI reg 6(3)) or when the "
+        "migration notice's deadline passes without one, whichever legacy "
+        "benefit closed (reg 46(2); NI reg 47(2)). Universal Credit then "
+        "leaves that rent out (uc_housing_costs_element), so the two awards "
+        "don't pay it twice. The tenure and capital tests still apply, and "
+        "would_claim_housing_benefit decides whether the family claims. The "
+        "Secretary of State appointed 1 July 2026 for every "
+        "other working-age award to end without a claim (SI 2025/1148 art. "
+        "7), and the Department for Communities appointed 1 October 2026 in "
+        "Northern Ireland (SR 2025/176 art. 7). The model ends the continuing "
+        "award in the year its payable share (housing_benefit_payable_share) "
+        "reaches 0, from 2027-28, and housing_benefit_pre_benefit_cap pays it "
+        "for the share of 2026-27 before that date. A family that would claim "
+        "Universal Credit then claims it when the abolition reaches its award "
+        "(claims_uc_at_legacy_closure), and the claim ends the award for the "
+        "whole year. A family meeting the Pension Credit age conditions keeps "
+        "a share of 1 (art. 7(4)(a)). Other statutory savings are not "
+        "modelled; housing_benefit_payable_share lists them. "
+        "Accommodation-specific eligible rent and benefit-cap rules are not "
         "modelled."
     )
     definition_period = YEAR
@@ -32,27 +53,35 @@ class housing_benefit_eligible(Variable):
         "https://www.legislation.gov.uk/ukpga/2002/16/section/4",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/46",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60A",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
-        "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
-        "https://www.legislation.gov.uk/nisr/2025/176/article/7",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/4A",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/47",
+        "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
+        "https://www.legislation.gov.uk/nisr/2025/176/article/7",
     )
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # Apart from the accommodation exception, new claims are barred
-        # except where the claimant, and any partner,
+        # New claims are barred except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
         # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)), or the claim
         # is made by the older member of a mixed-age couple that keeps the
         # SI 2019/37 art. 4 saving (reg 6A(5); NI reg 4A(5)). Before 15 May
         # 2019 mixed-age couples could claim too. These are the Pension
-        # Credit age conditions, which also rule out Universal Credit
-        # (is_uc_eligible), so no family on this route receives it. They read
-        # the claimant and partner (is_claimant_or_partner), so a pensioner
-        # with an 18 or 19 year old dependant can claim Housing Benefit and
-        # not Universal Credit.
+        # Credit age conditions. In the model they rule out Universal Credit
+        # (is_uc_eligible) except for a family that claims it when DWP moves
+        # it off its legacy benefits: a mixed-age couple claiming jointly
+        # (UC Regs 2013 reg 3(2)(a)), or a pension-age claimant, or joint
+        # claimants, on Working Tax Credit and not Pension Credit, for whom
+        # SI 2014/1230 reg 60A disapplies the upper age condition. Such a
+        # family leaves this route once it is entitled (below), so no family
+        # on this route receives Universal Credit. The conditions read the
+        # claimant and partner (is_claimant_or_partner), so a pensioner's 18
+        # or 19 year old dependant neither takes the family off this route
+        # nor makes it eligible for Universal Credit.
         # A family DWP moved to Universal Credit leaves this route if it
         # claims Universal Credit and is entitled before benefit-cap reductions
         # and deductions (left_pension_route_at_legacy_closure). One that does
@@ -65,26 +94,32 @@ class housing_benefit_eligible(Variable):
         # Working-age families, and mixed-age couples without the saving
         # (since 15 May 2019), claim Universal Credit instead. They keep an
         # existing award until they claim it (reg 8(2A)), so this route also
-        # rules out receiving Universal Credit. Working-age awards outside
-        # specified or temporary accommodation were abolished from 1 July
-        # 2026 in Great Britain (SI 2025/1148 art. 7) and 1 October 2026 in
-        # Northern Ireland (SR 2025/176 art. 7); a family outside the reg
-        # 6A(2)-(5) savings continues one only for the part of the year
-        # before that date (housing_benefit_payable_share).
+        # rules out receiving Universal Credit. The Secretary of State
+        # appointed 1 July 2026 for the remaining working-age awards to end
+        # without a claim (SI 2025/1148 art. 7; Northern Ireland: 1 October
+        # 2026, SR 2025/176 art. 7), but not in specified or temporary
+        # accommodation (art. 7(4)(a), through reg 6A(2); NI reg 4A(2)). A
+        # family outside the modelled savings continues one only for the part
+        # of the year before that date (housing_benefit_payable_share), so
+        # the route closes once none of the year is payable.
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("claims_universal_credit", period)
         # Once another of the family's legacy benefits has closed, DWP's
         # migration notice ends this award even if the family does not claim
-        # Universal Credit (reg 46(1)(a), (2)).
+        # Universal Credit (reg 46(1)(a)).
         migrated = benunit("legacy_benefits_closed", period)
         still_payable = benunit("housing_benefit_payable_share", period) > 0
         continuing_award = already_claiming & ~claiming_uc & ~migrated & still_payable
-        # Reg 6A(2) permits new accommodation claims irrespective of UC;
-        # reg 8(3) preserves accommodation HB when UC is claimed.
-        # NI equivalents: SR 2016/226 regs 4A(2) and 6(3).
-        protected_accommodation = benunit(
-            "in_specified_or_temporary_accommodation", period
-        )
+        # Specified or temporary accommodation: the bar on new claims doesn't
+        # apply (reg 6A(2); NI: SR 2016/226 reg 4A(2)), and an existing award
+        # terminates neither on a Universal Credit claim (reg 8(3); NI reg
+        # 6(3)) nor when the deadline passes without one (reg 46(2); NI reg
+        # 47(2)). The route reads the supplied status, not an award, so it
+        # adds no read of Universal Credit or Housing Benefit amounts.
+        # The Secretary of State excludes this rent from Universal Credit's
+        # rent payments (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B), so
+        # only Housing Benefit pays it.
+        accommodation = benunit("in_specified_or_temporary_accommodation", period)
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
         pension_age_regulations = benunit(
@@ -98,7 +133,7 @@ class housing_benefit_eligible(Variable):
             hb_capital.working_age.limit,
         )
         return (
-            (pension_age | continuing_award | protected_accommodation)
+            (pension_age | continuing_award | accommodation)
             & (social | lha_eligible)
             & (capital <= limit)
         )

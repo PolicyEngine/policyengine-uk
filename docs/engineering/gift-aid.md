@@ -84,8 +84,9 @@ order, each against the extended limits. Property income is taxed on top of
 and savings and dividends on top of `non_savings_taxable_income`
 (`earned_taxable_income` plus property income after allowances). Both bases
 derive from `net_income`, so the gift raises the limits without also shrinking
-the income beneath them. They differ only when Marriage Allowance applies,
-which `earned_taxable_income` subtracts (#1947). The Personal Savings Allowance
+the income beneath them. The two bases come to the same amount; the Marriage
+Allowance reduces neither, since the model gives it as a tax reduction at Step 6
+(`marriage_allowance_tax_reduction`). The Personal Savings Allowance
 compares net income less allowances with the UK basic and higher rate limits,
 both extended by the gross gift ([s. 12B](https://www.legislation.gov.uk/ukpga/2007/3/section/12B),
 including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).

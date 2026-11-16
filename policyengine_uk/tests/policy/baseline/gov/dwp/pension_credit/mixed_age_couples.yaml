@@ -105,6 +105,10 @@
       benunit:
         members: [older, younger]
         would_claim_uc: false
+        # The couple does not claim Universal Credit when the abolition of
+        # income-related ESA or of working-age Housing Benefit reaches its
+        # awards, so it keeps the continuing Housing Benefit award this case
+        # tests.
         would_claim_uc_at_legacy_closure: false
     households:
       household:

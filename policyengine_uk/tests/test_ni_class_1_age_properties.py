@@ -12,9 +12,9 @@ earnings e >= 0 and age a:
    earner who is not an apprentice, before the elective veterans and freeport
    reliefs and the employer-level Employment Allowance. The test people are
    not apprentices and have no employer pension contributions, so e is their
-   Class 1 earnings. Ages 16 to 20 are not checked against it: s.9A sets
-   a 0% rate for them up to the upper secondary threshold, which the model
-   does not implement.
+   Class 1 earnings. At ages 16 to 20, s.9A sets a 0% rate up to the upper
+   secondary threshold UST, so ni_class_1_employer equals
+   r * max(e - 52 * max(ST, UST), 0).
 2. Nothing under 16: for a < 16, both ni_class_1_employer and
    ni_class_1_employee are zero.
 3. Primary Class 1 stops at state pension age: when is_SP_age holds,
@@ -108,6 +108,7 @@ def simulate(policy, people):
         f"{year}-01-01"
     ).gov.hmrc.national_insurance.class_1
     values["secondary_threshold"] = class_1.thresholds.secondary_threshold
+    values["upper_secondary_threshold"] = class_1.thresholds.upper_secondary_threshold
     values["employer_rate"] = class_1.rates.employer
     return values
 
@@ -125,7 +126,7 @@ def statutory_secondary(earnings, weekly_threshold, rate):
 # working-age employee on the same pay.
 REGRESSION_EXAMPLE = (
     dict(year=2026, secondary_threshold=None, employer_rate=None),
-    [(70, 40_000.0), (35, 40_000.0)],
+    [(70, 40_000.0), (35, 40_000.0), (20, 40_000.0), (20, 60_000.0)],
 )
 
 
@@ -141,12 +142,11 @@ def test_secondary_class_1_continues_past_state_pension_age(population):
         if age < 16:
             assert model == 0
             continue
+        threshold = values["secondary_threshold"]
         if age < 21:
-            # s.9A under-21 relief is not modelled; see the module docstring.
-            continue
-        expected = statutory_secondary(
-            earnings, values["secondary_threshold"], values["employer_rate"]
-        )
+            # s.9A: 0% up to the upper secondary threshold.
+            threshold = max(threshold, values["upper_secondary_threshold"])
+        expected = statutory_secondary(earnings, threshold, values["employer_rate"])
         assert abs(model - float(expected)) <= tolerance(expected, earnings), (
             policy,
             age,

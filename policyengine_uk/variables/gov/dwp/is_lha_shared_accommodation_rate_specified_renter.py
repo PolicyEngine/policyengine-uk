@@ -14,12 +14,13 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "as a single person (reg. 3(3)), who is under the shared "
         "accommodation age threshold and not excepted by a disability benefit "
         "(para 29(5); armed forces independence payment counts as attendance "
-        "allowance, reg. 2); not responsible for a child or qualifying young "
-        "person; and with no non-dependant under the household composition "
-        "proxy. The age and the exception are the renter's own: the other "
-        "member of a couple claiming as a single person is neither the "
-        "renter nor a non-dependant (para 9(2)(b)). Other paragraph 29 "
-        "exceptions are not modelled. Housing Benefit has its own test: see "
+        "allowance, reg. 2) or as a foster parent or adopter (para 29(9A)); "
+        "not responsible for a child or qualifying young person; and with no "
+        "non-dependant under the household composition proxy. The age and "
+        "the exceptions are the renter's own: the other member of a couple "
+        "claiming as a single person is neither the renter nor a "
+        "non-dependant (para 9(2)(b)). Other paragraph 29 exceptions are not "
+        "modelled. Housing Benefit has its own test: see "
         "is_housing_benefit_young_individual and housing_benefit_LHA_category."
     )
     definition_period = YEAR
@@ -47,13 +48,18 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         renter = person("is_claimant_or_partner", period) & ~other_member
         renter_age = benunit.max(where(renter, person("age", period), -np.inf))
         # UC Sch 4 para 29(5): a renter under 35 receiving
-        # attendance allowance, DLA care at the middle or highest rate, or the
-        # PIP daily living component is excepted. Other para 29 exceptions
-        # (care leavers, hostel residents, MAPPA, domestic abuse, modern
-        # slavery, foster parents) are not observed.
+        # attendance allowance (which includes armed forces independence
+        # payment, reg 2), DLA care at the middle or highest rate, or the PIP
+        # daily living component is excepted. Other para 29 exceptions (care
+        # leavers, hostel residents, MAPPA, domestic abuse, modern slavery)
+        # are not observed.
         excepted_disabled_renter = benunit.any(
             renter
             & (add(person, period, p.shared_accommodation_exception_benefits) > 0)
+        )
+        # Para 29(9A): a renter who satisfies the foster parent condition.
+        excepted_foster_parent = benunit(
+            "lha_renter_meets_foster_parent_condition", period
         )
         return (
             (~benunit("is_couple", period) | claims_as_single_person)
@@ -68,4 +74,5 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
             )
             & ~benunit("lha_renter_has_non_dependant", period)
             & ~excepted_disabled_renter
+            & ~excepted_foster_parent
         )

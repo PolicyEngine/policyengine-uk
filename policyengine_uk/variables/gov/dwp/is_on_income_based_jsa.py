@@ -30,7 +30,8 @@ class is_on_income_based_jsa(Variable):
         "(person_legacy_benefits_closed), and the benefit unit's modelled award must "
         "be in payment: positive, or nil while jsa_income_eligible fails and "
         "jsa_income is not neutralised. On the formula path that nil comes only "
-        "from the claimant's or partner's own claim failing the screen. "
+        "from the retained value-based override convention. Formula totals "
+        "include each outside member's separately screened own award. "
         "Neutralising jsa_income removes the status; a nil jsa_income entered "
         "directly, or a reform that replaces it with nil, removes it only while "
         "the screen passes."
@@ -54,7 +55,7 @@ class is_on_income_based_jsa(Variable):
             person,
             period,
             "jsa_income",
-            works=hours >= JSA.remunerative_work.claimant_hours,
+            barred=hours >= JSA.remunerative_work.claimant_hours,
             capital_limit=JSA.income.capital.limit,
         )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

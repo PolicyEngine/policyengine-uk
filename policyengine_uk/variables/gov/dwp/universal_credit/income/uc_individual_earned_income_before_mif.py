@@ -10,7 +10,7 @@ class uc_individual_earned_income_before_mif(Variable):
     documentation = (
         "The person's actual earned income for Universal Credit: their "
         "earnings, including statutory sick, maternity and paternity pay, "
-        "less their own relievable pension contributions and their own "
+        "less allowable employment expenses, their own relievable pension contributions and their own "
         "income tax and National Insurance in respect of their employment "
         "and self-employment. Concurrent trade results include company "
         "income treated as self-employed earnings under regulation 77; "
@@ -24,8 +24,12 @@ class uc_individual_earned_income_before_mif(Variable):
     unit = GBP
     reference = [
         dict(
-            title="Universal Credit Regulations 2013 reg. 55(4) and (5)",
+            title="Universal Credit Regulations 2013 reg. 55(3)(a), (4) and (5)",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
+        ),
+        dict(
+            title="Universal Credit Regulations (Northern Ireland) 2016 reg. 55(3)(a)",
+            href="https://www.legislation.gov.uk/nisr/2016/216/regulation/55",
         ),
         dict(
             title="Universal Credit Regulations 2013 reg. 57(2)",
@@ -45,22 +49,24 @@ class uc_individual_earned_income_before_mif(Variable):
         # The deductions are the person's own and come off only their own
         # earnings, so one partner's tax, NI or pension contributions never
         # reduce the other partner's earned income.
-        # Miscellaneous income as income tax counts it, so a loss does not
-        # reduce pay (and matches uc_income_tax_on_earnings). Whether it is
-        # earnings at all is issue #1961.
+        # Miscellaneous income with a net loss counted as nil, so a loss does
+        # not reduce pay, and before the trading allowance, an income tax
+        # relief the UC earnings rules do not give (as a trade counts its
+        # profit before it). uc_income_tax_on_earnings deducts the tax on it.
+        # Whether it is earnings at all is issue #1961.
         #
         # Reg. 55(4) treats statutory sick, maternity and paternity pay as
         # employed earnings, and reg. 55(5) takes the deductions off "the
         # amount of general earnings or benefits specified in paragraphs (2)
         # to (4)". National Insurance falls on all three (ni_class_1_income)
-        # and income tax on sick and maternity pay (employment_benefits in
+        # and income tax on all three (employment_benefits in
         # taxable_employment_income), and both are deducted below. Leaving
         # the payments out of the earnings deducted the tax and National
         # Insurance on them from other earnings, so the award rose as the
         # payments rose.
         earnings_components = [
             "employment_income",
-            "taxable_miscellaneous_income",
+            "miscellaneous_income_before_trading_allowance",
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "statutory_paternity_pay",
@@ -92,8 +98,12 @@ class uc_individual_earned_income_before_mif(Variable):
             + person("uc_national_insurance_on_earnings", period)
             - person("uc_national_insurance_on_trade", period)
         )
+        # Reg. 55(3)(a) disregards expenses allowed under Chapter 2 of
+        # Part 5 ITEPA. This input is the already-allowable amount, after
+        # relevant-employment limits, not a claim for arbitrary raw costs.
         employed = (
             add(person, period, earnings_components)
+            - person("employment_expenses", period)
             - employment_tax_and_national_insurance
         )
         # Contributions paid after the person reaches 75 are not relievable

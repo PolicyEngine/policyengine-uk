@@ -36,6 +36,7 @@
     benunits:
       benunit:
         members: [claimant]
+        would_claim_uc: false
     households:
       household:
         members: [claimant]
@@ -151,6 +152,9 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 4_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       applicant_unit:
         members: [applicant]
@@ -177,6 +181,9 @@
         is_claimant_or_partner: true
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 4_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
       other:
         age: 25
         is_claimant_or_partner: false
@@ -187,6 +194,7 @@
       nondep_unit:
         members: [nondep, other]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, nondep, other]
@@ -207,6 +215,9 @@
         is_claimant_or_partner: true
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 4_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
       partner:
         age: 29
         is_claimant_or_partner: true
@@ -217,6 +228,7 @@
       nondep_unit:
         members: [payee, partner]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, payee, partner]
@@ -242,6 +254,9 @@
         is_claimant_or_partner: true
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
       partner:
         age: 29
         is_claimant_or_partner: true
@@ -254,6 +269,7 @@
       nondep_unit:
         members: [payee, partner]
         universal_credit: 0
+        would_claim_uc: false
     households:
       household:
         members: [applicant, payee, partner]
@@ -286,11 +302,17 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 200
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
       other:
         age: 25
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 3_000
+        # Under SI 2025/1148 art. 3A(2), this award stays payable for the
+        # whole year after the 1 July 2026 abolition.
+        esa_income_appointee_saving: true
     benunits:
       applicant_unit:
         members: [applicant]

@@ -16,8 +16,9 @@ def allocate_uc_reductions(
 
     pre_cap_award: universal_credit_pre_benefit_cap.
     gross_cap_reduction: uc_benefit_cap_reduction, the regulation 81 amount
-        of SI 2013/376. benefit_cap_reduction and uc_has_deduction read it
-        too, so it is never floored.
+        of SI 2013/376. uc_has_deduction reads it too, so it is never
+        floored; benefit_cap_reduction reads the applied amount returned
+        here.
     deduction_demand: the deduction rate times the standard allowance,
         before the one-penny rule.
     max_reduction: uc_maximum_reduction, infinite when no protected floor is

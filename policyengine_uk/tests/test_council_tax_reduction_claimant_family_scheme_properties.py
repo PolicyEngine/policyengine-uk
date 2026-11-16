@@ -123,9 +123,11 @@ DISABILITY = {
     "armed_forces_independence_payment": 9_000,
     "is_blind": True,
 }
-# Ages of 20 or more are never presumed to be a child of the family, so
-# changing them never changes who is a claimant or partner. The sampled values
-# sit on both sides of State Pension age.
+# Adults are 20 or more. The situation supplies their claimant-or-partner
+# role, so changing their ages never changes who is a claimant or partner
+# (without the input, a member 20 or more years younger than the claimant
+# would be presumed their child). The sampled values sit on both sides of
+# State Pension age.
 adult_age = st.one_of(
     st.sampled_from([20, 30, 45, 64, 65, 66, 67, 70, 85]), st.integers(20, 100)
 )

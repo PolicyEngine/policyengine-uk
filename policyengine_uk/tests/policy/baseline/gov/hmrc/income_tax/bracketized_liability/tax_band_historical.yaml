@@ -1,0 +1,222 @@
+# ITA 2007 s.10(2), (3), (3A): equality remains in the lower band.
+# FA 2015 s.4, as amended: basic limits 32,000 (2016-17), 33,500 (2017-18).
+# FA 2015 s.5, as amended: personal allowances 11,000 and 11,500.
+# ITA 2007 s.55B(2)(b): a higher-rate recipient cannot receive the transfer.
+# FA 2016 s.1(2) and FA 2017 s.2: basic/higher rates 20%/40%.
+# Annual labels use fiscal-year parameters but formula dispatch at 1 January.
+# Model-resident married adults below MCA age, no other income/reliefs,
+# and default claimed-election/take-up assumptions. This does not audit every
+# historical statutory election or devolved-rate condition.
+
+- name: Case 1, higher-rate spouse cannot receive Marriage Allowance in 2016.
+  # 32000 * 20% + (60,000 - 11000 - 32000) * 40% = 13200.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 60_000
+      person2:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        is_married: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    personal_allowance: [11000, 11000]
+    net_income: [60_000, 5_000]
+    tax_band: [HIGHER, NONE]
+    meets_marriage_allowance_income_conditions: [false, true]
+    marriage_allowance: [0, 0]
+    income_tax: [13200, 0]
+
+- name: Case 2, higher-rate spouse cannot receive Marriage Allowance in 2017.
+  # 33500 * 20% + (60,000 - 11500 - 33500) * 40% = 12700.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 60_000
+      person2:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        is_married: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    personal_allowance: [11500, 11500]
+    net_income: [60_000, 5_000]
+    tax_band: [HIGHER, NONE]
+    meets_marriage_allowance_income_conditions: [false, true]
+    marriage_allowance: [0, 0]
+    income_tax: [12700, 0]
+
+- name: Case 3, the basic-rate limit stays basic.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 43000
+    allowances: 11000
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 4, income above the basic-rate limit is higher.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 43000.01
+    allowances: 11000
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 5, the later historical basic-rate limit stays basic.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2017
+  input:
+    net_income: 45000
+    allowances: 11500
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 6, income above the later basic-rate limit is higher.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2017
+  input:
+    net_income: 45000.01
+    allowances: 11500
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 7, the additional-rate limit stays higher.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 150000
+    allowances: 0
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 8, the next float32 value above the additional-rate limit is additional.
+  # Classifier unit contract with supplied net income/allowances.
+  # 0.015625 is one representable float32 step at 150,000, not a tolerance.
+  period: 2016
+  input:
+    net_income: 150000.015625
+    allowances: 0
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: ADDITIONAL
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 9, zero income remains below the allowance.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 0
+    allowances: 11000
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: NONE
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 10, income at the allowance remains untaxed.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 11000
+    allowances: 11000
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: NONE
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 11, income above the allowance is basic.
+  # Classifier unit contract with supplied net income/allowances.
+  period: 2016
+  input:
+    net_income: 11000.01
+    allowances: 11000
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 12, Gift Aid extends the basic-rate limit.
+  # Classifier unit contract with supplied net income/allowances.
+  # ITA 2007 s.414(2)(b): grossed-up gift extends both limits by 2,000.
+  period: 2016
+  input:
+    net_income: 45000
+    allowances: 11000
+    gift_aid_grossed_up: 2000
+  output:
+    tax_band: BASIC
+    meets_marriage_allowance_income_conditions: true
+
+- name: Case 13, income above the extended Gift Aid limit is higher.
+  # Classifier unit contract with supplied net income/allowances.
+  # ITA 2007 s.414(2)(b): grossed-up gift extends both limits by 2,000.
+  period: 2016
+  input:
+    net_income: 45000.01
+    allowances: 11000
+    gift_aid_grossed_up: 2000
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 14, earliest model year uses the actual bracket slots.
+  # Classifier unit contract with supplied net income/allowances.
+  # Parameter-consistency control only; no full 2015 rate-law audit.
+  period: 2015
+  input:
+    net_income: 60000
+    allowances: 10600
+    gift_aid_grossed_up: 0
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 15, modern rest-of-UK routing remains unchanged away from a boundary.
+  # Existing later-method behavior preservation, not a new historical rate audit.
+  period: 2018
+  input:
+    net_income: 60_000
+    allowances: 11_850
+    pays_scottish_income_tax: false
+  output:
+    tax_band: HIGHER
+    meets_marriage_allowance_income_conditions: false
+
+- name: Case 16, modern Scottish routing remains unchanged away from a boundary.
+  # Existing 2026 parameter/dispatch control: 17,430 falls in the intermediate band.
+  # This does not audit unrelated Scottish dates or exact-boundary behavior.
+  period: 2026
+  input:
+    net_income: 30_000
+    allowances: 12_570
+    pays_scottish_income_tax: true
+  output:
+    tax_band: INTERMEDIATE
+    meets_marriage_allowance_income_conditions: true

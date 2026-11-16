@@ -10,7 +10,10 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing Benefit single personal allowance, State Pension age reached from April 2021
-  uprating: gov.benefit_uprating_cpi
+  # Equal to the Pension Credit standard minimum guarantee in 2021-2026;
+  # project at its earnings floor (SSAA 1992 s150A(2)). The HB allowance is
+  # set in Schedule 3 below.
+  uprating: gov.economic_assumptions.indices.earnings_uprating
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) (Amendment) Regulations 2021 (SI 2021/188), regulation 2(3), inserting paragraph 1(1)(c) of Schedule 3 to SI 2006/214 from 1 April 2021
       href: https://www.legislation.gov.uk/uksi/2021/188/regulation/2/made

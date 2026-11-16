@@ -36,6 +36,13 @@ the pieces to the invariants the Test job relies on:
 11. ``changed_code.py`` calls a change code exactly when a path matches a
     pattern as a workflow ``paths`` filter would (``dir/**`` is every file
     under ``dir/``), and calls an empty change list code.
+12. The slow tests in ``shard_durations.toml`` are dealt out longest first to
+    the least loaded shard, whatever order the table lists them in, so no
+    shard's listed load exceeds another's by more than the longest test; the
+    table parses and each entry names a test function that exists.
+13. With two or more shards, the last runs exactly the tests that need the
+    dataset, and ``shard_of`` over one shard fewer places the others. The
+    workflow numbers its shards from 1 to N and gives the last one one worker.
 """
 
 import ast
@@ -169,6 +176,126 @@ def test_parse_shard_rejects_anything_else(conftest, value):
 
     with pytest.raises(argparse.ArgumentTypeError):
         conftest.parse_shard(value)
+
+
+# Invariant 12: the slowest tests are dealt out by duration.
+
+_durations = st.dictionaries(nodeids, st.floats(0, 3_000, allow_nan=False), max_size=40)
+
+
+@PROPERTY_SETTINGS
+@given(durations=_durations, shards=st.integers(1, 8), data=st.data())
+def test_balanced_shards_bound_the_gap_by_the_longest_test(
+    conftest, durations, shards, data
+):
+    placed = conftest.balanced_shards(durations, shards)
+    assert placed.keys() == durations.keys()
+    assert all(1 <= shard <= shards for shard in placed.values())
+    load = [0.0] * shards
+    for nodeid, shard in placed.items():
+        load[shard - 1] += durations[nodeid]
+    assert max(load) - min(load) <= max(durations.values(), default=0) + 1e-6
+    # The same placement whatever order the table lists the tests in.
+    reordered = dict(data.draw(st.permutations(list(durations.items()))))
+    assert conftest.balanced_shards(reordered, shards) == placed
+
+
+@PROPERTY_SETTINGS
+@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 8))
+def test_shards_partition_a_collection_with_listed_tests(conftest, ids, shards):
+    listed = list(conftest.read_shard_durations())[:20]
+    collection = sorted(set(ids) | set(listed))
+    members = {
+        shard: [
+            nodeid
+            for nodeid in collection
+            if conftest.shard_of(nodeid, shards) == shard
+        ]
+        for shard in range(1, shards + 1)
+    }
+    assert sorted(sum(members.values(), [])) == collection
+
+
+def test_listed_tests_follow_the_table(conftest):
+    durations = conftest.read_shard_durations()
+    for shards in (1, 3, 5, 6):
+        placed = conftest.balanced_shards(durations, shards)
+        assert all(conftest.shard_of(n, shards) == k for n, k in placed.items())
+
+
+def test_the_checked_in_shard_durations_name_tests_that_exist(conftest):
+    durations = conftest.read_shard_durations()
+    assert durations
+    assert all(seconds > 0 for seconds in durations.values())
+    for nodeid in durations:
+        path, _, rest = nodeid.partition("::")
+        file = REPO_ROOT / path
+        assert file.exists(), nodeid
+        names = rest.split("::")
+        scope = ast.parse(file.read_text(encoding="utf-8")).body
+        for name in names[:-1]:
+            [cls] = [n for n in scope if isinstance(n, ast.ClassDef) and n.name == name]
+            scope = cls.body
+        functions = {
+            n.name
+            for n in scope
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        assert names[-1].split("[")[0] in functions, nodeid
+
+
+def test_a_missing_table_leaves_every_test_to_the_hash(conftest, tmp_path):
+    assert conftest.read_shard_durations(tmp_path / "absent.toml") == {}
+
+
+# Invariant 13: the last shard runs the tests that need the dataset.
+
+
+class _CollectedTest:
+    """What item_shard reads from a pytest item."""
+
+    def __init__(self, nodeid, needs_data):
+        self.nodeid = nodeid
+        self.needs_data = needs_data
+
+    def get_closest_marker(self, name):
+        return object() if self.needs_data and name == "microsimulation" else None
+
+
+@PROPERTY_SETTINGS
+@given(
+    collection=st.dictionaries(nodeids, st.booleans(), max_size=40),
+    shards=st.integers(2, 8),
+)
+def test_the_last_shard_runs_exactly_the_tests_that_need_the_dataset(
+    conftest, collection, shards
+):
+    for nodeid, needs_data in collection.items():
+        shard = conftest.item_shard(_CollectedTest(nodeid, needs_data), shards)
+        if needs_data:
+            assert shard == shards
+        else:
+            assert shard == conftest.shard_of(nodeid, shards - 1) < shards
+
+
+@PROPERTY_SETTINGS
+@given(nodeid=nodeids, needs_data=st.booleans())
+def test_one_shard_runs_every_test(conftest, nodeid, needs_data):
+    assert conftest.item_shard(_CollectedTest(nodeid, needs_data), 1) == 1
+
+
+def test_the_workflow_gives_the_last_shard_one_worker():
+    import yaml
+
+    workflow = GITHUB_DIR / "workflows" / "test-suite.yaml"
+    job = yaml.safe_load(workflow.read_text(encoding="utf-8"))["jobs"]["Python"]
+    shards = job["strategy"]["matrix"]["shard"]
+    assert shards == list(range(1, len(shards) + 1))
+    [step] = [step for step in job["steps"] if step.get("name") == "Run the tests"]
+    assert step["env"]["WORKERS"] == (
+        "${{ matrix.shard == strategy.job-total && 1 || 4 }}"
+    )
+    assert '-n "$WORKERS"' in step["run"]
 
 
 # Invariant 4: the collection listing.
@@ -471,6 +598,15 @@ def test_never_runs():
     raise AssertionError
 """
 
+SAMPLE_DATA_TEST = """
+import pytest
+
+
+@pytest.mark.microsimulation
+def test_needs_the_dataset():
+    pass
+"""
+
 FAILING_SUITE = """
 import pytest
 
@@ -533,6 +669,11 @@ why = "sample"
 [[allow]]
 nodeid = "suite/test_skipped_module.py"
 outcome = "collect-skipped"
+why = "sample"
+
+[[allow]]
+nodeid = "suite/test_latest_data_smoke.py::test_needs_the_dataset"
+outcome = "skipped"
 why = "sample"
 """
 
@@ -654,19 +795,32 @@ def test_a_skipped_subtest_is_not_hidden_by_its_tests_pass(tmp_path):
 
 @pytest.mark.parametrize("xdist", [(), ("-n", "2", "--dist", "worksteal")])
 def test_real_pytest_shards_pass_the_check_only_when_allowed(tmp_path, xdist):
-    _suite(tmp_path, test_sample=SAMPLE_SUITE, test_skipped_module=SKIPPED_MODULE)
+    # conftest.py verifies no dataset for a test in this file (UNPINNED_BY_DESIGN),
+    # so the run downloads nothing.
+    _suite(
+        tmp_path,
+        test_sample=SAMPLE_SUITE,
+        test_skipped_module=SKIPPED_MODULE,
+        test_latest_data_smoke=SAMPLE_DATA_TEST,
+    )
     listing = _pytest(tmp_path, "suite", "--collect-only", "-q")
     assert listing.returncode == 0, listing.stdout + listing.stderr
     collected = tmp_path / "collected.txt"
     collected.write_text(listing.stdout, encoding="utf-8")
-    assert len(checker.read_collected(listing.stdout)) == 43
+    assert len(checker.read_collected(listing.stdout)) == 44
 
     logs = _run_shards(tmp_path, 3, *xdist)
     sizes = [
         sum(not r.is_collector for r in checker.read_outcomes(log.read_text()))
         for log in logs
     ]
-    assert sum(sizes) == 43 and all(sizes)
+    assert sum(sizes) == 44 and all(sizes)
+    # The last shard runs the test that needs the dataset and nothing else.
+    assert [
+        r.nodeid
+        for r in checker.read_outcomes(logs[-1].read_text())
+        if not r.is_collector
+    ] == ["suite/test_latest_data_smoke.py::test_needs_the_dataset"]
     allowlist = tmp_path / "allow.toml"
     allowlist.write_text(SAMPLE_ALLOWLIST, encoding="utf-8")
 
@@ -786,6 +940,7 @@ CODE_PATHS = [
     ".github/**",
     "pyproject.toml",
     "uv.lock",
+    "hatch_build.py",
     "Makefile",
     "conftest.py",
     ".gitignore",
@@ -805,6 +960,7 @@ def reference_is_code(path):
         in {
             "pyproject.toml",
             "uv.lock",
+            "hatch_build.py",
             "Makefile",
             "conftest.py",
             ".gitignore",
@@ -823,6 +979,7 @@ def reference_is_code(path):
                 "docs/a.md",
                 "changelog.d/1.fixed.md",
                 "Makefile",
+                "hatch_build.py",
                 "Makefile.bak",
                 "policyengine_uk",
                 "policyengine_uk_other/x.py",

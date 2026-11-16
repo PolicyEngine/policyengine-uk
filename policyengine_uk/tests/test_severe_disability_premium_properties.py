@@ -98,9 +98,10 @@ BENEFITS = {
     "afcs_other": ({"afcs_reported": 1_000.0}, False),
 }
 benefit = st.sampled_from(sorted(BENEFITS))
-# Adults aged 20 to 60 and children under 16 are the claimant and partner, and
-# their children, under any reading of the benefit unit (18 and 19 year olds
-# can be qualifying young persons).
+# Adults aged 20 to 60 are the claimant and partner, and children under 16
+# their children; simulate() supplies those roles, since the age presumption
+# would read a partner 20 or more years younger as the claimant's child (18
+# and 19 year olds can be qualifying young persons).
 ADULT_AGE = st.integers(20, 60)
 
 
@@ -183,11 +184,19 @@ def simulate(units, variables=("severe_disability_premium",)):
         family = []
         for j, p in enumerate(family_members(unit)):
             people[f"h{i}_f{j}"] = person_inputs(p)
+            # The generated adults are the claimant and partner; children and
+            # 16-19 year olds are not.
+            people[f"h{i}_f{j}"]["is_claimant_or_partner"] = {
+                YEAR: j < len(unit["adults"])
+            }
             family.append(f"h{i}_f{j}")
         benunits[f"h{i}_family"] = {"members": family}
         members = list(family)
         for j, p in enumerate(unit["others"]):
             people[f"h{i}_o{j}"] = person_inputs(p)
+            # Each is the claimant of their own benefit unit from age 16, as
+            # the carer reference reads them.
+            people[f"h{i}_o{j}"]["is_claimant_or_partner"] = {YEAR: p["age"] >= 16}
             benunits[f"h{i}_o{j}"] = {"members": [f"h{i}_o{j}"]}
             members.append(f"h{i}_o{j}")
         hh[f"h{i}"] = {"members": members}
@@ -289,6 +298,12 @@ def _adult(benefit, blind=False, carer=False):
         # Both qualify, no carer: the double rate.
         dict(
             adults=[_adult("pip_standard"), _adult("aa_lower")],
+            children=[],
+            others=[],
+        ),
+        # The same couple 20 years apart (60 and 40) keeps the double rate.
+        dict(
+            adults=[dict(_adult("pip_standard"), age=60), _adult("aa_lower")],
             children=[],
             others=[],
         ),

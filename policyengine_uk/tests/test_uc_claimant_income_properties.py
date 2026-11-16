@@ -73,6 +73,19 @@ SHAPES = {
     "mixed_age": [PENSION_AGE, WORKING_AGE],
 }
 amount = st.one_of(st.just(0.0), st.floats(0, 30_000))
+
+
+def claimant_ages(draw, strategies):
+    """The claimants' ages, each within 19 years of the first. The age
+    presumption reads a member 20 or more years younger than the claimant as
+    their child, and invariants 2 and 5 check the model's own reading of who
+    the claimants are, so the draws keep to couples it reads as couples."""
+    ages = [draw(strategies[0])]
+    for strategy in strategies[1:]:
+        ages.append(draw(strategy.filter(lambda a, first=ages[0]: abs(a - first) < 20)))
+    return ages
+
+
 # What a dependant may receive. The last two are contributory benefits, which
 # count towards the benefit cap total when they are the claimant's.
 # Contributory ESA is left out: any member's ESA exempts the benefit unit from
@@ -143,7 +156,7 @@ def families(draw):
     if kind == "capped":
         # Claimants without earnings, several children and a high council
         # rent: over the cap unless something exempts them.
-        claimants = [dict(age=draw(age)) for age in SHAPES[shape]]
+        claimants = [dict(age=age) for age in claimant_ages(draw, SHAPES[shape])]
         return dict(
             claimants=claimants,
             dependants=draw(dependants(minimum=3)),
@@ -156,8 +169,8 @@ def families(draw):
         # Every claimant works, so the work condition is the claimants' to
         # meet.
         claimants = [
-            dict(age=draw(age), employment_income=draw(st.floats(3_000, 30_000)))
-            for age in SHAPES[shape]
+            dict(age=age, employment_income=draw(st.floats(3_000, 30_000)))
+            for age in claimant_ages(draw, SHAPES[shape])
         ]
         return dict(
             claimants=claimants,
@@ -169,12 +182,12 @@ def families(draw):
         )
     claimants = [
         dict(
-            age=draw(age),
+            age=age,
             employment_income=draw(amount),
             savings_interest_income=draw(amount),
             private_pension_income=draw(amount),
         )
-        for age in SHAPES[shape]
+        for age in claimant_ages(draw, SHAPES[shape])
     ]
     return dict(
         claimants=claimants,
@@ -258,8 +271,9 @@ def capped_families(draw):
     """Working-age claimants with no income, four or five children and a high
     council rent, so the benefit cap always bites; at least one child has
     earnings well over the earnings exception's threshold."""
+    n = draw(st.integers(1, 2))
     claimants = [
-        dict(age=draw(st.integers(25, 60))) for _ in range(draw(st.integers(1, 2)))
+        dict(age=age) for age in claimant_ages(draw, [st.integers(25, 60)] * n)
     ]
     children = [
         dict(age=draw(st.integers(0, 15)), employment_income=draw(amount))
@@ -330,14 +344,15 @@ untaxed_earnings = st.one_of(st.just(0.0), st.floats(0, 12_000))
 def untaxed_families(draw):
     """Working-age claimants whose earnings carry no tax or NI, with capital
     under the £16,000 limit (reg. 18)."""
+    n = draw(st.integers(1, 2))
     claimants = [
         dict(
-            age=draw(st.integers(25, 60)),
+            age=age,
             employment_income=draw(untaxed_earnings),
             savings_interest_income=draw(st.one_of(st.just(0.0), st.floats(0, 500))),
             private_pension_income=draw(st.one_of(st.just(0.0), st.floats(0, 500))),
         )
-        for _ in range(draw(st.integers(1, 2)))
+        for age in claimant_ages(draw, [st.integers(25, 60)] * n)
     ]
     return dict(
         claimants=claimants,

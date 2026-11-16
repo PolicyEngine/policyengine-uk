@@ -4,10 +4,14 @@ from policyengine_uk.model_api import *
 class has_own_esa_award(Variable):
     value_type = bool
     entity = Person
-    label = "has an ESA award of their own"
+    label = "has held an ESA award of their own"
     documentation = (
-        "Whether this person claims an employment and support allowance "
-        "themselves: they report contributory ESA or an income-related award. "
+        "Whether this person has held an employment and support allowance "
+        "of their own: they report contributory ESA or an income-related "
+        "award. The report records the award's history, so it counts after "
+        "the abolition of income-related ESA or a Universal Credit claim has "
+        "ended the award (esa_income_report_closed): the work capability "
+        "assessment behind it still stands. "
         "When the family's income-related award is entered directly "
         "(esa_income) rather than reported, it is attributed to one claimant: "
         "the claimant or partner who heads the benefit unit, or else the "

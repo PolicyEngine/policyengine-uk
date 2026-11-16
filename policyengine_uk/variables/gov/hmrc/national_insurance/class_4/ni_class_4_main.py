@@ -14,14 +14,14 @@ class ni_class_4_main(Variable):
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
         profits = person("ni_class_4_profits", period)
         add_rate_income = max_(
-            profits - class_4.thresholds.upper_profits_limit,
+            profits - class_4.contribution_scale.components[2].threshold,
             0,
         )
         main_rate_income = (
             max_(
-                profits - class_4.thresholds.lower_profits_limit,
+                profits - class_4.contribution_scale.components[1].threshold,
                 0,
             )
             - add_rate_income
         )
-        return main_rate_income * class_4.rates.main
+        return main_rate_income * class_4.contribution_scale.components[1].rate

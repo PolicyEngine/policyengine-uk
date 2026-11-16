@@ -7,8 +7,8 @@ care pay "are to be treated as employed earnings". Reg. 55(5) takes relievable
 pension contributions, income tax and primary Class 1 contributions off "the
 amount of general earnings or benefits specified in paragraphs (2) to (4)".
 The model has variables for the first three payments. It charges National
-Insurance on all three (ni_class_1_income) and income tax on sick and maternity
-pay (employment_benefits in taxable_employment_income), as it does on wages.
+Insurance (ni_class_1_income) and income tax (employment_benefits in
+taxable_employment_income) on all three, as it does on wages.
 
 Before this was fixed the payments were left out of earned income while the
 National Insurance on them, and the income tax on sick and maternity pay, were
@@ -45,13 +45,12 @@ or without children, in which one member receives one of the three payments:
       earnings exemption uses actual UC net earned income before the
       minimum income floor, which reg. 82(4) excludes.
 
-2. Same as wages: statutory sick or maternity pay of s on top of wages of e
-   gives the same income tax, National Insurance, earned income and award
-   before and after the benefit cap as wages of e + s. This holds for Marriage Allowance
-   claimants too. Two differences in the model's income tax are left out
-   (counts_as_wages): it charges no income tax on statutory paternity pay, and
-   it caps pension contribution relief at employment and self-employment
-   income without statutory pay.
+2. Same as wages: statutory sick, maternity or paternity pay of s on top of
+   wages of e gives the same income tax, National Insurance, earned income
+   and award before and after the benefit cap as wages of e + s. This holds
+   for Marriage Allowance claimants too. One difference in the model's income
+   tax is left out (counts_as_wages): it caps pension contribution relief at
+   employment and self-employment income without statutory pay.
 
 3. Accounting: a person's earned income before the minimum income floor is
    their wages, statutory pay and trading profit (a loss counts as nil) less
@@ -104,7 +103,11 @@ PAYMENTS = [
     "statutory_paternity_pay",
 ]
 # The model charges income tax on these, as on wages (employment_benefits).
-TAXED_AS_WAGES = ["statutory_sick_pay", "statutory_maternity_pay"]
+TAXED_AS_WAGES = [
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "statutory_paternity_pay",
+]
 BENEFITS = list(dict.fromkeys(HOUSEHOLD_BENEFIT_VARIABLES))
 # Wages and payments on and around the 2026-27 thresholds: the personal
 # allowance and primary threshold (12,570), the basic rate limit (50,270) and
@@ -135,7 +138,9 @@ def adults(draw, marriage_allowance):
 
 
 @st.composite
-def families(draw, marriage_allowance=False, dependant_recipient=False):
+def families(
+    draw, marriage_allowance=False, dependant_recipient=False, payments=PAYMENTS
+):
     members = draw(st.lists(adults(marriage_allowance), min_size=1, max_size=2))
     child_ages = draw(st.lists(st.sampled_from([1, 6, 13]), max_size=3))
     if dependant_recipient:
@@ -158,7 +163,7 @@ def families(draw, marriage_allowance=False, dependant_recipient=False):
         tenure=draw(st.sampled_from(["RENT_FROM_COUNCIL", "RENT_PRIVATELY"])),
         rent=float(draw(st.sampled_from([0, 7_200, 18_000, 36_000]))),
         recipient=recipient,
-        payment=draw(st.sampled_from(PAYMENTS)),
+        payment=draw(st.sampled_from(payments)),
         low=float(low),
         high=float(high),
     )
@@ -381,7 +386,6 @@ def test_each_payment_is_household_income_and_government_spending():
 def counts_as_wages(family):
     """Whether the model taxes the family's payment exactly as it taxes wages.
 
-    It charges no income tax on statutory paternity pay. And
     pension_contributions_relief caps relief at employment and self-employment
     income, which leaves statutory pay out: a recipient whose wages and profit
     are below their pension contributions gets less relief on statutory pay
@@ -538,6 +542,44 @@ ARCHETYPES = {
         [adult(profit=5_000)], rent=9_600
     ),
 }
+
+
+@PROPERTY_SETTINGS
+@given(population=populations(payments=["statutory_paternity_pay"]))
+def test_uc_does_not_increase_as_statutory_paternity_pay_rises(population):
+    # Keep one taxable, positive-award case in every generated population,
+    # so an all-zero set of awards cannot satisfy the property vacuously.
+    pinned = dict(
+        ARCHETYPES["lone parent on 20,000"],
+        payment="statutory_paternity_pay",
+        low=0.0,
+        high=388.64,
+    )
+    # No Marriage Allowance is drawn. With no childcare costs, a payment
+    # starting from nil cannot open a new childcare element either.
+    population = [pinned] + [dict(family, childcare=0.0) for family in population]
+    results = Results(population)
+    before_cap = {
+        version: results.families("universal_credit_pre_benefit_cap", version)
+        for version in (LOW, HIGH)
+    }
+    award = {
+        version: results.families("universal_credit", version)
+        for version in (LOW, HIGH)
+    }
+    exempt = {
+        version: results.families("is_uc_benefit_cap_exempt", version)
+        for version in (LOW, HIGH)
+    }
+    assert np.all(before_cap[HIGH] <= before_cap[LOW] + TOLERANCE), population
+    assert np.all(exempt[HIGH] >= exempt[LOW]), population
+    newly_exempt = (exempt[LOW] == 0) & (exempt[HIGH] != 0)
+    assert np.all(newly_exempt | (award[HIGH] <= award[LOW] + TOLERANCE)), population
+    assert award[LOW][0] > 0 and award[HIGH][0] > 0
+    assert award[HIGH][0] < award[LOW][0] - TOLERANCE
+    assert results.recipient("income_tax", 0, HIGH) > results.recipient(
+        "income_tax", 0, LOW
+    )
 
 
 def along_paths(bases, payments, variables):

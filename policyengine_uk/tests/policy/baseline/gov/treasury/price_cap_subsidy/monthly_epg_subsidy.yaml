@@ -1,0 +1,11 @@
+- name: Case 1, Northern Ireland receives no Energy Price Guarantee before November 2022.
+  period: 2022-10
+  absolute_error_margin: 0.01
+  input:
+    country:
+      2022: NORTHERN_IRELAND
+    monthly_domestic_energy_consumption: 100
+  output:
+    # Northern Ireland's scheme began on 1 November 2022.
+    # https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023#how-the-epg-applied-in-northern-ireland
+    monthly_epg_subsidy: 0

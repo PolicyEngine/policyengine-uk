@@ -217,3 +217,110 @@
     employment_income: 100_000
   output:
     ni_class_1_employer: 13_680.45  # 0.1505 x (100,000 - 9,100)
+
+# SSCBA 1992 s.9A: the secondary percentage is 0% for an earner under 21 on
+# earnings up to the upper secondary threshold (UST). s.9B: the same for a
+# relevant apprentice under 25 up to the apprentice upper secondary threshold
+# (AUST). Earnings above the UST or AUST bear the ordinary secondary
+# percentage (s.9A(9)-(10), s.9B(7)). SI 2001/1004 reg 10(e)-(f) sets both at
+# £967 a week for 2026-27, and reg 11(3B)-(3C) at £50,270 for an annual
+# earnings period; the model stores 50,270 / 52 = 966.73 a week, as it does
+# for the upper earnings limit.
+
+- name: No employer NI on an earner aged 20 below the upper secondary threshold (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 20
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 0
+
+- name: Employer NI on an earner aged 20 only above the upper secondary threshold (2026)
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    age: 20
+    employment_income: 60_000
+  output:
+    ni_class_1_employer: 1_459.50  # 0.15 x (60,000 - 50,270)
+
+- name: An earner aged 21 bears the full employer rate (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 21
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 3_750  # 0.15 x (30,000 - 5,000)
+
+- name: No employer NI on an apprentice aged 24 below the apprentice upper secondary threshold (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 24
+    is_apprentice: true
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 0
+
+- name: An apprentice aged 25 bears the full employer rate (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 25
+    is_apprentice: true
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 3_750  # 0.15 x (30,000 - 5,000)
+
+- name: A non-apprentice aged 22 bears the full employer rate (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 22
+    is_apprentice: false
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 3_750
+
+- name: No employer NI on an earner aged 18 in 2024-25 below the upper secondary threshold
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 18
+    employment_income: 30_000
+  output:
+    ni_class_1_employer: 0
+
+- name: The under-21 zero rate applies from 2015-16 (UST £815 a week)
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 19
+    ni_class_1_income: 50_000
+  output:
+    ni_class_1_employer: 1_051.56  # 0.138 x (50,000 - 815 x 52 = 42,380)
+
+# s.9B took effect from 6 April 2016, so a 2015-16 apprentice aged 23 bears
+# the full rate above the £8,112 secondary threshold.
+
+- name: No apprentice zero rate in 2015-16
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 23
+    is_apprentice: true
+    ni_class_1_income: 30_000
+  output:
+    ni_class_1_employer: 3_020.54  # 0.138 x (30,000 - 8,112) = 3,020.544
+
+- name: The apprentice zero rate applies from 2016-17 (AUST £827 a week)
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 23
+    is_apprentice: true
+    ni_class_1_income: 30_000
+  output:
+    ni_class_1_employer: 0

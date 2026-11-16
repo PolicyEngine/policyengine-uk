@@ -1,8 +1,16 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 
 
 class employer_ni_response_consumer_incidence(Variable):
     label = "price response to employer NI reform"
+    documentation = (
+        "The part of a change in employer National Insurance that falls on "
+        "consumers through prices, shared by each household's "
+        "consumption_shareholding and split equally among its members. The "
+        "change is the simulation's own total, which a household situation "
+        "cannot know for the UK, so a situation gets 0."
+    )
     entity = Person
     definition_period = YEAR
     value_type = float
@@ -14,8 +22,9 @@ class employer_ni_response_consumer_incidence(Variable):
             # If consumer incidence is zero, or if the employee incidence is 100%, then there is no capital incidence.:
             return 0
 
-        if not hasattr(person.simulation, "dataset"):
-            # In single-household simulations, we can't automatically put revenue into price increases because we don't know the revenue.
+        if not built_from_data(person.simulation):
+            # A household situation cannot know how much employers pay across
+            # the UK, so it takes no share of it.
             return 0
 
         person_weight = person("person_weight", period)
@@ -24,19 +33,9 @@ class employer_ni_response_consumer_incidence(Variable):
         change_in_employer_cost = employer_cost - baseline_employer_cost
         amount_paid_by_employers = (person_weight * change_in_employer_cost).sum()
 
-        consumption = (
-            person.household("consumption", period) / person.household.nb_persons()
+        # Each member takes an equal part of the household's share.
+        share = (
+            person.household("consumption_shareholding", period)
+            / person.household.nb_persons()
         )
-        total_consumption = (consumption * person_weight).sum()
-        share_of_total_consumption = consumption / total_consumption
-
-        value = (
-            amount_paid_by_employers
-            * share_of_total_consumption
-            * emp_ni.consumer_incidence
-        )
-
-        if total_consumption == 0:
-            return 0
-
-        return value
+        return amount_paid_by_employers * share * emp_ni.consumer_incidence

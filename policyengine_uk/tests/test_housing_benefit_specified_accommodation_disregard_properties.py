@@ -9,8 +9,8 @@ or partner is an employed or self-employed earner: £61.41 for a single
 claimant or lone parent under 25, £77.73 at 25 or over; for a couple £97.33
 where both are under 18, £61.53 where one is 18 or over but both are under
 25, and £119.70 where one is 25 or over. A couple has one amount. It is added
-to the £5/£10/£25 disregards (paras 10, 7 and 4), and para 17(3)(a) counts it
-in the £17.10 additional disregard's earnings test. The pension-age
+to the £5/£10/£20/£25 disregards (paras 10, 7, 3 and 4), and para 17(3)(a)
+counts it in the £17.10 additional disregard's earnings test. The pension-age
 Regulations (SI 2006/214; NI SR 2006/406) have no such disregard.
 
 Invariants, for 2027 (the first fiscal year the model reads with para 18 in
@@ -32,9 +32,12 @@ income-based JSA or income-related ESA:
 5. Differential: the model agrees with a reference written from the
    statutory text. The reference is independent for the para 18 bands and
    gates (amounts hard-coded from the instrument, ages, family type, earner
-   and pension-age status from the generated inputs) and for how paras 4, 7,
-   10, 17 and 18 combine. It takes net earnings, deductible childcare and
-   the para 17(2) work condition from the model, which other tests cover.
+   and pension-age status from the generated inputs) and for how paras 3, 4,
+   7, 10, 17 and 18 combine. It takes net earnings, deductible childcare,
+   the para 17(2) work condition and whether the para 3 special £20 applies
+   from the model, which other tests cover
+   (test_housing_benefit_earnings_disregard_properties.py tests the special
+   £20).
    Explicit examples pin the age boundaries (couples aged 17/17, 17/18 and
    24/25; single claimants and lone parents aged 24 and 25).
 6. Scope: families whose claimant and partner are all over State Pension
@@ -80,6 +83,8 @@ STATUTORY_WEEKLY = {
 }
 # Paras 4, 7 and 10, and para 17.
 BASE_WEEKLY = {"single": 5, "lone_parent": 25, "couple": 10, "couple_with_children": 10}
+# Para 3: replaces the single or couple amount; a lone parent keeps £25.
+SPECIAL_WEEKLY = 20
 ADDITIONAL_WEEKLY = 17.10
 MAX_ANNUAL = (25 + COUPLE_25_PLUS + ADDITIONAL_WEEKLY) * WEEKS
 
@@ -198,6 +203,7 @@ VARIABLES = [
     "housing_benefit_applicable_income",
     "housing_benefit_applicable_income_childcare_element",
     "meets_housing_benefit_additional_earnings_disregard_conditions",
+    "housing_benefit_special_earnings_disregard_eligible",
     "housing_benefit_pension_age_regulations_apply",
 ]
 
@@ -229,10 +235,14 @@ def reference_para_18_weekly(unit):
     return SINGLE_25_PLUS if eldest >= 25 else SINGLE_UNDER_25
 
 
-def reference_disregard(unit, net, childcare, work_condition):
-    """Paras 4, 7, 10, 17 and 18 combined, from net earnings, the deductible
-    childcare charges and whether a para 17(2) work condition is met."""
-    standard = min(BASE_WEEKLY[unit["shape"]] * WEEKS, net)
+def reference_disregard(unit, net, childcare, work_condition, special=False):
+    """Paras 3, 4, 7, 10, 17 and 18 combined, from net earnings, the deductible
+    childcare charges, whether a para 17(2) work condition is met and whether
+    the para 3 special £20 applies."""
+    weekly = BASE_WEEKLY[unit["shape"]]
+    if special and unit["shape"] != "lone_parent":
+        weekly = SPECIAL_WEEKLY
+    standard = min(weekly * WEEKS, net)
     accommodation = min(reference_para_18_weekly(unit) * WEEKS, net - standard)
     additional = ADDITIONAL_WEEKLY * WEEKS
     covers = round(net, 2) >= round(
@@ -367,6 +377,9 @@ def test_differential_against_the_statutory_reference(units):
                 values[
                     "meets_housing_benefit_additional_earnings_disregard_conditions"
                 ][i]
+            ),
+            special=bool(
+                values["housing_benefit_special_earnings_disregard_eligible"][i]
             ),
         )
         total = values["housing_benefit_applicable_income_disregard"][i]

@@ -23,7 +23,12 @@ class new_state_pension(Variable):
         pension_type = person("state_pension_type", period)
         eligible = pension_type == pension_type.possible_values.NEW
 
-        reported_weekly = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
+        # The age addition is paid by state_pension_age_addition, so split
+        # the reported amount without it.
+        reported_weekly = (
+            person("state_pension_reported_excluding_age_addition", data_year)
+            / WEEKS_IN_YEAR
+        )
         # state_pension_reported was observed under the legislated rates, so
         # split it at the baseline's data-year rate, not the reformed one.
         # Otherwise a reform that also sets the data year's rate (an undated

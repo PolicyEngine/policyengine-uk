@@ -240,10 +240,13 @@
       older:
         age: 70
         self_employment_income: 3_000
+        is_claimant_or_partner: true
       younger:
         age: 40
         self_employment_income: 3_000
+        is_claimant_or_partner: true
   output:
+    relation_type: COUPLE
     uc_mif_applies: [false, true]
 
 - name: A partner who cannot be a joint claimant is not a claimant

@@ -6,4 +6,3 @@ class car_is_ved_exempt(Variable):
     entity = Person
     definition_period = YEAR
     label = "Car has a vehicle excise duty exemption"
-    unit = "/1"

@@ -13,10 +13,14 @@ class ni_class_1_employee_additional(Variable):
         income = person("ni_class_1_income", period)
         parameters = parameters(period).gov.hmrc.national_insurance.class_1
         upper_earnings_limit = (
-            parameters.thresholds.upper_earnings_limit * WEEKS_IN_YEAR / MONTHS_IN_YEAR
+            parameters.employee_scale.components[2].threshold
+            * WEEKS_IN_YEAR
+            / MONTHS_IN_YEAR
         )
         upper_earnings_limit_income = max_(income - upper_earnings_limit, 0)
-        ordinary = parameters.rates.employee.additional * upper_earnings_limit_income
+        ordinary = (
+            parameters.employee_scale.components[2].rate * upper_earnings_limit_income
+        )
         directors = parameters.directors.full_year_category_a_2022_23
         if not directors.in_effect:
             return ordinary

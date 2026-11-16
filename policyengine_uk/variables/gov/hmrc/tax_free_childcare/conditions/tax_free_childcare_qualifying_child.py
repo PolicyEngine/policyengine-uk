@@ -21,4 +21,13 @@ class tax_free_childcare_qualifying_child(Variable):
             "is_looked_after_by_local_authority",
             period,
         )
-        return meets_age_condition & ~is_parent & ~looked_after_by_local_authority
+        # Childcare Payments (Eligibility) Regs 2015 reg 4(2)(c)-(d): no one is
+        # responsible for a child looked after by a local authority, or placed
+        # for adoption in the home of a person proposing to adopt them.
+        placed_for_adoption = person("is_placed_for_adoption", period)
+        return (
+            meets_age_condition
+            & ~is_parent
+            & ~looked_after_by_local_authority
+            & ~placed_for_adoption
+        )

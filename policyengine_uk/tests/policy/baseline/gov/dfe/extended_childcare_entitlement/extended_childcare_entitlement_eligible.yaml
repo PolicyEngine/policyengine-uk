@@ -178,6 +178,76 @@
   output:
     extended_childcare_entitlement_eligible: false
 
+# DfE's statutory guidance (April 2026, footnotes 7 and 17, paras A4.8 and
+# C.6): a child in a state-funded or council-funded reception class is not
+# entitled to free hours outside the school place, though it is still under
+# compulsory school age. A child starting reception in September (C.5) still
+# qualifies for the summer term.
+- name: Not eligible - the only child is at school all year
+  period: 2026
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 4
+        early_years_term_share_before_school: 0
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_qualifying_child: [false, false]
+    extended_childcare_entitlement_eligible: false
+
+- name: Eligible - a child at school all year with a 2-year-old sibling
+  period: 2026
+  input:
+    households:
+      household1:
+        members: [parent1, child1, child2]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 4
+        early_years_term_share_before_school: 0
+      child2:
+        age: 2
+    benunits:
+      benunit1:
+        members: [parent1, child1, child2]
+  output:
+    extended_childcare_entitlement_qualifying_child: [false, false, true]
+    extended_childcare_entitlement_eligible: true
+
+- name: Eligible - a 4-year-old starting reception in September
+  period: 2026
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 4
+        date_of_birth: 20220831
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_qualifying_child: [false, true]
+    extended_childcare_entitlement_eligible: true
+
 - name: Not eligible - no children
   period: 2025
   input:

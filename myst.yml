@@ -17,9 +17,11 @@ project:
       - file: docs/book/usage/simulations.md
       - file: docs/book/usage/scenarios.md
       - file: docs/book/usage/dynamics.md
-    # Pages listed by `file:` keep their place at the top of a section. Any other
-    # Markdown page in a section's folder is added after them by `pattern:`, so a
-    # new page needs no change here. Notebooks are not pattern-matched.
+    # A `file:` entry fixes its page's place in a section. A `pattern:` entry
+    # adds, at its own place, any other Markdown page in a section's folder, so a
+    # new page needs no change here. The patterns match only Markdown, so each
+    # notebook needs its own `file:` entry, and
+    # policyengine_uk/tests/code_health/test_docs_toc.py fails when one has none.
     - title: Assumptions
       children:
       - file: docs/book/assumptions/growthfactors.md
@@ -28,17 +30,28 @@ project:
     - title: Validation
       children:
       - file: docs/book/validation/hbai.md
+      - file: docs/book/validation/spi-validation.ipynb
+      - file: docs/book/validation/student-loan-repayments.ipynb
       - pattern: docs/book/validation/*.md
     - title: Policy
       children:
       - file: docs/engineering/excise-duties.md
+      - file: docs/engineering/gambling-duties.md
       - file: docs/engineering/bus-fares.md
       - file: docs/engineering/vat-coverage.md
       - pattern: docs/book/policy/*.md
     - title: Programmes
       children:
       - file: docs/book/programs/contrib/ubi-center/carbon-tax.ipynb
+      - file: docs/book/programs/gov/dwp/pension-credit.ipynb
+      - file: docs/book/programs/gov/hmrc/stamp-duty.ipynb
       - pattern: docs/book/programs/gov/*/*.md
+      - file: docs/book/programs/gov/dfe/care-to-learn.ipynb
+      - file: docs/book/programs/gov/dfe/extended-childcare-entitlement.ipynb
+      - file: docs/book/programs/gov/dfe/targeted-childcare-entitlement.ipynb
+      - file: docs/book/programs/gov/dfe/universal-childcare-entitlement.ipynb
+      - file: docs/book/programs/gov/dwp/housing-benefit.ipynb
+      - file: docs/book/programs/gov/hmrc/tax-free-childcare.ipynb
 site:
   options:
     logo: docs/book/logo.png

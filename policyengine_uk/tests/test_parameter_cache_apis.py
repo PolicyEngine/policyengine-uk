@@ -38,6 +38,7 @@ def small_system():
     system.dated_assignments = []
     system.legacy_overrides = []
     system._projected_timelines = {}
+    system._enacted_parameters = tbs_module.statutory_parameters()
     system._raw_parameters = None
     system._parameters_before_reset = None
     system.capital_gains_projection = None

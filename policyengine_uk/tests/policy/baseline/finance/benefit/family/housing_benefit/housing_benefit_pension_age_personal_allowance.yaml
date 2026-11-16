@@ -214,10 +214,12 @@
         age: 80
         months_since_last_birthday: 4.1613
         is_male: true
+        is_claimant_or_partner: true
       younger:
         age: 60
         months_since_last_birthday: 9.1613
         is_male: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -227,6 +229,7 @@
         housing_benefit_pension_age_regulations_apply: true
         benefits_premiums: 0
   output:
+    relation_type: COUPLE
     housing_benefit_attained_pension_age_before_cutoff: true
     housing_benefit_applicable_amount: 383.35 * 52  # para 1(2)(b), older attained 1 June 2011, younger attained 1 January 2033
 

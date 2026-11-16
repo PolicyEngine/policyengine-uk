@@ -24,7 +24,10 @@ Invariants:
    index, CPI times the change in the Universal Credit Act 2025 s.1 uplift,
    and are checked against it like any other series. The LCWRA element is
    checked against its own uprating index, which holds it for 2026-27 to
-   2029-30 as s.3 freezes it.
+   2029-30 as s.3 freezes it. The full new and basic State Pension rates
+   then round to the nearest 5p, as each Up-rating Order rounds them
+   (``create_rate_projection``): 241.30 x 1.039 = 250.7107 gives 250.70, and
+   184.90 x 1.039 = 192.1111 gives 192.10.
 4. Housing Benefit non-dependant deductions: each year's bands and deductions
    are the published ones, and the scale, read with lower edges inclusive as
    reg 74(2) words them ("not less than"), never falls as income rises.
@@ -32,6 +35,7 @@ Invariants:
    apply the reg 74(6)-(7) exemptions; that is a separate fix.)
 """
 
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 import numpy as np
@@ -46,6 +50,12 @@ FIXTURE = yaml.safe_load(
     ).read_text()
 )
 PARAMETERS = FIXTURE["parameters"]
+# Rates projected to the nearest multiple of WEEKLY_RATE_ROUNDING.
+WEEKLY_RATE_ROUNDING = "gov.dwp.state_pension.weekly_rate_rounding"
+ROUNDED_WEEKLY_RATES = (
+    "gov.dwp.state_pension.basic_state_pension.amount",
+    "gov.dwp.state_pension.new_state_pension.amount",
+)
 
 
 def node(name: str):
@@ -90,6 +100,10 @@ def test_projection_continues_from_last_published_rate(name):
     index = node(uprating if isinstance(uprating, str) else uprating["parameter"])
     ratio = index(f"{last + 1}-01-01") / index(f"{last}-01-01")
     expected = PARAMETERS[name]["values"][last] * ratio
+    if name in ROUNDED_WEEKLY_RATES:
+        unit = Decimal(repr(node(WEEKLY_RATE_ROUNDING)(f"{last + 1}-04-30")))
+        steps = (Decimal(repr(expected)) / unit).quantize(Decimal(1), ROUND_HALF_UP)
+        expected = float(steps * unit)
     assert parameter(f"{last + 1}-04-30") == pytest.approx(expected, rel=1e-6)
 
 
