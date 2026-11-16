@@ -390,6 +390,18 @@ SUMS = {
 # income could move it by a pound only in the taper, above £100,000 of net
 # income, where ``_low_precision`` keeps the room anyway.
 EXACT = ("personal_allowance",)
+# The amounts the rate test reads beside net income and the allowances, which
+# hold them as parts: savings, dividends and property income in net income
+# with the trade loss relief taken off it, and pension relief in the
+# allowances. ``_can_hide_an_excess`` bounds each on its own where the walk
+# from net income and the allowances does not reach it.
+READ_WITH_NET_INCOME = (
+    "taxable_savings_interest_income",
+    "taxable_dividend_income",
+    "taxable_property_income",
+    "trade_loss_relief_against_general_income",
+    "pension_contributions_relief",
+)
 # The variables on earned_taxable_income_exclusions that the allocation sets
 # rather than reads.
 ALLOCATED_EXCLUSIONS = (
@@ -623,6 +635,15 @@ def _whole_pence(amount):
     return np.round(amount / PENNY) * PENNY
 
 
+def _entry_error(amount):
+    """How far an entry the model holds as ``amount`` can sit from the amount
+    entered: its distance from whole pence under ``INDISTINCT``, and no bound
+    from there."""
+    return np.where(
+        np.abs(amount) < INDISTINCT, np.abs(amount - _whole_pence(amount)), np.inf
+    )
+
+
 def _listed(person, period, variables):
     """The variables an ``adds`` or ``subtracts`` attribute names, which can
     be a list or the path of a parameter that holds one."""
@@ -672,11 +693,6 @@ def _held_error(person, period, income_tax, name, known):
     def error(variable):
         return _held_error(person, period, income_tax, variable, known)
 
-    def entry_error(amount):
-        return np.where(
-            np.abs(amount) < INDISTINCT, np.abs(amount - _whole_pence(amount)), np.inf
-        )
-
     def unless_nil(amount, bound):
         return np.where(amount == 0, 0.0, bound)
 
@@ -686,7 +702,7 @@ def _held_error(person, period, income_tax, name, known):
         # The model reads this amount as supplied and never works out its
         # parts, so neither does this function: a part can be a formula the
         # tax calculation would not otherwise run.
-        known[name] = entry_error(held)
+        known[name] = _entry_error(held)
         return known[name]
     plus, minus, floored, after = (), (), False, ()
     if name == "net_income_before_trade_loss_relief":
@@ -705,7 +721,7 @@ def _held_error(person, period, income_tax, name, known):
         bound = np.zeros_like(held)
     elif name == "trade_loss_relief_against_general_income":
         loss = values("trading_loss")
-        bound = unless_nil(held, np.where(held == loss, entry_error(loss), np.inf))
+        bound = unless_nil(held, np.where(held == loss, _entry_error(loss), np.inf))
     elif name == "pension_contributions_relief":
         contributions = values("pension_contributions")
         bound = unless_nil(
@@ -721,7 +737,7 @@ def _held_error(person, period, income_tax, name, known):
         total = total + sum((values(part) for part in after), np.zeros_like(held))
         bound = np.abs(held - total) + sum(error(part) for part in plus + minus + after)
     elif variable.is_input_variable():
-        bound = entry_error(held)
+        bound = _entry_error(held)
     else:
         bound = unless_nil(held, np.inf)
     known[name] = bound
@@ -748,20 +764,27 @@ def _can_hide_an_excess(person, period, income_tax, limits, earned_exclusions):
     stay below that least excess. An exclusion from earned income, which only
     a reform gives, gets no bound."""
     known = {}
-    names = ["net_income", "allowances"]
-    # Counted in net income unless a reform takes them out of its parts.
-    names += [
-        name
-        for name in ("taxable_savings_interest_income", "taxable_dividend_income")
-        if name not in income_tax.adjusted_net_income_components
-    ]
-    bound = sum(_held_error(person, period, income_tax, name, known) for name in names)
-    gift = np.asarray(person("gift_aid", period), dtype=np.float64)
-    held_gross = np.asarray(person("gift_aid_grossed_up", period), dtype=np.float64)
-    gross = _whole_pence(gift) / (1 - income_tax.rates.uk.rates[0])
-    bound = bound + np.where(
-        np.abs(gift) < INDISTINCT, np.abs(held_gross - gross), np.inf
+    bound = sum(
+        _held_error(person, period, income_tax, name, known)
+        for name in ("net_income", "allowances")
     )
+    # The walk reaches the other amounts the test reads, unless it stopped at
+    # a supplied amount above them or a reform took them out of the parts of
+    # net income. Then each gets its own bound.
+    for name in READ_WITH_NET_INCOME:
+        if name not in known:
+            bound = bound + _held_error(person, period, income_tax, name, known)
+    held_gross = np.asarray(person("gift_aid_grossed_up", period), dtype=np.float64)
+    if is_supplied_input(person, "gift_aid_grossed_up", period, held_gross):
+        # A gross gift supplied in place of its formula is an entry.
+        gross = _whole_pence(held_gross)
+        bound = bound + _entry_error(held_gross)
+    else:
+        gift = np.asarray(person("gift_aid", period), dtype=np.float64)
+        gross = _whole_pence(gift) / (1 - income_tax.rates.uk.rates[0])
+        bound = bound + np.where(
+            np.abs(gift) < INDISTINCT, np.abs(held_gross - gross), np.inf
+        )
     bound = bound + np.where(earned_exclusions == 0, 0.0, np.inf)
     least_excess = PENNY
     for limit in (limits.non_savings, limits.basic_rate):
