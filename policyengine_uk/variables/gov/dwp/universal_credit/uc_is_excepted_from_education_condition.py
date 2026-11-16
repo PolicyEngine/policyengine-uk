@@ -20,12 +20,19 @@ class uc_is_excepted_from_education_condition(Variable):
         "parent; (f) the member of a mixed-age couple who has reached the "
         "qualifying age for State Pension Credit; and reg. 60(1), a member of "
         "a family that claims Universal Credit when DWP moves it off its "
-        "legacy benefits (claims_uc_at_legacy_closure), which the model takes "
+        "legacy benefits, or when the abolition of income-related ESA or "
+        "working-age Housing Benefit reaches its award "
+        "(claims_uc_at_legacy_closure), which the model takes "
         "as the qualifying claim under reg. 48 of the 2014 Regulations, and who "
         "doesn't count "
         "as a qualifying young person for the condition "
         "(is_qualifying_young_person_for_uc_education, which applies reg. 28 "
-        "of the 2014 Regulations). The model needs no rule of its own for limb "
+        "of the 2014 Regulations). Reg. 48 needs a claim by a person DWP sent "
+        "a migration notice (reg. 44(6)). Reg. 44(3C) to (3E) let a notice to "
+        "an income-related ESA or Housing Benefit claimant set the abolition "
+        "day as its deadline; the model assumes a family whose award the "
+        "abolition reaches had such a notice. The model needs no rule of its "
+        "own for limb "
         "(e)(i): it places responsibility for a child on the benefit unit, so "
         "both members of the couple meet (c). Under (b), the decision maker "
         "must determine limited capability for work before the course starts. "
@@ -62,6 +69,7 @@ class uc_is_excepted_from_education_condition(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/44",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/48",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
