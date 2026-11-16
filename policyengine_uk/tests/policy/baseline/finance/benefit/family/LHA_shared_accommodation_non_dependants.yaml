@@ -13,10 +13,10 @@
 #
 # A 16-year-old is a dependant only within each scheme's young person test.
 # Outside it, they are a non-dependant. Either way the renter misses the shared
-# rate. The cases with a 16-year-old outside both tests set
+# rate. The cases with a 16-year-old set
 # is_before_first_september_following_16th_birthday to false for every person,
 # so that neither UC reg 5(1)(a) nor Child Benefit (General) Regs 2006 reg 4
-# holds.
+# holds: a 16-year-old in education is a young person through education alone.
 #
 # Bedrooms: everyone aged 16 or over other than the claimant or partner has a
 # bedroom (UC Sch 4 para 10(1)(b)-(c); HB reg 13D(3)(b)), so 1 + 1 = 2: C.
@@ -65,10 +65,14 @@
         age: 33
         is_household_head: true
         is_claimant_or_partner: true
+        is_before_first_september_following_16th_birthday: false
       son:
         age: 16
         is_claimant_or_partner: false
         current_education: UPPER_SECONDARY
+        # As the previous case but in education: that alone makes him a
+        # young person.
+        is_before_first_september_following_16th_birthday: false
     benunits:
       family:
         members: [parent, son]
