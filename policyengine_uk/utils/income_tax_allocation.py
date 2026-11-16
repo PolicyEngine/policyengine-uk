@@ -358,10 +358,11 @@ INDISTINCT = 131_072.0
 # ``_held_error`` rounds an input to whole pence to recover the amount entered.
 PENNY = 0.01
 # The variables below are an amount less other amounts, floored at nil where
-# the third item says so, plus the amounts in the last item. ``_held_error``
-# checks the amount the model holds against that sum, so a formula that stops
-# matching its entry here leaves an error no rounding explains, and the person
-# keeps the room.
+# the third item says so, plus the amounts in the last item. Unless the amount
+# is supplied as an input, when it is an entry, ``_held_error`` checks the
+# amount the model holds against that sum, so a formula that stops matching
+# its entry here leaves an error no rounding explains, and the person keeps
+# the room.
 SUMS = {
     "net_income": (
         ("net_income_before_trade_loss_relief",),

@@ -2232,7 +2232,8 @@ KEEPS_ROOM_AT_THE_LIMIT = [
     # £148,609.46, a penny over.
     dict(employment_income=148_609.45, employment_expenses=108_409.45),
     # Dividends of £201,570 less deficiency relief of £200,000, at the limit.
-    # Float32 holds £201,570 and £201,570.01 as one value.
+    # Both are £131,072 or more, where float32 can store two entries a penny
+    # apart as one, so the entries get no bound.
     dict(employment_income=40_200, dividend_income=201_570, deficiency_relief=200_000),
 ]
 
@@ -2496,7 +2497,8 @@ def test_rate_test_keeps_room_where_a_reform_replaces_a_formula(system):
     which come to £50,200, so £10,000 stays unexplained and the bound is far
     over a penny. The rate test keeps room, and the model denies the reduction
     and charges £7,440: £37,200 at 20%, with £500 of savings and £500 of
-    dividends at their nil rates."""
+    dividends at their nil rates. The reformed law gives the reduction and
+    £7,288, so the £152 is the cost of the room."""
     model = type(system.variables["taxable_employment_income"])
 
     class taxable_employment_income(model):
@@ -2538,7 +2540,9 @@ def test_rate_test_bounds_the_amounts_behind_a_supplied_net_income():
     £200,000 of deficiency relief. Each of those is £131,072 or more and gets
     no bound, so the test keeps room, and the model denies the reduction and
     charges £7,440, as it does without the supplied net income
-    (``KEEPS_ROOM_AT_THE_LIMIT``). The second gets the reduction: £7,288."""
+    (``KEEPS_ROOM_AT_THE_LIMIT``). The second gets the reduction: £7,288. The
+    law gives both the reduction and £7,288, so the first's £152 is the cost
+    of the room."""
     year = 2026
     common = dict(
         net_income=50_770, employment_income=40_200, savings_interest_income=9_000
