@@ -40,7 +40,7 @@ Invariants:
    behind the part that holds the ISAs (trusts and ISAs while listed, held
    between nil and share_like_capital; the rest of share_like_capital for the
    part with sale expenses), allowing for the one float32 rounding that forms
-   them, and all of a balance those holdings cover. Each programme counts
+   them, and all of a balance those holdings cover. Universal Credit counts
    each part on its lists within rounding of the holdings behind it.
 """
 
