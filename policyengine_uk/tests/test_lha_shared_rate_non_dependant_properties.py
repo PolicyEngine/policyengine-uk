@@ -12,11 +12,16 @@ Invariants, for any generated population of households:
    claimant or partner, who is not looked after by a local authority stops the
    renter being a specified renter. They are either a qualifying young person
    the renter is responsible for (para 28(3)) or a non-dependant (para
-   28(4)), so the shared rate never depends on which.
+   28(4)), so the shared rate never depends on which. The household head and
+   a member who pays the household head as a boarder or lodger are left out:
+   each is liable for their own occupation, so is not a non-dependant (para
+   9(2)(d)); one who is not a qualifying young person leaves the renter's
+   shared rate alone.
 2. HB: such a member who is not placed with the family stops the claimant
    being a young individual with no non-dependant: they are either a young
    person in the claimant's family, making the claimant a lone parent rather
-   than a single claimant (reg 2(1)), or a non-dependant (reg 3).
+   than a single claimant (reg 2(1)), or a non-dependant (reg 3). The same
+   two are left out (reg 3(2)(d)-(e) and (4)).
 3. Deductions imply a non-dependant: a family charged a UC or HB
    non-dependant deduction has a non-dependant under that scheme's test.
    One exception, for HB: a joint occupier charged part of the deduction for
@@ -41,7 +46,10 @@ Invariants, for any generated population of households:
 The generator concentrates members' ages around 16 to 20, where the schemes'
 definitions differ, draws whether a 16-year-old is before the 1 September
 after their 16th birthday (UC reg 5(1)(a); Child Benefit (General) Regs 2006
-reg 4), and explicit examples pin the cases that decide each invariant.
+reg 4) and whether a lodger's member aged 16 or over pays the householder
+too, and explicit examples pin the cases that decide each invariant,
+including a member who is the household head, which the generator never
+draws.
 """
 
 import numpy as np
@@ -78,6 +86,9 @@ def member(draw):
         before_uc_terminal_date=age != 19 or draw(st.booleans()),
         started_education_at=draw(st.integers(14, 19)),
         earnings=draw(st.sampled_from(EARNINGS)),
+        # In a lodger's family, a member aged 16 or over may pay the
+        # householder for their own room (pays_rent_to_householder).
+        pays_householder=age >= 16 and draw(st.booleans()),
     )
 
 
@@ -107,6 +118,7 @@ def _member(
     started=14,
     earnings=0.0,
     before_uc_terminal_date=True,
+    pays_householder=False,
 ):
     return dict(
         age=age,
@@ -117,10 +129,18 @@ def _member(
         before_uc_terminal_date=before_uc_terminal_date,
         started_education_at=started,
         earnings=earnings,
+        pays_householder=pays_householder,
     )
 
 
-def _house(renter_age, members, other=None, other_age=30, other_members=()):
+def _house(
+    renter_age,
+    members,
+    other=None,
+    other_age=30,
+    other_members=(),
+    member_is_head=False,
+):
     return dict(
         renter_age=renter_age,
         partner=False,
@@ -129,6 +149,9 @@ def _house(renter_age, members, other=None, other_age=30, other_members=()):
         other_age=other_age,
         other_earnings=30_000.0,
         other_members=list(other_members),
+        # The inputs flag the renter's first member, not the renter, as the
+        # household head.
+        member_is_head=member_is_head,
     )
 
 
@@ -147,6 +170,22 @@ SHARED_HOUSE = [
     _house(45, [], other="non_dependant", other_age=30),
     _house(50, [_member(25, earnings=30_000.0)], other="sharer", other_age=28),
 ]
+# A young single householder with a lodger whose adult son pays the
+# householder for his own room, so is no one's non-dependant (invariants 1
+# and 2 leave him out).
+PAYER = [
+    _house(
+        30,
+        [],
+        other="lodger",
+        other_age=25,
+        other_members=[_member(22, earnings=20_000.0, pays_householder=True)],
+    )
+]
+# A young single renter whose benefit unit holds the household head, a
+# 40-year-old who is not the claimant or partner (invariants 1 and 2 leave
+# them out).
+MEMBER_HEAD = [_house(25, [_member(40, earnings=20_000.0)], member_is_head=True)]
 
 
 def build(population):
@@ -155,6 +194,7 @@ def build(population):
     for h, house in enumerate(population):
         names = []
         renter_age = house["renter_age"]
+        member_is_head = house.get("member_is_head", False)
         families = [
             dict(
                 name=f"h{h}_renter",
@@ -184,7 +224,7 @@ def build(population):
                 people[pid] = {
                     "age": age,
                     "is_claimant_or_partner": True,
-                    "is_household_head": fam["head"] and i == 0,
+                    "is_household_head": fam["head"] and i == 0 and not member_is_head,
                     "current_education": "NOT_IN_EDUCATION",
                     "employment_income": fam["earnings"] if i == 0 else 0.0,
                     "is_before_first_september_following_16th_birthday": False,
@@ -198,7 +238,7 @@ def build(population):
                 people[pid] = {
                     "age": m["age"],
                     "is_claimant_or_partner": False,
-                    "is_household_head": False,
+                    "is_household_head": fam["head"] and i == 0 and member_is_head,
                     "current_education": m["education"],
                     "is_looked_after_by_local_authority": m["looked_after"],
                     "is_placed_for_adoption": m["placed_for_adoption"]
@@ -214,6 +254,8 @@ def build(population):
                         "before_uc_terminal_date"
                     ],
                 }
+                if fam["role"] == "lodger" and m["pays_householder"]:
+                    people[pid]["rent_paid_as_lodger"] = 2_000.0
                 ids.append(pid)
             benunits[fam["name"]] = {"members": ids}
             if fam["role"] == "sharer":
@@ -233,21 +275,35 @@ def calc(sim, variable):
     return np.asarray(sim.calculate(variable, YEAR))
 
 
+def liable_for_own_occupation(sim, people):
+    """For each person, whether they are the household head or pay the head
+    as a boarder or lodger: liable for their own occupation, so no one's
+    non-dependant (UC Sch 4 para 9(2)(d); HB reg 3(2)(d)-(e), (4))."""
+    head = calc(sim, "is_resolved_household_head")
+    payer = calc(sim, "pays_rent_to_householder")
+    return dict(zip(people, head | payer))
+
+
 @PROPERTY_SETTINGS
 @given(population)
 @example(SCHOOL_LEAVER)
 @example(NINETEEN_IN_EDUCATION)
+@example(PAYER)
+@example(MEMBER_HEAD)
 def test_shared_rate_never_depends_on_how_a_member_aged_16_or_over_is_classed(pop):
     sim, people, rows = build(pop)
     specified = calc(sim, "is_lha_shared_accommodation_rate_specified_renter")
     hb_young_individual = calc(sim, "is_housing_benefit_young_individual")
     hb_has_non_dependant = calc(sim, "housing_benefit_has_non_dependant")
     placed = dict(zip(people, calc(sim, "is_child_or_young_person_placed_with_family")))
+    liable = liable_for_own_occupation(sim, people)
     for i, row in enumerate(rows):
         others = [
             p
             for p in row["ids"]
-            if not people[p]["is_claimant_or_partner"] and people[p]["age"] >= 16
+            if not people[p]["is_claimant_or_partner"]
+            and people[p]["age"] >= 16
+            and not liable[p]
         ]
         # Invariant 1.
         if any(not people[p]["is_looked_after_by_local_authority"] for p in others):
@@ -284,6 +340,7 @@ def shares_another_joint_occupiers_own_non_dependant(sim, people, rows):
 @PROPERTY_SETTINGS
 @given(population)
 @example(SHARED_HOUSE)
+@example(PAYER)
 def test_a_non_dependant_deduction_implies_a_non_dependant(pop):
     sim, people, rows = build(pop)
     # Invariant 3.
@@ -344,6 +401,23 @@ def test_the_examples_decide_each_invariant():
     assert hb[3] > 0 and not has[3] and excepted[3]
     # Only the head's claim counts him under UC (Sch 4 para 9(2)(f)).
     assert uc[3] == 0 and not calc(sim, "universal_credit_renter_has_non_dependant")[3]
+
+    # Invariants 1 and 2 leave out a member liable for their own occupation:
+    # with one, the renter keeps the shared rate under both schemes.
+    for population, row, member in [
+        # The lodger's adult son, who pays the householder himself.
+        (PAYER, 1, "h0_other_member_0"),
+        # The household head, in the young renter's benefit unit.
+        (MEMBER_HEAD, 0, "h0_renter_member_0"),
+    ]:
+        sim, people, rows = build(population)
+        assert member in rows[row]["ids"]
+        assert liable_for_own_occupation(sim, people)[member]
+        assert calc(sim, "is_lha_shared_accommodation_rate_specified_renter")[row]
+        assert calc(sim, "is_housing_benefit_young_individual")[row]
+        assert not calc(sim, "housing_benefit_has_non_dependant")[row]
+        assert calc(sim, "uc_non_dep_deductions")[row] == 0
+        assert calc(sim, "housing_benefit_non_dep_deductions")[row] == 0
 
 
 def test_a_deduction_implies_a_non_dependant_when_a_family_has_no_claimant():

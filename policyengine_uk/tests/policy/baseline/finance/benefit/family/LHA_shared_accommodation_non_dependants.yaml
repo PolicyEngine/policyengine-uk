@@ -257,9 +257,16 @@
     # HB: housing_benefit_has_non_dependant counts a non-dependant within a
     # joint occupier's own benefit unit for that occupier only; the
     # non_dependant_normally_resides_with input covers other families'
-    # non-dependants, not his. So the sharer, a single claimant under 35, is
-    # a young individual with no non-dependant residing with them: 13D(2)(a)(i)
-    # gives A. Head: 2 bedrooms: C.
+    # non-dependants, not his. The size criteria agree: 2 bedrooms for the
+    # head (C), 1 for the sharer. The model presumes that a family liable for
+    # a share of the rent lacks exclusive use of self-contained accommodation
+    # (housing_benefit_shares_accommodation), so with 1 bedroom the sharer
+    # gets A under 13D(2)(a)(ii) whether or not the son resides with them.
+    # 13D(2)(a)(i) gives A too: the sharer, a single claimant under 35, is a
+    # young individual with no non-dependant residing with them. The next
+    # case rebuts the presumption, so that (a)(i) alone decides.
+    housing_benefit_shares_accommodation: [true, true]
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
     housing_benefit_has_non_dependant: [true, false]
     is_housing_benefit_young_individual: [false, true]
     housing_benefit_LHA_category: [C, A]
@@ -269,6 +276,51 @@
     # this split is an open question (whether he normally resides with the
     # sharer is a question of fact the model has no input for).
     housing_benefit_non_dep_deductions: [200, 200]
+
+- name: A joint tenant with exclusive use gets the HB shared rate only because the other tenant's adult son is not their non-dependant
+  period: 2026
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 28
+        is_claimant_or_partner: true
+    benunits:
+      head_family:
+        members: [head, son]
+        # As the presumption gives: an input for one family replaces the
+        # formula for every family.
+        housing_benefit_shares_accommodation: true
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        # The presumption rebutted: the sharer has, for example, an
+        # exclusive bedroom and sitting room (13D(2)(b)(i)).
+        housing_benefit_shares_accommodation: false
+    households:
+      home:
+        members: [head, son, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # 13D(2)(a)(ii) cannot apply, since (b)(i) is met. The sharer gets A only
+    # under (a)(i): a young individual with no non-dependant residing with
+    # them, which holds because the model counts the son for his own family
+    # only (as the previous case). Were he the sharer's non-dependant too,
+    # (a)(i) would fail and the sharer would get the one-bedroom rate (B)
+    # under (b), or C if the size criteria counted him.
+    housing_benefit_shares_accommodation: [true, false]
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
+    housing_benefit_has_non_dependant: [true, false]
+    is_housing_benefit_young_individual: [false, true]
+    housing_benefit_LHA_category: [C, A]
 
 - name: A lodger's adult son is the householder's HB non-dependant but counts in the lodger's UC claim
   period: 2026
@@ -309,6 +361,106 @@
     # no non-dependant (13D(2)(a)(i)).
     housing_benefit_has_non_dependant: [true, true]
     is_housing_benefit_young_individual: [true, false]
+
+- name: A lodger's adult son who pays the householder himself is no one's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 25
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 4_000
+      lodger_son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        rent_paid_as_lodger: 2_000
+        employment_income: 20_000
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger, lodger_son]
+    households:
+      home:
+        members: [householder, lodger, lodger_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Unlike the previous case, the son pays the householder for his own
+    # room. The model takes the payment to be commercial
+    # (pays_rent_to_householder); a non-commercial one would keep him a
+    # non-dependant (HB reg 3(3) with reg 9).
+    pays_rent_to_householder: [false, true, true]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false, false]
+    # UC: he is liable on a commercial basis for his occupation, "whether to
+    # the renter, joint renters or another person" (Sch 4 para 9(2)(d)), so
+    # he is neither the lodger's nor the householder's non-dependant. Both
+    # are specified renters: A.
+    universal_credit_renter_has_non_dependant: [false, false]
+    is_lha_shared_accommodation_rate_specified_renter: [true, true]
+    LHA_category: [A, A]
+    # HB: he pays the householder (reg 3(2)(e)(i)), and he and the lodger are
+    # each separately liable to the landlord, so he does not reside with the
+    # lodger (reg 3(4)). Both are young individuals with no non-dependant:
+    # A (13D(2)(a)(i)).
+    housing_benefit_has_non_dependant: [false, false]
+    is_housing_benefit_young_individual: [true, true]
+    housing_benefit_LHA_category: [A, A]
+    # The deductions already left him out.
+    uc_non_dep_deductions: [0, 0]
+    housing_benefit_non_dep_deductions: [0, 0]
+
+- name: A household head in the claimant's benefit unit is not the claimant's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 25
+        is_claimant_or_partner: true
+      head:
+        age: 40
+        is_household_head: true
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        employment_income: 20_000
+    benunits:
+      family:
+        members: [claimant, head]
+    households:
+      home:
+        members: [claimant, head]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The inputs can put the household head, the householder in whose name
+    # the home is rented, in a benefit unit whose claimant is someone else.
+    # The model takes the head to be liable for the dwelling. UC: liable for
+    # their own occupation (Sch 4 para 9(2)(d)), and the person the
+    # claimant's liability is owed to where the claimant pays them (para
+    # 9(2)(e)). HB: liable with the claimant (reg 3(2)(d)) or the person the
+    # claimant pays (reg 3(2)(e)(ii)). Either way not a non-dependant, so the
+    # claimant, single and under 35, gets A under both schemes.
+    is_resolved_household_head: [false, true]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    universal_credit_renter_has_non_dependant: false
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+    housing_benefit_has_non_dependant: false
+    is_housing_benefit_young_individual: true
+    housing_benefit_LHA_category: A
+    uc_non_dep_deductions: 0
+    housing_benefit_non_dep_deductions: 0
 
 - name: A looked-after 16-year-old school leaver stops a young single HB claimant's shared rate
   period: 2026
