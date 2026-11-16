@@ -1106,3 +1106,76 @@ def test_population_rebuild_retires_reports_and_keeps_donor_input_provenance(
     equals(money(simulation, "adjusted_net_income", 2026), [40_000, 50_000, 60_000])
     donor.set_input("adjusted_net_income", 2026, [70_000, 80_000, 90_000])
     equals(money(simulation, "adjusted_net_income", 2026), [40_000, 50_000, 60_000])
+
+
+def share_sensitive_couple():
+    """The public SHARE_COUPLE amounts, explicitly supplied in each test year."""
+    return {
+        "people": {
+            "recipient": {
+                "age": annual(40),
+                "employment_income": annual(40_000),
+                "savings_interest_income": annual(9_000),
+                "dividend_income": annual(1_570),
+            },
+            "partner": {"age": annual(40)},
+        },
+        "benunits": {
+            "benunit": {
+                "members": ["recipient", "partner"],
+                "is_married": annual(True),
+            }
+        },
+        "households": {"household": {"members": ["recipient", "partner"]}},
+    }
+
+
+@pytest.mark.parametrize(
+    "construction_route, period_key",
+    [
+        pytest.param("dict", "2026", id="dict-year"),
+        pytest.param("dict", "2026-01-01.2026-12-31", id="dict-calendar-interval"),
+        pytest.param("scenario", "2026", id="scenario-year"),
+        pytest.param(
+            "scenario", "2026-01-01.2026-12-31", id="scenario-calendar-interval"
+        ),
+    ],
+)
+def test_expanded_ma_share_search_keeps_inactive_year_current_law(
+    construction_route, period_key
+):
+    # This is the share-sensitive household in test_marriage_allowance_cps_switch.
+    # Keep the fixture local so source-tree and installed-wheel runs use it alike.
+    situation = share_sensitive_couple()
+    baseline = construct(situation)
+    simulation = construct(situation, {EXPAND: {period_key: True}}, construction_route)
+    direct_expansion = Simulation(
+        situation=copy.deepcopy(situation), reform=expanded_ma_reform
+    )
+    variables = (
+        "income_tax",
+        "marriage_allowance",
+        "marriage_allowance_reduction_at_stake",
+    )
+    # Exercise the active control before the regression, then query both sides
+    # again out of order. Cache state must not extend the expansion into 2025/27.
+    for year in (2026, 2025, 2027, 2026, 2025, 2027):
+        actual = {name: money(simulation, name, year) for name in variables}
+        control = direct_expansion if year == 2026 else baseline
+        expected = {name: money(control, name, year) for name in variables}
+        for name in variables:
+            equals(actual[name], expected[name])
+            equals(
+                money(simulation.baseline, name, year),
+                money(baseline, name, year),
+            )
+        if year == 2025:
+            # Current-law share: GBP7,500 before the GBP252 tax reduction.
+            expected_recipient = (7_248, 1_260, 252)
+        elif year == 2026:
+            # Preserve the active reform, including the 2026 dividend rates.
+            expected_recipient = (7_124.025, 1_260, 0)
+        else:
+            continue
+        for name, value in zip(variables, expected_recipient):
+            assert actual[name][0] == pytest.approx(value, abs=0.01)

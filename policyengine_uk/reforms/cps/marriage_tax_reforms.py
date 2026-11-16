@@ -351,6 +351,7 @@ def create_period_aware_marriage_tax_reform(parameters, period):
                     (
                         "meets_marriage_allowance_income_conditions",
                         "marriage_allowance",
+                        "marriage_allowance_reduction_at_stake",
                     ),
                     expanded_active,
                 )
