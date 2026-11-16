@@ -941,3 +941,82 @@ def test_examples_reach_the_cases():
     # the reference reads the same threshold, so neither is exempt.
     assert not v["is_uc_benefit_cap_exempt"][earner_in_gap]
     assert not v["reference_is_benefit_cap_exempt"][earner_in_gap]
+
+
+def test_the_reference_specified_renter_reads_universal_credit_responsibility():
+    """The reference specified renter reads Universal Credit responsibility
+    (UC Sch 4 para 28(3)), not the union of both schemes' tests, which also
+    counts every member aged 16 who is not the claimant or partner.
+
+    A lodger aged 25 lives with her son aged 16, who has left education, is
+    past the 1 September after his 16th birthday and pays the householder for
+    his own room. He is not a Universal Credit qualifying young person (reg
+    5(1)) or a Child Benefit young person, so the lodger is responsible for
+    him under neither scheme, but the union counts him as a 16-year-old. He is
+    liable on a commercial basis for his own occupation, so he is not her
+    non-dependant (Sch 4 para 9(2)(d)). She is a specified renter under the
+    production test and the reference alike; the union would make the
+    reference say she is not.
+    """
+    year = PERIOD
+    past_first_september = {
+        "is_before_first_september_following_16th_birthday": {year: False}
+    }
+    situation = {
+        "people": {
+            "householder": {
+                "age": {year: 30},
+                "is_household_head": {year: True},
+                "is_claimant_or_partner": {year: True},
+                **past_first_september,
+            },
+            "lodger": {
+                "age": {year: 25},
+                "is_claimant_or_partner": {year: True},
+                "rent_paid_as_lodger": {year: 4_000.0},
+                **past_first_september,
+            },
+            "son": {
+                "age": {year: 16},
+                "is_claimant_or_partner": {year: False},
+                "current_education": {year: "NOT_IN_EDUCATION"},
+                "rent_paid_as_lodger": {year: 2_000.0},
+                **past_first_september,
+            },
+        },
+        "benunits": {
+            "householder_family": {"members": ["householder"]},
+            "lodger_family": {"members": ["lodger", "son"]},
+        },
+        "households": {
+            "home": {
+                "members": ["householder", "lodger", "son"],
+                "rent": {year: 9_000.0},
+                "tenure_type": {year: "RENT_PRIVATELY"},
+            }
+        },
+    }
+    sim = Simulation(situation=situation, reform=REFERENCE)
+    son, lodger_family = 2, 1
+
+    def value(variable, index):
+        return bool(np.asarray(sim.calculate(variable, PERIOD))[index])
+
+    assert value("pays_rent_to_householder", son)
+    assert value(
+        "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
+        lodger_family,
+    )
+    assert not value(
+        "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
+        lodger_family,
+    )
+    assert not value(
+        "is_responsible_for_child_or_young_person_for_legacy_benefits",
+        lodger_family,
+    )
+    assert not value("universal_credit_renter_has_non_dependant", lodger_family)
+    assert value("is_lha_shared_accommodation_rate_specified_renter", lodger_family)
+    assert value(
+        "reference_is_lha_shared_accommodation_rate_specified_renter", lodger_family
+    )
