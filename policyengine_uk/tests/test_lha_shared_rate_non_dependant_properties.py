@@ -356,6 +356,7 @@ def test_a_non_dependant_deduction_implies_a_non_dependant(pop):
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(SCHOOL_LEAVER)
 @example(NINETEEN_IN_EDUCATION)
 def test_uc_and_hb_non_dependant_definitions_agree_below_19(pop):
     sim, people, _ = build(pop)
