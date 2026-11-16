@@ -8,10 +8,14 @@ description: >
   investment trusts are quoted shares, which take the deduction (ADM H1665),
   and were 8.2% of the pooled funds held in stocks and shares ISAs at 5 April
   2022 and 6.9% at 5 April 2025 (HMRC ISA Table 9.6). An ISA is valued at
-  what the holder would get by withdrawing it, and no ISA paragraph applies
-  the deduction (ADM H1656-H1658; DMG 29662-29664, 52662, 84748-84750).
+  what the holder would get by withdrawing it (ADM H1656-H1658; DMG
+  29662-29664, 52662, 84748-84750). The model counts that value in full, a
+  reading that rests on ADM H1656 saying nothing about costs of sale.
   Everything else in share_like_capital takes the deduction: directly held
   shares, and on datasets that do not itemise it, all of corporate_wealth.
+  Directly held shares include employee shares and share options, which the
+  Wealth and Assets Survey asks about together, so share options also take
+  the deduction, an approximation.
 metadata:
   label: Share-like holdings without expenses of sale
   period: year

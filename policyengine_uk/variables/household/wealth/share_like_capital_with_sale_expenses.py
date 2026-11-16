@@ -1,5 +1,10 @@
 from policyengine_uk.model_api import *
 
+# The share-like holdings a dataset can itemise. The formula treats a
+# household as itemising only when one of these is positive, so every name in
+# gov.dwp.share_like_capital.without_sale_expenses must be in this list. A
+# reform that adds a holding outside it would leave a household that itemises
+# only that holding with all of its share-like capital under the deduction.
 COMPONENTS = [
     "directly_held_shares",
     "unit_and_investment_trusts",
