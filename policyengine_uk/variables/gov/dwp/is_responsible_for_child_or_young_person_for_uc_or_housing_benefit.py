@@ -5,8 +5,9 @@ class is_responsible_for_child_or_young_person_for_uc_or_housing_benefit(Variabl
     """Responsible for a child or young person under UC or Housing Benefit rules.
 
     A union of the two schemes' tests that no formula reads; the reference
-    formulas in test_benefit_cap_lha_scheme_split_properties.py read it as
-    the rule before the schemes were split. UC counts a
+    cap rate in test_benefit_cap_lha_scheme_split_properties.py reads it as
+    the shared cap rate's rule before the benefit cap was split by scheme.
+    UC counts a
     child or qualifying young person (UC Regs 2013 regs 4-5); Housing Benefit
     counts a child or young person, whose young-person test follows Child
     Benefit (HB Regs 2006 regs 2, 19). Each scheme's rules read its own test:

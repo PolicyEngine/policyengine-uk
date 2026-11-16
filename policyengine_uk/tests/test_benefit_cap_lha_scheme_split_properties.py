@@ -12,7 +12,10 @@ benefits. ``REFERENCE`` re-adds those formulas from the parent commit
 under ``reference_`` names, so one simulation computes the old and the new
 values for the same families. They are verbatim except for the names they
 read, the inlined stopgap helpers, the earnings exception's dead code and its
-threshold, which now follows the national living wage (#2523).
+threshold, which now follows the national living wage (#2523), and the
+specified renter test, which reads the Universal Credit responsibility and
+non-dependant tests in place of the union of both schemes', as the
+production test now does (UC Sch 4 para 28(3)-(4)).
 The reference awards read the current ``uc_deductions``, which these
 single-household simulations leave at nil.
 
@@ -86,7 +89,8 @@ PROPERTY_SETTINGS = settings(
 
 # ---------------------------------------------------------------------------
 # The shared rules before the split (parent commit 17b9b8a16), verbatim but
-# for the names and the inlined stopgap helpers.
+# for the names, the inlined stopgap helpers and the specified renter's
+# Universal Credit responsibility and non-dependant tests.
 
 
 def _single_claim_in_shared_rules(benunit, period):
@@ -302,8 +306,12 @@ class reference_is_lha_shared_accommodation_rate_specified_renter(Variable):
         return (
             (~benunit("is_couple", period) | claims_as_single_person)
             & (renter_age < p.shared_accommodation_age_threshold)
+            # The Universal Credit responsibility and non-dependant tests
+            # that the production test now reads (UC Sch 4 para 28(3)-(4)),
+            # not the union of both schemes': that change is not the split
+            # these tests compare.
             & ~benunit(
-                "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
+                "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
                 period,
             )
             & ~benunit("universal_credit_renter_has_non_dependant", period)
