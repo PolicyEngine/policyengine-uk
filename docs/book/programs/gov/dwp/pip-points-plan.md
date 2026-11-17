@@ -13,7 +13,7 @@ This page captures the proposed scope, tracked under
 [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 ```
 
-```{admonition} Status, October 2026
+```{admonition} Status, November 2026
 A first step merged on 21 October 2026 as
 [#1661](https://github.com/PolicyEngine/policyengine-uk/pull/1661): total
 points inputs (`pip_dl_points`, `pip_m_points`) and the 8- and 12-point
@@ -29,15 +29,22 @@ for a later year than it; with neither, the category is NONE
 no per-activity scores and no `use_point_system` switch, since a category
 input already takes precedence over the formula.
 
-No data path supplies points yet. The datasets store categories, not
-points, so points play no part in microsimulation. The companion PR,
+Microcosm UK supplies total points. Since
+[microcosm #1550](https://github.com/PolicyEngine/microcosm/pull/1550)
+(merged 10 November 2026), a late stage draws each recipient's daily-living
+and mobility points within their stored award, by age group, from DWP's
+Pathways to Work evidence pack (chapter 2, Tables 2.9 and 2.10), and the
+release carries the points instead of the categories. With the thresholds
+unchanged, the categories the model derives from those points equal the
+stored awards for every recipient. A reform to the thresholds can now move
+people in microsimulation on Microcosm UK; before, the stored categories
+carried into every projected year, so it moved no one.
+
+The Enhanced FRS from policyengine-uk-data still stores categories. Its
+companion PR,
 [policyengine-uk-data #408](https://github.com/PolicyEngine/policyengine-uk-data/pull/408)
 (points imputed from the observed categories), was closed in June 2026
-in the uk-data archive clean-up, with PIP points derivation to move into
-Microcosm UK's source stages
-([microcosm #145](https://github.com/PolicyEngine/microcosm/issues/145))
-once the input variables existed here. Microcosm #145 closed on 16 October
-2026 with that item dropped, because the variables did not exist yet.
+in the uk-data archive clean-up.
 ```
 
 ## What PIP scoring actually is
@@ -81,9 +88,11 @@ sufficient because:
   cited under Phase 3,
 - the data (both Microcosm UK, the certified default since October 2026,
   and the Enhanced FRS from policyengine-uk-data, which it replaced) sets
-  `pip_dl_category` and `pip_m_category` by comparing the weekly PIP daily-living and mobility
-  amounts respondents report in the FRS with the standard and enhanced
-  rates.
+  each recipient's award by comparing the weekly PIP daily-living and
+  mobility amounts respondents report in the FRS with the standard and
+  enhanced rates. The Enhanced FRS stores the award as `pip_dl_category`
+  and `pip_m_category`; Microcosm UK stores points drawn within it (see
+  the status note above).
 
 So for headline distributional and fiscal analysis the categorical
 inputs are correct.
