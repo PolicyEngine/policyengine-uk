@@ -1169,15 +1169,18 @@ def test_other_members_awards_never_change_the_non_dependant_readers(drawn):
 
     Each household in Maidstone has an applicant aged 70, the household head,
     so England's pensioner scheme applies, and a non-dependant benefit unit
-    (non_dependant_units), with or without the added adult. Savings of
-    £10,000 give tariff income of £832 a year, more than a £200 report of
-    income-related ESA or income-based JSA: that member has no award, so is
-    not on it, whatever the added adult receives (HB Regs 2006 reg 2(3),
-    (3A)). A couple in remunerative work is banded on
-    its own gross income, which leaves out the added adult's award (HB Regs
-    2006 reg 74(4); SI 2012/2885 Sch 1 para 8(4)). The benefit unit claims no
-    Universal Credit, tax credits or Child Benefit, so the legacy awards and
-    pay alone decide each case.
+    (non_dependant_units), with or without the added adult. Savings of £10,000
+    give tariff income of £832 a year, more than a £200 report of
+    income-related ESA or income-based JSA on its own. The claimant's and
+    partner's reports make one award (£3,200 of reports leave £2,368), so a
+    couple whose only report is £200 has no award, and nor does the adult aged
+    45 with a £200 report of their own. Whether anyone is on an award never
+    turns on the added adult's award (HB Regs 2006 reg 2(3), (3A)). A couple in
+    remunerative work is banded on its own gross income, which leaves out the
+    added adult's award (HB Regs 2006 reg 74(4); SI 2006/214 reg 55(4); SI
+    2012/2885 Sch 1 para 8(4)). The benefit unit claims no Universal Credit,
+    tax credits or Child Benefit, so the legacy awards and pay alone decide
+    each case.
     """
     people, benunits, households = {}, {}, {}
     layouts = []
