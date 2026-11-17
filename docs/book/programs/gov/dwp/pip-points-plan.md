@@ -33,8 +33,8 @@ Microcosm UK supplies total points. Since
 [microcosm #1550](https://github.com/PolicyEngine/microcosm/pull/1550)
 (merged 10 November 2026), a late stage draws each recipient's daily-living
 and mobility points within their stored award, by age group, from DWP's
-Pathways to Work evidence pack (chapter 2, Tables 2.9 and 2.10), and the
-release carries the points instead of the categories. With the thresholds
+Pathways to Work evidence pack (chapter 2, Tables 2.9 and 2.10), and its
+output carries the points instead of the categories. With the thresholds
 unchanged, the categories the model derives from those points equal the
 stored awards for every recipient. A reform to the thresholds can now move
 people in microsimulation on Microcosm UK; before, the stored categories
@@ -111,8 +111,9 @@ Three reform scenarios that the categorical model can't answer:
    re-bands a synthetic distribution.
 2. **Threshold reform**: changing the band thresholds (for example raising
    the standard-rate floor from 8 to 10 points). The thresholds are now
-   parameters, so this works for households entered with points, but not in
-   microsimulation, where the data supply bands rather than points.
+   parameters, so this works for households entered with points and in
+   microsimulation on Microcosm UK, which supplies points, but not on the
+   Enhanced FRS, which stores categories.
 3. **Targeted analysis by descriptor**: distributional questions like
    "how does the enhanced cohort split between mobility activities" need
    the underlying activity scores.
