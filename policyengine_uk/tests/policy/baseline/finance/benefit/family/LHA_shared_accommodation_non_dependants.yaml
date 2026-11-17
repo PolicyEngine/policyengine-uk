@@ -11,15 +11,17 @@
 # claimant, so not a lone parent responsible for a child or young person
 # (reg 2(1)).
 #
-# A 16-year-old is a dependant only within each scheme's young person test.
+# In the first three cases, ordinary parent-and-child households, a child aged
+# 16 or over is a dependant only within each scheme's young person test.
 # Outside it, they are a non-dependant. Either way the renter misses the shared
-# rate. The cases with a 16-year-old set
+# rate. Later cases cover looked-after and foster children, joint tenants,
+# lodgers, a payer and the household head. The cases with a 16-year-old set
 # is_before_first_september_following_16th_birthday to false for every person,
 # so that neither UC reg 5(1)(a) nor Child Benefit (General) Regs 2006 reg 4
 # holds: a 16-year-old in education is a young person through education alone.
 #
-# Bedrooms: everyone aged 16 or over other than the claimant or partner has a
-# bedroom (UC Sch 4 para 10(1)(b)-(c); HB reg 13D(3)(b)), so 1 + 1 = 2: C.
+# Bedrooms: in those three cases the child aged 16 or over has a bedroom of
+# their own (UC Sch 4 para 10(1)(b)-(c); HB reg 13D(3)(b)), so 1 + 1 = 2: C.
 
 - name: A 16-year-old who has left education is a non-dependant under both schemes
   period: 2026
