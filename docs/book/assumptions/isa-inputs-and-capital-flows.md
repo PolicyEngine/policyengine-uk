@@ -151,17 +151,21 @@ rounds the listed holdings' float32 sum and then the subtraction, and could
 fall below a balance the holdings cover. For a list of two holdings each of
 these holdings rounds at most once, to float32 (for the float64 complement,
 unless one amount is more than 2^29 times another), and the parts' formulas
-stay within `share_like_capital`'s float32 spacing of them. The balances
-hold no more than the stored part, or nil where the part is nil or less,
-except that where both stored parts equal the split the parts' own formulas
-give from `share_like_capital` and the itemised holdings, the model lets
-them hold up to that spacing more; where that split falls further short, the
-stored part bounds the balances. Where a direct input, or a replaced or
-neutralised formula of either part, makes either stored part differ from
-that split, the stored part bounds the balances wherever it falls short of
-the holdings, however little, so the pool never counts less than nil of a
-stored part of nil or more. A missing (NaN) stored part that holds the ISAs
-leaves the bound at the holdings. Inputs or formulas that give exactly the
+stay within `share_like_capital`'s float32 spacing of them. Where none of
+`stocks_and_shares_isa`, `share_like_capital` and these holdings is missing
+(NaN), the balances hold no more than the stored part, or nil where the part
+is nil or less, except that where both stored parts equal the split the
+parts' own formulas give from `share_like_capital` and the itemised
+holdings, the model lets them hold up to that spacing more; where that split
+falls further short, the stored part bounds the balances. With all three
+present, where a direct input, or a replaced or neutralised formula of
+either part, makes either stored part differ from that split, the stored
+part bounds the balances wherever it falls short of the holdings, however
+little, so the pool never counts less than nil of a stored part of nil or
+more. A missing (NaN) stored part that holds the ISAs never replaces the
+holdings as a bound on the balances. A missing `stocks_and_shares_isa` or
+`share_like_capital` makes the overall bound missing, so finite balances of
+nil or more pass through unchanged. Inputs or formulas that give exactly the
 formulas' values leave every result as the formulas give it. Negative
 holdings beside the ISAs, itemised holdings that sum to nil or less, or a
 reform can leave these holdings short of the ISAs; the balances then share

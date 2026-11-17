@@ -44,16 +44,21 @@ Invariants:
    balance those holdings cover, for any list of two holdings. Universal
    Credit counts each part on its lists within rounding of the holdings
    behind it.
-10. The balances hold no more than the stored part that holds the ISAs,
-   or nil where that part is nil or less, except that where both stored
-   parts equal the split the parts' own formulas give, they may hold up to
-   share_like_capital's float32 spacing more. Where a direct input, or a
-   replaced or neutralised formula of either part, makes either stored part
-   differ from that split, the stored part bounds the balances however
-   little it falls short of the holdings behind it, so the pool never counts
-   less than nil of a stored part of nil or more. A missing (NaN) stored
-   part that holds the ISAs leaves the bound at those holdings. Inputs or
-   formulas that give exactly the formulas' values change no result.
+10. Where none of stocks_and_shares_isa, share_like_capital and the
+   holdings behind the part that holds the ISAs is missing (NaN), the
+   balances hold no more than that stored part, or nil where it is nil or
+   less, except that where both stored parts equal the split the parts' own
+   formulas give, they may hold up to share_like_capital's float32 spacing
+   more. With all three present, where a direct input, or a replaced or
+   neutralised formula of either part, makes either stored part differ from
+   that split, the stored part bounds the balances however little it falls
+   short of the holdings behind it, so the pool never counts less than nil
+   of a stored part of nil or more. A missing (NaN) stored part that holds
+   the ISAs never replaces those holdings as a bound on the balances. A
+   missing stocks_and_shares_isa or share_like_capital makes the overall
+   bound missing, so finite balances of nil or more pass through unchanged.
+   Inputs or formulas that give exactly the formulas' values change no
+   result.
 """
 
 from fractions import Fraction
