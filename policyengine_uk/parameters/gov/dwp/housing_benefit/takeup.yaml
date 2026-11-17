@@ -3,9 +3,10 @@ description: Share of eligible Housing Benefit recipients that participate. The 
   true only for families that report Housing Benefit, the rule Council Tax Reduction
   also follows (PolicyEngine UK pull request 1831). Hand-entered households use
   reported Housing Benefit or their per-benefit-unit claims_all_entitled_benefits
-  flag. Direct take-up inputs override either default. Pension-age families can
-  make new claims; working-age families only continued existing awards, until those
-  were abolished on 1 July 2026 in Great Britain and 1 October 2026 in Northern
+  flag. Direct take-up inputs override either default. Pension-age families and
+  families in specified or temporary accommodation can make new claims. Other
+  working-age families can only continue existing awards; abolition reaches
+  unsaved awards on 1 July 2026 in Great Britain and 1 October 2026 in Northern
   Ireland.
 metadata:
   economy: false
