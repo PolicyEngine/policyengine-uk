@@ -642,9 +642,10 @@
 
 # Art. 7(4)(b) (NI: SR 2025/176 art. 7(4)(b)) saves an award where,
 # immediately before the abolition date, the claimant is entitled to
-# income-related ESA that the art. 3A(2) appointee saving keeps. The claimant
-# and partner share one ESA claim, so either one's saved report keeps the
-# family's award; an adult claiming ESA in their own right does not.
+# income-related ESA that the art. 3A(2) appointee saving keeps. A couple
+# must supply confirmation that the saved ESA claimant also claims Housing
+# Benefit; a sole claimant's own saved report suffices. An outside adult's
+# saved report does not keep the family's award.
 
 - name: GB award with an appointee's income-related ESA is paid in full in 2026 and prompts no claim
   period: 2026
