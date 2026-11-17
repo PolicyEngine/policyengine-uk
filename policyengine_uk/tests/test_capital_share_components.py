@@ -36,6 +36,29 @@ Invariants:
    member's stocks and shares ISA balance with the household's ISAs into the
    part with sale expenses: the formulas net the balance out of that part
    and count it in the holder's unit less 10%.
+9. A person's stocks and shares ISA balance holds no more than the holdings
+   behind the part that holds the ISAs (the listed holdings, held between
+   nil and share_like_capital, while the list names the ISAs; the rest of
+   share_like_capital for the part with sale expenses once it does not),
+   allowing for the one float32 rounding that forms them, and all of a
+   balance those holdings cover, for any list of two holdings. Universal
+   Credit counts each part on its lists within rounding of the holdings
+   behind it.
+10. Where none of stocks_and_shares_isa, share_like_capital and the
+   holdings behind the part that holds the ISAs is missing (NaN), the
+   balances hold no more than that stored part, or nil where it is nil or
+   less, except that where both stored parts equal the split the parts' own
+   formulas give, they may hold up to share_like_capital's float32 spacing
+   more. With all three present, where a direct input, or a replaced or
+   neutralised formula of either part, makes either stored part differ from
+   that split, the stored part bounds the balances however little it falls
+   short of the holdings behind it, so the pool never counts less than nil
+   of a stored part of nil or more. A missing (NaN) stored part that holds
+   the ISAs never replaces those holdings as a bound on the balances. A
+   missing stocks_and_shares_isa or share_like_capital makes the overall
+   bound missing, so finite balances of nil or more pass through unchanged.
+   Inputs or formulas that give exactly the formulas' values change no
+   result.
 """
 
 from fractions import Fraction
@@ -46,6 +69,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.model_api import Household, Reform, Variable
 from policyengine_uk.variables.household.wealth.share_like_capital import (
     RELATIVE_TOLERANCE,
 )
@@ -337,18 +361,20 @@ def test_a_reform_that_takes_isas_out_of_the_exempt_list_values_person_isas_less
     assert reformed.calculate(pension_credit, YEAR)[3] == 4_500
 
 
-def test_the_part_holding_the_isas_bounds_balances_only_beyond_rounding():
+def test_a_balance_its_listed_holdings_cover_keeps_its_whole_value():
     """A sole holder's £100.01 ISA balance inside £20,000.01 of
     corporate_wealth: the part with sale expenses is £19,900.00 in float32,
     and the part without it, the difference, 100.009765625, a quarter of a
-    thousandth short of the 100.01000214 balance. That is rounding, so the
-    holder keeps the whole balance, as before the part bounded it: UC counts
+    thousandth short of the 100.01000214 balance. That is rounding: the
+    listed holdings behind the part, the £100.01 ISA, cover the balance, so
+    the holder keeps the whole balance, as before the part bounded it: UC counts
     90% of £19,900, £17,910, plus the part less the balance, plus the
     balance, £18,010.01.
 
     Trusts of -£5,000 beside £6,000 of shares and a lodger's £5,000 ISA
     leave share_like_capital at £6,000, all in the part with sale expenses,
-    and nil in the part that would hold the ISA. The balance can't take
+    and nil in the part that would hold the ISA: trusts and ISA sum to nil.
+    The balance can't take
     £5,000 out of nil, so the lodger holds nil, and the pool counts 90% of
     £6,000, £5,400, shared by two units: [£2,700, £2,700]. Netting £5,000 out
     of the empty part would give [£200, £5,200]."""
@@ -387,6 +413,503 @@ def test_the_part_holding_the_isas_bounds_balances_only_beyond_rounding():
     assert list(held) == [np.float32(100.01), 0, 0]
     uc = sim.calculate("uc_assessable_capital", YEAR)
     assert list(uc) == [np.float32(18_010.01), 2_700, 2_700]
+
+
+UC_NODE = NODES["uc_assessable_capital"]
+
+
+def _uc_lists_without(part):
+    """A reform that drops ``part`` from UC's capital and sale-expense lists."""
+    return {
+        f"{UC_NODE}.{name}": {
+            str(YEAR): [
+                source for source in _parameter(f"{UC_NODE}.{name}") if source != part
+            ]
+        }
+        for name in ("sources", "sale_expenses.sources")
+    }
+
+
+def _sole_isa_holders(rows):
+    """One working-age adult per household and benefit unit, with
+    corporate_wealth, directly held shares and unit trusts on the household
+    and a stocks and shares ISA balance on the person, no household ISA total
+    stored, so stocks_and_shares_isa is the balance."""
+    people, benunits, homes = {}, {}, {}
+    for i, (corporate_wealth, shares, trusts, balance) in enumerate(rows):
+        people[f"p{i}"] = {
+            "age": {YEAR: 30},
+            "stocks_and_shares_isa_balance": {YEAR: float(balance)},
+        }
+        benunits[f"b{i}"] = {"members": [f"p{i}"]}
+        homes[f"h{i}"] = {
+            "members": [f"p{i}"],
+            "corporate_wealth": {YEAR: float(corporate_wealth)},
+            "directly_held_shares": {YEAR: float(shares)},
+            "unit_and_investment_trusts": {YEAR: float(trusts)},
+        }
+    return {"people": people, "benunits": benunits, "households": homes}
+
+
+def test_a_balance_counts_nothing_the_holdings_behind_its_part_do_not_hold():
+    """Review r2's witness and two like it, where the holdings behind the
+    part that holds the ISAs come to nil although share_like_capital's
+    float32 spacing is at least the £1 balance.
+
+    1. Shares of £8,388,608 (2**23), trusts of -£1 and a £1 ISA balance:
+       the itemised sum is £8,388,608, so share_like_capital is £8,388,608.
+       Trusts and ISA sum to exactly nil, so the part with sale expenses is
+       £8,388,608, the part without nil, and the balance holds nil. With the
+       part with sale expenses off UC's lists, UC counts nothing; bounded by
+       the smaller of the ISA total and share_like_capital, the £1 would be
+       netted from the empty part, floored at nil, and counted: £1.
+    2. corporate_wealth of £16,777,216 (2**24), shares of -£2 and a £1 ISA
+       balance: the itemised sum is -£1, so share_like_capital is the
+       £16,777,216, all of it in the part with sale expenses, and the
+       balance holds nil. With that part off UC's lists, UC counts nothing.
+    3. With stocks_and_shares_isa off the exempt list, shares of -£1, trusts
+       of £8,388,608 and a £1 ISA balance: share_like_capital is £8,388,608,
+       all of it trusts, so the part with sale expenses, which now holds the
+       ISAs, is nil, and the balance holds nil. With the part without sale
+       expenses off UC's lists, UC counts nothing, not 90% of £1.
+
+    UC at baseline is 90% of share_like_capital in cases 1 and 2,
+    £7,549,747.20 and £15,099,494.40, which float32 holds as £7,549,747 and
+    £15,099,494, and in case 3 under the exempt-list reform alone the
+    £8,388,608 of trusts in full."""
+    rows = [(0, 2**23, -1, 1), (2**24, -2, 0, 1)]
+    baseline = Simulation(situation=_sole_isa_holders(rows))
+    reformed = Simulation(
+        situation=_sole_isa_holders(rows), reform=_uc_lists_without(WITH)
+    )
+    for sim in (baseline, reformed):
+        assert list(sim.calculate("share_like_capital", YEAR)) == [2**23, 2**24]
+        assert list(sim.calculate(WITH, YEAR)) == [2**23, 2**24]
+        assert list(sim.calculate(WITHOUT, YEAR)) == [0, 0]
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        assert list(held) == [0, 0]
+    assert list(baseline.calculate("uc_assessable_capital", YEAR)) == [
+        np.float32(7_549_747.2),
+        np.float32(15_099_494.4),
+    ]
+    assert list(reformed.calculate("uc_assessable_capital", YEAR)) == [0, 0]
+
+    mirror = _sole_isa_holders([(0, -1, 2**23, 1)])
+    exempt_list = ISAS_WITH_SALE_EXPENSES
+    for reform, uc in (
+        (exempt_list, 2**23),
+        ({**exempt_list, **_uc_lists_without(WITHOUT)}, 0),
+    ):
+        sim = Simulation(situation=mirror, reform=reform)
+        assert sim.calculate(WITH, YEAR)[0] == 0
+        assert sim.calculate(WITHOUT, YEAR)[0] == 2**23
+        assert sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)[0] == 0
+        assert sim.calculate("uc_assessable_capital", YEAR)[0] == uc
+
+
+def _exact(value):
+    return Fraction(float(value))
+
+
+# Signed holdings at and beside powers of two, where share_like_capital's
+# float32 spacing is a hundredth of a penny (2**10), £1 (2**23), £2 (2**24)
+# and £4 (2**25), and balances of a few pounds up to the power itself.
+SWEEP = [
+    (corporate_wealth, shares, trusts, balance)
+    for power in (2.0, 2.0**10, 2.0**23, 2.0**24, 2.0**25)
+    for corporate_wealth in (0, power)
+    for shares in (0, power, power - 1, -1, -2, -power)
+    for trusts in (0, power, power - 1, -1, -2, -power)
+    for balance in (1, 2, 3, power)
+]
+
+
+EXEMPT_NODE = "gov.dwp.share_like_capital.without_sale_expenses"
+# The baseline list, and two reforms that take the ISAs off it: the trusts
+# alone, and the shares with the trusts, whose float32 sum rounds before the
+# part with sale expenses subtracts it.
+SWEEP_LISTS = {
+    "baseline": None,
+    "trusts": ["unit_and_investment_trusts"],
+    "shares_and_trusts": ["directly_held_shares", "unit_and_investment_trusts"],
+}
+
+
+@pytest.mark.parametrize("exempt_list", list(SWEEP_LISTS))
+def test_isa_balances_stay_within_the_holdings_behind_their_part(exempt_list):
+    """Invariant 9, swept over SWEEP with each exempt list in SWEEP_LISTS,
+    and UC counting both parts, only the part without sale expenses, and
+    only the part with them.
+
+    Worked in exact arithmetic from the float32 holdings: the holdings behind
+    the part that holds the ISAs are, where the itemised sum is positive, the
+    listed holdings' sum held between nil and share_like_capital, or for the
+    part with sale expenses share_like_capital less that; otherwise nil, or
+    all of share_like_capital. The engine forms them with one rounding: the
+    float32 listed sum, or share_like_capital less the listed holdings in
+    float64, which holds these whole-pound amounts exactly, rounded to
+    float32 where it bounds the balance. Then:
+    - the balance holds between nil and the smaller of itself and
+      share_like_capital, and within that rounding of the smaller of those
+      and the holdings, so it holds all of a balance the holdings cover;
+    - each part lies within share_like_capital's float32 spacing plus the
+      listed sum's rounding of the holdings behind it;
+    - UC counts each part on its lists at its value there, within the parts'
+      and the balance's rounding, a penny for each valuation, and float32's
+      step at the result.
+    """
+    names = SWEEP_LISTS[exempt_list] or _parameter(EXEMPT_NODE)
+    isas_exempt = "stocks_and_shares_isa" in names
+    exempt = {} if exempt_list == "baseline" else {EXEMPT_NODE: {str(YEAR): names}}
+    situation = _sole_isa_holders(SWEEP)
+    holder_part = WITHOUT if isas_exempt else WITH
+    for counted in ((WITH, WITHOUT), (WITHOUT,), (WITH,)):
+        dropped = {WITH, WITHOUT} - set(counted)
+        reform = dict(exempt)
+        for part in dropped:
+            reform |= _uc_lists_without(part)
+        sim = Simulation(situation=situation, reform=reform or None)
+        share_like = sim.calculate("share_like_capital", YEAR)
+        isa_total = sim.calculate("stocks_and_shares_isa", YEAR)
+        parts = {name: sim.calculate(name, YEAR) for name in (WITH, WITHOUT)}
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        uc = sim.calculate("uc_assessable_capital", YEAR)
+        for i, (_, shares, trusts, balance) in enumerate(SWEEP):
+            row = (SWEEP[i], exempt_list, counted)
+            values = dict(
+                zip(
+                    (
+                        "directly_held_shares",
+                        "unit_and_investment_trusts",
+                        "stocks_and_shares_isa",
+                    ),
+                    (np.float32(v) for v in (shares, trusts, balance)),
+                )
+            )
+            shares, trusts, balance = values.values()
+            itemised = np.float32(np.float32(shares + trusts) + balance)
+            listed = [values[name] for name in names]
+            listed_sum = sum(_exact(v) for v in listed)
+            # The engine adds the listed holdings from nil, left to right.
+            engine_sum = np.float32(0)
+            for value in listed:
+                engine_sum = np.float32(engine_sum + value)
+            sum_rounding = abs(_exact(engine_sum) - listed_sum)
+            total = _exact(share_like[i])
+            if itemised > 0:
+                behind = {WITHOUT: min(total, max(0, listed_sum))}
+                behind[WITH] = total - behind[WITHOUT]
+            else:
+                behind = {WITHOUT: Fraction(0), WITH: total}
+            cap = max(Fraction(0), min(_exact(isa_total[i]), total))
+            if isas_exempt:
+                rounding = sum_rounding if itemised > 0 else Fraction(0)
+            else:
+                # The float64 complement is exact here; the bound rounds it
+                # once, to float32.
+                bound = min(cap, max(0, behind[WITH]))
+                rounding = abs(_exact(np.float32(float(bound))) - bound)
+            holding = _exact(held[i])
+            assert 0 <= holding <= cap, row
+            assert abs(holding - min(cap, max(0, behind[holder_part]))) <= rounding, row
+            if behind[holder_part] >= cap:
+                assert holding == cap, row
+            spacing = _exact(np.spacing(np.abs(share_like[i])))
+            # The part without sale expenses is share_like_capital less the
+            # other part: less than share_like_capital's spacing either side
+            # of the engine's clamped listed sum, which bounds the balances
+            # while the list names the ISAs. The part with sale expenses
+            # stays within that spacing of the holdings behind it, which
+            # bound them otherwise. So neither stored part falls short of the
+            # holdings by enough to bound the balances itself.
+            engine_behind = (
+                min(total, max(0, _exact(engine_sum))) if itemised > 0 else 0
+            )
+            assert abs(_exact(parts[WITHOUT][i]) - engine_behind) < max(
+                spacing, Fraction(2) ** -149
+            ), row
+            assert abs(_exact(parts[WITH][i]) - behind[WITH]) <= max(
+                spacing, Fraction(2) ** -149
+            ), row
+            for name in (WITH, WITHOUT):
+                assert abs(_exact(parts[name][i]) - behind[name]) <= (
+                    spacing + sum_rounding
+                ), (row, name)
+            sale = set(_parameter(f"{UC_NODE}.sale_expenses.sources")) - dropped
+            value = {
+                name: Fraction(9, 10) if name in sale else Fraction(1)
+                for name in counted
+            }
+            expected = sum(value[name] * behind[name] for name in counted)
+            tolerance = (
+                sum(abs(_exact(parts[name][i]) - behind[name]) for name in counted)
+                + rounding
+                + Fraction(3, 100)
+                + _exact(np.spacing(np.float32(float(expected))))
+            )
+            assert abs(_exact(uc[i]) - expected) <= tolerance, (row, uc[i], expected)
+
+
+def test_a_balance_the_complement_covers_keeps_its_whole_value():
+    """A reform that lists directly held shares and trusts, not the ISAs, so
+    the part with sale expenses holds them: corporate_wealth of £16,777,222,
+    shares of £16,777,216 (2**24), trusts of £3 and a £3 ISA balance. The
+    holdings sum to the corporate_wealth, so share_like_capital is
+    £16,777,222, whose float32 spacing is £2. Shares and trusts sum to
+    £16,777,219, which
+    float32 rounds to £16,777,220, so the part with sale expenses is £2 and
+    the part without £16,777,220. The holdings behind the part with sale
+    expenses are £16,777,222 less £16,777,219, £3, which cover the balance,
+    so the holder keeps all £3. With the part without sale expenses off
+    UC's lists, UC counts 90% of the £2 part less the £3 balance, a pool
+    below nil that it floors at nil, plus 90% of the balance: £2.70, 90% of
+    the £3 behind the part. Bounded by the £2 part, the holder would keep
+    £2, and UC would count £1.80. With both parts counted, UC counts the
+    £16,777,220 in full and 90% of the £2 part, £16,777,221.80, which float32
+    holds as £16,777,222."""
+    situation = _sole_isa_holders([(16_777_222, 2**24, 3, 3)])
+    exempt = {
+        EXEMPT_NODE: {str(YEAR): ["directly_held_shares", "unit_and_investment_trusts"]}
+    }
+    for reform, uc in (
+        (exempt, 16_777_222),
+        ({**exempt, **_uc_lists_without(WITHOUT)}, np.float32(2.7)),
+    ):
+        sim = Simulation(situation=situation, reform=reform)
+        assert sim.calculate("share_like_capital", YEAR)[0] == 16_777_222
+        assert sim.calculate(WITH, YEAR)[0] == 2
+        assert sim.calculate(WITHOUT, YEAR)[0] == 16_777_220
+        assert sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)[0] == 3
+        assert sim.calculate("uc_assessable_capital", YEAR)[0] == uc
+
+
+def _holder_and_lodger(household, balance=5_000):
+    """A holder with a stocks and shares ISA balance of ``balance`` and a
+    lodger in separate working-age benefit units sharing £10,000 of savings,
+    with ``household``'s inputs on the household. No household ISA total is
+    stored, so stocks_and_shares_isa is the balance."""
+    return {
+        "people": {
+            "holder": {
+                "age": {YEAR: 30},
+                "stocks_and_shares_isa_balance": {YEAR: balance},
+            },
+            "lodger": {"age": {YEAR: 30}},
+        },
+        "benunits": {
+            "holder_unit": {"members": ["holder"]},
+            "lodger_unit": {"members": ["lodger"]},
+        },
+        "households": {
+            "home": {
+                "members": ["holder", "lodger"],
+                "savings": {YEAR: 10_000},
+                **{name: {YEAR: value} for name, value in household.items()},
+            }
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "household, reform, held, uc",
+    [
+        # The part without sale expenses entered as nil: the listed £5,000 ISA
+        # would back the balance, but the part holds nothing, so the balance
+        # holds nil and the pool counts the savings, £5,000 for each unit.
+        # Bounded by the listed holdings alone, the holder would keep £5,000
+        # and the pool fall to £5,000: [£7,500, £2,500].
+        ({WITHOUT: 0}, None, 0, [5_000, 5_000]),
+        # Entered as £2,000: the balance holds the £2,000 the part holds.
+        ({WITHOUT: 2_000}, None, 2_000, [7_000, 5_000]),
+        # The part with sale expenses entered as all £5,000 of
+        # share_like_capital leaves nil in the part without, so the balance
+        # holds nil and the pool counts £10,000 and 90% of £5,000: £7,250 for
+        # each unit, not [£9,750, £4,750].
+        ({WITH: 5_000}, None, 0, [7_250, 7_250]),
+        # With the ISAs off the exempt list, the part with sale expenses
+        # entered as nil: the £5,000 complement would back the balance, but
+        # the part holds nothing, so the pool counts £10,000 and the £5,000
+        # in the part without sale expenses: £7,500 for each unit.
+        ({WITH: 0}, ISAS_WITH_SALE_EXPENSES, 0, [7_500, 7_500]),
+    ],
+)
+def test_a_stored_part_short_of_its_holdings_bounds_the_balances(
+    household, reform, held, uc
+):
+    """Invariant 10: where a direct input of either part leaves the stored
+    part that holds the ISAs, nil or more in each case here, short of the
+    holdings behind it, the balance holds no more than the part, so the pool
+    never counts less than nil of it. Each shortfall here exceeds
+    share_like_capital's float32 spacing;
+    test_an_override_within_rounding_still_bounds_the_balances covers
+    shortfalls within it."""
+    sim = Simulation(situation=_holder_and_lodger(household), reform=reform)
+    part = WITHOUT if reform is None else WITH
+    stored = sim.calculate(part, YEAR)[0]
+    holding = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(holding) == [held, 0]
+    assert holding[0] <= stored
+    assert list(sim.calculate("uc_assessable_capital", YEAR)) == uc
+
+
+def _returning(name, value):
+    """A structural reform that replaces the formula of the household
+    variable ``name`` with one giving ``value``."""
+
+    class replaced(Variable):
+        label = name
+        entity = Household
+        definition_period = "year"
+        value_type = float
+
+        def formula(household, period, parameters):
+            return household.filled_array(value)
+
+    replaced.__name__ = name
+
+    class Replace(Reform):
+        def apply(self):
+            self.update_variable(replaced)
+
+    return Replace
+
+
+class _NeutraliseWithout(Reform):
+    def apply(self):
+        self.neutralize_variable(WITHOUT)
+
+
+class _WithoutByAnotherFormula(Reform):
+    """Replaces the part without sale expenses' formula with another that
+    gives the same values: share_like_capital less the other part."""
+
+    def apply(self):
+        class share_like_capital_without_sale_expenses(Variable):
+            label = "share-like capital without expenses of sale"
+            entity = Household
+            definition_period = "year"
+            value_type = float
+
+            def formula(household, period, parameters):
+                return household("share_like_capital", period) - household(WITH, period)
+
+        self.update_variable(share_like_capital_without_sale_expenses)
+
+
+# share_like_capital of £8,388,608 (2**23), whose float32 spacing is £1,
+# beside £8,388,607 of directly held shares or of trusts.
+SPACING_SHARES = {"corporate_wealth": 2**23, "directly_held_shares": 2**23 - 1}
+SPACING_TRUSTS = {"corporate_wealth": 2**23, "unit_and_investment_trusts": 2**23 - 1}
+BASELINE_ROUTE = _uc_lists_without(WITH)
+REFORM_ROUTE = {**ISAS_WITH_SALE_EXPENSES, **_uc_lists_without(WITHOUT)}
+
+
+@pytest.mark.parametrize(
+    "household, reform, part",
+    [
+        ({**SPACING_SHARES, WITHOUT: 0}, BASELINE_ROUTE, WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _returning(WITHOUT, 0)), WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _NeutraliseWithout), WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _returning(WITH, 2**23)), WITHOUT),
+        ({**SPACING_TRUSTS, WITH: 0}, REFORM_ROUTE, WITH),
+        (SPACING_TRUSTS, (REFORM_ROUTE, _returning(WITH, 0)), WITH),
+    ],
+    ids=[
+        "without_entered_as_nil",
+        "without_replaced_by_nil",
+        "without_neutralised",
+        "with_replaced_by_the_total",
+        "isas_with_sale_expenses_with_entered_as_nil",
+        "isas_with_sale_expenses_with_replaced_by_nil",
+    ],
+)
+def test_an_override_within_rounding_still_bounds_the_balances(household, reform, part):
+    """Review r3's witnesses, where a direct input or a replaced or
+    neutralised formula leaves the stored part that holds the ISAs £1 short
+    of the holdings behind it, within share_like_capital's £1 float32
+    spacing. The holder still keeps nothing the part does not hold.
+
+    The holder's balance is £1, and the household has £8,388,608 (2**23) of
+    corporate_wealth and share_like_capital. Directly held shares of
+    £8,388,607 leave the listed £1 ISA behind the part without sale
+    expenses, which is nil: entered as nil, given by a formula replaced to
+    give nil or neutralised, or left as share_like_capital less a part with
+    sale expenses replaced to give all £8,388,608. With the ISAs off the
+    exempt list and trusts of £8,388,607 instead of the shares, the £1
+    complement stands behind the part with sale expenses, entered or
+    replaced as nil.
+
+    The balance holds nil. With the other part off UC's lists, the pool is
+    the £10,000 of savings, £5,000 for each unit. Bounded by the holdings
+    alone, the holder kept £1 and the pool netted it from the empty part:
+    [£5,000.50, £4,999.50], or with the ISAs valued less 10%, [£5,000.45,
+    £4,999.55]."""
+    sim = Simulation(situation=_holder_and_lodger(household, balance=1), reform=reform)
+    assert sim.calculate("share_like_capital", YEAR)[0] == 2**23
+    assert sim.calculate(part, YEAR)[0] == 0
+    held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(held) == [0, 0]
+    assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
+
+
+def test_only_a_split_that_differs_from_the_formulas_loses_the_rounding():
+    """A reform that replaces a part's formula with one giving the same
+    values changes nothing, while an input of the part that does not hold
+    the ISAs, which leaves the part that does as its formula gives it,
+    still makes that part bound the balances.
+
+    1. A sole holder's £100.01 balance in £20,000.01 of corporate_wealth,
+       as in test_a_balance_its_listed_holdings_cover_keeps_its_whole_value,
+       with the formula of the part without sale expenses replaced by one
+       giving share_like_capital less the other part: the split is the
+       formulas', so the holder keeps the whole balance against the
+       100.009765625 part, and UC counts £18,010.01.
+    2. The two-name list of
+       test_a_balance_the_complement_covers_keeps_its_whole_value, where
+       the £2 part with sale expenses holds the ISAs and £3 of holdings
+       stand behind it, with the same replacement: the holder keeps all £3,
+       and with the part without sale expenses off UC's lists, UC counts
+       £2.70. With that part entered as nil instead, the split differs from
+       the formulas', so the stored £2 part bounds the balance: the holder
+       keeps £2, and UC counts 90% of the £2 part less the £2 balance, nil,
+       plus 90% of the balance: £1.80."""
+    rounding = {
+        "people": {
+            "holder": {
+                "age": {YEAR: 30},
+                "stocks_and_shares_isa_balance": {YEAR: 100.01},
+            }
+        },
+        "benunits": {"holder_unit": {"members": ["holder"]}},
+        "households": {
+            "home": {"members": ["holder"], "corporate_wealth": {YEAR: 20_000.01}}
+        },
+    }
+    sim = Simulation(situation=rounding, reform=_WithoutByAnotherFormula)
+    assert sim.calculate(WITHOUT, YEAR)[0] == np.float32(100.009765625)
+    held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(held) == [np.float32(100.01)]
+    uc = sim.calculate("uc_assessable_capital", YEAR)
+    assert list(uc) == [np.float32(18_010.01)]
+
+    exempt = {
+        EXEMPT_NODE: {str(YEAR): ["directly_held_shares", "unit_and_investment_trusts"]}
+    }
+    lists = {**exempt, **_uc_lists_without(WITHOUT)}
+    complement = _sole_isa_holders([(16_777_222, 2**24, 3, 3)])
+    entered = _sole_isa_holders([(16_777_222, 2**24, 3, 3)])
+    entered["households"]["h0"][WITHOUT] = {YEAR: 0.0}
+    for situation, reform, without, holding, capital in (
+        (complement, (lists, _WithoutByAnotherFormula), 16_777_220, 3, 2.7),
+        (entered, lists, 0, 2, 1.8),
+    ):
+        sim = Simulation(situation=situation, reform=reform)
+        assert sim.calculate(WITH, YEAR)[0] == 2
+        assert sim.calculate(WITHOUT, YEAR)[0] == without
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        assert held[0] == holding
+        uc = sim.calculate("uc_assessable_capital", YEAR)
+        assert uc[0] == np.float32(capital)
 
 
 def test_the_exempt_list_starts_with_the_first_capital_list():
