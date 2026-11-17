@@ -29,16 +29,16 @@ for a later year than it; with neither, the category is NONE
 no per-activity scores and no `use_point_system` switch, since a category
 input already takes precedence over the formula.
 
-Microcosm UK supplies total points. Since
-[microcosm #1550](https://github.com/PolicyEngine/microcosm/pull/1550)
-(merged 10 November 2026), a late stage draws each recipient's daily-living
-and mobility points within their stored award, by age group, from DWP's
-Pathways to Work evidence pack (chapter 2, Tables 2.9 and 2.10), and its
-output carries the points instead of the categories. With the thresholds
-unchanged, the categories the model derives from those points equal the
-stored awards for every recipient. A reform to the thresholds can now move
-people in microsimulation on Microcosm UK; before, the stored categories
-carried into every projected year, so it moved no one.
+Since [microcosm #1550](https://github.com/PolicyEngine/microcosm/pull/1550)
+(merged 10 November 2026), a late stage of Microcosm UK's build draws each
+recipient's daily-living and mobility points within their stored award, by
+age group, from DWP's Pathways to Work evidence pack (chapter 2, Tables 2.9
+and 2.10), and the built dataset carries the points instead of the
+categories. With the thresholds unchanged, the categories the model derives
+from those points equal the stored awards for every recipient. A reform to
+the thresholds moves people in microsimulation on a Microcosm UK dataset
+built from #1550 on. On an earlier build, the stored categories carried into
+every projected year, so the reform moved no one.
 
 The Enhanced FRS from policyengine-uk-data still stores categories. Its
 companion PR,
@@ -90,16 +90,16 @@ sufficient because:
   and the Enhanced FRS from policyengine-uk-data, which it replaced) sets
   each recipient's award by comparing the weekly PIP daily-living and
   mobility amounts respondents report in the FRS with the standard and
-  enhanced rates. The Enhanced FRS stores the award as `pip_dl_category`
-  and `pip_m_category`; Microcosm UK stores points drawn within it (see
-  the status note above).
+  enhanced rates. The Enhanced FRS stores the award as `pip_dl_category` and
+  `pip_m_category`; a Microcosm UK build from microcosm #1550 on stores
+  points drawn within it (see the status note above).
 
-So for headline distributional and fiscal analysis the categorical
-inputs are correct.
+So for headline distributional and fiscal analysis the stored awards are
+correct.
 
 ## Where the point system would matter
 
-Three reform scenarios that the categorical model can't answer:
+Three reform scenarios where category inputs fall short:
 
 1. **Activity-level descriptor reform**: for example, the April 2024
    green paper consulted on changing the descriptors, and the March 2025 *Pathways to
@@ -110,10 +110,11 @@ Three reform scenarios that the categorical model can't answer:
    this; the categorical band wouldn't shift unless an analyst manually
    re-bands a synthetic distribution.
 2. **Threshold reform**: changing the band thresholds (for example raising
-   the standard-rate floor from 8 to 10 points). The thresholds are now
-   parameters, so this works for households entered with points and in
-   microsimulation on Microcosm UK, which supplies points, but not on the
-   Enhanced FRS, which stores categories.
+   the standard-rate floor from 8 to 10 points). The model reads the
+   thresholds from parameters, so a reform to them applies to any household
+   given points, in the calculator or on a Microcosm UK dataset built from
+   microcosm #1550 on. The Enhanced FRS gives categories, so on it the
+   reform moves no one.
 3. **Targeted analysis by descriptor**: distributional questions like
    "how does the enhanced cohort split between mobility activities" need
    the underlying activity scores.

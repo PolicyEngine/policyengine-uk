@@ -1,1 +1,1 @@
-Document that Microcosm UK supplies PIP daily-living and mobility points since microcosm#1550, so a reform to the PIP point thresholds moves people in microsimulation on Microcosm UK; the Enhanced FRS still stores categories.
+Document that Microcosm UK datasets built from microcosm#1550 on carry PIP daily-living and mobility points, so a reform to the PIP point thresholds can move people in microsimulation on them; the Enhanced FRS still stores categories.
