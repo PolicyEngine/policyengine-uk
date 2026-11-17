@@ -1908,3 +1908,74 @@
   output:
     housing_benefit_payable_share: 1
     claims_uc_at_legacy_closure: false
+
+- name: GB couple whose two Housing Benefit reporters both hold the saved ESA keeps the award with the status false in 2026
+  # The supplied status false leaves the identity to the reports, so it
+  # cannot remove the saving when every Housing Benefit reporter holds the
+  # saved award.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      both_saved_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      both_saved_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+    households:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+
+- name: GB couple whose two Housing Benefit reporters both hold the saved ESA loses the award to a third reporter in 2026
+  # An adult outside the claimant/partner mask who also reports Housing
+  # Benefit competes as a possible claimant without the saved award, so the
+  # reports no longer identify a saved claimant and the award is unsaved.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      both_saved_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      both_saved_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      third_reporter:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+    benunits:
+      both_saved:
+        members: [both_saved_head, both_saved_partner, third_reporter]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      both_saved:
+        members: [both_saved_head, both_saved_partner, third_reporter]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 0.235616
