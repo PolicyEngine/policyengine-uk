@@ -44,9 +44,14 @@ Invariants:
    balance those holdings cover, for any list of two holdings. Universal
    Credit counts each part on its lists within rounding of the holdings
    behind it.
-10. Where a direct input leaves the stored part that holds the ISAs short
-   of the holdings behind it, the balances hold no more than the stored
-   part, so the pool never counts less than nil of it.
+10. The balances hold more than the stored part that holds the ISAs only
+   where both stored parts equal the split the parts' own formulas give,
+   and then by no more than share_like_capital's float32 spacing. Where a
+   direct input, or a replaced or neutralised formula of either part, makes
+   either stored part differ from that split, the balances hold no more than
+   the stored part, however little it falls short of the holdings behind
+   it, so the pool never counts less than nil of it. Inputs or formulas that
+   give exactly the formulas' values change no result.
 """
 
 from fractions import Fraction
@@ -724,9 +729,12 @@ def _holder_and_lodger(household, balance=5_000):
 def test_a_stored_part_short_of_its_holdings_bounds_the_balances(
     household, reform, held, uc
 ):
-    """Invariant 10: where a direct input leaves the stored part that holds
-    the ISAs short of the holdings behind it, the balance holds no more than
-    the part, so the pool keeps what the part holds."""
+    """Invariant 10: where a direct input of either part leaves the stored
+    part that holds the ISAs short of the holdings behind it, the balance
+    holds no more than the part, so the pool keeps what the part holds. Each
+    shortfall here exceeds share_like_capital's float32 spacing;
+    test_an_override_within_rounding_still_bounds_the_balances covers
+    shortfalls within it."""
     sim = Simulation(situation=_holder_and_lodger(household), reform=reform)
     part = WITHOUT if reform is None else WITH
     stored = sim.calculate(part, YEAR)[0]
