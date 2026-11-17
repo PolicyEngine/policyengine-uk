@@ -1111,6 +1111,142 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
             assert np.isclose(deduction[a], deduction[b]), drawn[i]
 
 
+# Readers of the non-dependant rules in Housing Benefit and England's
+# pensioner council tax reduction scheme. The property runs in 2025, when
+# Income Support, income-based JSA and income-related ESA are all in payment.
+NON_DEPENDANT_READERS = [
+    "housing_benefit_non_dep_deduction_exempt",
+    "council_tax_reduction_non_dep_deduction_exempt",
+    "council_tax_reduction_individual_non_dep_deduction",
+    "household_benefits_individual_non_dep_deduction",
+]
+
+
+@st.composite
+def non_dependant_units(draw):
+    """A non-dependant benefit unit of one or two claimants aged 22 or 30,
+    each working 35 hours a week on £13,000 or not working, and sometimes
+    reporting £200 or £3,000 of one award; sometimes an adult aged 45 outside
+    their couple who is already a member, with a report of their own; and
+    household savings of nil or £10,000."""
+    claimants = []
+    for _ in range(draw(st.integers(1, 2))):
+        works = draw(st.booleans())
+        claimants.append(
+            {
+                "age": draw(st.sampled_from([22, 30])),
+                "employment_income": 13_000 if works else 0,
+                "hours_worked": 1_820 if works else 0,
+                **NO_AWARDS,
+                draw(st.sampled_from(AWARD_REPORTS)): draw(
+                    st.sampled_from([0, 0, 200, 3_000])
+                ),
+            }
+        )
+    existing = None
+    if draw(st.booleans()):
+        existing = {
+            "age": 45,
+            **NO_AWARDS,
+            draw(st.sampled_from(AWARD_REPORTS)): draw(
+                st.sampled_from([0, 200, 3_000])
+            ),
+        }
+    return claimants, existing, draw(st.sampled_from([0, 10_000]))
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(non_dependant_units(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_non_dependant_readers(drawn):
+    """Adding an adult outside the non-dependant couple, with an award of
+    their own, never changes a non-dependant reader for an existing member.
+
+    Each household in Maidstone has an applicant aged 70, the household head,
+    so England's pensioner scheme applies, and a non-dependant benefit unit
+    (non_dependant_units), with or without the added adult. Savings of
+    £10,000 give tariff income of £832 a year, more than a £200 report of
+    income-related ESA or income-based JSA: that member has no award, so is
+    not on it, whatever the added adult receives (HB Regs 2006 reg 2(3),
+    (3A)). A couple in remunerative work is banded on
+    its own gross income, which leaves out the added adult's award (HB Regs
+    2006 reg 74(4); SI 2012/2885 Sch 1 para 8(4)). The benefit unit claims no
+    Universal Credit, tax credits or Child Benefit, so the legacy awards and
+    pay alone decide each case.
+    """
+    people, benunits, households = {}, {}, {}
+    layouts = []
+    for other_present in [False, True]:
+        for i, ((claimants, existing, savings), other) in enumerate(drawn):
+            tag = f"{int(other_present)}_{i}"
+            applicant = f"applicant_{tag}"
+            people[applicant] = {"age": 70, "is_claimant_or_partner": True}
+            members = [(c, True) for c in claimants]
+            if existing is not None:
+                members.append((existing, False))
+            if other_present:
+                members.append((other, False))
+            unit = []
+            for j, (inputs, claimant_or_partner) in enumerate(members):
+                name = f"nondep_{tag}_{j}"
+                people[name] = {
+                    "current_education": "NOT_IN_EDUCATION",
+                    **inputs,
+                    "is_claimant_or_partner": claimant_or_partner,
+                }
+                unit.append(name)
+            benunits[f"applicant_unit_{tag}"] = {
+                "members": [applicant],
+                "claims_all_entitled_benefits": False,
+            }
+            benunits[f"nondep_unit_{tag}"] = {
+                "members": unit,
+                "claims_all_entitled_benefits": False,
+                "would_claim_uc": False,
+                "universal_credit": 0,
+                "child_benefit": 0,
+                "child_tax_credit": 0,
+                "working_tax_credit": 0,
+            }
+            households[f"h_{tag}"] = {
+                "members": [applicant] + unit,
+                "country": "ENGLAND",
+                "local_authority": "MAIDSTONE",
+                "council_tax": 2_000,
+                "savings": savings,
+            }
+            layouts.append([applicant] + unit)
+
+    def timed(entities):
+        return {
+            name: {k: (v if k == "members" else {YEAR: v}) for k, v in inputs.items()}
+            for name, inputs in entities.items()
+        }
+
+    sim = Simulation(
+        situation={
+            "people": timed(people),
+            "benunits": timed(benunits),
+            "households": timed(households),
+        }
+    )
+    k = len(drawn)
+    for variable in NON_DEPENDANT_READERS:
+        values = dict(zip(people, sim.calculate(variable, YEAR)))
+        for i in range(k):
+            without, with_other = layouts[i], layouts[k + i]
+            for a, b in zip(without, with_other):
+                assert np.isclose(values[a], values[b], atol=0.01), (
+                    variable,
+                    drawn[i],
+                )
+
+
 def _difference(variable, base_people, award_people, benunit_inputs=None):
     def build(people):
         names = list(people)
