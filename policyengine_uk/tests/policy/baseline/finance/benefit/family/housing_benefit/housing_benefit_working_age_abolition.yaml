@@ -643,8 +643,9 @@
 # Art. 7(4)(b) (NI: SR 2025/176 art. 7(4)(b)) saves an award where,
 # immediately before the abolition date, the claimant is entitled to
 # income-related ESA that the art. 3A(2) appointee saving keeps. The claimant
-# is the Housing Benefit claimant: the only member reporting Housing Benefit,
-# a sole claimant when no member reports it, or the saved ESA claimant where
+# is the Housing Benefit claimant: one of the members reporting Housing
+# Benefit, so every reporter must hold the saved award; a sole claimant when
+# no member reports it; or the saved ESA claimant where
 # housing_benefit_claimant_is_saved_esa_claimant confirms it. An outside
 # adult's saved report does not keep the family's award.
 
@@ -1266,13 +1267,13 @@
     claims_uc_at_legacy_closure: [false, true, true, true, true, false]
 
 - name: GB Housing Benefit reports identify the ESA-saved claimant in 2026
-  # Without the supplied status, the only member reporting Housing Benefit
-  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # Without the supplied status, the Housing Benefit claimant is one of the
+  # members reporting Housing Benefit. A sole claimant's saved ESA does not keep
   # an award that another adult in the benefit unit reports, even with the
   # status false. A couple keeps an award reported by the partner with the
   # saved ESA, and a false status does not remove that identity. Reports on
   # different members save only with the status true, and a second reporter
-  # leaves the claimant unidentified. A sole claimant with the saved report
+  # without the saved award leaves the claimant unidentified. A sole claimant with the saved report
   # and no Housing Benefit report has no competing reporter.
   period: 2026
   absolute_error_margin: 0.0001
@@ -1399,13 +1400,13 @@
     claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
 
 - name: NI Housing Benefit reports identify the ESA-saved claimant in 2026
-  # Without the supplied status, the only member reporting Housing Benefit
-  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # Without the supplied status, the Housing Benefit claimant is one of the
+  # members reporting Housing Benefit. A sole claimant's saved ESA does not keep
   # an award that another adult in the benefit unit reports, even with the
   # status false. A couple keeps an award reported by the partner with the
   # saved ESA, and a false status does not remove that identity. Reports on
   # different members save only with the status true, and a second reporter
-  # leaves the claimant unidentified. A sole claimant with the saved report
+  # without the saved award leaves the claimant unidentified. A sole claimant with the saved report
   # and no Housing Benefit report has no competing reporter.
   period: 2026
   absolute_error_margin: 0.0001
@@ -1532,13 +1533,13 @@
     claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
 
 - name: GB Housing Benefit reports identify the ESA-saved claimant in 2027
-  # Without the supplied status, the only member reporting Housing Benefit
-  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # Without the supplied status, the Housing Benefit claimant is one of the
+  # members reporting Housing Benefit. A sole claimant's saved ESA does not keep
   # an award that another adult in the benefit unit reports, even with the
   # status false. A couple keeps an award reported by the partner with the
   # saved ESA, and a false status does not remove that identity. Reports on
   # different members save only with the status true, and a second reporter
-  # leaves the claimant unidentified. A sole claimant with the saved report
+  # without the saved award leaves the claimant unidentified. A sole claimant with the saved report
   # and no Housing Benefit report has no competing reporter.
   period: 2027
   absolute_error_margin: 0.0001
@@ -1808,3 +1809,102 @@
   output:
     is_claimant_or_partner: [true, false]
     housing_benefit_payable_share: 0.235616
+
+- name: GB couple whose two Housing Benefit reporters both hold the saved ESA keeps the award in 2026
+  # Both members of a couple report Housing Benefit and both hold a saved
+  # income-related ESA award. Whichever of them claims Housing Benefit holds
+  # the saved award, so art. 7(4)(b) keeps it without the supplied status.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      both_saved_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      both_saved_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+
+- name: NI couple whose two Housing Benefit reporters both hold the saved ESA keeps the award in 2026
+  # Both members of a couple report Housing Benefit and both hold a saved
+  # income-related ESA award. Whichever of them claims Housing Benefit holds
+  # the saved award, so art. 7(4)(b) keeps it without the supplied status.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      both_saved_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      both_saved_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
+
+- name: GB couple whose two Housing Benefit reporters both hold the saved ESA keeps the award in 2027
+  # Both members of a couple report Housing Benefit and both hold a saved
+  # income-related ESA award. Whichever of them claims Housing Benefit holds
+  # the saved award, so art. 7(4)(b) keeps it without the supplied status.
+  period: 2027
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      both_saved_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      both_saved_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      both_saved:
+        members: [both_saved_head, both_saved_partner]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    claims_uc_at_legacy_closure: false
