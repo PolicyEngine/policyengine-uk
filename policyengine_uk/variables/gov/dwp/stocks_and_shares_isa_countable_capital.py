@@ -47,16 +47,18 @@ class stocks_and_shares_isa_countable_capital(Variable):
         "absorbs the part's "
         "rounding. While the list names at most two holdings, the parts' formulas "
         "stay within share_like_capital's float32 spacing of these holdings. The "
-        "formula lets the balances exceed the stored part by no more than that "
-        "spacing, and only where both stored parts equal the split the parts' own "
-        "formulas give from share_like_capital and the itemised holdings; where "
-        "that split falls further short, the stored part bounds the balances. "
-        "Where a direct input, or a replaced or neutralised formula of either part, "
-        "makes either stored part differ from that split, the stored part bounds "
-        "the balances wherever it falls short of the holdings, however little, so "
-        "the balances hold no more than the part and the pool keeps what the part "
-        "holds. Inputs or formulas that give exactly the formulas' values leave "
-        "every result as the formulas give it. "
+        "balances hold no more than the stored part, or nil where the part is nil "
+        "or less, except that where both stored parts equal the split the parts' "
+        "own formulas give from share_like_capital and the itemised holdings, the "
+        "formula lets them hold up to that spacing more; where that split falls "
+        "further short, the stored part bounds the balances. Where a direct input, "
+        "or a replaced or neutralised formula of either part, makes either stored "
+        "part differ from that split, the stored part bounds the balances wherever "
+        "it falls short of the holdings, however little, so the pool never counts "
+        "less than nil of a stored part of nil or more. A missing (NaN) stored part "
+        "that holds the ISAs leaves the bound at the holdings. Inputs or formulas "
+        "that give exactly the formulas' values leave every result as the formulas "
+        "give it. "
         "Negative holdings beside the ISAs, itemised holdings that sum to nil or less, "
         "or a reform can leave these holdings short of the ISAs; the balances then "
         "share what the holdings hold. When the household's stored "
@@ -94,17 +96,22 @@ class stocks_and_shares_isa_countable_capital(Variable):
             backing = holdings_without_sale_expenses(household, period, parameters)
         else:
             backing = holdings_with_sale_expenses(household, period, parameters)
-        # The formulas net the balances out of the stored part. While the
-        # list names at most two holdings, the parts' formulas stay within
-        # share_like_capital's float32 spacing of these holdings, and that
-        # rounding is all the bound lets the balances exceed the stored
-        # part by. It allows it only where both stored parts are the split
-        # the parts' own formulas give. Where a direct input or a replaced
-        # or neutralised formula of either part changes either value, the
-        # stored part bounds the balances wherever it falls short of the
-        # holdings, by however little, so the pool keeps what the part
-        # holds. Where the formulas' own split falls further short, the
-        # stored part bounds the balances too.
+        # The formulas net the balances out of the stored part. The bound
+        # holds the balances to no more than the stored part, or nil where
+        # the part is nil or less, as bounded_holdings floors a negative
+        # bound at nil. While the list names at most two holdings, the
+        # parts' formulas stay within share_like_capital's float32 spacing
+        # of these holdings, and that rounding is all the bound lets the
+        # balances exceed that by. It allows it only where both stored
+        # parts are the split the parts' own formulas give. Where a direct
+        # input or a replaced or neutralised formula of either part changes
+        # either value, the stored part bounds the balances wherever it
+        # falls short of the holdings, by however little, so the pool never
+        # counts less than nil of a stored part of nil or more. Where the
+        # formulas' own split falls further short, the stored part bounds
+        # the balances too. A missing (NaN) stored part is never the
+        # formulas' split and never less than the holdings, so it leaves
+        # the bound at the holdings.
         stored = household(part, period)
         with np.errstate(invalid="ignore"):
             short = where(
