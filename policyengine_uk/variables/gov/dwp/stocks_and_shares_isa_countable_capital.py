@@ -4,6 +4,7 @@ from policyengine_uk.variables.gov.dwp._person_capital_pool import (
     household_sources,
 )
 from policyengine_uk.variables.household.wealth.share_like_capital_with_sale_expenses import (
+    formula_split,
     holdings_with_sale_expenses,
     holdings_without_sale_expenses,
 )
@@ -45,10 +46,17 @@ class stocks_and_shares_isa_countable_capital(Variable):
         "so bounding by them keeps the whole of a balance they cover, and the pool "
         "absorbs the part's "
         "rounding. While the list names at most two holdings, the parts' formulas "
-        "stay within share_like_capital's float32 spacing of these holdings. Where "
-        "the stored part falls further short, as a direct input or a reformed "
-        "formula of either part can make it, the stored part bounds the balances "
-        "instead, so the pool keeps what the part holds. "
+        "stay within share_like_capital's float32 spacing of these holdings. The "
+        "formula lets the balances exceed the stored part by no more than that "
+        "spacing, and only where both stored parts equal the split the parts' own "
+        "formulas give from share_like_capital and the itemised holdings; where "
+        "that split falls further short, the stored part bounds the balances. "
+        "Where a direct input, or a replaced or neutralised formula of either part, "
+        "makes either stored part differ from that split, the stored part bounds "
+        "the balances wherever it falls short of the holdings, however little, so "
+        "the balances hold no more than the part and the pool keeps what the part "
+        "holds. Inputs or formulas that give exactly the formulas' values leave "
+        "every result as the formulas give it. "
         "Negative holdings beside the ISAs, itemised holdings that sum to nil or less, "
         "or a reform can leave these holdings short of the ISAs; the balances then "
         "share what the holdings hold. When the household's stored "
@@ -88,13 +96,22 @@ class stocks_and_shares_isa_countable_capital(Variable):
             backing = holdings_with_sale_expenses(household, period, parameters)
         # The formulas net the balances out of the stored part. While the
         # list names at most two holdings, the parts' formulas stay within
-        # share_like_capital's float32 spacing of these holdings. A direct
-        # input or a reformed formula can leave the stored part further
-        # short, and the stored part then bounds the balances, so the pool
-        # keeps what the part holds.
+        # share_like_capital's float32 spacing of these holdings, and that
+        # rounding is all the bound lets the balances exceed the stored
+        # part by. It allows it only where both stored parts are the split
+        # the parts' own formulas give. Where a direct input or a replaced
+        # or neutralised formula of either part changes either value, the
+        # stored part bounds the balances wherever it falls short of the
+        # holdings, by however little, so the pool keeps what the part
+        # holds. Where the formulas' own split falls further short, the
+        # stored part bounds the balances too.
         stored = household(part, period)
         with np.errstate(invalid="ignore"):
-            short = backing - stored > np.spacing(np.abs(share_like))
+            short = where(
+                formula_split(household, period, parameters),
+                backing - stored > np.spacing(np.abs(share_like)),
+                stored < backing,
+            )
         backing = where(short, stored, backing)
         # A missing (NaN) backing leaves the bound unchanged.
         return bounded_person_holding(

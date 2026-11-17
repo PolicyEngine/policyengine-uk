@@ -57,6 +57,7 @@ from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.model_api import Household, Reform, Variable
 from policyengine_uk.variables.household.wealth.share_like_capital import (
     RELATIVE_TOLERANCE,
 )
@@ -670,16 +671,16 @@ def test_a_balance_the_complement_covers_keeps_its_whole_value():
         assert sim.calculate("uc_assessable_capital", YEAR)[0] == uc
 
 
-def _holder_and_lodger(household):
-    """A holder with a £5,000 stocks and shares ISA balance and a lodger in
-    separate working-age benefit units sharing £10,000 of savings, with
-    ``household``'s inputs on the household. No household ISA total is
+def _holder_and_lodger(household, balance=5_000):
+    """A holder with a stocks and shares ISA balance of ``balance`` and a
+    lodger in separate working-age benefit units sharing £10,000 of savings,
+    with ``household``'s inputs on the household. No household ISA total is
     stored, so stocks_and_shares_isa is the balance."""
     return {
         "people": {
             "holder": {
                 "age": {YEAR: 30},
-                "stocks_and_shares_isa_balance": {YEAR: 5_000},
+                "stocks_and_shares_isa_balance": {YEAR: balance},
             },
             "lodger": {"age": {YEAR: 30}},
         },
@@ -733,6 +734,166 @@ def test_a_stored_part_short_of_its_holdings_bounds_the_balances(
     assert list(holding) == [held, 0]
     assert holding[0] <= stored
     assert list(sim.calculate("uc_assessable_capital", YEAR)) == uc
+
+
+def _returning(name, value):
+    """A structural reform that replaces the formula of the household
+    variable ``name`` with one giving ``value``."""
+
+    class replaced(Variable):
+        label = name
+        entity = Household
+        definition_period = "year"
+        value_type = float
+
+        def formula(household, period, parameters):
+            return household.filled_array(value)
+
+    replaced.__name__ = name
+
+    class Replace(Reform):
+        def apply(self):
+            self.update_variable(replaced)
+
+    return Replace
+
+
+class _NeutraliseWithout(Reform):
+    def apply(self):
+        self.neutralize_variable(WITHOUT)
+
+
+class _WithoutByAnotherFormula(Reform):
+    """Replaces the part without sale expenses' formula with another that
+    gives the same values: share_like_capital less the other part."""
+
+    def apply(self):
+        class share_like_capital_without_sale_expenses(Variable):
+            label = "share-like capital without expenses of sale"
+            entity = Household
+            definition_period = "year"
+            value_type = float
+
+            def formula(household, period, parameters):
+                return household("share_like_capital", period) - household(WITH, period)
+
+        self.update_variable(share_like_capital_without_sale_expenses)
+
+
+# share_like_capital of £8,388,608 (2**23), whose float32 spacing is £1,
+# beside £8,388,607 of directly held shares or of trusts.
+SPACING_SHARES = {"corporate_wealth": 2**23, "directly_held_shares": 2**23 - 1}
+SPACING_TRUSTS = {"corporate_wealth": 2**23, "unit_and_investment_trusts": 2**23 - 1}
+BASELINE_ROUTE = _uc_lists_without(WITH)
+REFORM_ROUTE = {**ISAS_WITH_SALE_EXPENSES, **_uc_lists_without(WITHOUT)}
+
+
+@pytest.mark.parametrize(
+    "household, reform, part",
+    [
+        ({**SPACING_SHARES, WITHOUT: 0}, BASELINE_ROUTE, WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _returning(WITHOUT, 0)), WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _NeutraliseWithout), WITHOUT),
+        (SPACING_SHARES, (BASELINE_ROUTE, _returning(WITH, 2**23)), WITHOUT),
+        ({**SPACING_TRUSTS, WITH: 0}, REFORM_ROUTE, WITH),
+        (SPACING_TRUSTS, (REFORM_ROUTE, _returning(WITH, 0)), WITH),
+    ],
+    ids=[
+        "without_entered_as_nil",
+        "without_replaced_by_nil",
+        "without_neutralised",
+        "with_replaced_by_the_total",
+        "isas_with_sale_expenses_with_entered_as_nil",
+        "isas_with_sale_expenses_with_replaced_by_nil",
+    ],
+)
+def test_an_override_within_rounding_still_bounds_the_balances(household, reform, part):
+    """Review r3's witnesses, where a direct input or a replaced or
+    neutralised formula leaves the stored part that holds the ISAs £1 short
+    of the holdings behind it, within share_like_capital's £1 float32
+    spacing. The holder still keeps nothing the part does not hold.
+
+    The holder's balance is £1, and the household has £8,388,608 (2**23) of
+    corporate_wealth and share_like_capital. Directly held shares of
+    £8,388,607 leave the listed £1 ISA behind the part without sale
+    expenses, which is nil: entered as nil, given by a formula replaced to
+    give nil or neutralised, or left as share_like_capital less a part with
+    sale expenses replaced to give all £8,388,608. With the ISAs off the
+    exempt list and trusts of £8,388,607 instead of the shares, the £1
+    complement stands behind the part with sale expenses, entered or
+    replaced as nil.
+
+    The balance holds nil. With the other part off UC's lists, the pool is
+    the £10,000 of savings, £5,000 for each unit. Bounded by the holdings
+    alone, the holder kept £1 and the pool netted it from the empty part:
+    [£5,000.50, £4,999.50], or with the ISAs valued less 10%, [£5,000.45,
+    £4,999.55]."""
+    sim = Simulation(situation=_holder_and_lodger(household, balance=1), reform=reform)
+    assert sim.calculate("share_like_capital", YEAR)[0] == 2**23
+    assert sim.calculate(part, YEAR)[0] == 0
+    held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(held) == [0, 0]
+    assert list(sim.calculate("uc_assessable_capital", YEAR)) == [5_000, 5_000]
+
+
+def test_only_a_split_that_differs_from_the_formulas_loses_the_rounding():
+    """A reform that replaces a part's formula with one giving the same
+    values changes nothing, while an input of the part that does not hold
+    the ISAs, which leaves the part that does as its formula gives it,
+    still makes that part bound the balances.
+
+    1. A sole holder's £100.01 balance in £20,000.01 of corporate_wealth,
+       as in test_a_balance_its_listed_holdings_cover_keeps_its_whole_value,
+       with the formula of the part without sale expenses replaced by one
+       giving share_like_capital less the other part: the split is the
+       formulas', so the holder keeps the whole balance against the
+       100.009765625 part, and UC counts £18,010.01.
+    2. The two-name list of
+       test_a_balance_the_complement_covers_keeps_its_whole_value, where
+       the £2 part with sale expenses holds the ISAs and £3 of holdings
+       stand behind it, with the same replacement: the holder keeps all £3,
+       and with the part without sale expenses off UC's lists, UC counts
+       £2.70. With that part entered as nil instead, the split differs from
+       the formulas', so the stored £2 part bounds the balance: the holder
+       keeps £2, and UC counts 90% of the £2 part less the £2 balance, nil,
+       plus 90% of the balance: £1.80."""
+    rounding = {
+        "people": {
+            "holder": {
+                "age": {YEAR: 30},
+                "stocks_and_shares_isa_balance": {YEAR: 100.01},
+            }
+        },
+        "benunits": {"holder_unit": {"members": ["holder"]}},
+        "households": {
+            "home": {"members": ["holder"], "corporate_wealth": {YEAR: 20_000.01}}
+        },
+    }
+    sim = Simulation(situation=rounding, reform=_WithoutByAnotherFormula)
+    assert sim.calculate(WITHOUT, YEAR)[0] == np.float32(100.009765625)
+    held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+    assert list(held) == [np.float32(100.01)]
+    uc = sim.calculate("uc_assessable_capital", YEAR)
+    assert list(uc) == [np.float32(18_010.01)]
+
+    exempt = {
+        EXEMPT_NODE: {str(YEAR): ["directly_held_shares", "unit_and_investment_trusts"]}
+    }
+    lists = {**exempt, **_uc_lists_without(WITHOUT)}
+    complement = _sole_isa_holders([(16_777_222, 2**24, 3, 3)])
+    entered = _sole_isa_holders([(16_777_222, 2**24, 3, 3)])
+    entered["households"]["h0"][WITHOUT] = {YEAR: 0.0}
+    for situation, reform, without, holding, capital in (
+        (complement, (lists, _WithoutByAnotherFormula), 16_777_220, 3, 2.7),
+        (entered, lists, 0, 2, 1.8),
+    ):
+        sim = Simulation(situation=situation, reform=reform)
+        assert sim.calculate(WITH, YEAR)[0] == 2
+        assert sim.calculate(WITHOUT, YEAR)[0] == without
+        held = sim.calculate("stocks_and_shares_isa_countable_capital", YEAR)
+        assert held[0] == holding
+        uc = sim.calculate("uc_assessable_capital", YEAR)
+        assert uc[0] == np.float32(capital)
 
 
 def test_the_exempt_list_starts_with_the_first_capital_list():

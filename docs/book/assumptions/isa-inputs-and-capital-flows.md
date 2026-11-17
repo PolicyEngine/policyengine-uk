@@ -151,10 +151,16 @@ rounds the listed holdings' float32 sum and then the subtraction, and could
 fall below a balance the holdings cover. For a list of two holdings each of
 these holdings rounds at most once, to float32 (for the float64 complement,
 unless one amount is more than 2^29 times another), and the parts' formulas
-stay within `share_like_capital`'s float32 spacing of them. Where the stored
-part falls further short, as a direct input or a reformed formula of either
-part can make it, the stored part bounds the balances instead, so the pool
-keeps what the part holds. Negative
+stay within `share_like_capital`'s float32 spacing of them. The model lets
+the balances exceed the stored part by no more than that spacing, and only
+where both stored parts equal the split the parts' own formulas give from
+`share_like_capital` and the itemised holdings; where that split falls
+further short, the stored part bounds the balances. Where a direct input, or
+a replaced or neutralised formula of either part, makes either stored part
+differ from that split, the stored part bounds the balances wherever it
+falls short of the holdings, however little, so the pool keeps what the
+part holds. Inputs or formulas that give exactly the formulas' values leave
+every result as the formulas give it. Negative
 holdings beside the ISAs, itemised holdings that sum to nil or less, or a
 reform can leave these holdings short of the ISAs; the balances then share
 what the holdings hold. Data that store only household totals hold no

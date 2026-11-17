@@ -36,18 +36,51 @@ class share_like_capital_with_sale_expenses(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        share_like = household("share_like_capital", period)
-        itemised, without = _itemised_and_listed(household, period, parameters)
-        # share_like_capital is nonnegative wherever the itemised sum is
-        # positive. Holding this part between nil and that total keeps the
-        # other part, the difference, between nil and the total too, so
-        # negative trusts beside positive shares can't push the two parts
-        # apart.
-        return where(
-            itemised > 0,
-            min_(share_like, max_(0, share_like - without)),
-            share_like,
-        )
+        return _formula_with_sale_expenses(household, period, parameters)
+
+
+def _formula_with_sale_expenses(household, period, parameters):
+    """share_like_capital_with_sale_expenses's formula."""
+    share_like = household("share_like_capital", period)
+    itemised, without = _itemised_and_listed(household, period, parameters)
+    # share_like_capital is nonnegative wherever the itemised sum is
+    # positive. Holding this part between nil and that total keeps the
+    # other part, the difference, between nil and the total too, so
+    # negative trusts beside positive shares can't push the two parts
+    # apart.
+    return where(
+        itemised > 0,
+        min_(share_like, max_(0, share_like - without)),
+        share_like,
+    )
+
+
+def formula_split(household, period, parameters):
+    """Whether each household's two stored parts are the split the parts'
+    own formulas give.
+
+    Recomputes share_like_capital_with_sale_expenses with its own formula,
+    from the stored share_like_capital and itemised holdings and the law's
+    exempt list, and stores it as the engine stores a formula result, in
+    float32; the part without sale expenses is share_like_capital less that,
+    as its formula subtracts it. The same float32 operations on the same
+    values give the same result, so where both parts come from these
+    formulas, the stored parts equal the recomputed ones exactly. A direct
+    input, or a reform that replaces or neutralises either part's formula,
+    gives a split that differs from it unless every value agrees, and a
+    split whose values all agree gives every result the formulas give. A
+    missing (NaN) part never equals its recomputation.
+    """
+    share_like = household("share_like_capital", period)
+    with_expenses = np.asarray(
+        _formula_with_sale_expenses(household, period, parameters), np.float32
+    )
+    return (
+        household("share_like_capital_with_sale_expenses", period) == with_expenses
+    ) & (
+        household("share_like_capital_without_sale_expenses", period)
+        == share_like - with_expenses
+    )
 
 
 def _itemised_and_listed(household, period, parameters):
