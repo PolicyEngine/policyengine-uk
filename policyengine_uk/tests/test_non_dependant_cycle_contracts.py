@@ -496,6 +496,11 @@ def test_computed_universal_credit_and_local_schemes(system):
     sim = make(system, data, year=year, trace=True)
     universal_credit = sim.calculate("universal_credit", year)
     names = traced_names(sim)
+    # The claimant-specific saving is a supplied status, never an ESA or HB
+    # award calculation. Keep that restriction alongside the trace contract.
+    assert not system.get_variable(
+        "housing_benefit_claimant_is_saved_esa_claimant"
+    ).formulas
     assert universal_credit[0] > 0
     assert "uc_maximum_amount" in names
     assert "housing_benefit_reported" in names
@@ -512,7 +517,11 @@ def test_computed_universal_credit_and_local_schemes(system):
         for name in names
         if name.startswith("housing_benefit")
         and not name.startswith("housing_benefit_report")
-        and name != "housing_benefit_payable_share"
+        and name
+        not in (
+            "housing_benefit_payable_share",
+            "housing_benefit_claimant_is_saved_esa_claimant",
+        )
     }
     for name in [
         "housing_benefit",

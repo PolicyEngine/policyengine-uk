@@ -19,16 +19,17 @@ class housing_benefit_payable_share(Variable):
         "age, or a mixed-age couple with the SI 2019/37 art. 4 saving; reg "
         "6A(4) and (5), through art. 7(4)(a)) is the second; a mixed-age "
         "couple without the saving does not keep its award. The third is a "
-        "family whose claimant or partner reports an income-related ESA award "
-        "that the art. 3A(2) appointee saving keeps (esa_income_appointee_saving; "
-        "art. 7(4)(b)). The claimant and partner share one income-related ESA "
-        "claim and the model doesn't know which of them claims Housing Benefit, "
-        "so either one's saved report keeps the family's award, as it keeps "
-        "the whole ESA claim (esa_income_payable_share). The model reads the "
-        "report, not a calculated award, so it infers the entitlement "
-        "immediately before the abolition date from current receipt. An adult "
-        "claiming ESA in their own right is not the Housing Benefit claimant "
-        "and does not keep the family's award. A Universal Credit claim still "
+        "family whose Housing Benefit claimant personally holds a saved "
+        "income-related ESA award (art. 7(4)(b)). A positive claimant/partner "
+        "ESA report with esa_income_appointee_saving is required, together "
+        "with housing_benefit_claimant_is_saved_esa_claimant for a couple. "
+        "That supplied status defaults to false: without it a couple is "
+        "unsaved, because the model does not identify its Housing Benefit "
+        "claimant. A sole claimant's own saved report suffices. The model "
+        "reads reports, not a calculated award, so it infers entitlement "
+        "immediately before abolition from current receipt. An outside "
+        "adult's saved report does not keep the family's award. "
+        "A Universal Credit claim still "
         "ends a saved award (housing_benefit_eligible). "
         "Other saved working-age awards are not modelled, so their awards "
         "wrongly end on the abolition date: qualifying HB claims during the "
@@ -77,16 +78,23 @@ class housing_benefit_payable_share(Variable):
         )
         # Art. 7(4)(b) (NI: art. 7(4)(b)) saves an award where, immediately
         # before the abolition date, the claimant is entitled to
-        # income-related ESA and the art. 3A(2) appointee saving applies. As
-        # esa_income_payable_share does, the model applies the claimant's or
-        # partner's saved report to the family. It reads reports and the
-        # saving, never a calculated ESA award, which itself depends on
-        # whether the family claims Universal Credit at the abolition.
+        # income-related ESA and the art. 3A(2) appointee saving applies.
+        # Sharing an ESA assessment does not make its partner the HB claimant.
+        # Use a supplied claimant-specific status, like HB's main-phase ESA
+        # input, rather than inventing a general HB claimant identity. Missing
+        # status saves only a sole claimant with their own saved report.
+        # Read reports and flags, never calculated ESA: it depends on the UC
+        # claim that this share can itself trigger.
         person = benunit.members
-        esa_income_saving = benunit.any(
-            person("is_claimant_or_partner", period)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        saved_esa_report = benunit.any(
+            claimant_or_partner
             & (person("esa_income_reported", period) > 0)
             & person("esa_income_appointee_saving", period)
         )
+        same_claimant = (benunit.sum(claimant_or_partner) == 1) | benunit(
+            "housing_benefit_claimant_is_saved_esa_claimant", period
+        )
+        esa_income_saving = saved_esa_report & same_claimant
         saved = pension_age_saving | protected_accommodation | esa_income_saving
         return where(saved, 1, working_age_share)
