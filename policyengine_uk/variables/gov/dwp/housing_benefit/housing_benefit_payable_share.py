@@ -36,7 +36,10 @@ class housing_benefit_payable_share(Variable):
         "saved award, or a couple with no Housing Benefit report is unsaved. "
         "The model reads reports, not a calculated award, so it infers "
         "entitlement immediately before abolition from current receipt. An "
-        "outside adult's saved report does not keep the family's award. "
+        "outside adult's saved report does not keep the family's award, even "
+        "when that adult is the only Housing Benefit reporter, and the "
+        "supplied status cannot change this; supply is_claimant_or_partner "
+        "where that adult is in fact the partner. "
         "A Universal Credit claim ends an ESA-saved continuing award; "
         "specified or temporary accommodation Housing Benefit survives the "
         "claim (housing_benefit_eligible). "
@@ -110,6 +113,11 @@ class housing_benefit_payable_share(Variable):
         # reports and cannot remove an identity they establish. Anything
         # else (two reporters, a reporter without the saved award, a couple
         # with neither a report nor the confirmation) is unsaved.
+        # The saved award counts only on a claimant or partner, on every
+        # path. An outside adult who is the only reporter stays unsaved: the
+        # Housing Benefit amount still treats the marked member as the
+        # claimant and that adult as a non-dependant, so saving on the
+        # adult's award would mix two identities.
         # Read reports and flags, never calculated ESA: it depends on the UC
         # claim that this share can itself trigger.
         person = benunit.members

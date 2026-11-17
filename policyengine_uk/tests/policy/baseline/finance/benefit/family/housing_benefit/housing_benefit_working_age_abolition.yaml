@@ -1663,3 +1663,148 @@
     housing_benefit_payable_share: [0, 1, 1, 0, 1, 0, 1]
     # Only a reported award the abolition reaches prompts the claim.
     claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
+
+- name: GB outside adult's saved ESA and a couple without a report keep no award in 2026
+  # A saved ESA report counts only on a claimant or partner. An adult outside
+  # is_claimant_or_partner holds the saved ESA: as the only Housing Benefit
+  # reporter, without and with the status true; with the status true while
+  # the marked claimant reports; and with no report. Supplying both members
+  # as claimant or partner makes the same adult the partner and the only
+  # reporter, which saves the award. A couple with no Housing Benefit report
+  # and no status is unsaved even when a partner holds the saved ESA.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      reporter_claimant:
+        age: 40
+        is_claimant_or_partner: true
+      reporter_outside:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      reporter_confirmed_claimant:
+        age: 40
+        is_claimant_or_partner: true
+      reporter_confirmed_outside:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      reporter_partner_claimant:
+        age: 40
+        is_claimant_or_partner: true
+      reporter_partner_partner:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      confirmed_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      confirmed_outside:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      unreported_claimant:
+        age: 40
+        is_claimant_or_partner: true
+      unreported_outside:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      couple_head:
+        age: 40
+        is_claimant_or_partner: true
+      couple_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      reporter:
+        members: [reporter_claimant, reporter_outside]
+        would_claim_uc: false
+      reporter_confirmed:
+        members: [reporter_confirmed_claimant, reporter_confirmed_outside]
+        would_claim_uc: false
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      reporter_partner:
+        members: [reporter_partner_claimant, reporter_partner_partner]
+        would_claim_uc: false
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      confirmed:
+        members: [confirmed_claimant, confirmed_outside]
+        would_claim_uc: false
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      unreported:
+        members: [unreported_claimant, unreported_outside]
+        would_claim_uc: false
+      couple:
+        members: [couple_head, couple_partner]
+        would_claim_uc: false
+    households:
+      reporter:
+        members: [reporter_claimant, reporter_outside]
+        region: LONDON
+      reporter_confirmed:
+        members: [reporter_confirmed_claimant, reporter_confirmed_outside]
+        region: LONDON
+      reporter_partner:
+        members: [reporter_partner_claimant, reporter_partner_partner]
+        region: LONDON
+      confirmed:
+        members: [confirmed_claimant, confirmed_outside]
+        region: LONDON
+      unreported:
+        members: [unreported_claimant, unreported_outside]
+        region: LONDON
+      couple:
+        members: [couple_head, couple_partner]
+        region: LONDON
+  output:
+    # 86 / 365 unless saved.
+    housing_benefit_payable_share: [0.235616, 0.235616, 1, 0.235616, 0.235616, 0.235616]
+
+- name: GB age-gap couple entered without roles keeps no ESA-saved award in 2026
+  # is_claimant_or_partner presumes a member 20 or more years younger than
+  # the claimant to be their child, so the younger member's saved ESA does
+  # not count, even as the only Housing Benefit reporter with the status
+  # true. Supplying is_claimant_or_partner for both saves it (the
+  # reporter_partner unit above).
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      elder:
+        age: 60
+      younger:
+        age: 38
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [elder, younger]
+        would_claim_uc: false
+        housing_benefit_claimant_is_saved_esa_claimant: true
+    households:
+      household:
+        members: [elder, younger]
+        region: LONDON
+  output:
+    is_claimant_or_partner: [true, false]
+    housing_benefit_payable_share: 0.235616
