@@ -36,6 +36,12 @@ the child's parent, or the person themselves:
 - The Childcare Offer for Wales gross income limit for each parent: Welsh
   Government guidance for local authorities, version 8.3 (April 2026),
   paragraphs 57 and 69.
+- The non-dependant exemptions, and the rule that a non-dependant on Income
+  Support, income-based JSA or income-related ESA is not in remunerative
+  work, for the person the award is payable to: HB Regs 2006 regs 2(1), (3)
+  and (3A), 6(6) and 74(8); SI 2006/214 regs 6(6) and 55(8); SI 2012/2885
+  Sch 1 para 8(8); SSI 2012/319 reg 48; SSI 2021/249 reg 90; WSI 2013/3029
+  Sch 1 para 3 and Sch 6 para 5.
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -146,6 +152,9 @@ MEMBER_READERS = [
     "is_on_income_support",
     "extended_childcare_entitlement_limited_capability_or_specified_benefit",
     "wales_childcare_offer_parent_condition",
+    "housing_benefit_non_dep_deduction_exempt",
+    "council_tax_reduction_non_dep_deduction_exempt",
+    "household_benefits_individual_non_dep_deduction",
 ]
 # Readers built from the members' own ESA and JSA reports, their work and the
 # household's capital alone, which the severe disability premium cannot reach.

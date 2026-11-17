@@ -1,0 +1,369 @@
+# Non-dependant exemptions and the "not in remunerative work" test for a
+# non-dependant on a legacy income-related award. No deduction is made for a
+# non-dependant aged under 25 who is on Income Support or income-based JSA
+# (HB Regs 2006 reg 74(8)(a); SI 2006/214 reg 55(8)(a)), or, under the
+# national council tax reduction schemes, for one of any age on Income
+# Support, income-based JSA or income-related ESA (SI 2012/2885 Sch 1 para
+# 8(8)(a); SSI 2012/319 reg 48; SSI 2021/249 reg 90; WSI 2013/3029 Sch 1
+# para 3 and Sch 6 para 5). A person on one of them is not in remunerative
+# work (HB Regs 2006 reg 6(6); SI 2006/214 reg 6(6)).
+#
+# A person is on income-based JSA or income-related ESA on a day the
+# allowance "is payable to him", and on Income Support when "in receipt of"
+# it (HB Regs 2006 reg 2(1), (3) and (3A); the council tax reduction schemes
+# use the same definitions). "other" is a member of the non-dependant's
+# benefit unit who is neither its claimant, a partner nor a child or young
+# person they are responsible for, so an award they report is their own
+# claim, payable to them: it makes them exempt and leaves the claimant
+# deducted. A claimant whose own report falls below the tariff income on the
+# capital has no award, so is on none, whatever another member receives.
+#
+# Every case runs in 2025-26, when Income Support, income-based JSA and
+# income-related ESA are in payment for the whole year. The applicant is the
+# 70-year-old household head, so England's pensioner scheme deducts for the
+# non-dependants at its 2025-26 rates (SI 2025/39): £5.00 a week (£260 a
+# year) for a non-dependant outside remunerative work. Housing Benefit's
+# 2025-26 scale: £19.65 a week under £183, £45.15 from £183, £62.00 from
+# £266 and £101.35 from £348 of normal gross weekly income.
+
+- name: Another member's income-based JSA exempts that member, not the non-dependant claimant
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        jsa_income_reported: 4_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    claimant_or_partner_jsa_income: [0, 0]
+    is_on_income_based_jsa: [false, false, true]
+    # reg 74(8)(a): the other member is 23 and on income-based JSA.
+    housing_benefit_non_dep_deduction_exempt: [false, false, true]
+    # Sch 1 para 8(8)(a).
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    # The claimant pays the lowest amount, £5.00 x 52.
+    council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+
+- name: Another member's income-related ESA exempts that member from council tax reduction deductions, not the claimant
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        esa_income_reported: 4_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    claimant_or_partner_esa_income: [0, 0]
+    is_on_income_related_esa: [false, false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+
+- name: A claimant whose own ESA falls below tariff income is not on it when another member's award is paid
+  # Savings of £10,000 give tariff income of ceil(4,000 / 250) = 16 x £1 a
+  # week, £832 a year. The claimant's £500 report leaves no award; the other
+  # member's own claim pays £5,000 - £832 = £4,168.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        esa_income_reported: 500
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        esa_income_reported: 5_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 10_000
+  output:
+    esa_income_tariff_income: [0, 832]
+    claimant_or_partner_esa_income: [0, 0]
+    esa_income: [0, 4_168]
+    is_on_income_related_esa: [false, false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+
+- name: Another member aged 23 who reports Income Support in their own right is on it
+  # The model calculates income_support for the claimant and partner only,
+  # so the benefit unit's award stays nil; the other member is in receipt of
+  # their own award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        income_support_reported: 4_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    income_support: [0, 0]
+    is_on_income_support: [false, false, true]
+    housing_benefit_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+
+- name: Another member aged 40 on their own Income Support is exempt from council tax reduction deductions only
+  # Housing Benefit exempts a non-dependant on Income Support only under 25
+  # (reg 74(8)); the national council tax reduction schemes do at any age.
+  # The other member, outside remunerative work, pays Housing Benefit's
+  # lowest amount.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+      other:
+        age: 40
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        income_support_reported: 4_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_on_income_support: [false, false, true]
+    housing_benefit_non_dep_deduction_exempt: [false, false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_individual_non_dep_deduction: [0, 260, 0]
+
+- name: The claimant's own income-based JSA exempts the claimant
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        jsa_income_reported: 4_000
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    claimant_or_partner_jsa_income: [0, 4_000]
+    is_on_income_based_jsa: [false, true, false]
+    housing_benefit_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    # The other member, with no award, pays the lowest amount separately.
+    council_tax_reduction_individual_non_dep_deduction: [0, 0, 260]
+    council_tax_reduction_non_dep_deductions: [260, 0]
+
+- name: The claimant's own income-related ESA exempts the claimant from council tax reduction deductions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        esa_income_reported: 4_000
+      other:
+        age: 23
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, claimant, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    claimant_or_partner_esa_income: [0, 4_000]
+    is_on_income_related_esa: [false, true, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_individual_non_dep_deduction: [0, 0, 260]
+
+- name: Another member's own ESA leaves a non-dependant couple banded on their own income
+  # The claimant works 35 hours on £13,000 a year, £250 a week; the partner
+  # has no income. A couple is banded on its joint income, which counts the
+  # claimant's and partner's income-related ESA (reg 74(4)), here nil. The
+  # other member's £8,000 award is their own: counting it would add £153.85
+  # a week and move the claimant from the £183 band (£45.15) to the £348 band
+  # (£101.35). The partner and the other member, outside remunerative work,
+  # pay the lowest amount, £19.65 a week.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 70
+        housing_benefit_individual_non_dep_deduction_eligible: false
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+        housing_benefit_non_dep_gross_income: 13_000
+        housing_benefit_individual_non_dep_deduction_eligible: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        housing_benefit_non_dep_gross_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: true
+      other:
+        age: 40
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 0
+        housing_benefit_non_dep_gross_income: 0
+        housing_benefit_individual_non_dep_deduction_eligible: true
+        esa_income_reported: 8_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      non_dependant_unit:
+        members: [claimant, partner, other]
+        would_claim_uc: false
+        child_benefit: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [applicant, claimant, partner, other]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        savings: 0
+  output:
+    esa_income: [0, 8_000]
+    claimant_or_partner_esa_income: [0, 0]
+    # 45.15 x 52 = 2,347.80; 19.65 x 52 = 1,021.80.
+    household_benefits_individual_non_dep_deduction: [0, 2_347.80, 1_021.80, 1_021.80]
