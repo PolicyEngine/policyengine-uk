@@ -268,10 +268,12 @@ def has_working_age_claimant(unit):
 @given(st.lists(families(), min_size=1, max_size=25))
 @example(
     [
-        # The Housing Benefit abolition alone prompts each claim from 2026: a
-        # mixed-age couple without the saving, whose Pension Credit report
-        # keeps it from closure but saves no award (reg 6A(5)), and a
-        # working-age claimant on Housing Benefit only.
+        # The Housing Benefit abolition alone prompts the first two claims
+        # from 2026: a mixed-age couple without the saving, whose Pension
+        # Credit report keeps it from closure but saves no award (reg 6A(5)),
+        # and a working-age claimant on Housing Benefit only. The third
+        # family is the second without the closure claim flag, so it makes
+        # no claim: the flag decides the abolition claim too.
         dict(
             shape="mixed_age",
             members=[("claimant", 86), ("partner", 47)],
@@ -307,6 +309,22 @@ def has_working_age_claimant(unit):
             savings=0.0,
             would_claim_uc=False,
             claims_at_closure=True,
+            ineligible_partner=False,
+        ),
+        dict(
+            shape="single",
+            members=[("claimant", 30)],
+            reported={
+                name: 4_000.0 if name == "housing_benefit_reported" else 0.0
+                for name in LEGACY
+            },
+            saving=False,
+            tenure="RENT_PRIVATELY",
+            rent=6_000.0,
+            earnings=0.0,
+            savings=0.0,
+            would_claim_uc=False,
+            claims_at_closure=False,
             ineligible_partner=False,
         ),
     ]
