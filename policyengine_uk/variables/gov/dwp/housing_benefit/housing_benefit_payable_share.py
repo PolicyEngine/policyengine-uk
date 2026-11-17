@@ -20,15 +20,23 @@ class housing_benefit_payable_share(Variable):
         "6A(4) and (5), through art. 7(4)(a)) is the second; a mixed-age "
         "couple without the saving does not keep its award. The third is a "
         "family whose Housing Benefit claimant personally holds a saved "
-        "income-related ESA award (art. 7(4)(b)). A positive claimant/partner "
-        "ESA report with esa_income_appointee_saving is required, together "
-        "with housing_benefit_claimant_is_saved_esa_claimant for a couple. "
-        "That supplied status defaults to false: without it a couple is "
-        "unsaved, because the model does not identify its Housing Benefit "
-        "claimant. A sole claimant's own saved report suffices. The model "
-        "reads reports, not a calculated award, so it infers entitlement "
-        "immediately before abolition from current receipt. An outside "
-        "adult's saved report does not keep the family's award. "
+        "income-related ESA award (art. 7(4)(b)); a partner's award alone "
+        "does not save it. A saved award is a positive claimant/partner ESA "
+        "report with esa_income_appointee_saving. The model uses the Housing "
+        "Benefit reporter as the Housing Benefit claimant, as "
+        "has_mixed_age_couple_pension_credit_saving does. So the family is "
+        "saved when exactly one member reports Housing Benefit and that "
+        "member has the saved award; when no member reports Housing Benefit "
+        "and a sole claimant (exactly one is_claimant_or_partner) has it; or "
+        "when housing_benefit_claimant_is_saved_esa_claimant confirms the "
+        "identity and a claimant or partner has it. That supplied status "
+        "defaults to false, which leaves the identity to the reports; false "
+        "cannot remove an identity they establish. Without the confirmation, "
+        "a family with two Housing Benefit reporters, a reporter without the "
+        "saved award, or a couple with no Housing Benefit report is unsaved. "
+        "The model reads reports, not a calculated award, so it infers "
+        "entitlement immediately before abolition from current receipt. An "
+        "outside adult's saved report does not keep the family's award. "
         "A Universal Credit claim ends an ESA-saved continuing award; "
         "specified or temporary accommodation Housing Benefit survives the "
         "claim (housing_benefit_eligible). "
@@ -80,22 +88,50 @@ class housing_benefit_payable_share(Variable):
         # Art. 7(4)(b) (NI: art. 7(4)(b)) saves an award where, immediately
         # before the abolition date, the claimant is entitled to
         # income-related ESA and the art. 3A(2) appointee saving applies.
-        # Sharing an ESA assessment does not make its partner the HB claimant.
-        # Use a supplied claimant-specific status, like HB's main-phase ESA
-        # input, rather than inventing a general HB claimant identity. Missing
-        # status saves only a sole claimant with their own saved report.
+        # "The claimant" is the Housing Benefit claimant: a partner's saved
+        # award alone does not save it. A saved award is a claimant or
+        # partner's positive ESA report with the appointee saving. As in
+        # has_mixed_age_couple_pension_credit_saving, the Housing Benefit
+        # reporter is the Housing Benefit claimant. Reporters are counted
+        # over every member, as housing_benefit_eligible counts the award,
+        # so an adult outside the claimant/partner mask who reports Housing
+        # Benefit competes. The identity holds when:
+        # (a) exactly one member reports Housing Benefit and has the saved
+        #     award;
+        # (b) no member reports Housing Benefit and the sole claimant
+        #     (exactly one is_claimant_or_partner) has it. Without a report
+        #     no reader of this share changes an amount (the continuing award,
+        #     the abolition claim and the Tax-Free Childcare choice all need
+        #     one), so this shows only in the share itself or through a
+        #     supplied housing_benefit_eligible; or
+        # (c) housing_benefit_claimant_is_saved_esa_claimant confirms it and
+        #     a claimant or partner has the saved award.
+        # True confirms the identity. False, the default, leaves it to the
+        # reports and cannot remove an identity they establish. Anything
+        # else (two reporters, a reporter without the saved award, a couple
+        # with neither a report nor the confirmation) is unsaved.
         # Read reports and flags, never calculated ESA: it depends on the UC
         # claim that this share can itself trigger.
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        saved_esa_report = benunit.any(
+        saved_esa = (
             claimant_or_partner
             & (person("esa_income_reported", period) > 0)
             & person("esa_income_appointee_saving", period)
         )
-        same_claimant = (benunit.sum(claimant_or_partner) == 1) | benunit(
-            "housing_benefit_claimant_is_saved_esa_claimant", period
+        any_saved_esa = benunit.any(saved_esa)
+        hb_reporter = person("housing_benefit_reported", period) > 0
+        hb_reporters = benunit.sum(hb_reporter)
+        reporter_saved = (hb_reporters == 1) & benunit.any(hb_reporter & saved_esa)
+        sole_claimant_saved = (
+            (hb_reporters == 0)
+            & (benunit.sum(claimant_or_partner) == 1)
+            & any_saved_esa
         )
-        esa_income_saving = saved_esa_report & same_claimant
+        confirmed = (
+            benunit("housing_benefit_claimant_is_saved_esa_claimant", period)
+            & any_saved_esa
+        )
+        esa_income_saving = reporter_saved | sole_claimant_saved | confirmed
         saved = pension_age_saving | protected_accommodation | esa_income_saving
         return where(saved, 1, working_age_share)

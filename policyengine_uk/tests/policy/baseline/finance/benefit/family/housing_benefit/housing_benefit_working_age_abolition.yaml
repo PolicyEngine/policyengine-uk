@@ -642,10 +642,11 @@
 
 # Art. 7(4)(b) (NI: SR 2025/176 art. 7(4)(b)) saves an award where,
 # immediately before the abolition date, the claimant is entitled to
-# income-related ESA that the art. 3A(2) appointee saving keeps. A couple
-# must supply confirmation that the saved ESA claimant also claims Housing
-# Benefit; a sole claimant's own saved report suffices. An outside adult's
-# saved report does not keep the family's award.
+# income-related ESA that the art. 3A(2) appointee saving keeps. The claimant
+# is the Housing Benefit claimant: the only member reporting Housing Benefit,
+# a sole claimant when no member reports it, or the saved ESA claimant where
+# housing_benefit_claimant_is_saved_esa_claimant confirms it. An outside
+# adult's saved report does not keep the family's award.
 
 - name: GB award with an appointee's income-related ESA is paid in full in 2026 and prompts no claim
   period: 2026
@@ -925,8 +926,9 @@
         members: [single_head]
         region: LONDON
   output:
-    # The head's Housing Benefit report does not identify its legal claimant.
-    # Only the supplied same-person status or a sole saved claimant suffices.
+    # Each couple's head reports Housing Benefit without the saved ESA, so only
+    # the supplied status, with a saved ESA report, keeps the award. The sole
+    # claimant reports both.
     housing_benefit_payable_share: [1, 0.235616, 0.235616, 0.235616, 0.235616, 1]
     claims_uc_at_legacy_closure: [false, true, true, true, true, false]
 
@@ -1035,8 +1037,9 @@
         members: [single_head]
         region: NORTHERN_IRELAND
   output:
-    # The head's Housing Benefit report does not identify its legal claimant.
-    # Only the supplied same-person status or a sole saved claimant suffices.
+    # Each couple's head reports Housing Benefit without the saved ESA, so only
+    # the supplied status, with a saved ESA report, keeps the award. The sole
+    # claimant reports both.
     housing_benefit_payable_share: [1, 0.487671, 0.487671, 0.487671, 0.487671, 1]
     claims_uc_at_legacy_closure: [false, true, true, true, true, false]
 
@@ -1145,8 +1148,9 @@
         members: [single_head]
         region: LONDON
   output:
-    # The head's Housing Benefit report does not identify its legal claimant.
-    # Only the supplied same-person status or a sole saved claimant suffices.
+    # Each couple's head reports Housing Benefit without the saved ESA, so only
+    # the supplied status, with a saved ESA report, keeps the award. The sole
+    # claimant reports both.
     housing_benefit_payable_share: [1, 0, 0, 0, 0, 1]
     claims_uc_at_legacy_closure: [false, true, true, true, true, false]
 
@@ -1255,7 +1259,407 @@
         members: [single_head]
         region: NORTHERN_IRELAND
   output:
-    # The head's Housing Benefit report does not identify its legal claimant.
-    # Only the supplied same-person status or a sole saved claimant suffices.
+    # Each couple's head reports Housing Benefit without the saved ESA, so only
+    # the supplied status, with a saved ESA report, keeps the award. The sole
+    # claimant reports both.
     housing_benefit_payable_share: [1, 0, 0, 0, 0, 1]
     claims_uc_at_legacy_closure: [false, true, true, true, true, false]
+
+- name: GB Housing Benefit reports identify the ESA-saved claimant in 2026
+  # Without the supplied status, the only member reporting Housing Benefit
+  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # an award that another adult in the benefit unit reports, even with the
+  # status false. A couple keeps an award reported by the partner with the
+  # saved ESA, and a false status does not remove that identity. Reports on
+  # different members save only with the status true, and a second reporter
+  # leaves the claimant unidentified. A sole claimant with the saved report
+  # and no Housing Benefit report has no competing reporter.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      outside_reporter_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      outside_reporter_adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+      same_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      same_reporter_false_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_false_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_confirmed_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_confirmed_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      sole_unreported_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        region: LONDON
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        region: LONDON
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        region: LONDON
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        region: LONDON
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        region: LONDON
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        region: LONDON
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: [0.235616, 1, 1, 0.235616, 1, 0.235616, 1]
+    # Only a reported award the abolition reaches prompts the claim.
+    claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
+
+- name: NI Housing Benefit reports identify the ESA-saved claimant in 2026
+  # Without the supplied status, the only member reporting Housing Benefit
+  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # an award that another adult in the benefit unit reports, even with the
+  # status false. A couple keeps an award reported by the partner with the
+  # saved ESA, and a false status does not remove that identity. Reports on
+  # different members save only with the status true, and a second reporter
+  # leaves the claimant unidentified. A sole claimant with the saved report
+  # and no Housing Benefit report has no competing reporter.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      outside_reporter_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      outside_reporter_adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+      same_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      same_reporter_false_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_false_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_confirmed_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_confirmed_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      sole_unreported_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        region: NORTHERN_IRELAND
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        region: NORTHERN_IRELAND
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        region: NORTHERN_IRELAND
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        region: NORTHERN_IRELAND
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        region: NORTHERN_IRELAND
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        region: NORTHERN_IRELAND
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: [0.487671, 1, 1, 0.487671, 1, 0.487671, 1]
+    # Only a reported award the abolition reaches prompts the claim.
+    claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
+
+- name: GB Housing Benefit reports identify the ESA-saved claimant in 2027
+  # Without the supplied status, the only member reporting Housing Benefit
+  # is the Housing Benefit claimant. A sole claimant's saved ESA does not keep
+  # an award that another adult in the benefit unit reports, even with the
+  # status false. A couple keeps an award reported by the partner with the
+  # saved ESA, and a false status does not remove that identity. Reports on
+  # different members save only with the status true, and a second reporter
+  # leaves the claimant unidentified. A sole claimant with the saved report
+  # and no Housing Benefit report has no competing reporter.
+  period: 2027
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      outside_reporter_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      outside_reporter_adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        housing_benefit_reported: 1
+      same_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      same_reporter_false_head:
+        age: 40
+        is_claimant_or_partner: true
+      same_reporter_false_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_reporter_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_reporter_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      different_confirmed_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      different_confirmed_partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_head:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+      two_reporters_partner:
+        age: 40
+        is_claimant_or_partner: true
+        housing_benefit_reported: 1
+      sole_unreported_claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        esa_income_appointee_saving: true
+    benunits:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: false
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+        housing_benefit_claimant_is_saved_esa_claimant: true
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      outside_reporter:
+        members: [outside_reporter_claimant, outside_reporter_adult]
+        region: LONDON
+      same_reporter:
+        members: [same_reporter_head, same_reporter_partner]
+        region: LONDON
+      same_reporter_false:
+        members: [same_reporter_false_head, same_reporter_false_partner]
+        region: LONDON
+      different_reporter:
+        members: [different_reporter_head, different_reporter_partner]
+        region: LONDON
+      different_confirmed:
+        members: [different_confirmed_head, different_confirmed_partner]
+        region: LONDON
+      two_reporters:
+        members: [two_reporters_head, two_reporters_partner]
+        region: LONDON
+      sole_unreported:
+        members: [sole_unreported_claimant]
+        region: LONDON
+  output:
+    housing_benefit_payable_share: [0, 1, 1, 0, 1, 0, 1]
+    # Only a reported award the abolition reaches prompts the claim.
+    claims_uc_at_legacy_closure: [true, false, false, true, false, true, false]
