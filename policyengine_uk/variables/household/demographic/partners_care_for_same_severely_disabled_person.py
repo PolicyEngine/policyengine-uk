@@ -19,19 +19,23 @@ class partners_care_for_same_severely_disabled_person(Variable):
         "Carer's Allowance or Carer Support Payment award "
         "(carers_allowance_reported, the model's reported-receipt input for "
         "both), or an entitlement that caring hours do not explain (fewer "
-        "than the qualifying hours, or no claim), which must have been "
+        "than the qualifying hours, care of someone who isn't severely "
+        "disabled (cares_for_severely_disabled_person false), or no claim), "
+        "which must have been "
         "supplied directly (for example as carers_allowance, "
         "carers_allowance_pre_overlap or is_entitled_to_carer_benefit; supply "
         "it for every member, since members left out take the default). The "
         "qualifying hours are Carer Support Payment's in Scotland from 2025 "
         "and Carer's Allowance's otherwise. Two awards mean two different "
         "people cared for, while caring hours cannot show who is cared for, "
-        "so the entitlement of someone who cares the qualifying hours and "
-        "would claim is not read as an award. "
+        "so the default doesn't read as an award the entitlement of someone "
+        "who cares the qualifying hours for a severely disabled person and "
+        "would claim. "
         "With more than two members supplied as claimant or partner, "
         "two awards make the default false for all of them. The model's "
         "Carer's Allowance and Carer Support Payment candidate amounts follow "
-        "caring hours or a reported award. The default uses those candidates "
+        "a reported award or caring hours for a severely disabled person. "
+        "The default uses those candidates "
         "and directly supplied awards before the same-person couple limit, "
         "so it does not depend on the final awards it restricts."
     )
@@ -48,11 +52,13 @@ class partners_care_for_same_severely_disabled_person(Variable):
         entitled = unlimited_carer_benefit_entitlement(benunit.members, period)
         reported_award = benunit.members("carers_allowance_reported", period) > 0
         # The model makes someone entitled to a carer benefit only on a
-        # reported award or the qualifying hours, each for someone who would
-        # claim, so an entitlement the hours do not explain comes from a
-        # reported award or was supplied directly (an amount in payment, a
-        # pre-overlap amount or the entitlement itself). The hours are those
-        # of the benefit that applies, as in carers_allowance_pre_overlap.
+        # reported award or the qualifying hours of care for a severely
+        # disabled person (cares_for_severely_disabled_person), each for
+        # someone who would claim, so an entitlement the hours do not explain
+        # comes from a reported award or an input that supplies it directly
+        # (an amount in payment, a pre-overlap amount or the entitlement
+        # itself). The hours are those of the benefit that applies, as in
+        # carers_allowance_pre_overlap.
         gov = parameters(period).gov
         in_scotland = (
             benunit.members.household("country", period).decode_to_str() == "SCOTLAND"
@@ -64,7 +70,12 @@ class partners_care_for_same_severely_disabled_person(Variable):
             gov.dwp.carers_allowance.min_hours,
         )
         hours = benunit.members("care_hours", period)
+        cares_for_severely_disabled = benunit.members(
+            "cares_for_severely_disabled_person", period
+        )
         would_claim = benunit.members("would_claim_carers_allowance", period)
-        explained_by_hours = (hours >= min_hours) & would_claim
+        explained_by_hours = (
+            (hours >= min_hours) & cares_for_severely_disabled & would_claim
+        )
         award = reported_award | ~explained_by_hours
         return benunit.sum(claimant_or_partner & entitled & award) < 2

@@ -449,10 +449,13 @@ def test_the_step_lists_are_disjoint_and_hold_the_modelled_provisions():
 
 
 @pytest.mark.parametrize("year", [2026, 2027, 2028, 2029, 2030])
-def test_step_6_puts_the_pension_tax_allowance_after_every_other_reduction(sim, year):
+def test_step_6_lists_the_pension_and_marriage_allowances_last(sim, year):
     income_tax = sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax
     reductions = list(income_tax.step_6_tax_reductions)
-    assert reductions[-1] == "pension_tax_allowance"
+    assert reductions[-2:] == [
+        "pension_tax_allowance",
+        "marriage_allowance_tax_reduction",
+    ]
     for index, reduction in enumerate(reductions):
         assert earlier_tax_reductions(income_tax, reduction) == reductions[:index]
 

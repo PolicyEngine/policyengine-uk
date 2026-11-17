@@ -17,11 +17,18 @@ class is_non_dependant_of_household_head(Variable):
         "or daughter who pays nothing is a non-dependant. The Universal "
         "Credit formulas read is_uc_non_dependant_of_household_head, which "
         "also leaves out a boarder's or lodger's child or qualifying young "
-        "person (UC Regs 2013 Sch 4 para 9(2)(g)). Universal Credit counts a non-dependant in one claim only "
+        "person (UC Regs 2013 Sch 4 para 9(2)(g)) and an adult their own "
+        "family's claim counts (para 9(2)(f)). Universal Credit counts a "
+        "non-dependant in one claim only "
         "(uc_non_dependants_counted); Housing Benefit and Council Tax "
         "Reduction apportion a non-dependant of several joint occupiers "
-        "between them. Foster children and carers engaged through a charity "
-        "are not identified."
+        "between them. Apart from a boarder's or lodger's payer and partner, "
+        "the flag covers every member of a family outside those liable for "
+        "the rent, children included. A non-dependant's own children are "
+        "non-dependants too, but a child or qualifying young person looked "
+        "after by a local authority is not (UC Sch 4 para 9(2)(g)); the "
+        "size criteria apply that exclusion (see LHA_allowed_bedrooms). "
+        "Carers engaged through a charity are not identified."
     )
     definition_period = YEAR
     reference = (

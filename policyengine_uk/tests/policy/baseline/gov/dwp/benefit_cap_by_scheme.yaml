@@ -320,6 +320,7 @@
     uc_benefit_cap: 22_020
     uc_childcare_element: 9_000
     universal_credit_pre_benefit_cap: 15_000
+    housing_benefit_pre_benefit_cap: 0
   output:
     # Excess 7,980 < childcare 9,000.
     uc_benefit_cap_reduction: 0

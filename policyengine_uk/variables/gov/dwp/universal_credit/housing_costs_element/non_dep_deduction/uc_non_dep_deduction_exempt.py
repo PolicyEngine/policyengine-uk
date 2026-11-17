@@ -19,7 +19,8 @@ class uc_non_dep_deduction_exempt(Variable):
         "with the claimant or partner; the existing Universal Credit child "
         "age measure excludes children looked after by a local authority. Underlying "
         "entitlement reduced to nil by overlapping benefits does not qualify "
-        "for the carer exemption."
+        "for the carer exemption. Pension Credit is awarded to a benefit unit's claimant and partner, "
+        "so another adult in the unit is not receiving it."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/16",
@@ -38,7 +39,12 @@ class uc_non_dep_deduction_exempt(Variable):
             < p.child_responsibility_age_limit
         )
         return (
-            person.benunit("uc_non_dep_receives_pension_credit", period)
+            # Pension Credit is the claimant's and partner's award, not that of
+            # another adult in their benefit unit (para 16(2)(b)).
+            (
+                person("is_claimant_or_partner", period)
+                & person.benunit("uc_non_dep_receives_pension_credit", period)
+            )
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
             # Para 16(2)(d) uses "attendance allowance" as reg 2 defines it.

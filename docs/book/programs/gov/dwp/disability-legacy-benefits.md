@@ -94,7 +94,8 @@ annual netting does not represent benefit spells at different weekly rates.
 The focused household tests retain live UC eligibility, disability/carer
 elements and final awards. Legacy receipt and disability-assessment inputs are
 assumptions, not a re-derivation of IB/SDA entitlement. The care-hours interface
-does not identify the person cared for or check their qualifying benefit. No
+does not identify the person cared for, and reads their qualifying benefit only
+from the input `cares_for_severely_disabled_person`, which defaults to true. No
 private-data impact or Axiom parity has been measured.
 
 ## References

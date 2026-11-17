@@ -9,28 +9,39 @@ class is_carer_for_benefits(Variable):
 
     documentation = (
         "Receives or is entitled to a carer benefit, or provides at least the "
-        "Carer's Allowance qualifying hours of care a week. The Universal "
+        "Carer's Allowance qualifying hours of care a week for a severely "
+        "disabled person. The Universal "
         "Credit carer element does not require a Carer's Allowance claim. "
         "Entitlement-based additions and premiums use "
         "is_entitled_to_carer_benefit; receipt-based rules use "
         "receives_carer_benefit. A "
         "carer whose allowance is reduced to nil by an overlapping benefit, "
-        "such as State Pension, stays entitled. The hours limb tests "
-        "hours alone, as carers_allowance_pre_overlap does: it does not check that the "
-        "person cared for receives a qualifying disability benefit (part of "
-        "the Carer's Allowance conditions referenced by regulation 30), so a "
-        "survey hours field counts caring for "
-        "anyone and a dataset's take-up input carries that simplification. "
+        "such as State Pension, stays entitled. The hours limb, as in "
+        "carers_allowance_pre_overlap, counts the hours only where the input "
+        "cares_for_severely_disabled_person holds: the person cared for gets "
+        "a benefit that makes them a severely disabled person for Carer's "
+        "Allowance (SSCBA 1992 s.70(1) and (2)), one of the Carer's Allowance "
+        "conditions in regulation 30(1)(a). The input defaults to true, "
+        "because caring hours in the survey don't say whom the carer cares "
+        "for, so at the default a survey hours field counts caring for anyone "
+        "and a dataset's take-up input carries that simplification. Set it to "
+        "false in a household calculation for a carer whose hours go to "
+        "someone with no such benefit. "
         "A reported Carer's Allowance award the person would claim also "
         "counts, so a carer whose earnings put them over the Carer's Allowance "
         "earnings limit keeps the Universal Credit carer element, which does "
         "not apply that limit (regulation 30(1)(a)(i))."
     )
-    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/30"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/30",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/70",
+    )
 
     def formula(person, period, parameters):
         min_hours = parameters(period).gov.dwp.carers_allowance.min_hours
-        meets_hours = person("care_hours", period) >= min_hours
+        meets_hours = (person("care_hours", period) >= min_hours) & person(
+            "cares_for_severely_disabled_person", period
+        )
         # A reported Carer's Allowance award the person would claim is
         # evidence of the caring itself, where no hours are recorded. It still
         # counts when the earnings limit (which the Universal Credit carer

@@ -1,0 +1,55 @@
+from policyengine_uk.model_api import *
+
+
+class receives_enhanced_disability_premium_qualifying_benefit(Variable):
+    value_type = bool
+    entity = Person
+    label = "Receives an enhanced disability premium qualifying benefit"
+    documentation = (
+        "The model counts a person as receiving a qualifying benefit for the "
+        "legacy enhanced disability premium when they have an award of the "
+        "care component of disability living allowance at the highest rate "
+        "(has_highest_dla_sc_award), the daily living component of personal "
+        "independence payment at the enhanced rate (has_enhanced_pip_dl_award) "
+        "or armed forces independence payment. It counts only positive "
+        "amounts, and takes the rate from the award category or, for an "
+        "amount entered without its category, from the amount. The model "
+        "applies each programme's further conditions elsewhere: the age limit "
+        "(num_enhanced_disabled_claimants_or_partners_for_legacy_benefits) "
+        "and, in Council Tax Reduction, the scheme's own list "
+        "(meets_council_tax_reduction_enhanced_disability_premium_condition). "
+        "Attendance allowance does not qualify. The model has no separate "
+        "variables for the Scottish equivalents (the care components of child "
+        "disability payment and Scottish adult disability living allowance at "
+        "the highest rate, and the daily living component of adult disability "
+        "payment at the enhanced rate). It omits the limited capability for "
+        "work-related activity limb (Housing Benefit), the support component "
+        "limb (Employment and Support Allowance), the hospital rules and the "
+        "long-term patient exclusion. The model reads the Northern Ireland "
+        "list for households in Northern Ireland and the Great Britain list "
+        "elsewhere. Claimants in Northern Ireland qualify through armed forces "
+        "independence payment from 24 December 2013 and through PIP daily "
+        "living from 20 June 2016, and claimants in Great Britain through both "
+        "from 8 April 2013. The model reads each list as at 30 April of the "
+        "year from 2015, without within-year proration."
+    )
+    definition_period = YEAR
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/15",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13A",
+        "https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/7",
+        "https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15A",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/4/paragraph/15",
+        "https://www.legislation.gov.uk/nisr/2008/280/schedule/4/paragraph/7",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/12",
+    )
+
+    def formula(person, period, parameters):
+        p = parameters(period).gov.dwp.disability_premia
+        country = person.household("country", period)
+        northern_ireland = country == country.possible_values.NORTHERN_IRELAND
+        return where(
+            northern_ireland,
+            add(person, period, p.enhanced_qualifying_benefits_northern_ireland) > 0,
+            add(person, period, p.enhanced_qualifying_benefits) > 0,
+        )

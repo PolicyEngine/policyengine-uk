@@ -3,6 +3,8 @@ import typing
 import numpy as np
 import pandas as pd
 
+from policyengine_uk.utils.uk_totals import add_uk_totals, uk_total_columns
+
 if typing.TYPE_CHECKING:
     from policyengine_uk import Microsimulation
     from policyengine_uk.data import UKSingleYearDataset
@@ -27,6 +29,11 @@ def filter_dataset(
     the values it had in sim. Private school attendance ranks incomes, so the
     first extract from a simulation computes its taxes and benefits.
 
+    The extract also carries the UK totals its shares of national totals are
+    taken by (policyengine_uk.utils.uk_totals), worked out over the whole
+    dataset unless it carries them already, so it keeps the shares it had in
+    sim rather than taking every UK total.
+
     Parameters
     ----------
     sim : Microsimulation
@@ -43,6 +50,8 @@ def filter_dataset(
     """
     dataset: UKSingleYearDataset = sim.dataset[year]
     new_dataset = dataset.copy()
+    if not set(uk_total_columns()) <= set(new_dataset.household.columns):
+        new_dataset = add_uk_totals(new_dataset)
     person = new_dataset.person
     # These are imputed across the whole population: birthdays are spread over
     # the year, and private school attendance follows each household's income

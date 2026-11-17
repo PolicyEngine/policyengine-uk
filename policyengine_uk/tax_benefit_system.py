@@ -57,6 +57,9 @@ from policyengine_uk.parameters.gov.economic_assumptions.create_earnings_upratin
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_uk_total_growth import (
+    add_uk_total_growth,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_energy_price_indices import (
     add_energy_price_indices,
 )
@@ -143,6 +146,7 @@ GENERATION_STEPS = (
     add_earnings_uprating,
     add_triple_lock,
     add_september_cpi_uprating,
+    add_uk_total_growth,
     create_economic_assumption_indices,
     add_energy_price_indices,
     project_state_pension_rates,
@@ -203,6 +207,7 @@ def process_parameter_tree(
     - statutory uprating inputs (September CPI, May-July earnings)
     - triple lock calculations for state pensions
     - earnings and September CPI uprating
+    - growth of the UK totals a dataset can carry (policyengine-uk#2896)
     - economic assumption indices
     - household energy price indices
     - State Pension weekly rates, projected each April from the year before

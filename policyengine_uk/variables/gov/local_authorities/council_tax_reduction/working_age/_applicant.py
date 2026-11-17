@@ -48,15 +48,16 @@ def working_age_adult_premium_conditions(benunit, period, parameters):
     disability and severe disability premiums, and whether the severe
     disability premium is at the double rate.
 
-    Who qualifies follows the model's legacy premium variables, with Council
-    Tax Reduction's own severe disability premium family test
-    (council_tax_reduction_severe_disability_premium). Where the household
-    head applies alone, the conditions are the head's own as a single person,
-    as in council_tax_reduction_premiums.
+    Who qualifies follows the model's legacy disability premium, with Council
+    Tax Reduction's own enhanced disability premium condition
+    (council_tax_reduction_enhanced_disability_premium) and severe disability
+    premium family test (council_tax_reduction_severe_disability_premium).
+    Where the household head applies alone, the conditions are the head's own
+    as a single person, as in council_tax_reduction_premiums.
     """
     dwp = parameters(period).gov.dwp.disability_premia
     disability = benunit("disability_premium", period) > 0
-    enhanced = benunit("enhanced_disability_premium", period) > 0
+    enhanced = benunit("council_tax_reduction_enhanced_disability_premium", period) > 0
     severe_weekly = (
         benunit("council_tax_reduction_severe_disability_premium", period)
         / WEEKS_IN_YEAR
@@ -99,7 +100,12 @@ def working_age_adult_premium_conditions(benunit, period, parameters):
         ),
         where(
             head_applies_alone,
-            head_has(person("is_enhanced_disabled_for_benefits", period)),
+            head_has(
+                person(
+                    "meets_council_tax_reduction_enhanced_disability_premium_condition",
+                    period,
+                )
+            ),
             enhanced,
         ),
         where(head_applies_alone, head_severe, severe),

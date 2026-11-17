@@ -21,7 +21,11 @@ class is_uc_non_dependant_of_household_head(Variable):
         "non-dependant, because the parent belongs to the extended benefit "
         "unit. Where a child's benefit unit has no claimant or partner, the "
         "model cannot tell who is responsible for them and keeps them a "
-        "non-dependant. The Housing Benefit and Council Tax Reduction "
+        "non-dependant. Under para 9(2)(f), the formula also leaves out an "
+        "adult in a family's own Universal Credit claim: it gives a boarder's "
+        "or lodger's non-paying adult son to that family's claim if it makes "
+        "one (see uc_non_dep_deductions). The Housing Benefit and Council Tax "
+        "Reduction "
         "formulas read is_non_dependant_of_household_head, which follows "
         "their own definitions."
     )
@@ -56,4 +60,18 @@ class is_uc_non_dependant_of_household_head(Variable):
             & responsible
             & ~responsible_in_extended_unit
         )
-        return non_dependant & ~no_one_responsible
+        # Para 9(2)(f): someone already treated as a non-dependant in another
+        # claim is not one here. A member of a benefit unit who is not its
+        # claimant, partner or a qualifying young person counts in their own
+        # family's claim if it makes one, as in uc_non_dep_deductions. Only a
+        # boarder's or lodger's family reaches this: any other family is
+        # either liable for the household's rent or pays none.
+        own_claim = (
+            person.benunit("benunit_is_rent_liable", period)
+            & person.benunit("is_uc_eligible", period)
+            & person.benunit("claims_universal_credit", period)
+        )
+        in_own_claim = own_claim & person(
+            "is_benefit_unit_non_dependant_for_universal_credit", period
+        )
+        return non_dependant & ~no_one_responsible & ~in_own_claim

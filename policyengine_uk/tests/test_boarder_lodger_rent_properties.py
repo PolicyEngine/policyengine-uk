@@ -48,9 +48,9 @@ Person-level liability:
    head's benefit unit who pays, or who is a claimant or partner in a benefit
    unit where a claimant or partner pays.
 10. Moving a non-paying adult who is not a claimant or partner out of the
-    payer's benefit unit into one of their own leaves the household head's
-    Housing Benefit and council tax reduction non-dependant deductions
-    unchanged.
+    payer's benefit unit into one of their own that claims no Universal Credit
+    leaves the household head's Housing Benefit and council tax reduction
+    non-dependant deductions unchanged.
 11. Adding such an adult never lowers the household head's Housing Benefit
     non-dependant deductions, and never raises the head's Housing Benefit
     unless it raises the head's bedroom count under the size criteria.
@@ -156,6 +156,8 @@ def situation(h, year, scale=1.0, as_kind=None):
             people[name] = person
             members.append(name)
         benunits[f"payer_{j}"] = {"members": members}
+        if any(attrs.get("forgoes_universal_credit") for attrs in unit):
+            benunits[f"payer_{j}"]["would_claim_uc"] = {year: False}
         names += members
     return {
         "people": people,
@@ -461,7 +463,14 @@ def households_with_a_non_paying_adult(draw):
 def with_adult(h, adult, own_unit):
     h = dict(h, payers=[list(unit) for unit in h["payers"]])
     if own_unit:
-        h["payers"].append([dict(adult, is_claimant_or_partner=True)])
+        # A family's own Universal Credit award with no earned income exempts
+        # an adult from the national schemes' deductions (SI 2012/2885 Sch 1
+        # para 8(8)(c) and equivalents), and one under 25 from Housing Benefit's
+        # (HB Regs 2006 reg 74(8)). The model reads no award for an adult in
+        # another family's unit, so this family doesn't claim.
+        h["payers"].append(
+            [dict(adult, is_claimant_or_partner=True, forgoes_universal_credit=True)]
+        )
     else:
         h["payers"][0].append(adult)
     return h

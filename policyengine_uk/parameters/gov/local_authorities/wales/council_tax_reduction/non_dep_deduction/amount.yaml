@@ -1,0 +1,162 @@
+description: Wales Council Tax Reduction deducts this weekly amount for each non-dependant aged 18 or over, by the non-dependant's normal gross weekly income if they are in remunerative work; a non-dependant not in remunerative work pays the lowest amount.
+
+# Sums from paragraph 3 of Schedule 1 (pensioners) and paragraph 5 of Schedule
+# 6 (persons who are not pensioners) to the Council Tax Reduction Schemes and
+# Prescribed Requirements (Wales) Regulations 2013 (WSI 2013/3029); for
+# 2013-14, the same paragraphs of WSI 2012/3144, as substituted for each
+# financial year by the amending instruments in the references. Each year's
+# sums apply from 1 April.
+# 2016-17: the English text sets the first band at £194; the Welsh text has
+# £195 (WSI 2017/46 reg. 3(a)(iii)-(v) replaced both).
+brackets:
+- threshold:
+    2013-04-01: 0
+  amount:
+    2013-04-01: 3.65
+    2014-04-01: 3.75
+    2015-04-01: 3.9
+    2016-04-01: 4.05
+    2017-04-01: 4.2
+    2018-04-01: 4.35
+    2019-04-01: 4.55
+    2020-04-01: 4.85
+    2021-04-01: 5.1
+    2022-04-01: 5.3
+    2023-04-01: 5.45
+    2024-04-01: 5.8
+    2025-04-01: 6.25
+    2026-04-01: 6.7
+- threshold:
+    2013-04-01: 186
+    2014-04-01: 188
+    2015-04-01: 189
+    2016-04-01: 194
+    2017-04-01: 200
+    2018-04-01: 205
+    2019-04-01: 210
+    2020-04-01: 217
+    2021-04-01: 217
+    2022-04-01: 224
+    2023-04-01: 236
+    2024-04-01: 256
+    2025-04-01: 266
+    2026-04-01: 279
+  amount:
+    2013-04-01: 7.25
+    2014-04-01: 7.5
+    2015-04-01: 7.8
+    2016-04-01: 8.1
+    2017-04-01: 8.4
+    2018-04-01: 8.7
+    2019-04-01: 9.15
+    2020-04-01: 9.75
+    2021-04-01: 10.2
+    2022-04-01: 10.6
+    2023-04-01: 10.9
+    2024-04-01: 11.55
+    2025-04-01: 12.45
+    2026-04-01: 13.35
+- threshold:
+    2013-04-01: 322
+    2014-04-01: 326
+    2015-04-01: 328
+    2016-04-01: 338
+    2017-04-01: 346
+    2018-04-01: 355
+    2019-04-01: 365
+    2020-04-01: 377
+    2021-04-01: 377
+    2022-04-01: 389
+    2023-04-01: 410
+    2024-04-01: 445
+    2025-04-01: 463
+    2026-04-01: 485
+  amount:
+    2013-04-01: 9.15
+    2014-04-01: 9.45
+    2015-04-01: 9.85
+    2016-04-01: 10.25
+    2017-04-01: 10.6
+    2018-04-01: 10.95
+    2019-04-01: 11.5
+    2020-04-01: 12.25
+    2021-04-01: 12.85
+    2022-04-01: 13.35
+    2023-04-01: 13.7
+    2024-04-01: 14.5
+    2025-04-01: 15.65
+    2026-04-01: 16.8
+- threshold:
+    2013-04-01: 401
+    2014-04-01: 406
+    2015-04-01: 408
+    2016-04-01: 420
+    2017-04-01: 430
+    2018-04-01: 440
+    2019-04-01: 450
+    2020-04-01: 469
+    2021-04-01: 469
+    2022-04-01: 484
+    2023-04-01: 511
+    2024-04-01: 554
+    2025-04-01: 577
+    2026-04-01: 605
+  amount:
+    2013-04-01: 10.95
+    2014-04-01: 11.3
+    2015-04-01: 11.75
+    2016-04-01: 12.25
+    2017-04-01: 12.7
+    2018-04-01: 13.1
+    2019-04-01: 13.75
+    2020-04-01: 14.65
+    2021-04-01: 15.35
+    2022-04-01: 15.95
+    2023-04-01: 16.4
+    2024-04-01: 17.35
+    2025-04-01: 18.7
+    2026-04-01: 20.05
+metadata:
+  label: Wales CTR non-dependant deduction
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  economy: false
+  propagate_metadata_to_children: true
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013, Sch. 1 para. 3 (pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/3
+    - title: Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013, Sch. 6 para. 5 (persons who are not pensioners)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/5
+    - title: Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 (2013-14), Sch. 1 para. 3 and Sch. 6 para. 5
+      href: https://www.legislation.gov.uk/wsi/2012/3144/schedule/1/paragraph/3
+    - title: WSI 2013/112, sums for 2013-14
+      href: https://www.legislation.gov.uk/wsi/2013/112/made
+    - title: WSI 2014/66, sums for 2014-15
+      href: https://www.legislation.gov.uk/wsi/2014/66/made
+    - title: WSI 2015/44, sums for 2015-16
+      href: https://www.legislation.gov.uk/wsi/2015/44/made
+    - title: WSI 2016/50, sums for 2016-17
+      href: https://www.legislation.gov.uk/wsi/2016/50/made
+    - title: WSI 2017/46, sums for 2017-18
+      href: https://www.legislation.gov.uk/wsi/2017/46/made
+    - title: WSI 2018/14, sums for 2018-19
+      href: https://www.legislation.gov.uk/wsi/2018/14/made
+    - title: WSI 2019/11, sums for 2019-20
+      href: https://www.legislation.gov.uk/wsi/2019/11/made
+    - title: WSI 2020/16, sums for 2020-21
+      href: https://www.legislation.gov.uk/wsi/2020/16/made
+    - title: WSI 2021/34, sums for 2021-22
+      href: https://www.legislation.gov.uk/wsi/2021/34/made
+    - title: WSI 2022/51, sums for 2022-23
+      href: https://www.legislation.gov.uk/wsi/2022/51/made
+    - title: WSI 2023/47, sums for 2023-24
+      href: https://www.legislation.gov.uk/wsi/2023/47/made
+    - title: WSI 2024/56, sums for 2024-25
+      href: https://www.legislation.gov.uk/wsi/2024/56/made
+    - title: WSI 2025/59, sums for 2025-26
+      href: https://www.legislation.gov.uk/wsi/2025/59/made
+    - title: WSI 2026/13, sums for 2026-27
+      href: https://www.legislation.gov.uk/wsi/2026/13/made

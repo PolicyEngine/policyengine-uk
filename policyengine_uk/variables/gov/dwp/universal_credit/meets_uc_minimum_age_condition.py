@@ -22,8 +22,9 @@ class meets_uc_minimum_age_condition(Variable):
     is_carer_for_benefits means receipt of Carer's Allowance or Scottish Carer
     Support Payment, underlying entitlement to either benefit, or at least
     the Carer's Allowance qualifying hours of care (currently 35 weekly).
-    Its hours limb does not verify the recipient's
-    qualifying disability benefit, and it does not exclude paid care.
+    Its hours limb reads the cared-for person's qualifying disability benefit
+    only from the input cares_for_severely_disabled_person, which defaults to
+    true, and it does not exclude paid care.
 
     For regulation 8(1)(d), responsibility is proxied by being a claimant in a
     benefit unit with a nonclaimant child under the UC child definition. A

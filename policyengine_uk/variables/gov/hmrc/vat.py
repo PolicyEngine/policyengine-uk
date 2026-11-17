@@ -7,7 +7,8 @@ class vat(Variable):
     documentation = (
         "Receipt-calibrated VAT less private school fees' share of VAT "
         "receipts, which private_school_vat counts separately, plus VAT on "
-        "the household's energy bills, which is not grossed up."
+        "the household's energy bills and the VAT change from road fuel "
+        "duty reforms, neither of which is grossed up."
     )
     entity = Household
     definition_period = YEAR
@@ -37,4 +38,5 @@ class vat(Variable):
         # no school fees: the bills are calibrated to national energy use and
         # households bear that VAT in full.
         energy_vat = household("domestic_energy_vat", period)
-        return general_vat + energy_vat
+        fuel_duty_vat = household("fuel_duty_vat_change", period)
+        return general_vat + energy_vat + fuel_duty_vat

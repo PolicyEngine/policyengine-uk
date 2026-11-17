@@ -25,7 +25,15 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
     local authority, as the Universal Credit and legacy flags do. That is
     broader than Scotland's working-age rule, which names only a child or
     young person placed with a foster carer under the Looked After Children
-    (Scotland) Regulations 2009 (reg. 7(8)).
+    (Scotland) Regulations 2009 (reg. 7(8)). The Child Benefit branch also
+    leaves out a child placed for adoption with the applicant or partner
+    (SI 2012/2885 reg. 8(2); SI 2012/2886 Sch para. 8(2); WSI 2013/3029
+    reg. 8(2); SSI 2012/319 reg. 11(2)). The Universal Credit branch keeps them, since the Universal
+    Credit flag leaves out only looked-after children, so on Scotland's
+    working-age scheme from 1 April 2022 the applicant is responsible for a
+    child placed for adoption who normally lives with them (reg. 7(2)).
+    Before 1 April 2022 Scotland's working-age scheme follows the Child
+    Benefit branch.
     """
 
     value_type = bool

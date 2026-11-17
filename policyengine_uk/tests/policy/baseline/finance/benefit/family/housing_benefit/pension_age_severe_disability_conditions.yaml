@@ -1,8 +1,8 @@
 # HB(SPC) Regs 2006 Sch 3 para 6, with the non-dependant definition in
 # reg 3: these cases assert final awards without a Guarantee Credit passport.
-# The final HB and CTR awards include the model's current income rules,
-# including a known defect outside this file: no non-dependant deduction
-# exemption for a claimant on Attendance Allowance (#2007). The premium and
+# The final HB and CTR awards include the model's current income rules.
+# A claimant on Attendance Allowance has no non-dependant deductions (HB
+# (SPC) Regs 2006 reg 55(6); SI 2012/2885 Sch 1 para 8(6)); the premium and
 # applicable-amount assertions do not depend on it. Each HB award is the
 # rent less 65% of income after tax, plus the savings credit where the award
 # is savings credit only (HB (SPC) Regs 2006 reg 27(4)(a)), above the
@@ -129,9 +129,8 @@
     guarantee_credit: [0, 0]
     has_non_dependant_for_severe_disability_premium: [true, false]
     pension_age_severe_disability_premium: [0, 0]
-    # The resident has no banding income, so the work gate leaves the
-    # scale's zero; reg 55(6) and Sch 1 para 8(6) exempt this claimant's
-    # non-dependants in any case (the AA exemption remains for #2007).
+    # Reg 55(6) and Sch 1 para 8(6) exempt this claimant's non-dependants:
+    # the claimant receives Attendance Allowance.
     housing_benefit: [3_898.70, 0]
     council_tax_benefit: [1_279.60, 0]
 
@@ -175,9 +174,8 @@
     # Savings credit only (908.46): HB income is Pension Credit income plus
     # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 908.46 =
     # 590.50 below the figure without it.
-    # Neither non-working resident has banding income, so the work gate
-    # leaves the scale's zero for both; the AA exemption (reg 55(6), Sch 1
-    # para 8(6)) remains for #2007.
+    # The AA exemption (reg 55(6), Sch 1 para 8(6)) leaves no deduction for
+    # either resident.
     housing_benefit: [3_308.20, 0]
     council_tax_benefit: [1_097.91, 0]
 

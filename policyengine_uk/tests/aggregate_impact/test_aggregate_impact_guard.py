@@ -776,12 +776,13 @@ def test_two_heads_that_turn_not_finite_fail_by_name(response, route):
     assert result["reset_reproduces_baseline"]
 
 
-def core_counted_once(formulas, part, monthly):
+def core_counted_once(formulas, part, monthly, **options):
     """counted_once on a policyengine-core simulation of one household.
 
     ``formulas`` maps each head to None (an input, 5 in every period) or a
     function of a reader by name and the period. Heads are monthly or
-    yearly; gov_tax and household_weight are yearly.
+    yearly; gov_tax and household_weight are yearly. ``options`` go to
+    counted_once.
     """
     from policyengine_core.country_template import CountryTaxBenefitSystem
     from policyengine_core.country_template.entities import Household
@@ -829,7 +830,7 @@ def core_counted_once(formulas, part, monthly):
         },
     )
     with np.errstate(invalid="ignore"):
-        return sim, counted_once(sim, part, YEAR, 1e-6)
+        return sim, counted_once(sim, part, YEAR, 1e-6, **options)
 
 
 @pytest.mark.parametrize("monthly", [False, True], ids=["yearly", "monthly"])

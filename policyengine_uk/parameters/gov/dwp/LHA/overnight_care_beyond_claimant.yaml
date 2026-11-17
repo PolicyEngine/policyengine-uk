@@ -1,0 +1,14 @@
+description: Whether the overnight care additional bedroom in the LHA size criteria covers people other than the renter or claimant and partner, such as non-dependants, other occupiers and foster children.
+values:
+  2011-04-01: false
+  2017-04-01: true
+metadata:
+  unit: bool
+  label: LHA overnight care covers the household
+  reference:
+    - title: Housing Benefit and Universal Credit (Size Criteria) (Miscellaneous Amendments) Regulations 2017 (SI 2017/213) regs 4 and 6
+      href: https://www.legislation.gov.uk/uksi/2017/213/made
+    - title: Universal Credit Regulations 2013 Sch 4 para 12(A1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/12
+    - title: Housing Benefit Regulations 2006 reg 13D(3A)(a)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/13D

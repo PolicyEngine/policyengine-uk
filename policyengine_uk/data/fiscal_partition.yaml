@@ -818,10 +818,16 @@ overlap_guards:
     property: The level is only in gov_tax; the response incidence is only in household_tax.
   - id: corporate_incidence_allocations
     kind: shared_allocation_key
-    heads: [business_rates, sdlt_corporate, corporate_incident_tax_change, carbon_tax, land_value_tax]
+    heads: [business_rates, sdlt_corporate, corporate_incident_tax_change, carbon_tax, land_value_tax, employer_nics_response_capital]
     property: >-
       Each allocates a different receipt by shareholding; none reads another.
       corporate_tax_incidence sums two of them and is excluded.
+  - id: consumer_incidence_allocations
+    kind: shared_allocation_key
+    heads: [consumer_incident_tax_change, employer_nics_response_consumer]
+    property: >-
+      Each allocates a different amount by consumption_shareholding; neither
+      reads the other.
   - id: private_school_vat_level_and_change
     kind: level_and_change
     heads: [private_school_vat, private_school_vat_change]
@@ -1052,7 +1058,7 @@ spending_heads:
     totals: [gov_spending, household_benefits]
     sign: nonnegative
   - id: scottish_carer_supplement
-    label: Carer's Allowance Supplement (Scotland)
+    label: Scottish Carer Supplement
     variable: scottish_carer_supplement
     entity: person
     report_group: disability_and_carers_benefits

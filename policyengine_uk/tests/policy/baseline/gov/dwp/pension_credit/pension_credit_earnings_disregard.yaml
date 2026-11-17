@@ -337,12 +337,25 @@
         members: [claimant, partner]
         country: SCOTLAND
   output:
-    # The 1,040 of earnings add 210.89 of income tax (they cross into the
-    # Scottish intermediate band), so net earnings are 829.11 and the 20 pound
-    # disregard of 1,040 is capped there; income is as with no earnings (next).
-    income_tax: [3_016.62, 0]
-    pension_credit_earnings_disregard: 829.11
-    pension_credit_income: 25_194.27
+    # 2025-26 Scottish schedule on taxable income: 19% up to 2,827, 20% to
+    # 14,921, 21% to 31,092. The partner's unused personal allowance gives the
+    # claimant a Marriage Allowance of 1,260 (10% of 12,570, rounded up to
+    # 10), which comes off as a tax reduction of 20% x 1,260 = 252, the
+    # Scottish basic rate (ITA 2007 s. 55B(1) and (3)).
+    # With earnings: 12,000 + 16,000 + 1,040 - 12,570 = 16,470 taxable;
+    # 2,827 x 19% + 12,094 x 20% + 1,549 x 21% = 537.13 + 2,418.80 + 325.29
+    # = 3,281.22, less 252 = 3,029.22.
+    # Without earnings (next case): 15,430 taxable; 537.13 + 2,418.80 +
+    # 509 x 21% = 3,062.82, less 252 = 2,810.82.
+    # The taxable income exceeds 14,921 even without the earnings, so all
+    # 1,040 of the earnings bear 21%, adding 3,029.22 - 2,810.82 = 218.40 of
+    # tax. The claimant pays no Class 1 contributions above State Pension age,
+    # so net earnings come to 1,040 - 218.40 = 821.60, and the 20 pound
+    # disregard (attendance allowance), up to 1,040 a year, covers all 821.60.
+    # Income: 29,040 - 3,029.22 - 821.60 = 25,189.18, as with no earnings.
+    income_tax: [3_029.22, 0]
+    pension_credit_earnings_disregard: 821.60
+    pension_credit_income: 25_189.18
 
 - name: The same Scottish couple with no earnings has the same Pension Credit income.
   period: 2025
@@ -365,9 +378,13 @@
         members: [claimant, partner]
         country: SCOTLAND
   output:
-    income_tax: [2_805.73, 0]
+    # 28,000 - 12,570 = 15,430 taxable: 2,827 x 19% + 12,094 x 20% + 509 x
+    # 21% = 3,062.82, less the 252 Marriage Allowance reduction (20% x 1,260)
+    # = 2,810.82. Income: 12,000 + 16,000 - 2,810.82 = 25,189.18; attendance
+    # allowance does not count.
+    income_tax: [2_810.82, 0]
     pension_credit_earnings_disregard: 0
-    pension_credit_income: 25_194.27
+    pension_credit_income: 25_189.18
 
 - name: Caring hours without entitlement to carer's allowance do not qualify for the 20 pound disregard (Sch VI para 3 needs Sch I para 4).
   period: 2025
