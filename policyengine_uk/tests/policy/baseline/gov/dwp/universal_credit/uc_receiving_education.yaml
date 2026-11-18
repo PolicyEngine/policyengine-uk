@@ -815,6 +815,13 @@
   # Housing Benefit (reg. 2(1)), doesn't count as a qualifying young person
   # for the Universal Credit Regulations. With no maintenance funding, reg.
   # 12(2) doesn't apply either, so the claimant doesn't receive education.
+  # The claimant claims Universal Credit, which ends their own Housing
+  # Benefit two weeks after the award starts (reg. 8(2A)).
+  # is_qualifying_young_person_for_universal_credit follows that claim limb
+  # and reads reg. 5(5) only from reported Universal Credit, so it gives true
+  # for this claimant. The condition reads the status on the first day of the
+  # award, when the Housing Benefit still runs
+  # (is_qualifying_young_person_for_uc_education).
   period: 2026
   input:
     people:
@@ -886,17 +893,21 @@
         members: [person1, person2]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [true, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_uc_education: [false, false]
     uc_receiving_education: [false, false]
 
 - name: Case 34, the 18-year-old of case 32 claims when DWP moves them off legacy benefits and keeps the award.
   # The claimant reports Housing Benefit, so under SI 2014/1230 reg. 28 they
-  # don't count as a qualifying young person, and they receive education
+  # don't count as a qualifying young person for the condition
+  # (is_qualifying_young_person_for_uc_education), and they receive education
   # under reg. 12(2)(b), not reg. 12(1A). They fail the condition on the
   # migration day "because the person is undertaking a full-time course (see
   # regulation 12(2) and 13 ...)", so under reg. 60(1) it doesn't apply to
-  # them while they continue the course.
+  # them while they continue the course. Their claim ends their own Housing
+  # Benefit, so is_qualifying_young_person_for_universal_credit, which
+  # follows that claim limb and reads reg. 5(5) only from reported
+  # Universal Credit, gives true.
   period: 2026
   input:
     people:
@@ -1256,9 +1267,150 @@
   output:
     legacy_benefits_closed: true
     claims_uc_at_legacy_closure: true
-    is_qualifying_young_person_for_uc_education: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    is_qualifying_young_person_on_uc_migration_day: [false]
     uc_receiving_education: [true]
     uc_is_excepted_from_education_condition: [true]
     meets_uc_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 4_062.96
+
+- name: Case 43, the 18-year-old of case 31 in Northern Ireland, whose family rents, keeps the ordinary route.
+  # SR 2016/226 reg. 6(2A): a claim ends a rent rebate or allowance two weeks
+  # after the award starts, so on the first day the claimant keeps an existing
+  # benefit and reg. 29 keeps them out of the definition, as in case 31.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: RENT_PRIVATELY
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 44, the same 18-year-old in Northern Ireland, whose report covers only a rate rebate, receives education.
+  # SR 2016/226 reg. 6(2): the claim ends a rate rebate the day before the award
+  # starts. On the first day the claimant has no existing benefit, so they count
+  # as a qualifying young person and receive education (Universal Credit
+  # Regulations (Northern Ireland) 2016 reg. 12(1)). No exception applies, so they
+  # get no Universal Credit.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 45, the same 18-year-old in England in a home the family owns keeps the ordinary route.
+  # SI 2014/1230 reg. 8(2A) runs on an award of Housing Benefit whatever its
+  # form, so reg. 28 keeps the claimant out of the definition on the first day.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 46, the 18-year-old of case 31 in temporary accommodation stays outside the definition all year.
+  # SI 2014/1230 reg. 8(3): a claim doesn't end a Housing Benefit award for
+  # specified or temporary accommodation, so reg. 28 keeps the claimant out of
+  # the definition after the first day as well, and they take the ordinary
+  # route, as in case 31.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+        tenure_type: RENT_PRIVATELY
+  output:
+    is_qualifying_young_person_for_universal_credit: [false]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
+    is_uc_eligible: true
+
+- name: Case 47, the same 18-year-old in a caravan the family owns in Northern Ireland, with a rent allowance, keeps the ordinary route.
+  # Housing Benefit Regulations (Northern Ireland) 2006 reg. 13(1)(f) and (g): a
+  # rent rebate or allowance covers mooring charges for a houseboat and site
+  # payments for a caravan or mobile home, so an owner can get one. SR 2016/226
+  # reg. 6(2A) runs it on for two weeks, so on the first day reg. 29 keeps the
+  # claimant out of the definition, as in case 43. They get the standard allowance
+  # for a single person under 25: 12 x 338.58 (SR 2026/54 reg. 3(3)(a)).
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+  output:
+    is_qualifying_young_person_for_universal_credit: [true]
+    is_qualifying_young_person_for_uc_education: [false]
+    uc_receiving_education: [false]
     is_uc_eligible: true
     universal_credit: 4_062.96

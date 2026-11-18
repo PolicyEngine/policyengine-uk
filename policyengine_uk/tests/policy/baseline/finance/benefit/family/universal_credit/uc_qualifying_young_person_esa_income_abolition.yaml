@@ -1,0 +1,175 @@
+# The Secretary of State appointed 1 July 2026 for the abolition of the
+# remaining old style income-related ESA awards in Great Britain (SI
+# 2025/1148 art. 3A(1)), apart from awards saved for an appointee (art.
+# 3A(2)). The model pays each claim for the share of the fiscal year before
+# that date (esa_income_payable_share, from gov.dwp.ESA.income.awards_payable):
+# 1 up to 2025-26, 86/365 = 0.2356 in 2026-27 and 0 from 2027-28, or 1 for a
+# saved claim. Nobody is entitled to a claim that pays nothing, so a young
+# person's own income-related ESA report excludes them from the UC qualifying
+# young person test (SI 2014/1230 reg. 28) only while the share exceeds 0.
+#
+# The first four cases use one household: a parent aged 45 and a 17-year-old on a
+# non-advanced course in the parent's benefit unit, North East, owned
+# outright, no income. The parent claims Universal Credit as a single
+# claimant over 25 (standard_allowance SINGLE_OLD: £424.90 a month in
+# 2026-27, £443.2099 projected for 2027-28) with the first child higher
+# amount for a qualifying young person (£364.1952 projected for 2027-28):
+#   2027 with the child element:    12 x (443.2099 + 364.1952) = 9,688.86
+#   2027 without the child element: 12 x 443.2099 = 5,318.52
+#   2026 without the child element: 12 x 424.90 = 5,098.80
+
+- name: A young person's own income-related ESA report after the claim stops paying leaves the child element.
+  # The claim pays nothing in 2027-28, so nobody is entitled to it.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        esa_income_reported: 3_000
+
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_payable_share: [0, 0]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    universal_credit: 9_688.86
+
+- name: A young person's own income-related ESA report saved for an appointee removes the child element.
+  # An award saved for an appointee stays payable (SI 2025/1148 art. 3A(2)).
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        esa_income_reported: 3_000
+        esa_income_appointee_saving: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_payable_share: [0, 1]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 5_318.52
+
+- name: A young person's own income-related ESA report in the year the claim stops paying removes the child element.
+  # The claim pays for 86 of the 365 days of 2026-27 in Great Britain.
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        esa_income_reported: 3_000
+
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_payable_share: [0.2356, 0.2356]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    universal_credit: 5_098.80
+
+- name: A young person's own income-related ESA report after the claim stops paying leaves the child element while their legacy awards stay open.
+  # The young person also reports Pension Credit, so the model's migration
+  # proxy leaves their legacy awards open (person_legacy_benefits_closed is
+  # false), but the claim still pays nothing in 2027-28
+  # (esa_income_payable_share 0) and nobody is entitled to it.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        esa_income_reported: 3_000
+        pension_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    esa_income_payable_share: [0, 0]
+    person_legacy_benefits_closed: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    universal_credit: 9_688.86
+
+- name: An 18-year-old claimant's own income-related ESA report after the claim stops paying leaves them receiving education while their legacy awards stay open.
+  # A single 18-year-old on a full-time non-advanced course with no
+  # maintenance funding reports their own income-related ESA and Pension
+  # Credit, and claims Universal Credit. The Pension Credit report leaves
+  # their legacy awards open (person_legacy_benefits_closed false), but the
+  # ESA claim pays nothing in 2027-28 (esa_income_payable_share 0), so on the
+  # first day of their Universal Credit award they aren't entitled to it
+  # either. They count as a qualifying young person for the education
+  # condition and receive education (UC Regs 2013 reg. 12(1A)), with no
+  # exception, so they get no Universal Credit.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+        pension_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    esa_income_payable_share: [0]
+    person_legacy_benefits_closed: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    is_uc_eligible: false
+    universal_credit: 0
