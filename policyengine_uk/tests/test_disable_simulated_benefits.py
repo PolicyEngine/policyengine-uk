@@ -891,15 +891,17 @@ def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_pers
     assert paid == [0, 3_000, 3_000, 3_000, 3_000, 3_000]
     assert reformed.calculate(predicate, year)[1::2].tolist() == [False] * 6
     # Without the reform, the model stops paying tax credits from 2025 and
-    # Income Support and income-based JSA from 2026, and those reports
-    # exclude nobody.
+    # Income Support and income-based JSA from 2026, and the abolitions leave
+    # no unsaved income-related ESA or working-age Housing Benefit payable
+    # from 2027, and those reports exclude nobody.
     tax_credits_closed = year >= 2025
     legacy_closed = year >= 2026
+    abolished = year >= 2027
     assert unreformed.calculate(predicate, year)[1::2].tolist() == [
         legacy_closed,
         legacy_closed,
-        year >= 2027,
-        False,
+        abolished,
+        abolished,
         tax_credits_closed,
         tax_credits_closed,
     ]

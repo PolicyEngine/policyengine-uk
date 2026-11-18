@@ -98,7 +98,9 @@ PROPERTY_SETTINGS = settings(
 )
 # 2019: before the mixed-age couple exclusion of 15 May 2019 (parameters are
 # read at 30 April). 2021, 2024 and 2026 span the reg. 14(1)(b) versions.
-YEARS = [2019, 2021, 2024, 2026]
+# 2027 follows the abolitions of income-related ESA and working-age Housing
+# Benefit.
+YEARS = [2019, 2021, 2024, 2026, 2027]
 REGIONS = ["NORTH_EAST", "LONDON", "SCOTLAND", "NORTHERN_IRELAND"]
 EDUCATION = ["TERTIARY", "POST_SECONDARY", "NOT_IN_EDUCATION"]
 TAX_CREDITS = ["child_tax_credit_reported", "working_tax_credit_reported"]
@@ -113,8 +115,9 @@ EXISTING_BENEFITS = [
 ]
 # Reg. 28 turns on entitlement,
 # so a report counts only in a year the model pays that benefit (the
-# parameter, or None where the model has no closure date) and only if no
-# reform neutralises one of its variables.
+# parameter, or None where no parameter switches the benefit off;
+# excluded_on_first_day reads the income-related ESA and Housing Benefit
+# payable shares) and only if no reform neutralises one of its variables.
 REPORT_BENEFITS = {
     "jsa_income_reported": ("JSA.income.active", ["jsa_income"]),
     "esa_income_reported": (None, ["esa_income"]),
@@ -297,6 +300,8 @@ def all_flags(case):
 
 
 VARIABLES = OUTPUTS + [
+    "esa_income_payable_share",
+    "housing_benefit_payable_share",
     "is_uc_single_or_joint_claimant",
     "is_uc_assessed_claimant",
     "meets_uc_minimum_age_condition",
@@ -372,6 +377,16 @@ def excluded_on_first_day(case, result):
             if fam["people"][i - index].get(name, 0) <= 0:
                 return False
             if name not in result["paying"]:
+                return False
+            # The abolitions end an income-related ESA or Housing Benefit
+            # award in a year in which it is not payable.
+            if name == "esa_income_reported" and not (
+                result["esa_income_payable_share"][i] > 0
+            ):
+                return False
+            if name == "housing_benefit_reported" and not (
+                result["housing_benefit_payable_share"][f] > 0
+            ):
                 return False
             if name in OWN_CLOSURE:
                 return not result["person_legacy_benefits_closed"][i]
@@ -873,6 +888,32 @@ CLAIM_EXAMPLES = [
 ]
 
 
+# 2027, after the abolition of working-age Housing Benefit (SI 2025/1148 art.
+# 7; SR 2025/176 art. 7): an 18-year-old on a non-advanced full-time course
+# whose family's unsaved award has ended, in England and Northern Ireland, so
+# no Housing Benefit is payable on their report and reg. 28 no longer keeps
+# them out of the definition.
+ABOLITION_EXAMPLE = dict(
+    year=2027,
+    families=[
+        single_family(
+            [
+                person(
+                    18,
+                    is_in_full_time_education=True,
+                    current_education="POST_SECONDARY",
+                    housing_benefit_reported=6_000,
+                )
+            ],
+            region=region,
+            tenure_type="RENT_FROM_COUNCIL",
+            rent=6_000,
+        )
+        for region in ["NORTH_EAST", "NORTHERN_IRELAND"]
+    ],
+)
+
+
 @PROPERTY_SETTINGS
 @example(EXAMPLES[0])
 @example(EXAMPLES[1])
@@ -881,6 +922,7 @@ CLAIM_EXAMPLES = [
 @example(CLAIM_EXAMPLES[0])
 @example(CLAIM_EXAMPLES[1])
 @example(CLAIM_EXAMPLES[2])
+@example(ABOLITION_EXAMPLE)
 @given(cases())
 def test_education_condition_invariants(case):
     check(case)
