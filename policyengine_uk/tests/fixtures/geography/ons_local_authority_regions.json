@@ -1,0 +1,2328 @@
+{
+  "source": "Office for National Statistics licensed under the Open Government Licence v.3.0",
+  "source_items": {
+    "2026": "79e0950fa93446b996d0f3f95537ab6d",
+    "2020": "87a9e5a70982411790319c0eaad61351"
+  },
+  "source_urls": [
+    "https://www.data.gov.uk/dataset/45aa6dad-4337-4947-9ad0-0a48a8b6fa35/ward-to-local-authority-district-to-ctyua-to-rgn-to-ctry-may-2026-lookup-in-the-uk",
+    "https://www.data.gov.uk/dataset/f13d7a3d-5ad1-49dd-8ea4-8169e07a5704/ward-to-local-authority-district-to-cty-to-rgn-to-ctry-december-2020-lookup-in-the-uk-v2"
+  ],
+  "raw_projection_sha256": {
+    "2026": "bbd0a780e43a668a319913f8abd9ca0de8c885952f4d2f2a727672f6c3e3d83d",
+    "2020": "da160154684019482f73e84b624d7f218b0fcc185fa357d8266d386b804526fa"
+  },
+  "method": "Exact ONS council labels; prefer May2026, supplement24 historical names from Dec2020 V2. English ONS region; other nations use explicit ONS country. Derived solely from the sealed pre-implementation ONS comparison; no production mapping/helper read or import.",
+  "authorities": [
+    {
+      "local_authority": "ABERDEEN_CITY",
+      "ons_name": "Aberdeen City",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "ABERDEENSHIRE",
+      "ons_name": "Aberdeenshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "ADUR",
+      "ons_name": "Adur",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ALLERDALE",
+      "ons_name": "Allerdale",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "AMBER_VALLEY",
+      "ons_name": "Amber Valley",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ANGUS",
+      "ons_name": "Angus",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "ANTRIM_AND_NEWTOWNABBEY",
+      "ons_name": "Antrim and Newtownabbey",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "ARDS_AND_NORTH_DOWN",
+      "ons_name": "Ards and North Down",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "ARGYLL_AND_BUTE",
+      "ons_name": "Argyll and Bute",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "ARMAGH_CITY_BANBRIDGE_AND_CRAIGAVON",
+      "ons_name": "Armagh City, Banbridge and Craigavon",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "ARUN",
+      "ons_name": "Arun",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ASHFIELD",
+      "ons_name": "Ashfield",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ASHFORD",
+      "ons_name": "Ashford",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BABERGH",
+      "ons_name": "Babergh",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BARKING_AND_DAGENHAM",
+      "ons_name": "Barking and Dagenham",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BARNET",
+      "ons_name": "Barnet",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BARNSLEY",
+      "ons_name": "Barnsley",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BARROW_IN_FURNESS",
+      "ons_name": "Barrow-in-Furness",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BASILDON",
+      "ons_name": "Basildon",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BASINGSTOKE_AND_DEANE",
+      "ons_name": "Basingstoke and Deane",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BASSETLAW",
+      "ons_name": "Bassetlaw",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BATH_AND_NORTH_EAST_SOMERSET",
+      "ons_name": "Bath and North East Somerset",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BEDFORD",
+      "ons_name": "Bedford",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BELFAST",
+      "ons_name": "Belfast",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "BEXLEY",
+      "ons_name": "Bexley",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BIRMINGHAM",
+      "ons_name": "Birmingham",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BLABY",
+      "ons_name": "Blaby",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BLACKBURN_WITH_DARWEN",
+      "ons_name": "Blackburn with Darwen",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BLACKPOOL",
+      "ons_name": "Blackpool",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BLAENAU_GWENT",
+      "ons_name": "Blaenau Gwent",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "BOLSOVER",
+      "ons_name": "Bolsover",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BOLTON",
+      "ons_name": "Bolton",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BOSTON",
+      "ons_name": "Boston",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BOURNEMOUTH_CHRISTCHURCH_AND_POOLE",
+      "ons_name": "Bournemouth, Christchurch and Poole",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRACKNELL_FOREST",
+      "ons_name": "Bracknell Forest",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRADFORD",
+      "ons_name": "Bradford",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRAINTREE",
+      "ons_name": "Braintree",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRECKLAND",
+      "ons_name": "Breckland",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRENT",
+      "ons_name": "Brent",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRENTWOOD",
+      "ons_name": "Brentwood",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRIDGEND",
+      "ons_name": "Bridgend",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "BRIGHTON_AND_HOVE",
+      "ons_name": "Brighton and Hove",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BRISTOL_CITY_OF",
+      "ons_name": "Bristol, City of",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BROADLAND",
+      "ons_name": "Broadland",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BROMLEY",
+      "ons_name": "Bromley",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BROMSGROVE",
+      "ons_name": "Bromsgrove",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BROXBOURNE",
+      "ons_name": "Broxbourne",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BROXTOWE",
+      "ons_name": "Broxtowe",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BUCKINGHAMSHIRE",
+      "ons_name": "Buckinghamshire",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BURNLEY",
+      "ons_name": "Burnley",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "BURY",
+      "ons_name": "Bury",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CAERPHILLY",
+      "ons_name": "Caerphilly",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "CALDERDALE",
+      "ons_name": "Calderdale",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CAMBRIDGE",
+      "ons_name": "Cambridge",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CAMDEN",
+      "ons_name": "Camden",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CANNOCK_CHASE",
+      "ons_name": "Cannock Chase",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CANTERBURY",
+      "ons_name": "Canterbury",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CARDIFF",
+      "ons_name": "Cardiff",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "CARLISLE",
+      "ons_name": "Carlisle",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CARMARTHENSHIRE",
+      "ons_name": "Carmarthenshire",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "CASTLE_POINT",
+      "ons_name": "Castle Point",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CAUSEWAY_COAST_AND_GLENS",
+      "ons_name": "Causeway Coast and Glens",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "CENTRAL_BEDFORDSHIRE",
+      "ons_name": "Central Bedfordshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CEREDIGION",
+      "ons_name": "Ceredigion",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "CHARNWOOD",
+      "ons_name": "Charnwood",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHELMSFORD",
+      "ons_name": "Chelmsford",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHELTENHAM",
+      "ons_name": "Cheltenham",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHERWELL",
+      "ons_name": "Cherwell",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHESHIRE_EAST",
+      "ons_name": "Cheshire East",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHESHIRE_WEST_AND_CHESTER",
+      "ons_name": "Cheshire West and Chester",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHESTERFIELD",
+      "ons_name": "Chesterfield",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHICHESTER",
+      "ons_name": "Chichester",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CHORLEY",
+      "ons_name": "Chorley",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CITY_OF_EDINBURGH",
+      "ons_name": "City of Edinburgh",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "CITY_OF_LONDON",
+      "ons_name": "City of London",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CLACKMANNANSHIRE",
+      "ons_name": "Clackmannanshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "COLCHESTER",
+      "ons_name": "Colchester",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CONWY",
+      "ons_name": "Conwy",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "COPELAND",
+      "ons_name": "Copeland",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CORBY",
+      "ons_name": "Corby",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CORNWALL",
+      "ons_name": "Cornwall",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "COTSWOLD",
+      "ons_name": "Cotswold",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "COUNTY_DURHAM",
+      "ons_name": "County Durham",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "COVENTRY",
+      "ons_name": "Coventry",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CRAVEN",
+      "ons_name": "Craven",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CRAWLEY",
+      "ons_name": "Crawley",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CROYDON",
+      "ons_name": "Croydon",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "CUMBERLAND",
+      "ons_name": "Cumberland",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DACORUM",
+      "ons_name": "Dacorum",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DARLINGTON",
+      "ons_name": "Darlington",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DARTFORD",
+      "ons_name": "Dartford",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DAVENTRY",
+      "ons_name": "Daventry",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DENBIGHSHIRE",
+      "ons_name": "Denbighshire",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "DERBY",
+      "ons_name": "Derby",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DERBYSHIRE_DALES",
+      "ons_name": "Derbyshire Dales",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DERRY_CITY_AND_STRABANE",
+      "ons_name": "Derry City and Strabane",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "DONCASTER",
+      "ons_name": "Doncaster",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DORSET",
+      "ons_name": "Dorset",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DOVER",
+      "ons_name": "Dover",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DUDLEY",
+      "ons_name": "Dudley",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "DUMFRIES_AND_GALLOWAY",
+      "ons_name": "Dumfries and Galloway",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "DUNDEE_CITY",
+      "ons_name": "Dundee City",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "EALING",
+      "ons_name": "Ealing",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_AYRSHIRE",
+      "ons_name": "East Ayrshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "EAST_CAMBRIDGESHIRE",
+      "ons_name": "East Cambridgeshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_DEVON",
+      "ons_name": "East Devon",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_DUNBARTONSHIRE",
+      "ons_name": "East Dunbartonshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "EAST_HAMPSHIRE",
+      "ons_name": "East Hampshire",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_HERTFORDSHIRE",
+      "ons_name": "East Hertfordshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_LINDSEY",
+      "ons_name": "East Lindsey",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_LOTHIAN",
+      "ons_name": "East Lothian",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "EAST_NORTHAMPTONSHIRE",
+      "ons_name": "East Northamptonshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_RENFREWSHIRE",
+      "ons_name": "East Renfrewshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "EAST_RIDING_OF_YORKSHIRE",
+      "ons_name": "East Riding of Yorkshire",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_STAFFORDSHIRE",
+      "ons_name": "East Staffordshire",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EAST_SUFFOLK",
+      "ons_name": "East Suffolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EASTBOURNE",
+      "ons_name": "Eastbourne",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EASTLEIGH",
+      "ons_name": "Eastleigh",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EDEN",
+      "ons_name": "Eden",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ELMBRIDGE",
+      "ons_name": "Elmbridge",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ENFIELD",
+      "ons_name": "Enfield",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EPPING_FOREST",
+      "ons_name": "Epping Forest",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EPSOM_AND_EWELL",
+      "ons_name": "Epsom and Ewell",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EREWASH",
+      "ons_name": "Erewash",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "EXETER",
+      "ons_name": "Exeter",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "FALKIRK",
+      "ons_name": "Falkirk",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "FAREHAM",
+      "ons_name": "Fareham",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "FENLAND",
+      "ons_name": "Fenland",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "FERMANAGH_AND_OMAGH",
+      "ons_name": "Fermanagh and Omagh",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "FIFE",
+      "ons_name": "Fife",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "FLINTSHIRE",
+      "ons_name": "Flintshire",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "FOLKESTONE_AND_HYTHE",
+      "ons_name": "Folkestone and Hythe",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "FOREST_OF_DEAN",
+      "ons_name": "Forest of Dean",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "FYLDE",
+      "ons_name": "Fylde",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GATESHEAD",
+      "ons_name": "Gateshead",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GEDLING",
+      "ons_name": "Gedling",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GLASGOW_CITY",
+      "ons_name": "Glasgow City",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "GLOUCESTER",
+      "ons_name": "Gloucester",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GOSPORT",
+      "ons_name": "Gosport",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GRAVESHAM",
+      "ons_name": "Gravesham",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GREAT_YARMOUTH",
+      "ons_name": "Great Yarmouth",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GREENWICH",
+      "ons_name": "Greenwich",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GUILDFORD",
+      "ons_name": "Guildford",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "GWYNEDD",
+      "ons_name": "Gwynedd",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "HACKNEY",
+      "ons_name": "Hackney",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HALTON",
+      "ons_name": "Halton",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HAMBLETON",
+      "ons_name": "Hambleton",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HAMMERSMITH_AND_FULHAM",
+      "ons_name": "Hammersmith and Fulham",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARBOROUGH",
+      "ons_name": "Harborough",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARINGEY",
+      "ons_name": "Haringey",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARLOW",
+      "ons_name": "Harlow",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARROGATE",
+      "ons_name": "Harrogate",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARROW",
+      "ons_name": "Harrow",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HART",
+      "ons_name": "Hart",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HARTLEPOOL",
+      "ons_name": "Hartlepool",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HASTINGS",
+      "ons_name": "Hastings",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HAVANT",
+      "ons_name": "Havant",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HAVERING",
+      "ons_name": "Havering",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HEREFORDSHIRE_COUNTY_OF",
+      "ons_name": "Herefordshire, County of",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HERTSMERE",
+      "ons_name": "Hertsmere",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HIGH_PEAK",
+      "ons_name": "High Peak",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HIGHLAND",
+      "ons_name": "Highland",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "HILLINGDON",
+      "ons_name": "Hillingdon",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HINCKLEY_AND_BOSWORTH",
+      "ons_name": "Hinckley and Bosworth",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HORSHAM",
+      "ons_name": "Horsham",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HOUNSLOW",
+      "ons_name": "Hounslow",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HUNTINGDONSHIRE",
+      "ons_name": "Huntingdonshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "HYNDBURN",
+      "ons_name": "Hyndburn",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "INVERCLYDE",
+      "ons_name": "Inverclyde",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "IPSWICH",
+      "ons_name": "Ipswich",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ISLE_OF_ANGLESEY",
+      "ons_name": "Isle of Anglesey",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "ISLE_OF_WIGHT",
+      "ons_name": "Isle of Wight",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ISLES_OF_SCILLY",
+      "ons_name": "Isles of Scilly",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ISLINGTON",
+      "ons_name": "Islington",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KENSINGTON_AND_CHELSEA",
+      "ons_name": "Kensington and Chelsea",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KETTERING",
+      "ons_name": "Kettering",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KINGS_LYNN_AND_WEST_NORFOLK",
+      "ons_name": "King's Lynn and West Norfolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KINGSTON_UPON_HULL_CITY_OF",
+      "ons_name": "Kingston upon Hull, City of",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KINGSTON_UPON_THAMES",
+      "ons_name": "Kingston upon Thames",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KIRKLEES",
+      "ons_name": "Kirklees",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "KNOWSLEY",
+      "ons_name": "Knowsley",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LAMBETH",
+      "ons_name": "Lambeth",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LANCASTER",
+      "ons_name": "Lancaster",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LEEDS",
+      "ons_name": "Leeds",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LEICESTER",
+      "ons_name": "Leicester",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LEWES",
+      "ons_name": "Lewes",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LEWISHAM",
+      "ons_name": "Lewisham",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LICHFIELD",
+      "ons_name": "Lichfield",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LINCOLN",
+      "ons_name": "Lincoln",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LISBURN_AND_CASTLEREAGH",
+      "ons_name": "Lisburn and Castlereagh",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "LIVERPOOL",
+      "ons_name": "Liverpool",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "LUTON",
+      "ons_name": "Luton",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MAIDSTONE",
+      "ons_name": "Maidstone",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MALDON",
+      "ons_name": "Maldon",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MALVERN_HILLS",
+      "ons_name": "Malvern Hills",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MANCHESTER",
+      "ons_name": "Manchester",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MANSFIELD",
+      "ons_name": "Mansfield",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MEDWAY",
+      "ons_name": "Medway",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MELTON",
+      "ons_name": "Melton",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MENDIP",
+      "ons_name": "Mendip",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MERTHYR_TYDFIL",
+      "ons_name": "Merthyr Tydfil",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "MERTON",
+      "ons_name": "Merton",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MID_DEVON",
+      "ons_name": "Mid Devon",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MID_SUFFOLK",
+      "ons_name": "Mid Suffolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MID_SUSSEX",
+      "ons_name": "Mid Sussex",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MID_ULSTER",
+      "ons_name": "Mid Ulster",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "MID_AND_EAST_ANTRIM",
+      "ons_name": "Mid and East Antrim",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "MIDDLESBROUGH",
+      "ons_name": "Middlesbrough",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MIDLOTHIAN",
+      "ons_name": "Midlothian",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "MILTON_KEYNES",
+      "ons_name": "Milton Keynes",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MOLE_VALLEY",
+      "ons_name": "Mole Valley",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "MONMOUTHSHIRE",
+      "ons_name": "Monmouthshire",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "MORAY",
+      "ons_name": "Moray",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "NA_H_EILEANAN_SIAR",
+      "ons_name": "Na h-Eileanan Siar",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "NEATH_PORT_TALBOT",
+      "ons_name": "Neath Port Talbot",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "NEW_FOREST",
+      "ons_name": "New Forest",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NEWARK_AND_SHERWOOD",
+      "ons_name": "Newark and Sherwood",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NEWCASTLE_UPON_TYNE",
+      "ons_name": "Newcastle upon Tyne",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NEWCASTLE_UNDER_LYME",
+      "ons_name": "Newcastle-under-Lyme",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NEWHAM",
+      "ons_name": "Newham",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NEWPORT",
+      "ons_name": "Newport",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "NEWRY_MOURNE_AND_DOWN",
+      "ons_name": "Newry, Mourne and Down",
+      "region": "NORTHERN_IRELAND",
+      "country": "NORTHERN_IRELAND"
+    },
+    {
+      "local_authority": "NORTH_AYRSHIRE",
+      "ons_name": "North Ayrshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "NORTH_DEVON",
+      "ons_name": "North Devon",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_EAST_DERBYSHIRE",
+      "ons_name": "North East Derbyshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_EAST_LINCOLNSHIRE",
+      "ons_name": "North East Lincolnshire",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_HERTFORDSHIRE",
+      "ons_name": "North Hertfordshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_KESTEVEN",
+      "ons_name": "North Kesteven",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_LANARKSHIRE",
+      "ons_name": "North Lanarkshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "NORTH_LINCOLNSHIRE",
+      "ons_name": "North Lincolnshire",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_NORFOLK",
+      "ons_name": "North Norfolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_NORTHAMPTONSHIRE",
+      "ons_name": "North Northamptonshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_SOMERSET",
+      "ons_name": "North Somerset",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_TYNESIDE",
+      "ons_name": "North Tyneside",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_WARWICKSHIRE",
+      "ons_name": "North Warwickshire",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_WEST_LEICESTERSHIRE",
+      "ons_name": "North West Leicestershire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTH_YORKSHIRE",
+      "ons_name": "North Yorkshire",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTHAMPTON",
+      "ons_name": "Northampton",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORTHUMBERLAND",
+      "ons_name": "Northumberland",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NORWICH",
+      "ons_name": "Norwich",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NOTTINGHAM",
+      "ons_name": "Nottingham",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "NUNEATON_AND_BEDWORTH",
+      "ons_name": "Nuneaton and Bedworth",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "OADBY_AND_WIGSTON",
+      "ons_name": "Oadby and Wigston",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "OLDHAM",
+      "ons_name": "Oldham",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ORKNEY_ISLANDS",
+      "ons_name": "Orkney Islands",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "OXFORD",
+      "ons_name": "Oxford",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "PEMBROKESHIRE",
+      "ons_name": "Pembrokeshire",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "PENDLE",
+      "ons_name": "Pendle",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "PERTH_AND_KINROSS",
+      "ons_name": "Perth and Kinross",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "PETERBOROUGH",
+      "ons_name": "Peterborough",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "PLYMOUTH",
+      "ons_name": "Plymouth",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "PORTSMOUTH",
+      "ons_name": "Portsmouth",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "POWYS",
+      "ons_name": "Powys",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "PRESTON",
+      "ons_name": "Preston",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "READING",
+      "ons_name": "Reading",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "REDBRIDGE",
+      "ons_name": "Redbridge",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "REDCAR_AND_CLEVELAND",
+      "ons_name": "Redcar and Cleveland",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "REDDITCH",
+      "ons_name": "Redditch",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "REIGATE_AND_BANSTEAD",
+      "ons_name": "Reigate and Banstead",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RENFREWSHIRE",
+      "ons_name": "Renfrewshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "RHONDDA_CYNON_TAF",
+      "ons_name": "Rhondda Cynon Taf",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "RIBBLE_VALLEY",
+      "ons_name": "Ribble Valley",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RICHMOND_UPON_THAMES",
+      "ons_name": "Richmond upon Thames",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RICHMONDSHIRE",
+      "ons_name": "Richmondshire",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ROCHDALE",
+      "ons_name": "Rochdale",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ROCHFORD",
+      "ons_name": "Rochford",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ROSSENDALE",
+      "ons_name": "Rossendale",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ROTHER",
+      "ons_name": "Rother",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ROTHERHAM",
+      "ons_name": "Rotherham",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RUGBY",
+      "ons_name": "Rugby",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RUNNYMEDE",
+      "ons_name": "Runnymede",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RUSHCLIFFE",
+      "ons_name": "Rushcliffe",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RUSHMOOR",
+      "ons_name": "Rushmoor",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RUTLAND",
+      "ons_name": "Rutland",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "RYEDALE",
+      "ons_name": "Ryedale",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SALFORD",
+      "ons_name": "Salford",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SANDWELL",
+      "ons_name": "Sandwell",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SCARBOROUGH",
+      "ons_name": "Scarborough",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SCOTTISH_BORDERS",
+      "ons_name": "Scottish Borders",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "SEDGEMOOR",
+      "ons_name": "Sedgemoor",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SEFTON",
+      "ons_name": "Sefton",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SELBY",
+      "ons_name": "Selby",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SEVENOAKS",
+      "ons_name": "Sevenoaks",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SHEFFIELD",
+      "ons_name": "Sheffield",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SHETLAND_ISLANDS",
+      "ons_name": "Shetland Islands",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "SHROPSHIRE",
+      "ons_name": "Shropshire",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SLOUGH",
+      "ons_name": "Slough",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOLIHULL",
+      "ons_name": "Solihull",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOMERSET",
+      "ons_name": "Somerset",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOMERSET_WEST_AND_TAUNTON",
+      "ons_name": "Somerset West and Taunton",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_AYRSHIRE",
+      "ons_name": "South Ayrshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "SOUTH_CAMBRIDGESHIRE",
+      "ons_name": "South Cambridgeshire",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_DERBYSHIRE",
+      "ons_name": "South Derbyshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_GLOUCESTERSHIRE",
+      "ons_name": "South Gloucestershire",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_HAMS",
+      "ons_name": "South Hams",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_HOLLAND",
+      "ons_name": "South Holland",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_KESTEVEN",
+      "ons_name": "South Kesteven",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_LAKELAND",
+      "ons_name": "South Lakeland",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_LANARKSHIRE",
+      "ons_name": "South Lanarkshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "SOUTH_NORFOLK",
+      "ons_name": "South Norfolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_NORTHAMPTONSHIRE",
+      "ons_name": "South Northamptonshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_OXFORDSHIRE",
+      "ons_name": "South Oxfordshire",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_RIBBLE",
+      "ons_name": "South Ribble",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_SOMERSET",
+      "ons_name": "South Somerset",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_STAFFORDSHIRE",
+      "ons_name": "South Staffordshire",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTH_TYNESIDE",
+      "ons_name": "South Tyneside",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTHAMPTON",
+      "ons_name": "Southampton",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTHEND_ON_SEA",
+      "ons_name": "Southend-on-Sea",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SOUTHWARK",
+      "ons_name": "Southwark",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SPELTHORNE",
+      "ons_name": "Spelthorne",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ST_ALBANS",
+      "ons_name": "St Albans",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "ST_HELENS",
+      "ons_name": "St. Helens",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STAFFORD",
+      "ons_name": "Stafford",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STAFFORDSHIRE_MOORLANDS",
+      "ons_name": "Staffordshire Moorlands",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STEVENAGE",
+      "ons_name": "Stevenage",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STIRLING",
+      "ons_name": "Stirling",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "STOCKPORT",
+      "ons_name": "Stockport",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STOCKTON_ON_TEES",
+      "ons_name": "Stockton-on-Tees",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STOKE_ON_TRENT",
+      "ons_name": "Stoke-on-Trent",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STRATFORD_ON_AVON",
+      "ons_name": "Stratford-on-Avon",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "STROUD",
+      "ons_name": "Stroud",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SUNDERLAND",
+      "ons_name": "Sunderland",
+      "region": "NORTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SURREY_HEATH",
+      "ons_name": "Surrey Heath",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SUTTON",
+      "ons_name": "Sutton",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SWALE",
+      "ons_name": "Swale",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "SWANSEA",
+      "ons_name": "Swansea",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "SWINDON",
+      "ons_name": "Swindon",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TAMESIDE",
+      "ons_name": "Tameside",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TAMWORTH",
+      "ons_name": "Tamworth",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TANDRIDGE",
+      "ons_name": "Tandridge",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TEIGNBRIDGE",
+      "ons_name": "Teignbridge",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TELFORD_AND_WREKIN",
+      "ons_name": "Telford and Wrekin",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TENDRING",
+      "ons_name": "Tendring",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TEST_VALLEY",
+      "ons_name": "Test Valley",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TEWKESBURY",
+      "ons_name": "Tewkesbury",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "THANET",
+      "ons_name": "Thanet",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "THREE_RIVERS",
+      "ons_name": "Three Rivers",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "THURROCK",
+      "ons_name": "Thurrock",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TONBRIDGE_AND_MALLING",
+      "ons_name": "Tonbridge and Malling",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TORBAY",
+      "ons_name": "Torbay",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TORFAEN",
+      "ons_name": "Torfaen",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "TORRIDGE",
+      "ons_name": "Torridge",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TOWER_HAMLETS",
+      "ons_name": "Tower Hamlets",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TRAFFORD",
+      "ons_name": "Trafford",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "TUNBRIDGE_WELLS",
+      "ons_name": "Tunbridge Wells",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "UTTLESFORD",
+      "ons_name": "Uttlesford",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "VALE_OF_GLAMORGAN",
+      "ons_name": "Vale of Glamorgan",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "VALE_OF_WHITE_HORSE",
+      "ons_name": "Vale of White Horse",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WAKEFIELD",
+      "ons_name": "Wakefield",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WALSALL",
+      "ons_name": "Walsall",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WALTHAM_FOREST",
+      "ons_name": "Waltham Forest",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WANDSWORTH",
+      "ons_name": "Wandsworth",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WARRINGTON",
+      "ons_name": "Warrington",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WARWICK",
+      "ons_name": "Warwick",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WATFORD",
+      "ons_name": "Watford",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WAVERLEY",
+      "ons_name": "Waverley",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEALDEN",
+      "ons_name": "Wealden",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WELLINGBOROUGH",
+      "ons_name": "Wellingborough",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WELWYN_HATFIELD",
+      "ons_name": "Welwyn Hatfield",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_BERKSHIRE",
+      "ons_name": "West Berkshire",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_DEVON",
+      "ons_name": "West Devon",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_DUNBARTONSHIRE",
+      "ons_name": "West Dunbartonshire",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "WEST_LANCASHIRE",
+      "ons_name": "West Lancashire",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_LINDSEY",
+      "ons_name": "West Lindsey",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_LOTHIAN",
+      "ons_name": "West Lothian",
+      "region": "SCOTLAND",
+      "country": "SCOTLAND"
+    },
+    {
+      "local_authority": "WEST_NORTHAMPTONSHIRE",
+      "ons_name": "West Northamptonshire",
+      "region": "EAST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_OXFORDSHIRE",
+      "ons_name": "West Oxfordshire",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WEST_SUFFOLK",
+      "ons_name": "West Suffolk",
+      "region": "EAST_OF_ENGLAND",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WESTMINSTER",
+      "ons_name": "Westminster",
+      "region": "LONDON",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WESTMORLAND_AND_FURNESS",
+      "ons_name": "Westmorland and Furness",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WIGAN",
+      "ons_name": "Wigan",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WILTSHIRE",
+      "ons_name": "Wiltshire",
+      "region": "SOUTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WINCHESTER",
+      "ons_name": "Winchester",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WINDSOR_AND_MAIDENHEAD",
+      "ons_name": "Windsor and Maidenhead",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WIRRAL",
+      "ons_name": "Wirral",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WOKING",
+      "ons_name": "Woking",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WOKINGHAM",
+      "ons_name": "Wokingham",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WOLVERHAMPTON",
+      "ons_name": "Wolverhampton",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WORCESTER",
+      "ons_name": "Worcester",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WORTHING",
+      "ons_name": "Worthing",
+      "region": "SOUTH_EAST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WREXHAM",
+      "ons_name": "Wrexham",
+      "region": "WALES",
+      "country": "WALES"
+    },
+    {
+      "local_authority": "WYCHAVON",
+      "ons_name": "Wychavon",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WYRE",
+      "ons_name": "Wyre",
+      "region": "NORTH_WEST",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "WYRE_FOREST",
+      "ons_name": "Wyre Forest",
+      "region": "WEST_MIDLANDS",
+      "country": "ENGLAND"
+    },
+    {
+      "local_authority": "YORK",
+      "ons_name": "York",
+      "region": "YORKSHIRE",
+      "country": "ENGLAND"
+    }
+  ]
+}

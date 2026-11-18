@@ -21,17 +21,198 @@ import argparse
 import hashlib
 import json
 import sys
+import time
+from datetime import datetime, timezone
 import traceback
 from pathlib import Path
 
 from . import TOOL_SCHEMA
 
 
+GUARD_PROGRESS_SCHEMA = "policyengine-uk-aggregate-guard-progress/1"
+GUARD_PROGRESS_PHASE = "guard_probe"
+GUARD_PROGRESS_KINDS = frozenset(
+    (
+        "baseline",
+        "component",
+        "unheld_first",
+        "response_second",
+        "held_baseline_first",
+        "held_baseline_second",
+        "restore_held_baseline",
+        "held_reference_first",
+        "held_perturbed_second",
+        "restore_held_perturbed",
+        "restore_component",
+        "restore_final",
+        "baseline_reproduction",
+    )
+)
+GUARD_PROGRESS_EVENTS = ("start", "end", "skip")
+GUARD_PROGRESS_SKIP_REASONS = ("selection", "non_money", "no_weight_or_unreadable")
+GUARD_PROGRESS_MAX_RECORDS = 2048
+GUARD_PROGRESS_MAX_BYTES = 524288
+GUARD_PROGRESS_MAX_LINE_BYTES = 1024
+GUARD_PROGRESS_MARKER_BYTES = 512
+GUARD_PROGRESS_PREFIX = "aggregate-impact-phase "
+
+
+def _guard_progress_body(event, label, scope):
+    """Encode public scope as bounded digests, never financial values or text."""
+    if type(event) is not str or event not in GUARD_PROGRESS_EVENTS:
+        return None
+    if type(label) is not str or label not in ("base", "head"):
+        return None
+    if set(scope) - {"year", "component", "head", "probe_kind", "skip_reason"}:
+        return None
+    year, kind = scope.get("year"), scope.get("probe_kind")
+    if type(year) is not int or not 1900 <= year <= 2100:
+        return None
+    if type(kind) is not str or kind not in GUARD_PROGRESS_KINDS:
+        return None
+    reason = scope.get("skip_reason")
+    if event == "skip":
+        if type(reason) is not str or reason not in GUARD_PROGRESS_SKIP_REASONS:
+            return None
+    elif reason is not None:
+        return None
+    record = {
+        "schema": GUARD_PROGRESS_SCHEMA,
+        "event": event,
+        "phase": GUARD_PROGRESS_PHASE,
+        "label": label,
+        "probe_kind": kind,
+        "year": year,
+    }
+    for key in ("component", "head"):
+        identity = scope.get(key)
+        if identity is not None:
+            if type(identity) is not str or not 1 <= len(identity) <= 256:
+                return None
+            record[key + "_id_sha256"] = hashlib.sha256(
+                identity.encode("utf-8")
+            ).hexdigest()
+    if reason is not None:
+        record["skip_reason"] = reason
+    return record
+
+
 def _sha256(path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _phase_logger(out, label):
+    """Best-effort, nonfinancial receipts that survive an interrupted call."""
+    started = time.monotonic()
+    destination = Path(out) / "timing.jsonl"
+    guard_records = 0
+    guard_bytes = 0
+    guard_limited = False
+
+    def _guard_publish(line):
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with destination.open("a", encoding="utf-8") as stream:
+                stream.write(line + "\n")
+                stream.flush()
+        except Exception:  # noqa: BLE001 - stderr remains an independent sink
+            pass
+        try:
+            print(GUARD_PROGRESS_PREFIX + line, file=sys.stderr, flush=True)
+        except Exception:  # noqa: BLE001 - diagnostic sinks never affect finance
+            pass
+
+    def _guard_record(event, scope):
+        nonlocal guard_records, guard_bytes, guard_limited
+        if guard_limited:
+            return
+        record = _guard_progress_body(event, label, scope)
+        if record is None:
+            return
+        elapsed = round(time.monotonic() - started, 6)
+        if not 0 <= elapsed < float("inf"):
+            return
+        record.update(
+            utc=datetime.now(timezone.utc).isoformat(), elapsed_seconds=elapsed
+        )
+        line = json.dumps(record, sort_keys=True, allow_nan=False)
+        size = len((GUARD_PROGRESS_PREFIX + line + "\n").encode("utf-8"))
+        reason = None
+        if size > GUARD_PROGRESS_MAX_LINE_BYTES:
+            reason = "line_limit"
+        elif guard_records >= GUARD_PROGRESS_MAX_RECORDS - 1:
+            reason = "record_limit"
+        elif (
+            guard_bytes + size > GUARD_PROGRESS_MAX_BYTES - GUARD_PROGRESS_MARKER_BYTES
+        ):
+            reason = "byte_limit"
+        if reason is not None:
+            guard_limited = True
+            marker = {
+                "schema": GUARD_PROGRESS_SCHEMA,
+                "event": "limit",
+                "phase": GUARD_PROGRESS_PHASE,
+                "label": label,
+                "utc": record["utc"],
+                "elapsed_seconds": elapsed,
+                "reason": reason,
+                "record_limit": GUARD_PROGRESS_MAX_RECORDS,
+                "byte_limit": GUARD_PROGRESS_MAX_BYTES,
+            }
+            line = json.dumps(marker, sort_keys=True, allow_nan=False)
+            size = len((GUARD_PROGRESS_PREFIX + line + "\n").encode("utf-8"))
+            if (
+                size > GUARD_PROGRESS_MARKER_BYTES
+                or size > GUARD_PROGRESS_MAX_LINE_BYTES
+                or guard_records + 1 > GUARD_PROGRESS_MAX_RECORDS
+                or guard_bytes + size > GUARD_PROGRESS_MAX_BYTES
+            ):
+                return
+        # Charge the attempt once even when either sink is unavailable.
+        guard_records += 1
+        guard_bytes += size
+        _guard_publish(line)
+
+    def checkpoint(event, phase, **scope):
+        if phase == GUARD_PROGRESS_PHASE:
+            try:
+                _guard_record(event, scope)
+            except Exception:  # noqa: BLE001 - invalid diagnostics do not stop finance
+                pass
+            return
+        try:
+            record = {
+                "event": event,
+                "phase": phase,
+                "label": label,
+                "utc": datetime.now(timezone.utc).isoformat(),
+                "elapsed_seconds": round(time.monotonic() - started, 6),
+            }
+            for key in ("year", "reform"):
+                if scope.get(key) is not None:
+                    record[key] = scope[key]
+            line = json.dumps(record, sort_keys=True)
+        except Exception:  # noqa: BLE001 - diagnostics must not stop measurement
+            return
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with destination.open("a", encoding="utf-8") as stream:
+                stream.write(line + "\n")
+                stream.flush()
+        except Exception:  # noqa: BLE001 - the runner log is an independent sink
+            pass
+        try:
+            print("aggregate-impact-phase " + line, file=sys.stderr, flush=True)
+        except Exception:  # noqa: BLE001 - failed diagnostics do not change results
+            pass
+
+    return checkpoint
+
+
 def cmd_measure(args) -> int:
+    checkpoint = _phase_logger(args.out, args.label)
+    checkpoint("start", "command")
+    checkpoint("start", "setup")
     from .dataset import load_pin, materialise, sha256_file, verify_file
     from .measure import model_fingerprint, model_loaded, write_result
 
@@ -57,6 +238,7 @@ def cmd_measure(args) -> int:
         spec = load_spec(spec_path, years=args.years)
         provenance["spec_sha256"] = _sha256(spec_path)
 
+        checkpoint("start", "dataset")
         if args.pin:
             pin = load_pin(args.pin)
             if args.dataset_file:
@@ -79,6 +261,7 @@ def cmd_measure(args) -> int:
         else:
             raise ValueError("measure needs --pin, --dataset-file or both")
 
+        checkpoint("end", "dataset")
         if args.partition:
             partition_path, partition_source = Path(args.partition), "given"
         else:
@@ -105,14 +288,44 @@ def cmd_measure(args) -> int:
             reforms = load_reforms(reforms_path)
             provenance["reforms_sha256"] = _sha256(reforms_path)
 
+        checkpoint("end", "setup")
+        checkpoint("start", "initial_simulation")
         from policyengine_uk import Microsimulation
 
         sim = Microsimulation(dataset=str(dataset_path))
+        checkpoint("end", "initial_simulation")
         dataset_object = sim.dataset
 
         def factory(reform=None):
             return Microsimulation(dataset=dataset_object, reform=reform or None)
 
+        year_profile = None
+        if getattr(args, "profile_first_year", False):
+            try:
+                from .infra_profile import FirstYearProfiler
+
+                year_profile = FirstYearProfiler(args.out, args.label)
+            except Exception:  # noqa: BLE001 - optional diagnostics must not stop measurement
+                pass
+
+        guard_profile = None
+        if getattr(args, "profile_first_guard_probe", False):
+            try:
+                from .infra_profile import FirstYearProfiler
+
+                guard_profile = FirstYearProfiler(
+                    Path(args.out) / "first-guard-probe",
+                    args.label,
+                    window="first_counted_once_probe",
+                )
+            except Exception:  # noqa: BLE001 - optional diagnostics cannot stop finance
+                pass
+
+        guard_options = {}
+        if guard_profile is not None:
+            guard_options["guard_profile"] = guard_profile
+
+        checkpoint("start", "measure")
         result, households = measure(
             sim,
             factory,
@@ -123,13 +336,19 @@ def cmd_measure(args) -> int:
             run_guard=not args.no_guard,
             provenance=provenance,
             fingerprint_at_start=fingerprint_at_start,
+            checkpoint=checkpoint,
+            year_profile=year_profile,
+            **guard_options,
         )
+        checkpoint("end", "measure")
         write_result(args.out, result, households)
         print(
             f"{args.label}: measured {len(result['metrics'])} figures in {result['timings']['total']}s"
         )
+        checkpoint("end", "command")
         return 0
     except Exception:  # noqa: BLE001 - recorded for the comparison, then reported
+        checkpoint("error", "command")
         crash = {
             "schema": TOOL_SCHEMA,
             "status": "crashed",
@@ -223,6 +442,16 @@ def main(argv=None) -> int:
     m.add_argument("--git-ref", default="")
     m.add_argument(
         "--no-guard", action="store_true", help="skip the counted-once check"
+    )
+    m.add_argument(
+        "--profile-first-year",
+        action="store_true",
+        help="record bounded infrastructure statistics for the first ordinary year",
+    )
+    m.add_argument(
+        "--profile-first-guard-probe",
+        action="store_true",
+        help="record infrastructure statistics for the first existing guard probe",
     )
     m.add_argument("--out", required=True)
     m.set_defaults(func=cmd_measure)

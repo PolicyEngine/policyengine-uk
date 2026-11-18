@@ -2844,3 +2844,564 @@ def test_units_and_households_count_only_records_with_weight():
     # tax_a contains tax_b in households 1 and 2; only household 1 has weight.
     moves = [p for p in row["problems"] if p["head"] == "tax_a"]
     assert moves and all(p["households"] == 1 for p in moves)
+
+
+def _observed_guard_case(observer=None, *, selected=None, weights=(1, 2, 1)):
+    part = partition(["tax_a", "tax_b"])
+    sim = FakeSim(model(contains=False), {"x": [1000, 2000, 3000]}, weights)
+    snapshot = snapshot_inputs(sim, part.component_variables())
+    result = counted_once(
+        sim,
+        part,
+        YEAR,
+        1e-6,
+        snapshot,
+        variables_to_check=selected,
+        probe_profile=observer,
+    )
+    return sim, result
+
+
+def test_first_existing_guard_probe_preserves_calls_results_and_restoration(
+    monkeypatch,
+):
+    from policyengine_uk.utils.aggregate_impact import guard
+
+    calls, events = [], []
+    for name in ("_perturb", "_head_arrays", "_raw", "_restore"):
+        original = getattr(guard, name)
+
+        def record(*args, _name=name, _original=original, **kwargs):
+            key = tuple(args[2]) if _name == "_head_arrays" else str(args[1])
+            calls.append((_name, key))
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(guard, name, record)
+    reference, expected = _observed_guard_case()
+    original_calls = calls.copy()
+    calls.clear()
+
+    def observer(event, phase, **scope):
+        events.append((event, phase, scope, len(calls)))
+
+    observed, actual = _observed_guard_case(observer)
+    assert calls == original_calls
+    assert actual == expected
+    assert set(observed.inputs) == set(reference.inputs)
+    for key in reference.inputs:
+        np.testing.assert_array_equal(observed.inputs[key], reference.inputs[key])
+    assert [event[:3] for event in events] == [
+        ("start", "first_counted_once_probe", {"year": YEAR}),
+        ("stop", "first_counted_once_probe", {"year": YEAR, "completed": True}),
+    ]
+    start, stop = events[0][3], events[1][3]
+    assert calls[start][0] == "_perturb"
+    assert calls[stop - 1] == ("_raw", "gov_tax")
+    assert sum(name == "_perturb" for name, _ in calls[start:stop]) == 1
+    assert sum(name == "_perturb" for name, _ in calls) > 1
+
+
+@pytest.mark.parametrize("skip", ["selection", "weight"])
+def test_guard_without_an_eligible_probe_never_starts_observer(skip):
+    events = []
+
+    def observer(*args, **kwargs):
+        return events.append((args, kwargs))
+
+    _observed_guard_case(
+        observer,
+        selected=() if skip == "selection" else None,
+        weights=(0, 0, 0) if skip == "weight" else (1, 2, 1),
+    )
+    assert events == []
+
+
+@pytest.mark.parametrize("failure_event", ["start", "stop"])
+def test_guard_observer_errors_do_not_change_results(failure_event):
+    reference, expected = _observed_guard_case()
+
+    def observer(event, phase, **scope):
+        if event == failure_event:
+            raise OSError("PRIVATE_OBSERVER_FAILURE")
+
+    observed, actual = _observed_guard_case(observer)
+    assert actual == expected
+    for key in reference.inputs:
+        np.testing.assert_array_equal(observed.inputs[key], reference.inputs[key])
+
+
+@pytest.mark.parametrize("cleanup_error", [OSError, KeyboardInterrupt, SystemExit])
+def test_guard_financial_error_identity_survives_observer_cleanup(
+    monkeypatch, cleanup_error
+):
+    from policyengine_uk.utils.aggregate_impact import guard
+
+    original, calls, events = guard._head_arrays, [], []
+    financial_error = RuntimeError("PRIVATE_FINANCIAL_FAILURE")
+
+    def fail_probe(*args, **kwargs):
+        calls.append(None)
+        if len(calls) == 2:
+            raise financial_error
+        return original(*args, **kwargs)
+
+    def observer(event, phase, **scope):
+        events.append((event, scope))
+        if event == "stop":
+            raise cleanup_error("PRIVATE_CLEANUP_FAILURE")
+
+    monkeypatch.setattr(guard, "_head_arrays", fail_probe)
+    with pytest.raises(RuntimeError) as caught:
+        _observed_guard_case(observer)
+    assert caught.value is financial_error
+    assert events == [
+        ("start", {"year": YEAR}),
+        ("stop", {"year": YEAR, "completed": False}),
+    ]
+
+
+@pytest.mark.parametrize("interrupt_type", [KeyboardInterrupt, SystemExit])
+def test_guard_profile_keeps_a_genuine_stop_interrupt(interrupt_type):
+    interrupt = interrupt_type("PRIVATE_INTERRUPT")
+
+    def observer(event, phase, **scope):
+        if event == "stop":
+            raise interrupt
+
+    with pytest.raises(interrupt_type) as caught:
+        _observed_guard_case(observer)
+    assert caught.value is interrupt
+
+
+def _guard_progress_equal(actual, expected, *, ordered=True):
+    if isinstance(expected, dict):
+        if ordered:
+            assert list(actual) == list(expected)
+        else:
+            assert actual.keys() == expected.keys()
+        for key in expected:
+            _guard_progress_equal(actual[key], expected[key], ordered=ordered)
+    elif isinstance(expected, (list, tuple)):
+        assert type(actual) is type(expected) and len(actual) == len(expected)
+        for left, right in zip(actual, expected):
+            _guard_progress_equal(left, right, ordered=ordered)
+    elif isinstance(expected, np.ndarray):
+        assert actual.dtype == expected.dtype and actual.shape == expected.shape
+        np.testing.assert_array_equal(actual, expected)
+    elif isinstance(expected, BaseException):
+        assert actual is expected
+    elif isinstance(expected, (float, np.floating)) and np.isnan(expected):
+        assert np.isnan(actual)
+    else:
+        assert actual == expected
+
+
+def _guard_progress_run(
+    monkeypatch,
+    checkpoint=None,
+    *,
+    scenario="annual",
+    guard_module=None,
+    fail_stage=None,
+    model_error=None,
+    warnings_enabled=False,
+):
+    import copy
+    import warnings
+    from policyengine_uk.utils.aggregate_impact import guard as current_guard
+
+    guard = current_guard if guard_module is None else guard_module
+    trace = []
+    formulas = model(contains=scenario in ("direct", "monthly", "branch"))
+    spending = ["ben_c", "ben_d"]
+    reads = {"ben_d": ["ben_c"]}
+    if scenario == "reader_step":
+        formulas["ben_d"] = lambda f: 200 + 50 * (f("ben_c") > 100)
+    elif scenario == "linear_screen":
+        formulas["ben_d"] = lambda f: 200 + 0.5 * f("ben_c")
+    elif scenario == "mediated":
+        formulas["ben_e"] = lambda f: 50 - 0.5 * f("ben_c")
+        formulas["ben_d"] = lambda f: 200 - f("ben_e")
+        formulas["gov_spending"] = lambda f: f("ben_c") + f("ben_d") + f("ben_e")
+        spending.append("ben_e")
+        reads = {"ben_d": ["ben_e"]}
+    elif scenario == "gated":
+        formulas["tax_b"] = lambda f: 0 * f("x")
+        formulas["ben_c"] = lambda f: 40 * (f("tax_b") > 0)
+        formulas["tax_a"] = lambda f: 0.1 * f("x") + f("tax_b") * (f("ben_c") > 0)
+    elif scenario == "zero":
+        formulas["tax_b"] = lambda f: 0 * f("x")
+    elif scenario == "nonfinite":
+        formulas["tax_b"] = lambda f: np.where(f("x") > 1500, np.nan, 5.0)
+
+    def frozen(values):
+        a = np.asarray(values)
+        return (a.dtype.str, a.shape, a.tobytes())
+
+    class TraceHolder(FakeHolder):
+        def _get_array_from_storage(self, period, branch):
+            return self.sim.slots.get((self.variable, branch, str(period)))
+
+        def delete_arrays(self, *, branch_name):
+            trace.append(("delete_branch", self.variable, branch_name))
+            for key in list(self.sim.slots):
+                if key[:2] == (self.variable, branch_name):
+                    del self.sim.slots[key]
+            self.sim.refresh(self.variable)
+
+    class TraceSim(FakeSim):
+        def __init__(self):
+            super().__init__(formulas, {"x": [1000, 2000, 3000]}, (1, 0, 2))
+            self.writes = 0
+            self.deletes = {}
+            self.branch_name = "probe"
+            self.parent_branch = None
+            self.slots = {}
+            self._user_input_keys = set()
+            self._model_values = {}
+            if scenario == "monthly":
+                self.tax_benefit_system.variables["tax_b"].definition_period = "month"
+            if scenario == "branch":
+                original = np.asarray([5.0, 6.0, 7.0])
+                self.slots[("tax_b", "probe", str(YEAR))] = original.copy()
+                self.slots[("tax_b", "default", str(YEAR))] = original + 10
+                self._model_values[("tax_b", "probe", str(YEAR))] = original.copy()
+                self._user_input_keys.add(("tax_b", "default", str(YEAR)))
+                self.refresh("tax_b")
+
+        def refresh(self, variable):
+            key = (variable, str(YEAR))
+            self.inputs.pop(key, None)
+            for branch in (self.branch_name, "default"):
+                slot = self.slots.get((variable, branch, str(YEAR)))
+                if slot is not None:
+                    self.inputs[key] = slot
+                    break
+
+        def calculate(self, variable, period, unweighted=True, map_to=None):
+            key = (variable, str(period))
+            trace.append(
+                (
+                    "calculate",
+                    variable,
+                    str(period),
+                    unweighted,
+                    map_to,
+                    key in self.inputs,
+                    key in self.cache,
+                )
+            )
+            if warnings_enabled:
+                warnings.warn("synthetic guard warning", RuntimeWarning)
+            if fail_stage == "probe" and self.writes and variable == "gov_tax":
+                raise model_error
+            if (
+                scenario == "monthly"
+                and variable == "x"
+                and key[1] in {f"{YEAR}-{month:02d}" for month in range(1, 13)}
+            ):
+                return self.inputs[("x", str(YEAR))]
+            if scenario == "monthly" and variable == "tax_b" and len(str(period)) == 4:
+                return sum(
+                    self.calculate(variable, f"{period}-{month:02d}")
+                    for month in range(1, 13)
+                )
+            return super().calculate(
+                variable, period, unweighted=unweighted, map_to=map_to
+            )
+
+        def set_input(self, variable, period, values):
+            trace.append(("set_input", variable, str(period), frozen(values)))
+            self.writes += 1
+            super().set_input(variable, period, values)
+            if scenario == "branch" and variable == "tax_b":
+                key = (variable, self.branch_name, str(period))
+                self.slots[key] = np.asarray(values).copy()
+                self._user_input_keys.add(key)
+
+        def delete_arrays(self, variable, period=None):
+            trace.append(("delete_arrays", variable, str(period)))
+            self.deletes[variable] = self.deletes.get(variable, 0) + 1
+            if fail_stage == "restore" or (
+                fail_stage == "final_restore"
+                and variable == "tax_a"
+                and self.deletes[variable] == 2
+            ):
+                raise model_error
+            return super().delete_arrays(variable, period)
+
+        def _invalidate_all_caches(self):
+            trace.append(("reset", tuple(sorted(self.cache))))
+            return super()._invalidate_all_caches()
+
+        def get_holder(self, variable):
+            trace.append(("get_holder", variable))
+            return TraceHolder(self, variable)
+
+        def map_result(self, values, source, target):
+            trace.append(("map", source, target, frozen(values)))
+            return super().map_result(values, source, target)
+
+    sim = TraceSim()
+    if fail_stage == "final_restore":
+        spending, reads = [], {}
+    part = partition(["tax_a", "tax_b"], spending, reads=reads)
+    with monkeypatch.context() as patch:
+        if scenario == "branch":
+            from policyengine_uk.utils import supplied_inputs
+
+            def set_model_value(world, variable, period, values):
+                trace.append(("set_model_value", variable, str(period), frozen(values)))
+                world.writes += 1
+                key = (variable, world.branch_name, str(period))
+                world.slots[key] = np.asarray(values).copy()
+                world._model_values[key] = np.asarray(values).copy()
+                world.refresh(variable)
+
+            def drop_missing(world, variable):
+                trace.append(("drop_missing", variable))
+                world._user_input_keys = {
+                    k
+                    for k in world._user_input_keys
+                    if k[0] != variable or k in world.slots
+                }
+                world._model_values = {
+                    k: v
+                    for k, v in world._model_values.items()
+                    if k[0] != variable or k in world.slots
+                }
+
+            patch.setattr(supplied_inputs, "SUPPLIED_INPUT_VARIABLES", {"tax_b"})
+            patch.setattr(supplied_inputs, "set_model_value", set_model_value)
+            patch.setattr(supplied_inputs, "drop_missing_supplied_inputs", drop_missing)
+            patch.setattr(supplied_inputs, "drop_missing_model_values", drop_missing)
+        for name in (
+            "_perturb",
+            "_head_arrays",
+            "_raw",
+            "_restore",
+            "discard_formula_results",
+        ):
+            original = getattr(guard, name)
+
+            def record(*args, _name=name, _original=original, **kwargs):
+                key = (
+                    tuple(args[2])
+                    if _name == "_head_arrays"
+                    else (str(args[1]) if _name != "discard_formula_results" else None)
+                )
+                trace.append(("harness", _name, key))
+                return _original(*args, **kwargs)
+
+            patch.setattr(guard, name, record)
+        snapshot = guard.snapshot_inputs(sim, part.component_variables())
+        initial = copy.deepcopy(
+            (sim.inputs, sim.slots, sim._user_input_keys, sim._model_values)
+        )
+        trace.clear()
+        options = {
+            "probe_profile": lambda event, phase, **scope: trace.append(
+                ("profile", event, phase, tuple(sorted(scope.items())))
+            )
+        }
+        if checkpoint is not None:
+            options["checkpoint"] = checkpoint
+        result, error = None, None
+        with warnings.catch_warnings(record=True) as observed_warnings:
+            warnings.simplefilter("always")
+            try:
+                result = guard.counted_once(sim, part, YEAR, 1e-6, snapshot, **options)
+            except BaseException as caught:
+                error = caught
+        final = copy.deepcopy(
+            (sim.inputs, sim.slots, sim._user_input_keys, sim._model_values)
+        )
+    return {
+        "trace": trace,
+        "result": result,
+        "error": error,
+        "initial": initial,
+        "final": final,
+        "cache": copy.deepcopy(sim.cache),
+        "warnings": [(w.category.__name__, str(w.message)) for w in observed_warnings],
+    }
+
+
+def test_guard_progress_default_avoids_callback_and_clock_work(monkeypatch):
+    from policyengine_uk.utils.aggregate_impact import guard
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("disabled observer was called")
+
+    monkeypatch.setattr(guard, "_guard_checkpoint", forbidden)
+    result = _guard_progress_run(monkeypatch)
+    assert result["error"] is None
+    assert result["result"]["reset_reproduces_baseline"]
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "annual",
+        "direct",
+        "reader_step",
+        "linear_screen",
+        "mediated",
+        "gated",
+        "monthly",
+        "zero",
+        "nonfinite",
+        "branch",
+    ],
+)
+def test_guard_progress_preserves_synthetic_trace_and_payload(monkeypatch, scenario):
+    reference = _guard_progress_run(monkeypatch, scenario=scenario)
+    events = []
+    actual = _guard_progress_run(
+        monkeypatch,
+        lambda event, phase, **scope: events.append((event, phase, scope)),
+        scenario=scenario,
+    )
+    assert reference["error"] is None
+    assert actual["error"] is None
+    assert reference["result"]["status"] == actual["result"]["status"] == "ran"
+    _guard_progress_equal(actual, reference)
+    assert events and all(phase == "guard_probe" for _, phase, _ in events)
+    assert events[0][0] == "start" and events[0][2]["probe_kind"] == "baseline"
+    assert (
+        events[-1][0] == "end"
+        and events[-1][2]["probe_kind"] == "baseline_reproduction"
+    )
+
+
+@pytest.mark.parametrize("fail_stage", ["probe", "restore"])
+def test_guard_progress_incomplete_stage_has_no_false_end(monkeypatch, fail_stage):
+    error = RuntimeError("PRIVATE_MODEL_FAILURE")
+    reference = _guard_progress_run(
+        monkeypatch, fail_stage=fail_stage, model_error=error
+    )
+    events = []
+    actual = _guard_progress_run(
+        monkeypatch,
+        lambda event, phase, **scope: events.append((event, scope["probe_kind"])),
+        fail_stage=fail_stage,
+        model_error=error,
+    )
+    _guard_progress_equal(actual, reference)
+    assert actual["error"] is error
+    kind = "unheld_first" if fail_stage == "probe" else "restore_component"
+    assert ("start", kind) in events
+    assert ("end", kind) not in events
+    assert ("start", "restore_final") in events
+
+
+@pytest.mark.parametrize("cleanup_error", [OSError, KeyboardInterrupt, SystemExit])
+@pytest.mark.parametrize("failure_event", ["start", "end"])
+def test_guard_progress_observer_failure_preserves_primary_and_cleanup(
+    monkeypatch,
+    cleanup_error,
+    failure_event,
+):
+    error = RuntimeError("PRIVATE_MODEL_FAILURE")
+    reference = _guard_progress_run(monkeypatch, fail_stage="probe", model_error=error)
+
+    def broken(event, phase, **scope):
+        if scope["probe_kind"] == "restore_final" and event == failure_event:
+            raise cleanup_error("PRIVATE_DIAGNOSTIC_FAILURE")
+
+    actual = _guard_progress_run(
+        monkeypatch, broken, fail_stage="probe", model_error=error
+    )
+    _guard_progress_equal(actual, reference)
+    assert actual["error"] is error
+
+    restore_error = RuntimeError("PRIVATE_FINAL_RESTORE_FAILURE")
+    restore_reference = _guard_progress_run(
+        monkeypatch,
+        fail_stage="final_restore",
+        model_error=restore_error,
+    )
+    restore_actual = _guard_progress_run(
+        monkeypatch,
+        broken,
+        fail_stage="final_restore",
+        model_error=restore_error,
+    )
+    _guard_progress_equal(restore_actual, restore_reference)
+    assert restore_actual["error"] is restore_error
+
+    def ordinary_failure(*args, **kwargs):
+        raise OSError("PRIVATE_DIAGNOSTIC_FAILURE")
+
+    _guard_progress_equal(
+        _guard_progress_run(monkeypatch, ordinary_failure),
+        _guard_progress_run(monkeypatch),
+    )
+
+
+@pytest.mark.parametrize("interrupt_type", [KeyboardInterrupt, SystemExit])
+@pytest.mark.parametrize(
+    "interrupt_stage",
+    [
+        "unheld_first",
+        "restore_final_start",
+        "restore_final_end",
+    ],
+)
+def test_guard_progress_preserves_genuine_interrupt_and_warnings(
+    monkeypatch,
+    interrupt_type,
+    interrupt_stage,
+):
+    interrupt = interrupt_type("PRIVATE_INTERRUPT")
+
+    def stop(event, phase, **scope):
+        wanted_kind = (
+            "unheld_first" if interrupt_stage == "unheld_first" else "restore_final"
+        )
+        wanted_event = "end" if interrupt_stage == "restore_final_end" else "start"
+        if event == wanted_event and scope["probe_kind"] == wanted_kind:
+            raise interrupt
+
+    try:
+        raise ValueError("unrelated handled caller exception")
+    except ValueError:
+        actual = _guard_progress_run(monkeypatch, stop)
+    assert actual["error"] is interrupt
+    _guard_progress_equal(actual["final"], actual["initial"], ordered=False)
+    if interrupt_stage.startswith("restore_final"):
+        completed = _guard_progress_run(monkeypatch)
+
+        def restores(trace):
+            return [row for row in trace if row[:2] == ("harness", "_restore")]
+
+        assert restores(actual["trace"]) == restores(completed["trace"])
+    reference = _guard_progress_run(monkeypatch, warnings_enabled=True)
+    observed = _guard_progress_run(
+        monkeypatch, lambda *a, **k: None, warnings_enabled=True
+    )
+    _guard_progress_equal(observed, reference)
+    assert reference["warnings"]
+
+
+@pytest.mark.parametrize("scenario", ["monthly", "branch"])
+def test_guard_progress_covers_monthly_native_holds_and_branch_restoration(
+    monkeypatch, scenario
+):
+    reference = _guard_progress_run(monkeypatch, scenario=scenario)
+    actual = _guard_progress_run(monkeypatch, lambda *a, **k: None, scenario=scenario)
+    assert reference["error"] is None
+    assert actual["error"] is None
+    assert reference["result"]["status"] == actual["result"]["status"] == "ran"
+    _guard_progress_equal(actual, reference)
+    _guard_progress_equal(actual["final"], actual["initial"], ordered=False)
+    if scenario == "monthly":
+        months = {
+            row[2]
+            for row in actual["trace"]
+            if row[0] == "set_input" and row[1] == "tax_b"
+        }
+        assert months == {f"{YEAR}-{month:02d}" for month in range(1, 13)}
+    else:
+        assert any(row[0] == "delete_branch" for row in actual["trace"])
+        assert any(row[0] == "set_model_value" for row in actual["trace"])

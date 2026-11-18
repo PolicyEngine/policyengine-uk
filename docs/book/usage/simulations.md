@@ -643,3 +643,82 @@ This makes it easy to trace through exactly how a reform affects different compo
 ```
 
 The simulation system is designed to be flexible and powerful. Start with simple examples and gradually build up to more complex analyses as you become familiar with the structure and capabilities.
+
+## Household geography
+
+The UK `Simulation` and `Scenario` APIs resolve genuine supplied geography for
+each household and requested year. Region and local-authority facts carry
+forward. The later source wins by `(source.start, source.stop)`; an identical
+period prefers region. Future facts do not change historical queries. For
+example, `LONDON` in 2024 followed by `CITY_OF_EDINBURGH` in 2026 resolves to
+London/England before 2026 and Scotland/Scotland from 2026. The council lookup
+uses the documented [ONS mapping](../../../policyengine_uk/data/geography/README.md).
+
+`UNKNOWN` is a dated supplied value. A newer unknown region supersedes an
+older council; an older unknown region can be superseded by a newer council.
+With neither a region nor a council, a country supplied for the requested
+year identifies Scotland, Wales or Northern Ireland. England alone uses
+London. Country does not carry from an earlier year, and an explicit current
+country `UNKNOWN` remains unknown.
+
+Defaults (`LONDON`, `ENGLAND`, `MAIDSTONE`) do not count as supplied facts.
+Explicit default-equal values do count. When a newer region is incompatible
+with an older council, the old council becomes stale. Region, country and
+BRMA reads can remain available, but a read requiring that council asks for
+a new compatible council. The raw historical council is retained; the model
+does not invent a replacement council.
+
+Completed situation and dataset loads reject contradictory effective known
+nations in ordinary supplied names and provable native input facts. An unknown value itself does not assert a known nation, but it does
+not hide another council/country contradiction. Superseded regions and stale
+councils do not create conflicts. Setters permit field-by-field edits and
+emit a `UserWarning` with the `Contradictory supplied` prefix. A public
+calculation rejects a contradiction that remains for its requested year,
+including a cached financial return. A future contradiction does not block
+a valid historical query. Same-period London/Oxford remains an English
+geography warning with region selected for inference.
+
+Deliberate custom decoder views and nonstandard enum schemas retain their
+declared fallback, error and output behavior when the requested result or its
+formula depends on them. A fully supplied region, country or BRMA reads its
+requested view without evaluating unrelated decoder views.
+Validation uses trusted standard labels only when the underlying native input
+association, shape and bounds prove its physical meaning. It does not guess a
+nation from an unprovable custom schema or promise consistency among arbitrary
+custom outputs. Ordinary mixed-nation inputs still reject even when a custom
+view would present them differently.
+
+Warnings report the requested period, actual source fields and periods, the
+affected count and at most three household IDs in population order. They say
+which field wins or that a nation conflict is unresolved. Warning callbacks
+may repair or delete an input; the same read uses fresh facts after the
+callback and propagates callback exceptions.
+
+An explicit Broad Rental Market Area (BRMA) overrides the regional fallback.
+An earlier BRMA expires when the household changes region, including a move
+caused by a newer council. Returning later to the old region does not revive
+the expired override. A later compatible council does not expire a new
+override. With no applicable override, the existing regional BRMA default
+applies; council and BRMA boundaries differ.
+
+Use the UK APIs for partially supplied households. They retain genuine
+presence before Core pads arrays. Direct Core builders retain whole-array
+input semantics. Clones, branches, household subsets and numeric-axis
+replicas retain their own IDs, presence and historical facts.
+
+Default `to_input_dataframe()` remains a lossless raw-input export with actual
+source-period columns, encoded enum values and separate sparse-presence
+attrs. It does not calculate or retime effective geography. In-memory
+single-year snapshots retain only the region/council history needed through
+their fiscal-year horizon, including intermediate moves relevant to BRMA
+expiry. They do not replay future facts, past country inputs or an
+inapplicable/custom-calculated BRMA as new genuine inputs. Copy, subset and
+reorder operations keep immutable ID-keyed metadata. Explicit snapshots and
+`calculate_all(year)` raise the local stale-council diagnostic when they
+actually request that council.
+
+Keep the existing `policyengine_uk.geography_input_masks` attrs when copying
+frames; external serializers that discard them lose these distinctions.
+There is no new H5 schema or generic input registry. These local contracts
+do not establish national financial neutrality or certified performance;
+those comparisons require separate validation at the final source bytes.

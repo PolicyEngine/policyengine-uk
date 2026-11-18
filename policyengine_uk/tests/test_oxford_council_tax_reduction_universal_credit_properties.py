@@ -49,10 +49,12 @@ applicant has a Universal Credit award:
    net earned income and raises the award by at most the 55% taper.
 6. Differential: for families without a carer or disabled child element,
    the Appendix 3 income, with Universal Credit's unearned income in place
-   of Oxford's other income, equals the Universal Credit income on which
-   Merton, Kingston upon Thames, Newham and Westminster assess the same
-   family, recovered from each council's award (they, like Oxford, count the
-   award before deductions for debts).
+   of Oxford's other income and adjusted for the difference in the applied
+   benefit cap, equals the Universal Credit income on which Merton,
+   Kingston upon Thames, Newham and Westminster assess the same family,
+   recovered from each council's award (they, like Oxford, count the award
+   before deductions for debts). The London cap can leave those families a
+   larger Universal Credit award than Oxford's cap does.
 7. Earlier years: in 2025, before the scheme the model holds, the reduction
    of such a family is the band of its paragraphs 14 to 27 income less Child
    Benefit, with no tariff income, as the model gave before PolicyEngine
@@ -595,6 +597,28 @@ LARGE_COUNCIL_TAX = 50_000
 @given(st.lists(families(), min_size=1, max_size=6))
 @example(units=example_families()[:1])
 @example(units=couple_and_debt_families()[1:])
+@example(
+    units=[
+        dict(
+            adults=[
+                dict(
+                    age=age,
+                    employment_income=0.0,
+                    employee_pension_contributions=0.0,
+                    spousal_maintenance_income=0.0,
+                    maintenance_income=0.0,
+                    savings_interest_income=0.0,
+                    uc_carer_element_included_for_claimant=False,
+                )
+                for age in (25, 28)
+            ],
+            children=[],
+            housing=15_000.0,
+            savings=0.0,
+            deduction_rate=0.0,
+        )
+    ]
+)
 def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
     units,
 ):
@@ -633,9 +657,27 @@ def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
                 continue
             j = k * n + i
             case = (unit, authority)
-            # The council's scheme sees the same award.
+            # These English councils see the same non-UC income and no
+            # Oxford-only element disregard. Their regional benefit caps
+            # can leave different Universal Credit awards (UC reg. 80A).
+            for name in (
+                "uc_earned_income_before_work_allowance",
+                "uc_unearned_income",
+                "oxford_council_tax_reduction_universal_credit_other_income",
+            ):
+                assert abs(values[name][j] - values[name][i]) < TOLERANCE, case
+            for name in ("uc_carer_element", "uc_disability_elements"):
+                assert values[name][i] == values[name][j] == 0, case
+            oxford_cap = values["uc_benefit_cap_reduction_after_floor"][i]
+            council_cap = values["uc_benefit_cap_reduction_after_floor"][j]
+            oxford_before_debt = (
+                values["universal_credit"][i] + values["uc_deductions"][i]
+            )
+            council_before_debt = (
+                values["universal_credit"][j] + values["uc_deductions"][j]
+            )
             assert (
-                abs(values["universal_credit"][j] - values["universal_credit"][i])
+                abs(council_before_debt + council_cap - oxford_before_debt - oxford_cap)
                 < TOLERANCE
             ), case
             liability = (
@@ -652,6 +694,8 @@ def test_appendix_3_income_matches_the_other_councils_universal_credit_income(
                     i
                 ]
                 + values["uc_unearned_income"][i]
+                + oxford_cap
+                - council_cap
             )
             assert award > 0, case
             if award > liability * ctr.maximum_support_rate - TOLERANCE:
@@ -847,3 +891,68 @@ def test_each_receipt_counts_once(units):
             # Invariant 8: the whole receipt, once.
             assert abs(added - step) < TOLERANCE, case
             assert abs(earned[j] - earned[i]) < TOLERANCE, case
+
+
+def test_cross_council_uc_cap_changes_appendix_3_income_once():
+    """Appendix 3 counts each council's actual UC award once."""
+    unit = with_receipts(
+        dict(
+            adults=[
+                dict(
+                    age=age,
+                    employment_income=0.0,
+                    employee_pension_contributions=0.0,
+                    spousal_maintenance_income=0.0,
+                    maintenance_income=0.0,
+                    savings_interest_income=0.0,
+                    uc_carer_element_included_for_claimant=False,
+                )
+                for age in (25, 28)
+            ],
+            children=[],
+            housing=15_000.0,
+            savings=0.0,
+            deduction_rate=0.0,
+        )
+    )
+    councils = ["OXFORD"] + list(OTHER_COUNCILS)
+    values = calculate(
+        [unit] * len(councils),
+        INCOME_VARIABLES + ["uc_maximum_amount"],
+        local_authorities=councils,
+    )
+    # DWP's 2026-27 joint standard allowance for someone 25+: 666.97 a
+    # month. With the fixed housing element: 666.97 * 12 + 15,000 = 23,003.64.
+    # https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    # UC reg. 80A caps joint claimants at 22,020 outside Greater London and
+    # 25,323 inside it: Oxford loses 983.64; the London awards remain whole.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/80A
+    # Oxford Appendix 3 adds the UC awarded to net earnings and other income.
+    # https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
+    for i, council in enumerate(councils):
+        expected_award = 22_020.0 if council == "OXFORD" else 23_003.64
+        expected_cap = 983.64 if council == "OXFORD" else 0.0
+        for name in (
+            "uc_deductions",
+            "uc_earned_income_before_work_allowance",
+            "uc_unearned_income",
+            "uc_carer_element",
+            "uc_disability_elements",
+            "uc_tariff_income",
+            "oxford_council_tax_reduction_universal_credit_other_income",
+        ):
+            assert abs(values[name][i]) < TOLERANCE, (council, name)
+        assert not values["council_tax_reduction_head_applies_alone"][i], council
+        assert abs(values["uc_maximum_amount"][i] - 23_003.64) < TOLERANCE, council
+        assert abs(values["universal_credit"][i] - expected_award) < TOLERANCE, council
+        assert (
+            abs(values["uc_benefit_cap_reduction_after_floor"][i] - expected_cap)
+            < TOLERANCE
+        ), council
+        assert (
+            abs(
+                values["oxford_council_tax_reduction_universal_credit_income"][i]
+                - expected_award
+            )
+            < TOLERANCE
+        ), council
