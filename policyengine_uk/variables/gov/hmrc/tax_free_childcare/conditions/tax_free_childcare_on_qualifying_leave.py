@@ -6,8 +6,15 @@ class tax_free_childcare_on_qualifying_leave(Variable):
     entity = Person
     label = "on qualifying leave for tax-free childcare"
     documentation = (
-        "Whether this person is on qualifying sickness, parenting, annual, "
-        "parental bereavement, or neonatal care leave for Tax-Free Childcare."
+        "Legacy reported sickness, parenting or annual-leave fact, retained "
+        "for caller compatibility. This input alone no longer satisfies the "
+        "Tax-Free Childcare paid-work or minimum-income eligibility conditions. "
+        "Regulation 14 concerns the connection between childcare costs and "
+        "work, not qualifying paid work for eligibility. Ordinary employed "
+        "leave uses the person's factual in_work and expected income. For a "
+        "regulation 12 temporary absence, use "
+        "tax_free_childcare_qualifying_temporary_absence only when its "
+        "prior-work and applicable child/account conditions are satisfied."
     )
     definition_period = YEAR
     default_value = False

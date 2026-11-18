@@ -13,13 +13,21 @@ UNIVERSAL_CREDIT_AWARDS = ("universal_credit", "universal_credit_pre_benefit_cap
 def meets_tax_free_childcare_family_conditions(benunit, period):
     """The conditions of tax_free_childcare_eligible other than the
     disqualifying programmes and the UK connection: a qualifying child,
-    every parent within the income limits and the work condition."""
+    the applicant and any partner within the income limits and the work
+    condition.
+
+    The income conditions apply to the applicant and any partner:
+    https://www.legislation.gov.uk/ukpga/2014/28/section/3
+    https://www.legislation.gov.uk/ukpga/2014/28/section/10
+    https://www.legislation.gov.uk/uksi/2015/448/regulation/3
+    https://www.legislation.gov.uk/uksi/2015/448/regulation/15
+    """
     has_qualifying_child = benunit.any(
         benunit.members("tax_free_childcare_qualifying_child", period),
     )
     meets_income_condition = benunit.all(
         benunit.members("tax_free_childcare_meets_income_requirements", period)
-        | ~benunit.members("is_parent", period)
+        | ~benunit.members("is_claimant_or_partner", period)
     )
     work_eligible = benunit("tax_free_childcare_work_condition", period)
     return np.logical_and.reduce(
