@@ -25,12 +25,18 @@ formula makes it through ``parameters(period)`` or the dynamics make it through
 attribute or item of a node at an instant that holds a value (not a node), a
 direct call of a parameter or scale (``parameter(year)``), and fancy indexing
 of a node at an instant (``node[array]``), which reads every leaf under that
-node. Building a node at an instant reads nothing: it resolves every child,
-whether or not anything uses them.
+node. A read straight from a node's ``_children`` is not recorded.
 
-A control parameter that nothing reads is added to the tree of both runs. It
-must stay unread, which shows the recorder does not count a parameter just
-because it is in the tree.
+Building a node at an instant does not count its children as read. A node may
+build a child when it is first read: ``__getattr__`` then returns the child,
+and ``__getattribute__`` returns it after that, so both are recorded. Building
+a scale reads its brackets, which records the paths of the brackets but not the
+path of the scale.
+
+A control parameter that nothing reads is added to the tree of both runs, and
+every child of its node is built during the recording. It must stay unread,
+which shows the recorder does not count a parameter just because it is in the
+tree or has been built.
 """
 
 import contextlib
@@ -79,7 +85,7 @@ def leaf_paths(node: ParameterNode, path: str) -> set:
 
 
 def _leaves_at_instant(node: ParameterNodeAtInstant, path: str):
-    for key, child in object.__getattribute__(node, "_children").items():
+    for key, child in node._children.items():
         if isinstance(child, ParameterNodeAtInstant):
             yield from _leaves_at_instant(child, f"{path}.{key}")
         else:
@@ -88,20 +94,26 @@ def _leaves_at_instant(node: ParameterNodeAtInstant, path: str):
 
 @contextlib.contextmanager
 def record_parameter_reads():
-    """Record the path of every parameter read in the block."""
+    """Record the paths of the kinds of parameter read listed above."""
     reads = set()
     getattribute = ParameterNodeAtInstant.__getattribute__
+    getattr_fallback = ParameterNodeAtInstant.__getattr__
     getitem = ParameterNodeAtInstant.__getitem__
     get_at_instant = AtInstantLike.get_at_instant
 
+    def record_attribute_read(self, key, value):
+        if not key.startswith("_") and not isinstance(value, ParameterNodeAtInstant):
+            reads.add(f"{getattribute(self, '_name')}.{key}")
+
     def recording_getattribute(self, key):
         value = getattribute(self, key)
-        if (
-            not key.startswith("_")
-            and not isinstance(value, ParameterNodeAtInstant)
-            and key in getattribute(self, "_children")
-        ):
-            reads.add(f"{getattribute(self, '_name')}.{key}")
+        if key in getattribute(self, "__dict__"):
+            record_attribute_read(self, key, value)
+        return value
+
+    def recording_getattr(self, key):
+        value = getattr_fallback(self, key)
+        record_attribute_read(self, key, value)
         return value
 
     def recording_getitem(self, key):
@@ -123,6 +135,7 @@ def record_parameter_reads():
         patch.setattr(
             ParameterNodeAtInstant, "__getattribute__", recording_getattribute
         )
+        patch.setattr(ParameterNodeAtInstant, "__getattr__", recording_getattr)
         patch.setattr(ParameterNodeAtInstant, "__getitem__", recording_getitem)
         patch.setattr(AtInstantLike, "get_at_instant", recording_get_at_instant)
         yield reads
@@ -175,6 +188,11 @@ def labour_supply_run():
     with record_parameter_reads() as reads:
         response = formula_sim.calculate("employment_income_behavioral_response", YEAR)
         dynamics = dynamics_sim.apply_dynamics(YEAR)
+        for simulation in simulations:
+            # Build the control, which a node may otherwise leave unbuilt.
+            simulation.tax_benefit_system.parameters.get_child(CONTROL_NODE)(
+                f"{YEAR}-01-01"
+            )._children
 
     # Both paths ran in full: the formula measured a response, which it does
     # only after its early returns (its measurement branches are not kept),
@@ -209,6 +227,7 @@ def test_recorder_does_not_count_a_parameter_nothing_reads(labour_supply_run):
 
 
 def test_recorder_counts_each_kind_of_read():
+    getattr_fallback = ParameterNodeAtInstant.__getattr__
     getitem = ParameterNodeAtInstant.__getitem__
     get_at_instant = AtInstantLike.get_at_instant
     leaf = {"values": {"2000-01-01": 1}}
@@ -216,22 +235,32 @@ def test_recorder_counts_each_kind_of_read():
         "root",
         data={
             "by_attribute": leaf,
+            "by_attribute_again": leaf,
             "by_item": leaf,
             "by_call": leaf,
             "unread": leaf,
             "vector": {"a": leaf, "b": leaf},
         },
     )
+    # Read before recording starts, so the reads below use what these leave in
+    # the cached node: ``by_attribute_again`` is already an attribute, which
+    # does not reach ``__getattr__``, and ``vector`` already has its vectorial
+    # node, so fancy indexing does not read each child by name.
+    before_recording = root("2020-01-01")
+    before_recording.by_attribute_again
+    before_recording.vector[np.array(["a", "a"])]
     with record_parameter_reads() as reads:
         at_instant = root("2020-01-01")
         assert reads == set(), "Building a node at an instant is not a read."
         at_instant.by_attribute
+        at_instant.by_attribute_again
         at_instant["by_item"]
         root.by_call("2020-01-01")
         at_instant.vector[np.array(["a", "a"])]
 
     assert reads == {
         "root.by_attribute",
+        "root.by_attribute_again",
         "root.by_item",
         "root.by_call",
         "root.vector.a",
@@ -239,5 +268,6 @@ def test_recorder_counts_each_kind_of_read():
     }
     # The recorder leaves the classes as it found them.
     assert "__getattribute__" not in ParameterNodeAtInstant.__dict__
+    assert ParameterNodeAtInstant.__getattr__ is getattr_fallback
     assert ParameterNodeAtInstant.__getitem__ is getitem
     assert AtInstantLike.get_at_instant is get_at_instant
