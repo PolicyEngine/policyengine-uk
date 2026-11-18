@@ -501,6 +501,9 @@
       benunit:
         members: [claimant, student]
         would_claim_uc: false
+        # Nor does the family claim when working-age Housing Benefit is
+        # abolished on 1 July 2026 (SI 2025/1148 art. 7).
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant, student]

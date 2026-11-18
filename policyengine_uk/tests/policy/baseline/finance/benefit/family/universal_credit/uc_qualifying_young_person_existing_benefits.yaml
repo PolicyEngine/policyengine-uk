@@ -187,9 +187,11 @@
     universal_credit: 5_098.80
 
 - name: An 18-year-old claimant on a non-advanced course who reports Housing Benefit is not a qualifying young person.
-  # The claimant doesn't claim Universal Credit, so no claim ends their own
-  # Housing Benefit (uc_qualifying_young_person_universal_credit_claim.yaml
-  # covers a claim). They get no Universal Credit.
+  # The claimant doesn't claim Universal Credit, even when working-age
+  # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7), so no
+  # claim ends their own Housing Benefit
+  # (uc_qualifying_young_person_universal_credit_claim.yaml covers a claim).
+  # They get no Universal Credit.
   period: 2026
   input:
     people:
@@ -202,6 +204,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]

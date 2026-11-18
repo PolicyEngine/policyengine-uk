@@ -121,7 +121,9 @@
 - name: An 18-year-old claimant's own Housing Benefit report excludes them while they don't claim Universal Credit.
   # The claimant rents from the council at £6,000 a year, has no income and
   # doesn't claim Universal Credit, so the model continues their Housing
-  # Benefit award at the full rent (6,000) and they're entitled to it.
+  # Benefit award at the full rent until working-age awards are abolished
+  # on 1 July 2026 (SI 2025/1148 art. 7): 86 of the year's 365 days, or
+  # 1,413.70, and they're entitled to it.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -144,7 +146,7 @@
         rent: 6_000
   output:
     housing_benefit_eligible: true
-    housing_benefit: 6_000
+    housing_benefit: 1_413.70
     is_qualifying_young_person_for_universal_credit: [false]
     universal_credit: 0
 

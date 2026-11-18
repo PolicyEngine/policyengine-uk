@@ -833,6 +833,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7).
+        # The model treats such a claim as a qualifying claim, which reg. 60
+        # would exempt from the education condition.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1295,6 +1300,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
+        # claim, which reg. 60 would exempt from the education condition.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1324,6 +1334,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
+        # claim, which reg. 60 would exempt from the education condition.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1350,6 +1365,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7).
+        # The model treats such a claim as a qualifying claim, which reg. 60
+        # would exempt from the education condition.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1407,6 +1427,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
+        # claim, which reg. 60 would exempt from the education condition.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
