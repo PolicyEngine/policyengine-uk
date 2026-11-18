@@ -5,7 +5,16 @@ A person receiving Income Support is not a qualifying young person for
 Pension Credit (SPC Regs 2002 reg. 4A(5)), Child Benefit (Child Benefit
 (General) Regulations 2006 reg. 8(2)(a)) or Child Tax Credit (CTC Regs 2002
 reg. 5(4)(c)). Universal Credit's list (UC Regs 2013 reg. 5(5)) does not
-include Income Support.
+include Income Support, but the Secretary of State leaves a person entitled
+to an existing benefit, Income Support among them, out of the Universal
+Credit test (SI 2014/1230 regs. 2(1) and 28). Universal Credit reads the
+person's own report while Income Support is in payment and not neutralised,
+and until the model's legacy closure ends the person's award
+(person_legacy_benefits_closed), for a claimant or partner as for any other
+member (is_qualifying_young_person_for_universal_credit). No closure
+reaches a person in the Universal Credit assertions below: Income Support
+and tax credits are in payment in 2016, 2019 and 2024, and the 2025 grid
+reports no tax credit.
 
 Pension Credit and Child Tax Credit read is_on_income_support: the benefit
 unit's calculated award, for whichever of the claimant and partner receives
@@ -20,10 +29,10 @@ Invariants:
 1. Over every combination of age, education, training, the other own-right
    benefits and the 16th-birthday fact, for a member who is not the claimant
    or partner: reporting Income Support of their own while it is in payment
-   ends the Pension Credit, Child Benefit and Child Tax Credit statuses;
-   without a report each status is what it is when the report is left
-   alone; Universal Credit status never depends on it; and Pension Credit
-   and Universal Credit agree without it.
+   ends the Pension Credit, Child Benefit, Child Tax Credit and Universal
+   Credit statuses; without a report each status is what it is when the
+   report is left alone; the status under UC Regs reg. 5 alone never
+   depends on it; and Pension Credit and Universal Credit agree without it.
 2. By default receives_income_support_in_own_right is the person's own
    reported Income Support while Income Support is in payment (to 2025-26)
    and no reform neutralises it, and false otherwise.
@@ -35,8 +44,12 @@ Invariants:
    reader still exclude, as their documentation says, because only setting
    gov.dwp.income_support.active to false, neutralising Income Support, or
    setting the report to zero, removes a report.
-4. Universal Credit status never depends on reported Income Support, in the
-   baseline or under either reform.
+4. The status under UC Regs reg. 5 alone never depends on reported Income
+   Support, in the baseline or under either reform. The Universal Credit
+   status ends on a report while Income Support is in payment and the
+   person's legacy award remains open, for anyone, until a reform
+   neutralises Income Support; a reform that replaces its formula with one
+   returning zero leaves the exclusion in place.
 5. Setting a young person's reported Income Support to zero never lowers
    their household's Pension Credit.
 """
@@ -61,6 +74,7 @@ _PROPERTY_SYSTEM = system.clone()
 EDUCATIONS = tuple(item.name for item in EducationType)
 SIXTEEN = "is_before_first_september_following_16th_birthday"
 INCOME_SUPPORT = "receives_income_support_in_own_right"
+REGULATION_5 = "is_qualifying_young_person_under_universal_credit_regulation_5"
 EXCLUDING = ("pension_credit", "child_benefit", "child_tax_credit")
 # Income Support paid its last awards on 31 March 2026.
 IN_PAYMENT = {2016: True, 2019: True, 2024: True, 2025: True, 2026: False}
@@ -172,7 +186,7 @@ def as_members(rows, **inputs):
     return [[[claimant, member(**{SIXTEEN: False, **row, **inputs})]] for row in rows]
 
 
-def test_income_support_ends_three_statuses_and_not_universal_credit():
+def test_income_support_ends_four_statuses_and_not_regulation_5():
     untouched = simulate(as_members(GRID))
     reporting = simulate(as_members(GRID, income_support_reported=3_000))
     neutralised = simulate(
@@ -184,15 +198,15 @@ def test_income_support_ends_three_statuses_and_not_universal_credit():
             status(untouched, programme)[1::2],
             err_msg=programme,
         )
-    for programme in EXCLUDING:
+    for programme in EXCLUDING + ("universal_credit",):
         before = status(untouched, programme)[1::2]
         # Not vacuous: there is a status to lose.
         assert before.any(), programme
         assert not status(reporting, programme)[1::2].any(), programme
     universal_credit = status(untouched, "universal_credit")[1::2]
-    assert universal_credit.any()
+    # Reg. 5 alone doesn't read the report; SI 2014/1230 reg. 28 does.
     np.testing.assert_array_equal(
-        status(reporting, "universal_credit")[1::2], universal_credit
+        reporting.calculate(REGULATION_5, YEAR)[1::2], universal_credit
     )
     np.testing.assert_array_equal(
         status(untouched, "pension_credit")[1::2], universal_credit
@@ -295,24 +309,35 @@ def test_reforms_that_remove_income_support_end_the_exclusions(
         status(reformed, "child_benefit", year),
         status(unreported, "child_benefit", year) & ~report_stands,
     )
+    # Universal Credit reads the person's own report, for a claimant or
+    # partner too (SI 2014/1230 reg. 28).
     np.testing.assert_array_equal(
         status(reformed, "universal_credit", year),
-        status(unreported, "universal_credit", year),
+        status(unreported, "universal_credit", year) & ~report_stands,
+    )
+    np.testing.assert_array_equal(
+        reformed.calculate(REGULATION_5, year),
+        unreported.calculate(REGULATION_5, year),
     )
     assert not reformed.calculate("income_support", year).any()
 
 
 @SETTINGS
 @given(**GENERATED)
-def test_universal_credit_and_pension_credit_without_reported_income_support(
+def test_universal_credit_and_pension_credit_with_and_without_the_report(
     households, year
 ):
     # Invariants 4 and 5 in the baseline.
     reported = simulate(households, year)
     unreported = simulate(without_reports(households), year)
+    report_stands = (flat(households, "income_support_reported") > 0) & IN_PAYMENT[year]
     np.testing.assert_array_equal(
         status(reported, "universal_credit", year),
-        status(unreported, "universal_credit", year),
+        status(unreported, "universal_credit", year) & ~report_stands,
+    )
+    np.testing.assert_array_equal(
+        reported.calculate(REGULATION_5, year),
+        unreported.calculate(REGULATION_5, year),
     )
     gained = unreported.calculate("pension_credit", year, map_to="household")
     kept = reported.calculate("pension_credit", year, map_to="household")

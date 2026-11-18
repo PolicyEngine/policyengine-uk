@@ -1,3 +1,17 @@
+## [2.179.2] - 2026-11-18
+
+### Fixed
+
+- Excluded from the Universal Credit qualifying young person test a person who reports their own income-related ESA, income-based JSA, Income Support, Housing Benefit, Child Tax Credit or Working Tax Credit in a year the model pays that benefit, unless the model's legacy closure, or for a claimant or partner the family's Universal Credit claim, has ended the award on that report or a reform neutralises it, and a claimant or partner on the couple's tax credit award (SI 2014/1230 reg. 28). The Universal Credit education condition reads that test as it stands on the first day of a claimant's Universal Credit award, while a Housing Benefit award (in Northern Ireland, a rent rebate or allowance) or an income-related ESA award the claim ends still runs, and reads every reported existing benefit for the migration day's reg. 60(1) protection. Scotland's working-age Council Tax Reduction reads the Universal Credit qualifying young person test, so it leaves the same young persons out of the applicant's family (SSI 2021/249 reg. 6(1), read with SI 2014/1230 reg. 28(b)). The supplied input `housing_benefit_report_is_rate_rebate_only` marks a Northern Ireland report that covers only a rate rebate, which the claim ends the day before the award (SR 2016/226 reg. 6(2)).
+
+
+## [2.179.1] - 2026-11-16
+
+### Fixed
+
+- The search for the least-tax share of reliefs and allowances now applies the Marriage Allowance rate test at the statutory limits, instead of with room below them (about 3.9p near the £37,700 basic rate limit), so a recipient whose only qualifying share leaves income at a limit gets the reduction. The search keeps the room where float32 could hold income entered over a limit at the limit: where an amount the test reads reaches £65,536, or where the model cannot bound the float32 error in the amounts behind it, such as pay before expenses, under the least amount the entries can sit over a limit. An amount supplied as an input in place of its formula, such as pay set through Simulation.set_input or in a YAML test, counts as an entry: the model bounds that amount's own float32 error, with no bound from £131,072, and does not read the amounts its formula would.
+
+
 ## [2.179.0] - 2026-11-14
 
 ### Added

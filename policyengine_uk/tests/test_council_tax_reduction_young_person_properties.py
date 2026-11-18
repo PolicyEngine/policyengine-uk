@@ -1,8 +1,16 @@
 """Each Council Tax Reduction scheme's own young person.
 
-Scotland's working-age scheme, from 1 April 2022, defines a young person as a
-Universal Credit qualifying young person (Council Tax Reduction (Scotland)
-Regulations 2021 reg. 6(1); UC Regs 2013 reg. 5). England, Wales and
+Scotland's working-age scheme, from 1 April 2022, defines a young person by
+the qualifying young person of UC Regs 2013 reg. 5 (Council Tax Reduction
+(Scotland) Regulations 2021 reg. 6(1)). For a person entitled to an existing
+benefit, the Secretary of State has reg. 5(5) apply as if it also named that
+benefit (SI 2014/1230 reg. 28(b)). Under Interpretation Act 1978 s. 20(2),
+which s. 23(1) applies to subordinate legislation, the model reads the
+Scottish reference to reg. 5 as including that modification, so the
+scheme's young person is the Universal Credit qualifying young person
+(is_qualifying_young_person_for_universal_credit).
+The law is unsettled on whether the Scottish reference carries reg. 28(b).
+England, Wales and
 Scotland's pension-age scheme use the Child Benefit qualifying young person
 (SI 2012/2885 reg. 2; WSI 2013/3029 reg. 2; SSI 2012/319 reg. 4), as Scotland's
 working-age scheme did until 31 March 2022 (SSI 2012/303 reg. 4). Every scheme
@@ -16,8 +24,10 @@ Invariants:
    the claimant or partner) exactly where the family is in Scotland, is not a
    pensioner for Council Tax Reduction and the year is 2022-23 or later.
    Everywhere else it is the legacy (Child Benefit) flag. Checked over
-   every combination of the inputs the two definitions read, and over
-   generated benefit units of any shape.
+   every combination of the age, education, training, terminal-date,
+   looked-after and claimant inputs, and over generated benefit units of
+   any shape. None of these draws an existing-benefit report;
+   test_scottish_working_age_reads_reg_28 and the YAML cases cover reg. 28.
 2. No claimant or partner is their own benefit unit's child or young person,
    under any scheme.
 3. A member under 16 who is not looked after is in the family under every
@@ -394,6 +404,50 @@ def test_scottish_working_age_differs_from_child_benefit_at_19():
     ]
     np.testing.assert_array_equal(young, expected)
     assert not all(expected) and any(expected)
+
+
+def test_scottish_working_age_reads_reg_28():
+    # Not vacuous for reg. 28(b): a 19-year-old at school before the
+    # Universal Credit terminal date meets reg. 5 with or without their own
+    # Housing Benefit in 2026, but only without it are they a young person
+    # for Scotland's working-age scheme. A formula that read reg. 5 alone
+    # for Scotland would keep both.
+    base = {
+        "current_education": "UPPER_SECONDARY",
+        "is_in_approved_training": False,
+        "receives_benefits_in_own_right": False,
+        "is_looked_after_by_local_authority": False,
+        "age_started_or_accepted_current_education_or_training": 17,
+        "housing_benefit_reported": 0,
+    }
+    adult = dict(
+        base,
+        age=45,
+        current_education="NOT_IN_EDUCATION",
+        is_before_universal_credit_qualifying_young_person_terminal_date=False,
+        is_claimant_or_partner=True,
+    )
+    young = dict(
+        base,
+        age=19,
+        is_before_universal_credit_qualifying_young_person_terminal_date=True,
+        is_claimant_or_partner=False,
+    )
+    units = [
+        {
+            "country": "SCOTLAND",
+            "pensioner": False,
+            "members": [adult, dict(young, housing_benefit_reported=report)],
+        }
+        for report in (0, 3_000)
+    ]
+    sim = simulate(units, 2026)
+    regulation_5 = sim.calculate(
+        "is_qualifying_young_person_under_universal_credit_regulation_5", 2026
+    )[1::2]
+    flag = sim.calculate("is_child_or_young_person_for_council_tax_reduction", 2026)
+    np.testing.assert_array_equal(regulation_5, [True, True])
+    np.testing.assert_array_equal(flag[1::2], [True, False])
 
 
 def test_applicants_own_earnings_count_under_every_scheme():

@@ -24,15 +24,14 @@ class uc_is_excepted_from_education_condition(Variable):
         "working-age Housing Benefit reaches its award "
         "(claims_uc_at_legacy_closure), which the model takes "
         "as the qualifying claim under reg. 48 of the 2014 Regulations, and who "
-        "doesn't count "
-        "as a qualifying young person for the condition "
-        "(is_qualifying_young_person_for_uc_education, which applies reg. 28 "
-        "of the 2014 Regulations). Reg. 48 needs a claim by a person DWP sent "
-        "a migration notice (reg. 44(6)). Reg. 44(3C) to (3E) let a notice to "
-        "an income-related ESA or Housing Benefit claimant set the abolition "
-        "day as its deadline; the model assumes a family whose award the "
-        "abolition reaches had such a notice. The model needs no rule of its "
-        "own for limb "
+        "didn't count as a qualifying young person for the condition on the "
+        "migration day (is_qualifying_young_person_on_uc_migration_day, which "
+        "applies reg. 28 of the 2014 Regulations to the award the claim "
+        "ended). Reg. 48 needs a claim by a person DWP sent a migration notice "
+        "(reg. 44(6)). Reg. 44(3C) to (3E) let a notice to an income-related "
+        "ESA or Housing Benefit claimant set the abolition day as its "
+        "deadline; the model assumes a family whose award the abolition "
+        "reaches had such a notice. The model needs no rule of its own for limb "
         "(e)(i): it places responsibility for a child on the benefit unit, so "
         "both members of the couple meet (c). Under (b), the decision maker "
         "must determine limited capability for work before the course starts. "
@@ -71,6 +70,7 @@ class uc_is_excepted_from_education_condition(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/44",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/48",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/49",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
@@ -135,12 +135,13 @@ class uc_is_excepted_from_education_condition(Variable):
         # that condition is not to apply ... while they are continuing to
         # undertake that course". A qualifying young person receives
         # education under reg. 12(1A), not reg. 12(2); reg. 28 applies
-        # first, so a person entitled to an existing benefit takes reg.
-        # 12(2) and keeps the protection.
+        # first, so a person entitled to an existing benefit on the
+        # migration day took reg. 12(2) and keeps the protection while they
+        # continue the course, after that award has ended.
         migrated_student = (
             claimant_or_partner
             & benunit("claims_uc_at_legacy_closure", period)
-            & ~person("is_qualifying_young_person_for_uc_education", period)
+            & ~person("is_qualifying_young_person_on_uc_migration_day", period)
         )
         return (
             disabled_with_limited_capability_for_work
