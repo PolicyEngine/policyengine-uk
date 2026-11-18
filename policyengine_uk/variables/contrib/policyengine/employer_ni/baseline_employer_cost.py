@@ -64,4 +64,8 @@ class baseline_employer_cost(Variable):
         baseline_employer_ni = r_b * max_(
             0, ni_class_1_income - pen_con_subtracted_b + ni_only_earnings - t_b
         )
-        return ni_class_1_income + baseline_employer_ni
+        return (
+            ni_class_1_income
+            + baseline_employer_ni
+            + baseline_person("ni_class_1a", period)
+        )

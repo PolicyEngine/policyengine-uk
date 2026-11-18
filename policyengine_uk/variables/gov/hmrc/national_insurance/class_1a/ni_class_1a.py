@@ -14,9 +14,8 @@ class ni_class_1a(Variable):
         "14.53%. Unlike secondary Class 1, it has no threshold and no zero "
         "rate for earners under 21 or apprentices under 25, and the "
         "Employment Allowance cannot be set against it. The employer NI "
-        "incidence variables cover secondary Class 1 only, so no household "
-        "bears Class 1A or a change in it: it stays with the employer as "
-        "revenue in gov_tax."
+        "incidence channels include this liability under their adjustable "
+        "wage, consumer and capital assumptions."
     )
     definition_period = YEAR
     unit = GBP
