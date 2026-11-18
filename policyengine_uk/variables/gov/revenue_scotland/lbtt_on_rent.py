@@ -8,6 +8,7 @@ class lbtt_on_rent(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "lbtt_liable"
 
     adds = [
         "lbtt_on_residential_property_rent",

@@ -1,0 +1,30 @@
+description: Whether Revenue Scotland charges Land and Buildings Transaction Tax on ordinary transactions involving land in Scotland.
+values:
+  0000-01-01:
+    value: false
+    metadata:
+      note: This inert sentinel prevents precommencement liability and access to inactive LBTT schedules. It is not a statutory commencement date or a calculation of predecessor taxes.
+  2015-04-01:
+    value: true
+    metadata:
+      note: The model applies the ordinary commencement rule. It does not model the qualifying older-contract exceptions to SDLT disapplication or the related LBTT transitional charge and credit provisions.
+      reference:
+        - title: The Land and Buildings Transaction Tax (Scotland) Act 2013 (Commencement No. 2) Order 2015 (SSI 2015/108) art. 2
+          href: https://www.legislation.gov.uk/ssi/2015/108/article/2/made
+        - title: Scotland Act 2012 s. 28(2)
+          href: https://www.legislation.gov.uk/ukpga/2012/11/section/28
+        - title: The Land and Buildings Transaction Tax (Transitional Provisions) (Scotland) Order 2014 (SSI 2014/377) arts. 3, 4
+          href: https://www.legislation.gov.uk/ssi/2014/377/made
+metadata:
+  unit: bool
+  period: year
+  label: Land and Buildings Transaction Tax in effect
+  reference:
+    - title: Land and Buildings Transaction Tax (Scotland) Act 2013 s. 70
+      href: https://www.legislation.gov.uk/asp/2013/11/section/70
+    - title: The Land and Buildings Transaction Tax (Scotland) Act 2013 (Commencement No. 2) Order 2015 (SSI 2015/108) art. 2
+      href: https://www.legislation.gov.uk/ssi/2015/108/article/2/made
+    - title: Scotland Act 2012 s. 28(2)
+      href: https://www.legislation.gov.uk/ukpga/2012/11/section/28
+    - title: The Land and Buildings Transaction Tax (Transitional Provisions) (Scotland) Order 2014 (SSI 2014/377) arts. 3, 4
+      href: https://www.legislation.gov.uk/ssi/2014/377/made

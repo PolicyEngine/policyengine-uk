@@ -3,7 +3,7 @@ values:
   2003-07-10:
     value: 0
     metadata:
-      note: Parliament gave Schedule 6ZA effect from 22 November 2017 (Finance Act 2018 s. 41(8)). Before then a first-time buyer paid the main rates, so no purchase qualifies for the relief. The model applies no first-time buyers' relief other than Schedule 6ZA.
+      note: Parliament gave Schedule 6ZA effect from 22 November 2017 (Finance Act 2018 s. 41(8)). The model applies no first-time buyers' relief other than Schedule 6ZA. In particular, it does not model the separate relief for qualifying purchases from 25 March 2010 through 24 March 2012 under Finance Act 2010 s. 6.
       reference:
         - title: Finance Act 2018 s. 41(8)
           href: https://www.legislation.gov.uk/ukpga/2018/3/section/41/enacted

@@ -597,10 +597,15 @@ def statutory_leaves():
     return tbs_module._leaf_paths(tbs_module.statutory_parameters())
 
 
+STATUTORY_GOVERNMENT_PARAMETERS = [
+    path for path in statutory_leaves() if path.startswith("gov.")
+]
+READS_CALENDAR_YEARS = tbs_module.parameter_reads_calendar_years()
+CALENDAR = [
+    path for path in STATUTORY_GOVERNMENT_PARAMETERS if READS_CALENDAR_YEARS(path)
+]
 ORDINARY = [
-    path
-    for path in statutory_leaves()
-    if path.startswith("gov.") and not path.startswith(CALENDAR_YEAR_SERIES)
+    path for path in STATUTORY_GOVERNMENT_PARAMETERS if not READS_CALENDAR_YEARS(path)
 ]
 KEYS = st.one_of(
     st.integers(2016, 2040),
@@ -681,3 +686,65 @@ def test_scenario_apply_changes_the_parameter_an_alias_path_copies(summed):
     simulation = Simulation(situation=PENSIONER)
     scenario.apply(simulation)
     assert value(simulation, LSR, "2028-01-01") == pytest.approx(0.3)
+
+
+def test_ordinary_and_calendar_populations_partition_statutory_government_parameters():
+    assert set(ORDINARY).isdisjoint(CALENDAR)
+    assert set(ORDINARY) | set(CALENDAR) == set(STATUTORY_GOVERNMENT_PARAMETERS)
+    energy_quarter = f"{ENERGY_PRICES}.consumption_shares.electricity.q1"
+    assert energy_quarter in CALENDAR
+    assert energy_quarter not in ORDINARY
+
+
+def period_assignments(reader, path, key, value):
+    change = {path: {key: value}}
+    reads = tbs_module.parameter_reads_calendar_years()
+    if reader == "reform-dict":
+        assignments, legacy = read_reform_dict(
+            change, tbs_module.reform_parameter_defines(), calendar_years=reads
+        )
+        assert legacy == []
+        return assignments
+    return read_parameter_changes(change, calendar_years=reads)
+
+
+@pytest.mark.parametrize("reader", ["reform-dict", "parameter-changes"])
+@pytest.mark.parametrize(
+    "key",
+    [2016, "2016", "2016-01-01"],
+    ids=["integer-year", "string-year", "january-day"],
+)
+def test_energy_quarter_share_year_keys_are_calendar_years(reader, key):
+    path = f"{ENERGY_PRICES}.consumption_shares.electricity.q1"
+    assert tbs_module.parameter_reads_calendar_years()(path)
+    assignments = period_assignments(reader, path, key, 1)
+    assert len(assignments) == 1
+    entry = assignments[0]
+    assert entry.path == path
+    assert str(entry.start) == "2016-01-01"
+    assert str(entry.stop) == "2016-12-31"
+    assert entry.value == 1
+
+
+@pytest.mark.parametrize("reader", ["reform-dict", "parameter-changes"])
+@pytest.mark.parametrize(
+    "name", ["purchase_in_effect", "purchase_charged_on_whole_price"]
+)
+@pytest.mark.parametrize(
+    "year, start, stop",
+    [(2014, "2014-04-06", "2015-04-05"), (2016, "2016-04-06", "2017-04-05")],
+)
+def test_historical_sdlt_bare_year_reforms_keep_ordinary_fiscal_bounds(
+    reader, name, year, start, stop
+):
+    path = f"gov.hmrc.stamp_duty.residential.{name}"
+    assert path in ORDINARY
+    assert path not in CALENDAR
+    assert not tbs_module.parameter_reads_calendar_years()(path)
+    assignments = period_assignments(reader, path, year, True)
+    assert len(assignments) == 1
+    entry = assignments[0]
+    assert entry.path == path
+    assert str(entry.start) == start
+    assert str(entry.stop) == stop
+    assert entry.value is True

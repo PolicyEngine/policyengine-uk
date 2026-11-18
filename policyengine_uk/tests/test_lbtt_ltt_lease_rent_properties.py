@@ -23,6 +23,7 @@ Invariants, for households in all four countries and model years 2019 to 2030:
 1. Residential exemption: LBTT and LTT on residential lease rent are zero.
 2. Differential: LBTT and LTT on non-residential lease rent equal a reference
    built here from the bands above, with the band in force at 30 April.
+   Direct LBTT components are zero outside Scotland.
 3. Bounds: 0 <= charge <= 2% of the year's rent.
 4. Telescoping: charging rent over two years gives the same total as charging
    it in one year on the same earlier cumulative rent.
@@ -136,6 +137,7 @@ def test_lease_rent_matches_bands_and_exemptions(leases, year):
     lbtt = calc("lbtt_on_non_residential_property_rent")
     ltt = calc("ltt_on_non_residential_property_rent")
     expected_lbtt = increment(lbtt_rent_bands(year), cumulative, non_residential_rent)
+    expected_lbtt = np.where(country == "SCOTLAND", expected_lbtt, 0)
     expected_ltt = increment(ltt_rent_bands(year), cumulative, non_residential_rent)
     np.testing.assert_allclose(lbtt, expected_lbtt, atol=TOLERANCE)
     np.testing.assert_allclose(ltt, expected_ltt, atol=TOLERANCE)
