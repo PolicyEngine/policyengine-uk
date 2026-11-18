@@ -406,3 +406,24 @@ movers and are not newly validated by the existing-holder fallback. A single
 plan enum also cannot represent simultaneous undergraduate and postgraduate
 loans. This change supplies no new date schema, producer migration, Microcosm
 remeasurement or population accuracy estimate.
+
+## Guardian's Allowance reporting
+
+Guardian's Allowance requires separate annual Person facts for actual legal
+entitlement (`is_entitled_to_guardians_allowance`) and full-rate payable exposure
+(`guardians_allowance_full_rate_child_weeks`), or authoritative cash entered as
+`guardians_allowance`. Calculated cash is verified for 2024–2026 and belongs to
+an entitled holder who is also its recipient. A lawful distinct payee or
+exceptional, adjusted or mixed-rate payment needs direct cash; the legal holder
+keeps the entitlement fact. Ordinary Core cash inputs override the whole Person
+array, including explicit zeros; no sparse reported/calculated merge is added.
+
+Producers must keep that cash disjoint from miscellaneous income or any other
+reported component. This model change supplies no automatic subtraction,
+private-release migration or imputation. Missing facts use false/zero defaults;
+they do not prove legal ineligibility. Projection does not determine later
+claim, payability or entitlement changes, and positive computed exposure outside
+2024–2026 requires authoritative direct cash until verified coverage is extended.
+
+The [programme page](../../book/programs/gov/hmrc/guardians-allowance.md) states
+which source-qualified facts and historical limits callers must establish.
