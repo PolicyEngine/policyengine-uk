@@ -434,8 +434,8 @@ def test_a_failing_probe_leaves_the_system_and_its_caches_alone():
 
     system = CountryTaxBenefitSystem()
     parameters = system.parameters
-    # Fill some node caches.
-    parameters("2027-01-01")
+    # Fill some node caches: reading a node caches it and the nodes above it.
+    parameters("2027-01-01").gov.hmrc.income_tax
     filled = [
         n for n in parameters.get_descendants() if getattr(n, "_at_instant_cache", None)
     ]
