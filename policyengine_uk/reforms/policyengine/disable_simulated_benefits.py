@@ -62,7 +62,10 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # legacy awards, whether or not the family then claims Universal Credit,
 # unless DWP sent it to Pension Credit instead. The abolition of
 # income-related ESA reaching a family's award (esa_income_abolition_reached)
-# likewise prompts a Universal Credit claim from 2026-27. The reform pays
+# likewise prompts a Universal Credit claim from 2026-27, and so does the
+# abolition of working-age Housing Benefit reaching an unsaved award, which
+# claims_uc_at_legacy_closure reads from housing_benefit_payable_share
+# directly. The reform pays
 # every listed benefit, the legacy ones and Universal Credit alike, at its
 # dataset-year report in every year, so it moves no family: it holds these
 # false for its years. The closure then ends none of the family's legacy
@@ -79,12 +82,14 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # year: the abolition closes their report (esa_income_report_closed), but
 # _legacy_award_payee.own_report_is_paid uses the reform's held award to
 # determine their receipt status, as it does for the claimant and partner.
-# Hold the family closure, each separate member's own closure, and the
-# abolition's claim.
+# Hold the family closure, each separate member's own closure, the
+# income-related ESA abolition's reach, and the claim itself, which the
+# Housing Benefit abolition prompts without either.
 NOT_MOVED = [
     "legacy_benefits_closed",
     "person_legacy_benefits_closed",
     "esa_income_abolition_reached",
+    "claims_uc_at_legacy_closure",
 ]
 
 # The first year in which the model pays a carer in Scotland Carer Support

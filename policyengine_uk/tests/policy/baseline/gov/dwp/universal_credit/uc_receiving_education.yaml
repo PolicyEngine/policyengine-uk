@@ -834,9 +834,8 @@
       benunit:
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
-        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7).
-        # The model treats such a claim as a qualifying claim, which reg. 60
-        # would exempt from the education condition.
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -865,9 +864,8 @@
       benunit:
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
-        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7).
-        # The model treats such a claim as a qualifying claim, which reg. 60
-        # would exempt from the education condition.
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -1301,8 +1299,7 @@
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
         # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
-        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
-        # claim, which reg. 60 would exempt from the education condition.
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -1335,8 +1332,8 @@
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
         # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
-        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
-        # claim, which reg. 60 would exempt from the education condition.
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
+        # Cases 49 and 50 make that claim.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -1365,9 +1362,8 @@
       benunit:
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
-        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7).
-        # The model treats such a claim as a qualifying claim, which reg. 60
-        # would exempt from the education condition.
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -1428,8 +1424,7 @@
         members: [person1]
         # The claimant doesn't claim Universal Credit when working-age
         # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
-        # (SR 2025/176 art. 7). The model treats such a claim as a qualifying
-        # claim, which reg. 60 would exempt from the education condition.
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -1488,3 +1483,77 @@
     meets_uc_education_condition: [false]
     is_uc_eligible: false
     universal_credit: 0
+
+- name: Case 49, the 18-year-old of case 44 claims when the abolition reaches the rate rebate and gets no Universal Credit.
+  # The claimant of case 44 claims Universal Credit when working-age Housing
+  # Benefit is abolished on 1 October 2026 in Northern Ireland (SR 2025/176
+  # art. 7; would_claim_uc_at_legacy_closure defaults to true), and the model
+  # treats that claim as a qualifying claim (SR 2016/226 reg. 49). On the
+  # migration day the rate rebate still existed, so reg. 29 kept them out of
+  # the definition, and the Universal Credit Regulations (Northern Ireland)
+  # 2016 reg. 12(2) doesn't cover their unfunded non-advanced course: they met
+  # the condition that day, so reg. 61(1) doesn't reach them. The claim ends
+  # the rate rebate the day before the award starts (reg. 6(2)), so from the
+  # first day they count as a qualifying young person and receive education,
+  # as in case 44, and get no Universal Credit.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_uc_at_legacy_closure: true
+    is_qualifying_young_person_on_uc_migration_day: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 50, the 18-year-old of case 49 with maintenance funding keeps the award under SR 2016/226 reg. 61.
+  # As case 49, but a student loan or grant for maintenance brings the course
+  # within reg. 12(2)(b), so on the migration day the claimant failed the
+  # condition because of a course reg. 12(2) covers, and reg. 61(1) lifts it
+  # while they continue the course. No rent is due on the home the family
+  # owns, so the award is 12 assessment periods at the 2026 to 2027 rate for a
+  # single claimant under 25: 12 x £338.58 = £4,062.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        has_education_maintenance_funding: true
+        housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_uc_at_legacy_closure: true
+    is_qualifying_young_person_on_uc_migration_day: [false]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    meets_uc_education_condition: [true]
+    is_uc_eligible: true
+    universal_credit: 4_062.96

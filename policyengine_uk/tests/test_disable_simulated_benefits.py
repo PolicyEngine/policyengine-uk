@@ -363,6 +363,38 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
         assert known_years(reformed, variable) == ten_years, variable
 
 
+def test_the_housing_benefit_abolition_prompts_no_claim():
+    """The abolition of working-age Housing Benefit (SI 2025/1148 art. 7)
+    reaches an unsaved award from 2026-27, and a family that would claim at
+    a closure (would_claim_uc_at_legacy_closure, true by default) then
+    claims Universal Credit, although it wouldn't claim otherwise. The
+    reform pays the reported Housing Benefit in each of its years, so it
+    holds that claim too, and the family claims nothing."""
+    situation = {
+        "people": {
+            "tenant": {
+                "age": every_year(30),
+                "is_claimant_or_partner": every_year(True),
+                "current_education": every_year("NOT_IN_EDUCATION"),
+                "housing_benefit_reported": {DATASET_YEAR: 5_000},
+            }
+        },
+        "benunits": {
+            "family": {"members": ["tenant"], "would_claim_uc": every_year(False)}
+        },
+        "households": {
+            "home": {"members": ["tenant"], "region": every_year("NORTH_EAST")}
+        },
+    }
+    reformed = Simulation(situation=situation, scenario=REFORM)
+    unreformed = Simulation(situation=situation)
+    for year in YEARS[1:]:
+        for variable in ("claims_uc_at_legacy_closure", "claims_universal_credit"):
+            assert unreformed.calculate(variable, year).tolist() == [True], variable
+            assert reformed.calculate(variable, year).tolist() == [False], variable
+        assert reformed.calculate("housing_benefit", year).tolist() == [5_000]
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_each_person_is_on_their_own_award(reformed, year):
     on_esa = by_person(reformed, "is_on_income_related_esa", year)

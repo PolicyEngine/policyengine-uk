@@ -106,6 +106,9 @@
       benunit:
         members: [claimant]
         would_claim_uc: true
+        # Only would_claim_uc makes the claim: the abolition of working-age
+        # Housing Benefit (SI 2025/1148 art. 7) adds none.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -387,6 +390,9 @@
       benunit:
         members: [parent, young_person]
         would_claim_uc: true
+        # Only would_claim_uc makes the claim: the abolition of working-age
+        # Housing Benefit (SI 2025/1148 art. 7) adds none.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [parent, young_person]

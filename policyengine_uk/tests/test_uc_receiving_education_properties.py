@@ -51,8 +51,11 @@ Invariants:
 7. Maintenance funding comes from the input: removing every student loan and
    education grant changes no one's receiving education and no output in
    OUTPUTS.
-8. Reg. 28: a person who reports an existing benefit never counts as a
-   qualifying young person for the condition.
+8. Reg. 28: a person whose existing benefit report is open on the first day
+   of the Universal Credit award, and payable that year
+   (esa_income_payable_share and housing_benefit_payable_share above 0, or
+   disable_simulated_benefits on), never counts as a qualifying young person
+   for the condition.
 
 A family in a household with other families can lose Universal Credit
 because of another family's student: when the household head's family cannot
@@ -462,7 +465,8 @@ def reference(case, result):
     condition and without it. Reads from the model only the roles (who is a
     claimant), the age conditions, qualifying young person status before reg.
     28 (the reg. 5 variable), the legacy closures, the family's claim, the
-    Pension Credit route, capital, responsibility for a child, limited
+    income-related ESA and Housing Benefit payable shares, the Pension
+    Credit route, capital, responsibility for a child, limited
     capability for work and the disability benefit amounts, which other rules
     settle.
     """

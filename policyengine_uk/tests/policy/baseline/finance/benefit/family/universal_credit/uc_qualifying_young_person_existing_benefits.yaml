@@ -272,7 +272,10 @@
   # The abolition saves an award for specified or temporary accommodation
   # (SI 2025/1148 art. 7(4)(a), SI 2014/1230 reg. 6A(2)), so in 2027 the
   # award stays payable and the claimant is entitled to an existing benefit.
+  # They rent from the council and have no income, so the award meets their
+  # rent in full.
   period: 2027
+  absolute_error_margin: 0.01
   input:
     people:
       claimant:
@@ -290,9 +293,12 @@
       household:
         members: [claimant]
         region: NORTH_EAST
-        tenure_type: OWNED_OUTRIGHT
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
   output:
     housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit: 6_000
     is_qualifying_young_person_for_universal_credit: [false]
 
 - name: After the abolition, a parent's young person whose own Housing Benefit report is unsaved is a qualifying young person.
