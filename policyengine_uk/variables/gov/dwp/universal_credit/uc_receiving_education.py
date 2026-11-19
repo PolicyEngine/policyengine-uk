@@ -1,6 +1,29 @@
 from policyengine_uk.model_api import *
 
 
+def undertakes_regulation_12_2_course(person, period):
+    """Whether a person undertakes a course that the Universal Credit
+    Regulations 2013 reg. 12(2) covers: a full-time course of advanced
+    education (reg. 12(2)(a)), or another full-time course of study or
+    training with a student loan or grant for their maintenance (reg.
+    12(2)(b))."""
+    full_time = person("is_in_full_time_education", period)
+    # Reg. 12(3): a course leading to a degree, DipHE or HND, or "of a
+    # standard above a general certificate of education (advanced
+    # level), or above a Scottish national qualification (higher or
+    # advanced higher)".
+    education = person("current_education", period)
+    advanced = (education == education.possible_values.TERTIARY) | person(
+        "in_HE", period
+    )
+    # Reg. 12(2)(b): "any other full-time course of study or training at
+    # an educational establishment for which a student loan or grant is
+    # provided for the person's maintenance" (reg. 2 takes both terms
+    # from reg. 68(7)).
+    maintenance_funding = person("has_education_maintenance_funding", period)
+    return full_time & (advanced | maintenance_funding)
+
+
 class uc_receiving_education(Variable):
     value_type = bool
     entity = Person
@@ -46,19 +69,6 @@ class uc_receiving_education(Variable):
 
     def formula(person, period, parameters):
         full_time = person("is_in_full_time_education", period)
-        # Reg. 12(3): a course leading to a degree, DipHE or HND, or "of a
-        # standard above a general certificate of education (advanced
-        # level), or above a Scottish national qualification (higher or
-        # advanced higher)".
-        education = person("current_education", period)
-        advanced = (education == education.possible_values.TERTIARY) | person(
-            "in_HE", period
-        )
-        # Reg. 12(2)(b): "any other full-time course of study or training at
-        # an educational establishment for which a student loan or grant is
-        # provided for the person's maintenance" (reg. 2 takes both terms
-        # from reg. 68(7)).
-        maintenance_funding = person("has_education_maintenance_funding", period)
         # Reg. 12(1A): "A qualifying young person is to be treated as
         # receiving education", whatever the course. SI 2014/1230 reg. 28
         # applies first, so a person entitled to an existing benefit takes
@@ -66,4 +76,6 @@ class uc_receiving_education(Variable):
         qualifying_young_person = person(
             "is_qualifying_young_person_for_uc_education", period
         )
-        return full_time & (advanced | maintenance_funding | qualifying_young_person)
+        return undertakes_regulation_12_2_course(person, period) | (
+            full_time & qualifying_young_person
+        )
