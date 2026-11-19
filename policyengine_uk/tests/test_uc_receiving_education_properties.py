@@ -929,8 +929,8 @@ def test_education_condition_invariants(case):
 def test_examples_reach_the_cases():
     """The examples exclude the issue's student, apply the couple rule both
     ways, send the young Housing Benefit claimants down the ordinary route
-    and leave issue 2878's unfunded closure claimant without Universal
-    Credit, so the invariants run on each outcome. One simulation holds the
+    and leave YAML case 48's unfunded closure claimant (issue 2878) without
+    Universal Credit, so the invariants run on each outcome. One simulation holds the
     four examples, as drawn and under BEFORE."""
     assert all(example["year"] == 2026 for example in EXAMPLES)
     case = dict(

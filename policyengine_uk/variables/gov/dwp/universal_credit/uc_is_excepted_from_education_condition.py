@@ -75,14 +75,16 @@ class uc_is_excepted_from_education_condition(Variable):
         "placed, and for a friend or family carer, who is responsible for the "
         "child and so meets (c) under the law. In Northern Ireland the "
         "decision maker applies the same exceptions under reg. 14(1) of the "
-        "Universal Credit Regulations (Northern Ireland) 2016, with reg. 6 "
-        "of those Regulations in place of reg. 5, and the same protection "
-        "under reg. 61 of the Universal Credit (Transitional Provisions) "
-        "Regulations (Northern Ireland) 2016, with regs. 6, 29 and 49 of "
+        "Universal Credit Regulations (Northern Ireland) 2016, with regs. 6 "
+        "and 12(1) of those Regulations in place of regs. 5 and 12(1A), and "
+        "the same protection under reg. 61 of the Universal Credit "
+        "(Transitional Provisions) Regulations (Northern Ireland) 2016, with "
+        "regs. 6, 29 and 49 of "
         "those Regulations in place of regs. 8, 28 and 48: a claim ends a "
         "rate rebate before the award starts (reg. 6(2)), and a rent rebate "
-        "or allowance runs on (reg. 6(2A)). The model doesn't apply reg. "
-        "61(2) either."
+        "or allowance runs on (reg. 6(2A)), as income-related ESA does under "
+        "SR 2019/152 reg. 4 in place of SI 2019/1152 reg. 5. The model "
+        "doesn't apply reg. 61(2) either."
     )
     definition_period = YEAR
     reference = (
@@ -91,6 +93,7 @@ class uc_is_excepted_from_education_condition(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/12",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2019/1152/regulation/5",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/48",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/49",
@@ -99,6 +102,7 @@ class uc_is_excepted_from_education_condition(Variable):
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/12",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2019/152/regulation/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/49",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/61",
