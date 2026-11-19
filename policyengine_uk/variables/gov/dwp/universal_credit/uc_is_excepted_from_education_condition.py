@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.universal_credit.uc_receiving_education import (
+    undertakes_regulation_12_2_course,
+)
 
 
 class uc_is_excepted_from_education_condition(Variable):
@@ -23,17 +26,28 @@ class uc_is_excepted_from_education_condition(Variable):
         "legacy benefits, or when the abolition of income-related ESA or "
         "working-age Housing Benefit reaches its award "
         "(claims_uc_at_legacy_closure), which the model takes "
-        "as the qualifying claim under reg. 48 of the 2014 Regulations, and who "
+        "as the qualifying claim under reg. 48 of the 2014 Regulations, who "
         "didn't count as a qualifying young person for the condition on the "
         "migration day (is_qualifying_young_person_on_uc_migration_day, which "
         "applies reg. 28 of the 2014 Regulations to the award the claim "
-        "ended). Reg. 48 needs a claim by a person DWP sent a migration notice "
-        "(reg. 44(6)). Reg. 44(3C) to (3E) let a notice to an income-related "
-        "ESA or Housing Benefit claimant set the abolition day as its "
-        "deadline; the model assumes a family whose award the abolition "
-        "reaches had such a notice. The model needs no rule of its own for limb "
-        "(e)(i): it places responsibility for a child on the benefit unit, so "
-        "both members of the couple meet (c). Under (b), the decision maker "
+        "ended), and who undertakes a full-time course that reg. 12(2) of the "
+        "2013 Regulations covers: advanced education, or a course with a "
+        "student loan or grant for their maintenance. Reg. 48 needs a claim by "
+        "a person DWP sent a migration notice (reg. 44(6)). Reg. 44(3C) to "
+        "(3E) let a notice to an income-related ESA or Housing Benefit "
+        "claimant set the abolition day as its deadline; the model assumes a "
+        "family whose award the abolition reaches had such a notice. Reg. "
+        "60(1) protects only a person who fails the condition on the migration "
+        "day because of such a course, and only while they continue it; the "
+        "model reads the model year's course inputs for both, so a person who "
+        "leaves the course loses the protection that year. A person outside "
+        "the definition on the migration day on a course reg. 12(2) doesn't "
+        "cover met the condition that day, so reg. 60(1) doesn't reach them, "
+        "and once their existing benefit ends they receive education as a "
+        "qualifying young person (reg. 12(1A)). The model needs no rule of "
+        "its own for limb (e)(i): it places responsibility for a child on the "
+        "benefit unit, so both members of the couple meet (c). Under (b), the "
+        "decision maker "
         "must determine limited capability for work before the course starts. "
         "The model can derive uc_limited_capability_for_work from disability "
         "status (is_disabled_for_benefits) without an assessment, so it can "
@@ -137,11 +151,14 @@ class uc_is_excepted_from_education_condition(Variable):
         # education under reg. 12(1A), not reg. 12(2); reg. 28 applies
         # first, so a person entitled to an existing benefit on the
         # migration day took reg. 12(2) and keeps the protection while they
-        # continue the course, after that award has ended.
+        # continue the course, after that award has ended. A course reg.
+        # 12(2) doesn't cover left them meeting the condition that day, so
+        # the protection needs a course it covers.
         migrated_student = (
             claimant_or_partner
             & benunit("claims_uc_at_legacy_closure", period)
             & ~person("is_qualifying_young_person_on_uc_migration_day", period)
+            & undertakes_regulation_12_2_course(person, period)
         )
         return (
             disabled_with_limited_capability_for_work
