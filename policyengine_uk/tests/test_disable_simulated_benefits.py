@@ -345,7 +345,9 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
     )
     # The abolition of income-related ESA reaches the claimant's own award
     # from 2026-27 (SI 2025/1148 art. 3A), which would prompt a Universal
-    # Credit claim; the reform holds that too, so it prompts no claim.
+    # Credit claim. The reform holds the reach and the claim itself
+    # (NOT_MOVED), the claim because the Housing Benefit abolition prompts it
+    # without either, so no family claims.
     reached = year > DATASET_YEAR
     assert by_family(unreformed, "esa_income_abolition_reached", year) == {
         "excluded_adult": False,
@@ -355,6 +357,9 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
         "own_esa_over_tariff": reached,
         "excluded_income_support": False,
     }
+    assert by_family(reformed, "esa_income_abolition_reached", year) == dict.fromkeys(
+        NAMES, False
+    )
     assert by_family(reformed, "claims_uc_at_legacy_closure", year) == dict.fromkeys(
         NAMES, False
     )

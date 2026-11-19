@@ -62,17 +62,21 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # legacy awards, whether or not the family then claims Universal Credit,
 # unless DWP sent it to Pension Credit instead. The abolition of
 # income-related ESA reaching a family's award (esa_income_abolition_reached)
-# likewise prompts a Universal Credit claim from 2026-27, and so does the
-# abolition of working-age Housing Benefit reaching an unsaved award, which
-# claims_uc_at_legacy_closure reads from housing_benefit_payable_share
-# directly. The reform pays
+# likewise prompts a Universal Credit claim from 2026-27. The reform pays
 # every listed benefit, the legacy ones and Universal Credit alike, at its
 # dataset-year report in every year, so it moves no family: it holds these
 # false for its years. The closure then ends none of the family's legacy
 # benefits (their eligibility and the "on" statuses read from it, and Housing
 # Benefit and tax credit eligibility), neither prompts a Universal Credit
 # claim (claims_uc_at_legacy_closure) and no family leaves the Pension Credit
-# route. Only the closure is held: the model's other rules still apply, and
+# route. The abolition of working-age Housing Benefit reaching an unsaved
+# award also prompts a claim, which claims_uc_at_legacy_closure reads from
+# housing_benefit_payable_share directly, so the reform holds the claim
+# itself too. It doesn't hold the abolition: housing_benefit_payable_share
+# still applies, so housing_benefit_pre_benefit_cap covers only the part of
+# 2026-27 before the abolition date and housing_benefit_eligible ends from
+# 2027-28, while the reform still pays the reported housing_benefit. Only the
+# closure is held: the model's other rules still apply, and
 # the reform still pays the amounts reported. A family the model has claim
 # Universal Credit anyway (would_claim_uc) is still not eligible for Housing
 # Benefit or tax credits. An adult outside the couple who reports
@@ -84,7 +88,9 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # determine their receipt status, as it does for the claimant and partner.
 # Hold the family closure, each separate member's own closure, the
 # income-related ESA abolition's reach, and the claim itself, which the
-# Housing Benefit abolition prompts without either.
+# Housing Benefit abolition prompts without either. The claim's hold already
+# covers the reach's readers; holding the reach too keeps the variable itself
+# false under the reform for any other reader.
 NOT_MOVED = [
     "legacy_benefits_closed",
     "person_legacy_benefits_closed",

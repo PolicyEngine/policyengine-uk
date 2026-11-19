@@ -1533,8 +1533,13 @@
   # within reg. 12(2)(b), so on the migration day the claimant failed the
   # condition because of a course reg. 12(2) covers, and reg. 61(1) lifts it
   # while they continue the course. No rent is due on the home the family
-  # owns, so the award is 12 assessment periods at the 2026 to 2027 rate for a
-  # single claimant under 25: 12 x £338.58 = £4,062.96.
+  # owns. In law the award starts with the claim in about October 2026, after
+  # the rate rebate, and the Universal Credit Regulations (Northern Ireland)
+  # 2016 regs. 68 to 71 count the maintenance loan or grant as student income.
+  # The annual model pays the claim for the whole of 2026-27 and counts no
+  # student income, so we assert its amount: 12 assessment periods at the
+  # 2026 to 2027 rate for a single claimant under 25, 12 x £338.58 =
+  # £4,062.96.
   period: 2026
   absolute_error_margin: 0.01
   input:

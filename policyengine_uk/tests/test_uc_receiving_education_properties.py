@@ -53,9 +53,11 @@ Invariants:
    OUTPUTS.
 8. Reg. 28: a person whose existing benefit report is open on the first day
    of the Universal Credit award, and payable that year
-   (esa_income_payable_share and housing_benefit_payable_share above 0, or
-   disable_simulated_benefits on), never counts as a qualifying young person
-   for the condition.
+   (esa_income_payable_share and housing_benefit_payable_share above 0),
+   never counts as a qualifying young person for the condition. The suite
+   runs with gov.contrib.policyengine.disable_simulated_benefits off. While
+   it is on, the model reads the reports in every year and leaves out the
+   claim limbs; test_disable_simulated_benefits.py checks that.
 
 A family in a household with other families can lose Universal Credit
 because of another family's student: when the household head's family cannot
