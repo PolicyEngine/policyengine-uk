@@ -76,8 +76,8 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # still applies, so housing_benefit_pre_benefit_cap covers only the part of
 # 2026-27 before the abolition date and housing_benefit_eligible ends from
 # 2027-28, while the reform still pays the reported housing_benefit. Only the
-# closure is held: the model's other rules still apply, and
-# the reform still pays the amounts reported. A family the model has claim
+# closure and the claims it and the abolitions prompt are held: the model's
+# other rules still apply, and the reform still pays the amounts reported. A family the model has claim
 # Universal Credit anyway (would_claim_uc) is still not eligible for Housing
 # Benefit or tax credits. An adult outside the couple who reports
 # income-based JSA is on it, as their own claim, only in the years the model
@@ -140,8 +140,9 @@ def disable_simulated_benefits(parameters, period):
 
             No family is moved off its legacy benefits (NOT_MOVED): the
             reform pays them as reported in every year, after the dates
-            from which the model closes them included. Only the closure is
-            held; the model's other eligibility rules still apply.
+            from which the model closes them included. Only the closure and
+            the claims it and the abolitions prompt are held; the model's
+            other eligibility rules still apply.
 
             The reform reads what it uses when it is applied: the dataset
             year's reports, and who is the claimant or partner and where each
