@@ -1,3 +1,10 @@
+## [2.179.3] - 2026-11-19
+
+### Changed
+
+- Updated the labour supply parameter-read test and the uprating cache test so they pass when policyengine-core builds parameter-node children on first read.
+
+
 ## [2.179.2] - 2026-11-18
 
 ### Fixed
