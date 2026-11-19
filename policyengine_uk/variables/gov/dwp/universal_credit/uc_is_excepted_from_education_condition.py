@@ -40,11 +40,22 @@ class uc_is_excepted_from_education_condition(Variable):
         "60(1) protects only a person who fails the condition on the migration "
         "day because of such a course, and only while they continue it; the "
         "model reads the model year's course inputs for both, so a person who "
-        "leaves the course loses the protection that year. A person outside "
-        "the definition on the migration day on a course reg. 12(2) doesn't "
-        "cover met the condition that day, so reg. 60(1) doesn't reach them, "
-        "and once their existing benefit ends they receive education as a "
-        "qualifying young person (reg. 12(1A)). The model needs no rule of "
+        "leaves the course loses the protection that year, but a person who "
+        "starts a course reg. 12(2) covers after the migration day, or moves "
+        "to another such course, has it that year, which the law doesn't "
+        "give. A young person whom reg. 28 alone kept outside the definition "
+        "on the migration day, on a course reg. 12(2) doesn't cover, met the "
+        "condition that day, so reg. 60(1) doesn't reach them. Where the "
+        "claim ends that existing benefit before the award starts (a tax "
+        "credit, reg. 8(2) of the 2014 Regulations), they count as a "
+        "qualifying young person from the first day and receive education "
+        "(reg. 12(1A)). Where it runs on past the first day (Income Support "
+        "or Housing Benefit under reg. 8(2A), or income-related ESA under SI "
+        "2019/1152 reg. 5), reg. 28 still excludes them that day, so they "
+        "meet the condition, and reg. 5(5) of the 2013 Regulations then keeps "
+        "them outside the definition while they receive Universal Credit "
+        "(is_qualifying_young_person_for_uc_education). The model needs no "
+        "rule of "
         "its own for limb (e)(i): it places responsibility for a child on the "
         "benefit unit, so both members of the couple meet (c). Under (b), the "
         "decision maker "
@@ -71,22 +82,31 @@ class uc_is_excepted_from_education_condition(Variable):
         "placed, and for a friend or family carer, who is responsible for the "
         "child and so meets (c) under the law. In Northern Ireland the "
         "decision maker applies the same exceptions under reg. 14(1) of the "
-        "Universal Credit Regulations (Northern Ireland) 2016, and the same "
-        "protection under reg. 61 of the Universal Credit (Transitional "
-        "Provisions) Regulations (Northern Ireland) 2016, with regs. 29 and 49 "
-        "of those Regulations in place of regs. 28 and 48; the model doesn't "
-        "apply reg. 61(2) either."
+        "Universal Credit Regulations (Northern Ireland) 2016, with reg. 6 "
+        "of those Regulations in place of reg. 5, and the same protection "
+        "under reg. 61 of the Universal Credit (Transitional Provisions) "
+        "Regulations (Northern Ireland) 2016, with regs. 6, 29, 45 and 49 of "
+        "those Regulations in place of regs. 8, 28, 44 and 48: a claim ends a "
+        "rate rebate before the award starts (reg. 6(2)), and a rent rebate "
+        "or allowance runs on (reg. 6(2A)). The model doesn't apply reg. "
+        "61(2) either."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/14",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/12",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/28",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/44",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/48",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/49",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/60",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/6",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/12",
         "https://www.legislation.gov.uk/nisr/2016/216/regulation/14",
+        "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/29",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/49",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/61",

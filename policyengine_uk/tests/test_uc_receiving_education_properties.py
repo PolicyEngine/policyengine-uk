@@ -671,7 +671,11 @@ EXAMPLES = [
     # SI 2014/1230 reg. 28: an 18-year-old on a non-advanced full-time course
     # who reports Housing Benefit, without and with a closure claim. With the
     # claim, reg. 60(1) protects them only with maintenance funding, which
-    # brings the course within reg. 12(2) (issue 2878).
+    # brings the course within reg. 12(2) (issue 2878). The last is YAML case
+    # 48's claimant, whose closure claim ends a Working Tax Credit award the
+    # day before the Universal Credit award starts (reg. 8(2)): unfunded, they
+    # count as a qualifying young person from the first day, receive
+    # education, and get no Universal Credit.
     dict(
         year=2026,
         families=[
@@ -708,6 +712,20 @@ EXAMPLES = [
                         is_in_full_time_education=True,
                         current_education="POST_SECONDARY",
                         housing_benefit_reported=6_000,
+                    )
+                ],
+                closure=True,
+                tenure_type="RENT_FROM_COUNCIL",
+                rent=6_000,
+            ),
+            single_family(
+                [
+                    person(
+                        18,
+                        is_in_full_time_education=True,
+                        current_education="POST_SECONDARY",
+                        employment_income=9_000,
+                        working_tax_credit_reported=1_000,
                     )
                 ],
                 closure=True,
@@ -956,8 +974,9 @@ def test_education_condition_invariants(case):
 
 def test_examples_reach_the_cases():
     """The examples exclude the issue's student, apply the couple rule both
-    ways and send the young Housing Benefit claimants down the ordinary
-    route, so the invariants run on each outcome. One simulation holds the
+    ways, send the young Housing Benefit claimants down the ordinary route
+    and leave issue 2878's unfunded closure claimant without Universal
+    Credit, so the invariants run on each outcome. One simulation holds the
     four examples, as drawn and under BEFORE."""
     assert all(example["year"] == 2026 for example in EXAMPLES)
     case = dict(
@@ -966,9 +985,10 @@ def test_examples_reach_the_cases():
     )
     drawn, before = run(case, variants=[DRAWN, BEFORE])
     # Families: the issue's student; the student couples of EXAMPLES[1]; the
-    # mixed-age couples of EXAMPLES[2]; the young Housing Benefit claimants.
+    # mixed-age couples of EXAMPLES[2]; the young claimants of EXAMPLES[3].
     np.testing.assert_array_equal(
-        drawn["is_uc_eligible"], [False, False, True, True, False, True, True, True]
+        drawn["is_uc_eligible"],
+        [False, False, True, True, False, True, True, True, False],
     )
     assert drawn["universal_credit"][0] == 0
     assert before["universal_credit"][0] > 0
@@ -985,24 +1005,31 @@ def test_examples_reach_the_cases():
     # day of the award, when the Housing Benefit still runs. Only the funded
     # one undertakes a course reg. 12(2) covers, so only they receive
     # education, and the reg. 60(1) protection reaches only them: the third
-    # met the condition on the migration day (issue 2878).
-    young = slice(9, 12)
+    # met the condition on the migration day (issue 2878). Person 12's claim
+    # ends their Working Tax Credit the day before the award (reg. 8(2)), so
+    # on the first day they count as a qualifying young person and receive
+    # education (reg. 12(1A)). The protection doesn't reach them, as it
+    # doesn't reach the third, so they fail the condition and get no
+    # Universal Credit, which main_eligibility (BEFORE) pays them.
+    young = slice(9, 13)
     np.testing.assert_array_equal(
         drawn["is_qualifying_young_person_for_universal_credit"][young],
-        [True, True, True],
+        [True, True, True, True],
     )
     np.testing.assert_array_equal(
         drawn["is_qualifying_young_person_for_uc_education"][young],
-        [False, False, False],
+        [False, False, False, True],
     )
     np.testing.assert_array_equal(
-        drawn["uc_receiving_education"][young], [False, True, False]
+        drawn["uc_receiving_education"][young], [False, True, False, True]
     )
     np.testing.assert_array_equal(
         drawn["uc_is_excepted_from_education_condition"][young],
-        [False, True, False],
+        [False, True, False, False],
     )
-    assert np.all(drawn["universal_credit"][5:] > 0)
+    assert np.all(drawn["universal_credit"][5:8] > 0)
+    assert drawn["universal_credit"][8] == 0
+    assert before["universal_credit"][8] > 0
 
 
 def test_student_head_moves_non_dependant_to_joint_tenant():
