@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import exact_amount, round_to_penny
 
 
 class uc_property_capital(Variable):
@@ -28,11 +29,15 @@ class uc_property_capital(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         household_property = sum(
-            benunit.household(source, period) for source in p.property_sources
+            exact_amount(benunit.household(source, period))
+            for source in p.property_sources
         )
         person = benunit.members
         household_claimants = benunit.max(
             person.household.sum(person.household.members("is_uc_claimant", period))
         )
         benunit_claimants = benunit.sum(person("is_uc_claimant", period))
-        return household_property * benunit_claimants / max_(1, household_claimants)
+        return round_to_penny(
+            household_property * benunit_claimants / max_(1, household_claimants),
+            p.round_down,
+        )

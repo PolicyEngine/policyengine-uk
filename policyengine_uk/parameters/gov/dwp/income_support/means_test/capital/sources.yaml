@@ -3,13 +3,16 @@ description: >
   at their cash value, without a generic cash sale-cost deduction.
   Where the data tie a cash ISA or stocks and shares ISA balance to a member,
   the formulas count it through `person_sources` in the holder's own benefit
-  unit and subtract it from `cash_isa` or `share_like_capital` before they
+  unit and subtract it from `cash_isa` or
+  `share_like_capital_without_sale_expenses` before they
   allocate the rest.
   Capital sources included in the Income Support capital test.
   `private_pension_wealth` is excluded because Schedule 10 paragraphs 23 and
   23A disregard the value of the right to receive an occupational or personal
   pension and the value of funds held under a personal pension scheme.
-  `share_like_capital` is `corporate_wealth` as supplied, or the sum of its
+  `share_like_capital_with_sale_expenses` and
+  `share_like_capital_without_sale_expenses` split `share_like_capital`, which
+  is `corporate_wealth` as supplied, or the sum of its
   itemised components (`directly_held_shares`, `unit_and_investment_trusts`,
   `stocks_and_shares_isa`) where they exceed it beyond float32 rounding (see
   `share_like_capital`), so a household given only the components has them
@@ -34,6 +37,7 @@ values:
   - savings
   - cash_isa
   - owned_land
-  - share_like_capital
+  - share_like_capital_with_sale_expenses
+  - share_like_capital_without_sale_expenses
   - other_residential_property_value
   - non_residential_property_value

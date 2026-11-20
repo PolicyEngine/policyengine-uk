@@ -1,0 +1,20 @@
+description: >
+  Share of the current market or surrender value deducted from Income Support
+  capital where there would be expenses attributable to sale. It is a flat 10%
+  whatever the actual costs, taken from the gross value before any encumbrance
+  secured on the asset is deducted. Before 1 October 2007 the same deduction
+  sat in reg. 49(a)(i) alongside a separate valuation for National Savings
+  Certificates; SI 2007/2618 substituted the regulation in its current form.
+values:
+  2010-01-01: 0.1
+metadata:
+  label: Income Support capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: Income Support (General) Regulations 1987 reg. 49(a)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/49
+    - title: Income Support (General) Regulations (Northern Ireland) 1987 reg. 49(a), as substituted by S.R. 2007/396 reg. 4(10)
+      href: https://www.legislation.gov.uk/nisr/2007/396/regulation/4
+    - title: Decision Makers' Guide chapter 29, para. 29624
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=125

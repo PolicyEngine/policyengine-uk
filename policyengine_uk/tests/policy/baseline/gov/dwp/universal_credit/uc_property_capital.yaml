@@ -121,5 +121,160 @@
   output:
     household_uc_reported_financial_capital: 10_000
     household_uc_pool_company_holdings: 0
-    uc_assessable_capital: [0, 20_000]
+    # corporate_wealth is valued at 90% (reg. 49(1)(a)), and the holding
+    # inside the countable override comes off at that value: the owner keeps
+    # 10,000 - 9,000 = 1,000, and the pool is 20,000 + 9,000 - 10,000 =
+    # 19,000 for the other claimant.
+    uc_assessable_capital: [1_000, 19_000]
     universal_credit: [5_098.80, 0]
+
+- name: A recorded financial total consumes its owner's company holding at its counted value
+  period: 2026
+  input:
+    people:
+      owner:
+        age: 30
+        is_claimant_or_partner: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        owned_company_holding_value: 10_000
+        owned_company_capital: 0
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      reporting:
+        members: [owner]
+        would_claim_uc: true
+        benunit_reported_capital: 10_000
+      missing:
+        members: [other_claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [owner, other_claimant]
+        savings: 16_500
+        corporate_wealth: 10_000
+  output:
+    # The pool counts the 10,000 of shares at 90% (reg. 49(1)(a)): 16,500 +
+    # 9,000 = 25,500. The recorded total holds the holding at full value, so
+    # its holding part is consumed at the counted 9,000, not 10,000: the
+    # report consumes 10,000 - 1,000 = 9,000. The owner's own assessment takes
+    # the full holding off the report (10,000 - 10,000 = 0), and the other
+    # claimant keeps all 16,500 of savings, over the 16,000 limit. The total
+    # reconciles: 0 + 16,500 + the 9,000 disregarded holding = 25,500.
+    household_uc_reported_financial_capital: 9_000
+    household_uc_pool_company_holdings: 0
+    uc_assessable_capital: [0, 16_500]
+    universal_credit: [5_098.80, 0]
+
+- name: A capital of exactly 16,000.00 after a company holding leaves the pool is within the limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      owner:
+        age: 30
+        is_claimant_or_partner: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        owned_company_holding_value: 10_000.01
+        owned_company_capital: 0
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      reporting:
+        members: [owner]
+        would_claim_uc: true
+        uc_reported_capital: 0
+      missing:
+        members: [other_claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [owner, other_claimant]
+        savings: 7_000.01
+        corporate_wealth: 20_000
+  output:
+    # The pool is 7,000.01 + 90% of 20,000 = 25,000.01. The owner's holding
+    # leaves it at 90% of 10,000.01 = 9,000.009, which is 9,000.01 to the
+    # nearest penny (UC Regs 2013 reg. 6(1)), so the other claimant has
+    # 16,000.00, which does not exceed the 16,000 limit. Unrounded, the
+    # 16,000.001 would fail it.
+    household_uc_reported_financial_capital: 9_000.01
+    uc_assessable_capital: [0, 16_000]
+    is_uc_eligible: [true, true]
+
+- name: A capital pool shared three ways is rounded to the nearest penny at the last stage
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+      second:
+        age: 30
+        is_claimant_or_partner: true
+      third:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      first_unit:
+        members: [first]
+        would_claim_uc: true
+      second_unit:
+        members: [second]
+        would_claim_uc: true
+      third_unit:
+        members: [third]
+        would_claim_uc: true
+    households:
+      household:
+        members: [first, second, third]
+        savings: 48_000.01
+  output:
+    # A third of 48,000.01 is 16,000.0033, which is 16,000.00 to the nearest
+    # penny (reg. 6(1)), within the limit for each unit.
+    uc_assessable_capital: [16_000, 16_000, 16_000]
+    is_uc_eligible: [true, true, true]
+
+- name: A recorded financial total below its owner's company holding still consumes the holding
+  period: 2026
+  input:
+    people:
+      owner:
+        age: 30
+        is_claimant_or_partner: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        owned_company_holding_value: 10_000
+        owned_company_capital: 0
+      other_claimant:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      reporting:
+        members: [owner]
+        would_claim_uc: true
+        benunit_reported_capital: 4_000
+      missing:
+        members: [other_claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [owner, other_claimant]
+        savings: 10_000
+        corporate_wealth: 10_000
+  output:
+    # All 10,000 of shares are the owner's holding, which the pool counts at
+    # 9,000 (reg. 49(1)(a)). The recorded 4,000 is below the holding, so it
+    # has no part beyond it and consumes the holding at its counted 9,000,
+    # as an override would. The other claimant keeps only the 10,000 of
+    # savings: none of the holding is left for them to count. The owner's
+    # own assessment takes the full holding off the report: max(0, 4,000 -
+    # 10,000) = 0.
+    household_uc_reported_financial_capital: 9_000
+    household_uc_pool_company_holdings: 0
+    uc_assessable_capital: [0, 10_000]
