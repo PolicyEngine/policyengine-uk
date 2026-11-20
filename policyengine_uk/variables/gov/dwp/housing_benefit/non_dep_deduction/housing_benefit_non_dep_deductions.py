@@ -2,6 +2,11 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     deduction_per_family,
 )
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    apportioned_non_dependant_deductions,
+    outside_joint_occupiers,
+    resides_with_every_joint_occupier,
+)
 
 
 class housing_benefit_non_dep_deductions(Variable):
@@ -15,8 +20,13 @@ class housing_benefit_non_dep_deductions(Variable):
         "claimant, partner or a child or young person. One deduction for "
         "each non-dependant couple, the higher of the two members' amounts, "
         "and one for each other non-dependant. The council apportions each "
-        "between the joint occupiers by their shares of the rent, whichever "
-        "family the non-dependant is in. None if the claimant or partner is "
+        "between the joint occupiers the non-dependant normally resides with "
+        "by their shares of the rent: every joint occupier for a "
+        "non-dependant within a joint occupier's own benefit unit, and those "
+        "that non_dependant_normally_resides_with gives for another family's, "
+        "by default every one. One who resides with only one joint occupier "
+        "is deducted in full from that occupier. None if the claimant or "
+        "partner is "
         "exempt. A boarder or lodger bears none, even for a non-dependant in "
         "its own benefit unit, such as an adult son who pays nothing. He "
         "normally resides with the lodger as well as the householder, and we "
@@ -52,15 +62,22 @@ class housing_benefit_non_dep_deductions(Variable):
         # occupier, the council apportions the deduction by their shares of the
         # payments (reg 74(5); SPC reg 55(5)), so each family liable for the
         # household's rent bears its share; a boarder or lodger bears none of it.
+        # For one who resides with only one joint occupier, the council takes
+        # the whole deduction from that occupier (HB Guidance Manual A5 para
+        # 5.622). Which joint occupiers another family's non-dependant resides
+        # with is non_dependant_normally_resides_with.
         # A family bearing a share is a joint occupier, never another family's
         # non-dependant, even where the rent is nil and so the family is not
-        # benunit_is_rent_liable.
+        # benunit_is_rent_liable; nor is the household head's family or a
+        # sharer's, whatever share it has or is given (reg 3(2)(a), (d)).
         person = benunit.members
         deductions = person("household_benefits_individual_non_dep_deduction", period)
         in_joint_occupier_family = person.benunit("share_of_household_rent", period) > 0
+        outside = outside_joint_occupiers(benunit, period)
         other_family = (
             person("is_non_dependant_of_household_head", period)
             & ~in_joint_occupier_family
+            & outside
         )
         # A member of a rent-liable family who is not in its claimant's
         # family under reg 3(2)(a) and (c) is a non-dependant too. That takes
@@ -83,7 +100,20 @@ class housing_benefit_non_dep_deductions(Variable):
         )
         counted = person("is_benunit_head", period) * benunit.project(family_amount)
         share = benunit("share_of_household_rent", period)
-        from_joint_occupiers = share * benunit.max(person.household.sum(counted))
+        # A non-dependant of every joint occupier: by their shares of the
+        # rent. That is one within a joint occupier's own benefit unit, and
+        # another family's unless non_dependant_normally_resides_with says
+        # otherwise.
+        every = resides_with_every_joint_occupier(benunit, period)
+        of_every_joint_occupier = share * benunit.max(
+            person.household.sum(counted * every)
+        )
+        # One who resides with only some of the joint occupiers: between
+        # those, by their shares of the rent among themselves.
+        of_some_joint_occupiers = apportioned_non_dependant_deductions(
+            benunit, period, counted * ~every, equally=False
+        )
+        from_joint_occupiers = of_every_joint_occupier + of_some_joint_occupiers
         # A boarder or lodger, with no share of the rent, bears none, even
         # for a non-dependant in its own benefit unit (see the documentation).
         claimant_exempt = benunit(

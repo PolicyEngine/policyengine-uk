@@ -2,6 +2,30 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
     child_bedrooms,
 )
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    non_dependants_residing_with,
+)
+
+
+def housing_benefit_other_occupiers(benunit, period, other_occupier):
+    """For each family, the sum of ``other_occupier`` (a count or weight for
+    each occupier outside every family liable for the household's rent, zero
+    for anyone else) over the people who occupy its dwelling (HB Regs 2006
+    reg 13D(12)), before the caller limits it to claims by families liable
+    for the rent. A boarder or lodger who pays the householder occupies the
+    dwelling of every such claim. A non-dependant, and anyone else who pays
+    nothing, counts for each joint occupier they normally reside with (LHA
+    Guidance Manual paras 2.093 and 2.110; see
+    non_dependant_normally_resides_with), by default every one."""
+    person = benunit.members
+    boarder_or_lodger = person("pays_rent_to_householder", period)
+    of_every_claim = benunit.max(
+        person.household.sum(other_occupier * boarder_or_lodger)
+    )
+    non_dependants = non_dependants_residing_with(
+        benunit, period, other_occupier * ~boarder_or_lodger
+    )
+    return of_every_claim + non_dependants
 
 
 class housing_benefit_LHA_allowed_bedrooms(Variable):
@@ -19,7 +43,10 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "outside the claimant's household. For the household head's family "
         "or a sharer's, that is its own family, the household's "
         "non-dependants and anyone paying the householder rent, with their "
-        "children (but not the other families liable for the rent). A "
+        "children (but not the other families liable for the rent). Where "
+        "the rent is shared, a non-dependant and their children count for "
+        "each joint occupier they normally reside with, by default every one "
+        "(see non_dependant_normally_resides_with). A "
         "boarder's or lodger's own claim counts only their own family. A "
         "child or young person placed with the claimant or partner as a "
         "foster child or for adoption does not occupy the claimant's "
@@ -60,9 +87,13 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         # out.
         placed = person("is_child_or_young_person_placed_with_family", period)
 
+        # A non-dependant shared by joint tenants counts in each one's size
+        # criteria (LHA Guidance Manual para 2.110); one who lives with one
+        # joint tenant only counts for that tenant alone (para 2.093, example
+        # 2). See housing_benefit_other_occupiers.
         def occupiers_total(values):
             own = benunit.sum(values & ~placed)
-            others = benunit.max(person.household.sum(values & other))
+            others = housing_benefit_other_occupiers(benunit, period, values & other)
             return own + where(is_liable_claim, others, 0)
 
         # 13D(3)(zb), (a): one bedroom for each couple or single claimant. A

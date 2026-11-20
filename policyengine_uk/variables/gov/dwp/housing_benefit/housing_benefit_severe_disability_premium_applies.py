@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    non_dependants_residing_with,
+)
 
 
 class housing_benefit_severe_disability_premium_applies(Variable):
@@ -10,7 +13,12 @@ class housing_benefit_severe_disability_premium_applies(Variable):
         "Benefit severe disability premium: the claimant (and any partner) "
         "receives a qualifying disability benefit, and no non-dependant aged "
         "18 or over normally resides with them, other than one who receives "
-        "a qualifying benefit or is blind. A partner who is blind and "
+        "a qualifying benefit or is blind. Where the rent is shared, another "
+        "family's non-dependant resides with each joint occupier that "
+        "non_dependant_normally_resides_with gives, by default every one, "
+        "and a joint occupier's own family is never another's "
+        "non-dependant, whatever its rent (as for "
+        "housing_benefit_has_non_dependant). A partner who is blind and "
         "receives no qualifying benefit is treated as not being the "
         "claimant's partner, so the claimant is tested as a single person. "
         "Not modelled: who receives Carer's Allowance, Carer Support Payment "
@@ -22,6 +30,8 @@ class housing_benefit_severe_disability_premium_applies(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/6",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/3",
     )
 
     def formula(benunit, period, parameters):
@@ -53,10 +63,14 @@ class housing_benefit_severe_disability_premium_applies(Variable):
         ) | person("is_child_or_young_person_placed_with_family", period)
         within = benunit.any(adult_non_dependant & ~claimant_or_partner & ~young_person)
         liable_family = benunit.any(person("is_liable_for_household_rent", period))
-        outside = benunit.max(
-            person.household.sum(
-                adult_non_dependant
-                & person("is_non_dependant_of_household_head", period)
-            )
+        # Outside the family, reg 3(1), (2)(d) and (4): the non-dependants
+        # who normally reside with this joint occupier
+        # (non_dependant_normally_resides_with; LHA Guidance Manual paras
+        # 2.093 and 2.110). A member of a joint occupier's family is no one's
+        # non-dependant, even where the family has no rent of its own.
+        outside = non_dependants_residing_with(
+            benunit,
+            period,
+            adult_non_dependant & person("is_non_dependant_of_household_head", period),
         )
         return all_qualify & ~within & ~(liable_family & (outside > 0))

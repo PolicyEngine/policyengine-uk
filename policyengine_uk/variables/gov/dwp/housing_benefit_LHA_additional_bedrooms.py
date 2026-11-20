@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit_LHA_allowed_bedrooms import (
+    housing_benefit_other_occupiers,
+)
 
 
 class housing_benefit_LHA_additional_bedrooms(Variable):
@@ -14,7 +17,10 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "Occupiers outside the family count for a family liable for the "
         "rent: non-dependants, boarders and lodgers and their children, "
         "including a child placed with one of them as a foster child or for "
-        "adoption, but not a sharer of the rent. A child placed with the "
+        "adoption, but not a sharer of the rent. Where the rent is shared, a "
+        "non-dependant and their children count for each joint occupier they "
+        "normally reside with, as in housing_benefit_LHA_allowed_bedrooms. A "
+        "child placed with the "
         "claimant or partner counts as one for whom they are a qualifying "
         "parent or carer. Before 1 April 2017 only the claimant and partner "
         "counted for overnight care. The definitions require a bedroom in "
@@ -51,7 +57,11 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         )
         other = overnight_care & ~liable_family
         is_liable_claim = benunit.any(person("is_liable_for_household_rent", period))
-        others = where(is_liable_claim, benunit.max(person.household.sum(other)), 0)
+        # A non-dependant counts for each joint occupier they normally reside
+        # with (see housing_benefit_other_occupiers).
+        others = where(
+            is_liable_claim, housing_benefit_other_occupiers(benunit, period, other), 0
+        )
         # Reg 13D(3A)(a)(i)-(iv): the claimant, partner, other members of the
         # family, and a child or young person for whom the claimant or
         # partner is a qualifying parent or carer. Before 1 April 2017 (SI
