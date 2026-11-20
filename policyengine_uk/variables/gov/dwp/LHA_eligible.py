@@ -6,10 +6,15 @@ class LHA_eligible(Variable):
     entity = BenUnit
     label = "Eligibility for Local Housing Allowance"
     documentation = (
-        "Whether the local authority caps the benefit unit's Housing Benefit "
-        "eligible rent at the Local Housing Allowance: true where the benefit "
-        "unit rents, no member lives in social housing, and the household "
-        "doesn't live in a houseboat, caravan or mobile home."
+        "Whether the model takes the maximum rent (LHA) as the benefit unit's "
+        "Housing Benefit eligible rent (LHA_cap). By default this holds where "
+        "the benefit unit rents, no member lives in social housing, and the "
+        "household doesn't live in a houseboat, caravan or mobile home. "
+        "Otherwise housing_benefit_entitlement takes the rent less the "
+        "prescribed deduction for meals. The flag selects the eligible rent "
+        "only: housing_benefit_eligible reads the tenure, so a supplied value "
+        "takes a claim into or out of the LHA without deciding whether the "
+        "family can get Housing Benefit."
     )
     definition_period = YEAR
     reference = (
@@ -27,15 +32,15 @@ class LHA_eligible(Variable):
         # A local authority determines no maximum rent (LHA) where the claim
         # relates to rent for "a houseboat, caravan or mobile home which he
         # occupies as his home" (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i);
-        # Northern Ireland: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). For
-        # most of these claims it refers the rent to a rent officer and sets
-        # a maximum rent from the rent officer's determination (GB regs 14,
-        # 13 and 12C); in Northern Ireland the Housing Executive decides (NI
-        # regs 13B and 14). For an excluded tenancy, such as a pitch on a
-        # council's own caravan site, the eligible rent is the rent less
-        # ineligible charges (GB reg 12B and Sch 2). The model has no rent
-        # officer determination, so housing_benefit_entitlement takes the
-        # rent, less any charge for meals, as the eligible rent.
+        # Northern Ireland: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). It
+        # normally refers the rent to a rent officer and sets a maximum rent
+        # from the rent officer's determination (GB regs 14, 13 and 12C); in
+        # Northern Ireland the Housing Executive decides (NI regs 15, 14 and
+        # 13B). The model has no such determination. Here
+        # housing_benefit_entitlement takes the rent less the prescribed
+        # deduction for meals, which can exceed the eligible rent in law.
+        # The household's accommodation type stands in for the dwelling each
+        # of its benefit units pays for.
         accommodation = benunit.value_from_first_person(
             benunit.members.household("accommodation_type", period)
         )
