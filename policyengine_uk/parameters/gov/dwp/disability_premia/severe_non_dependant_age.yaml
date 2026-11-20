@@ -1,0 +1,15 @@
+description: >
+  A claimant loses the legacy severe disability premium if a non-dependant of
+  at least this age normally resides with them, unless that non-dependant
+  receives a severe disability premium qualifying benefit or is blind.
+metadata:
+  label: Legacy benefit severe disability premium non-dependant age
+  period: year
+  unit: year
+  reference:
+    - title: The Housing Benefit Regulations 2006 Sch. 3 para. 14(2)(a)(ii), (2)(b)(iii)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14
+    - title: The Income Support (General) Regulations 1987 Sch. 2 para. 13(2)(a)(ii), (2)(b)(iii)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13
+values:
+  2006-03-06: 18

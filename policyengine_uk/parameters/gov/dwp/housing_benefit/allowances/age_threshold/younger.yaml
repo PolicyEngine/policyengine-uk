@@ -4,8 +4,8 @@ metadata:
   period: year
   unit: year
   reference: 
-    - title: The Housing Benefit Regulations 2006 sec. 74
-      href: https://www.legislation.gov.uk/uksi/2006/213/made/data.pdf#page=73
+    - title: The Housing Benefit Regulations 2006, Schedule 3 paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/1
 
 values:
   2019-04-01: 18

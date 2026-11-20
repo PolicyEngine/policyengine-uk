@@ -1,12 +1,20 @@
 description: Working Tax Credit childcare element for one child.
 values:
+  # A fixed weekly limit, not uprated: each year's Up-rating Order leaves the
+  # Housing Benefit limit (HB Regs reg 27(3)) at £175, and it applied to the
+  # Working Tax Credit childcare element until tax credits ended in April 2025.
   2002-08-01: 135
   2005-04-06: 175
 metadata:
   period: week
   label: Working Tax Credit childcare element one child amount
-  uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
   reference:
-    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
-    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/20
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002, regulation 20
+      href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/20
+    - title: The Housing Benefit Regulations 2006, regulation 27(3)(a) (the same limit for Housing Benefit)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/27
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295), article 23(2) (£175 remains unchanged)
+      href: https://www.legislation.gov.uk/uksi/2025/295/article/23/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148), article 23(2) (£175 remains unchanged)
+      href: https://www.legislation.gov.uk/uksi/2026/148/article/23/made

@@ -1,0 +1,31 @@
+description: HMRC does not count a partner as in qualifying paid work, for another person's Tax-Free Childcare caring or incapacity route, while that partner is paid any of these benefits or allowances, or entitled to these credits.
+metadata:
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 13(3)
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/13
+    - title: The Childcare Payments (Miscellaneous Amendments) Regulations 2022 - Regulation 2(6)
+      href: https://www.legislation.gov.uk/uksi/2022/1148/regulation/2/made
+  period: year
+  unit: program
+  label: Tax-Free Childcare caring or incapacity benefits in payment
+values:
+  # Reg 13(3): "paid a benefit or an allowance, or is entitled to a credit,
+  # described in paragraph (1)(b)". Payment, not entitlement, for benefits and
+  # allowances, so an allowance reduced to nil by an overlapping benefit does
+  # not exclude the partner.
+  2015-01-01:
+    - incapacity_benefit  # 13(1)(b)(i) and (iii)
+    - sda  # 13(1)(b)(ii)
+    - carers_allowance  # 13(1)(b)(iv): the amount payable after overlapping benefits
+    - receives_carers_allowance  # 13(1)(b)(iv): carer's allowance supplied as received
+    - esa_contrib  # 13(1)(b)(v)
+    - receives_limited_capability_for_work_credits  # 13(1)(b)(vi): entitled to a credit
+  # SI 2022/1148 reg 2(6)(b) inserted 13(1)(b)(vii) from 1 December 2022.
+  2022-12-01:
+    - incapacity_benefit
+    - sda
+    - carers_allowance
+    - esa_contrib
+    - receives_limited_capability_for_work_credits
+    - carer_support_payment  # 13(1)(b)(vii): the amount payable after overlapping benefits
+    - receives_carer_benefit  # 13(1)(b)(iv) and (vii): a carer benefit supplied as received

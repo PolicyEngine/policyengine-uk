@@ -1,0 +1,22 @@
+description: >-
+  Age below which a child aged at least 1 puts their responsible carer in the
+  Universal Credit group subject to the work-focused interview requirement
+  only. The Act as passed covered a child "aged at least 1 and ... under a
+  prescribed age", prescribed as 5 and then, from 28 April 2014, as 3. Since 3
+  April 2017 the Act covers a child "who is aged 1".
+values:
+  2013-04-29: 5
+  2014-04-28: 3
+  2017-04-03: 2
+metadata:
+  unit: year
+  label: Universal Credit responsible carer work-focused interview only child age limit
+  reference:
+    - title: Welfare Reform Act 2012 s. 20(1)(a)
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/20
+    - title: The Universal Credit Regulations 2013 reg. 91(1), as made (prescribed age 5)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/91/made
+    - title: The Income Support (Work-Related Activity) and Miscellaneous Amendments Regulations 2014 reg. 16 (prescribed age 3)
+      href: https://www.legislation.gov.uk/uksi/2014/1097/regulation/16/made
+    - title: Welfare Reform and Work Act 2016 s. 17(1)(a) (a child aged 1, from 3 April 2017)
+      href: https://www.legislation.gov.uk/ukpga/2016/7/section/17

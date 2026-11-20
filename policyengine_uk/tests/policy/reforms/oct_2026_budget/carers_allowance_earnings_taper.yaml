@@ -1,0 +1,34 @@
+# Budget 2026 Carer's Allowance earnings taper (paragraph 6.13; policy
+# costings page 16), from 6 October 2030 until DWP confirms the date. The
+# amounts the taper pays follow the projected weekly rate, so
+# test_carers_allowance_earnings_taper.py checks them against the parameter
+# tree. These cases check what holds whatever the rate.
+#
+# A supplied carers_allowance_pre_overlap carries no dates, so the whole
+# year's overlapping benefits come off it, as before the taper, even where the
+# earnings condition says the allowance is paid for part of the year or none
+# of it (Overlapping Benefits Regulations 1979 regs 4 and 12).
+
+- name: 2030-31, Northern Ireland, a supplied award meets the whole year's State Pension.
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    carers_allowance_pre_overlap: 4_495.40
+    carers_allowance_earnings: 13_000
+    state_pension: 6_000
+    country: NORTHERN_IRELAND
+  output:
+    carers_allowance: 0
+
+- name: 2030-31, England, a supplied award over the limit meets the whole year's State Pension.
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    carers_allowance_pre_overlap: 4_495.40
+    carers_allowance_earnings: 13_000
+    state_pension: 2_000
+    country: ENGLAND
+  output:
+    carers_allowance: 2_495.40

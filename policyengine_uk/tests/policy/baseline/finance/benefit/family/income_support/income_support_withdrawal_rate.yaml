@@ -1,0 +1,447 @@
+# Existing annual-model continuing-award proxy: the parent reports Income Support.
+# No eligibility, allowance, assessable income or cash award is forced. The public
+# YAML dotted-input route reforms only the new dimensionless withdrawal rate.
+# 2024 model controls: 90.50 * 52 = 4,706; lone-parent disregard 20 * 52 = 1,040.
+# Pay 6,500 gives assessable income 5,460: default cash 0, half-rate cash 1,976.
+# Pay 2,000 gives assessable income 960: default cash 3,746, half-rate cash 4,226.
+# These inherited allowance/disregard controls are not a new rates or historical audit.
+
+- name: Default withdrawal exhausts an award above the old income cutoff
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 6500
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+  output:
+    income_support: 0
+    income_support_applicable_amount: 4706
+    income_support_applicable_income: 5460
+    income_support_eligible: true
+    income_tax:
+    - 0
+    - 0
+    national_insurance:
+    - 0
+    - 0
+    would_claim_IS: true
+- name: Default withdrawal preserves cash below the old income cutoff
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+  output:
+    income_support: 3746
+    income_support_applicable_amount: 4706
+    income_support_applicable_income: 960
+    income_support_eligible: true
+- name: Default withdrawal pays the full allowance at zero income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 0
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+  output:
+    income_support: 4706
+    income_support_applicable_income: 0
+    income_support_eligible: true
+- name: A half withdrawal rate pays cash above the old income cutoff
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 6500
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 1976
+    income_support_applicable_amount: 4706
+    income_support_applicable_income: 5460
+    income_support_eligible: true
+- name: A half withdrawal rate applies only to income below the old cutoff
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 4226
+    income_support_applicable_amount: 4706
+    income_support_applicable_income: 960
+- name: A half withdrawal rate preserves the full allowance at zero income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 0
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 4706
+- name: A zero withdrawal rate preserves the allowance despite assessable income
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 6500
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0
+  output:
+    income_support: 4706
+    income_support_applicable_income: 5460
+- name: A double withdrawal rate multiplies income rather than the allowance
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 2
+  output:
+    income_support: 2786
+    income_support_applicable_income: 960
+- name: The zero floor still applies under a double withdrawal rate
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 6500
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 2
+  output:
+    income_support: 0
+    income_support_eligible: true
+- name: A half withdrawal rate does not create an award without an existing report
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 0
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 0
+    # No reports enable the unchanged claim-all fallback, but not eligibility.
+    would_claim_IS: true
+    income_support_eligible: false
+- name: A half withdrawal rate preserves the remunerative work gate
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 832
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 0
+    income_support_remunerative_work_hours:
+    - 16
+    - 0
+    income_support_eligible: false
+- name: A half withdrawal rate preserves the capital limit
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+        savings: 16001
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 0
+    income_support_assessable_capital: 16001
+    income_support_eligible: false
+- name: A half withdrawal rate does not reopen Income Support in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 0
+    legacy_benefits_closed: true
+- name: A half withdrawal rate preserves tax credit migration closure
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+        income_support_reported: 100
+        employment_income: 2000
+        hours_worked: 520
+        child_tax_credit_reported: 100
+      child:
+        age: 4
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - parent
+        - child
+    households:
+      home:
+        members:
+        - parent
+        - child
+        region: LONDON
+    gov.dwp.income_support.means_test.withdrawal_rate: 0.5
+  output:
+    income_support: 0
+    legacy_benefits_closed: true

@@ -1,10 +1,10 @@
-description: Hours requirement for joint claimants of Jobseeker's Allowance.
+description: Income-based Jobseeker's Allowance treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more. Kept for existing users; the model reads gov.dwp.JSA.remunerative_work.partner_hours.
 values:
   2015-04-01:
     value: 24
     reference:
-      - title: The Jobseeker's Allowance Regulations 1996
-        href: https://www.legislation.gov.uk/uksi/1996/207/made
+      - title: The Jobseeker's Allowance Regulations 1996, regulation 51(1)(b)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/51
 metadata:
   unit: hour
   period: week

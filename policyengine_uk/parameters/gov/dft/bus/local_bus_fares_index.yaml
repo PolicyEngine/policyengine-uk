@@ -1,0 +1,65 @@
+description: DfT local bus fares index (table BUS0415a, March 2005 = 100) for each area
+  whose bus fares the model prices from journeys, from DfT's June 2026 release (quarters to
+  March 2026). Each value is the quarter-end figure DfT publishes, dated at the start of the
+  quarter it ends. fiscal_year_blend day-weights the quarters over each 6 April to 5 April
+  model year. After the last published quarter the index grows with the OBR consumer price
+  index. The yield per fare-paying boarding in a model year is the benchmark yield times this
+  index in that year over its value in the benchmark year. Northern Ireland has no published
+  index.
+metadata:
+  label: local bus fares index
+  propagate_metadata_to_children: true
+  fiscal_year_blend: true
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  # The June 2026 file (sha256 04721e9ade3b39c415ce2a0bcc045ec6d4ccb8afb6e33d525f619cf452bc7adf,
+  # 23,434 bytes) is the vintage Chronicle and Microcosm vendor. Its DfT address now serves
+  # the September 2026 release, which revises the December 2025 and March 2026 quarters and
+  # adds June 2026; move to it together with Microcosm. The archived copy does not change.
+  reference:
+  - title: DfT bus statistics, table BUS0415a, local bus fares index by metropolitan area status
+      and country, June 2026 release (archived copy)
+    href: https://web.archive.org/web/20260619124752/https://assets.publishing.service.gov.uk/media/6a310ac715f2a70fac7e6006/bus0415.ods
+  - title: DfT bus statistics data tables, BUS04 costs, fares and revenue (current release)
+    href: https://www.gov.uk/government/statistical-data-sets/bus04-costs-fares-and-revenue
+LONDON:
+  2023-01-01: 194.3  # quarter ending March 2023
+  2023-04-01: 194.3  # quarter ending June 2023
+  2023-07-01: 194.3  # quarter ending September 2023
+  2023-10-01: 194.3  # quarter ending December 2023
+  2024-01-01: 196.1  # quarter ending March 2024
+  2024-04-01: 196.1  # quarter ending June 2024
+  2024-07-01: 196.1  # quarter ending September 2024
+  2024-10-01: 196.1  # quarter ending December 2024
+  2025-01-01: 196.1  # quarter ending March 2025
+  2025-04-01: 196.1  # quarter ending June 2025
+  2025-07-01: 196.1  # quarter ending September 2025
+  2025-10-01: 196.1  # quarter ending December 2025
+  2026-01-01: 196.10649454164795  # quarter ending March 2026, unrounded in the DfT file
+ENGLAND_OUTSIDE_LONDON:
+  2023-01-01: 173.1  # quarter ending March 2023
+  2023-04-01: 175.6  # quarter ending June 2023
+  2023-07-01: 177.8  # quarter ending September 2023
+  2023-10-01: 178.8  # quarter ending December 2023
+  2024-01-01: 179.9  # quarter ending March 2024
+  2024-04-01: 181.6  # quarter ending June 2024
+  2024-07-01: 185.7  # quarter ending September 2024
+  2024-10-01: 185.9  # quarter ending December 2024
+  2025-01-01: 206.4  # quarter ending March 2025
+  2025-04-01: 210.5  # quarter ending June 2025
+  2025-07-01: 213.6  # quarter ending September 2025
+  2025-10-01: 214.3  # quarter ending December 2025
+  2026-01-01: 217.95569364121366  # quarter ending March 2026, unrounded in the DfT file
+SCOTLAND:
+  2023-01-01: 185.2  # quarter ending March 2023
+  2023-04-01: 203.1  # quarter ending June 2023
+  2023-07-01: 203.1  # quarter ending September 2023
+  2023-10-01: 203.1  # quarter ending December 2023
+  2024-01-01: 203.3  # quarter ending March 2024
+  2024-04-01: 207.7  # quarter ending June 2024
+  2024-07-01: 210.9  # quarter ending September 2024
+  2024-10-01: 211.3  # quarter ending December 2024
+  2025-01-01: 211.5  # quarter ending March 2025
+  2025-04-01: 228  # quarter ending June 2025
+  2025-07-01: 228.4  # quarter ending September 2025
+  2025-10-01: 228.4  # quarter ending December 2025
+  2026-01-01: 234.6832699716523  # quarter ending March 2026, unrounded in the DfT file

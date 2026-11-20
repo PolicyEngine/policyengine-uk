@@ -5,7 +5,12 @@ import pandas as pd
 class child_index(Variable):
     value_type = int
     entity = Person
-    label = "Child reference number"
+    label = "Rank by age among benefit-unit members under 18 (deprecated)"
+    documentation = (
+        "Deprecated: an age cut-off with no legal basis, kept only for "
+        "downstream compatibility with its original formula. Nothing in "
+        "policyengine-uk uses it. Use the programme's own child index (for example uc_child_index) instead."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):

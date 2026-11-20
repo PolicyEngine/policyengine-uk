@@ -1,0 +1,11 @@
+description: Penny precision for the favorable fractional-penny calculation of Carer Support Payment weekly earnings.
+values:
+  2023-11-19: 0.01
+metadata:
+  economy: false
+  period: week
+  unit: currency-GBP
+  label: Carer Support Payment earnings rounding precision
+  reference:
+    - title: The Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023, schedule 2 paragraph 4
+      href: https://www.legislation.gov.uk/ssi/2023/302/schedule/2/paragraph/4

@@ -23,8 +23,13 @@ SCHEDULE_INPUTS = (
 def legacy_capital_gains_tax(sim, year):
     """The single-schedule formula as it stood before #1858, on the same arrays.
 
-    Copied operation for operation so that any difference in the result is a
-    difference in the new formula, not in the comparison.
+    Its schedule allocation is copied operation for operation, so a difference
+    there is a difference in the new formula. Its income and allowance inputs
+    follow the current model (#2253 moved Gift Aid out of the allowances), so
+    it checks how gains are allocated to the schedules, not equivalence with
+    any earlier treatment of Gift Aid. Its higher band likewise follows the
+    current model, which stacks gains on top of taxable income, rather than
+    giving every gainer the whole band as the formula before #1858 did.
     """
     hmrc = sim.tax_benefit_system.parameters(str(year)).gov.hmrc
     cgt = hmrc.cgt
@@ -40,11 +45,13 @@ def legacy_capital_gains_tax(sim, year):
     basic_rate_band_extension = (
         get("gift_aid_grossed_up") + personal_pension_band_extension
     )
+    # Gift Aid is no longer in allowances; the pre-Gift-Aid income base
+    # reproduces the old income/allowance add-backs without double relief.
     allowances_for_cgt_income = max_(
         0,
-        get("allowances") - get("gift_aid") - personal_pension_band_extension,
+        get("allowances") - personal_pension_band_extension,
     )
-    taxable_income = max_(0, get("adjusted_net_income") - allowances_for_cgt_income)
+    taxable_income = max_(0, get("net_income") - allowances_for_cgt_income)
     gains = max_(0, get("capital_gains"))
     aea = cgt.annual_exempt_amount
     gains_less_aea = max_(0, gains - aea)
@@ -56,9 +63,11 @@ def legacy_capital_gains_tax(sim, year):
         gains_less_aea - remaining_basic_rate_band, 0
     )
     higher_rate_limit = it.rates.uk.thresholds[2] + basic_rate_band_extension
+    # Gains stack on top of taxable income (TCGA 1992 s. 1H), so the higher
+    # band left for them starts at taxable income or the basic rate limit.
     higher_rate_applicable_cg = min_(
         higher_and_add_rate_applicable_cg,
-        higher_rate_limit - basic_rate_limit,
+        max_(higher_rate_limit - max_(taxable_income, basic_rate_limit), 0),
     )
     add_rate_applicable_cg = max_(
         higher_and_add_rate_applicable_cg - higher_rate_applicable_cg, 0
@@ -219,6 +228,9 @@ class TestResponsePlumbing:
         changes = {
             "gov.hmrc.cgt.residential_property.higher_rate": {str(year): 0.30},
             "gov.hmrc.cgt.residential_property.additional_rate": {str(year): 0.30},
+            # The marginal tax rate convention, with the retention-rate
+            # default switched off.
+            "gov.simulation.capital_gains_responses.elasticity": {str(year): 0},
             "gov.simulation.capital_gains_responses.mtr_elasticity": {str(year): -0.5},
         }
         sim = Microsimulation(
@@ -299,12 +311,19 @@ class TestEqualisationReforms:
         "gov.hmrc.cgt.badr.lifetime_limit": {"2025": 0},
     }
     SCHEDULES = (None, *SCHEDULE_INPUTS)
+    # Which schedules a reform reaches shows in the tax on gains held fixed,
+    # so the reforms here switch the realisation response off.
+    STATIC = {"gov.simulation.capital_gains_responses.elasticity": {"2025": 0}}
 
     def tax(self, schedule, changes=None):
         variables = {"employment_income": 100_000, "capital_gains": 100_000}
         if schedule is not None:
             variables[schedule] = 100_000
-        kwargs = {"scenario": Scenario(parameter_changes=changes)} if changes else {}
+        kwargs = (
+            {"scenario": Scenario(parameter_changes={**changes, **self.STATIC})}
+            if changes
+            else {}
+        )
         sim = Microsimulation(situation=single_person(self.YEAR, **variables), **kwargs)
         return float(sim.calculate("capital_gains_tax", self.YEAR).values[0])
 
@@ -312,9 +331,11 @@ class TestEqualisationReforms:
         baseline = {s: self.tax(s) for s in self.SCHEDULES}
         reformed = {s: self.tax(s, self.MAIN_RATES_ONLY) for s in self.SCHEDULES}
 
-        # 97,000 above the AEA, all above the basic rate band: 87,440 at 40%
-        # and 9,560 at 45%.
-        assert reformed[None] == pytest.approx(39_278)
+        # Taxable income is 100,000 - 12,570 = 87,430, so the 97,000 above the
+        # AEA is all above the basic rate band. The higher band left on top of
+        # that income is 125,140 - 87,430 = 37,710: 37,710 at 40% and 59,290
+        # at 45%.
+        assert reformed[None] == pytest.approx(41_764.5)
         for schedule in SCHEDULE_INPUTS:
             assert reformed[schedule] == baseline[schedule], schedule
 
@@ -322,7 +343,86 @@ class TestEqualisationReforms:
         reformed = {s: self.tax(s, self.EVERY_SCHEDULE) for s in self.SCHEDULES}
 
         for schedule in self.SCHEDULES:
-            assert reformed[schedule] == pytest.approx(39_278), schedule
+            assert reformed[schedule] == pytest.approx(41_764.5), schedule
+
+
+class TestExemptionAllocation:
+    """The annual exempt amount goes where it saves most (TCGA 1992 s. 1K(5)).
+
+    Gains stack on taxable income, so a schedule's top gains can be at its
+    additional rate. The exemption is set for each person, pound by pound,
+    against the gains where it saves most, so it moves to another schedule
+    once a schedule's gains fall to a lower rate.
+    """
+
+    YEAR = 2025
+    # The tax on gains held fixed shows where the exemption goes, so the
+    # realisation response is switched off.
+    ADDITIONAL_RATE_ONLY = {
+        "gov.hmrc.cgt.additional_rate": {"2025": 0.45},
+        "gov.simulation.capital_gains_responses.elasticity": {"2025": 0},
+    }
+
+    def test_exemption_follows_each_persons_top_rate(self):
+        people, benunits, households = {}, {}, {}
+        for i, income in enumerate((200_000, 100_000)):
+            people[f"person_{i}"] = {
+                "age": {self.YEAR: 45},
+                "employment_income": {self.YEAR: income},
+                "capital_gains": {self.YEAR: 50_000},
+                "capital_gains_residential_property": {self.YEAR: 25_000},
+            }
+            benunits[f"benunit_{i}"] = {"members": [f"person_{i}"]}
+            households[f"household_{i}"] = {"members": [f"person_{i}"]}
+        sim = Microsimulation(
+            situation={
+                "people": people,
+                "benunits": benunits,
+                "households": households,
+            },
+            scenario=Scenario(parameter_changes=self.ADDITIONAL_RATE_ONLY),
+        )
+        tax = sim.calculate("capital_gains_tax", self.YEAR).values
+
+        # Taxable income 200,000 is above the higher rate limit, so main
+        # gains are at the reformed 45% and residential gains at 24%. The
+        # 3,000 exemption goes against main gains: 25,000 x 0.24 + 22,000 x
+        # 0.45 = 15,900, not 22,000 x 0.24 + 25,000 x 0.45 = 16,530.
+        assert tax[0] == pytest.approx(15_900)
+        # Taxable income 87,430 leaves 37,710 of higher band. Main gains fill
+        # it first, so none reach the 45% rate and every gain is at 24%:
+        # 47,000 x 0.24, wherever the exemption goes.
+        assert tax[1] == pytest.approx(11_280)
+
+    def test_exemption_moves_on_when_the_marginal_rate_falls(self):
+        sim = Microsimulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {self.YEAR: 45},
+                        "employment_income": {self.YEAR: 124_000},
+                        "capital_gains": {self.YEAR: 27_000},
+                        "capital_gains_carried_interest": {self.YEAR: 25_000},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {
+                    "household": {
+                        "members": ["person"],
+                        "region": {self.YEAR: "LONDON"},
+                    }
+                },
+            },
+            scenario=Scenario(parameter_changes=self.ADDITIONAL_RATE_ONLY),
+        )
+        tax = sim.calculate("capital_gains_tax", self.YEAR).values
+
+        # Taxable income 123,430 leaves 1,710 of higher band, so 290 of the
+        # 2,000 main gains are at 45% and the rest at 24%; carried interest
+        # is at 32%. The exemption takes the 290 at 45%, then 2,710 of
+        # carried interest: 1,710 x 0.24 + 22,290 x 0.32 = 7,543.20, not
+        # 7,680 from exempting all the main gains first.
+        assert tax[0] == pytest.approx(7_543.20)
 
 
 class TestScheduleParameters:

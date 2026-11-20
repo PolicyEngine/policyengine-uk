@@ -8,7 +8,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -18,7 +17,7 @@
         members: [p1, c1]
         savings: 1000
   output:
-    income_support: 5252.0073
+    income_support: 4786.60  # 92.05 a week (2025-26)
 
 - name: Income Support is zero after scheme ended on 31 March 2026
   period: 2026
@@ -30,7 +29,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -52,7 +50,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]

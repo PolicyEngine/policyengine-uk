@@ -1,0 +1,9 @@
+description: Income Support lone-parent youngest-child age limit, applied inclusively under the existing annual-age approximation although legislation specifies under this age.
+values:
+  2012-05-21: 5
+metadata:
+  unit: year
+  label: income support lone parent child age limit
+  reference:
+    - title: Income Support (General) Regulations 1987, Schedule 1B paragraph 1
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B

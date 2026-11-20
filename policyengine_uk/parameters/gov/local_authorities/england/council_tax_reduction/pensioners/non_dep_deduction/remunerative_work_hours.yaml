@@ -1,0 +1,10 @@
+description: England pensioner Council Tax Reduction treats a person working at least this many hours a week as in remunerative work, which puts a non-dependant on the income-banded deduction.
+values:
+  2013-04-01: 16
+metadata:
+  label: England pensioner CTR remunerative work hours
+  unit: hour
+  period: week
+  reference:
+    - title: Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012, reg. 10(1)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/regulation/10

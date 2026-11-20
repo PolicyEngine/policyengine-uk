@@ -1,0 +1,16 @@
+description: Whether the Pension Tax Allowance applies in the tax year.
+values:
+  0001-01-01: false
+  2027-04-06: true
+  # "The Pension Tax Allowance will apply from April 2027 for tax years
+  # 2027-28, 2028-29 and 2029-30."
+  2030-04-06: false
+metadata:
+  unit: bool
+  period: year
+  label: Pension Tax Allowance in effect
+  reference:
+    - title: HM Treasury, Pension Tax Allowance explainer, FAQ (tax years 2027-28 to 2029-30)
+      href: https://www.gov.uk/government/publications/pension-tax-allowance-explainer/pension-tax-allowance-explainer
+    - title: Budget 2026, Table 6.1, item 52 (from 6 April 2027 until 5 April 2030)
+      href: https://assets.publishing.service.gov.uk/media/6ae187a2779378370fd80a9a/Table_6.1_and_6.2_Budget_2026_Policy_Decisions.xlsx

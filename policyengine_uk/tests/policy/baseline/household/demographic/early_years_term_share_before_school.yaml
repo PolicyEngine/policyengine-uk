@@ -1,0 +1,114 @@
+# The share of the year's terms (from 1 April, 1 September and 1 January)
+# that begin before the child starts school, from the date of birth.
+# England and Wales: reception in the September following the fourth birthday
+# (School Admissions Code 2021 para 2.17; DfE statutory guidance, C.5).
+- name: An English 4-year-old with a fourth birthday on 31 August starts reception that September
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    age: 4
+    date_of_birth: 20220831
+    country: ENGLAND
+  output:
+    # The summer term only.
+    early_years_term_share_before_school: 0.3333
+
+- name: An English 4-year-old with a fourth birthday on 1 September starts reception a year later
+  period: 2026
+  input:
+    age: 4
+    date_of_birth: 20220901
+    country: ENGLAND
+  output:
+    early_years_term_share_before_school: 1
+
+# Without a date of birth a whole age is the middle of the year of age: born
+# on 6 April.
+- name: Without a date of birth a 4-year-old starts reception in September, a 3-year-old a year later and a 5-year-old has started
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      aged_3:
+        age: 3
+      aged_4:
+        age: 4
+      aged_5:
+        age: 5
+    households:
+      household:
+        members: [aged_3, aged_4, aged_5]
+        country: ENGLAND
+  output:
+    early_years_term_share_before_school: [1, 0.3333, 0]
+
+- name: Wales follows the same September cohort
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    age: 4
+    date_of_birth: 20220831
+    country: WALES
+  output:
+    early_years_term_share_before_school: 0.3333
+
+# Scotland: primary 1 starts in August for children who turn five by the
+# council's latest date, the end of February (Education (Scotland) Act 1980
+# s.32), so the cohort runs from 1 March to the end of February.
+- name: A Scottish child born on 28 February starts primary 1 in the August after its fourth birthday
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    age: 4
+    date_of_birth: 20220228
+    country: SCOTLAND
+  output:
+    early_years_term_share_before_school: 0.3333
+
+- name: A Scottish child born on 1 March starts primary 1 a year later
+  period: 2026
+  input:
+    age: 4
+    date_of_birth: 20220301
+    country: SCOTLAND
+  output:
+    early_years_term_share_before_school: 1
+
+# Northern Ireland: primary 1 starts in September for children who are four by
+# 1 July (Education and Libraries (Northern Ireland) Order 1986 art 46(2)).
+- name: A Northern Irish child who is four by 1 July starts primary 1 that September
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      four_by_1_july:
+        age: 4
+        date_of_birth: 20220701
+      four_on_2_july:
+        age: 4
+        date_of_birth: 20220702
+    households:
+      household:
+        members: [four_by_1_july, four_on_2_july]
+        country: NORTHERN_IRELAND
+  output:
+    early_years_term_share_before_school: [0.3333, 1]
+
+- name: Deferring one child's start keeps its year and leaves a sibling on its date of birth
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    people:
+      deferred:
+        age: 4
+        date_of_birth: 20220831
+        early_years_school_start_deferred: true
+      sibling:
+        age: 4
+        date_of_birth: 20211015
+    households:
+      household:
+        members: [deferred, sibling]
+        country: ENGLAND
+  output:
+    early_years_term_share_before_school: [1, 0.3333]

@@ -1,20 +1,23 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import birth_day
 
 
 class is_CTC_child_limit_exempt(Variable):
     value_type = bool
     entity = Person
     label = "Exemption from Child Tax Credit child limit"
-    documentation = "Exemption from Child Tax Credit limit on number of children based on birth year"
+    documentation = (
+        "Whether the Child Tax Credit child limit does not apply to this child "
+        "or qualifying young person because they were born before 6 April 2017."
+    )
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/ukpga/2002/21/section/9"
 
     def formula(person, period, parameters):
-        limit_year = parameters(
-            period
-        ).gov.dwp.tax_credits.child_tax_credit.limit.start_year
-        # Children must be born before April 2017.
-        # We use < 2017 as the closer approximation than <= 2017.
-        born_before_limit = person("birth_year", period) < limit_year
+        limit = parameters(period).gov.dwp.tax_credits.child_tax_credit.limit
+        # Tax Credits Act 2002 s.9(3A): the limit applies to a child or
+        # qualifying young person born on or after 6 April 2017.
+        born_before_limit = birth_day(person, period) < limit.born_before
 
         # Reform proposal
         age_exemption = (

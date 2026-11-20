@@ -1,0 +1,36 @@
+description: >
+  The model counts the care component of disability living allowance at the
+  highest rate and the daily living component of personal independence
+  payment at either rate, for the applicant or a member of the applicant's
+  family, towards the enhanced disability premium in Westminster City
+  Council's working-age Council Tax Support scheme. It omits armed forces
+  independence payment, and counts each award only for a person under the
+  qualifying age for State Pension Credit. This is the Default Scheme's list
+  (S.I. 2012/2886 Sch 3 para 12). The council has approved the same scheme,
+  based on the Default Scheme Regulations, since 2013/14, and its Cabinet
+  says from December 2020 that the council's local scheme mirrors those
+  Regulations. The model cites no full Westminster scheme text.
+  The model reads the list as at 30 April of each year.
+metadata:
+  label: Westminster Council Tax Support enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: Report of the Cabinet, 10 December 2018, Council Tax (archived copy; the same scheme for 2019/20, based on the Default Scheme Regulations)
+      href: https://web.archive.org/web/20220927103652id_/https://committees.westminster.gov.uk/documents/s30518/Report%20of%20the%20Cabinet%20on%2010%20Dec%202018%20-%20Council%20Tax.pdf
+    - title: Statement of decision, Council Tax Discounts including Council Tax Local Reduction Scheme, 2020/21 (archived copy)
+      href: https://web.archive.org/web/20250501010325id_/https://committees.westminster.gov.uk/documents/d1138/Printed%20decision%20Council%20Tax%20Discounts%20including%20Council%20Tax%20Local%20Reduction%20Scheme%20and%20Council%20T.pdf?T=5
+    - title: Report of the Cabinet, 14 December 2020, Council Tax Discounts (archived copy; the Default Scheme Regulations "are mirrored within the City Council's local scheme")
+      href: https://web.archive.org/web/20240621074656id_/https://committees.westminster.gov.uk/documents/s40219/Report%20of%20the%20Cabinet%2014%20December%202020%20-Council%20Tax%20Discounts.pdf
+    - title: Cabinet report, 13 December 2021, Council Tax Taxbase and Discounts (archived copy)
+      href: https://web.archive.org/web/20211205134208id_/https://committees.westminster.gov.uk/documents/s45385/Cabinet%20Report%20-%20Council%20Tax%20Taxbase%20and%20Discounts%20Report.pdf
+    - title: Cabinet report, 12 December 2022, Council Tax Discounts (archived copy)
+      href: https://web.archive.org/web/20230106164259id_/https://committees.westminster.gov.uk/documents/s50264/Council%20Tax%20Discounts.pdf
+    - title: Cabinet report, 11 December 2023, Council Tax Discounts including Council Tax Local Reduction Scheme (archived copy)
+      href: https://web.archive.org/web/20250207010503id_/https://committees.westminster.gov.uk/documents/s57091/Council%20Tax%20Discounts%20including%20Council%20Tax%20Local%20Reduction%20Scheme%20and%20Council%20Tax%20Base%20report.pdf
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012 Sch. 3 para. 12 (as made)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/appendix/3/regulation/12/made
+values:
+  2013-04-01:
+    - has_highest_dla_sc_award
+    - pip_dl

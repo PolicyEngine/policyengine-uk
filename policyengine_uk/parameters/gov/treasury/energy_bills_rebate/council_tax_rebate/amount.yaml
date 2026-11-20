@@ -1,8 +1,20 @@
 description: Council Tax rebate paid to households in qualifying Council Tax bands under the Energy Bills Rebate.
+# A one-off £150 per household in 2022-23. Eligibility was fixed at the end of
+# 1 April 2022, and billing authorities had to make every payment by
+# 30 September 2022 (billing authority guidance, paragraphs 7, 14 and 19).
+# 2023-24 had no rebate.
 values:
   0001-01-01: 0
-  2022-01-01: 150
-  2023-10-01: 0
+  2022-04-01:
+    value: 150
+    reference:
+      - title: The Council Tax Rebate 2022-23 billing authority guidance, paragraphs 7, 14 and 19
+        href: https://www.gov.uk/government/publications/the-council-tax-rebate-2022-23-billing-authority-guidance/support-for-energy-bills-the-council-tax-rebate-2022-23-billing-authority-guidance
+  2022-10-01:
+    value: 0
+    reference:
+      - title: The Council Tax Rebate 2022-23 billing authority guidance, paragraph 7 (payments made by 30 September 2022)
+        href: https://www.gov.uk/government/publications/the-council-tax-rebate-2022-23-billing-authority-guidance/support-for-energy-bills-the-council-tax-rebate-2022-23-billing-authority-guidance
 metadata:
   unit: currency-GBP
   period: year

@@ -1,30 +1,26 @@
-description: Cumulative index of rail ridership (passenger journeys). Base year 2020 = 1.0. Used for uprating the quantity component of rail subsidy spending.
+description: Index of passenger journeys on Great Britain's railways. Financial year 2020-21 = 1.0.
+# ORR Table 1220, passenger journeys in millions (published 18 June 2026),
+# divided by the 2020-21 figure, 387.885m, rounded to 4 decimals. The
+# financial year starting in April of year t is stored at t-01-01. ORR marks
+# every year from 2020-21 provisional.
+#
+# No official body forecasts passenger journeys, so from 2026-27 the index is
+# held at its 2025-26 level: journeys are assumed to stay flat.
+#
+# Dataset projection grows rail_usage by this index per household
+# (gov.economic_assumptions.yoy_growth.orr.per_capita.rail_passenger_journeys),
+# as household weights already grow by ons.population (#1862).
 values:
-  # Base year (COVID-affected)
-  2020-01-01: 1.000
-  # 2021: Recovery year
-  2021-01-01: 0.400
-  # 2022: Continued recovery
-  2022-01-01: 0.700
-  # 2023: Near full recovery
-  2023-01-01: 0.900
-  # 2024: Full recovery plus growth
-  2024-01-01: 0.950
-  # 2025: +1.9% growth (ORR/Steer projected trend)
-  2025-01-01: 0.968
-  # 2026: +1.9% growth
-  2026-01-01: 0.986
-  # 2027: +1.9% growth
-  2027-01-01: 1.005
-  # 2028: +1.9% growth
-  2028-01-01: 1.024
-  # 2029: +1.9% growth
-  2029-01-01: 1.044
+  2020-01-01: 1.0  # 387.885m
+  2021-01-01: 2.5525  # 990.062 / 387.885
+  2022-01-01: 3.5700  # 1,384.752 / 387.885
+  2023-01-01: 4.1559  # 1,612.028 / 387.885
+  2024-01-01: 4.4567  # 1,728.704 / 387.885
+  2025-01-01: 4.7165  # 1,829.468 / 387.885
+  2026-01-01: 4.7165  # held flat (assumption)
 metadata:
   unit: /1
   label: Rail ridership index
   reference:
-    - title: ORR Passenger Rail Usage Statistics
-      href: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/
-    - title: Steer - UK Rail Demand Forecasting
-      href: https://www.steergroup.com/
+    - title: ORR, Table 1220 Passenger journeys, Great Britain, January 1872 to March 2026 (18 June 2026)
+      href: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/table-1220-passenger-journeys/

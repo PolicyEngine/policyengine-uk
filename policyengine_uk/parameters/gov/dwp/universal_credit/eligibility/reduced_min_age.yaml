@@ -1,0 +1,9 @@
+description: Reduced minimum age for Universal Credit claimants meeting an age exception.
+values:
+  2013-04-29: 16
+metadata:
+  unit: year
+  label: universal credit reduced minimum age
+  reference:
+    - title: The Universal Credit Regulations 2013, regulation 8(1)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/8

@@ -209,3 +209,26 @@
   output:
     adult_dependants_grant_eligible: [false, false]
     adult_dependants_grant: [0, 0]
+
+# The partner route needs a partner (SI 2011/1986 reg 44(2)(a)); an older child
+# still at school is a dependant, not a partner.
+- name: A lone parent with an 18-year-old at school has no partner for Adult Dependants' Grant
+  period: 2025
+  input:
+    people:
+      student:
+        age: 30
+        is_parent: true
+      teenager:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [student, teenager]
+    households:
+      household:
+        members: [student, teenager]
+        country: ENGLAND
+  output:
+    is_couple: false
+    adult_dependants_grant_adult_eligible: [false, false]

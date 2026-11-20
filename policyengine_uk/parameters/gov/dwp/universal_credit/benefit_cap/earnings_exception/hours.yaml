@@ -1,0 +1,22 @@
+description: >-
+  Weekly hours at the national living wage that set the earnings threshold of
+  the Universal Credit benefit cap's earnings exception. Regulation 82(1)(a)
+  lifts the cap where the claimant's earned income, or a couple's combined
+  earned income, is at least the pay for these hours at the hourly rate in
+  regulation 4 of the National Minimum Wage Regulations, converted to a monthly
+  amount by multiplying by 52 and dividing by 12. Fractions of a pound in that
+  monthly amount are disregarded (regulation 6(1A)(za)). Before 1 April 2017 the
+  threshold was a fixed monthly amount instead.
+values:
+  2017-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit benefit cap earnings exception hours
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 82(1)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+    - title: The Universal Credit Regulations 2013 reg. 6(1A)(za)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/6
+    - title: The Universal Credit (Benefit Cap Earnings Exception) Amendment Regulations 2017 regs. 1 and 2
+      href: https://www.legislation.gov.uk/uksi/2017/138/made

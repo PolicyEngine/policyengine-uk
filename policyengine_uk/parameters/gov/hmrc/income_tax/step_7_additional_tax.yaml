@@ -1,0 +1,16 @@
+description: Charges to Income Tax added at Step 7 of the Income Tax calculation, after the tax reductions, so tax reductions do not offset them. The winter fuel payment charge is also a Step 7 amount, added separately in income_tax after income_tax_before_winter_fuel_payment_charge to avoid the cycle through benefit means tests. This list holds the other modelled Step 7 charges; it does not cover every provision in section 30.
+metadata:
+  label: Step 7 additional income tax
+  unit: list
+  period: year
+  reference:
+    - title: Income Tax Act 2007 s. 23 (Step 7)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/23
+    - title: Income Tax Act 2007 s. 30(1)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/30
+    - title: Finance Act 2026 Sch. 10 para. 4(3) (winter fuel payment charge)
+      href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10/paragraph/4
+values:
+  0000-01-01:
+    - CB_HITC
+    - personal_pension_contributions_tax

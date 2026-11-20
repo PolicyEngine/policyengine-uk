@@ -1,10 +1,33 @@
-description: Starter allowance for savings.
+description: Annual starting-rate limit for savings income.
+# ITA 2007 s21(3A) increases the previous rounded annual limit by positive
+# September CPI and rounds the result up to a multiple of £10. FA 2026 s9
+# fixes £5,000 through 2030-31 and disapplies that indexation. From 2031-32,
+# create_threshold_indexation.py applies the statutory step, so this file
+# has no generic uprating. The pre-2015 model entry is retained unchanged;
+# this prospective indexation fix does not verify that historical amount.
 values:
   2010-04-01: 5_000
+  2015-04-06:
+    value: 5_000
+    metadata:
+      reference:
+        - title: Finance Act 2014 s. 3 (2) and (3)
+          href: https://www.legislation.gov.uk/ukpga/2014/26/section/3
+  2026-04-06: 5_000
+  2027-04-06: 5_000
+  2028-04-06: 5_000
+  2029-04-06: 5_000
+  2030-04-06: 5_000
 metadata:
-  period: week
+  period: year
   unit: currency-GBP
   label: Savings starter rate allowance
-  reference: 
-  - title: Tax on savings interest
-    href: https://www.gov.uk/apply-tax-free-interest-on-savings
+  reference:
+    - title: Income Tax Act 2007 s. 12 (3) and (4)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/12
+    - title: Income Tax Act 2007 s. 21 (1), (3A), (5) and (6)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/21
+    - title: Finance Act 2026 s. 9 (freeze for 2026-27 to 2030-31)
+      href: https://www.legislation.gov.uk/ukpga/2026/11/section/9
+    - title: Tax on savings interest
+      href: https://www.gov.uk/apply-tax-free-interest-on-savings

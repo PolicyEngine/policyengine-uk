@@ -1,0 +1,56 @@
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/25
+# Only claimant and partner contribute capital weights. The equal allocation of
+# household stocks is a PolicyEngine convention, not a statutory allocation rule.
+- name: Housing Benefit capital allocation includes a claimant aged 17
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 17
+      unrelated_claimant:
+        age: 30
+    benunits:
+      claimant_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [claimant]
+      unrelated_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [unrelated_claimant]
+    households:
+      household:
+        members: [claimant, unrelated_claimant]
+        savings: 18_000
+  output:
+    # Two claimants: each gets 18,000 * 1 / 2 = 9,000.
+    # Previously the under-18 claimant had zero weight: [0, 18,000].
+    housing_benefit_assessable_capital: [9_000, 9_000]
+
+- name: Housing Benefit capital allocation excludes a dependent student aged 19
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+      student:
+        age: 19
+        is_in_non_advanced_education: true
+      unrelated_claimant:
+        age: 30
+    benunits:
+      claimant_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [claimant, student]
+      unrelated_benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [unrelated_claimant]
+    households:
+      household:
+        members: [claimant, student, unrelated_claimant]
+        savings: 18_000
+  output:
+    # The dependent student adds no weight. Each claimant gets 18,000 / 2.
+    # Previously the student's unit got 18,000 * 2 / 3 = 12,000 (other: 6,000).
+    housing_benefit_assessable_capital: [9_000, 9_000]

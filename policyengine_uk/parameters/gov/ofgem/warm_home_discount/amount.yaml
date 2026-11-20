@@ -1,0 +1,18 @@
+description: Rebate that a scheme electricity supplier gives each eligible customer in England and Wales under the Warm Home Discount, once per scheme year.
+values:
+  2022-04-01:
+    value: 150
+    metadata:
+      reference:
+        - title: The Warm Home Discount (England and Wales) Regulations 2022, reg. 3 ("prescribed rebate")
+          href: https://www.legislation.gov.uk/uksi/2022/772/regulation/3/made
+  2026-04-01:
+    value: 150
+    metadata:
+      reference:
+        - title: The Warm Home Discount (England and Wales) Regulations 2026, reg. 3 ("prescribed rebate")
+          href: https://www.legislation.gov.uk/uksi/2026/389/regulation/3/made
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Warm Home Discount amount

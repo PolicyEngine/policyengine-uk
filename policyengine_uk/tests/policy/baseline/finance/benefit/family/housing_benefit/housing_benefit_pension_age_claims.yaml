@@ -40,7 +40,7 @@
     benunits:
       benunit:
         members: [older, younger]
-        BRMA_LHA_rate: 8_000
+        housing_benefit_LHA_rate: 8_000
     households:
       household:
         members: [older, younger]
@@ -62,7 +62,7 @@
     benunits:
       benunit:
         members: [person]
-        BRMA_LHA_rate: 12_000
+        housing_benefit_LHA_rate: 12_000
         housing_benefit_applicable_income: 20_000
     households:
       household:

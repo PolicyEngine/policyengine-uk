@@ -1,0 +1,19 @@
+description: Assumed minimum share of Child Benefit recovered by the High Income
+  Child Benefit Charge at which a registered, opted-out family continues to forgo
+  payment. The default of one assumes opt-outs persist only while fully charged.
+  This is a behavioural modelling assumption, not a statutory eligibility rule.
+  Microcosm selects fully charged families first and can use the taper for any
+  remaining opt-out target; this threshold does not reproduce that fallback draw.
+values:
+  0001-01-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Child Benefit opt-out charge share assumption
+  reference:
+    - title: Child Benefit opt-out modelling issue
+      href: https://github.com/PolicyEngine/policyengine-uk/issues/2065
+    - title: Review recommendation for reform-responsive opt-outs
+      href: https://github.com/PolicyEngine/policyengine-uk/pull/2140#issuecomment-5992591745
+    - title: Microcosm Child Benefit claims and opt-outs, full-charge-first selection
+      href: https://github.com/PolicyEngine/microcosm/blob/4163b819402d9417554e0cb4e9ff890973897c24/packages/microcosm-build/src/microcosm/build/uk_runtime/child_benefit_take_up.py#L629

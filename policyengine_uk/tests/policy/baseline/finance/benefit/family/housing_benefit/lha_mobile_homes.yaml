@@ -1,11 +1,12 @@
 # No maximum rent (LHA) is determined where the claim relates to rent for "a
 # houseboat, caravan or mobile home which he occupies as his home" (SI 2006/213
-# and SI 2006/214 reg 13C(5)(d)(i)). The model takes such a family's rent as its
-# eligible rent. It stays eligible for Housing Benefit, because those payments
-# are still rent (reg 12(1)).
+# and SI 2006/214 reg 13C(5)(d)(i); Northern Ireland: SR 2006/405 and SR 2006/406
+# reg 14C(5)(d)(i)). The model takes such a family's rent as its eligible rent.
+# It stays eligible for Housing Benefit, because those payments are still rent
+# (reg 12(1); NI reg 13(1)).
 
 - name: Private renter in a caravan is outside the LHA
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
@@ -13,7 +14,7 @@
     LHA_eligible: false
 
 - name: Private renter in a flat is within the LHA
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_PRIVATELY
     accommodation_type: FLAT
@@ -21,7 +22,7 @@
     LHA_eligible: true
 
 - name: Private renter with unknown accommodation is within the LHA
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_PRIVATELY
     accommodation_type: UNKNOWN
@@ -30,7 +31,7 @@
 
 - name: Housing association tenant in a caravan is outside the LHA
   # The landlord exclusion (reg 13C(5)(a)) applies whatever the dwelling.
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_FROM_HA
     accommodation_type: MOBILE
@@ -38,7 +39,7 @@
     LHA_eligible: false
 
 - name: Owner of a caravan is not renting
-  period: 2026
+  period: 2025
   input:
     tenure_type: OWNED_OUTRIGHT
     accommodation_type: MOBILE
@@ -46,7 +47,7 @@
     LHA_eligible: false
 
 - name: Pension-age private renter in a caravan can claim Housing Benefit
-  period: 2026
+  period: 2025
   input:
     age: 70
     tenure_type: RENT_PRIVATELY
@@ -62,7 +63,7 @@
 - name: Caravan renter's eligible rent is the rent, not the LHA
   # Income is below the applicable amount, so the award is the eligible rent
   # (reg 70): the full rent of 10,400, not the LHA of 9,467.64.
-  period: 2026
+  period: 2025
   absolute_error_margin: 0.01
   input:
     tenure_type: RENT_PRIVATELY
@@ -77,7 +78,7 @@
 
 - name: Flat renter's eligible rent is capped at the LHA
   # Same family in a flat: the eligible rent is the LHA of 9,467.64.
-  period: 2026
+  period: 2025
   absolute_error_margin: 0.01
   input:
     tenure_type: RENT_PRIVATELY
@@ -93,7 +94,7 @@
 - name: Caravan renter's taper comes off the full rent
   # Income of 14,948.80 exceeds the applicable amount by 1,636.80, and 65% of
   # that (1,063.92) comes off the eligible rent of 10,400 (reg 71): 9,336.08.
-  period: 2026
+  period: 2025
   absolute_error_margin: 0.01
   input:
     tenure_type: RENT_PRIVATELY
@@ -109,7 +110,7 @@
 - name: Pension-age caravan renter with no income receives the full rent
   # Every step computed: no income, so the award is the rent of 20,000 even
   # though it is above the North East LHA rate.
-  period: 2026
+  period: 2025
   absolute_error_margin: 0.01
   input:
     age: 70
@@ -129,7 +130,7 @@
 # housing at the LHA (paras 20(1), 22 and 25(2)), whatever the home.
 
 - name: Universal Credit caps a caravan renter at the LHA
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
@@ -141,7 +142,7 @@
 
 - name: Universal Credit pays a housing association caravan tenant's rent
   # Sch 4 Part 5 (social rented sector) applies, with no LHA cap.
-  period: 2026
+  period: 2025
   input:
     tenure_type: RENT_FROM_HA
     accommodation_type: MOBILE

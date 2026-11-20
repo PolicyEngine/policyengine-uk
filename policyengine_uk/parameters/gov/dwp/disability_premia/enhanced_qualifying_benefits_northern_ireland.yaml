@@ -1,0 +1,47 @@
+description: >
+  Claimants and partners in Northern Ireland qualify for the legacy enhanced
+  disability premium through the care component of disability living allowance
+  at the highest rate. In Income Support, Jobseeker's Allowance, Housing
+  Benefit and Employment and Support Allowance, they also qualify through
+  armed forces independence payment from 24 December 2013 under S.I.
+  2013/3021, and through the daily living component of personal independence
+  payment at the enhanced rate from 20 June 2016 under S.R. 2016/228. The
+  model reads the list as at 30 April of each year from 2015 and does not
+  prorate a change made during a year, so it counts the daily living component
+  from 2017. The model dates the first value from the Great Britain list's
+  start, not from the commencement of S.R. 2006/405 on 20 November 2006.
+metadata:
+  label: Northern Ireland legacy benefit enhanced disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 Sch. 4 para. 15(1)(aa), (b), (c)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4/paragraph/15
+    - title: The Employment and Support Allowance Regulations (Northern Ireland) 2008 Sch. 4 para. 7(1)(aa), (b), (c)
+      href: https://www.legislation.gov.uk/nisr/2008/280/schedule/4/paragraph/7
+    - title: S.I. 2013/3021 art. 1 (commencement)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/1
+    - title: S.I. 2013/3021 art. 14(5)(d) (Income Support)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/14
+    - title: S.I. 2013/3021 art. 17(7)(d) (Jobseeker's Allowance)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/17
+    - title: S.I. 2013/3021 art. 26(6)(d) (Housing Benefit)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/26
+    - title: S.R. 2016/228 reg. 1 (commencement)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/1
+    - title: S.R. 2016/228 reg. 11 (Income Support)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/11
+    - title: S.R. 2016/228 reg. 14 (Jobseeker's Allowance)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/14
+    - title: S.R. 2016/228 reg. 30(7)(d) (Housing Benefit)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/30
+values:
+  2006-03-06:
+    - has_highest_dla_sc_award
+  2013-12-24:
+    - has_highest_dla_sc_award
+    - armed_forces_independence_payment
+  2016-06-20:
+    - has_highest_dla_sc_award
+    - has_enhanced_pip_dl_award
+    - armed_forces_independence_payment

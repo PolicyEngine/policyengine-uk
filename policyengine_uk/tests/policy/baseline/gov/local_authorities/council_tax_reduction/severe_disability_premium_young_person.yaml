@@ -1,0 +1,197 @@
+# SSI2021/249 regs6,8(2)(a),Sch1para13. Existing2026 model controls:
+# allowance95.55*52=4968.60; severe86.05*52=4474.60; withdrawal20%.
+# PIP qualifies SDP but generic disability flag is separately supplied/defaultfalse.
+# Enhanced PIP daily living also qualifies for the enhanced disability premium,
+# 22.00*52=1144 (HB Regs 2006 Sch3 para15(1)(c); IS Regs 1987 Sch2
+# para13A(1ZA)(c); SSI2021/249 Sch1 para14(1)(f)).
+# Pension12570:no tax; PIP disregarded; Child Benefit claim declined.
+# CTR=2000-20%*(12570-6112.60):708.52 under the shared formula and Scotland's
+# working-age route alike. Where the student is a UC qualifying young person,
+# that route (council_tax_reduction_devolved_working_age) makes the applicant
+# a lone parent with a child premium: (95.55 + 109.85 + 86.05 severe disability
+# premium + 22.00 enhanced disability premium) * 52 = 16,299.40 (SSI 2026/56
+# reg 14), above the 12,570 income, so the award is the full 2,000. The shared
+# council_tax_reduction_applicable_amount (10,587.20) has no child amounts and
+# no longer sets the award.
+# Annual UC terminal-date input represents unavailable assessment-period detail.
+# Reverse case supplies CB family status: input-contract composition,
+# not a naturally derived eligibility pair or full statutory rate audit.
+# Shared HB premium component and IS applicable amount are protected below.
+# This household has no continuing HB claim, so its gated HB applicable
+# amount is0; it is not used as a positive HB-payment regression oracle.
+- name: 'Terminal-date input contract: CB young person after UC terminal date removes
+    Scottish CTR premium'
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_claimant_or_partner: true
+        pip_dl_category: ENHANCED
+        private_pension_income: 12570
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - applicant
+        - student
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+        would_claim_child_benefit: false
+    households:
+      home:
+        members:
+        - applicant
+        - student
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 2000
+        savings: 0
+  output:
+    # 2000 - 20% * (12570 - 6112.60) = 708.52.
+    simulated_council_tax_reduction_benunit: 708.52
+    is_council_tax_reduction_lone_parent: false
+    # 4968.60 + 1144.
+    council_tax_reduction_working_age_applicable_amount: 6112.6
+    disability_premium: 0
+    enhanced_disability_premium: 1144
+    severe_disability_premium: 4474.6
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_applicable_income: 12570
+    # 4968.60 + 1144 (enhanced disability premium only).
+    council_tax_reduction_applicable_amount: 6112.6
+    council_tax_reduction_non_dep_deductions: 0
+    severe_disability_premium_before_non_dependant_test: 4474.6
+    council_tax_reduction_severe_disability_premium: 0
+    # 4474.60 + 1144 = 5618.60; IS 4968.60 + 5618.60 = 10587.20.
+    working_age_benefits_premiums: 5618.6
+    benefits_premiums: 5618.6
+    income_support_applicable_amount: 10587.2
+- name: Before terminal date both definitions retain Scottish CTR premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_claimant_or_partner: true
+        pip_dl_category: ENHANCED
+        private_pension_income: 12570
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members:
+        - applicant
+        - student
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+        would_claim_child_benefit: false
+    households:
+      home:
+        members:
+        - applicant
+        - student
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 2000
+        savings: 0
+  output:
+    simulated_council_tax_reduction_benunit: 2000
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_working_age_child_amounts: 109.85 * 52
+    council_tax_reduction_working_age_adult_premiums: (86.05 + 22.00) * 52
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 109.85 + 86.05 + 22.00) * 52
+    council_tax_reduction_working_age_applicable_income: 12570
+    disability_premium: 0
+    enhanced_disability_premium: 1144
+    severe_disability_premium: 4474.6
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_applicable_income: 12570
+    # 4968.60 + 4474.60 + 1144 = 10587.20.
+    council_tax_reduction_applicable_amount: 10587.2
+    council_tax_reduction_non_dep_deductions: 0
+    severe_disability_premium_before_non_dependant_test: 4474.6
+    council_tax_reduction_severe_disability_premium: 4474.6
+    working_age_benefits_premiums: 5618.6
+    benefits_premiums: 5618.6
+    income_support_applicable_amount: 10587.2
+- name: 'Supplied-status contract: UC young person outside CB family restores Scottish
+    CTR premium'
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_claimant_or_partner: true
+        pip_dl_category: ENHANCED
+        private_pension_income: 12570
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        is_claimant_or_partner: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      family:
+        members:
+        - applicant
+        - student
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        would_claim_IS: false
+        would_claim_pc: false
+        would_claim_CTC: false
+        would_claim_WTC: false
+        would_claim_child_benefit: false
+    households:
+      home:
+        members:
+        - applicant
+        - student
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 2000
+        savings: 0
+  output:
+    simulated_council_tax_reduction_benunit: 2000
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_working_age_child_amounts: 109.85 * 52
+    council_tax_reduction_working_age_adult_premiums: (86.05 + 22.00) * 52
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 109.85 + 86.05 + 22.00) * 52
+    council_tax_reduction_working_age_applicable_income: 12570
+    disability_premium: 0
+    enhanced_disability_premium: 1144
+    severe_disability_premium: 0
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_applicable_income: 12570
+    # 4968.60 + 4474.60 + 1144 = 10587.20.
+    council_tax_reduction_applicable_amount: 10587.2
+    council_tax_reduction_non_dep_deductions: 0
+    severe_disability_premium_before_non_dependant_test: 4474.6
+    council_tax_reduction_severe_disability_premium: 4474.6
+    # The non-dependant bars only the severe premium: 1144; IS 4968.60 +
+    # 1144 = 6112.60.
+    working_age_benefits_premiums: 1144
+    benefits_premiums: 1144
+    income_support_applicable_amount: 6112.6

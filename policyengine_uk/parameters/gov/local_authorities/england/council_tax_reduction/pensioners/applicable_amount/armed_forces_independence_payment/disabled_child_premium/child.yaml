@@ -1,0 +1,16 @@
+description: Councils in England count a child (under 16) in a pensioner's family for the disabled child premium under the England Council Tax Reduction prescribed requirements when an armed forces independence payment (AFIP) is payable for them, if this is true.
+values:
+  2015-04-01:
+    value: false
+    reference:
+      - title: SI 2012/2885 Sch. 2 para. 8, as in force on 30 April 2015, which has no AFIP limb; nor has the text in force on 30 April 2022
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2015-04-30
+      - title: SI 2012/2885 Sch. 2 para. 8(e), as in force on 30 April 2023, which reaches only a young person
+        href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2023-04-30
+metadata:
+  unit: bool
+  period: year
+  label: England Council Tax Reduction pensioner disabled child premium AFIP route for a child
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch. 2 paras. 7 and 8
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2

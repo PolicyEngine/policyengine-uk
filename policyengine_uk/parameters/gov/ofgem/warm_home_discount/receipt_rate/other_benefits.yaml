@@ -1,0 +1,12 @@
+description: Share of households receiving a qualifying benefit other than Pension Credit in England and Wales that receive the Warm Home Discount rebate. The Department for Energy Security and Net Zero bases this on delivery experience of the scheme, where around 70% of recipients of other means-tested benefits become rebate recipients. The impact assessment tests 60% and 80% as low and high sensitivities.
+values:
+  2025-04-01: 0.7
+metadata:
+  unit: /1
+  period: year
+  label: Warm Home Discount receipt rate, other qualifying benefit households
+  reference:
+    - title: "DESNZ, Continuing the Warm Home Discount 2026-2031: final stage impact assessment (DESNZ002(F)-26-EAC, 30 January 2026), para. 40 (page 11) and Table 8 (page 16)"
+      href: https://assets.publishing.service.gov.uk/media/6978a8b51c24881f40a4d675/continuing-the-warm-home-discount-scheme-impact-assessment.pdf#page=11
+    - title: "DESNZ, Continuing the Warm Home Discount 2026-2031: final stage impact assessment, para. 105 and Table 13 (pages 29 and 31; 60% and 80% sensitivities)"
+      href: https://assets.publishing.service.gov.uk/media/6978a8b51c24881f40a4d675/continuing-the-warm-home-discount-scheme-impact-assessment.pdf#page=29

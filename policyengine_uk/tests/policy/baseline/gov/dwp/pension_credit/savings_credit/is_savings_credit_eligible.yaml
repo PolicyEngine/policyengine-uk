@@ -24,7 +24,6 @@
     benunits:
       benunit:
         members: [person]
-        relation_type: SINGLE
         savings_credit_income: 10200
   output:
     is_savings_credit_eligible: true
@@ -40,7 +39,6 @@
     benunits:
       benunit:
         members: [person]
-        relation_type: SINGLE
         savings_credit_income: 10_000
   output:
     is_savings_credit_eligible: false
@@ -60,7 +58,6 @@
     benunits:
       benunit:
         members: [person, spouse]
-        relation_type: COUPLE
         savings_credit_income: 16000
   output:
     is_savings_credit_eligible: true
@@ -80,7 +77,92 @@
     benunits:
       benunit:
         members: [person, spouse]
-        relation_type: COUPLE
         savings_credit_income: 16000
   output:
+    is_savings_credit_eligible: false
+
+- name: A nonclaimant's age-requirement flag cannot establish Savings Credit eligibility.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 68
+      young_person:
+        age: 19
+        is_claimant_or_partner: false
+        # Deliberate override to isolate s.3(1)'s claimant/partner restriction.
+        meets_savings_credit_age_requirement: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        savings_credit_income: 12_000
+  output:
+    # 12,000 > 208.07 * 52, but no claimant reached SPA before the cutoff.
+    is_savings_credit_eligible: false
+
+- name: Case 6, 2025 single claimant below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        # One penny below 198.27 * 52.
+        savings_credit_income: 10_310.03
+  output:
+    is_savings_credit_eligible: false
+
+- name: Case 7, 2025 couple below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+      person2:
+        age: 78
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person, person2]
+        relation_type: COUPLE
+        savings_credit_income: 16_000
+  output:
+    is_savings_credit_eligible: false
+
+- name: Case 8, 2025 single claimant above the published threshold is eligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        # One penny above 198.27 * 52.
+        savings_credit_income: 10_310.05
+  output:
+    is_savings_credit_eligible: true
+
+- name: Case 9, 2027 uses the threshold derived from the two projection bases.
+  period: 2027
+  input:
+    people:
+      person:
+        age: 82
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 11_220
+  output:
+    # Plain CPI: 208.07 * 1.035 * 52 = 11,198.33, below this income.
+    # Derived: (247.282 - 18.588570 / 0.6) * 52 = 11,247.65, above it.
     is_savings_credit_eligible: false

@@ -17,7 +17,6 @@ class state_pension_type(Variable):
 
     def formula(person, period, parameters):
         sp = parameters.gov.dwp.state_pension
-        male = person("is_male", period)
         is_sp_age = person("is_SP_age", period)
 
         # Find the instant the New State Pension was first switched on.
@@ -37,14 +36,17 @@ class state_pension_type(Variable):
                 is_sp_age, StatePensionType.BASIC, StatePensionType.NONE
             )
         else:
-            instant = activation_entry.instant_str
-            years_since_instant = period.start.year - int(instant[:4])
-            male_age = sp.age.male(instant) + years_since_instant
-            female_age = sp.age.female(instant) + years_since_instant
-            age = person("age", period)
-            over_age = where(male, age >= male_age, age >= female_age)
+            # Pensions Act 2014 s.1(2): a person who reaches pensionable age
+            # before 6 April 2016 is not entitled to the new State Pension,
+            # and stays on the basic State Pension instead.
+            first_year = int(activation_entry.instant_str[:4])
+            months_from_start_to_mid_year = 12 * (period.start.year - first_year) + 6
+            reached_before_start = (
+                person("months_since_state_pension_age", period)
+                > months_from_start_to_mid_year
+            )
             values_if_sp_age = where(
-                over_age, StatePensionType.BASIC, StatePensionType.NEW
+                reached_before_start, StatePensionType.BASIC, StatePensionType.NEW
             )
 
         return where(is_sp_age, values_if_sp_age, StatePensionType.NONE)

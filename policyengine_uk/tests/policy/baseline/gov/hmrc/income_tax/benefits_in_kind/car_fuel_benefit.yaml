@@ -1,0 +1,131 @@
+# The car fuel benefit (ITEPA 2003 ss. 149 to 152). HMRC 480 Chapter 13
+# gives the worked example for 2021-22:
+# https://www.gov.uk/guidance/taxable-fuel-provided-for-company-cars-and-vans-480-chapter-13
+
+- name: HMRC 480 paragraph 13.6, a petrol car first registered on or after 6 April 2020, in 2021-22
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 30_000
+    company_car_co2_emissions: 160
+    company_car_registered_from_6_april_2020: true
+    company_car_private_fuel_provided: true
+  output:
+    # The appropriate percentage for the car is 36%, and the 2021-22 car
+    # fuel benefit charge is £24,600 x 36% = £8,856.
+    company_car_appropriate_percentage: 0.36
+    car_fuel_benefit: 8_856
+
+- name: Diesel car not meeting RDE2 with private fuel, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 15_000
+    company_car_co2_emissions: 156
+    company_car_fuel_type: DIESEL_NON_RDE2
+    company_car_private_fuel_provided: true
+  output:
+    # The car's 37% of the £29,200 multiplier (SI 2025/1254): £10,804.
+    car_fuel_benefit: 10_804
+
+- name: 2027-28 uses the multiplier announced at Budget 2026
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 120
+    company_car_private_fuel_provided: true
+  output:
+    # 120 g/km is 30% in 2027-28 (HMRC future rates table). OOTLAR
+    # paragraph 2.6 gives a £30,200 multiplier: £30,200 x 30% = £9,060.
+    car_fuel_benefit: 9_060
+
+- name: No fuel benefit when private fuel is made good in full
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    company_car_list_price: 15_000
+    company_car_co2_emissions: 156
+    company_car_private_fuel_provided: false
+  output:
+    # s. 151, condition A.
+    car_fuel_benefit: 0
+
+- name: No fuel benefit for a car that cannot emit CO2
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    company_car_list_price: 40_000
+    company_car_co2_emissions: 0
+    company_car_fuel_type: ELECTRIC
+    company_car_private_fuel_provided: true
+  output:
+    # s. 149(4): energy for such a car is not fuel.
+    car_fuel_benefit: 0
+
+- name: Fuel benefit is reduced for days the car is unavailable
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 15_000
+    company_car_co2_emissions: 156
+    company_car_fuel_type: DIESEL_NON_RDE2
+    company_car_private_fuel_provided: true
+    company_car_availability: 0.5
+  output:
+    # s. 152(1): £10,804 x 0.5 = £5,402.
+    car_fuel_benefit: 5_402
+
+- name: Payments for private use and capital contributions do not reduce the fuel benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 15_000
+    company_car_capital_contributions: 5_000
+    company_car_co2_emissions: 156
+    company_car_fuel_type: DIESEL_NON_RDE2
+    company_car_private_fuel_provided: true
+    company_car_private_use_payments: 10_000
+  output:
+    # HMRC 480 paragraph 13.1: a fuel benefit arises even where these
+    # reduce the car benefit to nil.
+    company_car_benefit: 0
+    car_fuel_benefit: 10_804
+
+- name: No fuel benefit without a company car
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    company_car_co2_emissions: 120
+    company_car_private_fuel_provided: true
+  output:
+    car_fuel_benefit: 0
+
+- name: Fuel benefit for a 1-50 g/km hybrid, in 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 32_000
+    company_car_co2_emissions: 40
+    company_car_electric_range: 35
+    company_car_private_fuel_provided: true
+  output:
+    # 30-39 miles is 14% (HMRC 480 Appendix 2, 2026-27): the petrol it
+    # burns is fuel, the electricity is not (s. 149(4)).
+    # £29,200 x 14% = £4,088.
+    car_fuel_benefit: 4_088
+
+- name: Fuel benefit under the s. 139A rates, in 2021-22
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    company_car_list_price: 22_000
+    company_car_co2_emissions: 50
+    company_car_electric_range: 65
+    company_car_registered_from_6_april_2020: true
+    company_car_private_fuel_provided: true
+  output:
+    # WLTP, 40-69 miles: 7% (HMRC 480 Appendix 2, 2021-22).
+    # £24,600 x 7% = £1,722.
+    company_car_appropriate_percentage: 0.07
+    car_fuel_benefit: 1_722

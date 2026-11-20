@@ -32,7 +32,7 @@ class TestAbolishBenefitCapScenario:
 
         baseline_reduction = baseline.calculate("benefit_cap_reduction", 2026)
         baseline_uc = baseline.calculate("universal_credit", 2026)
-        reformed_cap = reformed.calculate("benefit_cap", 2026)
+        reformed_cap = reformed.calculate("uc_benefit_cap", 2026)
         reformed_reduction = reformed.calculate("benefit_cap_reduction", 2026)
         reformed_uc = reformed.calculate("universal_credit", 2026)
         reformed_uc_pre_cap = reformed.calculate(
@@ -40,8 +40,11 @@ class TestAbolishBenefitCapScenario:
         )
 
         assert baseline_reduction[0] > 0
-        assert np.isfinite(baseline.calculate("benefit_cap", 2026)[0])
+        assert np.isfinite(baseline.calculate("uc_benefit_cap", 2026)[0])
         assert np.isinf(reformed_cap[0])
+        # The scenario lifts the Housing Benefit cap too: both schemes read
+        # the same annual limits.
+        assert np.isinf(reformed.calculate("housing_benefit_benefit_cap", 2026)[0])
         assert reformed_reduction.tolist() == [0.0]
         assert reformed_uc.tolist() == reformed_uc_pre_cap.tolist()
         assert reformed_uc[0] > baseline_uc[0]

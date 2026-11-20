@@ -1,0 +1,34 @@
+"""Who the claimants of a Universal Credit award are.
+
+A claim is made by a single person or jointly by the two members of a couple
+(Welfare Reform Act 2012 s. 2(1)). The work-related groups of ss. 19 to 22 and
+the minimum income floor of the Universal Credit Regulations 2013 reg. 62
+apply to claimants.
+"""
+
+
+def claimants(person, period):
+    """The single claimant or the joint claimants.
+
+    The members of the couple are `is_uc_assessed_claimant`: at most two
+    people in a benefit unit. A partner who cannot be a joint claimant (reg.
+    3(3)) is a member of the couple but not a claimant: no work-related group
+    or floor applies to them.
+    """
+    return person("is_uc_assessed_claimant", period) & ~person(
+        "uc_is_ineligible_partner", period
+    )
+
+
+def other_member_of_single_claim(person, period):
+    """The partner of a member of a couple who claims as a single person.
+
+    Under reg. 3(3) the member who can claim does so as a single person. The
+    other member is still in the couple, so their capital and income count
+    (regs. 18(2) and 22(3)), but they are not a claimant for the rules that
+    read "a claimant". A flag on a person with no claimant beside them (a
+    single person, or a couple neither of whom can claim) marks no such claim.
+    """
+    return person("uc_is_ineligible_partner", period) & person.benunit(
+        "uc_member_of_couple_claims_as_single_person", period
+    )

@@ -5,20 +5,56 @@ class severe_disability_premium(Variable):
     value_type = float
     entity = BenUnit
     label = "Severe disability premium"
+    documentation = (
+        "Legacy benefit severe disability premium. A single claimant qualifies "
+        "if they receive a qualifying benefit; a couple qualifies only if both "
+        "partners do, or if one does and the other is blind (the blind "
+        "partner is then treated as absent and the single rate applies). The "
+        "Regulations treat only the claimant's blind partner as absent; the "
+        "model assumes the qualifying partner is the claimant, as a couple "
+        "can arrange for Housing Benefit (HB Regs reg 82(1)). There must be "
+        "no non-dependant aged 18 or over, other than one who receives a "
+        "qualifying benefit or is blind. A single claimant (or one whose blind "
+        "partner is treated as absent) must have no one paid a carer benefit "
+        "for caring for them. A couple who both qualify get the double rate "
+        "when no carer benefit is paid for either of them, the single rate "
+        "when one is paid for only one of them, and nothing when carers are "
+        "paid for both. is_cared_for_by_carer_benefit_recipient attributes "
+        "each carer benefit to the person it is paid for caring for, and the "
+        "Pension Credit severe disability addition shares it. The attribution "
+        "counts an award of Universal Credit which includes the carer "
+        "element (has_uc_award_with_carer_element). A carer whose award "
+        "comes to nil, after any non-dependant deduction or because the "
+        "family takes Tax-Free Childcare instead, does not bar the premium. "
+        "Not modelled: a carer's "
+        "allowance or carer element that would be paid but for a loss of "
+        "benefit restriction under section 6B or 7 of the Social Security "
+        "Fraud Act 2001 also counts (HB Regs 2006 Sch 3 para 14(7), IS Regs "
+        "1987 Sch 2 para 13(5), ESA Regs 2008 Sch 4 para 6(8), JSA Regs 1996 "
+        "Sch 1 para 15(9)); the model has no input for such a restriction, so "
+        "where one applies it can pay a premium the law withholds. The "
+        "Jobseeker's Allowance savings for people protected by the Income "
+        "Support (General) Amendment (No. 6) Regulations 1991 (JSA Regs 1996 "
+        "Sch 1 para 15(8)) are not modelled; income-based Jobseeker's "
+        "Allowance is a reported amount in the model, so this changes no "
+        "modelled payment."
+    )
     definition_period = YEAR
     reference = (
-        "The Social Security Amendment (Enhanced Disability Premium) Regulations 2000"
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/4",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/15",
+        "https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6",
+        "https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15",
+        "https://www.legislation.gov.uk/ukpga/2001/11/section/6B",
+        "https://www.legislation.gov.uk/ukpga/2001/11/section/7",
     )
     unit = GBP
 
     def formula(benunit, period, parameters):
-        dis = parameters(period).gov.dwp.disability_premia
-        single = benunit("is_single", period.this_year)
-        couple = benunit("is_couple", period.this_year)
-        single_premium = single * dis.severe_single
-        couple_premium = couple * dis.severe_couple
-        has_severely_disabled_adults = (
-            benunit("num_severely_disabled_adults", period.this_year) > 0
+        amount = benunit("severe_disability_premium_before_non_dependant_test", period)
+        no_non_dependant = ~benunit(
+            "has_non_dependant_for_severe_disability_premium", period
         )
-        weekly_amount = single_premium + couple_premium
-        return weekly_amount * WEEKS_IN_YEAR * has_severely_disabled_adults
+        return amount * no_non_dependant

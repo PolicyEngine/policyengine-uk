@@ -1,0 +1,25 @@
+description: >-
+  Expected weekly hours DWP uses for the responsible carer of a child who has
+  reached compulsory school age and is under 13. The regulation leaves the
+  number to the Secretary of State ("compatible with the child's normal school
+  hours"). DWP's stated expectation was 25 hours. For the minimum income
+  floor it became a maximum of 30 hours for lead carers found gainfully
+  self-employed from 31 January 2024, and DWP began raising existing floors to
+  it from February 2025, the date used here. Work coaches can set fewer hours
+  for a claimant's circumstances; the model uses the maximum.
+values:
+  2013-04-29: 25
+  2025-02-01: 30
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit expected hours for the responsible carer of a school-age child under 13
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 88(2)(b)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/88
+    - title: DWP, Advice for Decision Making, chapter J2, J2086
+      href: https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide
+    - title: "DWP, Gainfully self-employed lead carers with youngest child aged 3-12 (increase in expected hours), deposited paper DEP2024-0673"
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/073_Gainfully_SE_lead_carer_youngest_child_age_3_12_expctd_hrs_V1.0.pdf
+    - title: Written answer 129349, 28 April 2026
+      href: https://questions-statements.parliament.uk/written-questions/detail/2026-04-22/129349

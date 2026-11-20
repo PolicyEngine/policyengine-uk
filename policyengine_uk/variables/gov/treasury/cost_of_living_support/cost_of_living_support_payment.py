@@ -3,31 +3,35 @@ from policyengine_uk.model_api import *
 
 class cost_of_living_support_payment(Variable):
     label = "Cost-of-living support payment"
+    documentation = (
+        "The household's Cost of Living Payments in the year: the "
+        "means-tested payment to each of its qualifying benefit units, the "
+        "disability payment to each of its qualifying members, and the "
+        "pensioner payment once if the household has a Winter Fuel Payment."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
     unit = GBP
+    reference = [
+        "https://www.legislation.gov.uk/ukpga/2022/38/section/1",
+        "https://www.legislation.gov.uk/ukpga/2022/38/section/5",
+        "https://www.legislation.gov.uk/ukpga/2023/7/section/1",
+        "https://www.legislation.gov.uk/ukpga/2023/7/section/5",
+        "https://www.gov.uk/guidance/cost-of-living-payment#pensioner-cost-of-living-payment",
+    ]
 
     def formula(household, period, parameters):
-        col = parameters(period).gov.treasury.cost_of_living_support
-        on_means_tested_benefits = (
-            add(
-                household,
-                period,
-                col.means_tested_households.qualifying_benefits,
-            )
-            > 0
+        pensioners = parameters(period).gov.treasury.cost_of_living_support.pensioners
+        unit_and_person_payments = add(
+            household,
+            period,
+            [
+                "cost_of_living_means_tested_payment",
+                "cost_of_living_disability_payment",
+            ],
         )
-        means_test_bonus = col.means_tested_households.amount * on_means_tested_benefits
-
-        on_pensioner_benefits = (
-            add(household, period, col.pensioners.qualifying_benefits) > 0
+        on_pensioner_benefit = (
+            add(household, period, pensioners.qualifying_benefits) > 0
         )
-        pensioner_bonus = col.pensioners.amount * on_pensioner_benefits
-
-        on_disability_benefits = (
-            add(household, period, col.disabled.qualifying_benefits) > 0
-        )
-        disabled_bonus = col.disabled.amount * on_disability_benefits
-
-        return means_test_bonus + pensioner_bonus + disabled_bonus
+        return unit_and_person_payments + pensioners.amount * on_pensioner_benefit

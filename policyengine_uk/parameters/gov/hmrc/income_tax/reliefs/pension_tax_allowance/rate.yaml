@@ -1,0 +1,12 @@
+description: Rate applied to the full new State Pension above the Personal Allowance to give the full Pension Tax Allowance. It is the UK basic rate for every taxpayer, Scottish taxpayers included.
+values:
+  2027-04-06: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Pension Tax Allowance rate
+  reference:
+    - title: HM Treasury, Pension Tax Allowance explainer, FAQ (Scottish taxpayers use the 20% basic rate)
+      href: https://www.gov.uk/government/publications/pension-tax-allowance-explainer/pension-tax-allowance-explainer
+    - title: Budget 2026 policy costings, page 63 (the tax otherwise due on the new State Pension above the Personal Allowance)
+      href: https://assets.publishing.service.gov.uk/media/6ae1883fe4367e5c8b0467df/AB26_Policy_Costing.pdf#page=63

@@ -1,0 +1,9 @@
+description: Income Support personal allowance age threshold for older single claimants.
+values:
+  1988-04-11: 25
+metadata:
+  unit: year
+  label: income support older allowance age threshold
+  reference:
+    - title: Income Support (General) Regulations 1987, Schedule 2 paragraph 1
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2

@@ -1,0 +1,17 @@
+description: >
+  Whether the Merton council tax reduction scheme for people under pension age
+  disregards the whole capital of an applicant on Income Support, income-based
+  Jobseeker's Allowance or income-related Employment and Support Allowance.
+  The council's 2026-27 scheme disregards the whole capital of an applicant on
+  Income Support, income-based Jobseeker's Allowance or income-related
+  Employment and Support Allowance (Schedule 10 paragraph 8), as the default
+  scheme does.
+metadata:
+  label: Merton council tax reduction disregards passported applicants' capital
+  unit: bool
+  period: year
+  reference:
+    - title: London Borough of Merton Council Tax Reduction Scheme 2026-27, Schedule 10 para. 8
+      href: https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf
+values:
+  2026-04-01: true

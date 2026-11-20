@@ -1,0 +1,9 @@
+description: Minimum age for the specified Working Tax Credit 16-hour and parental routes.
+values:
+  # Joint-claim variations inserted by SI 2012/848 from 6 April 2012.
+  2012-04-06: 16
+metadata:
+  unit: year
+  reference:
+    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002, regulation 4
+    href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/4/2024-04-06

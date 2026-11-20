@@ -6,3 +6,49 @@
     property_purchased: false
     main_residential_property_purchased: 0
     stamp_duty_land_tax: 0
+
+# Issue #2238 reproducer: one adult, £80,000 earnings, London, a £600,000 main
+# residence and £2,000,000 of other residential property. Before the fix a
+# main-residence purchase charged the whole other-property stock as one
+# additional-dwelling purchase (£233,750 of stamp duty).
+- name: Issue 2238 - no purchase, no stamp duty
+  period: 2025
+  input:
+    employment_income: 80_000
+    region: LONDON
+    main_residence_value: 600_000
+    other_residential_property_value: 2_000_000
+    property_purchased: false
+  output:
+    additional_residential_property_purchased: 0
+    stamp_duty_land_tax: 0
+
+- name: Issue 2238 - buying the main residence does not charge the other-property stock
+  period: 2025
+  input:
+    employment_income: 80_000
+    region: LONDON
+    main_residence_value: 600_000
+    other_residential_property_value: 2_000_000
+    non_residential_property_value: 500_000
+    property_purchased: true
+  output:
+    main_residential_property_purchased: 600_000
+    additional_residential_property_purchased: 0
+    non_residential_property_purchased: 0
+    # Main rates from 1 April 2025: 2% of 125,000 to 250,000, 5% above.
+    stamp_duty_land_tax: 0.02 * 125_000 + 0.05 * 350_000
+
+- name: Issue 2238 - an additional-dwelling purchase is charged on its own price
+  period: 2022
+  input:
+    employment_income: 80_000
+    region: LONDON
+    main_residence_value: 600_000
+    other_residential_property_value: 2_000_000
+    property_purchased: true
+    additional_residential_property_purchased: 400_000
+  output:
+    # Main residence as above; the £400,000 additional dwelling at the higher
+    # rates in force on 30 April 2022: 3% to 125,000, 5% to 250,000, 8% above.
+    stamp_duty_land_tax: (0.02 * 125_000 + 0.05 * 350_000) + (0.03 * 125_000 + 0.05 * 125_000 + 0.08 * 150_000)

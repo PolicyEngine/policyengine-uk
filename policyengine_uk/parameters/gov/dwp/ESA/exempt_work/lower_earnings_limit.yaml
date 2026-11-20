@@ -1,0 +1,18 @@
+description: Work for which a claimant's earnings in any week do not exceed this amount is exempt work, so it does not end an Employment and Support Allowance award or count as remunerative work for income-related ESA, whatever the hours.
+values:
+  2008-10-27:
+    value: 20
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 45(2) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45/2008-10-27
+metadata:
+  unit: currency-GBP
+  period: week
+  label: ESA exempt work lower earnings limit
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 45(2)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45
+    - title: Employment and Support Allowance Regulations 2008 regs. 40(2)(f) and 41(1)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/41
+    - title: DWP benefit and pension rates 2026 to 2027 (permitted work lower)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 
 
 def interpolate_percentile(param, percentile):
@@ -35,7 +36,10 @@ class attends_private_school(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        if not hasattr(person.simulation, "dataset"):
+        # Imputed only in simulations built from data. A household situation
+        # has no income distribution to rank within, so it attends no private
+        # school unless set, whatever its weight.
+        if not built_from_data(person.simulation):
             return 0
         household = person.household
         # To ensure that our model matches
@@ -48,7 +52,9 @@ class attends_private_school(Variable):
 
         person = household.members
 
-        is_child = person("is_child", period)
+        # No law governs this imputation. The attendance rates apply to
+        # everyone under 18, so the pool is an explicit age band.
+        under_18 = person("age_under_18", period)
 
         taxes = household.sum(
             person("income_tax", period) + person("national_insurance", period)
@@ -63,6 +69,13 @@ class attends_private_school(Variable):
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(net_income, weights=household_weight)
 
+        # Percentiles rank incomes within the simulated population. Until the
+        # data carries each household's national income rank, a population
+        # under a million people of weight (household weight counts once per
+        # member here), such as a constituency or local authority filtered
+        # from the national data, imputes no attendance: ranked against
+        # itself, constituency runs sum to about twice the national run's
+        # pupils (policyengine-uk#1905).
         if household_weight.sum() < 1e6:
             return 0
 
@@ -90,7 +103,7 @@ class attends_private_school(Variable):
         p_attends_private_school = (
             _rate_by_percentile[percentile]
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
-            * is_child
+            * under_18
         )
 
         # Use pre-generated random draw from dataset instead of calling random()

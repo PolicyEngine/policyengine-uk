@@ -1,0 +1,143 @@
+# Literal annual employee-primary expectations from HMRC's 2022–23 director
+# table: PT £11,908, UEL £50,270, category A rates 12.73% and 2.73%.
+# Annual model amounts, not interim payroll deductions. All are adults below SPA.
+- name: Full-year category A director below the annual primary threshold
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11000
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 0
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 0
+
+- name: Full-year category A director at the annual primary threshold
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11908
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 0
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 0
+
+- name: Full-year category A director one pound above the primary threshold
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11909
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 0.1273
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 0.1273
+
+- name: Full-year category A director in the main band
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30000
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 2303.1116
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 2303.1116
+
+- name: Full-year category A director one pound below the upper earnings limit
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50269
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 4883.3553
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 4883.3553
+
+- name: Full-year category A director at the upper earnings limit
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50270
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 4883.4826
+    ni_class_1_employee_additional: 0
+    ni_class_1_employee: 4883.4826
+
+- name: Full-year category A director one pound above the upper earnings limit
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 50271
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 4883.4826
+    ni_class_1_employee_additional: 0.0273
+    ni_class_1_employee: 4883.5099
+
+- name: Full-year category A director above the upper band
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 100000
+    is_full_year_category_a_director: true
+  output:
+    ni_class_1_employee_primary: 4883.4826
+    ni_class_1_employee_additional: 1357.629
+    ni_class_1_employee: 6241.1116
+
+- name: Natural salary household pays director NI and unchanged income tax
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    household_owns_tv: false
+    employment_income: 30000
+    is_full_year_category_a_director: true
+    would_claim_uc: false
+  output:
+    ni_class_1_income: 30000
+    ni_liable: true
+    income_tax: 3486
+    ni_class_1_employee: 2303.1116
+    national_insurance: 2303.1116
+    # Existing calendar-2022 support: council-tax rebate 150 + EBSS 199.
+    ebr_council_tax_rebate: 150
+    ebr_energy_bills_credit: 199
+    household_benefits: 349
+    tv_licence: 0
+
+- name: Natural higher salary household reconciles both director bands and cash
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    region: LONDON
+    household_owns_tv: false
+    employment_income: 60000
+    is_full_year_category_a_director: true
+    would_claim_uc: false
+  output:
+    ni_class_1_income: 60000
+    income_tax: 11432
+    ni_class_1_employee_primary: 4883.4826
+    ni_class_1_employee_additional: 265.629
+    ni_class_1_employee: 5149.1116
+    national_insurance: 5149.1116
+    # Existing calendar-2022 support: council-tax rebate 150 + EBSS 199.
+    ebr_council_tax_rebate: 150
+    ebr_energy_bills_credit: 199
+    household_benefits: 349
+    tv_licence: 0

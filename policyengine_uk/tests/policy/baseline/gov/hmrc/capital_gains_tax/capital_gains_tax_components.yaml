@@ -11,13 +11,13 @@
 # The residential property higher rate is 24% for the whole of 2024-25.
 
 - name: Residential property 2024, 18% on the unused basic rate band and 24% above, after one AEA.
-  # adjusted_net_income 42,570 less the 12,570 personal allowance leaves taxable
+  # net_income 42,570 less the 12,570 personal allowance leaves taxable
   # income 30,000 and 7,700 of the 37,700 basic rate band. 100,000 - 3,000 AEA =
   # 97,000: 7,700 x 0.18 = 1,386 plus 89,300 x 0.24 = 21,432.
   period: 2024
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 42_570
+    net_income: 42_570
     capital_gains: 100_000
     capital_gains_residential_property: 100_000
   output:
@@ -29,7 +29,7 @@
   period: 2024
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 42_570
+    net_income: 42_570
     capital_gains_before_response: 100_000
     capital_gains_residential_property: 100_000
   output:
@@ -39,7 +39,7 @@
   # 500,000 - 3,000 AEA = 497,000 x 0.10.
   period: 2024
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 500_000
     capital_gains_badr: 500_000
   output:
@@ -49,7 +49,7 @@
   # 497,000 x 0.14 (Finance Act 2025 s. 8, disposals from 6 April 2025).
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 500_000
     capital_gains_badr: 500_000
   output:
@@ -59,7 +59,7 @@
   # 497,000 x 0.18 (Finance Act 2025 s. 8, disposals from 6 April 2026).
   period: 2026
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 500_000
     capital_gains_badr: 500_000
   output:
@@ -73,7 +73,7 @@
   period: 2025
   absolute_error_margin: 0.1
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 1_500_000
     capital_gains_badr: 1_500_000
   output:
@@ -85,7 +85,7 @@
   period: 2024
   absolute_error_margin: 0.1
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 1_010_000
     capital_gains_badr: 1_010_000
   output:
@@ -97,7 +97,7 @@
   period: 2024
   absolute_error_margin: 0.1
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 1_000_000
     capital_gains_carried_interest: 1_000_000
   output:
@@ -108,7 +108,7 @@
   period: 2025
   absolute_error_margin: 0.1
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 1_000_000
     capital_gains_carried_interest: 1_000_000
   output:
@@ -122,7 +122,7 @@
   # the residential gains would have paid 0.18 and the total would be 6,538.
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 47_700
     capital_gains_badr: 37_700
     capital_gains_residential_property: 10_000
@@ -141,7 +141,7 @@
   period: 2024
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 20_000
+    net_income: 20_000
     capital_gains: 100_000
     capital_gains_badr: 20_000
     capital_gains_carried_interest: 10_000
@@ -155,7 +155,7 @@
   # Residential: 37,700 x 0.18 = 6,786 plus 2,300 x 0.24 = 552.
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 50_000
     capital_gains_residential_property: 40_000
     capital_gains_carried_interest: 30_000
@@ -167,7 +167,7 @@
   # 34,500 x 0.18 = 6,210 plus 3,800 x 0.28 = 1,064.
   period: 2018
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 50_000
     capital_gains_residential_property: 50_000
   output:
@@ -176,7 +176,7 @@
 - name: A schedule input without capital_gains is ignored.
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: 0
     capital_gains_residential_property: 50_000
   output:
@@ -185,7 +185,7 @@
 - name: A net loss pays nothing whatever the schedule inputs say.
   period: 2025
   input:
-    adjusted_net_income: 0
+    net_income: 0
     capital_gains: -20_000
     capital_gains_residential_property: 50_000
   output:
@@ -196,7 +196,7 @@
   period: 2025
   absolute_error_margin: 0.01
   input:
-    adjusted_net_income: 50_000
+    net_income: 50_000
     capital_gains: 50_000
     capital_gains_badr: 0
     capital_gains_residential_property: 0

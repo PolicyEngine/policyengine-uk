@@ -1,0 +1,34 @@
+description: The UK applies these marginal Gaming Duty rates to gross gaming yield from registered casino premises in a normal six-month accounting period, with thresholds measured over that six-month period. This operator catalogue excludes unregistered gaming and alternative-period adjustments. Household calculations do not use it, so changing these bands leaves household casino duty unchanged; see household.consumption.gambling.casino_effective_rate.
+brackets:
+- threshold:
+    '2022-04-01': 0
+  rate:
+    '2022-04-01': 0.15
+- threshold:
+    '2022-04-01': 2_686_000
+  rate:
+    '2022-04-01': 0.2
+- threshold:
+    '2022-04-01': 4_538_000
+  rate:
+    '2022-04-01': 0.3
+- threshold:
+    '2022-04-01': 7_781_000
+  rate:
+    '2022-04-01': 0.4
+- threshold:
+    '2022-04-01': 14_626_000
+  rate:
+    '2022-04-01': 0.5
+metadata:
+  type: marginal_rate
+  unit: /1
+  threshold_unit: currency-GBP
+  label: normal six-month casino gaming duty bands
+  reference:
+  - title: Finance Act 1997, section 11(2), as at 6 April 2024
+    href: https://www.legislation.gov.uk/ukpga/1997/16/section/11/2024-04-06
+  - title: HMRC Gaming Duty Notice 453
+    href: https://www.gov.uk/guidance/gaming-duty-excise-notice-453
+  - title: HMRC gambling duty rates
+    href: https://www.gov.uk/government/publications/rates-and-allowance-excise-duty-gambling-duty/excise-duty-gambling-duty-rates

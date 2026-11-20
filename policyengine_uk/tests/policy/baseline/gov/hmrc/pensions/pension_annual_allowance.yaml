@@ -1,0 +1,417 @@
+# Finance Act 2004 s. 228ZA: both income limits must be exceeded, and the
+# reduction is rounded down to the nearest whole pound. Pension contributions
+# are gross amounts in the model. These are synthetic cases (no survey data).
+# https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA
+
+- name: Adjusted and threshold income one pound below both limits
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 259_999
+    pension_annual_allowance_threshold_income: 199_999
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income below limit and threshold income at limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 259_999
+    pension_annual_allowance_threshold_income: 200_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income below limit and threshold income above limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 259_999
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income at limit and threshold income below limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_000
+    pension_annual_allowance_threshold_income: 199_999
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Both income limits equal their boundaries
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_000
+    pension_annual_allowance_threshold_income: 200_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income at limit and threshold income above limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income one pound above limit and threshold below limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_001
+    pension_annual_allowance_threshold_income: 199_999
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Adjusted income one pound above limit and threshold at limit
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_001
+    pension_annual_allowance_threshold_income: 200_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Both incomes one pound above limits rounds half pound reduction down
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_001
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Threshold income one pound below limit blocks an observable taper
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 280_000
+    pension_annual_allowance_threshold_income: 199_999
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Threshold income at limit blocks an observable taper
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 280_000
+    pension_annual_allowance_threshold_income: 200_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Threshold income one pound above limit enables an observable taper
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 280_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 50_000
+
+- name: Two pounds above adjusted limit reduces allowance by one pound
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_002
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 59_999
+
+- name: Three pounds above adjusted limit rounds reduction down to one pound
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 260_003
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 59_999
+
+- name: Fractional pounds round the reduction down rather than the allowance
+  period: 2024
+  input:
+    pension_annual_allowance_adjusted_income: 280_001.5
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 50_000
+
+- name: Employer contributions count in adjusted income
+  period: 2024
+  input:
+    age: 45
+    employment_income: 210_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance: 45_000
+
+- name: Defined benefit pension input counts above the individuals own contributions
+  period: 2024
+  input:
+    age: 45
+    employment_income: 210_000
+    employee_pension_contributions_reported: 10_000
+    pension_contributions_for_annual_allowance: 100_000
+  output:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 200_000
+    pension_annual_allowance: 60_000
+
+- name: Own net pay contributions cancel from adjusted income and lower threshold income
+  period: 2024
+  input:
+    age: 45
+    employment_income: 230_000
+    employee_pension_contributions_reported: 10_000
+    employer_pension_contributions: 70_000
+  output:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 220_000
+    pension_annual_allowance: 40_000
+
+- name: Gross relief at source contributions lower threshold income to the gate
+  period: 2024
+  input:
+    age: 45
+    employment_income: 210_000
+    personal_pension_contributions: 10_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance_threshold_income: 200_000
+    pension_annual_allowance: 60_000
+
+- name: Relief at source contributions below the threshold income gate prevent taper
+  period: 2024
+  input:
+    age: 45
+    employment_income: 270_000
+    personal_pension_contributions: 80_000
+  output:
+    pension_annual_allowance: 60_000
+
+- name: Member contributions after age 75 are excluded from the DC input amount
+  period: 2024
+  input:
+    age: 80
+    private_pension_income: 210_000
+    personal_pension_contributions: 50_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_contributions_relief: 0
+    pension_contributions_for_annual_allowance: 80_000
+    # Section 233 excludes unrelievable member contributions from the input
+    # amount. Section 228ZA(4)(d)(ii) still deducts those own contributions.
+    pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance_adjusted_income: 240_000
+    pension_annual_allowance: 60_000
+    personal_pension_contributions_tax: 9_000
+
+- name: Member contributions stop counting in the DC input at age 75
+  period: 2024
+  input:
+    age: [74, 75]
+    private_pension_income: [210_000, 210_000]
+    personal_pension_contributions: [50_000, 50_000]
+    employer_pension_contributions: [80_000, 80_000]
+  output:
+    pension_contributions_relief: [3_600, 0]
+    pension_contributions_for_annual_allowance: [130_000, 80_000]
+    pension_annual_allowance_threshold_income: [206_400, 210_000]
+    pension_annual_allowance_adjusted_income: [290_000, 240_000]
+    pension_annual_allowance: [45_000, 60_000]
+    personal_pension_contributions_tax: [38_250, 9_000]
+
+- name: Threshold income deducts relieved RAS rather than all member contributions
+  period: 2024
+  input:
+    age: 45
+    private_pension_income: 210_000
+    personal_pension_contributions: 50_000
+    employer_pension_contributions: 80_000
+  output:
+    # With no relevant earnings only the basic RAS amount receives relief.
+    # Deducting all 50,000 instead would incorrectly close the threshold gate.
+    pension_contributions_relief: 3_600
+    pension_contributions_for_annual_allowance: 130_000
+    pension_annual_allowance_threshold_income: 206_400
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance: 45_000
+    personal_pension_contributions_tax: 38_250
+
+- name: Salary sacrifice raises threshold income and adjusted income
+  period: 2024
+  input:
+    age: 45
+    employment_income: 190_000
+    employment_income_before_lsr: 190_000
+    pension_contributions_via_salary_sacrifice: 30_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 220_000
+    pension_annual_allowance: 40_000
+
+# The unchanged broad-base haircut reduces actual pay by 280. The 28,000
+# NICs excess creates neither ordinary pay nor a member payment. Threshold
+# income still adds back all 30,000: 174,720 + 30,000 = 204,720. Pension
+# input remains 130,000, adjusted income is 174,720 + 130,000 = 304,720,
+# and the charge is (130,000 - 37,640) * 45% = 41,562.
+- name: The 2029 NICs cap does not limit the salary sacrifice threshold income addback
+  period: 2029
+  input:
+    age: 45
+    employment_income_before_lsr: 175_000
+    pension_contributions_via_salary_sacrifice: 30_000
+    employer_pension_contributions: 100_000
+  output:
+    employment_income: 174_720
+    pension_contributions_relief: 0
+    salary_sacrifice_pension_ni_excess: 28_000
+    ni_class_1_income: 202_720
+    pension_contributions_for_annual_allowance: 130_000
+    pension_annual_allowance_threshold_income: 204_720
+    pension_annual_allowance_adjusted_income: 304_720
+    pension_annual_allowance: 37_640
+    personal_pension_contributions_tax: 41_562
+
+- name: Pre July 2015 salary sacrifice is excluded only from threshold income
+  period: 2024
+  input:
+    age: 45
+    employment_income: 190_000
+    employment_income_before_lsr: 190_000
+    pension_contributions_via_salary_sacrifice: 30_000
+    pension_contributions_via_salary_sacrifice_pre_2015: 30_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 190_000
+    pension_annual_allowance: 60_000
+
+- name: Grandfathered salary sacrifice cannot exceed actual sacrifice
+  period: 2024
+  input:
+    age: 45
+    employment_income: 210_000
+    employment_income_before_lsr: 210_000
+    pension_contributions_via_salary_sacrifice: 10_000
+    pension_contributions_via_salary_sacrifice_pre_2015: 50_000
+    employer_pension_contributions: 80_000
+  output:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance: 40_000
+
+- name: Gift Aid does not lower either annual allowance income measure
+  period: 2024
+  input:
+    age: 45
+    employment_income: 210_000
+    employer_pension_contributions: 80_000
+    gift_aid: 16_000
+  output:
+    adjusted_net_income: 190_000
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance_threshold_income: 210_000
+    pension_annual_allowance: 45_000
+
+- name: Taxable lump sum death benefits are deducted from both taper incomes
+  period: 2024
+  input:
+    net_income: 250_000
+    pension_annual_allowance_taxable_lump_sum_death_benefits: 60_000
+    employer_pension_contributions: 100_000
+  output:
+    pension_annual_allowance_adjusted_income: 290_000
+    pension_annual_allowance_threshold_income: 190_000
+    pension_annual_allowance: 60_000
+
+# The taper was introduced for 2016-17 by Finance (No. 2) Act 2015 Sch. 4 para. 10,
+# amended for 2020-21 by Finance Act 2020 s. 22 and for 2023-24 by
+# Finance (No. 2) Act 2023 ss. 20 and 22.
+- name: No annual allowance taper in 2015-16
+  period: 2015
+  input:
+    net_income: 1_000_000
+    pension_annual_allowance_adjusted_income: 1_000_000
+    pension_annual_allowance_threshold_income: 1_000_000
+  output:
+    pension_annual_allowance: 40_000
+
+- name: Employment income alone cannot trigger a taper before 2016-17
+  period: 2015
+  input:
+    age: 45
+    employment_income: 1_000_000
+  output:
+    pension_annual_allowance: 40_000
+
+- name: Employment income alone uses the 2018-19 taper limits
+  period: 2018
+  input:
+    age: 45
+    employment_income: 170_000
+  output:
+    pension_annual_allowance: 30_000
+
+- name: The 2016-17 taper starts at adjusted income of 150000
+  period: 2016
+  input:
+    pension_annual_allowance_adjusted_income: 170_000
+    pension_annual_allowance_threshold_income: 110_001
+  output:
+    pension_annual_allowance: 30_000
+
+- name: The 2019-20 threshold gate remains 110000
+  period: 2019
+  input:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 110_000
+  output:
+    pension_annual_allowance: 40_000
+
+- name: The 2019-20 tapered minimum remains 10000
+  period: 2019
+  input:
+    pension_annual_allowance_adjusted_income: 300_000
+    pension_annual_allowance_threshold_income: 110_001
+  output:
+    pension_annual_allowance: 10_000
+
+- name: The 2020-21 adjusted income limit rises to 240000
+  period: 2020
+  input:
+    pension_annual_allowance_adjusted_income: 260_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 30_000
+
+- name: The 2020-21 threshold gate rises to 200000
+  period: 2020
+  input:
+    pension_annual_allowance_adjusted_income: 400_000
+    pension_annual_allowance_threshold_income: 200_000
+  output:
+    pension_annual_allowance: 40_000
+
+- name: The 2022-23 tapered minimum remains 4000
+  period: 2022
+  input:
+    pension_annual_allowance_adjusted_income: 400_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 4_000
+
+- name: The 2023-24 adjusted income limit rises to 260000
+  period: 2023
+  input:
+    pension_annual_allowance_adjusted_income: 280_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 50_000
+
+- name: The 2023-24 tapered minimum rises to 10000
+  period: 2023
+  input:
+    pension_annual_allowance_adjusted_income: 400_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 10_000
+
+- name: The 2026-27 taper retains the 2023-24 limits
+  period: 2026
+  input:
+    pension_annual_allowance_adjusted_income: 280_000
+    pension_annual_allowance_threshold_income: 200_001
+  output:
+    pension_annual_allowance: 50_000

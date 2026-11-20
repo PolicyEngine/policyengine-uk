@@ -1,0 +1,9 @@
+description: Age below which a person in full-time non-advanced education or unwaged government training, living with parents and without a partner, is a dependent child in Households Below Average Income statistics.
+values:
+  0001-01-01: 20
+metadata:
+  unit: year
+  label: HBAI dependent young person age limit
+  reference:
+    - title: HBAI background information and methodology FYE 2025, glossary (Child)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#child
