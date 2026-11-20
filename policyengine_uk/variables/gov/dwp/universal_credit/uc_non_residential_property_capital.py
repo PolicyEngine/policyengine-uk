@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import exact_amount, less_sale_expenses
 
 
 class uc_non_residential_property_capital(Variable):
@@ -21,4 +22,8 @@ class uc_non_residential_property_capital(Variable):
         p = parameters(period).gov.dwp.universal_credit.means_test.capital
         market_value = max_(0, household("non_residential_property_value", period))
         debt = max_(0, household("non_residential_property_secured_debt", period))
-        return max_(0, market_value * (1 - p.property_sale_cost_rate) - debt)
+        return max_(
+            0,
+            less_sale_expenses(market_value, p.sale_expenses.rate, p.round_down)
+            - exact_amount(debt),
+        )

@@ -1,8 +1,9 @@
 from policyengine_uk.model_api import *
 
-# The capital source that holds a disregarded company holding: the share-like
-# capital the UC financial pool counts, so holdings are budgeted against it.
-HOLDINGS_SOURCE = "share_like_capital"
+# The capital source that holds a disregarded company holding: a holding is
+# shares in a company, which have expenses of sale, so it sits in that part of
+# the share-like capital the UC financial pool counts and is budgeted against it.
+HOLDINGS_SOURCE = "share_like_capital_with_sale_expenses"
 
 
 class household_uc_company_holding_pool_scale(Variable):
@@ -12,20 +13,30 @@ class household_uc_company_holding_pool_scale(Variable):
     documentation = (
         "Common proportional scale for disregarded company holdings when "
         "deducting them from the household financial pool. Before budgeting, "
-        "clip each person's holding to [0, max(0, share_like_capital)], mapping "
+        "clip each person's holding to [0, max(0, share_like_capital_with_sale_expenses)], mapping "
         "positive infinity to the upper bound and negative infinity to zero. "
         "Total bounded holdings "
-        "share one budget of nonnegative share_like_capital (the share-like "
+        "share one budget of nonnegative share_like_capital_with_sale_expenses (the share-like "
         "capital the pool counts) across override "
         "floors and separate pool deductions. This allocation is independent "
         "of row order and treats holders equally. It is a defensive rule for "
-        "inconsistent inputs, not a statutory determination. It does not "
-        "change regulation 77 substitution in the owner's own assessment."
+        "inconsistent inputs, not a statutory determination. Where a reform "
+        "takes share_like_capital_with_sale_expenses out of the Universal "
+        "Credit capital sources, the pool holds no part of a holding, so the "
+        "scale is nil: no holding leaves the pool, and a report consumes only "
+        "itself. It does not change regulation 77 substitution in the owner's own "
+        "assessment, which still takes the holding off the owner's report."
     )
     definition_period = YEAR
     unit = "/1"
 
     def formula(household, period, parameters):
+        capital = parameters(period).gov.dwp.universal_credit.means_test.capital
+        if HOLDINGS_SOURCE not in capital.sources:
+            # The pool doesn't count the shares that hold the holdings, so
+            # deducting them would take other capital, such as unit trusts,
+            # out of it.
+            return np.zeros(household.count)
         share_like = max_(0, household(HOLDINGS_SOURCE, period))
         person = household.members
         holding = person("uc_company_holding_disregard", period)

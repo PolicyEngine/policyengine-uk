@@ -185,7 +185,13 @@ def family(ages, **overrides):
 # recipient; and a working-age family.
 KNOWN_FAMILIES = [
     family([90], state_pension=12_480.0),
-    family([90], state_pension=12_480.0, savings=12_000.0, other_property=4_400.0),
+    family(
+        [90],
+        state_pension=12_480.0,
+        savings=12_000.0,
+        other_property=4_400.0,
+        shares=500.0,
+    ),
     family([90], state_pension=12_480.0, savings=12_000.0, rent=6_000.0),
     family([90], state_pension=12_480.0, would_claim_pc=False),
     family([70], state_pension=9_000.0),
@@ -234,6 +240,7 @@ def situation(units, would_claim_pc=None):
             "council_tax": {YEAR: unit["council_tax"]},
             "savings": {YEAR: unit["savings"]},
             "other_residential_property_value": {YEAR: unit["other_property"]},
+            "corporate_wealth": {YEAR: unit.get("shares", 0.0)},
         }
     return {"people": people, "benunits": benunits, "households": households}
 
@@ -394,11 +401,13 @@ def test_known_families_detect_main():
         )
         assert not np.any(fix[FLAG])
         # Main keeps the Pension Credit assessment. The owner with capital is
-        # tested on 16,400 (savings 12,000 and property 4,400) against the
-        # 16,000 limit and gets no council tax reduction, where the scheme's
-        # own rules count the property less 10% for the expenses of sale,
-        # 12,000 + 3,960 = 15,960, and give 2,000. The tenant has no Housing
-        # Benefit tariff income, where
+        # tested on 16,410 (savings 12,000, property 4,400 less 10% for the
+        # expenses of sale, 3,960, and shares 500 less 10%, 450; SPC Regs 2002
+        # reg. 19(a)) against the 16,000 limit and gets no council tax
+        # reduction, where the scheme's own household route counts the
+        # savings and the property less 10%, 12,000 + 3,960 = 15,960, leaves
+        # out shares (council tax reduction capital sources), and gives 2,000.
+        # The tenant has no Housing Benefit tariff income, where
         # Housing Benefit's own rules count 4 a week on savings of 12,000
         # (208). Its Housing Benefit income is the same on both routes: with
         # no savings credit paid, the Pension Credit assessment is the State
@@ -411,7 +420,7 @@ def test_known_families_detect_main():
             "housing_benefit_tariff_income",
         ]
         capital = "council_tax_reduction_assessable_capital"
-        assert main[capital][OWNER_WITH_CAPITAL] == 16_400
+        assert main[capital][OWNER_WITH_CAPITAL] == 16_410
         assert fix[capital][OWNER_WITH_CAPITAL] == 15_960
         reduction = "simulated_council_tax_reduction_benunit"
         assert main[reduction][OWNER_WITH_CAPITAL] == 0
@@ -421,7 +430,7 @@ def test_known_families_detect_main():
         assert assessed_differently(fix, not_claiming, known) == []
 
 
-def single_pensioner(savings=0.0, other_property=0.0):
+def single_pensioner(savings=0.0, other_property=0.0, shares=0.0):
     # Single, aged 90, State Pension 12,480 (240 a week), owning in Maidstone
     # with council tax of 2,000.
     return {
@@ -441,6 +450,7 @@ def single_pensioner(savings=0.0, other_property=0.0):
                 "council_tax": {YEAR: 2_000},
                 "savings": {YEAR: savings},
                 "other_residential_property_value": {YEAR: other_property},
+                "corporate_wealth": {YEAR: shares},
             }
         },
     }
@@ -501,24 +511,28 @@ def test_stopping_pension_credit_payments_ends_savings_credit_only_receipt():
 
 
 def test_stopping_pension_credit_payments_ends_the_pension_credit_capital_test():
-    # Savings of 12,000 and other property worth 4,400. The Pension Credit
-    # assessment of capital counts both (16,400), above the 16,000 limit, so
-    # the savings-credit-only award leaves no council tax reduction. Deemed
-    # income is 1 a week for each 500, or part of 500, over 10,000: 6,400 /
-    # 500 = 12.8, so 13 a week (SPC Regs 2002 reg 15(6)). Income is 240.00 +
+    # Savings of 12,000, other property worth 4,400 and shares worth 500. The
+    # Pension Credit assessment of capital counts all three, the property and
+    # the shares less 10% for the expenses of sale (SPC Regs 2002 reg. 19(a)):
+    # 12,000 + 3,960 + 450 = 16,410, above the 16,000 limit, so the
+    # savings-credit-only award leaves no council tax reduction. Deemed
+    # income is 1 a week for each 500, or part of 500, over 10,000: 6,410 /
+    # 500 = 12.82, so 13 a week (SPC Regs 2002 reg 15(6)). Income is 240.00 +
     # 13.00 = 253.00 a week, so the savings credit is 0.6 x (238.00 - 208.07)
     # - 0.4 x (253.00 - 238.00) = 17.958 - 6.00 = 11.958 a week (621.82).
-    data = single_pensioner(savings=12_000.0, other_property=4_400.0)
+    data = single_pensioner(savings=12_000.0, other_property=4_400.0, shares=500.0)
     unreformed = Simulation(situation=data)
     assert abs(unreformed.calculate("savings_credit", YEAR)[0] - 621.82) < 0.01
     assert unreformed.calculate(FLAG, YEAR).tolist() == [True]
     capital = "council_tax_reduction_assessable_capital"
-    assert unreformed.calculate(capital, YEAR)[0] == 16_400
+    assert unreformed.calculate(capital, YEAR)[0] == 16_410
     assert unreformed.calculate("council_tax_reduction", YEAR)[0] == 0
 
     # With Pension Credit not paid the scheme's own capital rule applies: the
     # savings and the property less 10% for the expenses of sale (SI
     # 2012/2885 Sch 1 para 32(a)), 12,000 + 3,960 = 15,960, within the limit.
+    # The household route leaves the shares out (council tax reduction
+    # capital sources).
     # Tariff income is 1 a week for each 500, or part of 500, over 10,000
     # (Sch 1 para 37): 5,960 / 500 = 11.92, so 12 a week, 624 a year. Income
     # 12,480 + 624 = 13,104 is below the applicable amount of 256.00 a week

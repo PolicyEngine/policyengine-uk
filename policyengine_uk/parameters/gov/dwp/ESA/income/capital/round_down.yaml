@@ -1,0 +1,17 @@
+description: >
+  Whether a fraction of a penny in an income-related Employment and Support
+  Allowance capital calculation is disregarded (true) rather than rounded to
+  the nearest penny (false). A fraction of a penny is treated as a penny
+  only where that is to the claimant's advantage, and is otherwise
+  disregarded; for capital that means rounding down.
+values:
+  2008-10-27: true
+metadata:
+  label: Income-related ESA capital rounded down to the penny
+  period: year
+  unit: bool
+  reference:
+    - title: The Employment and Support Allowance Regulations 2008 reg. 3(a)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/3
+    - title: The Employment and Support Allowance Regulations (Northern Ireland) 2008 reg. 3(a)
+      href: https://www.legislation.gov.uk/nisr/2008/280/regulation/3

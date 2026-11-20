@@ -1,0 +1,22 @@
+description: >
+  Whether a fraction of a penny in a Housing Benefit capital calculation is
+  disregarded (true) rather than rounded to the nearest penny (false). Any
+  amount determined under the regulations may, if appropriate, be rounded to
+  the nearest whole penny, disregarding less than half a penny and treating
+  half a penny or more as a penny. That is the regulations' only rounding
+  rule, and the model applies it.
+values:
+  2006-04-10: false
+metadata:
+  label: Housing Benefit capital rounded down to the penny
+  period: year
+  unit: bool
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 80
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/80
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 61(6)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/61
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 reg. 78(8)
+      href: https://www.legislation.gov.uk/nisr/2006/405/regulation/78
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 reg. 59(7)
+      href: https://www.legislation.gov.uk/nisr/2006/406/regulation/59

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import lifetime_isa_surrender_value
 
 
 class lifetime_isa_countable_capital(Variable):
@@ -23,8 +24,8 @@ class lifetime_isa_countable_capital(Variable):
         "https://www.legislation.gov.uk/uksi/1998/1870/schedule",
     ]
 
-    def formula(person, period, parameters):
-        p = parameters(period).gov.hmrc.isa.lifetime
-        balance = person("lifetime_isa_balance", period)
-        charge_free = person("age", period) >= p.charge_free_age
-        return where(charge_free, balance, balance * (1 - p.withdrawal_charge))
+    # The shared function's identity lets the means tests distinguish this
+    # baseline formula from a reform. They work it again in float64 before
+    # rounding, while preserving explicit inputs and reformed values
+    # (capital_valuation.valued_person_capital).
+    formula = lifetime_isa_surrender_value

@@ -14,7 +14,7 @@
 # the others. The last shard runs the tests that need the dataset, so this
 # table leaves them out: regenerate it from the other shards' logs.
 [seconds]
-"policyengine_uk/tests/test_capital_share_components.py::test_capital_matches_the_original_lists" = 1951
+"policyengine_uk/tests/test_capital_share_components.py::test_unitemised_inputs_match_the_lists_before_itemising" = 1951
 "policyengine_uk/tests/test_mixed_age_couple_properties.py::test_mixed_age_couple_invariants" = 1044
 "policyengine_uk/tests/test_dated_reform_routes.py::test_routes_agree_on_start_stop_keys" = 668
 "policyengine_uk/tests/test_pension_tax_allowance_properties.py::test_the_full_new_state_pension_pays_no_income_tax_at_any_rate" = 549
@@ -154,7 +154,7 @@
 "policyengine_uk/tests/test_dfe_childcare_student_support_properties.py::test_tax_free_childcare_work_condition_matches_reg_13" = 151
 "policyengine_uk/tests/test_salary_sacrifice_ni_measure_properties.py::test_measures_equal_the_difference_of_complete_liabilities[full-year Category A directors]" = 151
 "policyengine_uk/tests/test_uc_claimant_income_properties.py::test_member_order_does_not_matter" = 151
-"policyengine_uk/tests/test_capital_share_components.py::test_share_like_capital_keeps_the_supplied_aggregate" = 150
+"policyengine_uk/tests/test_capital_share_components.py::test_share_like_capital_and_its_parts" = 150
 "policyengine_uk/tests/test_housing_benefit_specified_accommodation_disregard_properties.py::test_no_para_18_amount_without_the_input" = 150
 "policyengine_uk/tests/test_income_support_eligibility_properties.py::test_excluded_member_never_changes_is_eligibility" = 150
 "policyengine_uk/tests/test_income_support_eligibility_properties.py::test_is_eligibility_matches_a_family_by_family_reading" = 150
@@ -399,7 +399,7 @@
 "policyengine_uk/tests/test_pension_annual_allowance_properties.py::test_unused_allowance_reduces_chargeable_amount_one_for_one" = 84
 "policyengine_uk/tests/test_property_transaction_tax_purchase_properties.py::test_additional_purchase_is_charged_on_its_own_price" = 84
 "policyengine_uk/tests/test_trading_loss_properties.py::test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award[housing_benefit-2024]" = 84
-"policyengine_uk/tests/test_capital_share_components.py::test_float32_rounding_at_the_limit_keeps_eligibility" = 83
+"policyengine_uk/tests/test_capital_share_components.py::test_float32_rounding_at_the_limit_keeps_the_aggregate" = 83
 "policyengine_uk/tests/test_energy_bills_rebate_council_tax_reduction_properties.py::test_a_larger_reduction_never_lowers_the_payment" = 83
 "policyengine_uk/tests/test_housing_benefit_savings_credit_only_properties.py::test_net_income_does_not_fall_where_savings_credit_ends" = 83
 "policyengine_uk/tests/test_cares_for_severely_disabled_person_properties.py::test_input_false_without_a_reported_award_pays_no_carer_benefit" = 82

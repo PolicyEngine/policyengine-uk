@@ -14,7 +14,8 @@ description: >
   investments, and the named child owns a junior ISA's investments (Individual
   Savings Account Regulations 1998 reg. 4(6)(a) and reg. 2B(c)). The formulas
   subtract each bounded ISA balance from its household source (`cash_isa`,
-  `share_like_capital`) and count it in the holder's unit. When a household's
+  `share_like_capital_without_sale_expenses`) and count it in the holder's
+  unit. When a household's
   balances exceed its total, the model scales them to sum to the total
   exactly, rounding each share down or up to a whole float32 step of the
   total. When a reform removes a household source from `sources`, the formulas
