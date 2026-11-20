@@ -1,3 +1,7 @@
+# Continuing-award route for a working-age family (age defaults to 40) in
+# 2021, before working-age awards were abolished: a reported award, no
+# Universal Credit claim, and social housing or the Local Housing Allowance.
+
 - name: Social housing eligible
   period: 2021
   input:

@@ -833,6 +833,10 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -859,6 +863,10 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1077,9 +1085,7 @@
   # to undertake that course" (SI 2014/1230 reg. 60(1)), so DWP now applies it
   # to them. Off the course, they don't receive education under reg. 12(2), so
   # they meet s. 4(1)(d) without an exception. DWP had published no rates for
-  # 2027 to 2028 by November 2026, so we assert no amount. The model keeps
-  # uc_is_excepted_from_education_condition true here although DWP no longer
-  # applies reg. 60(1) to the claimant, so we don't assert it.
+  # 2027 to 2028 by November 2026, so we assert no amount.
   period: 2027
   input:
     people:
@@ -1099,6 +1105,7 @@
         region: NORTH_EAST
   output:
     uc_receiving_education: [false]
+    uc_is_excepted_from_education_condition: [false]
     meets_uc_education_condition: [true]
     is_uc_eligible: true
 
@@ -1290,6 +1297,10 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1319,6 +1330,11 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
+        # Cases 49 and 50 make that claim.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1345,6 +1361,10 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7),
+        # so the case tests the ordinary claim alone.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1402,6 +1422,10 @@
     benunits:
       benunit:
         members: [person1]
+        # The claimant doesn't claim Universal Credit when working-age
+        # Housing Benefit is abolished on 1 October 2026 in Northern Ireland
+        # (SR 2025/176 art. 7), so the case tests the ordinary claim alone.
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [person1]
@@ -1412,5 +1436,136 @@
     is_qualifying_young_person_for_universal_credit: [true]
     is_qualifying_young_person_for_uc_education: [false]
     uc_receiving_education: [false]
+    is_uc_eligible: true
+    universal_credit: 4_062.96
+
+- name: Case 48, the 18-year-old of case 42 without maintenance funding gets no Universal Credit when the model derives the closure.
+  # Issue 2878. The claimant of case 42 takes a full-time course that is
+  # neither advanced education nor funded by a student loan or grant, earns
+  # £9,000 and pays a council rent of £6,000. While they had Working Tax
+  # Credit they worked at least 16 hours a week and had a disability that put
+  # them at a disadvantage in getting a job, the only route for a single
+  # claimant under 25 with no child (Working Tax Credit (Entitlement and
+  # Maximum Rate) Regulations 2002 reg. 4(1), First variation of the Second
+  # condition, para. (a), which also needs reg. 9(1)(c)). They hold no
+  # disability benefit and have no limited capability for work determination.
+  # On the migration day the Working Tax Credit award still existed, so SI
+  # 2014/1230 reg. 28 kept them out of the qualifying young person definition,
+  # and the Universal Credit Regulations 2013 reg. 12(2) doesn't cover their
+  # course: they met the condition in s. 4(1)(d) that day, so reg. 60(1)
+  # doesn't reach them. The claim ended the award the day before their
+  # Universal Credit award would start (reg. 8(2)(a)), so from then they count
+  # as a qualifying young person and receive education (reg. 12(1A)). No reg.
+  # 14(1) exception the model applies reaches them, so they fail the condition
+  # and get no Universal Credit. Under the earlier rule the model excepted
+  # them and paid 12 x £338.58 + £6,000 - 55% x £9,000 = £5,112.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        employment_income: 9_000
+        working_tax_credit_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [person1]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    claims_uc_at_legacy_closure: true
+    is_qualifying_young_person_on_uc_migration_day: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 49, the 18-year-old of case 44 claims when the abolition reaches the rate rebate and gets no Universal Credit.
+  # The claimant of case 44 claims Universal Credit when working-age Housing
+  # Benefit is abolished on 1 October 2026 in Northern Ireland (SR 2025/176
+  # art. 7; would_claim_uc_at_legacy_closure defaults to true), and the model
+  # treats that claim as a qualifying claim (SR 2016/226 reg. 49). On the
+  # migration day the rate rebate still existed, so reg. 29 kept them out of
+  # the definition, and the Universal Credit Regulations (Northern Ireland)
+  # 2016 reg. 12(2) doesn't cover their unfunded non-advanced course: they met
+  # the condition that day, so reg. 61(1) doesn't reach them. The claim ends
+  # the rate rebate the day before the date they would first have been
+  # entitled had they met the basic and financial conditions (reg. 6(2)(b)).
+  # From that date they count as a qualifying young person and receive
+  # education, as in case 44, and get no Universal Credit.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_uc_at_legacy_closure: true
+    is_qualifying_young_person_on_uc_migration_day: [false]
+    is_qualifying_young_person_for_uc_education: [true]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [false]
+    meets_uc_education_condition: [false]
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Case 50, the 18-year-old of case 49 with maintenance funding keeps the award under SR 2016/226 reg. 61.
+  # As case 49, but a student loan or grant for maintenance brings the course
+  # within reg. 12(2)(b), so on the migration day the claimant failed the
+  # condition because of a course reg. 12(2) covers, and reg. 61(1) lifts it
+  # while they continue the course. No rent is due on the home the family
+  # owns. In law the award starts with the claim in about October 2026, after
+  # the rate rebate, and the Universal Credit Regulations (Northern Ireland)
+  # 2016 regs. 68 to 71 count the maintenance loan or grant as student income.
+  # The annual model pays the claim for the whole of 2026-27 and counts no
+  # student income, so we assert its amount: 12 assessment periods at the
+  # 2026 to 2027 rate for a single claimant under 25, 12 x £338.58 =
+  # £4,062.96.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+        has_education_maintenance_funding: true
+        housing_benefit_reported: 6_000
+        housing_benefit_report_is_rate_rebate_only: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_uc_at_legacy_closure: true
+    is_qualifying_young_person_on_uc_migration_day: [false]
+    uc_receiving_education: [true]
+    uc_is_excepted_from_education_condition: [true]
+    meets_uc_education_condition: [true]
     is_uc_eligible: true
     universal_credit: 4_062.96

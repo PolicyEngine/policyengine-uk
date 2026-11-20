@@ -103,6 +103,11 @@
       householder_unit:
         members: [householder]
         would_claim_uc: false
+        # The head (60) is under the qualifying age for State Pension
+        # Credit, so the award ends when working-age Housing Benefit is
+        # abolished on 1 July 2026 (SI 2025/1148 art. 7(3)). The head
+        # doesn't claim Universal Credit then.
+        would_claim_uc_at_legacy_closure: false
       lodger_unit:
         members: [lodger, son]
     households:
@@ -119,7 +124,9 @@
     housing_benefit_non_dep_deductions: [3_346.20, 0]
     legacy_benefits_home_letting_income: [4_160, 0]
     housing_benefit_applicable_income: [4_160, 0]
-    housing_benefit: [7_053.80, 0]
+    # The award is paid for the 86 of the 365 days from 6 April 2026 before
+    # its abolition: 7,053.80 x 86 / 365 = 1,661.99.
+    housing_benefit: [1_661.99, 0]
 
 - name: A lodger's non-paying adult son is the householder's non-dependant for Universal Credit and CTR
   # The same household, with the household head claiming Universal Credit
@@ -332,6 +339,11 @@
       householder_unit:
         members: [householder]
         would_claim_uc: false
+        # The head (60) is under the qualifying age for State Pension
+        # Credit, so the award ends when working-age Housing Benefit is
+        # abolished on 1 July 2026 (SI 2025/1148 art. 7(3)). The head
+        # doesn't claim Universal Credit then.
+        would_claim_uc_at_legacy_closure: false
       lodger_unit:
         members: [mother, son]
     households:
@@ -349,7 +361,9 @@
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, false]
     housing_benefit_non_dep_deductions: [3_346.20, 0]
     legacy_benefits_home_letting_income: [4_160, 0]
-    housing_benefit: [7_053.80, 0]
+    # The award is paid for the 86 of the 365 days from 6 April 2026 before
+    # its abolition: 7,053.80 x 86 / 365 = 1,661.99.
+    housing_benefit: [1_661.99, 0]
 
 - name: Rent entered for a member of the household head's benefit unit is not paid to the householder
   # The household head's partner has rent_paid_as_lodger set. The household
@@ -539,6 +553,11 @@
       householder_unit:
         members: [householder]
         would_claim_uc: false
+        # The head (60) is under the qualifying age for State Pension
+        # Credit, so the award ends when working-age Housing Benefit is
+        # abolished on 1 July 2026 (SI 2025/1148 art. 7(3)). The head
+        # doesn't claim Universal Credit then.
+        would_claim_uc_at_legacy_closure: false
       lodger_unit:
         members: [lodger, son]
         would_claim_uc: false
@@ -552,7 +571,9 @@
     is_non_dependant_of_household_head: [false, false, true]
     is_uc_non_dependant_of_household_head: [false, false, true]
     housing_benefit_non_dep_deductions: [3_346.20, 0]
-    housing_benefit: [7_053.80, 0]
+    # The award is paid for the 86 of the 365 days from 6 April 2026 before
+    # its abolition: 7,053.80 x 86 / 365 = 1,661.99.
+    housing_benefit: [1_661.99, 0]
 
 - name: A non-paying daughter's qualifying young person stays the householder's non-dependant for Universal Credit
   # London (Inner South East London), 2026-27. The household head (62)

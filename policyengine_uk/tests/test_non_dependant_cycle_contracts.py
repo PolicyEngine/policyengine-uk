@@ -461,8 +461,9 @@ def test_each_household_gets_its_results_alone(system, households):
 
 def test_computed_universal_credit_and_local_schemes(system):
     """With nothing supplied, Universal Credit's traced calculation reads no
-    Housing Benefit variable but the report of the award, and the national and
-    local Council Tax Reduction schemes then read Universal Credit."""
+    Housing Benefit variable but the report of the award and its payable
+    share, and the national and local Council Tax Reduction schemes then read
+    Universal Credit."""
     # Each local scheme's parameters start in 2026-27.
     year = 2026
     template = situation("mixed", year=year, full_uc=True)
@@ -495,14 +496,32 @@ def test_computed_universal_credit_and_local_schemes(system):
     sim = make(system, data, year=year, trace=True)
     universal_credit = sim.calculate("universal_credit", year)
     names = traced_names(sim)
+    # The claimant-specific saving is a supplied status, never an ESA or HB
+    # award calculation. Keep that restriction alongside the trace contract.
+    assert not system.get_variable(
+        "housing_benefit_claimant_is_saved_esa_claimant"
+    ).formulas
     assert universal_credit[0] > 0
     assert "uc_maximum_amount" in names
     assert "housing_benefit_reported" in names
+    # The claim at the abolition of working-age Housing Benefit
+    # (claims_uc_at_legacy_closure) and the Tax-Free Childcare choice
+    # (forgoes_universal_credit_for_tax_free_childcare) read
+    # housing_benefit_payable_share, the share of the year before the
+    # abolition date. It reads reports, ages, the country and supplied
+    # savings, never a calculated award, so it adds no cycle. The trace
+    # includes everything it reads, so a calculated Housing Benefit variable
+    # read through it would still fail here.
     assert not {
         name
         for name in names
         if name.startswith("housing_benefit")
         and not name.startswith("housing_benefit_report")
+        and name
+        not in (
+            "housing_benefit_payable_share",
+            "housing_benefit_claimant_is_saved_esa_claimant",
+        )
     }
     for name in [
         "housing_benefit",

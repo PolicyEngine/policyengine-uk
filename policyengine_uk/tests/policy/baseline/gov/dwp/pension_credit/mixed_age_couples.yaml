@@ -106,8 +106,9 @@
         members: [older, younger]
         would_claim_uc: false
         # The couple does not claim Universal Credit when the abolition of
-        # income-related ESA reaches the award, so it keeps the continuing
-        # Housing Benefit award this case tests.
+        # income-related ESA or of working-age Housing Benefit reaches its
+        # awards, so it keeps the continuing Housing Benefit award this case
+        # tests.
         would_claim_uc_at_legacy_closure: false
     households:
       household:
@@ -118,7 +119,8 @@
     has_mixed_age_couple_pension_credit_saving: false
     is_pension_credit_eligible: false
     pension_credit: 0
-    # continuing award route (TP reg 8(2A)), unchanged from main
+    # continuing award route (TP reg 8(2A)), until the working-age abolition
+    # on 1 July 2026 for a couple that does not claim Universal Credit
     housing_benefit_eligible: true
 
 - name: A UC award ends the saving (art. 4(2))

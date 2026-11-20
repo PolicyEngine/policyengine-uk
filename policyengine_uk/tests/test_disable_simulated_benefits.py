@@ -345,7 +345,9 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
     )
     # The abolition of income-related ESA reaches the claimant's own award
     # from 2026-27 (SI 2025/1148 art. 3A), which would prompt a Universal
-    # Credit claim; the reform holds that too, so it prompts no claim.
+    # Credit claim. The reform holds the reach and the claim itself
+    # (NOT_MOVED), the claim because the Housing Benefit abolition prompts it
+    # without either, so no family claims.
     reached = year > DATASET_YEAR
     assert by_family(unreformed, "esa_income_abolition_reached", year) == {
         "excluded_adult": False,
@@ -355,12 +357,47 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
         "own_esa_over_tariff": reached,
         "excluded_income_support": False,
     }
+    assert by_family(reformed, "esa_income_abolition_reached", year) == dict.fromkeys(
+        NAMES, False
+    )
     assert by_family(reformed, "claims_uc_at_legacy_closure", year) == dict.fromkeys(
         NAMES, False
     )
     ten_years = list(range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
     for variable in NOT_MOVED:
         assert known_years(reformed, variable) == ten_years, variable
+
+
+def test_the_housing_benefit_abolition_prompts_no_claim():
+    """The abolition of working-age Housing Benefit (SI 2025/1148 art. 7)
+    reaches an unsaved award from 2026-27, and a family that would claim at
+    a closure (would_claim_uc_at_legacy_closure, true by default) then
+    claims Universal Credit, although it wouldn't claim otherwise. The
+    reform pays the reported Housing Benefit in each of its years, so it
+    holds that claim too, and the family claims nothing."""
+    situation = {
+        "people": {
+            "tenant": {
+                "age": every_year(30),
+                "is_claimant_or_partner": every_year(True),
+                "current_education": every_year("NOT_IN_EDUCATION"),
+                "housing_benefit_reported": {DATASET_YEAR: 5_000},
+            }
+        },
+        "benunits": {
+            "family": {"members": ["tenant"], "would_claim_uc": every_year(False)}
+        },
+        "households": {
+            "home": {"members": ["tenant"], "region": every_year("NORTH_EAST")}
+        },
+    }
+    reformed = Simulation(situation=situation, scenario=REFORM)
+    unreformed = Simulation(situation=situation)
+    for year in YEARS[1:]:
+        for variable in ("claims_uc_at_legacy_closure", "claims_universal_credit"):
+            assert unreformed.calculate(variable, year).tolist() == [True], variable
+            assert reformed.calculate(variable, year).tolist() == [False], variable
+        assert reformed.calculate("housing_benefit", year).tolist() == [5_000]
 
 
 @pytest.mark.parametrize("year", YEARS)
@@ -891,15 +928,17 @@ def test_a_young_person_on_a_benefit_the_reform_pays_is_no_qualifying_young_pers
     assert paid == [0, 3_000, 3_000, 3_000, 3_000, 3_000]
     assert reformed.calculate(predicate, year)[1::2].tolist() == [False] * 6
     # Without the reform, the model stops paying tax credits from 2025 and
-    # Income Support and income-based JSA from 2026, and those reports
-    # exclude nobody.
+    # Income Support and income-based JSA from 2026, and the abolitions leave
+    # no unsaved income-related ESA or working-age Housing Benefit payable
+    # from 2027, and those reports exclude nobody.
     tax_credits_closed = year >= 2025
     legacy_closed = year >= 2026
+    abolished = year >= 2027
     assert unreformed.calculate(predicate, year)[1::2].tolist() == [
         legacy_closed,
         legacy_closed,
-        year >= 2027,
-        False,
+        abolished,
+        abolished,
         tax_credits_closed,
         tax_credits_closed,
     ]

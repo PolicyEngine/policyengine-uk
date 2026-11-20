@@ -6,13 +6,14 @@ from policyengine_uk.variables.gov.hmrc.tax_free_childcare._top_up import (
 # Legacy awards a Universal Credit claim ends (SI 2014/1230 regs 8 and 46).
 # A family receiving one, until DWP closes it, keeps today's claim: not
 # claiming would keep that award as well as Tax-Free Childcare, which this
-# comparison does not weigh. Income-related ESA counts only while some of
-# the year is payable (esa_income_payable_share): its abolition ends the
-# award whether or not the family claims (SI 2025/1148 art. 3A).
+# comparison does not weigh. Income-related ESA and Housing Benefit count
+# only while some of the year is payable (esa_income_payable_share,
+# housing_benefit_payable_share): their abolition ends an unsaved award
+# whether or not the family claims (SI 2025/1148 arts. 3A and 7; SR 2025/176
+# arts. 3A and 7).
 LEGACY_AWARDS = (
     "child_tax_credit_reported",
     "working_tax_credit_reported",
-    "housing_benefit_reported",
     "income_support_reported",
     "jsa_income_reported",
 )
@@ -79,6 +80,14 @@ class forgoes_universal_credit_for_tax_free_childcare(Variable):
         top_up = add(benunit, period, ["tax_free_childcare_without_universal_credit"])
         esa_payable = person("esa_income_payable_share", period) > 0
         esa_award = benunit.sum(person("esa_income_reported", period) * esa_payable)
-        legacy = (add(benunit, period, LEGACY_AWARDS) > 0) | (esa_award > 0)
+        housing_benefit_payable = benunit("housing_benefit_payable_share", period) > 0
+        housing_benefit_award = (
+            add(benunit, period, ["housing_benefit_reported"]) * housing_benefit_payable
+        )
+        legacy = (
+            (add(benunit, period, LEGACY_AWARDS) > 0)
+            | (esa_award > 0)
+            | (housing_benefit_award > 0)
+        )
         keeps_no_legacy_award = ~legacy | benunit("legacy_benefits_closed", period)
         return keeps_no_legacy_award & (award > 0) & (top_up > award + scp_from_claim)

@@ -596,6 +596,11 @@ def situation(population, year=PERIOD):
         if f["legacy"]:
             # A continuing Housing Benefit award (SI 2014/1230 reg. 8).
             people[f"claimant{i}"]["housing_benefit_reported"] = {year: 3_000.0}
+            # The family stays on legacy benefits when working-age Housing
+            # Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7), so
+            # in 2026-27 the award is paid for the 86/365 of the year before
+            # that date rather than ending on a Universal Credit claim.
+            benunit["would_claim_uc_at_legacy_closure"] = {year: False}
         households[f"h{i}"] = {
             "members": household_members,
             "rent": {year: f["rent"]},

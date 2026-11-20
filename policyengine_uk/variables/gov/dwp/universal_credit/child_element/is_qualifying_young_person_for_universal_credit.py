@@ -25,11 +25,19 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "ESA only after their capital and work screens. The model pays Income "
         "Support, income-based JSA and tax credits only while "
         "gov.dwp.income_support.active, gov.dwp.JSA.income.active and "
-        "gov.dwp.tax_credits.active hold, has no closure date for Housing "
-        "Benefit, and pays an income-related ESA claim only while it stays "
-        "payable (esa_income_payable_share), so the formula reads its report "
-        "only then. The formula also reads the Income Support, income-based "
-        "JSA and tax credit reports while "
+        "gov.dwp.tax_credits.active hold, and pays an income-related ESA "
+        "claim and a Housing Benefit award only while each stays payable "
+        "(esa_income_payable_share and housing_benefit_payable_share: "
+        "working-age Housing Benefit outside its savings is abolished from "
+        "1 July 2026, or 1 October 2026 in Northern Ireland), so the formula "
+        "reads their reports only then. Each share is a fraction of the year. "
+        "Housing Benefit's is above 0 in 2026-27, so an unsaved report that "
+        "is otherwise open still excludes that year (a Universal Credit claim "
+        "ends it). From 2027-28 it is 0, so with "
+        "gov.contrib.policyengine.disable_simulated_benefits off the report "
+        "no longer excludes. The formula also reads the Income "
+        "Support, income-based JSA, tax credit, income-related ESA and "
+        "Housing Benefit reports while "
         "gov.contrib.policyengine.disable_simulated_benefits is on. The reform "
         "that switch turns on pays them at their reported amounts in the "
         "dataset year and the nine years after it, and the formula still reads "
@@ -219,7 +227,27 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     )
     jsa_income_paying = paying(dwp.JSA.income.active, "jsa_income") & own_award_open
     esa_income_paying = paying(True, "esa_income") & esa_income_open
-    housing_benefit_paying = paying(True, "housing_benefit") & housing_benefit_open
+    # The abolition of working-age Housing Benefit (SI 2025/1148 art. 7; in
+    # Northern Ireland, SR 2025/176 art. 7) ends an unsaved award from 1 July
+    # 2026, or 1 October 2026 in Northern Ireland, whether or not the family
+    # claims, so nobody is entitled to it in a year in which the award is not
+    # payable (housing_benefit_payable_share), on the first day of a claim
+    # (at_claim_start) as on any other. That share reads parameters, the
+    # country, reports, is_claimant_or_partner, input flags and the Pension
+    # Credit age conditions, and no Universal Credit variable. The share is
+    # a fraction of the year, so it is above 0 in 2026-27 and an unsaved
+    # report that is otherwise open still excludes for that year (a claim
+    # ends it); from 2027-28 it is 0 and, with the reform switch off, the
+    # report no longer excludes. The reform behind
+    # disable_simulated_benefits pays the report in the dataset year and the
+    # nine after it, so while the switch is on the formula reads the report
+    # in every year, as it does the other reports.
+    housing_benefit_payable = (
+        person.benunit("housing_benefit_payable_share", period) > 0
+    ) | paid_as_reported
+    housing_benefit_paying = (
+        paying(True, "housing_benefit") & housing_benefit_open & housing_benefit_payable
+    )
     child_tax_credit_paying = (
         paying(dwp.tax_credits.active, "child_tax_credit", "tax_credits")
         & family_award_open

@@ -81,7 +81,7 @@
     housing_benefit: 0
     universal_credit: 0
 
-- name: Housing Benefit alone has not closed, so a Housing Benefit family keeps its award
+- name: A Housing Benefit family claims Universal Credit when working-age awards are abolished
   period: 2027
   input:
     people:
@@ -99,8 +99,54 @@
         tenure_type: RENT_FROM_COUNCIL
   output:
     legacy_benefits_closed: false
+    claims_uc_at_legacy_closure: true
+    claims_universal_credit: true
+    housing_benefit_eligible: false
+
+- name: In the abolition year a claiming family gets Universal Credit for the year and no Housing Benefit
+  period: 2026
+  input:
+    people:
+      adult:
+        age: 40
+        housing_benefit_reported: 4_000
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [adult]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    claims_universal_credit: true
+    housing_benefit: 0
+    # The claim brings the abolition of income-related ESA into force.
+    esa_income: 0
+
+- name: In the abolition year a family that does not claim keeps its Housing Benefit and income-related ESA
+  period: 2026
+  input:
+    people:
+      adult:
+        age: 40
+        housing_benefit_reported: 4_000
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [adult]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
     claims_universal_credit: false
     housing_benefit_eligible: true
+    esa_income_eligible: true
     universal_credit: 0
 
 - name: Income-related ESA continues before tax credits close

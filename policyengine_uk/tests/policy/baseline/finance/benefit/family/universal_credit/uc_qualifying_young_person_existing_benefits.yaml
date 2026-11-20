@@ -8,9 +8,11 @@
 # the model's legacy closure, or for a claimant or partner the family's
 # Universal Credit claim, ends the award on it, and only if no reform
 # neutralises it. The model pays Income Support and income-based
-# JSA until 31 March 2026 and tax credits until 5 April 2025, has no
-# closure date for Housing Benefit, and pays an income-related ESA claim
-# only while it stays payable (esa_income_payable_share). It also ends a
+# JSA until 31 March 2026 and tax credits until 5 April 2025, and pays an
+# income-related ESA claim and a Housing Benefit award only while each
+# stays payable (esa_income_payable_share, housing_benefit_payable_share:
+# working-age Housing Benefit outside its savings is abolished from 1 July
+# 2026, or 1 October 2026 in Northern Ireland). It also ends a
 # person's legacy awards when its annual migration proxy closes them, and
 # the predicate follows that closure
 # (uc_qualifying_young_person_legacy_closure.yaml covers it). In these cases
@@ -187,9 +189,11 @@
     universal_credit: 5_098.80
 
 - name: An 18-year-old claimant on a non-advanced course who reports Housing Benefit is not a qualifying young person.
-  # The claimant doesn't claim Universal Credit, so no claim ends their own
-  # Housing Benefit (uc_qualifying_young_person_universal_credit_claim.yaml
-  # covers a claim). They get no Universal Credit.
+  # The claimant doesn't claim Universal Credit, even when working-age
+  # Housing Benefit is abolished on 1 July 2026 (SI 2025/1148 art. 7), so no
+  # claim ends their own Housing Benefit
+  # (uc_qualifying_young_person_universal_credit_claim.yaml covers a claim).
+  # They get no Universal Credit.
   period: 2026
   input:
     people:
@@ -202,6 +206,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant]
@@ -212,6 +217,118 @@
     is_child_or_qualifying_young_person_for_universal_credit: [false]
     uc_child_element: 0
     universal_credit: 0
+
+- name: After working-age Housing Benefit is abolished, the same report no longer excludes the claimant.
+  # SI 2025/1148 art. 7 ends the unsaved award from 1 July 2026, so in 2027
+  # no Housing Benefit is payable (housing_benefit_payable_share) and the
+  # claimant isn't entitled to an existing benefit (SI 2014/1230 reg. 28).
+  period: 2027
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    housing_benefit_payable_share: 0
+    is_qualifying_young_person_for_universal_credit: [true]
+
+- name: In Northern Ireland the same report no longer excludes the claimant once the abolition there has passed.
+  # SR 2025/176 art. 7 ends the unsaved award from 1 October 2026.
+  period: 2027
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    housing_benefit_payable_share: 0
+    is_qualifying_young_person_for_universal_credit: [true]
+
+- name: A saved award in specified or temporary accommodation still excludes the claimant after the abolition.
+  # The abolition saves an award for specified or temporary accommodation
+  # (SI 2025/1148 art. 7(4)(a), SI 2014/1230 reg. 6A(2)), so in 2027 the
+  # award stays payable and the claimant is entitled to an existing benefit.
+  # They rent from the council and have no income, so the award meets their
+  # rent in full.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: true
+        housing_benefit_reported: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit: 6_000
+    is_qualifying_young_person_for_universal_credit: [false]
+
+- name: After the abolition, a parent's young person whose own Housing Benefit report is unsaved is a qualifying young person.
+  # The abolition reaches the family's award, so in 2027 no Housing Benefit
+  # is payable on the young person's report (housing_benefit_payable_share)
+  # and reg. 28 no longer keeps them out of the definition.
+  period: 2027
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        current_education: POST_SECONDARY
+        is_claimant_or_partner: false
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    housing_benefit_payable_share: 0
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
 
 - name: A young person's own Income Support report after Income Support stops paying leaves the child element.
   # Income Support stops paying on 1 April 2026 (gov.dwp.income_support.active), so nobody is entitled to it in 2026.

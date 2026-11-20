@@ -18,7 +18,13 @@ P4  For a benefit unit that is not a mixed-age couple, the saving input
 P5  Differential against the formulas before this change: units that are
     not mixed-age couples, and mixed-age couples without the saving from
     model year 2020, get the same Pension Credit, Housing Benefit, Universal
-    Credit and household net income.
+    Credit and household net income. The reference formulas read
+    would_claim_uc alone, so no family here claims Universal Credit when a
+    legacy award closes or is abolished. In model year 2026 both runs pay a
+    working-age continuing award, an unsaved mixed-age couple's included,
+    for the share of the year before the abolition of working-age Housing
+    Benefit (housing_benefit_payable_share), so P5 compares those part-year
+    awards.
 P6  From model year 2020, the saving never lowers Pension Credit or Housing
     Benefit and leaves Universal Credit at 0.
 P7  In model years 2018 and 2019 every mixed-age couple not reported on
@@ -27,10 +33,17 @@ P7  In model years 2018 and 2019 every mixed-age couple not reported on
 P8  The default saving is never set where the older member was born after
     5 February 1954 (so had not reached the qualifying age by 14 May 2019),
     or where the couple reports Universal Credit.
+P9  From model year 2026 the abolition of working-age Housing Benefit (SI
+    2025/1148 art. 7) reaches a mixed-age couple's award without the saving
+    (payable share below 1) and not one with it (share 1): art. 7(4)(a)
+    saves the couple only through reg 6A(5), which needs the saving.
+    test_the_abolition_ends_only_an_unsaved_mixed_age_couples_award checks
+    one couple's awards with and without a Universal Credit claim then.
 """
 
 import json
 
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from policyengine_core.reforms import Reform
@@ -189,8 +202,8 @@ def cases(draw):
             "would_claim_uc": draw(st.booleans()),
             "would_claim_pc": draw(st.booleans()),
             # The reference formulas read would_claim_uc alone, so no family
-            # here claims when the abolition of income-related ESA reaches
-            # the older member's award in 2026-27.
+            # here claims when the abolition of income-related ESA or of
+            # working-age Housing Benefit reaches its award in 2026-27.
             "would_claim_uc_at_legacy_closure": False,
         },
         "household": {
@@ -239,6 +252,7 @@ def run(case, before=False, saving=None):
         result["uc_eligible"] = bool(get("is_uc_eligible"))
         result["mixed"] = bool(get("is_mixed_age_couple"))
         result["saving"] = bool(get("has_mixed_age_couple_pension_credit_saving"))
+        result["payable_share"] = float(get("housing_benefit_payable_share"))
     return result
 
 
@@ -276,6 +290,9 @@ def test_mixed_age_couple_invariants(case):
         assert on["pension_credit"] >= off["pension_credit"] - 0.01, context  # P6
         assert on["housing_benefit"] >= off["housing_benefit"] - 0.01, context
         assert on["universal_credit"] == 0, context
+        if case["year"] >= 2026:  # P9
+            assert off["payable_share"] < 1, context
+            assert on["payable_share"] == 1, context
     else:
         # P7: before the exclusion only a couple reported on UC stays on it.
         on_uc = case["people"]["older"]["universal_credit_reported"] > 0
@@ -288,3 +305,77 @@ def test_mixed_age_couple_invariants(case):
         # or before 5 February 1954 only if year - age is 1953 or earlier.
         assert case["year"] - older["age"] <= 1953, context
         assert older["universal_credit_reported"] == 0, context
+
+
+# The share of 2026-27 before 1 July 2026 (SI 2025/1148 art. 7(3)): 6 April
+# to 30 June.
+GREAT_BRITAIN_SHARE_2026 = 86 / 365
+
+
+@pytest.mark.parametrize("saving", [False, True])
+def test_the_abolition_ends_only_an_unsaved_mixed_age_couples_award(saving):
+    # P9 for one couple (67 and 26) continuing a Housing Benefit award in
+    # 2026-27. Without the saving the abolition reaches the award: a couple
+    # that does not claim Universal Credit is paid for the part of the year
+    # before 1 July 2026, and one that claims then gets no Housing Benefit
+    # and the Universal Credit of any claim for the whole year, the model's
+    # annual claim convention. With the saving (reg 6A(5), through art.
+    # 7(4)(a)) the award continues for the whole year and prompts no claim.
+    year = 2026
+
+    def simulate(**benunit):
+        case = {
+            "year": year,
+            "shape": "mixed",
+            "people": {
+                "older": {
+                    "age": 67,
+                    "is_claimant_or_partner": True,
+                    "state_pension": 9_000,
+                    "housing_benefit_reported": 4_000,
+                },
+                "younger": {"age": 26, "is_claimant_or_partner": True},
+            },
+            "benunit": {
+                "would_claim_uc": False,
+                "would_claim_pc": True,
+                "would_claim_uc_at_legacy_closure": False,
+                **benunit,
+            },
+            "household": {
+                "tenure_type": "RENT_FROM_COUNCIL",
+                "rent": 6_240,
+                "savings": 0,
+                "region": "NORTH_WEST",
+                "brma": "CENTRAL_GREATER_MANCHESTER",
+                "council_tax": 1_500,
+            },
+        }
+        simulation = Simulation(situation=situation(case))
+        simulation.set_input(
+            "has_mixed_age_couple_pension_credit_saving", year, [saving]
+        )
+        return lambda variable: float(simulation.calculate(variable, year)[0])
+
+    staying = simulate()
+    claiming = simulate(would_claim_uc_at_legacy_closure=True)
+    entitlement = staying("housing_benefit_entitlement")
+    assert entitlement > 0
+    if saving:
+        for get in (staying, claiming):
+            assert get("housing_benefit_payable_share") == 1
+            assert not get("claims_uc_at_legacy_closure")
+            assert close(get("housing_benefit_pre_benefit_cap"), entitlement)
+            assert get("universal_credit") == 0
+        return
+    anyway = simulate(would_claim_uc=True)
+    assert close(staying("housing_benefit_payable_share"), GREAT_BRITAIN_SHARE_2026)
+    assert close(
+        staying("housing_benefit_pre_benefit_cap"),
+        entitlement * GREAT_BRITAIN_SHARE_2026,
+    )
+    assert staying("universal_credit") == 0
+    assert claiming("claims_uc_at_legacy_closure")
+    assert claiming("housing_benefit") == 0
+    assert claiming("universal_credit") > 0
+    assert close(claiming("universal_credit"), anyway("universal_credit"))

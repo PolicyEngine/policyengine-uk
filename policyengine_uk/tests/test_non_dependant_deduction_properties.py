@@ -1147,8 +1147,14 @@ def award_households(households, awards=None, scaled=True):
 
 def test_universal_credit_reads_no_calculated_housing_benefit():
     """Invariant 12: Universal Credit's traced calculation reads no Housing
-    Benefit variable but the reported award, so the deductions can read
-    universal_credit. Inputs that supply benefit_cap_welfare_benefits, a
+    Benefit variable but the reported award, its payable share and the
+    supplied claimant-specific ESA saving status, so the
+    deductions can read universal_credit. The payable share
+    (housing_benefit_payable_share), which the claim at the abolition of
+    working-age Housing Benefit reads, is the share of the year before the
+    abolition date: it reads reports, ages, the country and supplied
+    savings, never a calculated award, and the trace includes everything it
+    reads. Inputs that supply benefit_cap_welfare_benefits, a
     total that includes Housing Benefit, also supply
     housing_benefit_pre_benefit_cap or uc_benefit_cap_welfare_benefits, or
     the basket raises ValueError. Where they supply
@@ -1158,12 +1164,21 @@ def test_universal_credit_reads_no_calculated_housing_benefit():
     situation = award_households([BAND_CROSSING], scaled=False)
     sim = core_simulation(situation, year, trace=True)
     sim.calculate("universal_credit", year)
+    assert not sim.tax_benefit_system.get_variable(
+        "housing_benefit_claimant_is_saved_esa_claimant"
+    ).formulas
     read = {key.split("<")[0] for key in sim.tracer.get_serialized_flat_trace()}
     assert "universal_credit" in read
     assert not [
         name
         for name in read
-        if name.startswith("housing_benefit") and name != "housing_benefit_reported"
+        if name.startswith("housing_benefit")
+        and name
+        not in (
+            "housing_benefit_reported",
+            "housing_benefit_payable_share",
+            "housing_benefit_claimant_is_saved_esa_claimant",
+        )
     ], read
     for unit in situation["benunits"].values():
         unit["benefit_cap_welfare_benefits"] = {
@@ -1180,7 +1195,13 @@ def test_universal_credit_reads_no_calculated_housing_benefit():
         name
         for name in read
         if name.startswith("housing_benefit")
-        and name not in ("housing_benefit_reported", "housing_benefit_pre_benefit_cap")
+        and name
+        not in (
+            "housing_benefit_reported",
+            "housing_benefit_payable_share",
+            "housing_benefit_claimant_is_saved_esa_claimant",
+            "housing_benefit_pre_benefit_cap",
+        )
     ], read
 
 

@@ -4,7 +4,14 @@ Tax credits closed from 6 April 2025 and Income Support and income-based JSA
 from 1 April 2026. The abolition of income-related ESA reached every remaining
 award on 1 July 2026 (SI 2025/1148 art. 3A), so a family whose award it
 reaches can claim from 2026-27, and DWP moves it from 2027-28, when none of the
-award is payable. DWP moved each family off its legacy benefits with a notice
+award is payable. The abolition of working-age Housing Benefit reached the
+remaining awards on 1 July 2026 (SI 2025/1148 art. 7(3)). Art. 7(4)(a)
+saves a family within reg 6A(4) of SI 2014/1230 (wholly pension age) or
+6A(5) (a mixed-age couple with the SI 2019/37 art. 4 saving), together the
+Pension Credit age conditions, so a family off them that reports Housing
+Benefit can claim from 2026-27. No generated family is in specified or
+temporary accommodation (reg 6A(2)) or has the ESA appointee saving (art.
+7(4)(b)). DWP moved each family off its legacy benefits with a notice
 covering all of them. A Universal Credit migration notice ends the awards on a
 claim (SI 2014/1230 reg 8) or at its deadline (reg 46). A tax credit closure
 notice sent families on Pension Credit, and families on Child Tax Credit but
@@ -22,10 +29,13 @@ Invariants, for any generated population of families in 2024 to 2027:
    not on Pension Credit and is not wholly pension age. The ESA abolition
    reaches (esa_income_abolition_reached) a family reporting income-related
    ESA from 2026 under the same Pension Credit conditions.
-2. Claim: claims_universal_credit is would_claim_uc, or the closure or the
-   abolition reaching the award with the closure claim flag; Universal Credit
-   is paid only to claiming families, and a claiming family gets no
-   income-related ESA.
+2. Claim: claims_universal_credit is would_claim_uc, or the closure or
+   either abolition reaching the award with the closure claim flag; Universal
+   Credit is paid only to claiming families, and a claiming family gets no
+   income-related ESA. From 2026 the Housing Benefit abolition reaches a
+   family reporting Housing Benefit off the Pension Credit age conditions,
+   and housing_benefit_payable_share is below 1 for exactly the families off
+   them.
 3. Migration ends every legacy award: a family moved off legacy benefits gets
    no tax credits, Income Support, income-related ESA or income-based JSA.
    It gets no Housing Benefit unless it keeps the pension-age route by not
@@ -37,7 +47,7 @@ Invariants, for any generated population of families in 2024 to 2027:
    Housing Benefit.
 5. Metamorphic, the flag is inert unless it decides a claim or age waiver: negating
    would_claim_uc_at_legacy_closure changes no benefit for a family neither
-   moved off legacy benefits nor reached by the ESA abolition, or for a
+   moved off legacy benefits nor reached by either abolition, or for a
    working-age one that would claim
    Universal Credit anyway and has a qualifying working-age claimant. In
    particular nothing changes in 2024, before
@@ -106,6 +116,7 @@ BENEFITS = [
 OUTPUTS = BENEFITS + [
     "legacy_benefits_closed",
     "esa_income_abolition_reached",
+    "housing_benefit_payable_share",
     "claims_universal_credit",
     "left_pension_route_at_legacy_closure",
     "meets_pension_credit_age_conditions",
@@ -227,6 +238,23 @@ def expected_reached(unit, year, pension_age_route, mixed_age):
     )
 
 
+def housing_benefit_abolished(year, pension_age_route):
+    """From 2026-27 the abolition of working-age Housing Benefit (SI
+    2025/1148 art. 7) reaches every family off the Pension Credit age
+    conditions: art. 7(4)(a) saves only reg 6A(4) (wholly pension age) and
+    6A(5) (a mixed-age couple with the SI 2019/37 art. 4 saving), and no
+    generated family has the other savings."""
+    return year >= 2026 and not pension_age_route
+
+
+def expected_housing_benefit_reached(unit, year, pension_age_route):
+    """The abolition reaches a reported Housing Benefit award it does not
+    save."""
+    return unit["reported"]["housing_benefit_reported"] > 0 and (
+        housing_benefit_abolished(year, pension_age_route)
+    )
+
+
 def has_working_age_claimant(unit):
     return any(
         role != "child"
@@ -238,6 +266,69 @@ def has_working_age_claimant(unit):
 
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=25))
+@example(
+    [
+        # The Housing Benefit abolition alone prompts the first two claims
+        # from 2026: a mixed-age couple without the saving, whose Pension
+        # Credit report keeps it from closure but saves no award (reg 6A(5)),
+        # and a working-age claimant on Housing Benefit only. The third
+        # family is the second without the closure claim flag, so it makes
+        # no claim: the flag decides the abolition claim too.
+        dict(
+            shape="mixed_age",
+            members=[("claimant", 86), ("partner", 47)],
+            reported={
+                "child_tax_credit_reported": 2_000.0,
+                "working_tax_credit_reported": 6_000.0,
+                "housing_benefit_reported": 6_000.0,
+                "esa_income_reported": 0.0,
+                "income_support_reported": 6_000.0,
+                "jsa_income_reported": 2_000.0,
+                "pension_credit_reported": 6_000.0,
+            },
+            saving=False,
+            tenure="RENT_FROM_COUNCIL",
+            rent=6_041.06,
+            earnings=8_000.0,
+            savings=5_000.0,
+            would_claim_uc=False,
+            claims_at_closure=True,
+            ineligible_partner=True,
+        ),
+        dict(
+            shape="single",
+            members=[("claimant", 30)],
+            reported={
+                name: 4_000.0 if name == "housing_benefit_reported" else 0.0
+                for name in LEGACY
+            },
+            saving=False,
+            tenure="RENT_PRIVATELY",
+            rent=6_000.0,
+            earnings=0.0,
+            savings=0.0,
+            would_claim_uc=False,
+            claims_at_closure=True,
+            ineligible_partner=False,
+        ),
+        dict(
+            shape="single",
+            members=[("claimant", 30)],
+            reported={
+                name: 4_000.0 if name == "housing_benefit_reported" else 0.0
+                for name in LEGACY
+            },
+            saving=False,
+            tenure="RENT_PRIVATELY",
+            rent=6_000.0,
+            earnings=0.0,
+            savings=0.0,
+            would_claim_uc=False,
+            claims_at_closure=False,
+            ineligible_partner=False,
+        ),
+    ]
+)
 def test_closure_claims_and_the_end_of_legacy_awards(units):
     values = calculate(units)
     for year in YEARS:
@@ -249,7 +340,15 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
             assert bool(v["legacy_benefits_closed"][i]) == closed, (year, unit)
             reached = expected_reached(unit, year, pension_age_route, mixed_age)
             assert bool(v["esa_income_abolition_reached"][i]) == reached, (year, unit)
-            moved = closed or reached
+            abolished = housing_benefit_abolished(year, pension_age_route)
+            assert bool(v["housing_benefit_payable_share"][i] < 1) == abolished, (
+                year,
+                unit,
+            )
+            housing_benefit_reached = expected_housing_benefit_reached(
+                unit, year, pension_age_route
+            )
+            moved = closed or reached or housing_benefit_reached
             claims_at_closure = moved and unit["claims_at_closure"]
             claims = unit["would_claim_uc"] or claims_at_closure
             assert bool(v["claims_universal_credit"][i]) == claims, (year, unit)
@@ -330,7 +429,17 @@ def test_the_closure_flag_only_decides_closure_claims(units):
                 "working_tax_credit_reported"
             ] > 0 and not has_working_age_claimant(unit)
             closed = bool(drawn[year]["legacy_benefits_closed"][i])
-            moved = closed or bool(drawn[year]["esa_income_abolition_reached"][i])
+            # The Housing Benefit abolition reaches a reported award whose
+            # payable share is below 1, and the flag decides that claim too.
+            housing_benefit_reached = (
+                unit["reported"]["housing_benefit_reported"] > 0
+                and drawn[year]["housing_benefit_payable_share"][i] < 1
+            )
+            moved = (
+                closed
+                or bool(drawn[year]["esa_income_abolition_reached"][i])
+                or housing_benefit_reached
+            )
             decides = moved and (
                 not unit["would_claim_uc"]
                 or bool(drawn[year]["meets_pension_credit_age_conditions"][i])

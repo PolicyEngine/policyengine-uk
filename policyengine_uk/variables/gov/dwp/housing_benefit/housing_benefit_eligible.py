@@ -35,9 +35,23 @@ class housing_benefit_eligible(Variable):
         "Secretary of State appointed 1 July 2026 for every "
         "other working-age award to end without a claim (SI 2025/1148 art. "
         "7), and the Department for Communities appointed 1 October 2026 in "
-        "Northern Ireland (SR 2025/176 art. 7). The model doesn't apply that "
-        "date, so it pays such an award for the whole of 2026-27 and keeps it "
-        "until the family claims or DWP moves it."
+        "Northern Ireland (SR 2025/176 art. 7). The model ends the continuing "
+        "award in the year its payable share (housing_benefit_payable_share) "
+        "reaches 0, from 2027-28, and housing_benefit_pre_benefit_cap pays it "
+        "for the share of 2026-27 before that date. A family that would claim "
+        "Universal Credit then claims it when the abolition reaches its award "
+        "(claims_uc_at_legacy_closure), and the claim ends the award for the "
+        "whole year. A family meeting the Pension Credit age conditions keeps "
+        "a share of 1 (art. 7(4)(a)), and so does one whose Housing Benefit "
+        "claimant personally holds a saved income-related ESA award "
+        "(art. 7(4)(b)). housing_benefit_payable_share takes that claimant to "
+        "be a member reporting Housing Benefit, so every reporter must hold "
+        "the saved award, or a sole claimant where no member reports it; the "
+        "saved award counts only on a claimant or partner; housing_benefit_claimant_is_saved_esa_claimant "
+        "can instead confirm the identity. Other statutory savings are not modelled; "
+        "housing_benefit_payable_share lists them. "
+        "Accommodation-specific eligible rent and benefit-cap rules are not "
+        "modelled."
     )
     definition_period = YEAR
     reference = (
@@ -90,17 +104,18 @@ class housing_benefit_eligible(Variable):
         # appointed 1 July 2026 for the remaining working-age awards to end
         # without a claim (SI 2025/1148 art. 7; Northern Ireland: 1 October
         # 2026, SR 2025/176 art. 7), but not in specified or temporary
-        # accommodation (art. 7(4)(a), through reg 6A(2); NI reg 4A(2)). The
-        # model doesn't apply that date, so it pays such an award for the
-        # whole of 2026-27 and keeps it until the family claims or DWP moves
-        # it.
+        # accommodation (art. 7(4)(a), through reg 6A(2); NI reg 4A(2)). A
+        # family outside the modelled savings continues one only for the part
+        # of the year before that date (housing_benefit_payable_share), so
+        # the route closes once none of the year is payable.
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("claims_universal_credit", period)
         # Once another of the family's legacy benefits has closed, DWP's
         # migration notice ends this award even if the family does not claim
         # Universal Credit (reg 46(1)(a)).
         migrated = benunit("legacy_benefits_closed", period)
-        continuing_award = already_claiming & ~claiming_uc & ~migrated
+        still_payable = benunit("housing_benefit_payable_share", period) > 0
+        continuing_award = already_claiming & ~claiming_uc & ~migrated & still_payable
         # Specified or temporary accommodation: the bar on new claims doesn't
         # apply (reg 6A(2); NI: SR 2016/226 reg 4A(2)), and an existing award
         # terminates neither on a Universal Credit claim (reg 8(3); NI reg

@@ -501,6 +501,9 @@
       benunit:
         members: [claimant, student]
         would_claim_uc: false
+        # Nor does the family claim when working-age Housing Benefit is
+        # abolished on 1 July 2026 (SI 2025/1148 art. 7).
+        would_claim_uc_at_legacy_closure: false
     households:
       household:
         members: [claimant, student]
@@ -591,3 +594,39 @@
     council_tax_reduction_non_dep_deductions: 0
     # 1_800 - 0.2 * (4_740 - 3_933.80).
     council_tax_reduction: 1_638.76
+
+- name: Case 17, Scotland working age, case 14's 19-year-old in 2027 is a young person once working-age Housing Benefit is abolished.
+  # SI 2025/1148 art. 7 ends the family's unsaved Housing Benefit award from
+  # 1 July 2026, so in 2027 none is payable on the 19-year-old's report
+  # (housing_benefit_payable_share), they aren't entitled to an existing
+  # benefit (SI 2014/1230 reg. 28(b)), and the Scottish Ministers' reg. 5
+  # reference counts them as a young person in the family.
+  period: 2027
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        housing_benefit_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    housing_benefit_payable_share: 0
+    is_qualifying_young_person_under_universal_credit_regulation_5: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
