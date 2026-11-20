@@ -30,10 +30,12 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "(esa_income_payable_share and housing_benefit_payable_share: "
         "working-age Housing Benefit outside its savings is abolished from "
         "1 July 2026, or 1 October 2026 in Northern Ireland), so the formula "
-        "reads their reports only then. Each share is a fraction of the year, "
-        "so an unsaved Housing Benefit report still excludes in 2026-27, "
-        "unless a Universal Credit claim ends it, and no longer excludes from "
-        "2027-28. The formula also reads the Income "
+        "reads their reports only then. Each share is a fraction of the year. "
+        "Housing Benefit's is above 0 in 2026-27, so an unsaved report that "
+        "is otherwise open still excludes that year (a Universal Credit claim "
+        "ends it). From 2027-28 it is 0, so with "
+        "gov.contrib.policyengine.disable_simulated_benefits off the report "
+        "no longer excludes. The formula also reads the Income "
         "Support, income-based JSA, tax credit, income-related ESA and "
         "Housing Benefit reports while "
         "gov.contrib.policyengine.disable_simulated_benefits is on. The reform "
@@ -234,8 +236,9 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     # country, reports, is_claimant_or_partner, input flags and the Pension
     # Credit age conditions, and no Universal Credit variable. The share is
     # a fraction of the year, so it is above 0 in 2026-27 and an unsaved
-    # report still excludes for that year unless a claim ends it; from
-    # 2027-28 it is 0 and the report no longer excludes. The reform behind
+    # report that is otherwise open still excludes for that year (a claim
+    # ends it); from 2027-28 it is 0 and, with the reform switch off, the
+    # report no longer excludes. The reform behind
     # disable_simulated_benefits pays the report in the dataset year and the
     # nine after it, so while the switch is on the formula reads the report
     # in every year, as it does the other reports.

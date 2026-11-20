@@ -75,11 +75,11 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # itself too. It doesn't hold the abolition: housing_benefit_payable_share
 # still applies, so housing_benefit_pre_benefit_cap covers only the part of
 # 2026-27 before the abolition date and housing_benefit_eligible ends from
-# 2027-28, while the reform still pays the reported housing_benefit. Only the
-# closure and the claims it and the abolitions prompt are held: the model's
-# other rules still apply, and the reform still pays the amounts reported. A family the model has claim
-# Universal Credit anyway (would_claim_uc) is still not eligible for Housing
-# Benefit or tax credits. An adult outside the couple who reports
+# 2027-28, while the reform still pays the reported housing_benefit. The reform
+# holds only the closure and the claims it and the abolitions prompt: the
+# model's other rules still apply. Ordinary UC claims (would_claim_uc) still
+# enter the usual Housing Benefit and tax credit eligibility rules. An adult
+# outside the couple who reports
 # income-based JSA is on it, as their own claim, only in the years the model
 # has the scheme open (gov.dwp.JSA.income.active: to 2025). One who reports
 # income-related ESA is on it in every year, as the reform pays it in every

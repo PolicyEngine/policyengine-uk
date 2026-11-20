@@ -1499,9 +1499,10 @@
   # the definition, and the Universal Credit Regulations (Northern Ireland)
   # 2016 reg. 12(2) doesn't cover their unfunded non-advanced course: they met
   # the condition that day, so reg. 61(1) doesn't reach them. The claim ends
-  # the rate rebate the day before the award starts (reg. 6(2)), so from the
-  # first day they count as a qualifying young person and receive education,
-  # as in case 44, and get no Universal Credit.
+  # the rate rebate the day before the date they would first have been
+  # entitled had they met the basic and financial conditions (reg. 6(2)(b)).
+  # From that date they count as a qualifying young person and receive
+  # education, as in case 44, and get no Universal Credit.
   period: 2026
   input:
     people:
