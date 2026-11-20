@@ -150,9 +150,6 @@ VARIABLES = [
 def calculate(units, **kwargs):
     sim = Simulation(situation=situation(units, **kwargs))
     values = {v: np.asarray(sim.calculate(v, YEAR)) for v in VARIABLES}
-    values["social"] = (
-        np.asarray(sim.calculate("in_social_housing", YEAR, map_to="benunit")) > 0
-    )
     values["renting"] = np.array([unit["tenure"].startswith("RENT_") for unit in units])
     capital = sim.tax_benefit_system.parameters(
         YEAR

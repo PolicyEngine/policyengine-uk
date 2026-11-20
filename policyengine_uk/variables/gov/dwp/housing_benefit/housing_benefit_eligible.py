@@ -121,7 +121,7 @@ class housing_benefit_eligible(Variable):
         # and Housing Benefit can still meet the rent, mooring charges and
         # site payments (reg 12(1); NI reg 13(1)). So this test reads
         # benunit_is_renting, not LHA_eligible, and a supplied LHA_eligible
-        # changes the eligible rent without changing eligibility.
+        # selects the eligible-rent calculation without changing eligibility.
         renting = benunit("benunit_is_renting", period)
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period

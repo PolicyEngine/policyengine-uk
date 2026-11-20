@@ -31,8 +31,9 @@
     LHA_eligible: true
 
 - name: The LHA doesn't apply to a housing association tenant in a caravan
-  # A local authority determines no LHA for a housing association tenant,
-  # whatever the home (reg 13C(5)(a)).
+  # The model counts a housing association tenant as in social housing, which
+  # stays outside the LHA whatever the home. Reg 13C(5)(a) names registered
+  # social landlords and registered providers of social housing.
   period: 2025
   input:
     tenure_type: RENT_FROM_HA
@@ -75,7 +76,7 @@
     LHA_eligible: false
     housing_benefit_eligible: true
 
-- name: A private renter aged 25 with a continuing award keeps it outside the LHA in a caravan
+- name: A private renter aged 25 with a reported award passes the eligibility gate outside the LHA in a caravan
   # Reg 13C(5)(d)(i) has no age condition.
   period: 2025
   input:
@@ -95,10 +96,10 @@
     people:
       adult:
         age: 70
-        in_social_housing: true
+        in_social_housing: false
       partner:
         age: 70
-        in_social_housing: false
+        in_social_housing: true
     benunits:
       benunit:
         members: [adult, partner]
@@ -111,10 +112,10 @@
     LHA_eligible: false
     housing_benefit_eligible: true
 
-- name: A pension-age lodger in an owner-occupied caravan gets Housing Benefit for the whole rent
+- name: The model awards a pension-age lodger in an owner-occupied caravan the whole rent
   # The lodger pays the householder to live in the caravan and occupies it as
   # their home, so reg 13C(5)(d)(i) covers the lodger's claim. With no income,
-  # the award equals the rent of 5,200.
+  # the model awards the rent of 5,200.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -291,8 +292,8 @@
     housing_benefit_entitlement: 9_467.64
 
 - name: A supplied LHA_eligible of false takes a flat renter's rent as the eligible rent
-  # The flag selects the eligible rent only, so a user can take another claim
-  # outside the LHA, such as a hostel (reg 13C(5)(d)(ii)).
+  # The flag selects the eligible-rent calculation, so a user can take another
+  # claim outside the LHA, such as a hostel (reg 13C(5)(d)(ii)).
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -309,9 +310,9 @@
     housing_benefit_eligible: true
     housing_benefit_entitlement: 10_400
 
-- name: Pension-age caravan renter with no income receives the full rent
-  # The model computes every step. With no income, the award equals the rent
-  # of 7,800, though the rent exceeds the one-bedroom LHA rate of 5,864.04 in
+- name: The model awards a pension-age caravan renter with no income the full rent
+  # The model computes every step. With no income, it awards the rent of
+  # 7,800, though the rent exceeds the one-bedroom LHA rate of 5,864.04 in
   # Tyneside, where the model places a North East household.
   period: 2025
   absolute_error_margin: 0.01
@@ -345,11 +346,11 @@
 
 # The DWP makes no such exception in Universal Credit. It counts mooring
 # charges and caravan or mobile home site payments as rent payments (SI
-# 2013/376 Sch 1 para 2(c) and (d)), and rent payments to a landlord who isn't
-# a provider of social housing stay subject to the LHA cap, whatever the home
-# (Sch 4 paras 20(1), 22 and 25(2)).
+# 2013/376 Sch 1 para 2(c) and (d)), and qualifying private-sector rent
+# payments within the Universal Credit calculation stay subject to the LHA
+# cap, whatever the home (Sch 4 paras 20(1), 22 and 25(2)).
 
-- name: Universal Credit caps a caravan renter at the LHA
+- name: Universal Credit's housing costs element caps a caravan renter's rent at the LHA
   period: 2025
   input:
     tenure_type: RENT_PRIVATELY
@@ -360,7 +361,7 @@
   output:
     uc_housing_costs_element: 6_000
 
-- name: Universal Credit pays a housing association caravan tenant's rent
+- name: Universal Credit's housing costs element covers a housing association caravan tenant's rent
   # The DWP calculates a social renter's housing costs under Sch 4 Part 5,
   # with no LHA cap.
   period: 2025

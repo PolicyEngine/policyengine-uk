@@ -22,11 +22,11 @@
     people:
       adult:
         age: 40
-        in_social_housing: true
+        in_social_housing: false
         housing_benefit_reported: 1
       partner:
         age: 40
-        in_social_housing: false
+        in_social_housing: true
     benunits:
       benunit:
         members: [adult, partner]
@@ -68,10 +68,11 @@
   output:
     housing_benefit_eligible: false
 
-- name: Private renter of a caravan keeps a continuing award outside the LHA
+- name: Private renter of a caravan with a reported award passes the eligibility gate outside the LHA
   # A local authority determines no maximum rent (LHA) for a houseboat,
   # caravan or mobile home (SI 2006/213 reg 13C(5)(d)(i)), and Housing
-  # Benefit can still meet the rent (reg 12(1)), so the award continues.
+  # Benefit can still meet the rent (reg 12(1)), so the family passes the
+  # eligibility gate.
   period: 2021
   input:
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
@@ -82,8 +83,9 @@
     LHA_eligible: false
     housing_benefit_eligible: true
 
-- name: A supplied LHA_eligible of false doesn't end a private renter's continuing award
-  # The flag selects the eligible rent only; the tenure decides eligibility.
+- name: A supplied LHA_eligible of false leaves a private renter with a reported award eligible
+  # The flag selects the eligible-rent calculation; the tenure decides
+  # eligibility.
   period: 2021
   input:
     would_claim_uc: false  # continuing award route: not claiming Universal Credit

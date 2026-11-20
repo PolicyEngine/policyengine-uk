@@ -6,8 +6,8 @@ occupies as his home" (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); Northern
 Ireland: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). Housing Benefit can
 still meet those payments (reg 12(1); NI reg 13(1)), so the family stays
 eligible where it rents. The DWP makes no such exception in Universal Credit
-(SI 2013/376 Sch 4 Part 4), where a private renter's rent payments stay
-subject to the LHA cap.
+(SI 2013/376 Sch 4 Part 4), where qualifying private-sector rent payments
+stay subject to the LHA cap.
 
 The grid crosses five families, five tenures, five regions, two rents and two
 incomes: 500 families, none of whose rent includes meals. One simulation
