@@ -575,7 +575,7 @@
     LHA_allowed_bedrooms: [2, 2]
     # The third condition in para 28(4) fails, so the head, single and
     # under 35, is not a specified renter (para 27): category C, not A.
-    lha_renter_has_non_dependant: [true, true]
+    universal_credit_renter_has_non_dependant: [true, true]
     is_lha_shared_accommodation_rate_specified_renter: [false, false]
     LHA_category: [C, C]
     # 96.55 x 12 = 1,158.60.
