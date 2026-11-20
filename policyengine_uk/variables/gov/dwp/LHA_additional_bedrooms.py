@@ -20,9 +20,8 @@ class LHA_additional_bedrooms(Variable):
         "uc_non_dependants_counted), as the size criteria count them (see "
         "other_family_non_dependants in LHA_allowed_bedrooms). "
         "Before 1 April 2017 only the renter could meet the overnight care "
-        "condition. "
-        "The disabled child and disabled person conditions, for children or "
-        "couples who cannot share a bedroom, are not modelled."
+        "condition. Plus the bedrooms for children and couples who cannot "
+        "share a bedroom because of disability (see LHA_cannot_share_bedrooms)."
     )
     definition_period = YEAR
     reference = (
@@ -63,4 +62,7 @@ class LHA_additional_bedrooms(Variable):
         # Para 12(9)(a)-(b): one bedroom for each condition met.
         overnight_room = benunit.any(own) | (others > 0)
         foster_room = benunit("lha_renter_meets_foster_parent_condition", period)
-        return 1.0 * overnight_room + 1.0 * foster_room
+        # Para 12(8) and (9)(c)-(d): the disabled child and disabled person
+        # conditions.
+        cannot_share = benunit("LHA_cannot_share_bedrooms", period)
+        return 1.0 * overnight_room + 1.0 * foster_room + cannot_share

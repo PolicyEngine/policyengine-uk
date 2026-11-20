@@ -1,0 +1,26 @@
+description: Disability benefits a member of a couple must receive to be a member of a couple who cannot share a bedroom in the LHA size criteria. Attendance allowance counted only at the higher rate until 27 January 2025. The law also lists the Scottish devolved equivalents (child disability payment, adult disability payment, Scottish adult disability living allowance, pension age disability payment), which the model has no variables for.
+values:
+  2017-04-01:
+    - receives_higher_rate_attendance_allowance
+    - armed_forces_independence_payment
+    - dla_sc_middle_plus
+    - pip_dl
+  2025-01-27:
+    - attendance_allowance
+    - armed_forces_independence_payment
+    - dla_sc_middle_plus
+    - pip_dl
+metadata:
+  unit: list
+  label: LHA member of a couple who cannot share qualifying benefits
+  reference:
+    - title: Universal Credit Regulations 2013 Sch 4 para 12(6A)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/12
+    - title: Universal Credit Regulations 2013 reg 2, "attendance allowance" (includes armed forces independence payment)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
+    - title: Housing Benefit Regulations 2006 reg 2(1), "member of a couple who cannot share a bedroom"
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/2
+    - title: Housing Benefit (State Pension Credit) Regulations 2006 reg 2(1), "member of a couple who cannot share a bedroom"
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/2
+    - title: Social Security (Miscellaneous Amendments) Regulations 2025 (SI 2025/3) regs 3-5 (attendance allowance at any rate from 27 January 2025)
+      href: https://www.legislation.gov.uk/uksi/2025/3/made
