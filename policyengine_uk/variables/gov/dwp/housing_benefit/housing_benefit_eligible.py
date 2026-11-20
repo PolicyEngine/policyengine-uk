@@ -53,6 +53,8 @@ class housing_benefit_eligible(Variable):
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/47",
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
         "https://www.legislation.gov.uk/nisr/2025/176/article/7",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/13",
     )
 
     def formula(benunit, period, parameters):
@@ -112,7 +114,15 @@ class housing_benefit_eligible(Variable):
         # only Housing Benefit pays it.
         accommodation = benunit("in_specified_or_temporary_accommodation", period)
         social = benunit.any(person("in_social_housing", period))
-        lha_eligible = benunit("LHA_eligible", period)
+        # The tenure test: social and private renters both pass it. A local
+        # authority determines no maximum rent (LHA) for a private renter of
+        # a houseboat, caravan or mobile home (SI 2006/213 and SI 2006/214
+        # reg 13C(5)(d)(i); NI: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)),
+        # and Housing Benefit can still meet the rent, mooring charges and
+        # site payments (reg 12(1); NI reg 13(1)). So this test reads
+        # benunit_is_renting, not LHA_eligible, and a supplied LHA_eligible
+        # selects the eligible-rent calculation without changing eligibility.
+        renting = benunit("benunit_is_renting", period)
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
@@ -125,6 +135,6 @@ class housing_benefit_eligible(Variable):
         )
         return (
             (pension_age | continuing_award | accommodation)
-            & (social | lha_eligible)
+            & (social | renting)
             & (capital <= limit)
         )
