@@ -13,7 +13,7 @@ This page captures the proposed scope, tracked under
 [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 ```
 
-```{admonition} Status, October 2026
+```{admonition} Status, November 2026
 A first step merged on 21 October 2026 as
 [#1661](https://github.com/PolicyEngine/policyengine-uk/pull/1661): total
 points inputs (`pip_dl_points`, `pip_m_points`) and the 8- and 12-point
@@ -29,15 +29,22 @@ for a later year than it; with neither, the category is NONE
 no per-activity scores and no `use_point_system` switch, since a category
 input already takes precedence over the formula.
 
-No data path supplies points yet. The datasets store categories, not
-points, so points play no part in microsimulation. The companion PR,
+Since [microcosm #1550](https://github.com/PolicyEngine/microcosm/pull/1550)
+(merged 10 November 2026), a late stage of Microcosm UK's build draws each
+recipient's daily-living and mobility points within their stored award, by
+age group, from DWP's Pathways to Work evidence pack (chapter 2, Tables 2.9
+and 2.10), and the built dataset carries the points instead of the
+categories. With the thresholds unchanged, the categories the model derives
+from those points equal the stored awards for every recipient. A reform to
+the thresholds moves people in microsimulation on a Microcosm UK dataset
+built from #1550 on. On an earlier build, the stored categories carried into
+every projected year, so the reform moved no one.
+
+The Enhanced FRS from policyengine-uk-data still stores categories. Its
+companion PR,
 [policyengine-uk-data #408](https://github.com/PolicyEngine/policyengine-uk-data/pull/408)
 (points imputed from the observed categories), was closed in June 2026
-in the uk-data archive clean-up, with PIP points derivation to move into
-Microcosm UK's source stages
-([microcosm #145](https://github.com/PolicyEngine/microcosm/issues/145))
-once the input variables existed here. Microcosm #145 closed on 16 October
-2026 with that item dropped, because the variables did not exist yet.
+in the uk-data archive clean-up.
 ```
 
 ## What PIP scoring actually is
@@ -81,16 +88,18 @@ sufficient because:
   cited under Phase 3,
 - the data (both Microcosm UK, the certified default since October 2026,
   and the Enhanced FRS from policyengine-uk-data, which it replaced) sets
-  `pip_dl_category` and `pip_m_category` by comparing the weekly PIP daily-living and mobility
-  amounts respondents report in the FRS with the standard and enhanced
-  rates.
+  each recipient's award by comparing the weekly PIP daily-living and
+  mobility amounts respondents report in the FRS with the standard and
+  enhanced rates. The Enhanced FRS stores the award as `pip_dl_category` and
+  `pip_m_category`; a Microcosm UK build from microcosm #1550 on stores
+  points drawn within it (see the status note above).
 
-So for headline distributional and fiscal analysis the categorical
-inputs are correct.
+So for headline distributional and fiscal analysis the stored awards are
+correct.
 
 ## Where the point system would matter
 
-Three reform scenarios that the categorical model can't answer:
+Three reform scenarios where category inputs fall short:
 
 1. **Activity-level descriptor reform**: for example, the April 2024
    green paper consulted on changing the descriptors, and the March 2025 *Pathways to
@@ -101,9 +110,11 @@ Three reform scenarios that the categorical model can't answer:
    this; the categorical band wouldn't shift unless an analyst manually
    re-bands a synthetic distribution.
 2. **Threshold reform**: changing the band thresholds (for example raising
-   the standard-rate floor from 8 to 10 points). The thresholds are now
-   parameters, so this works for households entered with points, but not in
-   microsimulation, where the data supply bands rather than points.
+   the standard-rate floor from 8 to 10 points). The model reads the
+   thresholds from parameters, so a reform to them applies to any household
+   given points, in the calculator or on a Microcosm UK dataset built from
+   microcosm #1550 on. The Enhanced FRS gives categories, so on it the
+   reform moves no one.
 3. **Targeted analysis by descriptor**: distributional questions like
    "how does the enhanced cohort split between mobility activities" need
    the underlying activity scores.
