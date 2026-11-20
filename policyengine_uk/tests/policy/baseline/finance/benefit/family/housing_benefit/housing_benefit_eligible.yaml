@@ -1,15 +1,18 @@
-# Continuing-award route for a working-age family (age defaults to 40) in
-# 2021: a reported award, no Universal Credit claim, and renting, from a social
-# landlord or privately. Private renters qualify whether or not the Local
-# Housing Allowance sets their eligible rent (see lha_mobile_homes.yaml).
+# In 2021 a working-age family (age defaults to 40) with a reported award and
+# no Universal Credit claim keeps Housing Benefit on the continuing-award
+# route if it rents, from a social landlord or privately. The next five cases
+# test that route. Private renters qualify whether or not the Local Housing
+# Allowance sets their eligible rent (see lha_mobile_homes.yaml).
 
 - name: Social housing eligible
+  # The social housing flag alone opens the route, as it did when the formula
+  # read LHA_eligible for private renters.
   period: 2021
   input:
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: true
     housing_benefit_reported: 1
-    benunit_is_renting: true
+    benunit_is_renting: false
   output:
     housing_benefit_eligible: true
 
@@ -44,9 +47,9 @@
     housing_benefit_eligible: false
 
 - name: Private renter of a caravan keeps a continuing award outside the LHA
-  # No maximum rent (LHA) is determined for a houseboat, caravan or mobile
-  # home (SI 2006/213 reg 13C(5)(d)(i)), but the payments are still rent
-  # (reg 12(1)), so the award continues.
+  # A local authority determines no maximum rent (LHA) for a houseboat,
+  # caravan or mobile home (SI 2006/213 reg 13C(5)(d)(i)) but still pays
+  # Housing Benefit toward the rent (reg 12(1)), so the award continues.
   period: 2021
   input:
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
@@ -373,8 +376,7 @@
     housing_benefit: 0
     uc_housing_costs_element: 0
 
-# Tenure: an owner occupier is neither a social nor a Local Housing Allowance
-# renter, so the status doesn't open Housing Benefit.
+# An owner occupier doesn't rent, so the status doesn't open Housing Benefit.
 - name: An owner occupier with the status gets no Housing Benefit
   period: 2026
   absolute_error_margin: 0.01

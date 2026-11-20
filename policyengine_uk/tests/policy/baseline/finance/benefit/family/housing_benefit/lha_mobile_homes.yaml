@@ -1,11 +1,12 @@
-# No maximum rent (LHA) is determined where the claim relates to rent for "a
-# houseboat, caravan or mobile home which he occupies as his home" (SI 2006/213
-# and SI 2006/214 reg 13C(5)(d)(i); Northern Ireland: SR 2006/405 and SR 2006/406
-# reg 14C(5)(d)(i)). The model takes such a family's rent as its eligible rent.
-# It stays eligible for Housing Benefit, because those payments are still rent
-# (reg 12(1); NI reg 13(1)).
+# A local authority determines no maximum rent (LHA) where the claim relates
+# to rent for "a houseboat, caravan or mobile home which he occupies as his
+# home" (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); Northern Ireland:
+# SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). It still pays Housing Benefit
+# toward those payments (reg 12(1); NI reg 13(1)), so the family stays
+# eligible, and the model takes its rent, less any charge for meals, as the
+# eligible rent.
 
-- name: Private renter in a caravan is outside the LHA
+- name: The LHA doesn't apply to a private renter in a caravan
   period: 2025
   input:
     tenure_type: RENT_PRIVATELY
@@ -13,7 +14,7 @@
   output:
     LHA_eligible: false
 
-- name: Private renter in a flat is within the LHA
+- name: The LHA applies to a private renter in a flat
   period: 2025
   input:
     tenure_type: RENT_PRIVATELY
@@ -21,7 +22,7 @@
   output:
     LHA_eligible: true
 
-- name: Private renter with unknown accommodation is within the LHA
+- name: The LHA applies to a private renter whose accommodation is unknown
   period: 2025
   input:
     tenure_type: RENT_PRIVATELY
@@ -29,8 +30,9 @@
   output:
     LHA_eligible: true
 
-- name: Housing association tenant in a caravan is outside the LHA
-  # The landlord exclusion (reg 13C(5)(a)) applies whatever the dwelling.
+- name: The LHA doesn't apply to a housing association tenant in a caravan
+  # A local authority determines no LHA for a housing association tenant,
+  # whatever the home (reg 13C(5)(a)).
   period: 2025
   input:
     tenure_type: RENT_FROM_HA
@@ -38,13 +40,18 @@
   output:
     LHA_eligible: false
 
-- name: Owner of a caravan is not renting
+- name: The LHA doesn't apply to an owner-occupier of a caravan, who gets no Housing Benefit
+  # Housing Benefit can meet an owner's site payments and mooring charges
+  # (reg 12(1)(f) and (g)). The model doesn't cover them: an owner-occupier
+  # doesn't rent, so it pays no Housing Benefit.
   period: 2025
   input:
+    age: 70
     tenure_type: OWNED_OUTRIGHT
     accommodation_type: MOBILE
   output:
     LHA_eligible: false
+    housing_benefit_eligible: false
 
 - name: Pension-age private renter in a caravan can claim Housing Benefit
   period: 2025
@@ -56,16 +63,104 @@
     LHA_eligible: false
     housing_benefit_eligible: true
 
-# The next three cases share their facts and figures with the companion tests
-# queued in TheAxiomFoundation/rulespec-uk#370 (cases P2, P1 and P5): rent of
-# 10,400, a maximum rent (LHA) of 9,467.64 and an applicable amount of 13,312.
+- name: Northern Ireland, a pension-age private renter in a caravan can claim Housing Benefit outside the LHA
+  # SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i).
+  period: 2025
+  input:
+    age: 70
+    region: NORTHERN_IRELAND
+    tenure_type: RENT_PRIVATELY
+    accommodation_type: MOBILE
+  output:
+    LHA_eligible: false
+    housing_benefit_eligible: true
+
+- name: The LHA doesn't apply to a lodger in an owner-occupied caravan
+  # The lodger pays the householder to live in the caravan and occupies it as
+  # their home, so reg 13C(5)(d)(i) covers the lodger's claim.
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+  output:
+    benunit_tenure_type: [OWNED_OUTRIGHT, RENT_PRIVATELY]
+    LHA_eligible: [false, false]
+
+- name: The LHA applies to the same lodger in an owner-occupied flat
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: FLAT
+  output:
+    benunit_tenure_type: [OWNED_OUTRIGHT, RENT_PRIVATELY]
+    LHA_eligible: [false, true]
+
+- name: The LHA applies to neither family in a privately rented caravan
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+  output:
+    benunit_is_renting: [true, true]
+    LHA_eligible: [false, false]
+
+# The next three cases give a single claimant aged 70 a rent of 10,400, a
+# maximum rent (LHA) of 9,467.64 and an applicable amount of 13,312.
 
 - name: Caravan renter's eligible rent is the rent, not the LHA
-  # Income is below the applicable amount, so the award is the eligible rent
-  # (reg 70): the full rent of 10,400, not the LHA of 9,467.64.
+  # Income of 10,000 falls short of the applicable amount of 13,312, so the
+  # award equals the eligible rent (SSCBA 1992 s.130(3)(a); SI 2006/214 reg
+  # 50): the full rent of 10,400, not the LHA of 9,467.64.
   period: 2025
   absolute_error_margin: 0.01
   input:
+    age: 70
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
     benunit_rent: 10_400
@@ -76,11 +171,13 @@
   output:
     housing_benefit_entitlement: 10_400
 
-- name: Flat renter's eligible rent is capped at the LHA
-  # Same family in a flat: the eligible rent is the LHA of 9,467.64.
+- name: The LHA caps a flat renter's eligible rent
+  # For the same claimant in a flat, the model caps the eligible rent at the
+  # LHA of 9,467.64.
   period: 2025
   absolute_error_margin: 0.01
   input:
+    age: 70
     tenure_type: RENT_PRIVATELY
     accommodation_type: FLAT
     benunit_rent: 10_400
@@ -93,10 +190,12 @@
 
 - name: Caravan renter's taper comes off the full rent
   # Income of 14,948.80 exceeds the applicable amount by 1,636.80, and 65% of
-  # that (1,063.92) comes off the eligible rent of 10,400 (reg 71): 9,336.08.
+  # that (1,063.92) comes off the eligible rent of 10,400 (SSCBA 1992
+  # s.130(3)(b); SI 2006/214 reg 51): 9,336.08.
   period: 2025
   absolute_error_margin: 0.01
   input:
+    age: 70
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
     benunit_rent: 10_400
@@ -107,9 +206,30 @@
   output:
     housing_benefit_entitlement: 9_336.08
 
+- name: Caravan renter's eligible rent leaves out a charge for meals
+  # A local authority deducts a charge for meals from the rent outside the LHA
+  # (SI 2006/214 reg 12B(2) and Sch 1 para 2), and not from a maximum rent
+  # (LHA). So this claimant gets 10,400 - 1,560 = 8,840 in a caravan, less
+  # than the 9,467.64 the same rent earns in a flat.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    tenure_type: RENT_PRIVATELY
+    accommodation_type: MOBILE
+    benunit_rent: 10_400
+    LHA_cap: 9_467.64
+    housing_benefit_meals_deduction: 1_560
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 10_000
+    housing_benefit_non_dep_deductions: 0
+  output:
+    housing_benefit_entitlement: 8_840
+
 - name: Pension-age caravan renter with no income receives the full rent
-  # Every step computed: no income, so the award is the rent of 20,000 even
-  # though it is above the North East LHA rate.
+  # The model computes every step. With no income, the award equals the rent
+  # of 7,800, though the rent exceeds the one-bedroom LHA rate of 5,864.04 in
+  # Tyneside, where the model places a North East household.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -117,17 +237,34 @@
     region: NORTH_EAST
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
-    rent: 20_000
+    rent: 7_800
   output:
     LHA_eligible: false
     housing_benefit_eligible: true
-    housing_benefit_entitlement: 20_000
-    housing_benefit: 20_000
+    housing_benefit_entitlement: 7_800
+    housing_benefit: 7_800
 
-# Universal Credit has no such exception. Mooring charges and caravan or mobile
-# home site payments are rent payments (SI 2013/376 Sch 1 para 2(c) and (d)),
-# and Sch 4 Part 4 caps every renter whose landlord is not a provider of social
-# housing at the LHA (paras 20(1), 22 and 25(2)), whatever the home.
+- name: The LHA caps the same pensioner's Housing Benefit in a flat
+  # 52 x 112.77, Tyneside's one-bedroom LHA rate for 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    region: NORTH_EAST
+    tenure_type: RENT_PRIVATELY
+    accommodation_type: FLAT
+    rent: 7_800
+  output:
+    LHA_eligible: true
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_864.04
+    housing_benefit: 5_864.04
+
+# The DWP makes no such exception in Universal Credit. It counts mooring
+# charges and caravan or mobile home site payments as rent payments (SI
+# 2013/376 Sch 1 para 2(c) and (d)) and caps at the LHA every renter whose
+# landlord isn't a provider of social housing, whatever the home (Sch 4 paras
+# 20(1), 22 and 25(2)).
 
 - name: Universal Credit caps a caravan renter at the LHA
   period: 2025
@@ -141,7 +278,8 @@
     uc_housing_costs_element: 6_000
 
 - name: Universal Credit pays a housing association caravan tenant's rent
-  # Sch 4 Part 5 (social rented sector) applies, with no LHA cap.
+  # The DWP calculates a social renter's housing costs under Sch 4 Part 5,
+  # with no LHA cap.
   period: 2025
   input:
     tenure_type: RENT_FROM_HA

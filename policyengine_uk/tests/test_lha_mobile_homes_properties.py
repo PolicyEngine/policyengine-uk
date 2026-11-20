@@ -1,50 +1,63 @@
-"""Property-based tests for the houseboat, caravan and mobile home LHA exclusion.
+"""Exhaustive tests of the houseboat, caravan and mobile home LHA exclusion.
 
-No maximum rent (LHA) is determined where a Housing Benefit claim relates to
-rent for "a houseboat, caravan or mobile home which he occupies as his home"
-(SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); Northern Ireland: SR 2006/405
-and SR 2006/406 reg 14C(5)(d)(i)). Those payments are still rent (reg 12(1);
-NI reg 13(1)), so the family can still get Housing Benefit. Universal Credit
-has no such exception (SI 2013/376 Sch 4 Part 4), so its housing element keeps
-the LHA.
+A local authority determines no maximum rent (LHA) where a Housing Benefit
+claim relates to rent for "a houseboat, caravan or mobile home which he
+occupies as his home" (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); Northern
+Ireland: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). It still pays Housing
+Benefit toward those payments (reg 12(1); NI reg 13(1)), so the family stays
+eligible. The DWP makes no such exception in Universal Credit (SI 2013/376
+Sch 4 Part 4) and still caps the housing element at the LHA.
 
-Invariants, for any generated population of families:
+The grid crosses five families, five tenures, five regions, two rents and two
+incomes: 500 families, none of whose rent includes meals. One simulation
+holds each family three times: in a caravan, in another type of home (the
+grid cycles through the six other known types), and in a home of unknown
+type.
 
-1. Definition: LHA_eligible is exactly renting, no member in social housing,
-   and accommodation other than a houseboat, caravan or mobile home.
-2. Metamorphic: moving a family between a caravan and any other accommodation
-   type never changes whether it is eligible for Housing Benefit.
-3. Metamorphic: moving a family from a caravan to other accommodation never
-   raises its Housing Benefit entitlement, and a caravan family's entitlement
-   never exceeds its rent.
-4. Metamorphic: freezing the LHA never changes a caravan family's Housing
-   Benefit entitlement.
-5. Metamorphic: accommodation type never changes the Universal Credit housing
-   element.
-6. Metamorphic: among homes other than a houseboat, caravan or mobile home,
-   the accommodation type changes nothing: not the LHA flag, not Housing
-   Benefit eligibility and not the entitlement.
+Invariants, for every family in the grid:
 
-A fixed example then shows invariant 4 is not vacuous: the same freeze moves
-the entitlement of the same family in a flat.
+1. Definition: LHA_eligible holds exactly for a private renter whose home is
+   not a houseboat, caravan or mobile home. The expectation comes from the
+   tenure and accommodation the grid sets, not from the model.
+2. Eligibility: a family is eligible for Housing Benefit exactly when it
+   rents and has either reached pension age or kept an existing award,
+   whatever its home. So moving a family between a caravan and any other home
+   never changes its eligibility.
+3. Entitlement: moving a family from a caravan to another home never raises
+   its Housing Benefit entitlement, a caravan family's entitlement never
+   exceeds its rent, and where the LHA applies in neither home the two
+   entitlements match. This holds because no rent in the grid includes meals:
+   a local authority deducts a charge for meals from a caravan renter's
+   eligible rent, and not from a maximum rent (LHA).
+4. Universal Credit: the home never changes the housing element.
+5. Other homes: among homes other than a houseboat, caravan or mobile home,
+   the type changes none of the variables the test computes.
+
+A fixed example then shows the LHA at work: freezing LHA rates lowers the
+entitlement of a pensioner in a flat and leaves the same pensioner's
+entitlement in a caravan at the rent.
 """
 
+from itertools import product
+
 import numpy as np
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.variables.household.demographic.accommodation_type import (
     AccommodationType,
 )
 
-YEAR = 2026
-PROPERTY_SETTINGS = settings(
-    max_examples=10,
-    deadline=None,
-    derandomize=True,
-    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
-)
+YEAR = 2025
+FREEZE_YEAR = 2026
+# Each family: its members' ages, and whether it reports a Housing Benefit
+# award and doesn't claim Universal Credit (the continuing-award route).
+FAMILIES = {
+    "pensioner": ([70], False),
+    "pensioner couple": ([70, 72], False),
+    "working-age adult": ([40], False),
+    "working-age adult with an award": ([40], True),
+    "working-age couple with an award": ([40, 38], True),
+}
 TENURES = [
     "RENT_FROM_COUNCIL",
     "RENT_FROM_HA",
@@ -52,59 +65,19 @@ TENURES = [
     "OWNED_OUTRIGHT",
     "OWNED_WITH_MORTGAGE",
 ]
-ACCOMMODATION = [value.name for value in AccommodationType]
-NOT_MOBILE = [name for name in ACCOMMODATION if name != "MOBILE"]
-REGIONS = ["LONDON", "NORTH_EAST", "SOUTH_EAST", "WALES", "SCOTLAND"]
-money = st.floats(0, 30_000, allow_nan=False, allow_infinity=False)
-
-
-@st.composite
-def families(draw):
-    return dict(
-        # 67 and over is unambiguously pension age, 60 and under working age.
-        ages=draw(
-            st.sampled_from(
-                [
-                    [draw(st.integers(67, 100))],
-                    [draw(st.integers(67, 100)), draw(st.integers(67, 100))],
-                    [draw(st.integers(18, 60))],
-                    [draw(st.integers(18, 60)), draw(st.integers(18, 60))],
-                ]
-            )
-        ),
-        tenure=draw(st.sampled_from(TENURES)),
-        other_accommodation=draw(st.sampled_from(NOT_MOBILE)),
-        region=draw(st.sampled_from(REGIONS)),
-        rent=draw(money),
-        pension=draw(st.one_of(st.just(0.0), money)),
-        earnings=draw(st.one_of(st.just(0.0), money)),
+REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
+# Below and above every one-bedroom LHA rate in these regions.
+RENTS = [3_000, 30_000]
+INCOMES = [0, 15_000]
+OTHER_KNOWN = [
+    value.name for value in AccommodationType if value.name not in ("MOBILE", "UNKNOWN")
+]
+GRID = [
+    dict(family=family, tenure=tenure, region=region, rent=rent, income=income)
+    for family, tenure, region, rent, income in product(
+        FAMILIES, TENURES, REGIONS, RENTS, INCOMES
     )
-
-
-def situation(units, accommodation):
-    people, benunits, households = {}, {}, {}
-    for i, unit in enumerate(units):
-        names = []
-        for j, age in enumerate(unit["ages"]):
-            name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
-            if age >= 67:
-                person["private_pension_income"] = {YEAR: unit["pension"]}
-            else:
-                person["employment_income"] = {YEAR: unit["earnings"]}
-            people[name] = person
-            names.append(name)
-        benunits[f"b{i}"] = {"members": names}
-        households[f"h{i}"] = {
-            "members": names,
-            "rent": {YEAR: unit["rent"]},
-            "tenure_type": {YEAR: unit["tenure"]},
-            "region": {YEAR: unit["region"]},
-            "accommodation_type": {YEAR: accommodation(unit)},
-        }
-    return {"people": people, "benunits": benunits, "households": households}
-
-
+]
 VARIABLES = [
     "LHA_eligible",
     "LHA_cap",
@@ -116,105 +89,117 @@ VARIABLES = [
 ]
 
 
-def calculate(units, accommodation, reform=None):
-    sim = Simulation(situation=situation(units, accommodation), reform=reform)
-    values = {v: np.asarray(sim.calculate(v, YEAR)) for v in VARIABLES}
-    values["social"] = (
-        np.asarray(sim.calculate("in_social_housing", YEAR, map_to="benunit")) > 0
+def add_household(situation, name, unit, accommodation, year):
+    ages, has_award = FAMILIES[unit["family"]]
+    members = []
+    for j, age in enumerate(ages):
+        person = {"age": {year: age}}
+        if j == 0:
+            source = "private_pension_income" if age >= 67 else "employment_income"
+            person[source] = {year: unit["income"]}
+            if has_award:
+                person["housing_benefit_reported"] = {year: 5_000}
+        member = f"{name}_{j}"
+        situation["people"][member] = person
+        members.append(member)
+    benunit = {"members": members}
+    if has_award:
+        benunit["would_claim_uc"] = {year: False}
+    situation["benunits"][name] = benunit
+    situation["households"][name] = {
+        "members": members,
+        "rent": {year: unit["rent"]},
+        "tenure_type": {year: unit["tenure"]},
+        "region": {year: unit["region"]},
+        "accommodation_type": {year: accommodation},
+    }
+
+
+def calculate(homes, year=YEAR, reform=None):
+    """Compute VARIABLES for (name, unit, accommodation) homes, in order."""
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for name, unit, accommodation in homes:
+        add_household(situation, name, unit, accommodation, year)
+    sim = Simulation(situation=situation, reform=reform)
+    return {v: np.asarray(sim.calculate(v, year)) for v in VARIABLES}
+
+
+def test_accommodation_type_invariants():
+    size = len(GRID)
+    homes = (
+        [(f"mobile{i}", unit, "MOBILE") for i, unit in enumerate(GRID)]
+        + [
+            (f"other{i}", unit, OTHER_KNOWN[i % len(OTHER_KNOWN)])
+            for i, unit in enumerate(GRID)
+        ]
+        + [(f"unknown{i}", unit, "UNKNOWN") for i, unit in enumerate(GRID)]
     )
-    return values
+    values = calculate(homes)
+    mobile = {v: values[v][:size] for v in VARIABLES}
+    other = {v: values[v][size : 2 * size] for v in VARIABLES}
+    unknown = {v: values[v][2 * size :] for v in VARIABLES}
 
-
-def as_mobile(unit):
-    return "MOBILE"
-
-
-def as_other(unit):
-    return unit["other_accommodation"]
-
-
-unit_lists = st.lists(families(), min_size=1, max_size=30)
-
-
-@PROPERTY_SETTINGS
-@given(unit_lists)
-def test_accommodation_type_invariants(units):
-    """Invariants 1, 2, 3, 5 and 6, from the same three populations."""
-    mobile = calculate(units, as_mobile)
-    other = calculate(units, as_other)
-    unknown = calculate(units, lambda unit: "UNKNOWN")
+    private = np.array([unit["tenure"] == "RENT_PRIVATELY" for unit in GRID])
+    renting = np.array([unit["tenure"].startswith("RENT_") for unit in GRID])
+    pension_age = np.array([unit["family"].startswith("pensioner") for unit in GRID])
+    has_award = np.array([FAMILIES[unit["family"]][1] for unit in GRID])
 
     # 1. Definition.
-    assert not mobile["LHA_eligible"].any(), units
-    for values in (other, unknown):
-        expected = values["benunit_is_renting"] & ~values["social"]
-        assert (values["LHA_eligible"] == expected).all(), units
+    assert not mobile["LHA_eligible"].any()
+    assert (other["LHA_eligible"] == private).all()
+    assert (unknown["LHA_eligible"] == private).all()
 
-    # 2. Housing Benefit eligibility ignores the accommodation type.
-    assert (
-        mobile["housing_benefit_eligible"] == other["housing_benefit_eligible"]
-    ).all(), units
+    # 2. Eligibility ignores the home.
+    eligible = renting & (pension_age | has_award)
+    for home in (mobile, other, unknown):
+        assert (home["housing_benefit_eligible"] == eligible).all()
+    # The grid holds eligible caravan renters of both kinds.
+    assert (eligible & private & pension_age).any()
+    assert (eligible & private & has_award).any()
 
     # 3. The LHA only lowers the entitlement, and a caravan family's
     # entitlement never exceeds its rent.
     entitlement = mobile["housing_benefit_entitlement"]
-    assert np.all(entitlement <= mobile["benunit_rent"] + 0.01), units
-    assert np.all(other["housing_benefit_entitlement"] <= entitlement + 0.01), units
-    # Where the LHA does not apply in either case, nothing else changes.
-    same = ~other["LHA_eligible"]
+    assert np.all(entitlement <= mobile["benunit_rent"] + 0.01)
+    assert np.all(other["housing_benefit_entitlement"] <= entitlement + 0.01)
+    # Where the LHA applies in neither home, nothing changes.
     assert np.allclose(
-        other["housing_benefit_entitlement"][same], entitlement[same], atol=0.01
-    ), units
+        other["housing_benefit_entitlement"][~private], entitlement[~private], atol=0.01
+    )
+    # The LHA cuts the entitlement of some private renters in other homes.
+    assert (other["housing_benefit_entitlement"][private] < entitlement[private]).any()
 
-    # 5. Universal Credit ignores the accommodation type.
-    assert np.allclose(
-        mobile["uc_housing_costs_element"],
-        other["uc_housing_costs_element"],
-        atol=0.01,
-    ), units
-
-    # 6. Other accommodation types change nothing.
-    for variable in VARIABLES:
-        assert np.allclose(other[variable], unknown[variable], atol=0.01), (
-            variable,
-            units,
+    # 4. Universal Credit ignores the home.
+    for home in (other, unknown):
+        assert np.allclose(
+            mobile["uc_housing_costs_element"],
+            home["uc_housing_costs_element"],
+            atol=0.01,
         )
 
-
-@settings(PROPERTY_SETTINGS, max_examples=5)
-@given(unit_lists)
-def test_lha_freeze_never_changes_caravan_housing_benefit(units):
-    frozen = calculate(units, as_mobile, reform={"gov.dwp.LHA.freeze": {"2026": True}})
-    unfrozen = calculate(
-        units, as_mobile, reform={"gov.dwp.LHA.freeze": {"2026": False}}
-    )
-    assert np.allclose(
-        frozen["housing_benefit_entitlement"],
-        unfrozen["housing_benefit_entitlement"],
-        atol=0.01,
-    ), units
+    # 5. Other homes change nothing.
+    for variable in VARIABLES:
+        assert np.allclose(other[variable], unknown[variable], atol=0.01), variable
 
 
 def test_lha_freeze_moves_a_flat_renter_but_not_a_caravan_renter():
     """A pensioner with no income renting privately in London for 30,000."""
     unit = dict(
-        ages=[70],
+        family="pensioner",
         tenure="RENT_PRIVATELY",
-        other_accommodation="FLAT",
         region="LONDON",
-        rent=30_000.0,
-        pension=0.0,
-        earnings=0.0,
+        rent=30_000,
+        income=0,
     )
-    frozen = {"gov.dwp.LHA.freeze": {"2026": True}}
-    unfrozen = {"gov.dwp.LHA.freeze": {"2026": False}}
-    flat = [
-        calculate([unit], as_other, reform)["housing_benefit_entitlement"][0]
-        for reform in (frozen, unfrozen)
-    ]
-    caravan = [
-        calculate([unit], as_mobile, reform)["housing_benefit_entitlement"][0]
-        for reform in (frozen, unfrozen)
-    ]
-    assert flat[0] < flat[1] < 30_000
-    assert caravan == [30_000, 30_000]
+    homes = [("flat", unit, "FLAT"), ("caravan", unit, "MOBILE")]
+    frozen, unfrozen = (
+        calculate(
+            homes,
+            year=FREEZE_YEAR,
+            reform={"gov.dwp.LHA.freeze": {str(FREEZE_YEAR): freeze}},
+        )["housing_benefit_entitlement"]
+        for freeze in (True, False)
+    )
+    flat, caravan = 0, 1
+    assert frozen[flat] < unfrozen[flat] < 30_000
+    assert frozen[caravan] == unfrozen[caravan] == 30_000

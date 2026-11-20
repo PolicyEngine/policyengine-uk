@@ -53,6 +53,8 @@ class housing_benefit_eligible(Variable):
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/47",
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
         "https://www.legislation.gov.uk/nisr/2025/176/article/7",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/13",
     )
 
     def formula(benunit, period, parameters):
@@ -112,11 +114,13 @@ class housing_benefit_eligible(Variable):
         # only Housing Benefit pays it.
         accommodation = benunit("in_specified_or_temporary_accommodation", period)
         social = benunit.any(person("in_social_housing", period))
-        # Social and private renters alike. A private renter of a houseboat,
-        # caravan or mobile home has no maximum rent (LHA) (SI 2006/213 and
-        # SI 2006/214 reg 13C(5)(d)(i); NI: SR 2006/405 and SR 2006/406 reg
-        # 14C(5)(d)(i)) but still pays rent (reg 12(1); NI reg 13(1)), so
-        # this tests renting, not LHA_eligible.
+        # Social and private renters both qualify. A local authority
+        # determines no maximum rent (LHA) for a private renter of a
+        # houseboat, caravan or mobile home (SI 2006/213 and SI 2006/214 reg
+        # 13C(5)(d)(i); NI: SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)) but
+        # still pays Housing Benefit toward the rent, mooring charges and
+        # site payments (reg 12(1); NI reg 13(1)), so eligibility reads
+        # benunit_is_renting rather than LHA_eligible.
         renting = benunit("benunit_is_renting", period)
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period

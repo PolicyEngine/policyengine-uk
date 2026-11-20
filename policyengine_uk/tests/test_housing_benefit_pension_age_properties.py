@@ -153,9 +153,7 @@ def calculate(units, **kwargs):
     values["social"] = (
         np.asarray(sim.calculate("in_social_housing", YEAR, map_to="benunit")) > 0
     )
-    values["renting"] = values["social"] | (
-        np.asarray(sim.calculate("benunit_is_renting", YEAR)) > 0
-    )
+    values["renting"] = np.array([unit["tenure"].startswith("RENT_") for unit in units])
     capital = sim.tax_benefit_system.parameters(
         YEAR
     ).gov.dwp.housing_benefit.means_test.capital
