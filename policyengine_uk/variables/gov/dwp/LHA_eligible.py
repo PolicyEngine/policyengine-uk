@@ -11,9 +11,10 @@ class LHA_eligible(Variable):
         "max(0, benunit_rent - housing_benefit_meals_deduction). By default "
         "the flag holds where the benefit unit rents, no member lives in "
         "social housing, and the household's recorded accommodation type "
-        "isn't a houseboat, caravan or mobile home; an unknown type keeps "
-        "the flag. A supplied value selects the model's eligible-rent "
-        "calculation independently of housing_benefit_eligible."
+        "isn't a houseboat, caravan or mobile home; an unknown type leaves "
+        "the flag to the renting and social housing checks. A supplied "
+        "value selects the model's eligible-rent calculation independently "
+        "of housing_benefit_eligible."
     )
     definition_period = YEAR
     reference = (
