@@ -34,25 +34,31 @@ tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
   - Council Tax Reduction income, also less £15 a week where the family
     includes a child or young person
     ([SI 2012/2885 Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20)
-    sets this for pension-age applicants in England). For working-age
-    applicants with Universal Credit, the model counts it in full in the
-    five English council schemes it holds and in Wales: Wales, Merton,
-    Kingston upon Thames, Newham and Westminster count it through the
-    Universal Credit income figure, and Oxford, from April 2026, as other
-    unearned income under its Appendix 3. Applicants without Universal
-    Credit in those five schemes, and Oxford's with it before April 2026,
-    have the same £15 disregard. Elsewhere in England the model uses a
-    working-age applicant's reported reduction, which it may cap at their
-    share of a jointly liable bill, so their income does not count. The
-    model leaves spousal maintenance out of Scotland's working-age scheme,
-    and out of the Welsh one for applicants without Universal Credit,
-    although both count it less £15 a week: Scotland where the family
-    includes a child or young person, Wales where the applicable amount
-    includes a family premium
+    sets this for pension-age applicants in England). From April 2022
+    Scotland's working-age scheme does the same, with or without Universal
+    Credit; before then it did so without Universal Credit, and the model
+    also applies it to those years' Universal Credit claims. The Welsh
+    scheme does the same for applicants without Universal Credit, where
+    the condition is a family premium in the applicable amount
     ([SSI 2021/249 reg. 57(1)(d) and (6)](https://www.legislation.gov.uk/ssi/2021/249/regulation/57);
     [WSI 2013/3029 Sch. 6 para. 17](https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17)
     and [Sch. 9 para. 49](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/49)).
-    [#2931](https://github.com/PolicyEngine/policyengine-uk/issues/2931) tracks the fix.
+    In the Scottish and Welsh schemes the model treats the whole input as
+    qualifying maintenance and uses its Council Tax Reduction child flag as
+    a proxy for statutory family membership, a flag that leaves out some
+    looked-after children whom Scotland's working-age scheme has counted
+    since April 2022
+    ([#2935](https://github.com/PolicyEngine/policyengine-uk/issues/2935)).
+    For working-age applicants with Universal Credit, the model counts it
+    in full in the five English council schemes it holds and in Wales:
+    Wales, Merton, Kingston upon Thames, Newham and Westminster count it
+    through the Universal Credit income figure, and Oxford, from April
+    2026, as other unearned income under its Appendix 3. Applicants
+    without Universal Credit in those five schemes, and Oxford's with it
+    before April 2026, have the same £15 disregard. Elsewhere in England
+    the model uses a working-age applicant's reported reduction, which it
+    may cap at their share of a jointly liable bill, so their income does
+    not count.
 - `maintenance_income` counts in none of those, except in Oxford City
   Council's Council Tax Reduction scheme for Universal Credit applicants
   from April 2026.

@@ -86,20 +86,22 @@ That means:
   [HB (SPC) Regulations 2006 Sch. 5 para. 7](https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/7)),
   a welfare benefit for the benefit cap and an overlapping benefit for Carer's Allowance and Carer Support
   Payment. The model counts it less £15 a week in Council Tax Reduction
-  too (less £10 on that route), but for working-age applicants with
-  Universal Credit it counts it in full in Wales and in the five English
-  council schemes it holds (Merton, Kingston upon Thames, Newham and
-  Westminster, and Oxford from April 2026). Elsewhere in England the
-  model uses a working-age applicant's reported reduction, which it may
-  cap at their share of a jointly liable bill. The
-  model leaves WPA out of Scotland's working-age scheme, and out of the
-  Welsh one for applicants without Universal Credit, although both count
-  it less £15 a week, and Wales also disregards the income tax on it
+  too, including Scotland's working-age scheme and the Welsh one for
+  applicants without Universal Credit, but less £10 on the
+  savings-credit-only route. Wales also disregards the income
+  tax on it, and from April 2022 Scotland takes up to £15 for each
+  recipient from the total of unearned income, tariff income and countable
+  Universal Credit payments, rather than from the allowance
   ([SSI 2021/249 reg. 57(1)(b)(vi) and (4)](https://www.legislation.gov.uk/ssi/2021/249/regulation/57);
   [WSI 2013/3029 Sch. 6 para. 17](https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17),
   [Sch. 9 para. 4](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/4)
   and [para. 21](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/21)).
-  [#2931](https://github.com/PolicyEngine/policyengine-uk/issues/2931) tracks the fix. The model also counts WPA in a
+  For working-age applicants with Universal Credit, the model counts it in
+  full in Wales and in the five English council schemes it holds (Merton,
+  Kingston upon Thames, Newham and Westminster, and Oxford from April
+  2026). Elsewhere in England the model uses a working-age applicant's
+  reported reduction, which it may cap at their share of a jointly liable
+  bill. The model also counts WPA in a
   non-dependant's gross income for the Housing Benefit non-dependant
   deduction and the English pension-age, Scottish and Welsh Council Tax
   Reduction ones, but not in the five English council schemes. WPA ends at

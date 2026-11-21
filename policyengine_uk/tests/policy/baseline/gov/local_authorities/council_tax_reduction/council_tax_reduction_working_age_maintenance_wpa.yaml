@@ -1,0 +1,942 @@
+# Spousal maintenance and Widowed Parent's Allowance on the Scottish and Welsh
+# working-age council tax reduction route (#2931). Scotland: SSI 2021/249 reg
+# 57(1)(b)(vi), (1)(d), (4) and (6); before April 2022, SSI 2012/303 Sch 4
+# paras 20 and 48. Wales: WSI 2013/3029 Sch 6 para 17 and Sch 9 paras 4, 21
+# and 49. Maintenance counts less one £15 a week for the family where it
+# includes a child or young person. Wales and Scotland before April 2022
+# count WPA less £15 a week; from April 2022 Scotland counts it in full and
+# takes £15 a week from total unearned income (reg 57(4)). Expected
+# values are worked from the 2026-27 weekly amounts times 52, the model's
+# weeks in a year: each £15 disregard is 780 a year. Council tax is £1,800 and
+# the taper is 20% of annual excess income. Applicable amounts: a Scottish
+# lone parent 95.55 + child premium 109.85 = 205.40 a week, 10,680.80 a year
+# (reg 35); a Welsh lone parent 101.85 + child 87.88 + family premium 20.22 =
+# 209.95 a week, 10,917.40 a year (Sch 7).
+
+- name: Scotland, lone parent's spousal maintenance counts less £15 a week
+  # Reg 57(1)(d) and (6): 20,000 - 780 = 19,220. Excess 19,220 - 10,680.80 =
+  # 8,539.20; award 1,800 - 0.2 x 8,539.20 = 1,800 - 1,707.84 = 92.16.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 20_000
+        savings: 0
+  output:
+    council_tax_reduction_devolved_working_age: true
+    council_tax_reduction_working_age_unearned_income: 19_220
+    council_tax_reduction_working_age_applicable_amount: 10_680.80
+    council_tax_reduction_working_age_applicable_income: 19_220
+    council_tax_reduction: 92.16
+
+- name: Wales, lone parent's spousal maintenance counts less £15 a week
+  # Sch 6 para 17 and Sch 9 para 49 (the family premium applies): 20,000 - 780
+  # = 19,220. Maintenance is not taxable, so no Sch 9 para 4 tax comes off.
+  # Excess 19,220 - 10,917.40 = 8,302.60; award 1,800 - 1,660.52 = 139.48.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        rent: 20_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 19_220
+    council_tax_reduction_working_age_unearned_income_tax: 0
+    council_tax_reduction_working_age_applicable_amount: 10_917.40
+    council_tax_reduction_working_age_applicable_income: 19_220
+    council_tax_reduction: 139.48
+
+- name: Scotland, lone parent's Widowed Parent's Allowance counts gross less £15 a week
+  # Reg 57(1)(b)(vi): the allowance counts in full, 20,000. Reg 57(4) takes
+  # £15 a week from the unearned total: 20,000 - 780 = 19,220. Scotland counts
+  # unearned income gross, so the income tax on the allowance does not come
+  # off. Excess 8,539.20; award 1,800 - 1,707.84 = 92.16.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        widowed_parents_allowance: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 20_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 20_000
+    council_tax_reduction_working_age_applicable_income: 19_220
+    council_tax_reduction: 92.16
+
+- name: Wales, lone parent's Widowed Parent's Allowance counts less £15 a week and its income tax
+  # Sch 9 para 21: 20,000 - 780 = 19,220. Sch 9 para 4 disregards the income
+  # tax on it: 20% x (20,000 - 12,570) = 1,486. Income 19,220 - 1,486 =
+  # 17,734; excess 17,734 - 10,917.40 = 6,816.60; award 1,800 - 1,363.32 =
+  # 436.68.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        widowed_parents_allowance: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        rent: 20_000
+        savings: 0
+  output:
+    income_tax: [1_486, 0]
+    council_tax_reduction_working_age_unearned_income: 19_220
+    council_tax_reduction_working_age_unearned_income_tax: 1_486
+    council_tax_reduction_working_age_applicable_income: 17_734
+    council_tax_reduction: 436.68
+
+- name: Wales, spousal maintenance counts in full without a child
+  # Sch 9 para 49 needs the family premium, which needs a child or young
+  # person, so all 10,000 counts. Applicable amount 101.85 x 52 = 5,296.20;
+  # excess 4,703.80; award 1,800 - 940.76 = 859.24.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        spousal_maintenance_income: 10_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 10_000
+    council_tax_reduction_working_age_applicable_amount: 5_296.20
+    council_tax_reduction: 859.24
+
+- name: Scotland, spousal maintenance counts in full without a child
+  # Reg 57(6) needs a child or young person in the family. Applicable amount
+  # 95.55 x 52 = 4,968.60; excess 10,000 - 4,968.60 = 5,031.40; award 1,800 -
+  # 1,006.28 = 793.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        spousal_maintenance_income: 10_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 10_000
+    council_tax_reduction_working_age_applicable_amount: 4_968.60
+    council_tax_reduction: 793.72
+
+- name: Scotland, maintenance and Widowed Parent's Allowance under £15 a week leave nothing counted
+  # £10 a week (520 a year) of each. Reg 57(6) disregards all the maintenance
+  # (up to £15), so unearned income is the 520 allowance. Reg 57(4) takes up to
+  # £15 a week from that total, never below nil: 520 - 520 = 0. No income
+  # counts and the maximum reduction is due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 520
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 520
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction: 1_800
+
+- name: Scotland, a couple's Widowed Parent's Allowances get a disregard each and their maintenance one
+  # Reg 57(4) deducts £15 where an applicant is in receipt of the allowance,
+  # reg 36(1) reads references to the applicant in Part 6 as including the
+  # partner and, unlike reg 57(6), reg 57(4) does not aggregate payments. The
+  # model reads that as a disregard for each recipient. Reg 57(6) aggregates
+  # the maintenance for one disregard: 1,040 + 1,040 - 780 = 1,300. Unearned
+  # income 2 x 7,800 + 1,300 = 16,900; less 2 x 780 under reg 57(4), 15,340.
+  # (A lawful award never reaches a couple: the allowance is not payable
+  # while the recipient lives with a partner, SSCBA 1992 s.39A(5)(b). The case
+  # pins the per-recipient disregard.) Applicable amount: couple 150.15 +
+  # child premium 109.85 = 260.00 a week, 13,520 a year. Excess 1,820; award
+  # 1,800 - 364 = 1,436.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        widowed_parents_allowance: 7_800
+        spousal_maintenance_income: 1_040
+        council_tax_benefit_reported: 100
+      partner:
+        age: 35
+        widowed_parents_allowance: 7_800
+        spousal_maintenance_income: 1_040
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 16_900
+    council_tax_reduction_working_age_applicable_amount: 13_520
+    council_tax_reduction_working_age_applicable_income: 15_340
+    council_tax_reduction: 1_436
+
+- name: Wales, with Universal Credit the Universal Credit income figure still applies
+  # Sch 6 para 9: income is the Secretary of State's Universal Credit income
+  # figure plus the award, which counts both incomes in full with no £15
+  # disregards. With no earnings, the award is the maximum amount less the
+  # 10,400 of unearned income, so income equals the maximum amount, the
+  # applicable amount (Sch 6 para 3): (424.90 standard allowance + 303.94
+  # child element) x 12 + 6,000 housing costs = 14,746.08. No excess income,
+  # so the maximum reduction is due, as before the fix. Within the
+  # applicable income calculation, Welsh Universal Credit claims select the
+  # Universal Credit income figure, so the scheme's own unearned income,
+  # 2 x (5,200 - 780) = 8,840, does not reach the award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 5_200
+        widowed_parents_allowance: 5_200
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_has_universal_credit: true
+    council_tax_reduction_working_age_unearned_income: 8_840
+    council_tax_reduction_working_age_applicable_amount: 14_746.08
+    council_tax_reduction_working_age_applicable_income: 14_746.08
+    council_tax_reduction: 1_800
+
+- name: Scotland, with Universal Credit both incomes count less their disregards
+  # Reg 57 applies with or without Universal Credit. Unearned income: 5,200 -
+  # 780 of maintenance plus the 5,200 allowance = 9,620. The Universal Credit
+  # child element (reg 57(1)(p)), 303.94 x 12 = 3,647.28, is below the award
+  # of 14,746.08 - 10,400 = 4,346.08. Reg 57(4) takes 780 from the total:
+  # 9,620 + 3,647.28 - 780 = 12,487.28; excess over 10,680.80 is 1,806.48;
+  # award 1,800 - 361.30 = 1,438.70. Before the fix only the 3,647.28 counted
+  # and the maximum reduction was due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 5_200
+        widowed_parents_allowance: 5_200
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_has_universal_credit: true
+    council_tax_reduction_working_age_unearned_income: 9_620
+    council_tax_reduction_relevant_universal_credit_payments: 3_647.28
+    council_tax_reduction_working_age_applicable_income: 12_487.28
+    council_tax_reduction: 1_438.70
+
+- name: Wales, income-based JSA still passports to the maximum reduction
+  # Sch 9 para 8: the whole of the applicant's income is disregarded, so the
+  # 19,220 of counted maintenance makes no difference.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        jsa_income: 4_000
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_passported: true
+    council_tax_reduction_working_age_unearned_income: 19_220
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction: 1_800
+
+- name: Scotland, Income Support still passports to the maximum reduction
+  # Reg 13(11): the maximum reduction whatever the income, so the 20,000 of
+  # counted Widowed Parent's Allowance makes no difference.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        widowed_parents_allowance: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        income_support: 3_000
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_passported: true
+    council_tax_reduction_working_age_unearned_income: 20_000
+    council_tax_reduction_working_age_applicable_income: 0
+    council_tax_reduction: 1_800
+
+- name: Scotland, child maintenance still does not count
+  # Reg 57(1)(d) counts maintenance from a spouse or civil partner, or a former
+  # one; child maintenance (maintenance_income) is not on the list, so the
+  # maximum reduction is due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        maintenance_income: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 0
+    council_tax_reduction: 1_800
+
+- name: Wales, child maintenance still does not count
+  # Sch 9 para 50(1) disregards this payment in full, assuming it comes from a
+  # liable relative other than the applicant or partner and is for a child in
+  # the applicant's family, so the maximum reduction is due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        maintenance_income: 20_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 0
+    council_tax_reduction: 1_800
+
+- name: Scotland 2021-22, the 2012 scheme's two £15 disregards
+  # SSI 2012/303 Sch 4 para 20 (as at 31 March 2022) disregards up to £15 of
+  # the allowance and para 48 up to £15 of the family's combined maintenance:
+  # 5,200 of each income less 780 each = 8,840. SSI 2012/303 Sch 4 para 3 disregarded tax on
+  # this income, which the route does not apply in Scotland; the allowance is
+  # below the 12,570 personal allowance, so no tax arises and the case does
+  # not depend on it. Applicable amount: lone parent 74.70 (SSI
+  # 2021/51 reg 7(a)(i)) + child premium 85.75 (reg 7(b)) = 160.45 a week,
+  # 8,343.40 a year. Excess 496.60; award 1,800 - 99.32 = 1,700.68. Tax
+  # credits are pinned to nil to isolate the two incomes.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 5_200
+        widowed_parents_allowance: 5_200
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_devolved_working_age: true
+    council_tax_reduction_working_age_passported: false
+    council_tax_reduction_working_age_unearned_income: 8_840
+    council_tax_reduction_working_age_applicable_amount: 8_343.40
+    council_tax_reduction: 1_700.68
+
+- name: Scotland, a 19-year-old who is the scheme's young person brings the maintenance disregard
+  # From April 2022 Scotland's young person is the Universal Credit qualifying
+  # young person (SSI 2021/249 reg 6(1)). Before the Universal Credit terminal
+  # date the 19-year-old at school qualifies, so reg 57(6) applies: 10,000 -
+  # 780 = 9,220. (Not under 18, so an under-18 test would count all 10,000.)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_claimant_or_partner: true
+        spousal_maintenance_income: 10_000
+        council_tax_benefit_reported: 100
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_working_age_unearned_income: 9_220
+
+- name: Scotland, a 19-year-old past the Universal Credit terminal date brings no maintenance disregard
+  # Past the terminal date the 19-year-old is not Scotland's young person,
+  # although Child Benefit still treats them as one until 20, so all 10,000
+  # counts.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_claimant_or_partner: true
+        spousal_maintenance_income: 10_000
+        council_tax_benefit_reported: 100
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    council_tax_reduction_working_age_unearned_income: 10_000
+
+- name: Wales, a 19-year-old Child Benefit young person brings the maintenance disregard
+  # Wales uses the Child Benefit qualifying young person (WSI 2013/3029 reg 2),
+  # who stays one to 20 on a course begun before 19, whatever the Universal
+  # Credit terminal date: the family premium applies, so Sch 9 para 49 does:
+  # 10,000 - 780 = 9,220.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_claimant_or_partner: true
+        spousal_maintenance_income: 10_000
+        council_tax_benefit_reported: 100
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [parent, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, student]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    council_tax_reduction_working_age_unearned_income: 9_220
+
+- name: Wales, a Widowed Parent's Allowance under £15 a week does not reduce counted maintenance
+  # Paragraph 21 disregards up to £15 of WPA and paragraph 49 disregards up to
+  # £15 of the family's combined qualifying maintenance, so neither disregard
+  # reaches the other income. Maintenance 15,600 - 780 = 14,820; the
+  # allowance, 520 a year, is all disregarded. Pooling the two disregards, or
+  # flooring only the total, would give 14,560. The allowance is below the
+  # personal allowance, so no tax comes off. Excess 14,820 - 10,917.40 =
+  # 3,902.60; award 1,800 - 780.52 = 1,019.48.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 15_600
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 14_820
+    council_tax_reduction_working_age_unearned_income_tax: 0
+    council_tax_reduction_working_age_applicable_income: 14_820
+    council_tax_reduction: 1_019.48
+
+- name: Scotland, a Widowed Parent's Allowance under £15 a week reduces other unearned income
+  # Reg 57(4) takes £15 a week "from the applicant's weekly unearned income",
+  # not from the allowance. Maintenance 15,600 - 780 (reg 57(6)) = 14,820,
+  # plus the 520 allowance, 15,340 of unearned income; less 780, 14,560.
+  # Excess 14,560 - 10,680.80 = 3,879.20; award 1,800 - 775.84 = 1,024.16.
+  # Wales gives 14,820 here (Sch 9 para 21 disregards £15 of the allowance).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 15_600
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 15_340
+    council_tax_reduction_working_age_applicable_income: 14_560
+    council_tax_reduction: 1_024.16
+
+- name: Scotland 2021-22, a Widowed Parent's Allowance under £15 a week does not reduce counted maintenance
+  # SSI 2012/303 Sch 4 para 20 disregarded £15 "of" the allowance, so the 520
+  # allowance is all disregarded and the disregard stops there: maintenance
+  # 15,600 - 780 (Sch 4 para 48) = 14,820. From April 2022 the same family
+  # would count 14,560. Tax credits are pinned to nil to isolate the incomes.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 15_600
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 14_820
+    council_tax_reduction_working_age_applicable_income: 14_820
+
+- name: Scotland, with Universal Credit a small Widowed Parent's Allowance disregard reaches the child element
+  # Unearned income is the 520 allowance. The Universal Credit child element
+  # counts (reg 57(1)(p)): 303.94 x 12 = 3,647.28. Reg 57(4) takes 780 from
+  # the total: 520 + 3,647.28 - 780 = 3,387.28, below the applicable amount,
+  # so the maximum reduction is due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_has_universal_credit: true
+    council_tax_reduction_working_age_unearned_income: 520
+    council_tax_reduction_relevant_universal_credit_payments: 3_647.28
+    council_tax_reduction_working_age_applicable_income: 3_387.28
+    council_tax_reduction: 1_800
+
+- name: Scotland, two children still bring one maintenance disregard
+  # Reg 57(6) aggregates the family's maintenance for one £15 a week, however
+  # many children: 26,000 - 780 = 25,220. Applicable amount: lone parent 95.55
+  # + 2 x child premium 109.85 = 315.25 a week, 16,393 a year. Excess 8,827;
+  # award 1,800 - 1,765.40 = 34.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 26_000
+        council_tax_benefit_reported: 100
+      child_1:
+        age: 8
+      child_2:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child_1, child_2]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 20_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 25_220
+    council_tax_reduction_working_age_applicable_amount: 16_393
+    council_tax_reduction_working_age_applicable_income: 25_220
+    council_tax_reduction: 34.60
+
+- name: Scotland, a small Widowed Parent's Allowance disregard reaches tariff income
+  # Capital of 8,500 gives tariff income of £1 a week for each £250 above
+  # £6,000: 10 x 52 = 520, which reg 57(1)(l) counts as unearned income.
+  # Unearned total 520 + 520 = 1,040; reg 57(4) takes 780: 260. Below the
+  # applicable amount, so the maximum reduction is due.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 8_500
+  output:
+    council_tax_reduction_working_age_unearned_income: 520
+    council_tax_reduction_tariff_income: 520
+    council_tax_reduction_working_age_applicable_income: 260
+    council_tax_reduction: 1_800
+
+- name: Wales, a couple's Widowed Parent's Allowances get a disregard each and their maintenance one
+  # The model applies the Sch 9 para 21 disregard to each allowance and
+  # omits the para 40 £20 cap, giving 2 x (7,800 - 780) = 14,040 of counted
+  # WPA in this synthetic couple; para 21 is subject to para 40, so the law
+  # would count 520 more. Sch 9 para 49 disregards £15 of the family's combined maintenance:
+  # 1,040 + 1,040 - 780 = 1,300. Unearned income 15,340. Each allowance is
+  # below the personal allowance, so no Sch 9 para 4 tax comes off. (As in the
+  # Scottish couple case, no lawful award reaches a couple; the case pins the
+  # per-recipient disregard.)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        widowed_parents_allowance: 7_800
+        spousal_maintenance_income: 1_040
+        council_tax_benefit_reported: 100
+      partner:
+        age: 35
+        widowed_parents_allowance: 7_800
+        spousal_maintenance_income: 1_040
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 15_340
+    council_tax_reduction_working_age_unearned_income_tax: 0
+    council_tax_reduction_working_age_applicable_income: 15_340
+
+- name: Scotland 2022-23, the 2021 scheme takes a small allowance's disregard from total unearned income
+  # SSI 2021/249 came into force on 1 April 2022 (reg 1), so 2022-23 counts
+  # the allowance in full: maintenance 15,600 - 780 (reg 57(6)) + 520 =
+  # 15,340, and reg 57(4) takes 780 from that total. Tax credits are pinned to
+  # nil to isolate the incomes.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        spousal_maintenance_income: 15_600
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 15_340
+    council_tax_reduction_working_age_applicable_income: 14_560
+
+- name: Scotland, a small allowance's disregard comes off unearned income before childcare charges
+  # Reg 57(4) takes £15 a week from unearned income; reg 38(2) then deducts
+  # relevant childcare charges from earned plus unearned income. Lone parent
+  # aged 60, child aged 5, £5,000 self-employed profit from 30 hours, £3,000
+  # private pension, £520 of the allowance, £5,000 of charges (under £175 a
+  # week). Earnings 5,000 - 1,300 = 3,700; unearned 3,000 + 520 = 3,520,
+  # less 780 = 2,740; less the charges: 3,700 + 2,740 - 5,000 = 1,440. Below
+  # the applicable amount, so the maximum reduction is due. If the
+  # disregard's cap used unearned income after subtracting all childcare
+  # charges from that pool, the disregard would be zero and applicable
+  # income would be 2,220.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 60
+        self_employment_income: 5_000
+        weekly_hours: 30
+        private_pension_income: 3_000
+        widowed_parents_allowance: 520
+        council_tax_benefit_reported: 100
+      child:
+        age: 5
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_tfc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 5_000
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_working_age_unearned_income: 3_520
+    council_tax_reduction_working_age_childcare_deduction: 5_000
+    council_tax_reduction_working_age_applicable_income: 1_440
+    council_tax_reduction: 1_800
