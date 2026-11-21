@@ -74,20 +74,24 @@ That means:
   ([ITEPA 2003 s. 577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)),
   Universal Credit unearned income
   ([UC Regulations 2013 reg. 66(1)(b)(vi)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66)),
-  pension income for tax credits
-  ([SI 2002/2006 reg. 5(1)(a)](https://www.legislation.gov.uk/uksi/2002/2006/regulation/5)),
+  pension income for tax credits, which ignores the first £300 a year of
+  pension, investment, property, foreign and notional income together
+  ([SI 2002/2006 reg. 3](https://www.legislation.gov.uk/uksi/2002/2006/regulation/3)
+  and [reg. 5(1)(a)](https://www.legislation.gov.uk/uksi/2002/2006/regulation/5)),
   Income Support income less £10 a week
   ([IS Regulations 1987 Sch. 9 para. 16(h)](https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/16)),
-  Housing Benefit income less £15 a week
+  Housing Benefit income less £15 a week (less £10 on the
+  savings-credit-only route below)
   ([HB Regulations 2006 Sch. 5 para. 16](https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16);
   [HB (SPC) Regulations 2006 Sch. 5 para. 7](https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/7)),
   a welfare benefit for the benefit cap and an overlapping benefit for Carer's Allowance and Carer Support
   Payment. The model counts it less £15 a week in Council Tax Reduction
-  too, but for working-age applicants with Universal Credit it counts it
-  in full in Wales and in the five English council schemes it holds
-  (Merton, Kingston upon Thames, Newham and Westminster, and Oxford from
-  April 2026). Elsewhere in England the model keeps a working-age
-  applicant's reported reduction. The
+  too (less £10 on that route), but for working-age applicants with
+  Universal Credit it counts it in full in Wales and in the five English
+  council schemes it holds (Merton, Kingston upon Thames, Newham and
+  Westminster, and Oxford from April 2026). Elsewhere in England the
+  model uses a working-age applicant's reported reduction, which it may
+  cap at their share of a jointly liable bill. The
   model leaves WPA out of Scotland's working-age scheme, and out of the
   Welsh one for applicants without Universal Credit, although both count
   it less £15 a week, and Wales also disregards the income tax on it
@@ -99,10 +103,10 @@ That means:
   non-dependant's gross income for the Housing Benefit non-dependant
   deduction and the English pension-age, Scottish and Welsh Council Tax
   Reduction ones, but not in the five English council schemes. WPA ends at
-  State Pension age, or on remarriage or a new civil or cohabiting
-  partnership, and is not paid while the recipient lives with someone as a
-  couple ([SSCBA 1992 s. 39A(4) to (5)][sscba-39a]). Pension Credit's qualifying
-  age is women's State Pension age
+  State Pension age or when the recipient marries or forms a new civil or
+  cohabiting partnership, and is not paid while the recipient lives with
+  someone as a couple ([SSCBA 1992 s. 39A(4) to (5)][sscba-39a]).
+  Pension Credit's qualifying age is women's State Pension age
   ([State Pension Credit Act 2002 s. 1(6)](https://www.legislation.gov.uk/ukpga/2002/16/section/1)),
   so until December 2018 a widower between that age and 65 could get both,
   and Pension Credit counts WPA less £10 a week

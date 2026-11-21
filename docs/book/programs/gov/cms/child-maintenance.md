@@ -38,15 +38,17 @@ tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
     applicants with Universal Credit, the model counts it in full in the
     five English council schemes it holds and in Wales: Wales, Merton,
     Kingston upon Thames, Newham and Westminster count it through the
-    Universal Credit income figure, and Oxford, from April 2026, in its own
-    list of unearned income (Appendix 3). Applicants without Universal
-    Credit in those five schemes have the same £15 disregard. Elsewhere in England the model keeps a working-age
-    applicant's reported reduction, so no income counts. The model leaves
-    spousal maintenance out of Scotland's working-age scheme, and out of
-    the Welsh one for applicants without Universal Credit, although both
-    count it less £15 a week: Scotland where the family includes a child
-    or young person, Wales where the applicable amount includes a family
-    premium
+    Universal Credit income figure, and Oxford, from April 2026, as other
+    unearned income under its Appendix 3. Applicants without Universal
+    Credit in those five schemes, and Oxford's with it before April 2026,
+    have the same £15 disregard. Elsewhere in England the model uses a
+    working-age applicant's reported reduction, which it may cap at their
+    share of a jointly liable bill, so their income does not count. The
+    model leaves spousal maintenance out of Scotland's working-age scheme,
+    and out of the Welsh one for applicants without Universal Credit,
+    although both count it less £15 a week: Scotland where the family
+    includes a child or young person, Wales where the applicable amount
+    includes a family premium
     ([SSI 2021/249 reg. 57(1)(d) and (6)](https://www.legislation.gov.uk/ssi/2021/249/regulation/57);
     [WSI 2013/3029 Sch. 6 para. 17](https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17)
     and [Sch. 9 para. 49](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/49)).
