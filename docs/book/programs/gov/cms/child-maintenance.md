@@ -35,12 +35,12 @@ tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
     includes a child or young person
     ([SI 2012/2885 Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20)
     sets this for pension-age applicants in England). For working-age
-    applicants with Universal Credit, the model counts it in full in Wales
-    and in the five English council schemes it holds (Merton, Kingston upon
-    Thames, Newham and Westminster, and Oxford from April 2026), because
-    they take income from the Universal Credit assessment. Applicants
-    without Universal Credit in those five schemes have the same £15
-    disregard. Elsewhere in England the model keeps a working-age
+    applicants with Universal Credit, the model counts it in full in the
+    five English council schemes it holds and in Wales: Wales, Merton,
+    Kingston upon Thames, Newham and Westminster count it through the
+    Universal Credit income figure, and Oxford, from April 2026, in its own
+    list of unearned income (Appendix 3). Applicants without Universal
+    Credit in those five schemes have the same £15 disregard. Elsewhere in England the model keeps a working-age
     applicant's reported reduction, so no income counts. The model leaves
     spousal maintenance out of Scotland's working-age scheme, and out of
     the Welsh one for applicants without Universal Credit, although both

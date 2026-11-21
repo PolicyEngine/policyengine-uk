@@ -92,7 +92,9 @@ That means:
   Welsh one for applicants without Universal Credit, although both count
   it less £15 a week, and Wales also disregards the income tax on it
   ([SSI 2021/249 reg. 57(1)(b)(vi) and (4)](https://www.legislation.gov.uk/ssi/2021/249/regulation/57);
-  [WSI 2013/3029 Sch. 6 para. 17 and Sch. 9 paras. 4 and 21](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9)).
+  [WSI 2013/3029 Sch. 6 para. 17](https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17),
+  [Sch. 9 para. 4](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/4)
+  and [para. 21](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/21)).
   [#2931](https://github.com/PolicyEngine/policyengine-uk/issues/2931) tracks the fix. The model also counts WPA in a
   non-dependant's gross income for the Housing Benefit non-dependant
   deduction and the English pension-age, Scottish and Welsh Council Tax
