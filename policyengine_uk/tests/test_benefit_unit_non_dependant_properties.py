@@ -453,8 +453,9 @@ def test_deductions_match_the_oracle(population):
         )
 
     # Any family's own non-dependants, a boarder's or lodger's included. HB
-    # eligibility also excludes an exempt non-dependant (reg 74(7)-(10)); CTR
-    # applies its exemptions in the amount.
+    # eligibility also excludes an exempt non-dependant (reg 74(7), (8) and
+    # (10); at pension age, reg 55(7) to (9)); CTR applies its exemptions in
+    # the amount.
     everyone = eligible(("head", "sharer", "lodger", "non_dependant"))
     hb_exempt = calc(sim, "housing_benefit_non_dep_deduction_exempt") > 0
     assert np.array_equal(
