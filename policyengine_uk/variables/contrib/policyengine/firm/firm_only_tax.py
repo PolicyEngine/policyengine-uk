@@ -8,11 +8,13 @@ class firm_only_tax(Variable):
         "side models, so that a reform to them reaches households through "
         "firm_tax_incidence without counting a change twice: corporation "
         "tax, the bank surcharge, the apprenticeship levy and business "
-        "rates, less the Employment Allowance. Employer National Insurance "
-        "rates and thresholds, and VAT rates, reach households through "
-        "ni_employer and vat on the household side, so they are left out. "
-        "Reforms to the VAT registration threshold and flat rate scheme are "
-        "not yet carried to households."
+        "rates. Employer National Insurance rates and thresholds, and VAT "
+        "rates, reach households through ni_employer and vat on the "
+        "household side, so they are left out. The Employment Allowance is "
+        "left out too, because it moves with employer National Insurance "
+        "liability: firm_tax_change_total adds the change in its rules "
+        "separately. Reforms to the VAT registration threshold and flat "
+        "rate scheme are not yet carried to households."
     )
     entity = Firm
     definition_period = YEAR
@@ -24,4 +26,3 @@ class firm_only_tax(Variable):
         "apprenticeship_levy",
         "firm_business_rates",
     ]
-    subtracts = ["employment_allowance"]
