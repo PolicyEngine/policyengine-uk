@@ -1,0 +1,27 @@
+description: First-year allowance rate for companies on new and unused special-rate plant and machinery, as a share of the expenditure. It is the 50% SR allowance from 1 April 2021 and the 50% section 45S allowance from 1 April 2023.
+values:
+  2012-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Finance Act 2021 s 9 (no general first-year allowance for special-rate plant before the SR allowance)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/9
+  2021-04-01:
+    value: 0.5
+    metadata:
+      reference:
+        - title: Finance Act 2021 s 9(3) (SR allowance of 50% on expenditure incurred from 1 April 2021 to 31 March 2023 by a company)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/9
+  2023-04-01:
+    value: 0.5
+    metadata:
+      reference:
+        - title: Capital Allowances Act 2001 s 52(3) Table (50% for expenditure qualifying under section 45S which is special rate expenditure)
+          href: https://www.legislation.gov.uk/ukpga/2001/2/section/52
+metadata:
+  unit: /1
+  period: year
+  label: Special-rate first-year allowance rate
+  reference:
+    - title: Capital Allowances Act 2001 s 45S
+      href: https://www.legislation.gov.uk/ukpga/2001/2/section/45S

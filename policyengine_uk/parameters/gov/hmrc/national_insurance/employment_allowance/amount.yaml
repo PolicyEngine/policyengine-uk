@@ -1,0 +1,43 @@
+description: Maximum Employment Allowance an employer can set against its secondary Class 1 National Insurance contributions in a tax year.
+# The allowance cannot exceed the employer's non-excluded secondary Class 1
+# liabilities for the year (s.1(2)(b)). It started in 2014-15, so the model
+# states a zero before then.
+values:
+  0000-01-01: 0
+  2014-04-06:
+    value: 2_000
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.1(2)(a), as enacted
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/1/enacted
+  2016-04-06:
+    value: 3_000
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.1(2)(a), as substituted by SI 2016/63 reg 2
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/1/2016-04-06
+  2020-04-06:
+    value: 4_000
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.1(2)(a), as substituted by SI 2020/273 reg 2
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/1/2020-04-06
+  2022-04-06:
+    value: 5_000
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.1(2)(a), as substituted by SI 2022/364 reg 2
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/1/2022-04-06
+  2025-04-06:
+    value: 10_500
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.1(2)(a), as substituted by the National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.3(2)
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/1
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Employment Allowance maximum amount
+  reference:
+    - title: National Insurance Contributions Act 2014 s.1
+      href: https://www.legislation.gov.uk/ukpga/2014/7/section/1

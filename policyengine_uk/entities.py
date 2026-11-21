@@ -43,4 +43,25 @@ Person = build_entity(
     is_person=True,
 )
 
-entities = [Household, BenUnit, Person]
+# A firm is a root entity: a population of its own, with its own count, ids,
+# weight and dataset table, and no members. People are not members of firms.
+# policyengine-core has no root entity type, so Firm is a plain ``Entity``
+# (``is_person`` is True, as for every non-group entity). Core takes the
+# first ``is_person`` entity in the system's list as its person entity and
+# makes the rest of the non-person entities its group entities, so Firm must
+# come after Person in ``CountryTaxBenefitSystem``'s entity list: it is then
+# neither the person entity nor a group entity, and
+# ``CountryTaxBenefitSystem.instantiate_entities`` adds its population.
+Firm = build_entity(
+    key="firm",
+    plural="firms",
+    label="Firm",
+    doc=(
+        "A business: a company, sole trader or partnership. Firms form a "
+        "population of their own, with no members. A simulation built from a "
+        "household situation or dataset without firms has no firms."
+    ),
+    is_person=True,
+)
+
+entities = [Household, BenUnit, Person, Firm]

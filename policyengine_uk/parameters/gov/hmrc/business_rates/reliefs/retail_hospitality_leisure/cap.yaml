@@ -1,0 +1,14 @@
+description: Cash cap on retail, hospitality and leisure (RHL) relief per business across all its properties in England.
+values:
+  2023-04-01: 110_000
+metadata:
+  label: Retail, hospitality and leisure relief cash cap
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Business Rates Relief, 2023/24 Retail, Hospitality and Leisure Scheme, paras 5, 14 and 19
+      href: https://www.gov.uk/government/publications/business-rates-relief-202324-retail-hospitality-and-leisure-scheme-local-authority-guidance/business-rates-relief-202324-retail-hospitality-and-leisure-scheme
+    - title: Business Rates Relief, 2024/25 Retail, Hospitality and Leisure Scheme, paras 5 and 18
+      href: https://www.gov.uk/guidance/business-rates-relief-202425-retail-hospitality-and-leisure-scheme
+    - title: Business Rates Relief, 2025/26 Retail, Hospitality and Leisure Scheme, para 18
+      href: https://www.gov.uk/guidance/business-rates-relief-202526-retail-hospitality-and-leisure-scheme

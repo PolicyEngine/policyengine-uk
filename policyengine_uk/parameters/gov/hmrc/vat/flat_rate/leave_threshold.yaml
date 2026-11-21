@@ -1,0 +1,12 @@
+description: A business must leave the VAT flat rate scheme when its VAT-inclusive total turnover in the year exceeds this amount. Encoded for reference; the model applies only the joining test.
+values:
+  # UNVERIFIED start date: the £230,000 figure is verified in Notice 733 section 3.5;
+  # the date it took effect (believed 4 January 2011, with the 20% standard rate) is not.
+  2011-01-04: 230_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT flat rate scheme leaving threshold
+  reference:
+    - title: VAT Notice 733, section 3.5
+      href: https://www.gov.uk/guidance/flat-rate-scheme-for-small-businesses-vat-notice-733--2

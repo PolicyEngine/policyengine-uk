@@ -1,0 +1,14 @@
+description: Properties with rateable value at or above this amount pay the high-value multiplier in England.
+# Before 2026-27 the high-value multiplier equals the standard multiplier, so
+# this threshold has no effect in those years.
+values:
+  2026-04-01: 500_000
+metadata:
+  label: Business rates high-value multiplier threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Local Government Finance Act 1988 Schedule 4ZA para 10(9B)(b) (£500,000 or more)
+      href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
+    - title: Business Rates Information Letter 5/2025, paras 1 and 3
+      href: https://www.gov.uk/government/publications/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027

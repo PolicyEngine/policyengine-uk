@@ -1,0 +1,103 @@
+- name: Case 1, merged scheme credit for a large company and none for a sole trader.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, SOLE_TRADER]
+    firm_qualifying_rd_expenditure: [1_000_000, 1_000_000]
+    firm_total_relevant_expenditure: [5_000_000, 5_000_000]
+    firm_taxable_trading_profit: [2_000_000, 2_000_000]
+  output:
+    # 20% x 1,000,000.
+    firm_rd_expenditure_credit: [200_000, 0]
+    firm_rd_additional_deduction: [0, 0]
+
+- name: Case 2, ERIS at 29.9% versus 30% intensity for a loss-making SME.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_sme: [true, true]
+    firm_qualifying_rd_expenditure: [299_000, 300_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [-500_000, -500_000]
+  output:
+    # 29.9%: not R&D intensive, so the merged credit: 20% x 299,000 = 59,800.
+    # 30%: ERIS. Deduction 86% x 300,000 = 258,000. Loss 500,000 + 258,000 =
+    # 758,000, capped at 300,000 + 258,000 = 558,000. Credit 14.5% x 558,000
+    # = 80,910.
+    firm_is_rd_intensive: [false, true]
+    firm_claims_rd_sme_relief: [false, true]
+    firm_rd_expenditure_credit: [59_800, 0]
+    firm_rd_additional_deduction: [0, 258_000]
+    firm_rd_surrenderable_loss: [0, 558_000]
+    firm_rd_payable_credit: [0, 80_910]
+
+- name: Case 3, ERIS needs a trading loss before the additional deduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY]
+    firm_is_sme: [true, true, true]
+    firm_qualifying_rd_expenditure: [300_000, 300_000, 300_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [-100_000, 100_000, 0]
+  output:
+    # Loss of 100,000: deduction 258,000; loss 358,000 below the 558,000 cap;
+    # credit 14.5% x 358,000 = 51,910.
+    # Profit of 100,000 or exactly 0: no loss, so the merged credit of
+    # 20% x 300,000 = 60,000.
+    firm_rd_additional_deduction: [258_000, 0, 0]
+    firm_rd_surrenderable_loss: [358_000, 0, 0]
+    firm_rd_payable_credit: [51_910, 0, 0]
+    firm_rd_expenditure_credit: [0, 60_000, 60_000]
+
+- name: Case 4, capital allowances can create the ERIS trading loss.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_is_sme: [true]
+    firm_qualifying_rd_expenditure: [300_000]
+    firm_total_relevant_expenditure: [1_000_000]
+    firm_taxable_trading_profit: [100_000]
+    firm_capex_main_pool_new: [150_000]
+  output:
+    # Profit 100,000 - full expensing 150,000 = -50,000. Deduction 258,000;
+    # loss 308,000; credit 14.5% x 308,000 = 44,660.
+    firm_rd_additional_deduction: [258_000]
+    firm_rd_payable_credit: [44_660]
+    firm_rd_expenditure_credit: [0]
+
+- name: Case 5, SME scheme for every SME in 2023 before the merger.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY]
+    firm_is_sme: [true, true, false]
+    firm_qualifying_rd_expenditure: [100_000, 100_000, 100_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [200_000, -50_000, 200_000]
+  output:
+    # Profitable SME: deduction 86% x 100,000 = 86,000, no credit.
+    # Loss-making SME (10% intensity, below 40%): loss 50,000 + 86,000 =
+    # 136,000 below the 186,000 cap; credit 10% x 136,000 = 13,600.
+    # Large company: 20% x 100,000 = 20,000.
+    firm_rd_additional_deduction: [86_000, 86_000, 0]
+    firm_rd_payable_credit: [0, 13_600, 0]
+    firm_rd_expenditure_credit: [0, 0, 20_000]
+
+- name: Case 6, SME scheme rates in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_sme: [true, false]
+    firm_qualifying_rd_expenditure: [100_000, 100_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [-50_000, 200_000]
+  output:
+    # SME: deduction 130% x 100,000 = 130,000; loss 180,000 below the 230,000
+    # cap; credit 14.5% x 180,000 = 26,100. Large: 13% x 100,000 = 13,000.
+    firm_rd_additional_deduction: [130_000, 0]
+    firm_rd_payable_credit: [26_100, 0]
+    firm_rd_expenditure_credit: [0, 13_000]

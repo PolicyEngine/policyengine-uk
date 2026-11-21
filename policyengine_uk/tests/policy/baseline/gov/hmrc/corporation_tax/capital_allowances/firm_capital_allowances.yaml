@@ -1,0 +1,256 @@
+- name: Case 1, full expensing for a company and AIA for a sole trader on new main-rate plant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, SOLE_TRADER]
+    firm_capex_main_pool_new: [500_000, 500_000]
+  output:
+    # Company: 100% full expensing on 500,000. Sole trader: no full
+    # expensing, so the AIA (limit 1,000,000) covers all 500,000.
+    firm_full_expensing_allowance: [500_000, 0]
+    firm_annual_investment_allowance: [0, 500_000]
+    firm_main_rate_first_year_allowance: [0, 0]
+    firm_capital_allowances: [500_000, 500_000]
+
+- name: Case 2, AIA at exactly 1 million and above on second-hand plant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER, SOLE_TRADER]
+    firm_capex_main_pool_used: [1_000_000, 1_200_000]
+  output:
+    # 1,000,000: AIA 1,000,000, nothing pooled.
+    # 1,200,000: AIA 1,000,000; 200,000 pooled; WDA 14% x 200,000 = 28,000.
+    firm_annual_investment_allowance: [1_000_000, 1_000_000]
+    firm_main_pool_writing_down_allowance: [0, 28_000]
+    firm_capital_allowances: [1_000_000, 1_028_000]
+    firm_main_pool_carried_forward: [0, 172_000]
+
+- name: Case 3, new versus second-hand plant for a sole trader above the AIA limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER, SOLE_TRADER]
+    firm_capex_main_pool_new: [1_500_000, 0]
+    firm_capex_main_pool_used: [0, 1_500_000]
+  output:
+    # New: AIA 1,000,000; 40% FYA on 500,000 = 200,000; the other 300,000
+    # joins the pool next year, so no WDA this year. Total 1,200,000.
+    # Used: no FYA. AIA 1,000,000; 500,000 pooled; WDA 14% = 70,000.
+    firm_main_rate_first_year_allowance: [200_000, 0]
+    firm_main_pool_writing_down_allowance: [0, 70_000]
+    firm_capital_allowances: [1_200_000, 1_070_000]
+    firm_main_pool_carried_forward: [300_000, 430_000]
+
+- name: Case 4, main-rate FYA for a sole trader in 2025, before it starts.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER]
+    firm_capex_main_pool_new: [1_500_000]
+  output:
+    # The 30 April 2025 rate is 0, so 500,000 above the AIA is pooled:
+    # WDA 18% x 500,000 = 90,000. Total 1,090,000.
+    firm_main_rate_first_year_allowance: [0]
+    firm_main_pool_writing_down_allowance: [90_000]
+    firm_capital_allowances: [1_090_000]
+
+- name: Case 5, main-rate FYA at 50% in 2027.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER, PARTNERSHIP]
+    firm_capex_main_pool_new: [1_500_000, 1_500_000]
+  output:
+    # AIA 1,000,000 plus 50% x 500,000 = 250,000.
+    firm_main_rate_first_year_allowance: [250_000, 250_000]
+    firm_capital_allowances: [1_250_000, 1_250_000]
+    firm_main_pool_carried_forward: [250_000, 250_000]
+
+- name: Case 6, main pool WDA rate in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_main_pool_brought_forward: [100_000]
+    firm_special_rate_pool_brought_forward: [100_000]
+  output:
+    # Main 18% x 100,000; special 6% x 100,000.
+    firm_main_pool_writing_down_allowance: [18_000]
+    firm_special_rate_pool_writing_down_allowance: [6_000]
+    firm_capital_allowances: [24_000]
+
+- name: Case 7, main pool WDA rate in 2026.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_main_pool_brought_forward: [100_000]
+    firm_special_rate_pool_brought_forward: [100_000]
+  output:
+    # Main 14% x 100,000; special 6% x 100,000.
+    firm_main_pool_writing_down_allowance: [14_000]
+    firm_special_rate_pool_writing_down_allowance: [6_000]
+    firm_capital_allowances: [20_000]
+
+- name: Case 8, main pool WDA rate in 2027.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    firm_main_pool_brought_forward: [100_000]
+  output:
+    # 12% x 100,000.
+    firm_main_pool_writing_down_allowance: [12_000]
+    firm_main_pool_carried_forward: [88_000]
+
+- name: Case 9, small pool write-off at and above 1,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_main_pool_brought_forward: [1_000, 1_001]
+    firm_special_rate_pool_brought_forward: [1_000, 1_001]
+  output:
+    # At 1,000 the pool is written off. At 1,001: 14% = 140.14 and 6% = 60.06.
+    firm_main_pool_writing_down_allowance: [1_000, 140.14]
+    firm_special_rate_pool_writing_down_allowance: [1_000, 60.06]
+
+- name: Case 10, balancing charge when disposals exceed the main pool.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_main_pool_brought_forward: [10_000]
+    firm_disposal_proceeds_main_pool: [25_000]
+  output:
+    # 10,000 - 25,000 = -15,000: no WDA, balancing charge 15,000.
+    firm_main_pool_writing_down_allowance: [0]
+    firm_main_pool_balancing_charge: [15_000]
+    firm_capital_allowances: [-15_000]
+    firm_main_pool_carried_forward: [0]
+
+- name: Case 11, AIA before the 50% FYA on a company's new special-rate plant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_capex_special_rate_new: [400_000, 1_400_000]
+  output:
+    # 400,000: AIA covers it all, worth more than the 50% FYA.
+    # 1,400,000: AIA 1,000,000; 50% FYA on 400,000 = 200,000; the other
+    # 200,000 joins the special rate pool next year.
+    firm_annual_investment_allowance: [400_000, 1_000_000]
+    firm_special_rate_first_year_allowance: [0, 200_000]
+    firm_special_rate_pool_writing_down_allowance: [0, 0]
+    firm_capital_allowances: [400_000, 1_200_000]
+    firm_special_rate_pool_carried_forward: [0, 200_000]
+
+- name: Case 12, special-rate plant for a sole trader goes to the pool after AIA.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER]
+    firm_capex_special_rate_new: [1_400_000]
+  output:
+    # AIA 1,000,000; no FYA for a sole trader; 400,000 pooled; WDA 6% = 24,000.
+    firm_special_rate_first_year_allowance: [0]
+    firm_special_rate_pool_writing_down_allowance: [24_000]
+    firm_capital_allowances: [1_024_000]
+
+- name: Case 13, AIA order across a company's mixed spend.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_main_pool_used: [800_000]
+    firm_capex_special_rate_used: [300_000]
+    firm_capex_special_rate_new: [500_000]
+  output:
+    # AIA: special used 300,000, then main used 700,000 (limit reached).
+    # Main pool: 100,000 x 14% = 14,000. Special new: 50% FYA = 250,000.
+    # Total 1,000,000 + 14,000 + 250,000 = 1,264,000.
+    firm_aia_special_rate_used: [300_000]
+    firm_aia_main_pool_used: [700_000]
+    firm_aia_special_rate_new: [0]
+    firm_main_pool_writing_down_allowance: [14_000]
+    firm_special_rate_first_year_allowance: [250_000]
+    firm_capital_allowances: [1_264_000]
+
+- name: Case 14, shared AIA limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER]
+    firm_aia_share: [0.5]
+    firm_capex_main_pool_used: [800_000]
+  output:
+    # Limit 0.5 x 1,000,000 = 500,000; 300,000 pooled; WDA 14% = 42,000.
+    firm_annual_investment_allowance: [500_000]
+    firm_capital_allowances: [542_000]
+
+- name: Case 15, structures and buildings allowance in 2026 and 2019.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_capex_structures: [1_000_000]
+    firm_sba_qualifying_cost_brought_forward: [500_000]
+  output:
+    # 3% x 1,500,000 = 45,000.
+    firm_structures_and_buildings_allowance: [45_000]
+    firm_capital_allowances: [45_000]
+
+- name: Case 16, structures and buildings allowance at 2% in 2019.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    firm_capex_structures: [1_000_000]
+  output:
+    firm_structures_and_buildings_allowance: [20_000]
+
+- name: Case 17, super-deduction in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, SOLE_TRADER]
+    firm_capex_main_pool_new: [100_000, 100_000]
+  output:
+    # Company: 130% x 100,000. Sole trader: AIA 100,000.
+    firm_full_expensing_allowance: [130_000, 0]
+    firm_capital_allowances: [130_000, 100_000]
+    firm_main_pool_carried_forward: [0, 0]
+
+- name: Case 18, company new main-rate plant in 2020 before full expensing.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_main_pool_new: [1_500_000]
+  output:
+    # AIA 1,000,000; 500,000 pooled at 18% = 90,000.
+    firm_full_expensing_allowance: [0]
+    firm_capital_allowances: [1_090_000]
+
+- name: Case 19, AIA goes to new special-rate plant before used main-rate plant without the special-rate FYA.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER, COMPANY]
+    firm_capex_main_pool_used: [600_000, 600_000]
+    firm_capex_special_rate_new: [600_000, 600_000]
+  output:
+    # Sole trader: AIA 600,000 on special new (else 6% WDA), then 400,000 on
+    # main used; 200,000 main pooled, WDA 14% = 28,000. Total 1,028,000.
+    # Company: AIA 600,000 on main used, then 400,000 on special new; 50% FYA
+    # on 200,000 = 100,000. Total 1,100,000.
+    firm_aia_special_rate_new: [600_000, 400_000]
+    firm_aia_main_pool_used: [400_000, 600_000]
+    firm_special_rate_first_year_allowance: [0, 100_000]
+    firm_main_pool_writing_down_allowance: [28_000, 0]
+    firm_capital_allowances: [1_028_000, 1_100_000]
+
+- name: Case 20, AIA limit of 200,000 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER]
+    firm_capex_main_pool_used: [300_000]
+  output:
+    # AIA 200,000; 100,000 pooled at 18% = 18,000.
+    firm_annual_investment_allowance: [200_000]
+    firm_capital_allowances: [218_000]

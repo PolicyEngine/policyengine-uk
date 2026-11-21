@@ -1,0 +1,24 @@
+description: Business rates relief for occupied pubs and live music venues in England, as a share of the rates bill left after other reliefs.
+# 15% for 2026-27; Budget 2026 raises it to 35% for 2027-28 and 2028-29
+# (BRIL 8/2026 Annex para 6(a)). Nothing yet sets the relief from 2029-30, so
+# it is 0 from 2029-04-01. Social clubs are covered from 2027-28 but are not
+# separately flagged here.
+values:
+  2023-04-01: 0
+  2026-04-01:
+    value: 0.15
+    metadata:
+      reference:
+        - title: GOV.UK, Pubs and live music venues relief (15% for 2026 to 2027)
+          href: https://www.gov.uk/apply-for-business-rate-relief/pubs-and-live-music-venues-relief
+  2027-04-01:
+    value: 0.35
+    metadata:
+      reference:
+        - title: Business Rates Information Letter 8/2026, Technical Annex para 6(a)
+          href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028
+  2029-04-01: 0
+metadata:
+  label: Pubs and live music venues relief rate
+  unit: /1
+  period: year

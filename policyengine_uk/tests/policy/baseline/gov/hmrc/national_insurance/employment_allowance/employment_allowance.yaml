@@ -1,0 +1,76 @@
+# Firm: paybill 300,000 and 10 employees. 2025-26 liability 37,500 (see
+# firm_employer_ni.yaml); 2024-25 liability 28,842.
+- name: Case 1, ineligible firms in 2025-26.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000, 300_000, 300_000, 300_000]
+    firm_employees: [10, 10, 10, 10, 10]
+    firm_is_single_director_company: [true, false, false, false, false]
+    firm_is_public_body: [false, true, true, false, false]
+    firm_is_charity: [false, false, true, false, false]
+    firm_claims_employment_allowance: [true, true, true, false, true]
+    # The £100,000 test no longer applies from 2025-26.
+    firm_prior_year_secondary_class_1_liabilities: [0, 0, 0, 0, 1_000_000]
+  output:
+    # Single director; public body; public body that is a charity (eligible);
+    # non-claiming group member; large prior-year liabilities (eligible).
+    employment_allowance_eligible: [false, false, true, false, true]
+    employment_allowance: [0, 0, 10_500, 0, 10_500]
+    firm_employer_ni: [37_500, 37_500, 27_000, 37_500, 27_000]
+
+- name: Case 2, the £100,000 prior-year liabilities test in 2024-25.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000]
+    firm_employees: [10, 10]
+    firm_prior_year_secondary_class_1_liabilities: [99_999, 100_000]
+  output:
+    # "£100,000 or more" excludes.
+    employment_allowance_eligible: [true, false]
+    employment_allowance: [5_000, 0]
+
+- name: Case 3, single-director companies could claim before 2016-17.
+  period: 2015
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_is_single_director_company: [true]
+  output:
+    # 2015-16 EA 2,000; liability (300,000 - 10 x 8,112) x 13.8% = 30,205.44.
+    employment_allowance_eligible: [true]
+    employment_allowance: [2_000]
+
+- name: Case 4, EA amounts by tax year.
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    employment_allowance: [4_000]
+
+- name: Case 5, the default prior-year liabilities exclude a large employer in 2024-25.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [1_000_000]
+    firm_employees: [10]
+  output:
+    # (1,000,000 - 10 x 9,100) x 13.8% = 125,442, taken as the prior-year
+    # liabilities; 125,442 >= 100,000 excludes.
+    firm_prior_year_secondary_class_1_liabilities: [125_442]
+    employment_allowance_eligible: [false]
+    employment_allowance: [0]
+    firm_employer_ni: [125_442]
+
+- name: Case 6, the £3,000 allowance in 2019-20.
+  period: 2019
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    employment_allowance: [3_000]

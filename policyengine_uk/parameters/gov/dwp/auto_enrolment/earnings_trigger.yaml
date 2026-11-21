@@ -1,0 +1,25 @@
+description: Annual earnings above which an employer must automatically enrol an eligible jobholder in a pension scheme.
+# The firm-level formulas do not use this value, because they do not observe
+# each employee's pay; it is stated for a future job-level model.
+# UNVERIFIED for years before 2014-15: earlier triggers (lower than £10,000)
+# are not encoded, so the model applies £10,000 to earlier years.
+values:
+  2014-04-06:
+    value: 10_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.3(1)(c), as substituted by SI 2014/623 art 2(1)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/3
+  2026-04-06:
+    value: 10_000
+    metadata:
+      reference:
+        - title: "DWP: Review of the automatic enrolment earnings trigger and qualifying earnings band for 2026/27"
+          href: https://www.gov.uk/government/publications/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Automatic enrolment earnings trigger
+  reference:
+    - title: Pensions Act 2008 s.3(1)(c)
+      href: https://www.legislation.gov.uk/ukpga/2008/30/section/3

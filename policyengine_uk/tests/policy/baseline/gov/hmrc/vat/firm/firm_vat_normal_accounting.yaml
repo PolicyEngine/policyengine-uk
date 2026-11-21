@@ -1,0 +1,46 @@
+# Normal accounting: output VAT (standard 20%, reduced 5%) less input VAT
+# recoverable under the partial exemption standard method
+# (taxable / (taxable + exempt) supplies).
+
+- name: Reduced-rated supplies carry VAT at 5%
+  period: 2025
+  input:
+    firm_standard_rated_supplies: 60_000
+    firm_reduced_rated_supplies: 40_000
+    firm_input_vat: 8_000
+  output:
+    firm_vat_taxable_turnover: 100_000
+    firm_vat_registered: true
+    # 60,000 * 0.2 + 40,000 * 0.05 = 12,000 + 2,000 = 14,000
+    firm_output_vat: 14_000
+    firm_recoverable_input_vat: 8_000
+    # 14,000 - 8,000 = 6,000
+    firm_vat: 6_000
+
+- name: Partial exemption restricts input VAT recovery
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 150_000
+    firm_exempt_supplies: 50_000
+    firm_input_vat: 20_000
+  output:
+    # 150,000 / (150,000 + 50,000) = 0.75
+    firm_partial_exemption_recovery_share: 0.75
+    # 20,000 * 0.75 = 15,000
+    firm_recoverable_input_vat: 15_000
+    # Output 150,000 * 0.2 = 30,000; 30,000 - 15,000 = 15,000
+    firm_vat: 15_000
+
+- name: A supplied recovery share overrides the standard method
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 150_000
+    firm_exempt_supplies: 50_000
+    firm_input_vat: 20_000
+    firm_partial_exemption_recovery_share: 0.9
+  output:
+    # 20,000 * 0.9 = 18,000; 30,000 - 18,000 = 12,000
+    firm_recoverable_input_vat: 18_000
+    firm_vat: 12_000

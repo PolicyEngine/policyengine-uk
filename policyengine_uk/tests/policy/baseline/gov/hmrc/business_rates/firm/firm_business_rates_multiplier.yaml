@@ -1,0 +1,51 @@
+# Small business threshold: RV below £51,000. High-value: RV £500,000 or more.
+- name: 2023-24 multipliers, small 49.9p below £51,000 and standard 51.2p from it
+  period: 2023
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 500_000]
+  output:
+    firm_business_rates_multiplier: [0.499, 0.512, 0.512]
+
+- name: 2024-25 multipliers, small 49.9p and standard 54.6p
+  period: 2024
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 500_000]
+  output:
+    firm_business_rates_multiplier: [0.499, 0.546, 0.546]
+
+- name: 2025-26 multipliers, small 49.9p and standard 55.5p, RHL pays the same
+  period: 2025
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 50_999, 51_000]
+    firm_is_rhl_property: [false, false, true, true]
+  output:
+    firm_business_rates_multiplier: [0.499, 0.555, 0.499, 0.555]
+
+- name: 2026-27 non-RHL multipliers switch at £51,000 and £500,000
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 499_999, 500_000]
+  output:
+    firm_business_rates_multiplier: [0.432, 0.480, 0.480, 0.508]
+
+- name: 2026-27 RHL multipliers, with high-value 50.8p for all properties
+  period: 2026
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 499_999, 500_000]
+    firm_is_rhl_property: [true, true, true, true]
+  output:
+    firm_business_rates_multiplier: [0.382, 0.430, 0.430, 0.508]
+
+- name: 2027-28 multipliers from BRIL 8/2026
+  period: 2027
+  absolute_error_margin: 0.0001
+  input:
+    firm_rateable_value: [50_999, 51_000, 500_000, 50_999, 51_000, 500_000]
+    firm_is_rhl_property: [false, false, false, true, true, true]
+  output:
+    firm_business_rates_multiplier: [0.447, 0.497, 0.525, 0.395, 0.445, 0.525]

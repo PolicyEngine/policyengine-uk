@@ -1,0 +1,1 @@
+Added a firm entity beside person, benefit unit and household, with firm-level rules for employer National Insurance and the Employment Allowance, the apprenticeship levy, corporation tax with capital allowances, R&D relief and the bank surcharge, business rates in England, firm-side VAT and employer auto-enrolment contributions. Household results are unchanged.

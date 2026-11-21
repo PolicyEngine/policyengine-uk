@@ -1,0 +1,142 @@
+# Agent C's capital allowance and R&D variables are set as inputs so these
+# cases test corporation tax alone.
+- name: Case 1, small profits rate, marginal relief and main rate boundaries in 2026-27.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0, 0, 0, 0]
+    firm_taxable_trading_profit: [50_000, 50_001, 100_000, 250_000, 250_001]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # 50,000 is at the lower limit: 19% x 50,000 = 9,500.
+    # 50,001: 25% x 50,001 = 12,500.25; relief 3/200 x (250,000 - 50,001)
+    #   = 2,999.985; tax 9,500.265.
+    # 100,000: 25,000 - 3/200 x 150,000 = 25,000 - 2,250 = 22,750.
+    # 250,000 is at the upper limit: relief 3/200 x 0 = 0; tax 62,500.
+    # 250,001: 25% x 250,001 = 62,500.25.
+    firm_marginal_relief: [0, 2_999.985, 2_250, 0, 0]
+    corporation_tax_before_credits: [9_500, 9_500.265, 22_750, 62_500, 62_500.25]
+    corporation_tax: [9_500, 9_500.265, 22_750, 62_500, 62_500.25]
+
+- name: Case 2, limits divided by associated companies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [1, 3, 3, 3]
+    firm_taxable_trading_profit: [100_000, 100_000, 12_500, 40_000]
+    firm_capital_allowances: [0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0]
+  output:
+    # One associate: limits 25,000 and 125,000.
+    #   100,000: 25,000 - 3/200 x (125,000 - 100,000) = 25,000 - 375 = 24,625.
+    # Three associates: limits 12,500 and 62,500.
+    #   100,000 is above the upper limit: 25% x 100,000 = 25,000.
+    #   12,500 is at the lower limit: 19% x 12,500 = 2,375.
+    #   40,000: 10,000 - 3/200 x 22,500 = 10,000 - 337.5 = 9,662.5.
+    firm_corporation_tax_lower_limit: [25_000, 12_500, 12_500, 12_500]
+    firm_corporation_tax_upper_limit: [125_000, 62_500, 62_500, 62_500]
+    firm_marginal_relief: [375, 0, 0, 337.5]
+    corporation_tax: [24_625, 25_000, 2_375, 9_662.5]
+
+- name: Case 3, exempt distributions raise augmented profits.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0]
+    firm_taxable_trading_profit: [40_000, 40_000]
+    firm_exempt_distributions: [5_000, 20_000]
+    firm_capital_allowances: [0, 0]
+    firm_rd_additional_deduction: [0, 0]
+    firm_rd_expenditure_credit: [0, 0]
+  output:
+    # Augmented 45,000 is below the lower limit: 19% x 40,000 = 7,600.
+    # Augmented 60,000: 25% x 40,000 = 10,000; relief
+    #   3/200 x (250,000 - 60,000) x 40,000 / 60,000 = 1,900; tax 8,100.
+    firm_augmented_profits: [45_000, 60_000]
+    firm_taxable_profit: [40_000, 40_000]
+    firm_marginal_relief: [0, 1_900]
+    corporation_tax: [7_600, 8_100]
+
+- name: Case 4, profits combine capital allowances, R&D relief and non-trading profits.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_n_associated_companies: 0
+    firm_taxable_trading_profit: 500_000
+    firm_capital_allowances: 100_000
+    firm_rd_additional_deduction: 50_000
+    firm_rd_expenditure_credit: 20_000
+    firm_non_trading_profits: 30_000
+  output:
+    # 500,000 - 100,000 - 50,000 + 20,000 + 30,000 = 400,000.
+    # Tax before credits 25% x 400,000 = 100,000; less RDEC 20,000 = 80,000.
+    firm_profits_before_losses: 400_000
+    corporation_tax_before_credits: 100_000
+    corporation_tax: 80_000
+    firm_rdec_excess_payable: 0
+
+- name: Case 5, R&D expenditure credit above the tax is payable.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_n_associated_companies: 0
+    firm_taxable_trading_profit: 0
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 20_000
+  output:
+    # The taxable credit gives profits of 20,000: 19% x 20,000 = 3,800.
+    # The credit discharges the 3,800 and 20,000 - 3,800 = 16,200 is payable.
+    corporation_tax_before_credits: 3_800
+    corporation_tax: 0
+    firm_rdec_excess_payable: 16_200
+
+- name: Case 6, non-companies pay no corporation tax.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [SOLE_TRADER, PARTNERSHIP, OTHER]
+    firm_taxable_trading_profit: [100_000, 100_000, 100_000]
+    firm_exempt_distributions: [10_000, 10_000, 10_000]
+    firm_capital_allowances: [0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0]
+  output:
+    firm_taxable_profit: [0, 0, 0]
+    firm_augmented_profits: [0, 0, 0]
+    corporation_tax: [0, 0, 0]
+
+- name: Case 7, single main rate before the small profits rate returned.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0]
+    firm_taxable_trading_profit: [40_000, 100_000]
+    firm_capital_allowances: [0, 0]
+    firm_rd_additional_deduction: [0, 0]
+    firm_rd_expenditure_credit: [0, 0]
+  output:
+    # 19% on all profits in 2022-23: 7,600 and 19,000; no marginal relief.
+    firm_marginal_relief: [0, 0]
+    corporation_tax: [7_600, 19_000]
+
+- name: Case 8, 20% main rate in 2016-17.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_taxable_trading_profit: 100_000
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    corporation_tax: 20_000

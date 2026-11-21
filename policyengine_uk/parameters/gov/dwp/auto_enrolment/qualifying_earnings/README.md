@@ -1,0 +1,1 @@
+# Qualifying earnings band

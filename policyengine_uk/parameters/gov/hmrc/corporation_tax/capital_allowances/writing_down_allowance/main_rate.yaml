@@ -1,0 +1,33 @@
+description: Writing-down allowance rate on the main pool of plant and machinery under section 56(1) of the Capital Allowances Act 2001, applied each year to the reducing balance.
+values:
+  2012-04-01:
+    value: 0.18
+    metadata:
+      reference:
+        - title: Finance Act 2011 s 10(2) and (13)(a) (20% to 18% for chargeable periods beginning on or after 1 April 2012 for corporation tax)
+          href: https://www.legislation.gov.uk/ukpga/2011/11/section/10
+  2026-04-01:
+    value: 0.14
+    metadata:
+      reference:
+        - title: Capital Allowances Act 2001 s 56(1), as amended by Finance Act 2026 s 28(1) (18% to 14% from 1 April 2026 for corporation tax)
+          href: https://www.legislation.gov.uk/ukpga/2001/2/section/56
+        - title: HMRC policy paper, Capital allowances - new first year allowance and reducing main rate writing down allowances
+          href: https://www.gov.uk/government/publications/new-first-year-allowance-and-main-rate-of-writing-down-allowances/capital-allowances-new-first-year-allowance-and-reducing-main-rate-writing-down-allowances
+  # Announced at Budget 2026 for Finance Bill 2026-27; not yet enacted.
+  2027-04-01:
+    value: 0.12
+    metadata:
+      reference:
+        - title: HMRC policy paper, Capital allowances - reduce the main rate writing down allowance and increase the main rate first year allowance (Budget 2026; 14% to 12% for chargeable periods beginning on or after 1 April 2027 for corporation tax)
+          href: https://www.gov.uk/government/publications/reduce-the-main-rate-writing-down-allowance-and-increase-the-main-rate-first-year-allowance/capital-allowances-reduce-the-main-rate-writing-down-allowance-and-increase-the-main-rate-first-year-allowance
+metadata:
+  unit: /1
+  period: year
+  label: Main pool writing-down allowance rate
+  # Changes take effect on 1 April for corporation tax, so every model year
+  # (an April to March chargeable period) takes one rate. Unincorporated
+  # businesses change on 6 April; the model gives them the company date.
+  reference:
+    - title: Capital Allowances Act 2001 s 56(1)
+      href: https://www.legislation.gov.uk/ukpga/2001/2/section/56

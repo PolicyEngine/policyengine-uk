@@ -1,0 +1,21 @@
+description: Whether the corporation tax small profits rate and marginal relief apply. They were abolished from 1 April 2015, when a single main rate took over, and reintroduced from 1 April 2023.
+values:
+  2015-04-01:
+    value: false
+    metadata:
+      reference:
+        - title: Finance Act 2014 s. 7 and Sch. 1 (abolition of the small profits rate for non-ring-fence profits)
+          href: https://www.legislation.gov.uk/ukpga/2014/26/section/7/enacted
+  2023-04-01:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2021 s. 7 and Sch. 1 (small profits rate and marginal relief from financial year 2023)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/7
+metadata:
+  unit: bool
+  period: year
+  label: Corporation tax small profits rate applies
+  reference:
+    - title: Corporation Tax Act 2010 ss. 18A to 18N
+      href: https://www.legislation.gov.uk/ukpga/2010/4/part/3

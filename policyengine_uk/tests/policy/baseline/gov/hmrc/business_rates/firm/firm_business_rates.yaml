@@ -1,0 +1,172 @@
+# Margins of 0.1 allow for float32 storage of six-figure amounts.
+- name: 2026-27 small business rate relief, taper and multiplier switch
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [10_000, 13_500, 14_000, 15_000, 50_999, 51_000, 500_000]
+  output:
+    # Gross = RV x multiplier (43.2p below £51,000, 48.0p to £499,999, 50.8p above).
+    # 10,000 x 0.432 = 4,320, SBRR 100% -> 0.
+    # 13,500 x 0.432 = 5,832, SBRR (15,000 - 13,500) / 3,000 = 50% -> 2,916.
+    # 14,000 x 0.432 = 6,048, SBRR 1/3 -> 4,032.
+    # 15,000 x 0.432 = 6,480, SBRR 0%.
+    # 50,999 x 0.432 = 22,031.568.
+    # 51,000 x 0.480 = 24,480.
+    # 500,000 x 0.508 = 254,000.
+    firm_gross_business_rates: [4_320, 5_832, 6_048, 6_480, 22_031.568, 24_480, 254_000]
+    firm_small_business_rate_relief: [4_320, 2_916, 2_016, 0, 0, 0, 0]
+    firm_business_rates: [0, 2_916, 4_032, 6_480, 22_031.568, 24_480, 254_000]
+
+- name: 2026-27 RHL against non-RHL property
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000, 100_000, 13_500]
+    firm_is_rhl_property: [false, true, true]
+  output:
+    # 100,000 x 0.480 = 48,000; 100,000 x 0.430 = 43,000.
+    # 13,500 x 0.382 = 5,157, SBRR 50% (RHL thresholds still £12k/£15k) -> 2,578.5.
+    firm_business_rates: [48_000, 43_000, 2_578.5]
+
+- name: 2027-28 RHL small business rate relief thresholds of £18,000 and £21,000
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [18_000, 19_500, 21_000, 19_500]
+    firm_is_rhl_property: [true, true, true, false]
+  output:
+    # RHL: 18,000 x 0.395 = 7,110, 100% relief -> 0.
+    # 19,500 x 0.395 = 7,702.5, relief (21,000 - 19,500) / 3,000 = 50% -> 3,851.25.
+    # 21,000 x 0.395 = 8,295, relief 0%.
+    # Non-RHL keeps £12k/£15k: 19,500 x 0.447 = 8,716.5, no relief.
+    firm_business_rates: [0, 3_851.25, 8_295, 8_716.5]
+
+- name: Small business rate relief only with one property
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [10_000, 10_000]
+    firm_n_properties: [1, 2]
+  output:
+    # 10,000 x 0.432 = 4,320.
+    firm_business_rates: [0, 4_320]
+
+- name: 2025-26 RHL relief at 40%, cap of £110,000, after SBRR
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000, 1_000_000, 13_500, 100_000]
+    firm_is_rhl_property: [true, true, true, false]
+  output:
+    # 100,000 x 0.555 = 55,500, RHL relief 40% = 22,200 -> 33,300.
+    # 1,000,000 x 0.555 = 555,000, 40% = 222,000 capped at 110,000 -> 445,000.
+    # 13,500 x 0.499 = 6,736.5, SBRR 50% = 3,368.25, RHL 40% of the remaining
+    # 3,368.25 = 1,347.30 -> 2,020.95.
+    # Non-RHL: 55,500.
+    firm_retail_hospitality_leisure_rate_relief: [22_200, 110_000, 1_347.3, 0]
+    firm_business_rates: [33_300, 445_000, 2_020.95, 55_500]
+
+- name: 2024-25 RHL relief at 75%
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000]
+    firm_is_rhl_property: [true]
+  output:
+    # 100,000 x 0.546 = 54,600, relief 75% = 40,950 -> 13,650.
+    firm_business_rates: [13_650]
+
+- name: RHL relief ended on 31 March 2026
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000]
+    firm_is_rhl_property: [true]
+  output:
+    firm_retail_hospitality_leisure_rate_relief: [0]
+
+- name: Mandatory charitable relief of 80%, instead of SBRR, before RHL relief
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000, 10_000]
+    firm_is_charity: [true, true]
+  output:
+    # 100,000 x 0.480 = 48,000, relief 38,400 -> 9,600.
+    # 10,000 x 0.432 = 4,320, charity relief 3,456 and no SBRR -> 864.
+    firm_charitable_rate_relief: [38_400, 3_456]
+    firm_small_business_rate_relief: [0, 0]
+    firm_business_rates: [9_600, 864]
+
+- name: Charity with RHL relief in 2025-26 (guidance Example 3 order)
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000]
+    firm_is_charity: [true]
+    firm_is_rhl_property: [true]
+  output:
+    # 55,500 - 80% (44,400) = 11,100; RHL relief 40% = 4,440 -> 6,660.
+    firm_business_rates: [6_660]
+
+- name: Empty property, 3 months exempt (6 for industrial), then full rates
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [100_000, 100_000, 100_000, 100_000, 10_000]
+    firm_property_occupied: [false, false, false, false, false]
+    firm_is_industrial_property: [false, true, false, false, false]
+    firm_months_empty: [0, 0, 3, 2, 0]
+  output:
+    # Gross 100,000 x 0.480 = 48,000.
+    # 3 of 12 months exempt: 12,000 -> 36,000.
+    # Industrial, 6 of 12 months exempt: 24,000 -> 24,000.
+    # Already empty 3 months: no exemption left -> 48,000.
+    # Already empty 2 months: 1 month left, 4,000 -> 44,000.
+    # 10,000 x 0.432 = 4,320, no SBRR when empty, 3 months exempt 1,080 -> 3,240.
+    firm_empty_property_rates_exemption: [12_000, 24_000, 0, 4_000, 1_080]
+    firm_business_rates: [36_000, 24_000, 48_000, 44_000, 3_240]
+
+- name: Pubs and live music venues relief, 15% in 2026-27
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [40_000]
+    firm_is_rhl_property: [true]
+    firm_is_pub_or_live_music_venue: [true]
+  output:
+    # 40,000 x 0.382 = 15,280, relief 15% = 2,292 -> 12,988.
+    firm_business_rates: [12_988]
+
+- name: Pubs and live music venues relief, 35% in 2027-28 and 15% at £1m or more
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [40_000, 1_000_000]
+    firm_is_rhl_property: [true, true]
+    firm_is_pub_or_live_music_venue: [true, true]
+  output:
+    # 40,000 x 0.395 = 15,800, relief 35% = 5,530 -> 10,270.
+    # 1,000,000 x 0.525 = 525,000, relief 15% = 78,750 -> 446,250.
+    firm_pubs_and_live_music_venues_rate_relief: [5_530, 78_750]
+    firm_business_rates: [10_270, 446_250]
+
+- name: No pubs relief after 31 March 2029
+  period: 2029
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [40_000]
+    firm_is_rhl_property: [true]
+    firm_is_pub_or_live_music_venue: [true]
+  output:
+    # 40,000 x 0.395 = 15,800 (2027-28 multiplier carried forward).
+    firm_business_rates: [15_800]
+
+- name: Property outside England is not modelled
+  period: 2026
+  input:
+    firm_rateable_value: [100_000]
+    firm_in_england: [false]
+  output:
+    firm_gross_business_rates: [0]
+    firm_business_rates: [0]

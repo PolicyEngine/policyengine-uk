@@ -1,0 +1,21 @@
+description: Qualifying retail, hospitality and leisure (RHL) properties with rateable value at or below this amount get 100% small business rate relief in England.
+# Budget 2026 raises the RHL threshold to £18,000 from 1 April 2027 "until
+# 31/3/29" (BRIL 8/2026 Annex para 5(b)); the 2029-04-01 value restores the
+# general threshold, as nothing yet extends it. Vape shops lose SBRR and adult
+# gaming centres keep the £12,000/£15,000 thresholds (para 5(a), (c)); not
+# modelled.
+values:
+  2017-04-01: 12_000
+  2027-04-01: 18_000
+  2029-04-01: 12_000
+metadata:
+  label: Small business rate relief RHL full relief threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Local Government Finance Act 1988 Schedule 4ZA para 4 (small business rate relief, conditions prescribed by the Secretary of State)
+      href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
+    - title: GOV.UK, Small business rate relief (100% at £12,000 or less, tapering to 0% at £15,000; 50% at £13,500)
+      href: https://www.gov.uk/apply-for-business-rate-relief/small-business-rate-relief
+    - title: Business Rates Information Letter 8/2026, Technical Annex para 5(b) (RHL thresholds £12,000 to £18,000 and £15,000 to £21,000 until 31/3/29)
+      href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028

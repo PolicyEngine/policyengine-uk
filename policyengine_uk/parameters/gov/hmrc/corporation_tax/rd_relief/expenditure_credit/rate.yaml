@@ -1,0 +1,41 @@
+description: Research and development expenditure credit as a share of qualifying expenditure. It is the large-company credit under section 104M of the Corporation Tax Act 2009 before April 2024 and the merged scheme credit under section 1042G from then. The credit is a taxable receipt of the trade.
+values:
+  2015-04-01:
+    value: 0.11
+    metadata:
+      reference:
+        - title: Finance Act 2015 s 27(2) and (5) (10% to 11% for expenditure incurred on or after 1 April 2015)
+          href: https://www.legislation.gov.uk/ukpga/2015/11/section/27
+  2018-01-01:
+    value: 0.12
+    metadata:
+      reference:
+        - title: Finance Act 2018 s 19 (11% to 12% for expenditure incurred on or after 1 January 2018)
+          href: https://www.legislation.gov.uk/ukpga/2018/3/section/19
+  2020-04-01:
+    value: 0.13
+    metadata:
+      reference:
+        - title: Finance Act 2020 s 28 (12% to 13% for expenditure incurred on or after 1 April 2020)
+          href: https://www.legislation.gov.uk/ukpga/2020/14/section/28
+  2023-04-01:
+    value: 0.2
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 104M(3), as amended by Finance Act 2023 s 4(2) (20% for expenditure incurred on or after 1 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/104M/2023-04-01
+  2024-04-01:
+    value: 0.2
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1042G(1)(b) (merged scheme, 20% in any case other than a ring fence trade)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1042G
+metadata:
+  unit: /1
+  period: year
+  label: R&D expenditure credit rate
+  # Each April to March year takes the rate in force on 30 April, so the 12%
+  # rate from 1 January 2018 first applies in 2018.
+  reference:
+    - title: Corporation Tax Act 2009 s 1042G
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1042G

@@ -1,0 +1,66 @@
+# 2025-26: secondary threshold 96.153846 x 52 = 5,000; rate 15%; EA 10,500.
+- name: Case 1, firm employer NICs in 2025-26 with and without the EA binding.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 40_000, 2_000_000]
+    firm_employees: [10, 2, 40]
+  output:
+    # 300,000 - 10 x 5,000 = 250,000; 40,000 - 2 x 5,000 = 30,000;
+    # 2,000,000 - 40 x 5,000 = 1,800,000.
+    firm_class_1_earnings_above_secondary_threshold: [250_000, 30_000, 1_800_000]
+    # 15% of each.
+    firm_employer_ni_before_allowance: [37_500, 4_500, 270_000]
+    # min(10,500, liability).
+    employment_allowance: [10_500, 4_500, 10_500]
+    firm_employer_ni: [27_000, 0, 259_500]
+
+# 2024-25: secondary threshold 175 x 52 = 9,100; rate 13.8%; EA 5,000.
+- name: Case 2, firm employer NICs in 2024-25.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    # 300,000 - 91,000 = 209,000; x 0.138 = 28,842; less 5,000.
+    firm_class_1_earnings_above_secondary_threshold: [209_000]
+    firm_employer_ni_before_allowance: [28_842]
+    employment_allowance: [5_000]
+    firm_employer_ni: [23_842]
+
+- name: Case 3, zero-rated earnings for under-21s, apprentices and freeport staff.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000]
+    firm_employees: [10, 10]
+    firm_zero_rated_class_1_earnings: [50_000, 400_000]
+  output:
+    # (250,000 - 50,000) x 15% = 30,000; zero-rated above the base gives 0.
+    firm_employer_ni_before_allowance: [30_000, 0]
+    employment_allowance: [10_500, 0]
+    firm_employer_ni: [19_500, 0]
+
+- name: Case 4, supplied earnings above the threshold override the average-pay default.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+  output:
+    # 100,000 x 15% = 15,000; less 10,500.
+    firm_employer_ni_before_allowance: [15_000]
+    firm_employer_ni: [4_500]
+
+- name: Case 5, a paybill below the headcount times the threshold gives no NICs.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [40_000, 0]
+    firm_employees: [10, 0]
+  output:
+    # 40,000 - 50,000 < 0.
+    firm_class_1_earnings_above_secondary_threshold: [0, 0]
+    firm_employer_ni: [0, 0]

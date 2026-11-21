@@ -1,0 +1,10 @@
+description: Pubs and live music venues with rateable value at or above this amount get the large venue rate of relief in England.
+values:
+  2027-04-01: 1_000_000
+metadata:
+  label: Pubs and live music venues relief large venue threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Business Rates Information Letter 8/2026, Technical Annex para 6(b)
+      href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028

@@ -14,11 +14,12 @@ from policyengine_core.parameters.operations.propagate_parameter_metadata import
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.populations import Population
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
 # PolicyEngine UK imports
-from policyengine_uk.entities import BenUnit, Household, Person
+from policyengine_uk.entities import BenUnit, Firm, Household, Person
 from policyengine_uk.data.capital_gains_projection import (
     CapitalGainsProjection,
     add_capital_gains_projection,
@@ -277,11 +278,77 @@ def process_parameter_tree(
     return parameters, projected
 
 
+def _root_entities(system: TaxBenefitSystem) -> list:
+    """The entities of ``system`` whose populations stand on their own, with
+    no members: those that are neither its person entity nor a group entity
+    (the firm; see ``policyengine_uk.entities``)."""
+    own = {system.person_entity.key, *system.group_entity_keys}
+    return [entity for entity in system.entities if entity.key not in own]
+
+
+class RootPopulation(Population):
+    """The population of a root entity (the firm's): records of their own,
+    with no members.
+
+    Core treats any non-group population as people, so ``firm.household``
+    would otherwise project household values onto the people, not the firms,
+    and return an array of the wrong length. A root population refuses those
+    shortcuts. Its clones (for branches, copies and reforms) are root
+    populations too."""
+
+    def __getattr__(self, attribute: str):
+        simulation = self.__dict__.get("simulation")
+        populations = getattr(simulation, "populations", None) or {}
+        if attribute in populations:
+            entity = self.__dict__.get("entity")
+            key = entity.key if entity is not None else "root"
+            raise AttributeError(
+                f"A {key} has no members, so {key} formulas cannot read "
+                f"{attribute} values through {key}.{attribute}."
+            )
+        return super().__getattr__(attribute)
+
+    def clone(self, simulation, share_arrays: bool = False) -> "RootPopulation":
+        sharing = {"share_arrays": True} if share_arrays else {}
+        result = super().clone(simulation, **sharing)
+        result.__class__ = RootPopulation
+        return result
+
+
+def _instantiate_entities_with_root_populations(self) -> dict:
+    """Core's populations (people and their groups) and an empty population
+    of each root entity. A root population has no records until a
+    situation, dataset or ``Simulation.build_from_ids`` gives it some.
+
+    This replaces ``TaxBenefitSystem.instantiate_entities`` rather than
+    overriding it in ``CountryTaxBenefitSystem``: a core ``Reform`` (as the
+    YAML test runner builds for a test's reforms and parameter changes) is a
+    ``TaxBenefitSystem`` built from this system's entities, not a
+    ``CountryTaxBenefitSystem``, and its simulations need the firm
+    population too. For a system with no root entities it returns what core
+    returns."""
+    populations = _core_instantiate_entities(self)
+    for entity in _root_entities(self):
+        populations.setdefault(entity.key, RootPopulation(entity))
+    return populations
+
+
+_core_instantiate_entities = getattr(
+    TaxBenefitSystem.instantiate_entities,
+    "_core_instantiate_entities",
+    TaxBenefitSystem.instantiate_entities,
+)
+_instantiate_entities_with_root_populations._core_instantiate_entities = (
+    _core_instantiate_entities
+)
+TaxBenefitSystem.instantiate_entities = _instantiate_entities_with_root_populations
+
+
 class CountryTaxBenefitSystem(TaxBenefitSystem):
     """UK-specific tax and benefit system implementation.
 
     This class defines the UK tax-benefit system with all relevant
-    variables, parameters, and entities (Person, BenUnit, Household).
+    variables, parameters, and entities (Person, BenUnit, Household, Firm).
     """
 
     basic_inputs: List[str] = [
@@ -564,7 +631,10 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def __init__(self, capital_gains_projection: CapitalGainsProjection | None = None):
         """Initialize the UK tax-benefit system with entities and parameters."""
-        super().__init__(entities=[Person, BenUnit, Household])
+        # Person first: core takes the first ``is_person`` entity as the
+        # person entity. Firm is a root entity (see ``entities.py``) and must
+        # come after it, so it is neither the person entity nor a group one.
+        super().__init__(entities=[Person, BenUnit, Household, Firm])
         self.capital_gains_projection = capital_gains_projection
 
         # Load all variables from the variables directory

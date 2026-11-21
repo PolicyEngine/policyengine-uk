@@ -1,0 +1,29 @@
+description: Annual earnings up to which earnings count as qualifying earnings for automatic enrolment pension contributions.
+# UNVERIFIED for years before 2019-20: the first value is the 2019-20 band and
+# earlier bands are not encoded, so the model applies £50,000 to earlier years.
+values:
+  2019-04-06:
+    value: 50_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2019/374 art 2(b)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2019-04-06
+  2021-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2021/314 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13
+  2026-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: "DWP: Review of the automatic enrolment earnings trigger and qualifying earnings band for 2026/27"
+          href: https://www.gov.uk/government/publications/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Automatic enrolment qualifying earnings upper limit
+  reference:
+    - title: Pensions Act 2008 s.13(1)(b)
+      href: https://www.legislation.gov.uk/ukpga/2008/30/section/13

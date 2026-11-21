@@ -1,0 +1,23 @@
+description: Share of a company's relevant profits above the deductions allowance against which corporation tax losses carried forward can be relieved. Before 1 April 2017 carried-forward trade losses were relieved in full against later profits of the trade, represented here as a share of 1.
+values:
+  2015-04-01:
+    value: 1
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2010 s. 45(4) (as enacted)
+          href: https://www.legislation.gov.uk/ukpga/2010/4/section/45/enacted
+  2017-04-01:
+    value: 0.5
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2010 s. 269ZD(4) and s. 269ZFA
+          href: https://www.legislation.gov.uk/ukpga/2010/4/section/269ZD
+        - title: Finance (No. 2) Act 2017 Sch. 4 para. 190 (accounting periods from 1 April 2017)
+          href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/4/paragraph/190
+metadata:
+  unit: /1
+  period: year
+  label: Corporation tax carried-forward losses restriction rate
+  reference:
+    - title: Corporation Tax Act 2010 s. 269ZD(4)
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/269ZD

@@ -1,0 +1,77 @@
+# Flat rate scheme (VAT Regulations 1995 Part VIIA; Notice 733).
+# Liability = flat rate % x VAT-inclusive turnover (all supplies incl. VAT,
+# exempt included). No input VAT recovery. Joining limit £150,000 taxable
+# turnover ex-VAT. Limited cost trader rate 16.5%; default sector rate 12%
+# ("any other activity not listed elsewhere").
+
+- name: Limited cost trader pays 16.5%, other firm the 12% default
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: [100_000, 100_000]
+    firm_input_vat: [3_000, 3_000]
+    firm_uses_flat_rate_scheme: [true, true]
+    firm_is_limited_cost_trader: [true, false]
+  output:
+    firm_flat_rate_scheme_eligible: [true, true]
+    # 100,000 * 1.2 = 120,000
+    firm_flat_rate_turnover: [120_000, 120_000]
+    firm_flat_rate_percentage: [0.165, 0.12]
+    # 120,000 * 0.165 = 19,800; 120,000 * 0.12 = 14,400
+    firm_vat_flat_rate_liability: [19_800, 14_400]
+    # Normal would be 20,000 - 3,000 = 17,000
+    firm_vat_normal_liability: [17_000, 17_000]
+    firm_vat: [19_800, 14_400]
+
+- name: Flat rate turnover includes zero-rated and exempt supplies
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 80_000
+    firm_zero_rated_supplies: 20_000
+    firm_exempt_supplies: 10_000
+    firm_uses_flat_rate_scheme: true
+  output:
+    # Taxable 80,000 + 20,000 = 100,000 > 90,000, so registered
+    firm_vat_registered: true
+    # 80,000 * 1.2 + 20,000 + 10,000 = 126,000
+    firm_flat_rate_turnover: 126_000
+    # 126,000 * 0.12 = 15,120
+    firm_vat: 15_120
+
+- name: Firm above the £150,000 joining limit uses normal accounting
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: [150_000, 160_000]
+    firm_input_vat: [10_000, 10_000]
+    firm_uses_flat_rate_scheme: [true, true]
+  output:
+    firm_flat_rate_scheme_eligible: [true, false]
+    # A: 150,000 * 1.2 * 0.12 = 21,600 (flat rate)
+    # B: 160,000 * 0.2 - 10,000 = 22,000 (normal)
+    firm_vat_liability_if_registered: [21_600, 22_000]
+    firm_vat: [21_600, 22_000]
+
+- name: A supplied sector percentage replaces the default
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 100_000
+    firm_uses_flat_rate_scheme: true
+    firm_flat_rate_sector_percentage: 0.145
+  output:
+    # 120,000 * 0.145 = 17,400
+    firm_vat: 17_400
+
+- name: An unregistered firm electing the flat rate scheme pays nothing
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 50_000
+    firm_uses_flat_rate_scheme: true
+  output:
+    firm_vat_registered: false
+    # 50,000 * 1.2 * 0.12 = 7,200 if registered
+    firm_vat_liability_if_registered: 7_200
+    firm_vat: 0

@@ -1,0 +1,27 @@
+description: Standard non-domestic rating multiplier for England, for properties with rateable value from the small business threshold up to the high-value threshold that are not retail, hospitality or leisure (RHL) properties.
+# Dates are the start of each English rating year (1 April). England only:
+# Scotland (poundage), Wales and Northern Ireland set their own rates.
+# 2023-24 is 51.2p (BRIL 1/2023); 54.6p is the 2024-25 value (BRIL 1/2024).
+values:
+  2023-04-01: 0.512
+  2024-04-01: 0.546
+  2025-04-01: 0.555
+  2026-04-01: 0.480
+  2027-04-01: 0.497
+metadata:
+  label: Business rates standard multiplier
+  unit: /1
+  period: year
+  reference:
+    - title: Local Government Finance Act 1988 Schedule 4ZA para 10 and Schedule 7 (multipliers)
+      href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
+    - title: Business Rates Information Letter 1/2023, notice of the 2023-24 multipliers (small business 49.9p, standard 51.2p)
+      href: https://assets.publishing.service.gov.uk/media/63eceb47d3bf7f62e8c34981/BRIL_1-_multiplier___demand_notice_-_14_Feb.pdf
+    - title: Business Rates Information Letter 1/2024 (2024-25 multipliers, standard 54.6p, small business 49.9p)
+      href: https://www.gov.uk/government/publications/12024-confirmation-of-business-rates-multipliers-and-relief-information/12024-confirmation-of-business-rates-multipliers-and-relief-information
+    - title: MHCLG, National non-domestic rates collected by councils in England, forecast 2025 to 2026 (2025-26 multipliers, standard 55.5p, small business 49.9p)
+      href: https://www.gov.uk/government/statistics/national-non-domestic-rates-collected-by-councils-in-england-forecast-2025-to-2026/national-non-domestic-rates-collected-by-councils-in-england-forecast-for-2025-to-2026
+    - title: Business Rates Information Letter 5/2025, para 2 (2026-27 multipliers)
+      href: https://www.gov.uk/government/publications/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027
+    - title: Business Rates Information Letter 8/2026, main letter para 7 (2027-28 multipliers)
+      href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028

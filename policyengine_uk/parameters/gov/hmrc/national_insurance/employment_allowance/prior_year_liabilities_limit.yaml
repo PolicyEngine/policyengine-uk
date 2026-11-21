@@ -1,0 +1,27 @@
+description: Secondary Class 1 liabilities in the previous tax year at or above which an employer cannot qualify for the Employment Allowance.
+# s.2(4B) excluded an employer whose qualifying secondary Class 1 liabilities
+# for the previous tax year, together with those of connected companies or
+# charities, were £100,000 or more. It applied from 6 April 2020 (SI 2020/218)
+# and was omitted from 6 April 2025 by the National Insurance Contributions
+# (Secondary Class 1 Contributions) Act 2025 s.3. Infinity means no limit.
+values:
+  0000-01-01: .inf
+  2020-04-06:
+    value: 100_000
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.2(4B), inserted by SI 2020/218 reg 3
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/2/2020-04-06
+  2025-04-06:
+    value: .inf
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.2(4B)-(4G), omitted by the National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.3
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/2
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Employment Allowance prior-year liabilities limit
+  reference:
+    - title: National Insurance Contributions Act 2014 s.2(4B)
+      href: https://www.legislation.gov.uk/ukpga/2014/7/section/2/2020-04-06

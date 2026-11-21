@@ -86,6 +86,7 @@ class UKSingleYearDataset:
         energy_price_basis: dict[str, str | int] | EnergyPriceBasis | None = None,
         isa_income_contract: dict | None = None,
         savings_income_projection: str | None = None,
+        firm: pd.DataFrame | None = None,
     ):
         basis = parse_energy_price_basis(energy_price_basis)
         file_path = str(file_path) if file_path else None
@@ -105,6 +106,8 @@ class UKSingleYearDataset:
                 self._person = f["person"]
                 self._benunit = f["benunit"]
                 self._household = f["household"]
+                # Optional: a dataset of households alone has no firm table.
+                self._firm = f["firm"] if "/firm" in f.keys() else None
                 self.time_period = str(f["time_period"].iloc[0])
             basis = merge_energy_price_basis(basis, read_energy_price_basis(file_path))
         else:
@@ -126,6 +129,7 @@ class UKSingleYearDataset:
             self._person = person
             self._benunit = benunit
             self._household = household
+            self._firm = firm
             self.time_period = str(fiscal_year)
 
         self._energy_price_basis = basis
@@ -139,7 +143,8 @@ class UKSingleYearDataset:
         )
         self.data_format = "arrays"
         # tables tuple points at the raw (int16) DataFrames used by the
-        # simulation engine internals - do not decode these.
+        # simulation engine internals - do not decode these. It holds the
+        # household-side tables only: the optional firm table is ``firm``.
         self.tables = (self._person, self._benunit, self._household)
         self.table_names = ("person", "benunit", "household")
         # Populated by _pre_encode_enum_columns in simulation.py after the
@@ -199,12 +204,27 @@ class UKSingleYearDataset:
         self._household = df
         self.tables = (self._person, self._benunit, self._household)
 
+    @property
+    def firm(self) -> pd.DataFrame | None:
+        """The firm table, one row per firm, or None for a dataset without
+        firms. Kept out of ``tables`` and ``table_names``, which hold the
+        household-side tables that uprating and subsampling read."""
+        if self._firm is None:
+            return None
+        return self._decode_enum_df(self._firm)
+
+    @firm.setter
+    def firm(self, df: pd.DataFrame | None):
+        self._firm = df
+
     def save(self, file_path: str):
         contract = validate_contract(self.isa_income_contract)
         with pd.HDFStore(file_path) as f:
             f.put("person", self.person, format="table", data_columns=True)
             f.put("benunit", self.benunit, format="table", data_columns=True)
             f.put("household", self.household, format="table", data_columns=True)
+            if self._firm is not None:
+                f.put("firm", self.firm, format="table", data_columns=True)
             f.put("time_period", pd.Series([self.time_period]), format="table")
         write_energy_price_basis(file_path, self._energy_price_basis)
         with h5py.File(file_path, "a") as f:
@@ -215,7 +235,9 @@ class UKSingleYearDataset:
 
     def load(self):
         data = {}
-        for df in (self.person, self.benunit, self.household):
+        for df in (self.person, self.benunit, self.household, self.firm):
+            if df is None:
+                continue
             for col in df.columns:
                 data[col] = df[col].values
 
@@ -226,6 +248,7 @@ class UKSingleYearDataset:
             person=self.person.copy(),
             benunit=self.benunit.copy(),
             household=self.household.copy(),
+            firm=None if self._firm is None else self.firm.copy(),
             fiscal_year=self.time_period,
             energy_price_basis=self._energy_price_basis,
             isa_income_contract=validate_contract(self.isa_income_contract),
@@ -234,7 +257,8 @@ class UKSingleYearDataset:
 
     def validate(self):
         # Check for NaNs in the tables
-        for df in self.tables:
+        tables = self.tables if self._firm is None else (*self.tables, self._firm)
+        for df in tables:
             for col in df.columns:
                 if df[col].isna().any():
                     raise ValueError(f"Column '{col}' contains NaN values.")
@@ -262,10 +286,31 @@ class UKSingleYearDataset:
                     input_variables, period=fiscal_year
                 )
 
+        # The firm table, only for a simulation with firms: one row per firm,
+        # in the population's order, with every firm input.
+        firm = None
+        firm_population = getattr(simulation, "populations", {}).get("firm")
+        if firm_population is not None and firm_population.count > 0:
+            firm_variables = [
+                variable
+                for variable in simulation.input_variables
+                if simulation.tax_benefit_system.variables[variable].entity.key
+                == "firm"
+            ]
+            firm = pd.DataFrame(
+                {
+                    variable: np.asarray(simulation.calculate(variable, fiscal_year))
+                    for variable in firm_variables
+                }
+            )
+            if "firm_id" not in firm.columns:
+                firm["firm_id"] = np.arange(firm_population.count)
+
         return UKSingleYearDataset(
             person=entity_dfs["person"],
             benunit=entity_dfs["benunit"],
             household=entity_dfs["household"],
+            firm=firm,
             fiscal_year=fiscal_year,
             energy_price_basis=energy_price_basis,
             isa_income_contract=simulation_contract(simulation, fiscal_year),
@@ -316,10 +361,13 @@ class UKMultiYearDataset:
                         person_df = f[year]
                         benunit_df = f[f"/benunit/{fiscal_year}"]
                         household_df = f[f"/household/{fiscal_year}"]
+                        firm_key = f"/firm/{fiscal_year}"
+                        firm_df = f[firm_key] if firm_key in f.keys() else None
                         self.datasets[fiscal_year] = UKSingleYearDataset(
                             person=person_df,
                             benunit=benunit_df,
                             household=household_df,
+                            firm=firm_df,
                             fiscal_year=fiscal_year,
                             isa_income_contract=contracts[fiscal_year],
                             savings_income_projection=stored_savings_rule,
@@ -385,6 +433,13 @@ class UKMultiYearDataset:
                     format="table",
                     data_columns=True,
                 )
+                if dataset.firm is not None:
+                    f.put(
+                        f"firm/{year}",
+                        dataset.firm,
+                        format="table",
+                        data_columns=True,
+                    )
                 f.put(
                     f"time_period/{year}",
                     pd.Series([year]),
@@ -456,7 +511,14 @@ class UKMultiYearDataset:
     def load(self):
         data = {}
         for year, dataset in self.datasets.items():
-            for df in (dataset.person, dataset.benunit, dataset.household):
+            for df in (
+                dataset.person,
+                dataset.benunit,
+                dataset.household,
+                dataset.firm,
+            ):
+                if df is None:
+                    continue
                 for col in df.columns:
                     if col not in data:
                         data[col] = {}

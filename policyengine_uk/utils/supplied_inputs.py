@@ -77,6 +77,7 @@ from policyengine_core import periods
 from policyengine_core.holders.helpers import _is_input as _stored_as_input_in
 from policyengine_core.holders.helpers import get_stored_input
 from policyengine_core.periods import Period
+from policyengine_core.populations import GroupPopulation
 from policyengine_core.simulations.simulation import _latest_input_key
 
 
@@ -732,9 +733,14 @@ def copy_other_populations(simulation, populations):
             simulation, share_arrays=True
         )
     for key in copied - {person_key}:
-        result[key] = populations[key].clone(
-            simulation, result[person_key], share_arrays=True
-        )
+        population = populations[key]
+        if isinstance(population, GroupPopulation):
+            result[key] = population.clone(
+                simulation, result[person_key], share_arrays=True
+            )
+        else:
+            # A root population (the firm's) has no members.
+            result[key] = population.clone(simulation, share_arrays=True)
     adopted = []
     for (key, name), record in records.items():
         population = result[key]

@@ -1,0 +1,10 @@
+description: >-
+  Share of a change in firm-only tax liability that falls on owners of capital, allocated by each household's shareholding.
+values:
+  2010-01-01: 1
+metadata:
+  label: Firm tax capital incidence
+  unit: /1
+  reference:
+    - title: PolicyEngine-UK corporate-incident tax allocation by shareholding (corporate_incident_tax_revenue_change)
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/70014b3c12dea44773d0b06370416ed12e64f32e/policyengine_uk/variables/contrib/policyengine/corporate_incident_tax_revenue_change.py

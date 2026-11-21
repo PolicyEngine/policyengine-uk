@@ -1,0 +1,33 @@
+description: Retail, hospitality and leisure (RHL) relief in England, as a share of the rates bill left after mandatory reliefs.
+# Earlier schemes (before 2023-24) are not encoded; the model backdates the
+# 2023-24 value to those years. The relief ended on 31 March 2026,
+# when the RHL multipliers replaced it.
+values:
+  2023-04-01:
+    value: 0.75
+    metadata:
+      reference:
+        - title: Business Rates Relief, 2023/24 Retail, Hospitality and Leisure Scheme, paras 5 and 14(a)
+          href: https://www.gov.uk/government/publications/business-rates-relief-202324-retail-hospitality-and-leisure-scheme-local-authority-guidance/business-rates-relief-202324-retail-hospitality-and-leisure-scheme
+  2024-04-01:
+    value: 0.75
+    metadata:
+      reference:
+        - title: Business Rates Relief, 2024/25 Retail, Hospitality and Leisure Scheme, paras 5 and 14(a)
+          href: https://www.gov.uk/guidance/business-rates-relief-202425-retail-hospitality-and-leisure-scheme
+  2025-04-01:
+    value: 0.40
+    metadata:
+      reference:
+        - title: Business Rates Relief, 2025/26 Retail, Hospitality and Leisure Scheme, para 14(a)
+          href: https://www.gov.uk/guidance/business-rates-relief-202526-retail-hospitality-and-leisure-scheme
+  2026-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: GOV.UK, Retail, hospitality and leisure relief (no new claims; from 1 April 2026 bills use the RHL multipliers)
+          href: https://www.gov.uk/apply-for-business-rate-relief/retail-discount
+metadata:
+  label: Retail, hospitality and leisure relief rate
+  unit: /1
+  period: year

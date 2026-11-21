@@ -1,0 +1,21 @@
+description: Additional deduction a small or medium-sized enterprise takes in computing trading profits, as a share of its qualifying research and development expenditure, under section 1044(8) of the Corporation Tax Act 2009. From April 2024 only loss-making R&D intensive SMEs claim it, as enhanced R&D intensive support.
+values:
+  2015-04-01:
+    value: 1.3
+    metadata:
+      reference:
+        - title: Finance Act 2015 s 27(3)(a) and (5) (125% to 130% for expenditure incurred on or after 1 April 2015)
+          href: https://www.legislation.gov.uk/ukpga/2015/11/section/27
+  2023-04-01:
+    value: 0.86
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1044(8), as amended by Finance Act 2023 s 4(3)(a) (86% for expenditure incurred on or after 1 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1044/2023-04-01
+metadata:
+  unit: /1
+  period: year
+  label: R&D SME additional deduction rate
+  reference:
+    - title: Corporation Tax Act 2009 s 1044(8)
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1044

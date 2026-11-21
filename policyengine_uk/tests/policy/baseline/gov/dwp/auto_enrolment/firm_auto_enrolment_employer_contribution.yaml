@@ -1,0 +1,53 @@
+# 2025-26 band 6,240 to 50,270 (width 44,030); employer minimum 3%.
+- name: Case 1, average-pay qualifying earnings and the 3% employer minimum.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 40_000, 0, 1_000_000]
+    firm_employees: [10, 10, 0, 10]
+  output:
+    # Average pay 30,000: (30,000 - 6,240) x 10 = 237,600.
+    # Average 4,000 is below the lower limit: 0. No employees: 0.
+    # Average 100,000 is capped at the band width: 44,030 x 10 = 440,300.
+    firm_auto_enrolment_qualifying_earnings: [237_600, 0, 0, 440_300]
+    # 3% of each.
+    firm_auto_enrolment_employer_contribution: [7_128, 0, 0, 13_209]
+
+- name: Case 2, 2019-20 band of 6,136 to 50,000.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    # (30,000 - 6,136) x 10 = 238,640; x 3% = 7,159.2.
+    firm_auto_enrolment_qualifying_earnings: [238_640]
+    firm_auto_enrolment_employer_contribution: [7_159.2]
+
+- name: Case 3, supplied qualifying earnings override the default.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    firm_auto_enrolment_employer_contribution: [3_000]
+
+- name: Case 4, transitional employer minimums of 1% and 2%.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    # 2017-18 is in the first transitional period: 1%.
+    firm_auto_enrolment_employer_contribution: [1_000]
+
+- name: Case 5, second transitional period.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    # 2018-19: 2%.
+    firm_auto_enrolment_employer_contribution: [2_000]

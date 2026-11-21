@@ -1,0 +1,14 @@
+description: A business may join the VAT flat rate scheme if it expects the value of its taxable supplies (excluding VAT) in the next year to be no more than this amount.
+values:
+  # UNVERIFIED start date: the £150,000 figure is verified in regulation 55L(1)(a)(i)
+  # and Notice 733 section 2.5; the date it took effect (believed 1 April 2004) is not.
+  2004-04-01: 150_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT flat rate scheme joining threshold
+  reference:
+    - title: Value Added Tax Regulations 1995, regulation 55L(1)(a)(i)
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/55L
+    - title: VAT Notice 733, section 2.5
+      href: https://www.gov.uk/guidance/flat-rate-scheme-for-small-businesses-vat-notice-733--2
