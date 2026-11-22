@@ -15,8 +15,10 @@ class firm_small_business_rate_relief(Variable):
         "a charity, which gets charitable relief instead. Not modelled: "
         "relief kept on the main property when the other properties are each "
         "under £2,900 and in total under £20,000 (£28,000 in London), the "
-        "grace period after taking on a second property, and the exclusion "
-        "of vape shops."
+        "grace period after taking on a second property, the exclusion "
+        "of vape shops, and the rounding of the taper factor to three "
+        "decimal places in SI 2017/102 art 3(5), which can withhold a few "
+        "pounds of relief just below the taper end."
     )
     definition_period = YEAR
     unit = GBP

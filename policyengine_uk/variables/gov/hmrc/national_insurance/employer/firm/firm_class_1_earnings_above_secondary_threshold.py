@@ -22,7 +22,11 @@ class firm_class_1_earnings_above_secondary_threshold(Variable):
         "earnings period. Inconsistent inputs are clipped silently: the "
         "headcount at or below the threshold is floored at zero and capped "
         "at firm_employees, and their paybill is floored at zero and capped "
-        "at the lower of firm_paybill and that headcount times the threshold."
+        "at the lower of the paybill and that headcount times the threshold. "
+        "The paybill is firm_paybill_after_minimum_wage, firm_paybill plus "
+        "any pay needed to meet the minimum wage; with a pay split supplied, "
+        "that extra pay all falls in the remaining group, which overstates "
+        "the base if the low-paid staff are at or below the threshold."
     )
     definition_period = YEAR
     unit = GBP
@@ -38,7 +42,7 @@ class firm_class_1_earnings_above_secondary_threshold(Variable):
         secondary_threshold = (
             class_1.employer_scale.components[1].threshold * WEEKS_IN_YEAR
         )
-        paybill = firm("firm_paybill", period)
+        paybill = firm("firm_paybill_after_minimum_wage", period)
         employees = firm("firm_employees", period)
         employees_below = min_(
             max_(firm("firm_employees_below_secondary_threshold", period), 0),

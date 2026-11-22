@@ -16,3 +16,36 @@
     firm_gross_business_rates: [5_184, 5_184.432, 5_832, 6_480]
     firm_small_business_rate_relief: [5_184, 5_182.704, 2_916, 0]
     firm_business_rates: [0, 1.728, 2_916, 6_480]
+
+- name: SBRR £1 either side of the full-relief limit and the taper end
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [11_999, 14_999, 15_001]
+  output:
+    # 11,999 x 0.432 = 5,183.568; share 1 -> relief 5,183.568, rates 0.
+    # 14,999 x 0.432 = 6,479.568; share (15,000 - 14,999) / 3,000 = 1/3,000
+    #   -> relief 2.159856, rates 6,477.408144.
+    # 15,001 x 0.432 = 6,480.432; share clipped to 0 -> rates 6,480.432.
+    firm_gross_business_rates: [5_183.568, 6_479.568, 6_480.432]
+    firm_small_business_rate_relief: [5_183.568, 2.159856, 0]
+    firm_business_rates: [0, 6_477.408144, 6_480.432]
+
+- name: 2027-28 RHL SBRR either side of £18,000 and £21,000
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [17_999, 18_000, 18_001, 20_999, 21_000, 21_001]
+    firm_is_rhl_property: [true, true, true, true, true, true]
+  output:
+    # RHL small business multiplier 0.395 in 2027-28, thresholds 18,000 and
+    # 21,000.
+    # 17,999 x 0.395 = 7,109.605; 18,000 x 0.395 = 7,110; both full relief.
+    # 18,001 x 0.395 = 7,110.395; share 2,999 / 3,000
+    #   -> relief 7,110.395 - 7,110.395 / 3,000 = 7,108.024868,
+    #   rates 2.370132.
+    # 20,999 x 0.395 = 8,294.605; share 1/3,000 -> relief 2.764868,
+    #   rates 8,291.840132.
+    # 21,000 x 0.395 = 8,295 and 21,001 x 0.395 = 8,295.395; no relief.
+    firm_small_business_rate_relief: [7_109.605, 7_110, 7_108.024868, 2.764868, 0, 0]
+    firm_business_rates: [0, 0, 2.370132, 8_291.840132, 8_295, 8_295.395]

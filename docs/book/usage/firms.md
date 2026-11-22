@@ -110,7 +110,7 @@ Every firm variable uses `entity = Firm` and a yearly period. Each parameter cit
 |---|---|---|
 | Employer National Insurance | `firm_employer_ni`, `firm_employer_ni_before_allowance` | Class 1 secondary contributions with the `gov.hmrc.national_insurance.class_1` rates and thresholds. Pay above the secondary threshold can be an input; by default it is approximated from the paybill and the number of employees, less any staff supplied as paid at or below the secondary threshold (see the pay-distribution inputs below). |
 | Employment Allowance | `employment_allowance`, `employment_allowance_eligible` | The amount from 2014 (now £10,500), capped at employer National Insurance liability. Excludes single-director companies and public bodies, and applies the £100,000 prior-year liability limit from 2020-21 to 2024-25. |
-| Apprenticeship levy | `apprenticeship_levy` | 0.5% of the paybill less the £15,000 allowance, which connected employers share. |
+| Apprenticeship levy | `apprenticeship_levy` | 0.5% of the paybill (after any National Minimum Wage top-up) less the £15,000 allowance, which connected employers share. |
 | Auto-enrolment | `firm_auto_enrolment_employer_contribution`, `firm_auto_enrolment_qualifying_earnings` | The 3% employer minimum contribution on qualifying earnings between £6,240 and £50,270. Qualifying earnings can be an input; by default they are approximated from the paybill and the number of employees, less any staff supplied as paid at or below the earnings trigger or above the upper limit (see the pay-distribution inputs below). |
 | Corporation tax | `corporation_tax`, `firm_taxable_profit`, `firm_marginal_relief`, `firm_losses_used` | Main and small profits rates, marginal relief at a 3/200 fraction with limits divided by associated companies, and loss relief with the £5 million deductions allowance. Only companies are liable (`firm_legal_form`). |
 | Capital allowances | `firm_capital_allowances` and its components | Full expensing, the 50% special-rate first-year allowance, the annual investment allowance, the main-rate first-year allowance (40% from 1 January 2026), writing-down allowances, the structures and buildings allowance, and balancing charges. |
@@ -128,6 +128,14 @@ Six optional inputs describe how a firm's pay is spread, so the employer Nationa
 The formulas clip inconsistent values silently: negative values count as 0, a headcount is capped at the employees left, and a paybill at the paybill left (and, at or below the secondary threshold, at that headcount times the threshold). If the paybill above the upper limit is less than that headcount times the limit, those staff are treated as part of the remaining group. With the defaults, every employee is enrolled at the firm's average pay, so the £10,000 earnings trigger is not applied.
 
 `policyengine_uk/programs.yaml` lists these programmes with the years their parameters and tests cover.
+
+### National Minimum Wage
+
+Two optional inputs describe the firm's low-paid workers as one block: `firm_low_paid_hours`, their annual hours, and `firm_low_paid_paybill`, the pay for those hours (part of `firm_paybill`). Both default to 0. `firm_minimum_wage_cost` is the extra pay needed to bring the block up to the adult rate (the national living wage): the rate times the hours, less their pay, floored at zero. The rate is the top age band of `gov.hmrc.minimum_wage.non_apprentice`, read at 30 April like other yearly parameters, so 2026 uses the £12.71 rate from April 2026.
+
+`firm_paybill_after_minimum_wage` is `firm_paybill` plus that cost. The apprenticeship levy and the default employer National Insurance and auto-enrolment approximations read it, so they rise with the floor. A supplied `firm_class_1_earnings_above_secondary_threshold` or `firm_auto_enrolment_qualifying_earnings` is used as given. With the pay-distribution inputs supplied, the extra pay falls in the remaining group, which overstates the base if the low-paid staff are at or below the secondary threshold or the earnings trigger. The cost is a firm cost, not a tax, so it is not a term of `firm_tax` or `firm_only_tax`. Where pay already meets the rate the cost is 0 and every result is unchanged.
+
+The block is treated as paid its average hourly wage, so the cost is understated where pay within it varies: hours paid above the rate offset hours paid below it. The younger-worker and apprentice rates are not modelled.
 
 ## Aggregates and incidence
 
@@ -147,6 +155,7 @@ Worked examples of firm reforms, including incidence, are in [Firm reforms](firm
 - Every firm has an April to March financial year.
 - Yearly parameters are read at 30 April, so changes dated 1 January are not apportioned. This affects the 40% and 50% main-rate first-year allowances and the 6% bank surcharge for January to March 2027.
 - Employer National Insurance and auto-enrolment use firm-level approximations, since there is no per-employee pay yet. They treat the employees outside the optional pay-distribution inputs as all paid the same, and apply thresholds annually rather than per pay period. Without the auto-enrolment inputs the £10,000 earnings trigger is not applied, and the age conditions, opt-outs and opt-ins are not modelled.
+- The National Minimum Wage floor treats the low-paid workers as one block paid its average hourly wage and applies only the adult rate (see above).
 - Business rates assume one aggregate property per firm, cover England only and have no transitional relief.
 - Corporation tax has no group relief, Patent Box or quarterly instalment payments.
 - VAT registration is tested on annual turnover, not a rolling 12 months, and there is no cash or annual accounting.

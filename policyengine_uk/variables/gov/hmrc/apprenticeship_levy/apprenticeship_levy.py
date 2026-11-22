@@ -10,9 +10,9 @@ class apprenticeship_levy(Variable):
         "allowance, floored at zero (Finance Act 2016 s.99). The pay bill is "
         "all earnings on which the firm incurs secondary Class 1 liabilities, "
         "including earnings below the secondary threshold (s.100(3)) and "
-        "earnings zero-rated at £0 (s.100(6)), so it is firm_paybill. A "
-        "member of a "
-        "company unit of connected companies receives its allocated share of "
+        "earnings zero-rated at £0 (s.100(6)), so it is "
+        "firm_paybill_after_minimum_wage: firm_paybill plus any pay needed to "
+        "meet the minimum wage. A member of a company unit of connected companies receives its allocated share of "
         "one allowance (s.101)."
     )
     definition_period = YEAR
@@ -34,6 +34,6 @@ class apprenticeship_levy(Variable):
 
     def formula(firm, period, parameters):
         p = parameters(period).gov.hmrc.apprenticeship_levy
-        paybill = firm("firm_paybill", period)
+        paybill = firm("firm_paybill_after_minimum_wage", period)
         share = firm("firm_apprenticeship_levy_allowance_share", period)
         return max_(p.rate * paybill - p.allowance * share, 0)

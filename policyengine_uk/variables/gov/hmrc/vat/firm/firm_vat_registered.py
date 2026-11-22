@@ -7,8 +7,9 @@ class firm_vat_registered(Variable):
     documentation = (
         "Whether the firm is registered for VAT: its taxable turnover in the "
         "year exceeds the registration threshold, or it registers voluntarily. "
-        "The test uses the year's turnover and the threshold in force on 1 "
-        "January, not a rolling 12-month look-back."
+        "The test uses the year's turnover and the threshold in force on 30 "
+        "April of the year (so 2024 uses the £90,000 threshold from 1 April "
+        "2024), not a rolling 12-month look-back."
     )
     entity = Firm
     definition_period = YEAR

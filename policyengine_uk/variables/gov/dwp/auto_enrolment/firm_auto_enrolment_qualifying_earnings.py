@@ -34,7 +34,10 @@ class firm_auto_enrolment_qualifying_earnings(Variable):
         "paybill left. If the paybill above the upper limit is less than "
         "that headcount times the upper limit, the split is inconsistent and "
         "those employees and their paybill are treated as part of the "
-        "remaining group instead."
+        "remaining group instead. The paybill is "
+        "firm_paybill_after_minimum_wage, firm_paybill plus any pay needed "
+        "to meet the minimum wage; with a pay split supplied, that extra pay "
+        "all falls in the remaining group."
     )
     definition_period = YEAR
     unit = GBP
@@ -52,7 +55,7 @@ class firm_auto_enrolment_qualifying_earnings(Variable):
     def formula(firm, period, parameters):
         band = parameters(period).gov.dwp.auto_enrolment.qualifying_earnings
         band_width = band.upper_limit - band.lower_limit
-        paybill = firm("firm_paybill", period)
+        paybill = firm("firm_paybill_after_minimum_wage", period)
         employees = firm("firm_employees", period)
         employees_below_trigger = min_(
             max_(

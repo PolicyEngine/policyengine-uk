@@ -87,3 +87,40 @@
   output:
     firm_partial_exemption_recovery_share: 1
     firm_vat: -1_000
+
+- name: £90,001 is registered in 2025 (£1 above the £90,000 threshold)
+  period: 2025
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 90_001
+  output:
+    # 90,001 > 90,000 (Sch 1 para 1(1)(a) "has exceeded").
+    firm_vat_registered: true
+    # 90,001 * 0.2 = 18,000.2
+    firm_vat: 18_000.2
+
+- name: £85,001 is registered in 2023 (threshold £85,000)
+  period: 2023
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 85_001
+  output:
+    firm_vat_registered: true
+    # 85,001 * 0.2 = 17,000.2
+    firm_vat: 17_000.2
+
+- name: 2024 change year uses the £90,000 threshold in force at 30 April
+  period: 2024
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: [85_001, 88_000, 90_000, 90_001]
+  output:
+    # SI 2024/307 raised the threshold to £90,000 from 1 April 2024. Read at
+    # 30 April 2024, so 85,001 and 88,000 (above the old £85,000) and 90,000
+    # (not exceeding) are unregistered; 90,001 is registered.
+    firm_vat_registered: [false, false, false, true]
+    # 90,001 * 0.2 = 18,000.2
+    firm_vat: [0, 0, 0, 18_000.2]

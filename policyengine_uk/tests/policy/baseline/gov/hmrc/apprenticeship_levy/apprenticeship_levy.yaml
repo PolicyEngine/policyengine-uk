@@ -22,3 +22,32 @@
   output:
     # 20,000 - 15,000.
     apprenticeship_levy: [5_000]
+
+# FA 2016 s.99: levy = 0.5% x pay bill - levy allowance (15,000), and nil where
+# that is negative. The charge starts at a pay bill of 15,000 / 0.005 =
+# 3,000,000. Margin 0.001 so that a 0.005 levy is distinguishable from 0.
+- name: Case 4, pay bill at and £1 above the break-even point and the allowance.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    firm_paybill: [3_000_000, 3_000_001, 15_000, 15_001]
+  output:
+    # 0.005 x 3,000,000 = 15,000 - 15,000 = 0.
+    # 0.005 x 3,000,001 = 15,000.005 - 15,000 = 0.005.
+    # Pay bill equal to the allowance: 0.005 x 15,000 = 75 - 15,000 < 0 -> 0.
+    # 0.005 x 15,001 = 75.005 - 15,000 < 0 -> 0.
+    apprenticeship_levy: [0, 0.005, 0, 0]
+
+- name: Case 5, connected companies share one allowance (s.101).
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    firm_paybill: [1_500_000, 1_500_001, 1_000_000, 3_000_000, 1_000_000]
+    firm_apprenticeship_levy_allowance_share: [0.5, 0.5, 0.25, 0.75, 0]
+  output:
+    # Half share 7,500: 0.005 x 1,500,000 = 7,500 - 7,500 = 0;
+    #   0.005 x 1,500,001 = 7,500.005 - 7,500 = 0.005.
+    # Unit split 25/75: 5,000 - 3,750 = 1,250 and 15,000 - 11,250 = 3,750;
+    #   total 5,000 = 0.005 x 4,000,000 - 15,000, as for one employer.
+    # Member allocated no allowance: 0.005 x 1,000,000 = 5,000.
+    apprenticeship_levy: [0, 0.005, 1_250, 3_750, 5_000]

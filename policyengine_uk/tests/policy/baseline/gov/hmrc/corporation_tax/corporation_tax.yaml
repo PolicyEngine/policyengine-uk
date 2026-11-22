@@ -140,3 +140,72 @@
     firm_rd_expenditure_credit: 0
   output:
     corporation_tax: 20_000
+
+# Boundaries in CTA 2010: the small profits rate applies where augmented
+# profits do not exceed the lower limit (s.18A), marginal relief where they
+# exceed the lower limit and do not exceed the upper limit (s.18B). Lower
+# limit 50,000, upper limit 250,000, fraction 3/200 = 0.015, rates 19% and 25%,
+# limits divided by 1 + associated companies (s.18D).
+- name: Case 9, profits just below each limit with no associated companies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0]
+    firm_taxable_trading_profit: [49_999, 249_999]
+    firm_capital_allowances: [0, 0]
+    firm_rd_additional_deduction: [0, 0]
+    firm_rd_expenditure_credit: [0, 0]
+  output:
+    # 49,999 is below the lower limit: 19% x 49,999 = 9,499.81.
+    # 249,999 is upper limit - 1: 25% x 249,999 = 62,499.75; relief
+    #   0.015 x (250,000 - 249,999) = 0.015; tax 62,499.735.
+    firm_marginal_relief: [0, 0.015]
+    corporation_tax: [9_499.81, 62_499.735]
+
+- name: Case 10, every limit boundary with one associated company.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [1, 1, 1, 1, 1]
+    firm_taxable_trading_profit: [25_000, 25_001, 124_999, 125_000, 125_001]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # Limits 50,000 / 2 = 25,000 and 250,000 / 2 = 125,000.
+    # 25,000 at the lower limit: 19% x 25,000 = 4,750.
+    # 25,001: 25% x 25,001 = 6,250.25; relief 0.015 x (125,000 - 25,001)
+    #   = 1,499.985; tax 4,750.265.
+    # 124,999: 31,249.75 - 0.015 x 1 = 31,249.735.
+    # 125,000 at the upper limit: relief 0; tax 31,250.
+    # 125,001 above the upper limit: 25% x 125,001 = 31,250.25.
+    firm_corporation_tax_lower_limit: [25_000, 25_000, 25_000, 25_000, 25_000]
+    firm_corporation_tax_upper_limit: [125_000, 125_000, 125_000, 125_000, 125_000]
+    firm_marginal_relief: [0, 1_499.985, 0.015, 0, 0]
+    corporation_tax: [4_750, 4_750.265, 31_249.735, 31_250, 31_250.25]
+
+- name: Case 11, every limit boundary with four associated companies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [4, 4, 4, 4, 4]
+    firm_taxable_trading_profit: [10_000, 10_001, 49_999, 50_000, 50_001]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # Limits 50,000 / 5 = 10,000 and 250,000 / 5 = 50,000.
+    # 10,000 at the lower limit: 19% x 10,000 = 1,900.
+    # 10,001: 25% x 10,001 = 2,500.25; relief 0.015 x (50,000 - 10,001)
+    #   = 599.985; tax 1,900.265.
+    # 49,999: 12,499.75 - 0.015 = 12,499.735.
+    # 50,000 at the upper limit: tax 12,500. Unscaled limits would give
+    #   19% x 50,000 = 9,500 here.
+    # 50,001 above the upper limit: 25% x 50,001 = 12,500.25.
+    firm_corporation_tax_lower_limit: [10_000, 10_000, 10_000, 10_000, 10_000]
+    firm_corporation_tax_upper_limit: [50_000, 50_000, 50_000, 50_000, 50_000]
+    firm_marginal_relief: [0, 599.985, 0.015, 0, 0]
+    corporation_tax: [1_900, 1_900.265, 12_499.735, 12_500, 12_500.25]
