@@ -18,6 +18,7 @@ project:
       - file: docs/book/usage/scenarios.md
       - file: docs/book/usage/dynamics.md
       - file: docs/book/usage/firms.md
+      - file: docs/book/usage/firm-reforms.md
     # A `file:` entry fixes its page's place in a section. A `pattern:` entry
     # adds, at its own place, any other Markdown page in a section's folder, so a
     # new page needs no change here. The patterns match only Markdown, so each

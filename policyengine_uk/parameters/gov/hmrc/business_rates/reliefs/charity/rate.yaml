@@ -2,13 +2,23 @@ description: Mandatory charitable rate relief in England, as a share of the rate
 # The ratepayer pays one fifth of the bill. Private schools in England are
 # excluded (Sch 4ZA para 2(3)); not modelled.
 values:
-  1990-04-01: 0.8
+  # From 1 April 1990 the charge was A x B / (C x 5), one fifth of the full
+  # bill (LGFA 1988 s.43(5)-(6) as enacted). Schedule 4ZA para 2 restates the
+  # same one-fifth formula from 1 April 2024 (Non-Domestic Rating Act 2023).
+  1990-04-01:
+    value: 0.8
+    metadata:
+      reference:
+        - title: Local Government Finance Act 1988 s.43(5) and (6), as enacted (chargeable amount A x B / (C x 5) for a charity)
+          href: https://www.legislation.gov.uk/ukpga/1988/41/section/43/enacted
 metadata:
   label: Mandatory charitable rate relief
   unit: /1
   period: year
   reference:
-    - title: Local Government Finance Act 1988 Schedule 4ZA para 2 (charitable relief)
+    - title: Local Government Finance Act 1988 s.43(5) and (6), as enacted
+      href: https://www.legislation.gov.uk/ukpga/1988/41/section/43/enacted
+    - title: Local Government Finance Act 1988 Schedule 4ZA para 2(1) and (2)(a) (A x M / (C x 5), from 1 April 2024)
       href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
     - title: GOV.UK, Charitable rate relief (80%)
       href: https://www.gov.uk/apply-for-business-rate-relief/charitable-rate-relief

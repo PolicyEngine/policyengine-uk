@@ -8,11 +8,18 @@ class firm_class_1_earnings_above_secondary_threshold(Variable):
     documentation = (
         "Total of each employee's Class 1 earnings above the secondary "
         "threshold (SSCBA 1992 s.9). Supply it as an input where per-employee "
-        "pay is known. Otherwise the formula assumes every employee is paid "
-        "the firm's average pay, giving the paybill less the headcount times "
-        "the annual secondary threshold, floored at zero. Where some staff "
-        "earn below the threshold this understates the base, since their "
-        "unused threshold is netted against others' pay."
+        "pay is known. Otherwise the formula removes any employees supplied "
+        "as paid below the annual secondary threshold "
+        "(firm_employees_below_secondary_threshold and "
+        "firm_paybill_below_secondary_threshold), then assumes the rest are "
+        "paid at or above the threshold: the remaining paybill less the "
+        "remaining headcount times the threshold, floored at zero. This is "
+        "exact when every remaining employee earns above the threshold. With "
+        "no split supplied (both 0) it is the plain average-pay "
+        "approximation, which understates the base where some staff earn "
+        "below the threshold, since their unused threshold is netted against "
+        "others' pay. The threshold is applied annually rather than per "
+        "earnings period."
     )
     definition_period = YEAR
     unit = GBP
@@ -28,6 +35,14 @@ class firm_class_1_earnings_above_secondary_threshold(Variable):
         secondary_threshold = (
             class_1.employer_scale.components[1].threshold * WEEKS_IN_YEAR
         )
-        paybill = firm("firm_paybill", period)
-        employees = firm("firm_employees", period)
-        return max_(paybill - employees * secondary_threshold, 0)
+        paybill_above = max_(
+            firm("firm_paybill", period)
+            - firm("firm_paybill_below_secondary_threshold", period),
+            0,
+        )
+        employees_above = max_(
+            firm("firm_employees", period)
+            - firm("firm_employees_below_secondary_threshold", period),
+            0,
+        )
+        return max_(paybill_above - employees_above * secondary_threshold, 0)

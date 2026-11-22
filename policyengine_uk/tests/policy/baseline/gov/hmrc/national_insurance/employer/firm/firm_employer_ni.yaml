@@ -64,3 +64,23 @@
     # 40,000 - 50,000 < 0.
     firm_class_1_earnings_above_secondary_threshold: [0, 0]
     firm_employer_ni: [0, 0]
+
+- name: Case 6, staff supplied as paid below the secondary threshold leave the average.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000, 20_000]
+    firm_employees: [10, 10, 5]
+    firm_employees_below_secondary_threshold: [3, 0, 5]
+    firm_paybill_below_secondary_threshold: [12_000, 0, 20_000]
+  output:
+    # Firm 1: 3 staff paid 4,000 each (12,000) are below 5,000.
+    # (300,000 - 12,000) - (10 - 3) x 5,000 = 288,000 - 35,000 = 253,000,
+    # against 250,000 from the plain average.
+    # Firm 2: no split supplied, the plain average: 300,000 - 50,000 = 250,000.
+    # Firm 3: every employee below the threshold: 0 - 0 x 5,000 = 0.
+    firm_class_1_earnings_above_secondary_threshold: [253_000, 250_000, 0]
+    # 15% of each: 37,950; 37,500; 0.
+    firm_employer_ni_before_allowance: [37_950, 37_500, 0]
+    # Less the 10,500 Employment Allowance (capped at the liability).
+    firm_employer_ni: [27_450, 27_000, 0]

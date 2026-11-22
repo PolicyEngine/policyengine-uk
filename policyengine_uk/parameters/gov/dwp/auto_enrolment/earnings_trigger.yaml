@@ -1,6 +1,9 @@
 description: Annual earnings above which an employer must automatically enrol an eligible jobholder in a pension scheme.
-# The firm-level formulas do not use this value, because they do not observe
-# each employee's pay; it is stated for a future job-level model.
+# The firm-level formulas do not read this value, because they do not observe
+# each employee's pay. The caller applies it by supplying the employees paid
+# below it and their pay (firm_employees_below_auto_enrolment_earnings_trigger
+# and firm_paybill_below_auto_enrolment_earnings_trigger), whom the formula
+# treats as not enrolled.
 # The first value is the trigger in force when employer duties began (from
 # 1 October 2012); it is applied to earlier years.
 values:

@@ -51,3 +51,26 @@
   output:
     # 2018-19: 2%.
     firm_auto_enrolment_employer_contribution: [2_000]
+
+# 2025-26: trigger 10,000; band 6,240 to 50,270 (width 44,030); 3%.
+- name: Case 6, staff below the earnings trigger and above the upper limit leave the average.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 300_000, 100_000, 300_000]
+    firm_employees: [10, 10, 10, 3]
+    firm_employees_below_auto_enrolment_earnings_trigger: [2, 0, 4, 0]
+    firm_paybill_below_auto_enrolment_earnings_trigger: [16_000, 0, 20_000, 0]
+    firm_employees_above_auto_enrolment_upper_limit: [1, 0, 0, 3]
+    firm_paybill_above_auto_enrolment_upper_limit: [100_000, 0, 0, 300_000]
+  output:
+    # Firm 1: 2 staff paid 8,000 are not enrolled; 1 paid 100,000 gives the
+    # band width 44,030. The other 7 share 300,000 - 16,000 - 100,000 =
+    # 184,000: 184,000 - 7 x 6,240 = 140,320. Total 140,320 + 44,030 = 184,350.
+    # Firm 2: no split supplied, the plain average: (30,000 - 6,240) x 10 = 237,600.
+    # Firm 3: 4 staff paid 5,000 are not enrolled. The other 6 share 80,000:
+    # 80,000 - 6 x 6,240 = 42,560 (the plain average gives 37,600).
+    # Firm 4: all 3 above the upper limit: 3 x 44,030 = 132,090.
+    firm_auto_enrolment_qualifying_earnings: [184_350, 237_600, 42_560, 132_090]
+    # 3% of each.
+    firm_auto_enrolment_employer_contribution: [5_530.5, 7_128, 1_276.8, 3_962.7]

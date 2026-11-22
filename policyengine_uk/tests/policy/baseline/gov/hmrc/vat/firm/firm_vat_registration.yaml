@@ -1,8 +1,8 @@
 # VAT registration (VATA 1994 Sch 1 para 1): registered when taxable supplies
 # (standard + reduced + zero rated, ex-VAT) exceed the threshold, or voluntarily.
-# Threshold: £85,000 from 1 April 2017, £90,000 from 1 April 2024. Yearly
-# parameters are read at 1 January, so calendar 2024 resolves to £85,000,
-# 2025 to £90,000 and 2023 to £85,000. Standard rate 20%.
+# Threshold: £85,000 from 1 April 2017, £90,000 from 1 April 2024. A year's
+# parameters are read at 30 April of that year (the fiscal year it starts),
+# so 2023 resolves to £85,000 and 2024 and 2025 to £90,000. Standard rate 20%.
 
 - name: 2025 threshold is £90,000 and must be exceeded
   period: 2025

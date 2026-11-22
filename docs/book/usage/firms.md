@@ -132,6 +132,8 @@ Four variables combine the firm-level results:
 
 `firm_tax` is a receipts measure. Summed over firms it must not be added to `gov_tax`, whose household terms already count employer National Insurance, VAT and business rates as incidence. None of the four variables is a term of `gov_tax` or `household_tax` yet.
 
+Worked examples of firm reforms, including incidence, are in [Firm reforms](firm-reforms.md).
+
 ## Known simplifications
 
 - Every firm has an April to March financial year.
