@@ -7,4 +7,5 @@ class firm_input_costs(Variable):
     label = "Firm input costs"
     documentation = "Value of the goods and services the firm buys from other businesses in the year, excluding VAT and excluding pay and capital investment."
     definition_period = YEAR
+    hidden_input = True
     unit = GBP

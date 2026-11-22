@@ -8,4 +8,5 @@ class firm_is_industrial_property(Variable):
     label = "Firm's property is a qualifying industrial property"
     documentation = "Whether the firm's property is a qualifying industrial hereditament, which gets a longer empty property rates exemption in England."
     definition_period = YEAR
+    hidden_input = True
     default_value = False

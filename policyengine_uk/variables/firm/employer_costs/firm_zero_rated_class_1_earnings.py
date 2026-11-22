@@ -16,6 +16,7 @@ class firm_zero_rated_class_1_earnings(Variable):
         "firm-level model has no per-employee pay."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = GBP
     reference = [
         dict(

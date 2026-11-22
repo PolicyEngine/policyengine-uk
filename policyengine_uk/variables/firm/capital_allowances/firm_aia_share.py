@@ -7,5 +7,6 @@ class firm_aia_share(Variable):
     label = "Firm share of the annual investment allowance"
     documentation = "Share of the annual investment allowance limit allocated to this firm. Group companies and related businesses share one limit; a stand-alone business has the whole limit."
     definition_period = YEAR
+    hidden_input = True
     unit = "/1"
     default_value = 1

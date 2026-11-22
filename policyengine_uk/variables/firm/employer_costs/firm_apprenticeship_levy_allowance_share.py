@@ -12,6 +12,7 @@ class firm_apprenticeship_levy_allowance_share(Variable):
         "for a firm with no connected companies."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = "/1"
     default_value = 1
     reference = [

@@ -7,5 +7,6 @@ class firm_input_vat(Variable):
     documentation = "VAT the firm is charged on its purchases in the year that would be recoverable before any partial exemption restriction."
     entity = Firm
     definition_period = YEAR
+    hidden_input = True
     value_type = float
     unit = GBP

@@ -7,5 +7,6 @@ class firm_vat_voluntarily_registered(Variable):
     documentation = "Whether the firm is registered for VAT although its taxable turnover does not exceed the registration threshold."
     entity = Firm
     definition_period = YEAR
+    hidden_input = True
     value_type = bool
     default_value = False

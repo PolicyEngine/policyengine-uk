@@ -11,6 +11,7 @@ class firm_is_public_body(Variable):
         "not a charity cannot claim the Employment Allowance."
     )
     definition_period = YEAR
+    hidden_input = True
     default_value = False
     reference = [
         dict(

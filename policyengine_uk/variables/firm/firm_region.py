@@ -8,5 +8,6 @@ class firm_region(Variable):
     label = "Firm region"
     documentation = "ITL1 region (or nation) where the firm is based."
     definition_period = YEAR
+    hidden_input = True
     possible_values = Region
     default_value = Region.LONDON

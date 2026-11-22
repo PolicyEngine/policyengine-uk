@@ -12,4 +12,5 @@ class firm_non_trading_profits(Variable):
         "chargeable gains, net of their own reliefs."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = GBP

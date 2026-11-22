@@ -8,4 +8,5 @@ class firm_property_occupied(Variable):
     label = "Firm's property is occupied"
     documentation = "Whether the firm's property is occupied throughout the year. If not, it is treated as unoccupied throughout the year for business rates, and gets the empty property exemption but no other relief."
     definition_period = YEAR
+    hidden_input = True
     default_value = True

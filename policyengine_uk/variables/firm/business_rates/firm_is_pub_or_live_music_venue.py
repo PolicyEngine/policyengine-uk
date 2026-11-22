@@ -8,4 +8,5 @@ class firm_is_pub_or_live_music_venue(Variable):
     label = "Firm's property is a pub or live music venue"
     documentation = "Whether the firm's property is a pub or live music venue eligible for the pubs and live music venues business rates relief in England."
     definition_period = YEAR
+    hidden_input = True
     default_value = False

@@ -32,5 +32,6 @@ class firm_sic_section(Variable):
     label = "Firm industry (SIC section)"
     documentation = "Section of the UK Standard Industrial Classification of economic activities 2007 (SIC 2007) of the firm's main activity."
     definition_period = YEAR
+    hidden_input = True
     possible_values = SICSection
     default_value = SICSection.UNKNOWN

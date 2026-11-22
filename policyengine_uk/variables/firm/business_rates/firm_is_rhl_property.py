@@ -8,4 +8,5 @@ class firm_is_rhl_property(Variable):
     label = "Firm's property is a qualifying retail, hospitality or leisure property"
     documentation = "Whether the firm's property qualifies as retail, hospitality or leisure (RHL) for business rates in England: the RHL multipliers from 2026-27, RHL relief to 2025-26 and the higher RHL small business rate relief thresholds from 2027-28."
     definition_period = YEAR
+    hidden_input = True
     default_value = False

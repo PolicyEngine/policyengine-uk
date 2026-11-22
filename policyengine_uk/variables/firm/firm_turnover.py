@@ -9,4 +9,5 @@ class firm_turnover(Variable):
         "Value of the firm's sales of goods and services in the year, excluding VAT."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = GBP

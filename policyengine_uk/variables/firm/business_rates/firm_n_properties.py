@@ -12,4 +12,5 @@ class firm_n_properties(Variable):
         "this count only decides small business rate relief eligibility."
     )
     definition_period = YEAR
+    hidden_input = True
     default_value = 1

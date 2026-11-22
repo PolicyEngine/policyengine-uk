@@ -7,4 +7,5 @@ class firm_capex_main_pool_used(Variable):
     label = "Firm second-hand main-rate plant and machinery expenditure"
     documentation = "Expenditure in the year on second-hand plant and machinery that falls in the main pool. Excludes cars."
     definition_period = YEAR
+    hidden_input = True
     unit = GBP

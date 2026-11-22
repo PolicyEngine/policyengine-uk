@@ -7,4 +7,5 @@ class firm_weight(Variable):
     label = "Firm weight"
     documentation = "Number of firms in the population this firm represents. Defaults to one, so a firm in a situation counts once."
     definition_period = YEAR
+    hidden_input = True
     default_value = 1

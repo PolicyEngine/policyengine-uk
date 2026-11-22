@@ -7,4 +7,5 @@ class firm_in_freeport(Variable):
     label = "Firm operates in a freeport"
     documentation = "Whether the firm's employees work in a freeport or investment zone tax site, for the employer National Insurance zero rate."
     definition_period = YEAR
+    hidden_input = True
     default_value = False

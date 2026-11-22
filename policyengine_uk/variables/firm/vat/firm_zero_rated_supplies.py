@@ -7,5 +7,6 @@ class firm_zero_rated_supplies(Variable):
     documentation = "Value of the firm's zero-rated supplies in the year."
     entity = Firm
     definition_period = YEAR
+    hidden_input = True
     value_type = float
     unit = GBP

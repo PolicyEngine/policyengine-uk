@@ -14,5 +14,6 @@ class firm_legal_form(Variable):
     label = "Firm legal form"
     documentation = "Legal form of the business: a company, a sole trader, a partnership or another form."
     definition_period = YEAR
+    hidden_input = True
     possible_values = FirmLegalForm
     default_value = FirmLegalForm.COMPANY

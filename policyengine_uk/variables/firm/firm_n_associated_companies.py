@@ -7,3 +7,4 @@ class firm_n_associated_companies(Variable):
     label = "Number of associated companies"
     documentation = "Number of companies associated with the firm for corporation tax purposes (excluding the firm itself), which divides the small profits and upper limits."
     definition_period = YEAR
+    hidden_input = True

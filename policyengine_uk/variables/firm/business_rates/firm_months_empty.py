@@ -13,4 +13,5 @@ class firm_months_empty(Variable):
         "when the property is occupied."
     )
     definition_period = YEAR
+    hidden_input = True
     default_value = 0

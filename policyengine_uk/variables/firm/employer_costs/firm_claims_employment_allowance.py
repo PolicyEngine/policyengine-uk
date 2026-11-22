@@ -12,6 +12,7 @@ class firm_claims_employment_allowance(Variable):
         "a firm with no connected companies."
     )
     definition_period = YEAR
+    hidden_input = True
     default_value = True
     reference = [
         dict(

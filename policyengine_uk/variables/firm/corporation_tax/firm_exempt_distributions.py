@@ -12,5 +12,6 @@ class firm_exempt_distributions(Variable):
         "small profits rate and marginal relief."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = GBP
     reference = "https://www.legislation.gov.uk/ukpga/2010/4/section/18L"

@@ -7,5 +7,6 @@ class firm_exempt_supplies(Variable):
     documentation = "Value of the firm's VAT-exempt supplies in the year."
     entity = Firm
     definition_period = YEAR
+    hidden_input = True
     value_type = float
     unit = GBP

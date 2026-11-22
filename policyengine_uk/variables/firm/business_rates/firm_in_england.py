@@ -8,4 +8,5 @@ class firm_in_england(Variable):
     label = "Firm's property is in England"
     documentation = "Whether the firm's property is in England. Business rates are modelled for England only; Scotland, Wales and Northern Ireland set their own rates and reliefs, so firm business rates are 0 elsewhere."
     definition_period = YEAR
+    hidden_input = True
     default_value = True

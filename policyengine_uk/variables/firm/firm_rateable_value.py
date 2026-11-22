@@ -7,4 +7,5 @@ class firm_rateable_value(Variable):
     label = "Firm rateable value"
     documentation = "Total rateable value of the non-domestic properties the firm occupies, as set by the Valuation Office Agency."
     definition_period = YEAR
+    hidden_input = True
     unit = GBP

@@ -7,4 +7,5 @@ class firm_is_single_director_company(Variable):
     label = "Firm is a single-director company"
     documentation = "Whether the firm is a company whose only employee paid above the secondary threshold is a director, which excludes it from the Employment Allowance."
     definition_period = YEAR
+    hidden_input = True
     default_value = False

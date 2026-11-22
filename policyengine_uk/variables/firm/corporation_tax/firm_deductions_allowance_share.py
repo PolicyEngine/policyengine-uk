@@ -12,5 +12,6 @@ class firm_deductions_allowance_share(Variable):
         "the default of 1 gives the company the whole allowance."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = "/1"
     default_value = 1

@@ -9,5 +9,6 @@ class firm_standard_rated_supplies(Variable):
     )
     entity = Firm
     definition_period = YEAR
+    hidden_input = True
     value_type = float
     unit = GBP

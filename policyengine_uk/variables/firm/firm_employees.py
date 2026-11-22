@@ -7,4 +7,5 @@ class firm_employees(Variable):
     label = "Number of employees"
     documentation = "Number of employees on the firm's payroll in the year (headcount)."
     definition_period = YEAR
+    hidden_input = True
     unit = "person"

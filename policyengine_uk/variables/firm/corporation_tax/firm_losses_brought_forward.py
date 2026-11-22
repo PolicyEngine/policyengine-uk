@@ -12,4 +12,5 @@ class firm_losses_brought_forward(Variable):
         "restriction."
     )
     definition_period = YEAR
+    hidden_input = True
     unit = GBP
