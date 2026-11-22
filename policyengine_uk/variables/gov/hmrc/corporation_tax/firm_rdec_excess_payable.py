@@ -77,4 +77,5 @@ class firm_rdec_excess_payable(Variable):
             )
         else:
             cap = firm("firm_rd_staff_paye_nic", period)
-        return min_(after_step_2, cap)
+        supplied = firm("firm_rdec_paye_nic_cap_supplied", period)
+        return where(supplied, min_(after_step_2, cap), after_step_2)

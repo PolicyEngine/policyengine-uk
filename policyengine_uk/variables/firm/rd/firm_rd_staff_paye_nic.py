@@ -12,13 +12,12 @@ class firm_rd_staff_paye_nic(Variable):
         "and actively engaged in R&D that form part of the company's PAYE "
         "income tax and Class 1 National Insurance liabilities, plus the "
         "relevant portion for externally provided workers from other group "
-        "members. Defaults to infinity, meaning not supplied, so the cap does "
-        "not bind."
+        "members. Used only when firm_rdec_paye_nic_cap_supplied is true."
     )
     definition_period = YEAR
     hidden_input = True
     unit = GBP
-    default_value = np.inf
+    default_value = 0
     reference = (
         "https://www.legislation.gov.uk/ukpga/2009/4/section/104P/2024-03-31",
         "https://www.legislation.gov.uk/ukpga/2009/4/section/104Q/2024-03-31",

@@ -206,6 +206,7 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
     firm_relevant_paye_nic_liabilities: 40_000
+    firm_rdec_paye_nic_cap_supplied: true
   output:
     # As case 7, 162,000 is left after step 2. Cap 20,000 + 3 x 40,000
     # = 140,000 < 162,000, so payable 140,000.
@@ -220,6 +221,7 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
     firm_relevant_paye_nic_liabilities: 50_000
+    firm_rdec_paye_nic_cap_supplied: true
   output:
     # Cap 20,000 + 3 x 50,000 = 170,000 > 162,000, so payable 162,000.
     firm_rdec_excess_payable: 162_000
@@ -233,6 +235,7 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
     firm_relevant_paye_nic_liabilities: 0
+    firm_rdec_paye_nic_cap_supplied: true
     # The pre-2024 input is ignored under the merged scheme.
     firm_rd_staff_paye_nic: 0
   output:
@@ -248,6 +251,7 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
     firm_rd_staff_paye_nic: 100_000
+    firm_rdec_paye_nic_cap_supplied: true
   output:
     # As case 11, 150,000 is left after step 2. Cap is the R&D staff PAYE
     # and NIC itself, 100,000 < 150,000, so payable 100,000.
@@ -262,13 +266,14 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
     firm_rd_staff_paye_nic: 200_000
+    firm_rdec_paye_nic_cap_supplied: true
     firm_relevant_paye_nic_liabilities: 0
   output:
     # Cap 200,000 > 150,000, so payable 150,000. No 20,000 fixed amount
     # before April 2024, and the merged input plays no part.
     firm_rdec_excess_payable: 150_000
 
-- name: Case 17, defaults leave the cap unsupplied in both regimes.
+- name: Case 17, defaults leave the cap unsupplied (firm_rdec_paye_nic_cap_supplied false).
   period: 2025
   absolute_error_margin: 0.01
   input:
