@@ -3,6 +3,9 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_scotland_scheme,
     is_wales_scheme,
 )
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 
 
 class council_tax_reduction_working_age_applicable_income(Variable):
@@ -23,12 +26,23 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         "(council_tax_reduction_tariff_income), rent for letting part of the "
         "home (council_tax_reduction_home_letting_income) where the scheme "
         "counts it and, in Scotland, the relevant Universal Credit payments, "
-        "less relevant childcare "
-        "charges. Wales deducts the charges from earnings, so they never take "
-        "earnings below zero or reduce other income (WSI 2013/3029 Sch 6 para "
-        "20(1)(c)). Scotland deducts them from the total of earned and "
-        "unearned income, with or without Universal Credit (SSI 2021/249 "
-        "regs 38(2) and 42(2)). Income never falls below zero."
+        "less relevant childcare charges. From April 2022 Scotland also takes "
+        "£15 weekly for each applicant or partner who receives Widowed "
+        "Parent's Allowance from the total of unearned income, tariff income "
+        "and relevant Universal Credit payments, never below nil (SSI "
+        "2021/249 reg 57(4)). Wales deducts the charges from earnings after "
+        "the disregards, never below zero (WSI 2013/3029 Sch 6 para "
+        "20(1)(c)). Where those earnings are below the capped charges and the "
+        "applicant or partner receives working tax credit or child tax "
+        "credit, para 20 also deducts the rest from that credit; the model "
+        "does not, so in Wales the charges never reduce other income "
+        "(#2936). From April 2022 Scotland deducts them from the "
+        "total of earned and unearned income, with or without Universal "
+        "Credit (SSI 2021/249 regs 38(2) and 42(2)). The model applies that "
+        "rule to earlier Scottish claims too, although SSI 2012/303 reg "
+        "27(1)(c) and (2) deducted them as para 20 does and, from 25 November "
+        "2013, reg 28(1A) gave Universal Credit claims no deduction "
+        "(#2937). Income never falls below zero."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,6 +50,7 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/13",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/38",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/42",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/9",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/20",
     )
@@ -61,11 +76,19 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         childcare = benunit(
             "council_tax_reduction_working_age_childcare_deduction", period
         )
-        # Wales deducts childcare charges "from any earnings" (WSI 2013/3029
-        # Sch 6 para 20(1)(c)), after the disregards. Scotland estimates
-        # earned income, adds unearned income and then deducts the charges
-        # (SSI 2021/249 reg 38(2) without Universal Credit, reg 42(2) with
-        # it), so they can reduce unearned income too.
+        # Wales deducts childcare charges "from any earnings" after the
+        # disregards (WSI 2013/3029 Sch 6 para 20(1)(c)). Where those earnings
+        # are below the capped charges and the applicant or partner receives
+        # working tax credit or child tax credit, para 20(1)(c) and (2) also
+        # deduct the rest from that credit; the model does not
+        # (#2936). From April 2022 Scotland estimates earned
+        # income, adds unearned income and then deducts the charges (SSI
+        # 2021/249 reg 38(2) without Universal Credit, reg 42(2) with it), so
+        # they can reduce unearned income too. Before then SSI 2012/303 reg
+        # 27(1)(c) and (2) deducted them as para 20 does, and from 25
+        # November 2013 reg 28(1A) gave Universal Credit claims no deduction.
+        # The model applies the April 2022 rule to Scottish claims in every
+        # year (#2937).
         from_earnings = wales & ~has_universal_credit
         earnings_after_deductions = max_(
             0, earnings - disregard - where(from_earnings, childcare, 0)
@@ -98,19 +121,48 @@ class council_tax_reduction_working_age_applicable_income(Variable):
             benunit("council_tax_reduction_home_letting_income", period),
             0,
         )
+        other_unearned = add(
+            benunit,
+            period,
+            [
+                "council_tax_reduction_tariff_income",
+                "council_tax_reduction_relevant_universal_credit_payments",
+            ],
+        )
+        # From April 2022 Scotland disregards £15 weekly "from the
+        # applicant's weekly unearned income" where the applicant receives
+        # Widowed Parent's Allowance (reg 57(4)), so the disregard comes off
+        # the reg 57 total, which includes tariff income (reg 57(1)(l), the
+        # assumed yield from capital) and the relevant Universal Credit
+        # payments (reg 57(1)(p)), not only the allowance.
+        # council_tax_reduction_working_age_unearned_income counts the
+        # allowance gross in that case. Each applicant or partner who
+        # receives it gets a disregard (reg 36(1)).
+        person = benunit.members
+        recipients = benunit.sum(
+            working_age_applicant_or_partner(person, period)
+            & (person("widowed_parents_allowance", period) > 0)
+        )
+        widowed_parents_allowance_disregard = where(
+            scotland
+            & p_scotland.working_age_widowed_parents_allowance_disregard_from_unearned_income,
+            min_(
+                recipients
+                * parameters(
+                    period
+                ).gov.local_authorities.council_tax_reduction.income_disregards.widowed_parents_allowance
+                * WEEKS_IN_YEAR,
+                max_(0, unearned + other_unearned),
+            ),
+            0,
+        )
         own_rules_income = (
             earnings_after_deductions
             + unearned
             - unearned_tax
             + home_letting
-            + add(
-                benunit,
-                period,
-                [
-                    "council_tax_reduction_tariff_income",
-                    "council_tax_reduction_relevant_universal_credit_payments",
-                ],
-            )
+            + other_unearned
+            - widowed_parents_allowance_disregard
             - where(from_earnings, 0, childcare)
         )
         income = where(
