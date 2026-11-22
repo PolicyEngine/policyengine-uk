@@ -55,9 +55,9 @@ def _employment_allowance_rule_change(simulation, baseline, period) -> float:
     through ni_employer) is not counted again."""
     firms = simulation.populations.get("firm")
     baseline_firms = baseline.populations.get("firm")
-    if firms is None or baseline_firms is None or firms.count == 0:
+    if firms is None or firms.count == 0:
         return 0.0
-    if baseline_firms.count != firms.count:
+    if baseline_firms is None or baseline_firms.count != firms.count:
         raise ValueError(
             "The baseline holds a different number of firms from the "
             "reform, so their Employment Allowances cannot be compared "
@@ -81,8 +81,8 @@ class firm_tax_change_total(Variable):
         "the same total. It is 0 without a baseline, in a household "
         "situation (which has no UK population of firms to sum), and where "
         "the simulation has no firms. The baseline must carry the same firm "
-        "table: one with no firms counts as zero liability, and one with a "
-        "different number of firms raises an error."
+        "table; a baseline with a different number of firms (including "
+        "none) raises an error."
     )
     entity = Household
     definition_period = YEAR

@@ -5,7 +5,8 @@ class firm_paybill_below_auto_enrolment_earnings_trigger(Variable):
     value_type = float
     entity = Firm
     label = (
-        "Firm paybill of employees paid below the automatic enrolment earnings trigger"
+        "Firm paybill of employees paid at or below the automatic enrolment "
+        "earnings trigger"
     )
     documentation = (
         "Total annual earnings of the employees counted in "

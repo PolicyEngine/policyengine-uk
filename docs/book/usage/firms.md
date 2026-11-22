@@ -108,16 +108,24 @@ Every firm variable uses `entity = Firm` and a yearly period. Each parameter cit
 
 | Programme | Main variables | Rules |
 |---|---|---|
-| Employer National Insurance | `firm_employer_ni`, `firm_employer_ni_before_allowance` | Class 1 secondary contributions with the `gov.hmrc.national_insurance.class_1` rates and thresholds. Pay above the secondary threshold can be an input; by default it is approximated from the paybill and the number of employees. |
+| Employer National Insurance | `firm_employer_ni`, `firm_employer_ni_before_allowance` | Class 1 secondary contributions with the `gov.hmrc.national_insurance.class_1` rates and thresholds. Pay above the secondary threshold can be an input; by default it is approximated from the paybill and the number of employees, less any staff supplied as paid at or below the secondary threshold (see the pay-distribution inputs below). |
 | Employment Allowance | `employment_allowance`, `employment_allowance_eligible` | The amount from 2014 (now £10,500), capped at employer National Insurance liability. Excludes single-director companies and public bodies, and applies the £100,000 prior-year liability limit from 2020-21 to 2024-25. |
 | Apprenticeship levy | `apprenticeship_levy` | 0.5% of the paybill less the £15,000 allowance, which connected employers share. |
-| Auto-enrolment | `firm_auto_enrolment_employer_contribution` | The 3% employer minimum contribution on qualifying earnings between £6,240 and £50,270. |
+| Auto-enrolment | `firm_auto_enrolment_employer_contribution`, `firm_auto_enrolment_qualifying_earnings` | The 3% employer minimum contribution on qualifying earnings between £6,240 and £50,270. Qualifying earnings can be an input; by default they are approximated from the paybill and the number of employees, less any staff supplied as paid at or below the earnings trigger or above the upper limit (see the pay-distribution inputs below). |
 | Corporation tax | `corporation_tax`, `firm_taxable_profit`, `firm_marginal_relief`, `firm_losses_used` | Main and small profits rates, marginal relief at a 3/200 fraction with limits divided by associated companies, and loss relief with the £5 million deductions allowance. Only companies are liable (`firm_legal_form`). |
 | Capital allowances | `firm_capital_allowances` and its components | Full expensing, the 50% special-rate first-year allowance, the annual investment allowance, the main-rate first-year allowance (40% from 1 January 2026), writing-down allowances, the structures and buildings allowance, and balancing charges. |
 | R&D relief | `firm_rd_expenditure_credit`, `firm_rd_additional_deduction`, `firm_rd_payable_credit` | The merged-scheme expenditure credit (20%) and enhanced support for R&D-intensive loss-making SMEs. |
 | Bank surcharge | `bank_surcharge` | 8% above a £25 million allowance from 2016, and 3% above £100 million from April 2023. The 6% rate announced for 1 January 2027 to 31 March 2028 is marked as not yet enacted. |
 | Business rates (England) | `firm_business_rates` and its reliefs | Multipliers for 2023-24 to 2027-28, including the 2026 retail, hospitality and leisure (RHL) and high-value multipliers. Small business rate relief, charitable relief, RHL relief to 2025-26, pubs and live music venues relief, and empty property relief. |
 | VAT | `firm_vat`, `firm_vat_registered`, `firm_output_vat` | The registration threshold (£85,000, then £90,000 from April 2024), output VAT less recoverable input VAT with partial exemption, and the flat rate scheme with the 16.5% limited cost trader rate. Uses the existing `gov.hmrc.vat` rate parameters. |
+
+Six optional inputs describe how a firm's pay is spread, so the employer National Insurance and auto-enrolment approximations need not assume every employee earns the firm's average pay. Each pair is a headcount and the total pay of those employees, and all default to 0:
+
+- `firm_employees_below_secondary_threshold` and `firm_paybill_below_secondary_threshold`: staff paid at or below the annual secondary threshold, who pay no secondary contributions.
+- `firm_employees_below_auto_enrolment_earnings_trigger` and `firm_paybill_below_auto_enrolment_earnings_trigger`: staff paid at or below the £10,000 earnings trigger, who need not be enrolled.
+- `firm_employees_above_auto_enrolment_upper_limit` and `firm_paybill_above_auto_enrolment_upper_limit`: staff paid above the qualifying earnings upper limit, who each contribute the full band.
+
+The formulas clip inconsistent values silently: negative values count as 0, a headcount is capped at the employees left, and a paybill at the paybill left (and, at or below the secondary threshold, at that headcount times the threshold). If the paybill above the upper limit is less than that headcount times the limit, those staff are treated as part of the remaining group. With the defaults, every employee is enrolled at the firm's average pay, so the £10,000 earnings trigger is not applied.
 
 `policyengine_uk/programs.yaml` lists these programmes with the years their parameters and tests cover.
 
@@ -138,7 +146,7 @@ Worked examples of firm reforms, including incidence, are in [Firm reforms](firm
 
 - Every firm has an April to March financial year.
 - Yearly parameters are read at 30 April, so changes dated 1 January are not apportioned. This affects the 40% and 50% main-rate first-year allowances and the 6% bank surcharge for January to March 2027.
-- Employer National Insurance and auto-enrolment use firm-level approximations, since there is no per-employee pay yet.
+- Employer National Insurance and auto-enrolment use firm-level approximations, since there is no per-employee pay yet. They treat the employees outside the optional pay-distribution inputs as all paid the same, and apply thresholds annually rather than per pay period. Without the auto-enrolment inputs the £10,000 earnings trigger is not applied, and the age conditions, opt-outs and opt-ins are not modelled.
 - Business rates assume one aggregate property per firm, cover England only and have no transitional relief.
 - Corporation tax has no group relief, Patent Box or quarterly instalment payments.
 - VAT registration is tested on annual turnover, not a rolling 12 months, and there is no cash or annual accounting.

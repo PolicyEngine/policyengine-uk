@@ -6,7 +6,7 @@ This page runs three static reforms to firm taxes through the Python API. The fi
 The figures on this page come from small, made-up firms and households. They show how the model computes a reform; they are not estimates of UK revenue or of household impacts. Population totals need a calibrated firm dataset, which does not exist yet. `firm_tax_incidence` is not yet a term of `household_tax` or `gov_tax`, so these reforms leave household net income unchanged.
 ```
 
-Every example uses the 2026-27 tax year. `policyengine_uk/tests/test_firm_docs_examples.py` runs each example and checks every figure below.
+Every example uses the 2026-27 tax year. `policyengine_uk/tests/test_firm_docs_examples.py` repeats each example and checks every figure below.
 
 ## Raise the corporation tax main rate
 

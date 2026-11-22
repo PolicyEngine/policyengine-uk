@@ -74,3 +74,28 @@
     firm_auto_enrolment_qualifying_earnings: [184_350, 237_600, 42_560, 132_090]
     # 3% of each.
     firm_auto_enrolment_employer_contribution: [5_530.5, 7_128, 1_276.8, 3_962.7]
+
+# 2025-26: band 6,240 to 50,270 (width 44,030).
+- name: Case 7, inconsistent pay-distribution inputs are clipped.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 300_000, 300_000, 300_000]
+    firm_employees: [10, 10, 10, 10]
+    firm_employees_below_auto_enrolment_earnings_trigger: [12, -2, 0, 2]
+    firm_paybill_below_auto_enrolment_earnings_trigger: [400_000, -16_000, 0, 16_000]
+    firm_employees_above_auto_enrolment_upper_limit: [5, -1, 2, 10]
+    firm_paybill_above_auto_enrolment_upper_limit: [50_000, -100_000, 60_000, 290_000]
+  output:
+    # Firm 1: below-trigger headcount 12 capped at 10 and paybill 400,000 at
+    # 300,000; above-upper headcount capped at 10 - 10 = 0 and paybill at
+    # 300,000 - 300,000 = 0. Nobody is left: 0.
+    # Firm 2: negative inputs floored at 0, the plain average:
+    # (30,000 - 6,240) x 10 = 237,600.
+    # Firm 3: 2 above the upper limit with 60,000 < 2 x 50,270 = 100,540 is
+    # inconsistent, so they rejoin the rest: (30,000 - 6,240) x 10 = 237,600.
+    # Firm 4: 2 below the trigger with 16,000. Above-upper headcount capped at
+    # 10 - 2 = 8 and paybill at 300,000 - 16,000 = 284,000 < 8 x 50,270 =
+    # 402,160, so the 8 rejoin the rest: 8 share 284,000, average 35,500;
+    # (35,500 - 6,240) x 8 = 234,080.
+    firm_auto_enrolment_qualifying_earnings: [0, 237_600, 237_600, 234_080]

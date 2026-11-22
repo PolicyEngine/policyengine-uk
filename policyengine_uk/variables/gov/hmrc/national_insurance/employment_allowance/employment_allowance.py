@@ -21,6 +21,9 @@ class employment_allowance(Variable):
     ]
 
     def formula(firm, period, parameters):
+        # Keep in step with
+        # policyengine_uk/variables/contrib/policyengine/firm/firm_tax_change_total.py
+        # (_employment_allowance_under_rules).
         p = parameters(period).gov.hmrc.national_insurance.employment_allowance
         liabilities = firm("firm_employer_ni_before_allowance", period)
         return min_(p.amount, liabilities)

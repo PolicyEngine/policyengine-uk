@@ -324,3 +324,68 @@ def test_employer_ni_rate_reform_does_not_flip_prior_year_eligibility():
     assert np.asarray(reform_eligible).tolist() == [False]
     total = np.asarray(simulation.calculate("firm_tax_change_total", 2024))
     assert total == pytest.approx([0, 0], abs=0.01)
+
+
+def test_dataset_with_a_firmless_baseline_raises():
+    """The baseline must carry the same firm table; one built without firms
+    cannot be compared firm by firm."""
+    data = dataset()
+    firmless = UKSingleYearDataset(
+        person=data.person,
+        benunit=data.benunit,
+        household=data.household,
+        fiscal_year=YEAR,
+    )
+    simulation = Microsimulation(dataset=dataset(), reform=CT_REFORM)
+    simulation.baseline = Microsimulation(dataset=firmless)
+    with pytest.raises(ValueError, match="different number of firms"):
+        simulation.calculate("firm_tax_change_total", YEAR)
+
+
+@pytest.mark.parametrize("year", [2025, 2024])
+def test_employment_allowance_under_rules_matches_the_variables(year):
+    """With no reform, the firm-only total's copy of the Employment Allowance
+    rules gives the same weighted allowance as employment_allowance."""
+    from policyengine_uk.variables.contrib.policyengine.firm.firm_tax_change_total import (
+        _employment_allowance_under_rules,
+    )
+
+    data = dataset(year)
+    # A charity public body (eligible), a non-charity public body (excluded),
+    # a single-director company (excluded), a non-claimant group member
+    # (excluded), and two ordinary firms with prior-year liabilities over and
+    # under 100,000 (the over one excluded in 2024-25 only).
+    data.firm = pd.DataFrame(
+        {
+            "firm_id": [1, 2, 3, 4, 5, 6],
+            "firm_weight": [2.0, 3.0, 5.0, 7.0, 11.0, 13.0],
+            "firm_paybill": [300_000.0] * 6,
+            "firm_employees": [8.0] * 6,
+            "firm_is_public_body": [True, True, False, False, False, False],
+            "firm_is_charity": [True, False, False, False, False, False],
+            "firm_is_single_director_company": [False, False, True] + [False] * 3,
+            "firm_claims_employment_allowance": [True] * 3 + [False] + [True] * 2,
+            "firm_prior_year_secondary_class_1_liabilities": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                150_000.0,
+                50_000.0,
+            ],
+        }
+    )
+    simulation = Microsimulation(dataset=data)
+    firms = simulation.populations["firm"]
+    liability = firms("firm_employer_ni_before_allowance", year)
+    expected = (
+        np.asarray(simulation.calculate("employment_allowance", year))
+        * np.asarray(firms("firm_weight", year))
+    ).sum()
+    actual = _employment_allowance_under_rules(simulation, year, firms, liability)
+    assert actual == pytest.approx(expected)
+    eligible = np.asarray(simulation.calculate("employment_allowance_eligible", year))
+    if year == 2024:
+        assert eligible.tolist() == [True, False, False, False, False, True]
+    else:
+        assert eligible.tolist() == [True, False, False, False, True, True]

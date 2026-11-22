@@ -4,11 +4,11 @@ from policyengine_uk.model_api import *
 class firm_employees_below_auto_enrolment_earnings_trigger(Variable):
     value_type = int
     entity = Firm
-    label = "Firm employees paid below the automatic enrolment earnings trigger"
+    label = "Firm employees paid at or below the automatic enrolment earnings trigger"
     documentation = (
-        "Number of the firm's employees whose annual earnings are below the "
-        "automatic enrolment earnings trigger, so the employer need not enrol "
-        "them. They are treated as not enrolled (no opt-ins). Defaults to 0, "
+        "Number of the firm's employees whose annual earnings are at or below "
+        "the automatic enrolment earnings trigger, so the employer need not "
+        "enrol them (enrolment requires earnings above the trigger). They are treated as not enrolled (no opt-ins). Defaults to 0, "
         "which keeps the plain average-pay approximation."
     )
     definition_period = YEAR

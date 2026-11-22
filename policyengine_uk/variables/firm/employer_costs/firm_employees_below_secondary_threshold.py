@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class firm_employees_below_secondary_threshold(Variable):
     value_type = int
     entity = Firm
-    label = "Firm employees paid below the secondary threshold"
+    label = "Firm employees paid at or below the secondary threshold"
     documentation = (
         "Number of the firm's employees whose Class 1 earnings for the year "
         "are at or below the annual secondary threshold, so pay no secondary "

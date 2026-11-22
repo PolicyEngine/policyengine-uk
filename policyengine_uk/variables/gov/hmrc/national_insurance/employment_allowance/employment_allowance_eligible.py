@@ -30,6 +30,9 @@ class employment_allowance_eligible(Variable):
     ]
 
     def formula(firm, period, parameters):
+        # Keep in step with
+        # policyengine_uk/variables/contrib/policyengine/firm/firm_tax_change_total.py
+        # (_employment_allowance_under_rules).
         p = parameters(period).gov.hmrc.national_insurance.employment_allowance
         excluded_public_body = firm("firm_is_public_body", period) & ~firm(
             "firm_is_charity", period

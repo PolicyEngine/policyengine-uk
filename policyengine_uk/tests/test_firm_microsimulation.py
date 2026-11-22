@@ -16,6 +16,7 @@ import pytest
 
 from policyengine_uk import Microsimulation
 from policyengine_uk.data import UKSingleYearDataset
+from policyengine_uk.model_api import WEEKS_IN_YEAR
 
 YEAR = 2026
 N_FIRMS = 200
@@ -162,7 +163,7 @@ def test_apprenticeship_levy_matches_hand_calculation(sim, params, firms):
 def test_employer_ni_before_allowance_matches_hand_calculation(sim, params, firms):
     scale = params.national_insurance.class_1.employer_scale
     rate = scale.rates[1]
-    annual_threshold = scale.thresholds[1] * 52
+    annual_threshold = scale.thresholds[1] * WEEKS_IN_YEAR
     expected = rate * np.maximum(
         firms.firm_paybill.values - firms.firm_employees.values * annual_threshold,
         0,

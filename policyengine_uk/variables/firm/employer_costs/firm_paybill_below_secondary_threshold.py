@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class firm_paybill_below_secondary_threshold(Variable):
     value_type = float
     entity = Firm
-    label = "Firm paybill of employees paid below the secondary threshold"
+    label = "Firm paybill of employees paid at or below the secondary threshold"
     documentation = (
         "Total Class 1 earnings for the year of the employees counted in "
         "firm_employees_below_secondary_threshold. Defaults to 0."

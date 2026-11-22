@@ -234,6 +234,7 @@ def test_firms_in_a_situation_leave_household_results_unchanged(name, year):
 @pytest.mark.parametrize("name,year", CASES)
 def test_firm_only_reform_leaves_household_results_unchanged(name, year):
     from policyengine_uk import Simulation
+    from policyengine_uk.variables.gov.gov_tax import GOV_TAX_VARIABLES
 
     situation = {**situations(year)[name], "firms": FIRMS}
     baseline = Simulation(situation=situation)
@@ -243,11 +244,12 @@ def test_firm_only_reform_leaves_household_results_unchanged(name, year):
         np.asarray(reformed.calculate("firm_tax", year)).sum()
         > np.asarray(baseline.calculate("firm_tax", year)).sum()
     )
-    expected = _values(baseline, HOUSEHOLD_VARIABLES, year)
-    actual = _values(reformed, HOUSEHOLD_VARIABLES, year)
+    variables = HOUSEHOLD_VARIABLES + tuple(GOV_TAX_VARIABLES)
+    expected = _values(baseline, variables, year)
+    actual = _values(reformed, variables, year)
     mismatches = {
         variable: (expected[variable], actual[variable])
-        for variable in HOUSEHOLD_VARIABLES
+        for variable in variables
         if not np.array_equal(expected[variable], actual[variable])
     }
     assert not mismatches, mismatches

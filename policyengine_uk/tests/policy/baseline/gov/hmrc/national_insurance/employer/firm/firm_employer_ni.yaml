@@ -84,3 +84,23 @@
     firm_employer_ni_before_allowance: [37_950, 37_500, 0]
     # Less the 10,500 Employment Allowance (capped at the liability).
     firm_employer_ni: [27_450, 27_000, 0]
+
+- name: Case 7, inconsistent pay-distribution inputs are clipped.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [200_000, 300_000, 300_000, 20_000]
+    firm_employees: [10, 10, 10, 5]
+    firm_employees_below_secondary_threshold: [15, -3, 3, 5]
+    firm_paybill_below_secondary_threshold: [60_000, -12_000, 40_000, 30_000]
+  output:
+    # Secondary threshold 5,000.
+    # Firm 1: headcount 15 capped at 10; paybill 60,000 capped at
+    # min(200,000, 10 x 5,000) = 50,000. (200,000 - 50,000) - 0 x 5,000 = 150,000.
+    # Firm 2: negative inputs floored at 0, the plain average:
+    # 300,000 - 10 x 5,000 = 250,000.
+    # Firm 3: paybill 40,000 capped at 3 x 5,000 = 15,000.
+    # (300,000 - 15,000) - 7 x 5,000 = 285,000 - 35,000 = 250,000.
+    # Firm 4: paybill 30,000 capped at min(20,000, 25,000) = 20,000.
+    # (20,000 - 20,000) - 0 x 5,000 = 0.
+    firm_class_1_earnings_above_secondary_threshold: [150_000, 250_000, 250_000, 0]
