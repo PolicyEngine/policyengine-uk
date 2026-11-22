@@ -1,19 +1,20 @@
-# Firm-level VAT (planned)
+# Firm-level VAT
 
-```{warning}
-**Not yet modelled.** PolicyEngine UK models VAT only on *household
-consumption*: the `vat` variable applies `gov.hmrc.vat.standard_rate` and
-`gov.hmrc.vat.reduced_rate` to each household's standard- and reduced-rate
-spending (`full_rate_vat_consumption`, `reduced_rate_vat_consumption`), then
-grosses the result up to VAT receipts. VAT on the household's own electricity
-and gas bills (`domestic_energy_vat`, at `gov.hmrc.vat.domestic_electricity_rate`
-and `gov.hmrc.vat.reduced_rate`) is added once, without the gross-up. There is
-no business side. This page
-sets out the scope for adding firm-level VAT and a `Firm` entity, tracked in
-[#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320), which is
-still open (October 2026). The companion analysis issue,
-[#1333](https://github.com/PolicyEngine/policyengine-uk/issues/1333), was
-closed on 20 October 2026 as a duplicate of #1320.
+```{note}
+**Partly modelled.** PolicyEngine UK now has a `Firm` entity and firm-side
+VAT rules (see [Firms](../../../usage/firms.md)): the registration threshold
+(`gov.hmrc.vat.registration.threshold`, £90,000 since 1 April 2024),
+output VAT on standard- and reduced-rated supplies, recoverable input VAT
+with a partial exemption share, net liability (`firm_vat`) and the flat
+rate scheme, including the limited cost trader rate. Supplies are firm
+inputs; the sector-driven supply split, VAT groups, cross-border rules and
+a calibrated firm dataset are not yet modelled. The household-side `vat`
+variable is unchanged, and firm-side VAT is not yet linked to it. Tracked
+in [#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320).
+The design notes below predate the implementation: the `Firm` entity was
+built as a population of its own, with no person members, rather than the
+group entity with an owner role sketched under "Entity", and the variable
+and parameter names differ.
 ```
 
 ## Why firm-level VAT?

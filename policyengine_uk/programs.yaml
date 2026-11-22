@@ -266,6 +266,104 @@ programs:
     verified_end_year: 2030
     notes: Receipts allocated to households by shareholding. Local and central rating lists; outturn from 2020-21 (Northern Ireland's first year) to 2025-26 (Wales 2024-25), then OBR March 2026 receipts forecasts to 2030-31.
 
+  # --- Firm-side programs (firm entity; not in the budget totals) ---
+  - id: corporation_tax
+    name: Corporation tax
+    full_name: Corporation Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: corporation_tax
+    parameter_prefix: gov.hmrc.corporation_tax
+    verified_start_year: 2025
+    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief. No group relief, Patent Box or quarterly instalments. Not in household_tax or gov_tax.
+
+  - id: bank_surcharge
+    name: Bank surcharge
+    full_name: Bank Corporation Tax Surcharge
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: bank_surcharge
+    parameter_prefix: gov.hmrc.bank_surcharge
+    verified_start_year: 2026
+    notes: Firm-level surcharge on banking companies' profits above the surcharge allowance. The 6% rate announced for 1 January 2027 to 31 March 2028 is not yet enacted. Not in household_tax or gov_tax.
+
+  - id: apprenticeship_levy
+    name: Apprenticeship levy
+    full_name: Apprenticeship Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: apprenticeship_levy
+    parameter_prefix: gov.hmrc.apprenticeship_levy
+    verified_start_year: 2017
+    notes: Firm-level levy on the paybill less the levy allowance, with the allowance shared across connected employers. Not in household_tax or gov_tax.
+
+  - id: firm_employer_ni
+    name: Employer National Insurance (firms)
+    full_name: Class 1 secondary National Insurance contributions of employers
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_employer_ni
+    parameter_prefix: gov.hmrc.national_insurance.class_1
+    verified_start_year: 2024
+    notes: Firm-level employer National Insurance after the Employment Allowance. Earnings above the secondary threshold are approximated from paybill and employees unless given as an input. The household-side measure is ni_employer under the national_insurance entry. Not in household_tax or gov_tax.
+
+  - id: employment_allowance
+    name: Employment Allowance
+    full_name: Employment Allowance against employer National Insurance
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: employment_allowance
+    parameter_prefix: gov.hmrc.national_insurance.employment_allowance
+    verified_start_year: 2024
+    notes: Firm-level allowance, capped at the employer's Class 1 secondary liability. Covers the single-director and public-body exclusions and the prior-year liabilities limit for 2020-21 to 2024-25. Not in household_tax or gov_tax.
+
+  - id: firm_business_rates
+    name: Business rates (firms)
+    full_name: Non-domestic rates payable by firms in England
+    category: Taxes
+    agency: Local
+    status: partial
+    coverage: England
+    variable: firm_business_rates
+    parameter_prefix: gov.hmrc.business_rates
+    verified_start_year: 2023
+    verified_end_year: 2027
+    notes: Firm-level statutory liability on one aggregate property per firm, with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
+
+  - id: firm_vat
+    name: VAT (firms)
+    full_name: Value Added Tax payable by registered businesses
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_vat
+    parameter_prefix: gov.hmrc.vat
+    verified_start_year: 2025
+    notes: Firm-level output VAT less recoverable input VAT, with partial exemption, the registration threshold and the flat rate scheme including the limited cost trader rate. Registration is tested on annual turnover; no cash or annual accounting. The household-side measure is the vat entry. Not in household_tax or gov_tax.
+
+  - id: auto_enrolment_employer_contribution
+    name: Auto-enrolment employer contribution
+    full_name: Automatic enrolment employer minimum pension contribution
+    category: Other
+    agency: DWP
+    status: partial
+    coverage: UK
+    variable: firm_auto_enrolment_employer_contribution
+    parameter_prefix: gov.dwp.auto_enrolment
+    verified_start_year: 2025
+    notes: Firm-level employer minimum contribution on qualifying earnings, approximated from paybill and employees.
+
   - id: minimum_wage
     name: National Minimum Wage
     full_name: National Minimum Wage / National Living Wage
