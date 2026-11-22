@@ -90,10 +90,12 @@ That means:
   too (less £10 on that route), but for working-age applicants with
   Universal Credit it counts it in full in Wales and in the five English
   council schemes it holds (Merton, Kingston upon Thames, Newham and
-  Westminster, and Oxford from April 2026). Elsewhere in England the model
-  uses a working-age applicant's reported reduction, capped at their share
-  of a jointly liable bill when another claim in the household is paid a
-  simulated reduction and no one counted in the share may be a student. The
+  Westminster, and Oxford from April 2026). For working-age applicants in
+  other English councils, the model uses the reported reduction in place of
+  a local income assessment. It caps the report at the claimant's share of
+  the bill only when that share is below the full bill, another claim in the
+  household receives a positive simulated reduction, and the model flags no
+  one counted in the share as a possible excluded student. The
   model leaves WPA out of Scotland's working-age scheme, and out of the
   Welsh one for applicants without Universal Credit, although both count
   it less £15 a week, and Wales also disregards the income tax on it
