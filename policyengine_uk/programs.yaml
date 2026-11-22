@@ -338,7 +338,7 @@ programs:
     parameter_prefix: gov.hmrc.business_rates
     verified_start_year: 2023
     verified_end_year: 2027
-    notes: Firm-level statutory liability on one aggregate property per firm. England with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs; Wales (multipliers and SBRR) and Scotland (poundage and Small Business Bonus Scheme) from 2023-24; Northern Ireland not modelled. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
+    notes: Firm-level statutory liability on one aggregate property per firm. England with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs; Wales (multipliers, SBRR and charitable relief) and Scotland (poundage, Small Business Bonus Scheme and charitable relief) from 2023-24; Northern Ireland not modelled. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
 
   - id: firm_vat
     name: VAT (firms)

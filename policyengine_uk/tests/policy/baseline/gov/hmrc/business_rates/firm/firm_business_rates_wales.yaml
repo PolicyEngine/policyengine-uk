@@ -97,3 +97,53 @@
     firm_rateable_value: 30_000
   output:
     firm_business_rates: 0
+
+# Mandatory charitable relief in Wales: the ratepayer pays one fifth
+# (LGFA 1988 Sch 4ZA para 2; s.43(5)-(6) before April 2024). Where charity
+# relief and SBRR both apply, the charity calculation is used (Sch 4ZA
+# para 9; s.43(8B) before April 2024), even where SBRR would give more.
+- name: Wales large charity gets 80% charitable relief
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    firm_region: WALES
+    firm_rateable_value: 100_000
+    firm_is_charity: true
+  output:
+    # 100,000 x 0.568 = 56,800; relief 56,800 x 0.8 = 45,440;
+    # rates 56,800 - 45,440 = 11,360.
+    firm_charitable_rate_relief: 45_440
+    firm_business_rates_reliefs: 45_440
+    firm_business_rates: 11_360
+
+- name: Wales small charity gets charitable relief instead of SBRR
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES, WALES]
+    firm_rateable_value: [6_000, 9_000, 6_000]
+    firm_is_charity: [true, true, true]
+    firm_property_occupied: [true, true, false]
+  output:
+    # 6,000 x 0.568 = 3,408. SBRR alone would be 100% (3,408), but the
+    # charity calculation is used: relief 3,408 x 0.8 = 2,726.4, rates 681.6.
+    # 9,000 x 0.568 = 5,112. SBRR alone would be 50% (2,556); charity relief
+    # 5,112 x 0.8 = 4,089.6, rates 1,022.4.
+    # Unoccupied: no charitable relief or SBRR; empty property relief in
+    # Wales is not modelled, so rates 3,408.
+    firm_charitable_rate_relief: [2_726.4, 4_089.6, 0]
+    firm_business_rates_reliefs: [2_726.4, 4_089.6, 0]
+    firm_business_rates: [681.6, 1_022.4, 3_408]
+
+- name: Wales small charity in 2023-24, under s.43(5) and (8B)
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_region: WALES
+    firm_rateable_value: 6_000
+    firm_is_charity: true
+  output:
+    # 6,000 x 0.535 = 3,210; charity relief 3,210 x 0.8 = 2,568 (not the
+    # 100% SBRR); rates 642.
+    firm_business_rates_reliefs: 2_568
+    firm_business_rates: 642

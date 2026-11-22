@@ -1,6 +1,7 @@
-description: Mandatory charitable rate relief in England, as a share of the rates bill, for property occupied by a charity and used wholly or mainly for charitable purposes.
-# The ratepayer pays one fifth of the bill. Private schools in England are
-# excluded (Sch 4ZA para 2(3)); not modelled.
+description: Mandatory charitable rate relief in England, Wales and Scotland, as a share of the rates bill, for property occupied by a charity and used wholly or mainly for charitable purposes.
+# The ratepayer pays one fifth of the bill in England, Wales and Scotland.
+# Private and independent schools are excluded (England Sch 4ZA para 2(3),
+# Wales para 2A, Scotland 1962 Act s.4(9)); not modelled.
 values:
   # From 1 April 1990 the charge was A x B / (C x 5), one fifth of the full
   # bill (LGFA 1988 s.43(5)-(6) as enacted). Schedule 4ZA para 2 restates the
@@ -20,5 +21,7 @@ metadata:
       href: https://www.legislation.gov.uk/ukpga/1988/41/section/43/enacted
     - title: Local Government Finance Act 1988 Schedule 4ZA para 2(1) and (2)(a) (A x M / (C x 5), from 1 April 2024)
       href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
+    - title: Local Government (Financial Provisions etc.) (Scotland) Act 1962 s.4(2) (rate not to exceed one fifth for a charity)
+      href: https://www.legislation.gov.uk/ukpga/1962/9/section/4
     - title: GOV.UK, Charitable rate relief (80%)
       href: https://www.gov.uk/apply-for-business-rate-relief/charitable-rate-relief

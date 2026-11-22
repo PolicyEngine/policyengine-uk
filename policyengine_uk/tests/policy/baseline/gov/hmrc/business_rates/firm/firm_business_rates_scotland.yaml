@@ -85,3 +85,44 @@
     # Two properties (multi-entry SBBS not modelled) or unoccupied: none.
     firm_business_rates_reliefs: [4_980, 0, 0]
     firm_business_rates: [0, 4_980, 4_980]
+
+# Mandatory charitable relief in Scotland: the rate may not exceed one fifth
+# (Local Government (Financial Provisions etc.) (Scotland) Act 1962 s.4(2)).
+# SBBS is reduced by any s.4(2) reduction, but only down to nil (levying
+# regulations reg 3(4), 2023 to 2026), so a charity gets the larger of the
+# two reliefs.
+- name: Scotland large charity gets 80% charitable relief
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: SCOTLAND
+    firm_rateable_value: 1_000_000
+    firm_is_charity: true
+  output:
+    # 1,000,000 x (0.481 + 0.067) = 548,000; relief 548,000 x 0.8 = 438,400;
+    # rates 109,600.
+    firm_charitable_rate_relief: 438_400
+    firm_business_rates_reliefs: 438_400
+    firm_business_rates: 109_600
+
+- name: Scotland small charity gets the larger of SBBS and charitable relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
+    firm_rateable_value: [10_000, 12_001, 13_500, 10_000]
+    firm_n_properties: [1, 1, 1, 2]
+    firm_is_charity: [true, true, true, true]
+  output:
+    # Gross = RV x 0.481.
+    # 10,000 -> 4,810. SBBS 100% (4,810) exceeds charity 3,848, so relief
+    #   4,810 and rates 0.
+    # 12,001 -> 5,772.481. SBBS 99.975% = 5,771.037880 exceeds charity
+    #   4,617.9848; rates 1.443120.
+    # 13,500 -> 6,493.5. SBBS 62.5% = 4,058.4375 is below charity
+    #   6,493.5 x 0.8 = 5,194.8; relief 5,194.8, rates 1,298.7.
+    # 10,000 on two properties: multi-entry SBBS is not modelled, so charity
+    #   relief only, 3,848; rates 962.
+    firm_charitable_rate_relief: [3_848, 4_617.9848, 5_194.8, 3_848]
+    firm_business_rates_reliefs: [4_810, 5_771.037880, 5_194.8, 3_848]
+    firm_business_rates: [0, 1.443120, 1_298.7, 962]
