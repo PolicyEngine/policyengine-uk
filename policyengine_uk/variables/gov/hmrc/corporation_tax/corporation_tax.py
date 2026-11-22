@@ -8,7 +8,8 @@ class corporation_tax(Variable):
     label = "Corporation tax"
     documentation = (
         "Corporation tax after setting the R&D expenditure credit against it. "
-        "Any credit above the tax is shown in firm_rdec_excess_payable. "
+        "The part of the credit paid out, after the notional tax deduction, is "
+        "firm_rdec_excess_payable. "
         "The bank surcharge is a separate variable."
     )
     definition_period = YEAR

@@ -9,9 +9,9 @@ class firm_rd_expenditure_credit(Variable):
         "R&D expenditure credit on qualifying expenditure for a company that "
         "does not claim SME relief: the merged scheme credit from April 2024 "
         "and the large-company credit before. The credit is a taxable receipt "
-        "of the trade and is set against corporation tax. The notional tax "
-        "deduction, the PAYE cap and payment steps for loss-makers are not "
-        "modelled."
+        "of the trade and is set against corporation tax; "
+        "firm_rdec_excess_payable gives the part paid out after the notional "
+        "tax deduction."
     )
     definition_period = YEAR
     unit = GBP

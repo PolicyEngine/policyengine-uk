@@ -101,3 +101,98 @@
     firm_rd_additional_deduction: [130_000, 0]
     firm_rd_payable_credit: [26_100, 0]
     firm_rd_expenditure_credit: [0, 13_000]
+
+# R&D expenditure credit payable after corporation tax (CTA 2009 s. 1042I).
+# Step 1 sets the credit against the year's tax; step 2 (s. 1042K) caps what
+# is left at the credit less notional tax on the credit, at the main rate if
+# the company has profits chargeable at the main rate ignoring the credit and
+# at the small profits rate otherwise. Before April 2024 the RDEC step 2
+# (s. 104N) always used the main rate. The firms are large companies, so all
+# R&D goes to the expenditure credit.
+- name: Case 7, loss-making company pays notional tax at the small profits rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+  output:
+    # Credit 20% x 1,000,000 = 200,000. Profits -1,000,000 + 200,000 < 0, so
+    # no tax and step 1 leaves 200,000. No profits ignoring the credit, so
+    # notional tax at 19% x 200,000 = 38,000. Payable 200,000 - 38,000
+    # = 162,000.
+    firm_rd_expenditure_credit: 200_000
+    corporation_tax_before_credits: 0
+    corporation_tax: 0
+    firm_rdec_excess_payable: 162_000
+
+- name: Case 8, main-rate company whose step 1 remainder is under the cap.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_n_associated_companies: 0
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: 300_000
+  output:
+    # Credit 200,000. Taxable 300,000 + 200,000 = 500,000, above the
+    # 250,000 upper limit: tax 25% x 500,000 = 125,000. Step 1 leaves
+    # 200,000 - 125,000 = 75,000. Profits ignoring the credit are 300,000,
+    # above the lower limit, so the cap is 200,000 x (1 - 25%) = 150,000.
+    # Payable 75,000.
+    corporation_tax_before_credits: 125_000
+    corporation_tax: 0
+    firm_rdec_excess_payable: 75_000
+
+- name: Case 9, main rate for a marginal relief company ignoring the credit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0]
+    firm_qualifying_rd_expenditure: [500_000, 500_000]
+    firm_total_relevant_expenditure: [10_000_000, 10_000_000]
+    firm_taxable_trading_profit: [1_000, 1_000]
+    firm_exempt_distributions: [60_000, 0]
+  output:
+    # Both: credit 20% x 500,000 = 100,000; taxable 1,000 + 100,000 = 101,000.
+    # First: augmented 161,000, in the marginal relief band. Tax 25% x
+    # 101,000 - 3/200 x (250,000 - 161,000) x 101,000 / 161,000 = 25,250
+    # - 837.48 = 24,412.52. Step 1 leaves 75,587.48. Ignoring the credit,
+    # taxable 1,000 and augmented 61,000 exceed the 50,000 lower limit, so
+    # main rate: cap 100,000 x 75% = 75,000. Payable 75,000.
+    # Second: augmented 101,000. Tax 25,250 - 3/200 x 149,000 = 23,015. Step
+    # 1 leaves 76,985. Ignoring the credit augmented profits are 1,000, so
+    # the small profits rate: cap 100,000 x 81% = 81,000. Payable 76,985.
+    corporation_tax_before_credits: [24_412.52, 23_015]
+    firm_rdec_excess_payable: [75_000, 76_985]
+
+- name: Case 10, notional tax at the single 19% main rate in 2022 (s. 104N).
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+  output:
+    # Large-company RDEC 13% x 1,000,000 = 130,000; no tax. Notional tax at
+    # the 19% main rate: 130,000 x 81% = 105,300.
+    firm_rd_expenditure_credit: 130_000
+    firm_rdec_excess_payable: 105_300
+
+- name: Case 11, notional tax at the 25% main rate for a loss-maker in 2023 (s. 104N).
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+  output:
+    # RDEC 20% x 1,000,000 = 200,000; no tax. Before the merged scheme step 2
+    # uses the main rate even with no profits: 200,000 x 75% = 150,000.
+    firm_rd_expenditure_credit: 200_000
+    firm_rdec_excess_payable: 150_000

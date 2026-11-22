@@ -100,16 +100,19 @@
     # 160,000,000 - 10,000,000 = 150,000,000 at 25% = 37,500,000.
     firm_taxable_profit: [150_000_000]
     corporation_tax: [37_500_000]
-    # Bank surcharge: 3% x (150,000,000 - 100,000,000 allowance) = 1,500,000.
-    bank_surcharge: [1_500_000]
+    # Bank surcharge rate for 2026-27, day-weighted from 6 April 2026: 270
+    # days at 3% and 95 days at 6% from 1 January 2027, (270 x 3% + 95 x 6%)
+    # / 365 = 13.8 / 365. Times (150,000,000 - 100,000,000 allowance)
+    # = 1,890,410.96.
+    bank_surcharge: [1_890_410.96]
     # Business rates: 2,000,000 x 50.8p high-value multiplier = 1,016,000.
     firm_business_rates: [1_016_000]
-    # firm_tax: 37,500,000 + 1,500,000 + 485,000 + 14,239,500 + 1,016,000
-    # + 0 VAT = 54,740,500.
-    firm_tax: [54_740_500]
-    # firm_only_tax: 37,500,000 + 1,500,000 + 485,000 + 1,016,000
-    # = 40,501,000.
-    firm_only_tax: [40_501_000]
+    # firm_tax: 37,500,000 + 1,890,410.96 + 485,000 + 14,239,500 + 1,016,000
+    # + 0 VAT = 55,130,910.96.
+    firm_tax: [55_130_910.96]
+    # firm_only_tax: 37,500,000 + 1,890,410.96 + 485,000 + 1,016,000
+    # = 40,891,410.96.
+    firm_only_tax: [40_891_410.96]
 
 - name: Case 3, R&D tax credits paid out reduce firm tax.
   period: 2026

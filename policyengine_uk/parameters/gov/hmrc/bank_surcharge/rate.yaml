@@ -1,4 +1,4 @@
-description: Bank corporation tax surcharge rate charged on a banking company's surcharge profits above its surcharge allowance. Dates are the legal start dates; for each financial year label the model reads the value in force on 30 April, so a mid-year change (1 January 2016, 1 January 2027) takes effect from the next year label rather than being apportioned.
+description: Bank corporation tax surcharge rate charged on a banking company's surcharge profits above its surcharge allowance. Dates are the legal start dates; each year label is the day-weighted average over 6 April to 5 April, which approximates the apportionment of an accounting period that straddles a change (1 January 2016, 1 January 2027).
 values:
   2015-04-01:
     value: 0
@@ -45,6 +45,14 @@ metadata:
   unit: /1
   period: year
   label: Bank surcharge rate
+  # Commencement provisions split an accounting period that straddles a rate
+  # change in two and apportion profits between the parts by time (for
+  # example Finance Act 2022 s. 6(4)-(6) with Corporation Tax Act 2010
+  # s. 1172). Day-weighting over the fiscal year approximates that for a firm
+  # with an April to March year, as for the annual investment allowance
+  # limit. The window runs from 6 April, so a change dated 1 April (2023,
+  # 2028) puts 5 days at the new rate into the previous year label.
+  fiscal_year_blend: true
   reference:
     - title: Corporation Tax Act 2010 s. 269DA
       href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DA
