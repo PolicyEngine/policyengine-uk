@@ -16,9 +16,13 @@ class firm_business_rates_multiplier(Variable):
         "£500,000 pay the lower RHL multipliers. The small multiplier is "
         "chosen by rateable value alone; the 1p Transitional Relief "
         "Supplement for 2026-27 is not modelled. "
-        "Wales: one multiplier to 2025-26; from 2026-27 the standard "
-        "multiplier, or the higher multiplier above £100,000. The 2026-27 "
-        "retail multiplier for small and medium shops is not modelled. "
+        "Wales: one multiplier to 2025-26. From 2026-27 the retail "
+        "multiplier for shops, kiosks, pharmacies and post offices below "
+        "£51,000 (firm_is_wales_retail_property), the higher multiplier "
+        "above £100,000 unless the property has one of the 19 excluded "
+        "public-service descriptions "
+        "(firm_is_wales_higher_multiplier_excluded), and the standard "
+        "multiplier otherwise (WSI 2025/1163 regs 3 and 4). "
         "Scotland: the basic property rate, plus the intermediate property "
         "supplement above £51,000 up to £100,000, or the higher property "
         "supplement above £100,000. The firm's rateable value is treated as "
@@ -30,6 +34,7 @@ class firm_business_rates_multiplier(Variable):
         "https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA",
         "https://www.gov.uk/government/publications/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027",
         "https://businesswales.gov.wales/non-domestic-rates-multipliers",
+        "https://www.legislation.gov.uk/wsi/2025/1163/made",
         "https://www.legislation.gov.uk/ssi/2026/68/made",
     ]
 
@@ -54,7 +59,17 @@ class firm_business_rates_multiplier(Variable):
 
         # Wales
         w = br.wales.multipliers
-        wales = where(rateable_value > w.higher_threshold, w.higher, w.standard)
+        is_wales_retail = firm("firm_is_wales_retail_property", period) & (
+            rateable_value < w.retail_threshold
+        )
+        is_wales_higher = (rateable_value > w.higher_threshold) & ~firm(
+            "firm_is_wales_higher_multiplier_excluded", period
+        )
+        wales = select(
+            [is_wales_retail, is_wales_higher],
+            [w.retail, w.higher],
+            default=w.standard,
+        )
 
         # Scotland
         s = br.scotland.poundage

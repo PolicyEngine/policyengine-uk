@@ -286,3 +286,25 @@
     # bind and payable is 162,000 as in case 7 (cases 10 and 11 cover
     # 2022 and 2023).
     firm_rdec_excess_payable: 162_000
+
+- name: Case 18, R&D intensity at the 30% condition in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.000001
+  input:
+    firm_qualifying_rd_expenditure: [299_999, 300_000, 0]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000, 0]
+  output:
+    # 299,999 / 1,000,000 = 0.299999, below 30%; 300,000 / 1,000,000 = 0.3
+    # meets it. A zero total gives an intensity of 0, not a division error.
+    firm_rd_intensity: [0.299999, 0.3, 0]
+    firm_is_rd_intensive: [false, true, false]
+
+- name: Case 19, R&D intensity at the 40% condition in 2023-24.
+  period: 2023
+  input:
+    firm_qualifying_rd_expenditure: [399_999, 400_000, 300_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000, 1_000_000]
+  output:
+    # 39.9999% is below 40%; 40% meets it; 30% meets the 2024 condition
+    # but not the 40% that applied in 2023-24.
+    firm_is_rd_intensive: [false, true, false]

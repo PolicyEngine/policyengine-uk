@@ -35,3 +35,26 @@
     # Full relief: min(10m, 8m) = 8m used, taxable 0.
     firm_losses_used: 8_000_000
     firm_taxable_profit: 0
+
+- name: Case 3, profits just above the 5m deductions allowance in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0, 0]
+    firm_taxable_trading_profit: [5_000_000, 5_000_001, 5_000_002]
+    firm_losses_brought_forward: [6_000_000, 6_000_000, 5_000_000]
+    firm_capital_allowances: [0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0]
+  output:
+    # 5,000,000 at the allowance: all 5,000,000 relieved, taxable 0.
+    # 5,000,001: cap 5,000,000 + 50% x 1 = 5,000,000.5 binds, taxable 0.5.
+    # 5,000,002 with 5,000,000 of losses: cap 5,000,001 does not bind, so
+    #   5,000,000 used, taxable 2.
+    # Float32 holds 5,000,000.5 exactly (spacing 0.5 between 4,194,304 and
+    #   8,388,608), so the 0.01 margin is enough.
+    firm_losses_used: [5_000_000, 5_000_000.5, 5_000_000]
+    firm_taxable_profit: [0, 0.5, 2]
+    # 19% (under the lower limit): 0; 19% x 0.5 = 0.095; 19% x 2 = 0.38.
+    corporation_tax: [0, 0.095, 0.38]

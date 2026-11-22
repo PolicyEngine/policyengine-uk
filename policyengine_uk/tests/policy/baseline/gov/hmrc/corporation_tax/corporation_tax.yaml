@@ -209,3 +209,67 @@
     firm_corporation_tax_upper_limit: [50_000, 50_000, 50_000, 50_000, 50_000]
     firm_marginal_relief: [0, 599.985, 0.015, 0, 0]
     corporation_tax: [1_900, 1_900.265, 12_499.735, 12_500, 12_500.25]
+
+- name: Case 12, small profits rate, marginal relief and main rate in 2023-24.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0, 0, 0, 0]
+    firm_taxable_trading_profit: [50_000, 50_001, 150_000, 250_000, 300_000]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # From 1 April 2023: main rate 25%, small profits rate 19%, limits
+    #   50,000 and 250,000, marginal relief fraction 3/200.
+    # 50,000 is at the lower limit: 19% x 50,000 = 9,500.
+    # 50,001: 25% x 50,001 = 12,500.25; relief 0.015 x (250,000 - 50,001)
+    #   = 2,999.985; tax 9,500.265.
+    # 150,000: 37,500 - 0.015 x 100,000 = 37,500 - 1,500 = 36,000.
+    # 250,000 at the upper limit: relief 0; tax 62,500.
+    # 300,000 above the upper limit: 25% x 300,000 = 75,000.
+    firm_marginal_relief: [0, 2_999.985, 1_500, 0, 0]
+    corporation_tax: [9_500, 9_500.265, 36_000, 62_500, 75_000]
+
+- name: Case 13, small profits rate, marginal relief and main rate in 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0, 0, 0, 0]
+    firm_taxable_trading_profit: [50_000, 50_001, 150_000, 250_000, 300_000]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # 2024-25: the same rates, limits and fraction as 2023-24.
+    # 50,000 is at the lower limit: 19% x 50,000 = 9,500.
+    # 50,001: 25% x 50,001 = 12,500.25; relief 0.015 x (250,000 - 50,001)
+    #   = 2,999.985; tax 9,500.265.
+    # 150,000: 37,500 - 0.015 x 100,000 = 37,500 - 1,500 = 36,000.
+    # 250,000 at the upper limit: relief 0; tax 62,500.
+    # 300,000 above the upper limit: 25% x 300,000 = 75,000.
+    firm_marginal_relief: [0, 2_999.985, 1_500, 0, 0]
+    corporation_tax: [9_500, 9_500.265, 36_000, 62_500, 75_000]
+
+- name: Case 14, small profits rate, marginal relief and main rate in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY]
+    firm_n_associated_companies: [0, 0, 0, 0, 0]
+    firm_taxable_trading_profit: [50_000, 50_001, 150_000, 250_000, 300_000]
+    firm_capital_allowances: [0, 0, 0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0, 0, 0]
+  output:
+    # 2025-26: the same rates, limits and fraction as 2023-24.
+    # 50,000 is at the lower limit: 19% x 50,000 = 9,500.
+    # 50,001: 25% x 50,001 = 12,500.25; relief 0.015 x (250,000 - 50,001)
+    #   = 2,999.985; tax 9,500.265.
+    # 150,000: 37,500 - 0.015 x 100,000 = 37,500 - 1,500 = 36,000.
+    # 250,000 at the upper limit: relief 0; tax 62,500.
+    # 300,000 above the upper limit: 25% x 300,000 = 75,000.
+    firm_marginal_relief: [0, 2_999.985, 1_500, 0, 0]
+    corporation_tax: [9_500, 9_500.265, 36_000, 62_500, 75_000]

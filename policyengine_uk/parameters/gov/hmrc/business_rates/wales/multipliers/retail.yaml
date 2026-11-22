@@ -1,0 +1,21 @@
+description: Retail non-domestic rating multiplier in Wales, for shops, kiosks, pharmacies and post offices with rateable value below the retail multiplier threshold.
+# Before 2026-27 this equals the single Welsh multiplier, so it has no effect.
+# From 2026-27 it is 0.697 times the standard multiplier (0.697 x 0.502 =
+# 0.349894), calculated to three decimal places only (LGFA 1988 Sch 7
+# para A19(2)) and published as 0.350.
+values:
+  2023-04-01: 0.535
+  2024-04-01: 0.562
+  2025-04-01: 0.568
+  2026-04-01: 0.350
+metadata:
+  label: Wales retail non-domestic rating multiplier
+  unit: /1
+  period: year
+  reference:
+    - title: The Non-Domestic Rating (Value of Differential Multipliers) (Wales) Regulations 2026 (WSI 2026/39), reg 2(1)(a) (retail multiplier 0.697 times the standard)
+      href: https://www.legislation.gov.uk/wsi/2026/39/made
+    - title: Local Government Finance Act 1988, Schedule 7, para A19(2) (differential multipliers calculated to three decimal places only)
+      href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/7
+    - title: Business Wales, Non-domestic rates multipliers 2026-27 (retail multiplier 0.350)
+      href: https://businesswales.gov.wales/non-domestic-rates-multipliers

@@ -3,3 +3,4 @@ Added a firm-level National Minimum Wage floor: firm_minimum_wage_cost tops low-
 Added the R&D expenditure credit notional tax deduction to the payable credit, and to the bank surcharge the exclusion of the credit from surcharge profits, a group share of the allowance and day-weighting of the rate across the 1 January 2027 change.
 Added firm business rates for Wales and Scotland with charitable relief, the live music venue limit on the pubs relief large-venue rate, the three-decimal small business rate relief taper factor, and firm employer Class 1A National Insurance.
 Added the PAYE and National Insurance cap on the payable R&D expenditure credit.
+Added the 2026-27 Welsh retail multiplier and the public-service exclusions from the Welsh higher multiplier.

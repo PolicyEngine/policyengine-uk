@@ -171,3 +171,15 @@
   output:
     firm_gross_business_rates: [0]
     firm_business_rates: [0]
+
+- name: 2023-24 multiplier switch at £51,000, and no English rates in Northern Ireland
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [NORTHERN_IRELAND, LONDON, LONDON]
+    firm_rateable_value: [100_000, 50_999, 51_000]
+  output:
+    # Northern Ireland is outside England: 0.
+    # 50,999 x 0.499 = 25,448.501 (above 15,000, so no SBRR).
+    # 51,000 x 0.512 = 26,112.
+    firm_business_rates: [0, 25_448.501, 26_112]

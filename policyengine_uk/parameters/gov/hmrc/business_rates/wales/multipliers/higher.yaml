@@ -1,5 +1,8 @@
 description: Higher non-domestic rating multiplier in Wales, for properties with rateable value above the higher multiplier threshold.
-# Before 2026-27 this equals the single Welsh multiplier, so it has no effect.
+# Before 2026-27 this equals the single Welsh multiplier, and the threshold
+# is infinite, so it has no effect. From 1 April 2027 WSI 2026/133 raises
+# it to 1.042 times the standard multiplier; 2027-28 values are not set yet
+# and the 2026-27 value carries forward.
 values:
   2023-04-01: 0.535
   2024-04-01: 0.562

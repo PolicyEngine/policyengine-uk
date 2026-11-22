@@ -254,3 +254,12 @@
     # AIA 200,000; 100,000 pooled at 18% = 18,000.
     firm_annual_investment_allowance: [200_000]
     firm_capital_allowances: [218_000]
+
+- name: Case 21, AIA limit share in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_aia_share: [1, 0.25]
+  output:
+    # 1 x 1,000,000 = 1,000,000; 0.25 x 1,000,000 = 250,000.
+    firm_annual_investment_allowance_limit: [1_000_000, 250_000]

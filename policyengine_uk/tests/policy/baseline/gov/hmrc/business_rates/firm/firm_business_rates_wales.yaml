@@ -1,5 +1,6 @@
 # Wales non-domestic rates. Multipliers: 0.535 (2023-24), 0.562 (2024-25),
-# 0.568 (2025-26); 2026-27 standard 0.502, higher 0.515 above £100,000.
+# 0.568 (2025-26); 2026-27 standard 0.502, higher 0.515 above £100,000,
+# retail 0.350 below £51,000.
 # SBRR: 100% at RV £6,000 or less, tapering linearly to 0% at £12,000, on at
 # most two properties. Margin 0.01 for float32 storage.
 - name: Wales standard property, single multiplier 2023-24 to 2025-26
@@ -77,7 +78,7 @@
     firm_business_rates_multiplier: [0.502, 0.515, 0.515]
     firm_business_rates: [50_200, 51_500.515, 257_500]
 
-- name: Wales firm gets no English SBRR or RHL multiplier; the Welsh retail multiplier is not modelled
+- name: Wales firm gets no English SBRR or RHL multiplier
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -86,9 +87,64 @@
     firm_is_rhl_property: true
   output:
     # 13,500 x 0.502 = 6,777; above £12,000 so no Welsh SBRR, and the
-    # English SBRR and RHL relief do not apply. A small Welsh shop would pay
-    # the 0.350 retail multiplier, which is not modelled.
+    # English SBRR and RHL relief do not apply. The English RHL flag does
+    # not give the Welsh retail multiplier.
     firm_business_rates: 6_777
+
+# Welsh retail multiplier from 2026-27 (WSI 2025/1163 reg 3; WSI 2026/39):
+# 0.350 for shops, kiosks, pharmacies and post offices below £51,000.
+- name: Wales 2026-27 retail multiplier at its £51,000 boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES, WALES]
+    firm_rateable_value: [50_999, 51_000, 50_999]
+    firm_is_wales_retail_property: [true, true, false]
+  output:
+    # Shop below £51,000: 50,999 x 0.350 = 17,849.65.
+    # Shop at £51,000 (not "less than"): 51,000 x 0.502 = 25,602.
+    # Not a shop: 50,999 x 0.502 = 25,601.498.
+    firm_business_rates_multiplier: [0.350, 0.502, 0.502]
+    firm_business_rates: [17_849.65, 25_602, 25_601.498]
+
+- name: Wales 2026-27 small shop gets SBRR on the retail-multiplier bill
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: WALES
+    firm_rateable_value: 9_000
+    firm_is_wales_retail_property: true
+  output:
+    # Gross 9,000 x 0.350 = 3,150. SBRR tapers 100% to 0% from £6,000 to
+    # £12,000: 50% = 1,575; rates 1,575.
+    firm_business_rates_reliefs: 1_575
+    firm_business_rates: 1_575
+
+- name: Wales retail flag has no effect before 2026-27 or outside Wales
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, LONDON]
+    firm_rateable_value: [30_000, 30_000]
+    firm_is_wales_retail_property: [true, true]
+  output:
+    # Wales 2025-26 single multiplier 0.568; England 2025-26 small business
+    # multiplier 0.499.
+    firm_business_rates_multiplier: [0.568, 0.499]
+
+# Higher multiplier exclusions (WSI 2025/1163 reg 4): 19 public-service
+# descriptions stay on the standard multiplier above £100,000.
+- name: Wales 2026-27 excluded description stays on the standard multiplier
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES]
+    firm_rateable_value: [200_000, 200_000]
+    firm_is_wales_higher_multiplier_excluded: [true, false]
+  output:
+    # Hospital: 200,000 x 0.502 = 100,400; other: 200,000 x 0.515 = 103,000.
+    firm_business_rates_multiplier: [0.502, 0.515]
+    firm_business_rates: [100_400, 103_000]
 
 - name: Northern Ireland is not modelled
   period: 2026
@@ -147,3 +203,25 @@
     # 100% SBRR); rates 642.
     firm_business_rates_reliefs: 2_568
     firm_business_rates: 642
+
+- name: Wales flagged shop above £100,000 pays the higher multiplier
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES]
+    firm_rateable_value: [200_000]
+    firm_is_wales_retail_property: [true]
+  output:
+    # A flagged shop above £100,000 pays the higher multiplier: 0.515.
+    firm_business_rates_multiplier: [0.515]
+
+- name: Wales excluded flag has no effect in 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES]
+    firm_rateable_value: [200_000, 200_000]
+    firm_is_wales_higher_multiplier_excluded: [true, false]
+  output:
+    # One multiplier, 0.568, for both.
+    firm_business_rates_multiplier: [0.568, 0.568]

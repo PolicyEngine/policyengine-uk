@@ -389,3 +389,56 @@ def test_employment_allowance_under_rules_matches_the_variables(year):
         assert eligible.tolist() == [True, False, False, False, False, True]
     else:
         assert eligible.tolist() == [True, False, False, False, True, True]
+
+
+# Firm-only parameter reforms on the dataset above. 2026-27 baseline: standard
+# multiplier 48p (rateable value 51,000 to 499,999); apprenticeship levy 0.5%
+# of the paybill less a 15,000 allowance; corporation tax main rate 25%.
+# Firms: profits 1,000,000 / 100,000 / 40,000; paybills 2,000,000 / 300,000 /
+# 0; rateable values 150,000 / 20,000 / 0; weights 5 / 7 / 11.
+FIRM_ONLY_REFORMS = {
+    # Only the first firm pays the standard multiplier (20,000 is under the
+    # 51,000 small business threshold): 150,000 x 2p = 3,000; 5 x 3,000.
+    "business_rates_standard_multiplier": (
+        "gov.hmrc.business_rates.multipliers.standard",
+        0.50,
+        15_000,
+    ),
+    # Baseline 0.5% x 2,000,000 = 10,000 and 1,500 are under the allowance.
+    # At 1%: 20,000 - 15,000 = 5,000 for the first firm; 3,000 is still
+    # under it. 5 x 5,000 = 25,000.
+    "apprenticeship_levy_rate": (
+        "gov.hmrc.apprenticeship_levy.rate",
+        0.01,
+        25_000,
+    ),
+    # With no allowance: 10,000 and 1,500. 5 x 10,000 + 7 x 1,500 = 60,500.
+    "apprenticeship_levy_allowance": (
+        "gov.hmrc.apprenticeship_levy.allowance",
+        0,
+        60_500,
+    ),
+    # 1% x 1,000,000 = 10,000; 1% x 100,000 = 1,000 (marginal relief does not
+    # depend on the main rate); 0 under the lower limit.
+    # 5 x 10,000 + 7 x 1,000 = 57,000.
+    "corporation_tax_main_rate": (
+        "gov.hmrc.corporation_tax.main_rate",
+        0.26,
+        57_000,
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "parameter, value, expected",
+    list(FIRM_ONLY_REFORMS.values()),
+    ids=list(FIRM_ONLY_REFORMS),
+)
+def test_firm_only_parameter_reform_total_and_incidence(parameter, value, expected):
+    simulation = Microsimulation(
+        dataset=dataset(), reform={parameter: {"2020-01-01.2035-12-31": value}}
+    )
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([expected, expected], abs=0.01)
+    incidence = np.asarray(simulation.calculate("firm_tax_incidence", YEAR))
+    assert (incidence * HOUSEHOLD_WEIGHTS).sum() == pytest.approx(expected, abs=0.01)
