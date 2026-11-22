@@ -17,7 +17,9 @@ class firm_minimum_wage_cost(Variable):
         "the fiscal year that starts that April. The block is treated as "
         "paid its average hourly wage, so the cost is understated where pay "
         "within it varies: hours paid above the rate offset hours paid "
-        "below it. The younger-worker and apprentice rates are not modelled."
+        "below it. Negative inputs count as 0. The rates in the model start "
+        "in October 2010, so the cost is 0 for 2010 and earlier. The "
+        "younger-worker and apprentice rates are not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -35,7 +37,10 @@ class firm_minimum_wage_cost(Variable):
     def formula(firm, period, parameters):
         # The compiled scale orders brackets by age, so its last amount is
         # the adult rate, as in esa_exempt_work_higher_earnings_limit.
-        adult_rate = parameters(period).gov.hmrc.minimum_wage.non_apprentice.amounts[-1]
-        hours = firm("firm_low_paid_hours", period)
-        paybill = firm("firm_low_paid_paybill", period)
+        # The rates start in October 2010, so at 30 April of 2010 and
+        # earlier the scale is empty and the floor does not apply.
+        amounts = parameters(period).gov.hmrc.minimum_wage.non_apprentice.amounts
+        adult_rate = amounts[-1] if len(amounts) else 0
+        hours = max_(firm("firm_low_paid_hours", period), 0)
+        paybill = max_(firm("firm_low_paid_paybill", period), 0)
         return max_(adult_rate * hours - paybill, 0)

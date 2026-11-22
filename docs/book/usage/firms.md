@@ -135,7 +135,7 @@ Two optional inputs describe the firm's low-paid workers as one block: `firm_low
 
 `firm_paybill_after_minimum_wage` is `firm_paybill` plus that cost. The apprenticeship levy and the default employer National Insurance and auto-enrolment approximations read it, so they rise with the floor. A supplied `firm_class_1_earnings_above_secondary_threshold` or `firm_auto_enrolment_qualifying_earnings` is used as given. With the pay-distribution inputs supplied, the extra pay falls in the remaining group, which overstates the base if the low-paid staff are at or below the secondary threshold or the earnings trigger. The cost is a firm cost, not a tax, so it is not a term of `firm_tax` or `firm_only_tax`. Where pay already meets the rate the cost is 0 and every result is unchanged.
 
-The block is treated as paid its average hourly wage, so the cost is understated where pay within it varies: hours paid above the rate offset hours paid below it. The younger-worker and apprentice rates are not modelled.
+The block is treated as paid its average hourly wage, so the cost is understated where pay within it varies: hours paid above the rate offset hours paid below it. Negative inputs count as 0. The model's rates start in October 2010, so the cost is 0 for 2010 and earlier. The younger-worker and apprentice rates are not modelled. `firm_taxable_trading_profit` is an input, so the extra pay, though deductible, does not reduce the firm's taxable profit or corporation tax; reduce that input yourself if you want the deduction.
 
 ## Aggregates and incidence
 

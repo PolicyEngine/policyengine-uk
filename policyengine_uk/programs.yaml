@@ -352,6 +352,18 @@ programs:
     verified_start_year: 2025
     notes: Firm-level output VAT less recoverable input VAT, with partial exemption, the registration threshold and the flat rate scheme including the limited cost trader rate. Registration is tested on annual turnover; no cash or annual accounting. The household-side measure is the vat entry. Not in household_tax or gov_tax.
 
+  - id: firm_minimum_wage_cost
+    name: Minimum wage floor (firms)
+    full_name: Firm cost of meeting the National Minimum Wage
+    category: Other
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_minimum_wage_cost
+    parameter_prefix: gov.hmrc.minimum_wage
+    verified_start_year: 2026
+    notes: Extra pay needed to bring a firm's low-paid block up to the adult rate, at the block's average hourly wage. It raises the paybill read by the apprenticeship levy and the default employer NIC and auto-enrolment approximations. A firm cost, not a tax; not in household_tax or gov_tax. Younger-worker and apprentice rates not modelled.
+
   - id: auto_enrolment_employer_contribution
     name: Auto-enrolment employer contribution
     full_name: Automatic enrolment employer minimum pension contribution

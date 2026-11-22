@@ -37,7 +37,9 @@ class firm_auto_enrolment_qualifying_earnings(Variable):
         "remaining group instead. The paybill is "
         "firm_paybill_after_minimum_wage, firm_paybill plus any pay needed "
         "to meet the minimum wage; with a pay split supplied, that extra pay "
-        "all falls in the remaining group."
+        "all falls in the remaining group, which overstates qualifying "
+        "earnings if the low-paid staff earn at or below the earnings "
+        "trigger."
     )
     definition_period = YEAR
     unit = GBP

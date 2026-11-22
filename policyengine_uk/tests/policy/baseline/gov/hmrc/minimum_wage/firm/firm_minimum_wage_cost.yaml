@@ -111,3 +111,27 @@
     # (320,000 - 6,000) - 8 x 5,000 = 274,000; 15% = 41,100.
     firm_class_1_earnings_above_secondary_threshold: [274_000]
     firm_employer_ni_before_allowance: [41_100]
+
+- name: Case 8, no rate before October 2010 and negative inputs count as 0.
+  period: 2010
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [3_100_000]
+    firm_low_paid_hours: [10_000]
+    firm_low_paid_paybill: [50_000]
+  output:
+    # The non-apprentice rates start on 1 October 2010; at 30 April 2010
+    # the scale is empty, so the cost is 0 and the levy (0 before
+    # 2017) is unaffected.
+    firm_minimum_wage_cost: [0]
+    apprenticeship_levy: [0]
+
+- name: Case 9, a negative low-paid paybill counts as 0.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_low_paid_hours: [1_000]
+    firm_low_paid_paybill: [-5_000]
+  output:
+    # 12.71 x 1,000 = 12,710 - 0 = 12,710 (not 17,710).
+    firm_minimum_wage_cost: [12_710]
