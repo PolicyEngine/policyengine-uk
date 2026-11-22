@@ -74,8 +74,9 @@ That means:
   ([ITEPA 2003 s. 577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)),
   Universal Credit unearned income
   ([UC Regulations 2013 reg. 66(1)(b)(vi)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66)),
-  pension income for tax credits, which ignores the first £300 a year of
-  pension, investment, property, foreign and notional income together
+  pension income for tax credits, where the model ignores the first £300 a
+  year of its pension, investment and property income together (the law also
+  adds foreign and notional income to that total)
   ([SI 2002/2006 reg. 3](https://www.legislation.gov.uk/uksi/2002/2006/regulation/3)
   and [reg. 5(1)(a)](https://www.legislation.gov.uk/uksi/2002/2006/regulation/5)),
   Income Support income less £10 a week
@@ -89,9 +90,10 @@ That means:
   too (less £10 on that route), but for working-age applicants with
   Universal Credit it counts it in full in Wales and in the five English
   council schemes it holds (Merton, Kingston upon Thames, Newham and
-  Westminster, and Oxford from April 2026). Elsewhere in England the
-  model uses a working-age applicant's reported reduction, which it may
-  cap at their share of a jointly liable bill. The
+  Westminster, and Oxford from April 2026). Elsewhere in England the model
+  uses a working-age applicant's reported reduction, capped at their share
+  of a jointly liable bill when another claim in the household is paid a
+  simulated reduction and no one counted in the share may be a student. The
   model leaves WPA out of Scotland's working-age scheme, and out of the
   Welsh one for applicants without Universal Credit, although both count
   it less £15 a week, and Wales also disregards the income tax on it

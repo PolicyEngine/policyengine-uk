@@ -42,8 +42,10 @@ tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
     unearned income under its Appendix 3. Applicants without Universal
     Credit in those five schemes, and Oxford's with it before April 2026,
     have the same £15 disregard. Elsewhere in England the model uses a
-    working-age applicant's reported reduction, which it may cap at their
-    share of a jointly liable bill, so their income does not count. The
+    working-age applicant's reported reduction, so their income does not
+    count. It caps the report at their share of a jointly liable bill when
+    another claim in the household is paid a simulated reduction and no one
+    counted in the share may be a student. The
     model leaves spousal maintenance out of Scotland's working-age scheme,
     and out of the Welsh one for applicants without Universal Credit,
     although both count it less £15 a week: Scotland where the family
