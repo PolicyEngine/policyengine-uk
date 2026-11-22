@@ -918,6 +918,16 @@ class Simulation(CoreSimulation):
         # this simulation's population. Give the clone its own copy, bound
         # to the clone's system.
         for key in _root_population_keys(self):
+            # The patched core clone (policyengine_uk.tax_benefit_system)
+            # has already given the clone its own copy, bound to it.
+            existing = clone.populations.get(key)
+            if (
+                existing is not None
+                and existing is not self.populations[key]
+                and getattr(existing, "simulation", None) is clone
+            ):
+                setattr(clone, key, existing)
+                continue
             sharing = {"share_arrays": True} if share_arrays else {}
             population = self.populations[key].clone(clone, **sharing)
             entity = _root_entity(clone.tax_benefit_system, key)

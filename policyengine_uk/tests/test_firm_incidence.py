@@ -137,7 +137,7 @@ FIRM_WEIGHTS = [5.0, 7.0, 11.0]
 FIRM_PROFITS = [1_000_000.0, 100_000.0, 40_000.0]
 
 
-def dataset() -> UKSingleYearDataset:
+def dataset(year: int = YEAR) -> UKSingleYearDataset:
     return UKSingleYearDataset(
         person=pd.DataFrame(
             {
@@ -172,7 +172,7 @@ def dataset() -> UKSingleYearDataset:
                 "firm_rateable_value": [150_000.0, 20_000.0, 0.0],
             }
         ),
-        fiscal_year=YEAR,
+        fiscal_year=year,
     )
 
 
@@ -298,3 +298,29 @@ def test_employment_allowance_reform_reaches_firm_incidence():
     )
     total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
     assert total == pytest.approx([27_500, 27_500], abs=0.01)
+
+
+def test_employer_ni_rate_reform_does_not_flip_prior_year_eligibility():
+    """In 2024-25 a firm whose prior-year secondary liabilities reach
+    100,000 loses the allowance. A rate rise that lifts a firm from 90,000
+    to about 130,000 of liabilities would take its 5,000 allowance away;
+    that is an employer NI change, reaching households through ni_employer,
+    so the firm-only total holds last year's liabilities at baseline and
+    does not move. 2024-25: 13.8% above 9,100 a year; one employee paid
+    9,100 + 90,000 / 0.138 = 661,275 (about 90,000 of liabilities)."""
+    data = dataset(2024)
+    data.firm = data.firm.iloc[:1].copy()
+    data.firm["firm_paybill"] = 9_100 + 90_000 / 0.138
+    data.firm["firm_employees"] = 1.0
+    data.firm["firm_taxable_trading_profit"] = 0.0
+    data.firm["firm_rateable_value"] = 0.0
+    simulation = Microsimulation(dataset=data, reform=EMPLOYER_NI_REFORM)
+    baseline_eligible = simulation.baseline.calculate(
+        "employment_allowance_eligible", 2024
+    )
+    reform_eligible = simulation.calculate("employment_allowance_eligible", 2024)
+    # The flip the total must not count.
+    assert np.asarray(baseline_eligible).tolist() == [True]
+    assert np.asarray(reform_eligible).tolist() == [False]
+    total = np.asarray(simulation.calculate("firm_tax_change_total", 2024))
+    assert total == pytest.approx([0, 0], abs=0.01)

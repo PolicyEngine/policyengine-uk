@@ -104,7 +104,7 @@ The firm table is kept out of the dataset's `tables`, so uprating and household 
 
 ## Programmes
 
-Every firm variable uses `entity = Firm` and a yearly period. Each parameter cites legislation or GOV.UK guidance, and values that could not be verified carry `# UNVERIFIED` comments in their YAML files.
+Every firm variable uses `entity = Firm` and a yearly period. Each parameter cites legislation or GOV.UK guidance. Values announced but not yet enacted are marked in their YAML files.
 
 | Programme | Main variables | Rules |
 |---|---|---|
@@ -127,7 +127,7 @@ Four variables combine the firm-level results:
 
 - **`firm_tax`** (firm): the firm's total statutory liability to corporation tax, the bank surcharge, the apprenticeship levy, employer National Insurance after the Employment Allowance, business rates and VAT, less R&D tax credits paid out to the firm.
 - **`firm_only_tax`** (firm): the liability set by rules that only the firm side models: corporation tax, the bank surcharge, the apprenticeship levy and business rates, less R&D tax credits paid out. It leaves out employer National Insurance and VAT, whose rates and thresholds already reach households through `ni_employer` and `vat`. It also leaves out the Employment Allowance.
-- **`firm_tax_change_total`** (household): the reform's `firm_only_tax` less the baseline's, summed over firms with `firm_weight`, less the change in the Employment Allowance from a change in its own rules (amount and eligibility), with each firm's employer National Insurance liability held at its baseline value. Every household carries the same total. It is 0 without a baseline, in a simulation built from a situation, and where the simulation has no firms.
+- **`firm_tax_change_total`** (household): the reform's `firm_only_tax` less the baseline's, summed over firms with `firm_weight`, less the change in the Employment Allowance from a change in its own rules (amount and eligibility), with each firm's employer National Insurance liabilities (this year's, and last year's for the 2020-21 to 2024-25 prior-year limit) held at their baseline values. Every household carries the same total. It is 0 without a baseline, in a simulation built from a situation, and where the simulation has no firms.
 - **`firm_tax_incidence`** (household): each household's share of `firm_tax_change_total`, split between capital (by `shareholding`), consumers (by `consumption_shareholding`) and workers (by the household's share of weighted employment income). The shares are the `gov.contrib.policyengine.firm_incidence` parameters `capital`, `consumer` and `labour`, which default to 1, 0 and 0.
 
 `firm_tax` is a receipts measure. Summed over firms it must not be added to `gov_tax`, whose household terms already count employer National Insurance, VAT and business rates as incidence. None of the four variables is a term of `gov_tax` or `household_tax` yet.

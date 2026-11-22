@@ -276,7 +276,7 @@ programs:
     coverage: UK
     variable: corporation_tax
     parameter_prefix: gov.hmrc.corporation_tax
-    verified_start_year: 2025
+    verified_start_year: 2026
     notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief. No group relief, Patent Box or quarterly instalments. Not in household_tax or gov_tax.
 
   - id: bank_surcharge

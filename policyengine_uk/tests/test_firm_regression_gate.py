@@ -1,27 +1,19 @@
-"""Regression gate: the firm entity leaves household results unchanged.
+"""The firm entity leaves household results alone.
 
-The fixture ``fixtures/firm_regression_gate_base.json`` holds results
-computed at the branch's base commit (70014b3) for a fixed set of household
-situations, with no firm entity in the model. Each test recomputes them on
-the current tree and requires exact equality: the firm-side rules are built
-but not wired into any household tax or benefit, so household results must
-match to the last bit.
-
-To regenerate the fixture, run ``compute_gate_values()`` from this module
-with the base commit's ``policyengine_uk`` first on the import path, and
-write its result as JSON (Python's ``json`` writes floats at ``repr``
-precision, which round-trips exactly).
+Firm-side rules are built but not wired into any household tax or benefit.
+These tests check that structurally (no firm variable is a term of
+gov_tax or of the household budget totals) and live: for a varied set of
+household situations, adding firms to the situation, or reforming
+firm-only rules, leaves every household and government total exactly as
+it was. (Before review, a frozen fixture also matched the base commit
+70014b3 exactly; it was dropped so later changes to household rules do
+not break this test.)
 """
-
-import json
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-FIXTURE = Path(__file__).parent / "fixtures" / "firm_regression_gate_base.json"
 YEARS = (2025, 2026)
-BASE_COMMIT = "70014b3"
 
 HOUSEHOLD_VARIABLES = (
     "gov_tax",
@@ -31,15 +23,31 @@ HOUSEHOLD_VARIABLES = (
     "household_benefits",
 )
 
-# Raise the employer Class 1 main rate from 15% to 20%: the employer NI
-# incidence path (ni_employer, employer_ni_* contrib variables) runs with a
-# baseline, so the reform proves it is unchanged too.
-EMPLOYER_NI_REFORM = {
-    "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {
-        "2025-01-01.2030-12-31": 0.2
-    }
+# A firm-only reform: raise the corporation tax main rate and cut the
+# Employment Allowance.
+FIRM_REFORM = {
+    "gov.hmrc.corporation_tax.main_rate": {"2020-01-01.2035-12-31": 0.3},
+    "gov.hmrc.national_insurance.employment_allowance.amount": {
+        "2020-01-01.2035-12-31": 1_000
+    },
 }
-REFORM_VARIABLES = HOUSEHOLD_VARIABLES + ("ni_employer",)
+
+FIRMS = {
+    "manufacturer": {
+        "firm_employees": 20,
+        "firm_paybill": 700_000,
+        "firm_taxable_trading_profit": 400_000,
+        "firm_rateable_value": 60_000,
+        "firm_standard_rated_supplies": 2_000_000,
+        "firm_input_vat": 150_000,
+    },
+    "shop": {
+        "firm_legal_form": "SOLE_TRADER",
+        "firm_employees": 2,
+        "firm_paybill": 50_000,
+        "firm_taxable_trading_profit": 70_000,
+    },
+}
 
 
 def _household(members, **household_inputs):
@@ -169,75 +177,77 @@ def _values(simulation, variables, year) -> dict:
     }
 
 
-def compute_case(case: str) -> dict:
-    """The gate values of one case, ``"<situation>/<year>"`` or
-    ``"<situation>/<year>/employer_ni_reform"``, under the
-    ``policyengine_uk`` on the import path."""
-    from policyengine_uk import Simulation
-    from policyengine_uk.variables.gov.gov_tax import GOV_TAX_VARIABLES
-
-    name, year, *reform = case.split("/")
-    year = int(year)
-    situation = situations(year)[name]
-    if reform:
-        simulation = Simulation(situation=situation, reform=EMPLOYER_NI_REFORM)
-        return _values(simulation, REFORM_VARIABLES, year)
-    simulation = Simulation(situation=situation)
-    return _values(simulation, HOUSEHOLD_VARIABLES + tuple(GOV_TAX_VARIABLES), year)
-
-
-CASES = sorted(
-    f"{name}/{year}{suffix}"
-    for year in YEARS
-    for name in situations(year)
-    for suffix in ("", "/employer_ni_reform")
-)
-
-
-def compute_gate_values() -> dict:
-    """Every gate value: run this against the base commit to write the
-    fixture."""
-    from policyengine_uk.variables.gov.gov_tax import GOV_TAX_VARIABLES
-
+def _values(simulation, variables, year) -> dict:
     return {
-        "base_commit": BASE_COMMIT,
-        "gov_tax_variables": list(GOV_TAX_VARIABLES),
-        "cases": {case: compute_case(case) for case in CASES},
+        name: np.asarray(simulation.calculate(name, year), dtype=float)
+        for name in variables
     }
 
 
-@pytest.fixture(scope="module")
-def base():
-    return json.loads(FIXTURE.read_text())
+CASES = sorted((name, year) for year in YEARS for name in situations(year))
 
 
-def test_gov_tax_variables_are_unchanged(base):
+def test_no_firm_variable_is_a_term_of_gov_tax():
+    from policyengine_uk import CountryTaxBenefitSystem
     from policyengine_uk.variables.gov.gov_tax import GOV_TAX_VARIABLES
 
-    assert list(GOV_TAX_VARIABLES) == base["gov_tax_variables"]
+    system = CountryTaxBenefitSystem()
+    assert [
+        name
+        for name in GOV_TAX_VARIABLES
+        if system.variables[name].entity.key == "firm"
+    ] == []
 
 
-def test_fixture_covers_every_case(base):
-    assert sorted(base["cases"]) == CASES
-    assert len(CASES) == 2 * len(YEARS) * len(situations(YEARS[0]))
+def test_no_firm_variable_is_a_budget_term():
+    from policyengine_uk import CountryTaxBenefitSystem
+    from policyengine_uk.programs import budget_programs
+
+    system = CountryTaxBenefitSystem()
+    assert [
+        term.variable
+        for term in budget_programs()
+        if term.variable in system.variables
+        and system.variables[term.variable].entity.key == "firm"
+    ] == []
 
 
-def test_employer_ni_reform_moves_ni_employer(base):
-    """The reform case must exercise employer NI, or it proves nothing."""
-    case = "single_earner/2025"
-    assert sum(base["cases"][f"{case}/employer_ni_reform"]["ni_employer"]) > sum(
-        base["cases"][case]["ni_employer"]
-    )
+@pytest.mark.parametrize("name,year", CASES)
+def test_firms_in_a_situation_leave_household_results_unchanged(name, year):
+    from policyengine_uk import Simulation
+    from policyengine_uk.variables.gov.gov_tax import GOV_TAX_VARIABLES
 
-
-@pytest.mark.parametrize("case", CASES)
-def test_household_results_match_base_exactly(base, case):
-    expected = base["cases"][case]
-    actual = compute_case(case)
-    assert sorted(actual) == sorted(expected)
+    situation = situations(year)[name]
+    variables = HOUSEHOLD_VARIABLES + tuple(GOV_TAX_VARIABLES)
+    without = _values(Simulation(situation=situation), variables, year)
+    with_firms = Simulation(situation={**situation, "firms": FIRMS})
+    assert np.asarray(with_firms.calculate("firm_tax", year)).sum() > 0
+    actual = _values(with_firms, variables, year)
     mismatches = {
-        name: (expected[name], actual[name])
-        for name in expected
-        if not np.array_equal(np.array(expected[name]), np.array(actual[name]))
+        variable: (without[variable], actual[variable])
+        for variable in variables
+        if not np.array_equal(without[variable], actual[variable])
+    }
+    assert not mismatches, mismatches
+
+
+@pytest.mark.parametrize("name,year", CASES)
+def test_firm_only_reform_leaves_household_results_unchanged(name, year):
+    from policyengine_uk import Simulation
+
+    situation = {**situations(year)[name], "firms": FIRMS}
+    baseline = Simulation(situation=situation)
+    reformed = Simulation(situation=situation, reform=FIRM_REFORM)
+    # The reform must move the firms, or it proves nothing.
+    assert (
+        np.asarray(reformed.calculate("firm_tax", year)).sum()
+        > np.asarray(baseline.calculate("firm_tax", year)).sum()
+    )
+    expected = _values(baseline, HOUSEHOLD_VARIABLES, year)
+    actual = _values(reformed, HOUSEHOLD_VARIABLES, year)
+    mismatches = {
+        variable: (expected[variable], actual[variable])
+        for variable in HOUSEHOLD_VARIABLES
+        if not np.array_equal(expected[variable], actual[variable])
     }
     assert not mismatches, mismatches
