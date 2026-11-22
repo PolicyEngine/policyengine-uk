@@ -1,0 +1,15 @@
+description: Multiple of a company's relevant PAYE and NIC liabilities added to the fixed amount in the cap on the payable R&D expenditure credit, under section 1112B(2)(b) of the Corporation Tax Act 2009, for the merged scheme.
+values:
+  2024-04-01:
+    value: 3
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1112B(2)(b)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1112B
+metadata:
+  unit: /1
+  period: year
+  label: R&D expenditure credit PAYE and NIC cap multiplier
+  reference:
+    - title: Corporation Tax Act 2009 s 1112B
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1112B

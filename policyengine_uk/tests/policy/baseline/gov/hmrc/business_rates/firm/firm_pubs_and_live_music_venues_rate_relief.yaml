@@ -1,0 +1,47 @@
+# Pubs and live music venues relief (BRIL 8/2026 Technical Annex para 6):
+# 35% in 2027-28 and 2028-29, but live music venues (not pubs) with rateable
+# value of £1m or more keep 15%. 2027-28 high-value multiplier 52.5p from
+# £500,000 (BRIL 8/2026). RHL relief has ended by 2027-28, so the pubs
+# relief applies to the full gross bill. Margin 0.1 for float32 storage of
+# bills over £500,000.
+- name: 2027-28 pub and live music venue at £1.2m
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [1_200_000, 1_200_000]
+    firm_is_rhl_property: [true, true]
+    firm_is_pub_or_live_music_venue: [true, true]
+    firm_is_live_music_venue: [false, true]
+  output:
+    # Both: 1,200,000 x 0.525 = 630,000.
+    # Pub: 35% whatever the rateable value = 220,500 -> rates 409,500.
+    # Live music venue at £1m or more: 15% = 94,500 -> rates 535,500.
+    firm_gross_business_rates: [630_000, 630_000]
+    firm_pubs_and_live_music_venues_rate_relief: [220_500, 94_500]
+    firm_business_rates: [409_500, 535_500]
+
+- name: 2027-28 pub and live music venue at £999,999
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [999_999, 999_999]
+    firm_is_rhl_property: [true, true]
+    firm_is_pub_or_live_music_venue: [true, true]
+    firm_is_live_music_venue: [false, true]
+  output:
+    # Both: 999,999 x 0.525 = 524,999.475, below £1m so both get 35%
+    #   = 183,749.81625 -> rates 341,249.65875.
+    firm_gross_business_rates: [524_999.475, 524_999.475]
+    firm_pubs_and_live_music_venues_rate_relief: [183_749.81625, 183_749.81625]
+    firm_business_rates: [341_249.65875, 341_249.65875]
+
+- name: Live music venue flag alone does not make a firm eligible
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_rateable_value: [40_000]
+    firm_is_rhl_property: [true]
+    firm_is_live_music_venue: [true]
+  output:
+    # firm_is_pub_or_live_music_venue is the eligibility flag; it is false.
+    firm_pubs_and_live_music_venues_rate_relief: [0]

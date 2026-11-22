@@ -1,0 +1,99 @@
+# Wales non-domestic rates. Multipliers: 0.535 (2023-24), 0.562 (2024-25),
+# 0.568 (2025-26); 2026-27 standard 0.502, higher 0.515 above £100,000.
+# SBRR: 100% at RV £6,000 or less, tapering linearly to 0% at £12,000, on at
+# most two properties. Margin 0.01 for float32 storage.
+- name: Wales standard property, single multiplier 2023-24 to 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES, WALES]
+    firm_rateable_value: [30_000, 30_000, 30_000]
+  output:
+    # 30,000 x 0.568 = 17,040; above £12,000 so no SBRR.
+    firm_business_rates_multiplier: [0.568, 0.568, 0.568]
+    firm_business_rates: [17_040, 17_040, 17_040]
+
+- name: Wales multiplier in 2023-24 and 2024-25
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_region: WALES
+    firm_rateable_value: 30_000
+  output:
+    # 30,000 x 0.535 = 16,050.
+    firm_business_rates: 16_050
+
+- name: Wales multiplier in 2024-25
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_region: WALES
+    firm_rateable_value: 30_000
+  output:
+    # 30,000 x 0.562 = 16,860.
+    firm_business_rates: 16_860
+
+- name: Wales SBRR at its boundaries, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES, WALES, WALES, WALES, WALES]
+    firm_rateable_value: [6_000, 6_001, 9_000, 11_999, 12_000, 12_001]
+  output:
+    # 6,000 x 0.568 = 3,408; share clip((12,000 - 6,000) / 6,000) = 1 -> 0.
+    # 6,001 x 0.568 = 3,408.568; share 5,999 / 6,000
+    #   -> relief 3,407.999905, rates 0.568095.
+    # 9,000 x 0.568 = 5,112; share 0.5 -> relief 2,556.
+    # 11,999 x 0.568 = 6,815.432; share 1 / 6,000 -> relief 1.135905,
+    #   rates 6,814.296095.
+    # 12,000 x 0.568 = 6,816 and 12,001 x 0.568 = 6,816.568; no relief.
+    firm_gross_business_rates: [3_408, 3_408.568, 5_112, 6_815.432, 6_816, 6_816.568]
+    firm_business_rates_reliefs: [3_408, 3_407.999905, 2_556, 1.135905, 0, 0]
+    firm_business_rates: [0, 0.568095, 2_556, 6_814.296095, 6_816, 6_816.568]
+
+- name: Wales SBRR property limit and occupation
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [WALES, WALES, WALES]
+    firm_rateable_value: [9_000, 9_000, 9_000]
+    firm_n_properties: [2, 3, 1]
+    firm_property_occupied: [true, true, false]
+  output:
+    # Gross 9,000 x 0.568 = 5,112. Two properties: relief 50% = 2,556.
+    # Three properties: no SBRR. Unoccupied: no SBRR.
+    firm_business_rates_reliefs: [2_556, 0, 0]
+
+- name: Wales 2026-27 standard and higher multipliers
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [WALES, WALES, WALES]
+    firm_rateable_value: [100_000, 100_001, 500_000]
+  output:
+    # 100,000 x 0.502 = 50,200 (not above £100,000).
+    # 100,001 x 0.515 = 51,500.515.
+    # 500,000 x 0.515 = 257,500.
+    firm_business_rates_multiplier: [0.502, 0.515, 0.515]
+    firm_business_rates: [50_200, 51_500.515, 257_500]
+
+- name: Wales firm gets no English SBRR or RHL multiplier; the Welsh retail multiplier is not modelled
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: WALES
+    firm_rateable_value: 13_500
+    firm_is_rhl_property: true
+  output:
+    # 13,500 x 0.502 = 6,777; above £12,000 so no Welsh SBRR, and the
+    # English SBRR and RHL relief do not apply. A small Welsh shop would pay
+    # the 0.350 retail multiplier, which is not modelled.
+    firm_business_rates: 6_777
+
+- name: Northern Ireland is not modelled
+  period: 2026
+  input:
+    firm_region: NORTHERN_IRELAND
+    firm_rateable_value: 30_000
+  output:
+    firm_business_rates: 0

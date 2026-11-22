@@ -1,18 +1,21 @@
-# Small business rate relief boundaries (SI 2017/102 art 3): 100% at RV
-# £12,000 or less, tapering linearly to 0% at £15,000. 2026-27 small business
-# multiplier 43.2p (BRIL 5/2025 para 2). Margin 0.01 for float32 storage.
+# Small business rate relief boundaries (Sch 4ZA para 4(1) LGFA 1988 and
+# SI 2023/1250 reg 3): 100% at RV £12,000 or less; above that the bill is
+# gross / E, with E = 3,000 / (RV - 12,000) rounded to three decimal places,
+# so relief = gross - gross / E, and none above £15,000. 2026-27 small
+# business multiplier 43.2p (BRIL 5/2025 para 2). Margin 0.01 for float32
+# storage.
 - name: SBRR at exactly £12,000, just above, at £13,500 and at £15,000
   period: 2026
   absolute_error_margin: 0.01
   input:
     firm_rateable_value: [12_000, 12_001, 13_500, 15_000]
   output:
-    # 12,000 x 0.432 = 5,184; share = clip((15,000 - 12,000) / 3,000) = 1
-    #   -> relief 5,184, rates 0.
-    # 12,001 x 0.432 = 5,184.432; share = 2,999 / 3,000
-    #   -> relief 5,184.432 x 2,999 / 3,000 = 5,182.704; rates 1.728.
-    # 13,500 x 0.432 = 5,832; share = 1,500 / 3,000 = 0.5 -> relief 2,916.
-    # 15,000 x 0.432 = 6,480; share = 0 -> relief 0, rates 6,480.
+    # 12,000 x 0.432 = 5,184; at or below £12,000 -> relief 5,184, rates 0.
+    # 12,001 x 0.432 = 5,184.432; E = 3,000 / 1 = 3,000.000
+    #   -> rates 5,184.432 / 3,000 = 1.728144, relief 5,182.703856.
+    # 13,500 x 0.432 = 5,832; E = 3,000 / 1,500 = 2.000 -> relief 2,916.
+    # 15,000 x 0.432 = 6,480; E = 3,000 / 3,000 = 1.000 -> relief 0,
+    #   rates 6,480.
     firm_gross_business_rates: [5_184, 5_184.432, 5_832, 6_480]
     firm_small_business_rate_relief: [5_184, 5_182.704, 2_916, 0]
     firm_business_rates: [0, 1.728, 2_916, 6_480]
@@ -24,12 +27,13 @@
     firm_rateable_value: [11_999, 14_999, 15_001]
   output:
     # 11,999 x 0.432 = 5,183.568; share 1 -> relief 5,183.568, rates 0.
-    # 14,999 x 0.432 = 6,479.568; share (15,000 - 14,999) / 3,000 = 1/3,000
-    #   -> relief 2.159856, rates 6,477.408144.
-    # 15,001 x 0.432 = 6,480.432; share clipped to 0 -> rates 6,480.432.
+    # 14,999 x 0.432 = 6,479.568; E = 3,000 / 2,999 = 1.000333 -> 1.000
+    #   -> rates 6,479.568 / 1 = 6,479.568, relief 0 (the rounding of E
+    #   removes the 2.16 a linear taper would give).
+    # 15,001 x 0.432 = 6,480.432; above £15,000 -> no relief, rates 6,480.432.
     firm_gross_business_rates: [5_183.568, 6_479.568, 6_480.432]
-    firm_small_business_rate_relief: [5_183.568, 2.159856, 0]
-    firm_business_rates: [0, 6_477.408144, 6_480.432]
+    firm_small_business_rate_relief: [5_183.568, 0, 0]
+    firm_business_rates: [0, 6_479.568, 6_480.432]
 
 - name: 2027-28 RHL SBRR either side of £18,000 and £21,000
   period: 2027
@@ -41,11 +45,11 @@
     # RHL small business multiplier 0.395 in 2027-28, thresholds 18,000 and
     # 21,000.
     # 17,999 x 0.395 = 7,109.605; 18,000 x 0.395 = 7,110; both full relief.
-    # 18,001 x 0.395 = 7,110.395; share 2,999 / 3,000
-    #   -> relief 7,110.395 - 7,110.395 / 3,000 = 7,108.024868,
-    #   rates 2.370132.
-    # 20,999 x 0.395 = 8,294.605; share 1/3,000 -> relief 2.764868,
-    #   rates 8,291.840132.
+    # E assumed = 3,000 / (RV - 18,000), rounded to three decimal places.
+    # 18,001 x 0.395 = 7,110.395; E = 3,000.000
+    #   -> rates 7,110.395 / 3,000 = 2.370132, relief 7,108.024868.
+    # 20,999 x 0.395 = 8,294.605; E = 3,000 / 2,999 = 1.000333 -> 1.000
+    #   -> relief 0, rates 8,294.605.
     # 21,000 x 0.395 = 8,295 and 21,001 x 0.395 = 8,295.395; no relief.
-    firm_small_business_rate_relief: [7_109.605, 7_110, 7_108.024868, 2.764868, 0, 0]
-    firm_business_rates: [0, 0, 2.370132, 8_291.840132, 8_295, 8_295.395]
+    firm_small_business_rate_relief: [7_109.605, 7_110, 7_108.024868, 0, 0, 0]
+    firm_business_rates: [0, 0, 2.370132, 8_294.605, 8_295, 8_295.395]

@@ -8,10 +8,11 @@ class firm_pubs_and_live_music_venues_rate_relief(Variable):
     label = "Pubs and live music venues business rates relief of the firm"
     documentation = (
         "Relief for occupied pubs and live music venues in England: 15% in "
-        "2026-27 and 35% in 2027-28 and 2028-29, with venues at rateable "
-        "value £1m or more kept at 15%. The model applies it to the bill left "
-        "after all other reliefs (the order is an assumption) and applies "
-        "the £1m rule, set for live music venues, to pubs as well."
+        "2026-27 and 35% in 2027-28 and 2028-29, except that live music "
+        "venues (not pubs) with rateable value of £1m or more stay at 15%. "
+        "The model applies it to the bill left after all other reliefs (the "
+        "order is an assumption). Social clubs, covered from 2027-28, are not "
+        "separately flagged."
     )
     definition_period = YEAR
     unit = GBP
@@ -37,10 +38,11 @@ class firm_pubs_and_live_music_venues_rate_relief(Variable):
         )
         remaining = max_(gross - other_reliefs, 0)
         rateable_value = firm("firm_rateable_value", period)
-        rate = where(
-            rateable_value >= p.large_venue_threshold,
-            p.large_venue_rate,
-            p.rate,
+        is_live_music_venue = firm("firm_is_live_music_venue", period)
+        large_live_music_venue = is_live_music_venue & (
+            rateable_value >= p.large_venue_threshold
         )
+        rate = where(large_live_music_venue, p.large_venue_rate, p.rate)
         is_venue = firm("firm_is_pub_or_live_music_venue", period)
-        return where(is_venue, remaining * rate, 0)
+        in_england = firm("firm_rates_in_england", period)
+        return where(is_venue & in_england, remaining * rate, 0)

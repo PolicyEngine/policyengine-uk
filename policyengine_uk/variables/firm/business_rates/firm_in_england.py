@@ -6,7 +6,7 @@ class firm_in_england(Variable):
     value_type = bool
     entity = Firm
     label = "Firm's property is in England"
-    documentation = "Whether the firm's property is in England. Business rates are modelled for England only; Scotland, Wales and Northern Ireland set their own rates and reliefs, so firm business rates are 0 elsewhere."
+    documentation = "Whether the firm's property is in England. A firm_region of Wales, Scotland or Northern Ireland overrides it: Welsh and Scottish rates follow their own rules, and Northern Ireland rates are not modelled (0)."
     definition_period = YEAR
     hidden_input = True
     default_value = True

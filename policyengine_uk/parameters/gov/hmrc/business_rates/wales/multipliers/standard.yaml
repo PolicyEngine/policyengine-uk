@@ -1,0 +1,26 @@
+description: Non-domestic rating multiplier for Wales; from 2026-27 the standard multiplier, paid by properties that pay neither the retail nor the higher multiplier.
+# Before 2026-27 one multiplier applied to every property in Wales.
+values:
+  2023-04-01: 0.535
+  2024-04-01: 0.562
+  2025-04-01: 0.568
+  2026-04-01: 0.502
+metadata:
+  label: Wales standard non-domestic rating multiplier
+  unit: /1
+  period: year
+  reference:
+    - title: Welsh Government, Non-domestic rates collected by local councils, April 2023 to March 2024 ("For the financial year 2023-24 the multiplier was 0.535")
+      href: https://gov.wales/non-domestic-rates-actuals-april-2023-march-2024-html
+    - title: Welsh Government, Non-domestic rates collected by local councils, April 2024 to March 2025 ("the multiplier was 0.562")
+      href: https://gov.wales/non-domestic-rates-actuals-april-2024-march-2025-html
+    - title: The Non-Domestic Rating (Multiplier) (Wales) Regulations 2024 (SI 2024/180)
+      href: https://www.legislation.gov.uk/wsi/2024/180/made
+    - title: Welsh Government written statement, Non-domestic rates support 2025-26 (provisional multiplier 0.568, increase capped at 1%; confirmed by SI 2025/182, which raises the 2024-25 multiplier of 0.562 by 1%)
+      href: https://www.gov.wales/written-statement-non-domestic-rates-support-2025-26
+    - title: The Non-Domestic Rating (Multiplier) (Wales) Regulations 2025 (SI 2025/182), item B 133.3, a 1% increase
+      href: https://www.legislation.gov.uk/wsi/2025/182/made
+    - title: Welsh Government written statement, Non-domestic rates support 2026-27 (standard multiplier 0.502)
+      href: https://gov.wales/written-statement-non-domestic-rates-support-2026-27
+    - title: Business Wales, Non-domestic rates multipliers 2026-27
+      href: https://businesswales.gov.wales/non-domestic-rates-multipliers

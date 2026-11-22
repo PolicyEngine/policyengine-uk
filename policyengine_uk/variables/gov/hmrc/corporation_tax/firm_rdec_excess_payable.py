@@ -20,10 +20,19 @@ class firm_rdec_excess_payable(Variable):
         "with no recalculation of the carried-forward loss restriction. The "
         "notional tax deduction is not paid: it is set against later "
         "corporation tax or surrendered (section 1042L), which is not "
-        "modelled. The PAYE and NIC cap of step 3 (section 1112B) is not "
-        "modelled, for want of an input for PAYE and NIC on R&D staff, nor "
-        "are set-off against other periods and liabilities and group "
-        "surrender."
+        "modelled. Step 3 caps what is left by reference to PAYE and NIC: "
+        "under the merged scheme at £20,000 plus three times the company's "
+        "relevant PAYE and NIC liabilities (section 1112B, input "
+        "firm_relevant_paye_nic_liabilities); before April 2024 at the "
+        "company's PAYE and NIC on R&D staff (section 104P, input "
+        "firm_rd_staff_paye_nic). Both inputs default to infinity, so the cap "
+        "binds only when supplied. The excess over the cap is not paid but "
+        "added to the next period's credit (section 1042J, before April 2024 "
+        "section 104N step 3), which is not modelled. Not modelled either: "
+        "the proportionate reduction of the £20,000 for a period under 12 "
+        "months, the section 1112E exemption for companies creating or "
+        "managing intellectual property (leave the input unset), set-off "
+        "against other periods and liabilities and group surrender."
     )
     definition_period = YEAR
     unit = GBP
@@ -33,6 +42,8 @@ class firm_rdec_excess_payable(Variable):
         "https://www.legislation.gov.uk/ukpga/2009/4/section/1042I",
         "https://www.legislation.gov.uk/ukpga/2009/4/section/1042K",
         "https://www.legislation.gov.uk/ukpga/2009/4/section/1042L",
+        "https://www.legislation.gov.uk/ukpga/2009/4/section/1112B",
+        "https://www.legislation.gov.uk/ukpga/2009/4/section/104P/2024-03-31",
     )
 
     def formula(firm, period, parameters):
@@ -56,4 +67,14 @@ class firm_rdec_excess_payable(Variable):
             lower = firm("firm_corporation_tax_lower_limit", period)
             main_rate_profits = (taxable_ex_credit > 0) & (augmented_ex_credit > lower)
             rate = where(main_rate_profits, p.main_rate, p.small_profits_rate)
-        return min_(after_step_1, credit * (1 - rate))
+        after_step_2 = min_(after_step_1, credit * (1 - rate))
+        # Step 3 (s.1042I with s.1112B; before April 2024 s.104N with
+        # s.104P): cap by reference to PAYE and NIC liabilities.
+        if merged:
+            cap_p = p.rd_relief.paye_nic_cap
+            cap = cap_p.amount + cap_p.multiplier * firm(
+                "firm_relevant_paye_nic_liabilities", period
+            )
+        else:
+            cap = firm("firm_rd_staff_paye_nic", period)
+        return min_(after_step_2, cap)

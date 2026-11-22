@@ -1,0 +1,55 @@
+# SSCBA 1992 s.10: Class 1A = Class 1A percentage x cash equivalent of
+# benefits in kind. No threshold. Annual rates are read at 30 April.
+- name: Case 1, Class 1A at 15% in 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_class_1a_benefits: [100_000, 0, 1]
+  output:
+    # 0.15 x 100,000 = 15,000; nothing on no benefits; 0.15 x 1 = 0.15
+    # (no threshold).
+    firm_class_1a_ni: [15_000, 0, 0.15]
+
+- name: Case 2, Class 1A at 13.8% in 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_class_1a_benefits: [100_000]
+  output:
+    # 0.138 x 100,000 = 13,800.
+    firm_class_1a_ni: [13_800]
+
+- name: Case 3, Class 1A fixed at 14.53% for 2022-23.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_class_1a_benefits: [100_000]
+  output:
+    # The 30 April 2022 secondary rate is 15.05%, but the Health and Social
+    # Care Levy (Repeal) Act 2022 fixes Class 1A at 14.53% for the whole
+    # year: 0.1453 x 100,000 = 14,530.
+    firm_class_1a_ni: [14_530]
+
+- name: Case 4, Class 1A at 13.8% in 2023-24 after the fixed rate ends.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_class_1a_benefits: [100_000]
+  output:
+    # 0.138 x 100,000 = 13,800.
+    firm_class_1a_ni: [13_800]
+
+- name: Case 5, the Employment Allowance is not set against Class 1A.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_class_1a_benefits: [20_000]
+  output:
+    # Secondary Class 1: (300,000 - 10 x 5,000) x 0.15 = 37,500; less the
+    # 10,500 EA = 27,000, as with no benefits.
+    employment_allowance: [10_500]
+    firm_employer_ni: [27_000]
+    # Class 1A in full: 0.15 x 20,000 = 3,000.
+    firm_class_1a_ni: [3_000]

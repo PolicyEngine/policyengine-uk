@@ -1,4 +1,4 @@
-description: For qualifying retail, hospitality and leisure (RHL) properties, small business rate relief tapers linearly from 100% at the RHL full relief threshold to 0% at this rateable value in England.
+description: For qualifying retail, hospitality and leisure (RHL) properties, small business rate relief tapers (the bill is the gross bill divided by a factor E = 3,000 / (rateable value less the full relief threshold), to three decimal places, SI 2023/1250 reg 3) from 100% at the RHL full relief threshold to 0% at this rateable value in England.
 # Raised to £21,000 from 1 April 2027 "until 31/3/29" (BRIL 8/2026 Annex
 # para 5(b)); the 2029-04-01 value restores the general threshold.
 values:
@@ -12,8 +12,8 @@ metadata:
   reference:
     - title: Local Government Finance Act 1988 Schedule 4ZA para 4 (small business rate relief, conditions prescribed by the Secretary of State)
       href: https://www.legislation.gov.uk/ukpga/1988/41/schedule/4ZA
-    - title: The Non-Domestic Rating (Reliefs, Thresholds and Amendment) (England) Order 2017 art 3 (full relief at £12,000 or less, tapered relief above £12,000 and up to £15,000, from 1 April 2017)
-      href: https://www.legislation.gov.uk/uksi/2017/102/article/3/made
+    - title: The Non-Domestic Rating (Small Business Rate Relief) (England) Regulations 2023 reg 3 (full relief at £12,000 or less, tapered relief above £12,000 and up to £15,000, from 1 April 2024; replaces SI 2017/102 art 3)
+      href: https://www.legislation.gov.uk/uksi/2023/1250/regulation/3
     - title: GOV.UK, Small business rate relief (100% at £12,000 or less, tapering to 0% at £15,000; 50% at £13,500)
       href: https://www.gov.uk/apply-for-business-rate-relief/small-business-rate-relief
     - title: Business Rates Information Letter 8/2026, Technical Annex para 5(b) (RHL thresholds £12,000 to £18,000 and £15,000 to £21,000 until 31/3/29)

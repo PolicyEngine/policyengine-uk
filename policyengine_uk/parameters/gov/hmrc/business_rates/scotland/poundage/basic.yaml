@@ -1,0 +1,19 @@
+description: Basic property rate (non-domestic rate poundage) in Scotland, paid on every property.
+values:
+  2023-04-01: 0.498
+  2024-04-01: 0.498
+  2025-04-01: 0.498
+  2026-04-01: 0.481
+metadata:
+  label: Scotland basic property rate
+  unit: /1
+  period: year
+  reference:
+    - title: The Non-Domestic Rate (Scotland) Order 2023 (SSI 2023/29) art 2 (49.8p, 2023-24)
+      href: https://www.legislation.gov.uk/ssi/2023/29/made
+    - title: The Non-Domestic Rate (Scotland) Order 2024 (SSI 2024/3) art 2 (49.8p, 2024-25)
+      href: https://www.legislation.gov.uk/ssi/2024/3/made
+    - title: The Non-Domestic Rate (Scotland) Order 2025 (SSI 2025/37) art 2 (49.8p, 2025-26)
+      href: https://www.legislation.gov.uk/ssi/2025/37/made
+    - title: The Non-Domestic Rate (Scotland) Order 2026 (SSI 2026/39) art 2 (48.1p, 2026-27)
+      href: https://www.legislation.gov.uk/ssi/2026/39/made

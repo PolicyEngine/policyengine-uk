@@ -196,3 +196,88 @@
     # uses the main rate even with no profits: 200,000 x 75% = 150,000.
     firm_rd_expenditure_credit: 200_000
     firm_rdec_excess_payable: 150_000
+
+- name: Case 12, merged scheme PAYE and NIC cap binds (s. 1042I step 3, s. 1112B).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_relevant_paye_nic_liabilities: 40_000
+  output:
+    # As case 7, 162,000 is left after step 2. Cap 20,000 + 3 x 40,000
+    # = 140,000 < 162,000, so payable 140,000.
+    firm_rdec_excess_payable: 140_000
+
+- name: Case 13, merged scheme PAYE and NIC cap does not bind.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_relevant_paye_nic_liabilities: 50_000
+  output:
+    # Cap 20,000 + 3 x 50,000 = 170,000 > 162,000, so payable 162,000.
+    firm_rdec_excess_payable: 162_000
+
+- name: Case 14, merged scheme cap is the 20,000 fixed amount with no PAYE or NIC.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_relevant_paye_nic_liabilities: 0
+    # The pre-2024 input is ignored under the merged scheme.
+    firm_rd_staff_paye_nic: 0
+  output:
+    # Cap 20,000 + 3 x 0 = 20,000, so payable 20,000.
+    firm_rdec_excess_payable: 20_000
+
+- name: Case 15, cap at PAYE and NIC on R&D staff before April 2024 binds (s. 104N step 3).
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_rd_staff_paye_nic: 100_000
+  output:
+    # As case 11, 150,000 is left after step 2. Cap is the R&D staff PAYE
+    # and NIC itself, 100,000 < 150,000, so payable 100,000.
+    firm_rdec_excess_payable: 100_000
+
+- name: Case 16, pre-2024 cap does not bind and the merged input is ignored.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_rd_staff_paye_nic: 200_000
+    firm_relevant_paye_nic_liabilities: 0
+  output:
+    # Cap 200,000 > 150,000, so payable 150,000. No 20,000 fixed amount
+    # before April 2024, and the merged input plays no part.
+    firm_rdec_excess_payable: 150_000
+
+- name: Case 17, defaults leave the cap unsupplied in both regimes.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 10_000_000
+    firm_taxable_trading_profit: -1_000_000
+  output:
+    # Neither input supplied: both default to infinity, so the cap does not
+    # bind and payable is 162,000 as in case 7 (cases 10 and 11 cover
+    # 2022 and 2023).
+    firm_rdec_excess_payable: 162_000

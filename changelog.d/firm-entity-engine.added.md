@@ -1,3 +1,5 @@
 Added a firm entity beside person, benefit unit and household, with firm-level rules for employer National Insurance and the Employment Allowance, the apprenticeship levy, corporation tax with capital allowances, R&D relief and the bank surcharge, business rates in England, firm-side VAT and employer auto-enrolment contributions. Household results are unchanged.
 Added a firm-level National Minimum Wage floor: firm_minimum_wage_cost tops low-paid hours up to the adult rate, and the apprenticeship levy and default employer National Insurance and auto-enrolment approximations read the higher paybill.
 Added the R&D expenditure credit notional tax deduction to the payable credit, and to the bank surcharge the exclusion of the credit from surcharge profits, a group share of the allowance and day-weighting of the rate across the 1 January 2027 change.
+Added firm business rates for Wales and Scotland, the live music venue limit on the pubs relief large-venue rate, the three-decimal small business rate relief taper factor, and firm employer Class 1A National Insurance.
+Added the PAYE and National Insurance cap on the payable R&D expenditure credit.

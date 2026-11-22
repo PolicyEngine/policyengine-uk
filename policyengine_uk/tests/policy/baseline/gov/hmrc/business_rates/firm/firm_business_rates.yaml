@@ -138,16 +138,17 @@
     # 40,000 x 0.382 = 15,280, relief 15% = 2,292 -> 12,988.
     firm_business_rates: [12_988]
 
-- name: Pubs and live music venues relief, 35% in 2027-28 and 15% at £1m or more
+- name: Pubs and live music venues relief, 35% in 2027-28 and 15% for a live music venue at £1m or more
   period: 2027
   absolute_error_margin: 0.1
   input:
     firm_rateable_value: [40_000, 1_000_000]
     firm_is_rhl_property: [true, true]
     firm_is_pub_or_live_music_venue: [true, true]
+    firm_is_live_music_venue: [false, true]
   output:
-    # 40,000 x 0.395 = 15,800, relief 35% = 5,530 -> 10,270.
-    # 1,000,000 x 0.525 = 525,000, relief 15% = 78,750 -> 446,250.
+    # 40,000 x 0.395 = 15,800, pub relief 35% = 5,530 -> 10,270.
+    # 1,000,000 x 0.525 = 525,000, live music venue at £1m or more: 15% = 78,750 -> 446,250.
     firm_pubs_and_live_music_venues_rate_relief: [5_530, 78_750]
     firm_business_rates: [10_270, 446_250]
 

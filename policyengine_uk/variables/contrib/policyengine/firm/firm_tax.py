@@ -6,7 +6,7 @@ class firm_tax(Variable):
     documentation = (
         "The firm's statutory liability to the firm-side taxes this model "
         "covers: corporation tax, the bank surcharge, the apprenticeship "
-        "levy, employer National Insurance (after the Employment Allowance), "
+        "levy, employer National Insurance (secondary Class 1 after the Employment Allowance, and Class 1A), "
         "business rates and VAT, less R&D tax credits paid out to the firm "
         "(R&D expenditure credit above its corporation tax, and the payable "
         "credit for R&D-intensive loss-making SMEs). This is liability, not "
@@ -24,6 +24,7 @@ class firm_tax(Variable):
         "bank_surcharge",
         "apprenticeship_levy",
         "firm_employer_ni",
+        "firm_class_1a_ni",
         "firm_business_rates",
         "firm_vat",
     ]

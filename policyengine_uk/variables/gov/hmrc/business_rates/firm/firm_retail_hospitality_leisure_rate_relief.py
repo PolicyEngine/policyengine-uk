@@ -30,4 +30,5 @@ class firm_retail_hospitality_leisure_rate_relief(Variable):
         )
         remaining = max_(gross - mandatory_reliefs, 0)
         is_rhl = firm("firm_is_rhl_property", period)
-        return where(is_rhl, min_(remaining * p.rate, p.cap), 0)
+        in_england = firm("firm_rates_in_england", period)
+        return where(is_rhl & in_england, min_(remaining * p.rate, p.cap), 0)

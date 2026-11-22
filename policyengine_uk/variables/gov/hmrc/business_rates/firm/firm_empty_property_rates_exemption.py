@@ -31,4 +31,7 @@ class firm_empty_property_rates_exemption(Variable):
         exempt_months_this_year = clip(
             exemption_months - months_already_empty, 0, MONTHS_IN_YEAR
         )
-        return where(occupied, 0, gross * exempt_months_this_year / MONTHS_IN_YEAR)
+        in_england = firm("firm_rates_in_england", period)
+        return where(
+            occupied | ~in_england, 0, gross * exempt_months_this_year / MONTHS_IN_YEAR
+        )

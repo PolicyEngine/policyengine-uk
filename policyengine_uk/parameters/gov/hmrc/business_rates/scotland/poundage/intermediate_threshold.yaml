@@ -1,0 +1,12 @@
+description: Properties in Scotland with rateable value above this amount pay the intermediate property rate.
+values:
+  2023-04-01: 51_000
+metadata:
+  label: Scotland intermediate threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: SSI 2023/30 reg 5(1) (rateable value exceeding £51,000, but not exceeding £100,000)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made
+    - title: SSI 2026/68 reg 5(1) (rateable value exceeding £51,000, but not exceeding £100,000)
+      href: https://www.legislation.gov.uk/ssi/2026/68/made

@@ -1,0 +1,19 @@
+description: Additional factor added to the basic property rate in Scotland for properties with rateable value above the intermediate threshold, up to the higher threshold (the intermediate property rate).
+values:
+  2023-04-01: 0.013
+  2024-04-01: 0.047
+  2025-04-01: 0.056
+  2026-04-01: 0.054
+metadata:
+  label: Scotland intermediate property supplement
+  unit: /1
+  period: year
+  reference:
+    - title: Levying regulations SSI 2023/30 reg 5(4) (0.013)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made
+    - title: Levying regulations SSI 2024/4 reg 5(4) (0.047)
+      href: https://www.legislation.gov.uk/ssi/2024/4/made
+    - title: Levying regulations SSI 2025/38 reg 5 (0.056)
+      href: https://www.legislation.gov.uk/ssi/2025/38/made
+    - title: Levying regulations SSI 2026/68 reg 5(3) (0.054)
+      href: https://www.legislation.gov.uk/ssi/2026/68/made

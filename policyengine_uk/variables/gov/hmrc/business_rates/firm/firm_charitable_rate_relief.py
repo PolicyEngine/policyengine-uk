@@ -20,4 +20,5 @@ class firm_charitable_rate_relief(Variable):
         p = parameters(period).gov.hmrc.business_rates.reliefs.charity
         gross = firm("firm_gross_business_rates", period)
         is_charity = firm("firm_is_charity", period)
-        return where(is_charity, gross * p.rate, 0)
+        in_england = firm("firm_rates_in_england", period)
+        return where(is_charity & in_england, gross * p.rate, 0)

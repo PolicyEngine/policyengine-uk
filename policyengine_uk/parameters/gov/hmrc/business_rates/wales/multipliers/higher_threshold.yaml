@@ -1,0 +1,10 @@
+description: Properties in Wales with rateable value above this amount pay the higher non-domestic rating multiplier.
+values:
+  2026-04-01: 100_000
+metadata:
+  label: Wales higher multiplier threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Business Wales, Non-domestic rates multipliers 2026-27 ("a higher multiplier of 0.515, applicable to properties with a rateable value above £100,000")
+      href: https://businesswales.gov.wales/non-domestic-rates-multipliers

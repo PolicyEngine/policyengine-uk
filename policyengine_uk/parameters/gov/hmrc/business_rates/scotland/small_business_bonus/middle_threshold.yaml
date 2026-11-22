@@ -1,0 +1,14 @@
+description: Small Business Bonus Scheme relief in Scotland tapers from 100% down to the middle relief rate at this rateable value.
+values:
+  2023-04-01: 15_000
+metadata:
+  label: Scotland SBBS middle threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Scottish Government, Local government finance circular 5/2023, Small Business Bonus Scheme, Table 5 (£12,001 to £15,000, relief = 100 - 75 x (1 - (15000 - RV) / 3000))
+      href: https://www.gov.scot/publications/local-government-finance-circular-5-2023-non-domestic-rates-relief-guidance/pages/small-business-bonus-scheme/
+    - title: Scottish Government, Local government finance circular 7/2026, Table 3 (same bands and formulas)
+      href: https://www.gov.scot/publications/local-government-finance-circular-7-2026-non-domestic-rates-relief-guidance/pages/non-domestic-rates-relief-information-for-scottish-local-authorities/
+    - title: SSI 2023/30 reg 3(3)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made

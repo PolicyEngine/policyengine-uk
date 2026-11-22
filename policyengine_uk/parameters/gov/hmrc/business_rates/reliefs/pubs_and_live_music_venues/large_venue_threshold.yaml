@@ -1,4 +1,4 @@
-description: Pubs and live music venues with rateable value at or above this amount get the large venue rate of relief in England.
+description: Live music venues (not pubs) with rateable value at or above this amount get the large venue rate of relief in England.
 values:
   2027-04-01: 1_000_000
 metadata:
