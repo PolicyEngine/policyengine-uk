@@ -45,7 +45,8 @@ class firm_small_business_rate_relief(Variable):
         taper_end = where(is_rhl, p.rhl_taper_end_threshold, p.taper_end_threshold)
         # Sch 4ZA para 4(1): chargeable amount = gross / E. In the taper,
         # E = band width / (rateable value - full threshold), "calculated to
-        # three decimal places only" (SI 2023/1250 reg 3(4)).
+        # three decimal places only" (SI 2023/1250 reg 3(4)). The regulation
+        # does not say round or truncate; this rounds to nearest.
         in_taper = (rateable_value > full_threshold) & (rateable_value <= taper_end)
         excess = where(in_taper, rateable_value - full_threshold, 1)
         e = np.round(

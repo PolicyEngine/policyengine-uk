@@ -13,7 +13,7 @@
     firm_business_rates_multiplier: [0.568, 0.568, 0.568]
     firm_business_rates: [17_040, 17_040, 17_040]
 
-- name: Wales multiplier in 2023-24 and 2024-25
+- name: Wales multiplier in 2023-24
   period: 2023
   absolute_error_margin: 0.01
   input:

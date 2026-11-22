@@ -282,7 +282,7 @@
     firm_total_relevant_expenditure: 10_000_000
     firm_taxable_trading_profit: -1_000_000
   output:
-    # Neither input supplied: both default to infinity, so the cap does not
+    # firm_rdec_paye_nic_cap_supplied defaults to false, so the cap does not
     # bind and payable is 162,000 as in case 7 (cases 10 and 11 cover
     # 2022 and 2023).
     firm_rdec_excess_payable: 162_000
