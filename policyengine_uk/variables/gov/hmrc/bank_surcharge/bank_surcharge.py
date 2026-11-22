@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class bank_surcharge(Variable):
     value_type = float
     entity = Firm
-    label = "bank corporation tax surcharge"
+    label = "Bank corporation tax surcharge"
     documentation = (
         "Surcharge on a banking company's surcharge profits above the "
         "surcharge allowance. Surcharge profits are approximated by taxable "

@@ -339,3 +339,99 @@ def test_every_export_leaves_firms_out(with_firms):
 def test_a_variable_only_situation_cannot_give_firm_inputs():
     with pytest.raises(ValueError, match="'firms' entry"):
         Simulation(situation={"firm_paybill": [1.0, 2.0]})
+
+
+def multi_year(first_firm, later_firm) -> UKMultiYearDataset:
+    first = tables(first_firm)
+    later = tables(later_firm)
+    later.time_period = str(YEAR + 1)
+    return UKMultiYearDataset(datasets=[first, later])
+
+
+@pytest.mark.parametrize(
+    "later_rows",
+    [
+        # A firm only in the later year.
+        pd.concat(
+            [
+                FIRM_TABLE,
+                pd.DataFrame(
+                    {
+                        "firm_id": [40],
+                        "firm_weight": [1.0],
+                        "firm_paybill": [1.0],
+                        "firm_legal_form": ["COMPANY"],
+                    }
+                ),
+            ],
+            ignore_index=True,
+        ),
+        # A firm missing from the later year.
+        FIRM_TABLE.iloc[:2],
+        # The same number of firms, but a different one.
+        FIRM_TABLE.assign(firm_id=[30, 10, 99]),
+    ],
+)
+def test_a_later_year_must_give_the_first_years_firms(later_rows):
+    dataset = multi_year(FIRM_TABLE.copy(), later_rows.copy())
+    with pytest.raises(ValueError, match="same firms"):
+        Microsimulation(dataset=dataset)
+
+
+def test_a_later_year_cannot_give_firms_the_first_year_lacks():
+    dataset = multi_year(None, FIRM_TABLE.copy())
+    with pytest.raises(ValueError, match="first year"):
+        Microsimulation(dataset=dataset)
+
+
+def test_filtering_to_a_household_keeps_the_firm_table():
+    from policyengine_uk.data.filter_dataset import filter_dataset
+
+    simulation = Microsimulation(dataset=tables(FIRM_TABLE.copy()))
+    filtered = filter_dataset(simulation, household_id=1, year=YEAR)
+    assert len(filtered.household) == 1
+    assert filtered.firm["firm_id"].tolist() == [30, 10, 20]
+
+
+def test_a_firm_table_without_firm_ids_numbers_its_firms():
+    simulation = Microsimulation(dataset=tables(FIRM_TABLE.drop(columns="firm_id")))
+    assert simulation.calculate("firm_id", YEAR).tolist() == [0, 1, 2]
+    assert simulation.calculate("firm_paybill", YEAR).tolist() == [3e6, 1e5, 2e5]
+    dataset = multi_year(
+        FIRM_TABLE.drop(columns="firm_id"), FIRM_TABLE.drop(columns="firm_id")
+    )
+    simulation = Microsimulation(dataset=dataset)
+    assert simulation.calculate("firm_paybill", YEAR + 1).tolist() == [3e6, 1e5, 2e5]
+
+
+def test_a_core_dataset_without_firm_ids_numbers_its_firms():
+    from policyengine_uk.simulation import _core_dataset_firm_ids
+
+    system = CountryTaxBenefitSystem()
+    data = {
+        "person_id": {YEAR: np.array([1, 2])},
+        "firm_paybill": {YEAR: np.array([1.0, 2.0, 3.0])},
+    }
+    assert _core_dataset_firm_ids(data, system).tolist() == [0, 1, 2]
+    assert _core_dataset_firm_ids({"person_id": data["person_id"]}, system) is None
+    data["firm_id"] = {YEAR: np.array([7, 8, 9])}
+    assert _core_dataset_firm_ids(data, system).tolist() == [7, 8, 9]
+
+
+def test_nested_exports_leave_the_simulation_as_found(with_firms):
+    assert "_get_exportable_input_periods" not in with_firms.__dict__
+    with with_firms._exporting_people_only():
+        inner = with_firms._get_exportable_input_periods
+        with with_firms._exporting_people_only():
+            pass
+        assert with_firms._get_exportable_input_periods is inner
+        assert "age" in with_firms.to_input_dict()
+    assert "_get_exportable_input_periods" not in with_firms.__dict__
+    assert "age" in with_firms.to_input_dict()
+
+
+def test_a_firm_table_cannot_give_other_entities_variables():
+    dataset = tables(FIRM_TABLE.assign(employment_income=1.0, not_a_variable=1.0))
+    with pytest.raises(ValueError, match="'employment_income' \\(a person"):
+        dataset.validate()
+    tables(FIRM_TABLE.assign(not_a_variable=1.0)).validate()

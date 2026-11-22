@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_rdec_excess_payable(Variable):
     value_type = float
     entity = Firm
-    label = "firm R&D expenditure credit in excess of corporation tax"
+    label = "Firm R&D expenditure credit in excess of corporation tax"
     documentation = (
         "R&D expenditure credit left after discharging the year's corporation "
         "tax, treated as paid to the company. The notional tax deduction, the "

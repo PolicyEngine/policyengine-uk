@@ -110,3 +110,37 @@
     # firm_only_tax: 37,500,000 + 1,500,000 + 485,000 + 1,016,000
     # = 40,501,000.
     firm_only_tax: [40_501_000]
+
+- name: Case 3, R&D tax credits paid out reduce firm tax.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Lab: an R&D-intensive loss-making SME (qualifying R&D 400,000 of
+    # 1,000,000 relevant expenditure, intensity 40%). Large company: R&D of
+    # 400,000 and no trading profit, so its RDEC exceeds its tax.
+    firm_is_sme: [true, false]
+    firm_qualifying_rd_expenditure: [400_000, 400_000]
+    firm_total_relevant_expenditure: [1_000_000, 4_000_000]
+    firm_taxable_trading_profit: [-200_000, 0]
+    firm_employees: [10, 0]
+    firm_paybill: [400_000, 0]
+  output:
+    # Lab (ERIS): additional deduction 86% x 400,000 = 344,000; loss
+    # 200,000 + 344,000 = 544,000, under the cap 400,000 + 344,000 = 744,000;
+    # payable credit 14.5% x 544,000 = 78,880.
+    firm_rd_additional_deduction: [344_000, 0]
+    firm_rd_payable_credit: [78_880, 0]
+    # Large company (RDEC): 20% x 400,000 = 80,000, taxable; 80,000 is in the
+    # marginal relief band: 25% x 80,000 - 3/200 x (250,000 - 80,000)
+    # = 17,450 before credits; the credit discharges it and 62,550 is paid.
+    firm_rd_expenditure_credit: [0, 80_000]
+    corporation_tax_before_credits: [0, 17_450]
+    corporation_tax: [0, 0]
+    firm_rdec_excess_payable: [0, 62_550]
+    # Lab employer NI: (400,000 - 10 x 5,000) x 15% = 52,500 less the 10,500
+    # Employment Allowance = 42,000.
+    firm_employer_ni: [42_000, 0]
+    # firm_tax: 42,000 - 78,880 = -36,880; 0 - 62,550 = -62,550.
+    firm_tax: [-36_880, -62_550]
+    # firm_only_tax leaves employer NI out: -78,880 and -62,550.
+    firm_only_tax: [-78_880, -62_550]

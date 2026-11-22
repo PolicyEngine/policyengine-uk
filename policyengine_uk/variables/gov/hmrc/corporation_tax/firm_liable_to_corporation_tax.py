@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_liable_to_corporation_tax(Variable):
     value_type = bool
     entity = Firm
-    label = "firm is liable to corporation tax"
+    label = "Firm is liable to corporation tax"
     documentation = (
         "Companies pay corporation tax. Sole traders and partnerships pay "
         "income tax on their profits instead."

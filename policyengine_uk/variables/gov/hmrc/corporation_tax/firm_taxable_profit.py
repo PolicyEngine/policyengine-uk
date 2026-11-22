@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_taxable_profit(Variable):
     value_type = float
     entity = Firm
-    label = "firm taxable total profits"
+    label = "Firm taxable total profits"
     documentation = (
         "Profits chargeable to corporation tax after carried-forward losses. "
         "Group relief is not modelled."

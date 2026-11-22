@@ -15,6 +15,8 @@ from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
 from policyengine_core.populations import Population
+from policyengine_core.simulations import Simulation as CoreSimulation
+from policyengine_core.simulations.simulation import _branch_clone
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
@@ -342,6 +344,48 @@ _instantiate_entities_with_root_populations._core_instantiate_entities = (
     _core_instantiate_entities
 )
 TaxBenefitSystem.instantiate_entities = _instantiate_entities_with_root_populations
+
+
+def _clone_with_root_populations(self, *args, **kwargs):
+    """Core's ``Simulation.clone``, keeping the root (firm) populations.
+
+    Core copies only the person and group populations. A core simulation
+    over this system (as the YAML test runner builds, and as formulas that
+    branch or clone it, such as the marginal tax rates, work on) would lose
+    the firm population, and clearing or reading any firm variable on the
+    copy would raise. The UK ``Simulation`` overrides ``clone`` and binds
+    its own copy over the one made here. For a simulation with no root
+    populations it returns what core returns."""
+    roots = [
+        key
+        for key in getattr(self, "populations", {})
+        if isinstance(self.populations[key], RootPopulation)
+    ]
+    request = _branch_clone.get()
+    share_arrays = (
+        request is not None and request.pending and request.simulation is self
+    )
+    new = _core_simulation_clone(self, *args, **kwargs)
+    sharing = {"share_arrays": True} if share_arrays else {}
+    for key in roots:
+        if key in new.populations:
+            continue
+        population = self.populations[key].clone(new, **sharing)
+        entity = next(
+            (e for e in new.tax_benefit_system.entities if e.key == key), None
+        )
+        if entity is not None:
+            population.entity = entity
+        new.populations[key] = population
+        setattr(new, key, population)
+    return new
+
+
+_core_simulation_clone = getattr(
+    CoreSimulation.clone, "_core_simulation_clone", CoreSimulation.clone
+)
+_clone_with_root_populations._core_simulation_clone = _core_simulation_clone
+CoreSimulation.clone = _clone_with_root_populations
 
 
 class CountryTaxBenefitSystem(TaxBenefitSystem):

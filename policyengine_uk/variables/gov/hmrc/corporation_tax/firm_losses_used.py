@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_losses_used(Variable):
     value_type = float
     entity = Firm
-    label = "firm losses brought forward used"
+    label = "Firm losses brought forward used"
     documentation = (
         "Carried-forward losses set against the year's profits, up to the "
         "deductions allowance plus 50% of profits above it. Losses are treated "

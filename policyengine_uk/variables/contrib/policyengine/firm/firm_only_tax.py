@@ -8,7 +8,7 @@ class firm_only_tax(Variable):
         "side models, so that a reform to them reaches households through "
         "firm_tax_incidence without counting a change twice: corporation "
         "tax, the bank surcharge, the apprenticeship levy and business "
-        "rates. Employer National Insurance rates and thresholds, and VAT "
+        "rates, less R&D tax credits paid out to the firm. Employer National Insurance rates and thresholds, and VAT "
         "rates, reach households through ni_employer and vat on the "
         "household side, so they are left out. The Employment Allowance is "
         "left out too, because it moves with employer National Insurance "
@@ -26,3 +26,4 @@ class firm_only_tax(Variable):
         "apprenticeship_levy",
         "firm_business_rates",
     ]
+    subtracts = ["firm_rdec_excess_payable", "firm_rd_payable_credit"]

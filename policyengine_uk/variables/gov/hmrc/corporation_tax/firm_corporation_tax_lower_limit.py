@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_corporation_tax_lower_limit(Variable):
     value_type = float
     entity = Firm
-    label = "firm corporation tax lower limit"
+    label = "Firm corporation tax lower limit"
     documentation = (
         "The lower limit divided by one plus the number of associated "
         "companies. Short accounting periods are not modelled."

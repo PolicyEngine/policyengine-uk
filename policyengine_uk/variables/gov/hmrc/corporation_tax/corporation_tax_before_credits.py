@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class corporation_tax_before_credits(Variable):
     value_type = float
     entity = Firm
-    label = "corporation tax before credits"
+    label = "Corporation tax before credits"
     documentation = (
         "Corporation tax on taxable total profits: the small profits rate "
         "where augmented profits do not exceed the lower limit, otherwise the "

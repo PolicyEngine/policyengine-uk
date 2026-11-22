@@ -7,7 +7,7 @@ from policyengine_uk.model_api import *
 class firm_marginal_relief(Variable):
     value_type = float
     entity = Firm
-    label = "firm corporation tax marginal relief"
+    label = "Firm corporation tax marginal relief"
     documentation = (
         "Marginal relief for companies with augmented profits above the lower "
         "limit and not above the upper limit: the standard fraction times the "

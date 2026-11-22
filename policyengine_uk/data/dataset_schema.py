@@ -255,13 +255,36 @@ class UKSingleYearDataset:
             savings_income_projection=self.savings_income_projection,
         )
 
-    def validate(self):
+    def validate(self, tax_benefit_system=None):
+        """Check the tables hold no NaNs and the firm table, if any, gives
+        only firm variables (or columns naming no variable, which loading
+        skips). ``tax_benefit_system`` defaults to the baseline system."""
         # Check for NaNs in the tables
         tables = self.tables if self._firm is None else (*self.tables, self._firm)
         for df in tables:
             for col in df.columns:
                 if df[col].isna().any():
                     raise ValueError(f"Column '{col}' contains NaN values.")
+        if self._firm is None:
+            return
+        if tax_benefit_system is None:
+            from policyengine_uk.tax_benefit_system import system
+
+            tax_benefit_system = system
+        variables = tax_benefit_system.variables
+        misplaced = {
+            col: variables[col].entity.key
+            for col in self._firm.columns
+            if col in variables and variables[col].entity.key != "firm"
+        }
+        if misplaced:
+            details = ", ".join(
+                f"'{col}' (a {entity} variable)" for col, entity in misplaced.items()
+            )
+            raise ValueError(
+                f"The firm table gives variables that are not firm variables: "
+                f"{details}. Give them in their own entity's table."
+            )
 
     @staticmethod
     def from_simulation(

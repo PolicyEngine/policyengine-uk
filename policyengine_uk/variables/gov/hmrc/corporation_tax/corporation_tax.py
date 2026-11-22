@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class corporation_tax(Variable):
     value_type = float
     entity = Firm
-    label = "corporation tax"
+    label = "Corporation tax"
     documentation = (
         "Corporation tax after setting the R&D expenditure credit against it. "
         "Any credit above the tax is shown in firm_rdec_excess_payable. "

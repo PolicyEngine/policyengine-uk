@@ -265,25 +265,61 @@ def _root_entity(system, key):
     return None
 
 
+def _with_firm_ids(table):
+    """``table``, a firm table, with a ``firm_id`` column: a table without
+    one numbers its firms 0, 1, ... in the order it gives them, as
+    ``UKSingleYearDataset.from_simulation`` does. None stays None."""
+    if table is None or FIRM_ID_VARIABLE in table.columns:
+        return table
+    return table.assign(**{FIRM_ID_VARIABLE: np.arange(len(table))})
+
+
 def _firm_table_in_population_order(table, firm_ids):
     """``table``, a year's firm table, with its rows in the order of the firm
     population's ``firm_ids`` (the first year's order), or None if there is
-    no table. A table without ``firm_id`` is taken to be in that order."""
+    no table. A table without ``firm_id`` numbers its firms 0, 1, ... .
+
+    Each year's table must give exactly the first year's firms, each once:
+    the population is built from the first year, so a later year's extra or
+    missing firms would otherwise be dropped or left without inputs."""
     if table is None:
         return None
-    if FIRM_ID_VARIABLE not in table.columns:
-        return table
+    table = _with_firm_ids(table)
     ids = table[FIRM_ID_VARIABLE].to_numpy()
     firm_ids = np.asarray(firm_ids)
     if np.array_equal(ids, firm_ids):
         return table
     position = pd.Series(np.arange(len(ids)), index=ids)
-    if position.index.has_duplicates or not np.isin(firm_ids, ids).all():
+    if (
+        len(ids) != len(firm_ids)
+        or position.index.has_duplicates
+        or set(ids.tolist()) != set(firm_ids.tolist())
+    ):
         raise ValueError(
             "Each year's firm table must give the same firms, each once, as "
-            "the first year's."
+            f"the first year's: the first year gives {len(firm_ids)} firm(s), "
+            f"this table {len(ids)} row(s) with different firm ids."
         )
     return table.iloc[position.loc[firm_ids].to_numpy()]
+
+
+def _core_dataset_firm_ids(data, system):
+    """The firm ids of a core dataset's ``data`` (``{variable: {period:
+    values}}``): its ``firm_id`` values for their first period, or, without
+    them, 0, 1, ... for as many firms as its firm variables' first values
+    give. None if it has no firm variables."""
+    if FIRM_ID_VARIABLE in data:
+        values = data[FIRM_ID_VARIABLE]
+        return np.asarray(values[next(iter(values))])
+    for variable, values in data.items():
+        if variable not in system.variables or not values:
+            continue
+        if system.variables[variable].entity.key != "firm":
+            continue
+        first = np.asarray(values[next(iter(values))])
+        if first.ndim > 0:
+            return np.arange(len(first))
+    return None
 
 
 def get_default_dataset_url() -> str:
@@ -819,11 +855,18 @@ class Simulation(CoreSimulation):
                 return []
             return exportable(variable_name, include_computed_variables)
 
+        # Restore whatever was there before (an instance override from an
+        # enclosing call, or none), so nested exports leave it as found.
+        missing = object()
+        previous = self.__dict__.get("_get_exportable_input_periods", missing)
         self._get_exportable_input_periods = periods
         try:
             yield
         finally:
-            del self._get_exportable_input_periods
+            if previous is missing:
+                del self._get_exportable_input_periods
+            else:
+                self._get_exportable_input_periods = previous
 
     def _to_person_dataframe(self, get_periods, include_computed_variables=False):
         roots = set(_root_population_keys(self))
@@ -1718,9 +1761,7 @@ class Simulation(CoreSimulation):
                 ],
             ),
             # Firms, if the dataset has any, in the order it gives them.
-            firm_id=(
-                get_first_array(FIRM_ID_VARIABLE) if FIRM_ID_VARIABLE in data else None
-            ),
+            firm_id=_core_dataset_firm_ids(data, self.tax_benefit_system),
         )
 
         self._isa_income_contracts = resolve_contracts(
@@ -1802,6 +1843,17 @@ class Simulation(CoreSimulation):
             _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]
+        first_firm_table = _with_firm_ids(first_year.firm)
+        if first_firm_table is None:
+            later = [
+                year for year in dataset.years[1:] if dataset[year].firm is not None
+            ]
+            if later:
+                raise ValueError(
+                    f"The dataset gives a firm table for {later[0]} but not for "
+                    f"its first year, {dataset.years[0]}: the first year's "
+                    "firm table sets the simulation's firms."
+                )
         self.build_from_ids(
             first_year.person.person_id,
             first_year.person.person_benunit_id,
@@ -1810,8 +1862,8 @@ class Simulation(CoreSimulation):
             first_year.household.household_id,
             firm_id=(
                 None
-                if first_year.firm is None
-                else first_year.firm[FIRM_ID_VARIABLE].to_numpy()
+                if first_firm_table is None
+                else first_firm_table[FIRM_ID_VARIABLE].to_numpy()
             ),
         )
         self._isa_income_contracts = {

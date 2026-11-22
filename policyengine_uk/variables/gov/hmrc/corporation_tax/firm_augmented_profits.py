@@ -5,7 +5,7 @@ from policyengine_uk.model_api import *
 class firm_augmented_profits(Variable):
     value_type = float
     entity = Firm
-    label = "firm augmented profits"
+    label = "Firm augmented profits"
     documentation = (
         "Taxable total profits plus exempt distributions from non-group "
         "companies, compared with the lower and upper limits."
