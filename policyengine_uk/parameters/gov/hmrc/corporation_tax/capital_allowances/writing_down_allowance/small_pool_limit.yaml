@@ -1,11 +1,11 @@
 description: Pool balance at or below which a business may write off the whole main pool or special rate pool in one year instead of claiming the percentage writing-down allowance, under section 56A of the Capital Allowances Act 2001.
 values:
-  # UNVERIFIED: 1 April 2008 start date (FA 2008 introduced section 56A) was
-  # not fetched; the 1,000 limit is confirmed by the current text.
   2008-04-01:
     value: 1_000
     metadata:
       reference:
+        - title: Finance Act 2008 s 81(3) and (5)(a) (section 56A inserted for chargeable periods beginning on or after 1 April 2008 for corporation tax)
+          href: https://www.legislation.gov.uk/ukpga/2008/9/section/81/enacted
         - title: Capital Allowances Act 2001 s 56A(3)
           href: https://www.legislation.gov.uk/ukpga/2001/2/section/56A
 metadata:

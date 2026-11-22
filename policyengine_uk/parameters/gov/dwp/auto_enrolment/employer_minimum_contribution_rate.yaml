@@ -5,9 +5,10 @@ description: Minimum employer contribution to a money purchase scheme used for a
 # amended by SI 2016/719).
 values:
   0000-01-01: 0
-  # Pensions Act 2008 s.3 and s.20 came into force on 30 June 2012 (SI
-  # 2012/1682); duties applied to employers in stages from 1 October 2012, so
-  # the model dates the first rate to the first staging date.
+  # SI 2012/1682 brought the automatic enrolment provisions not already in
+  # force into force on 30 June 2012; duties applied to employers in stages
+  # from 1 October 2012, so the model dates the first rate to the first
+  # staging date.
   2012-10-01:
     value: 0.01
     metadata:

@@ -4,15 +4,14 @@ values:
     value: 0
     metadata:
       reference:
-        - title: Capital Allowances Act 2001 Part 2A (structures and buildings allowance introduced for contracts entered into on or after 29 October 2018)
+        - title: Capital Allowances Act 2001 s 270AA(1) (no allowance unless construction begins and expenditure is incurred on or after 29 October 2018)
           href: https://www.legislation.gov.uk/ukpga/2001/2/section/270AA
-  # UNVERIFIED: 29 October 2018 start date (contracts entered into from that
-  # date, Capital Allowances (Structures and Buildings Allowances)
-  # Regulations 2019) not checked against the regulations.
   2018-10-29:
     value: 0.02
     metadata:
       reference:
+        - title: Capital Allowances Act 2001 s 270AA(1)(a) and (b) (construction begins and expenditure incurred on or after 29 October 2018)
+          href: https://www.legislation.gov.uk/ukpga/2001/2/section/270AA
         - title: Finance Act 2020 s 29(2)(c) (2% replaced by 3%)
           href: https://www.legislation.gov.uk/ukpga/2020/14/section/29
   2020-04-01:

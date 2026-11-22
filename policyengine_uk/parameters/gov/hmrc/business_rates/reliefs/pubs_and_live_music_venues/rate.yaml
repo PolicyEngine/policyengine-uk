@@ -22,3 +22,8 @@ metadata:
   label: Pubs and live music venues relief rate
   unit: /1
   period: year
+  reference:
+    - title: GOV.UK, Pubs and live music venues relief (15% for 2026 to 2027)
+      href: https://www.gov.uk/apply-for-business-rate-relief/pubs-and-live-music-venues-relief
+    - title: Business Rates Information Letter 8/2026, Technical Annex para 6(a)
+      href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028

@@ -20,8 +20,12 @@ values:
           href: https://www.legislation.gov.uk/ukpga/2022/3/section/6
         - title: Corporation Tax Act 2010 s. 269DA(1)
           href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DA
+  # Finance Bill 2026-27 (Bill 173) clause 7, per HMRC BKM409200. Not enacted:
+  # as at 22 November 2026 the Bill has had its Commons first reading (3
+  # November 2026), with second reading set for 23 November 2026. The 6% rate
+  # and the 2028-04-01 return to 3% have provisional statutory effect only
+  # (Provisional Collection of Taxes Act 1968).
   2027-01-01:
-    # Finance Bill 2026-27 clause 7; not yet law (awaiting Royal Assent).
     value: 0.06
     metadata:
       reference:
@@ -33,6 +37,8 @@ values:
     value: 0.03
     metadata:
       reference:
+        - title: HMRC Banking Manual BKM409200 (rate reverts to 3% from 1 April 2028)
+          href: https://www.gov.uk/hmrc-internal-manuals/banking-manual/bkm409200
         - title: HMRC policy paper, Increase in rate of Banking Surcharge for a temporary period (Budget 2026)
           href: https://www.gov.uk/government/publications/increase-in-the-banking-surcharge-rate-for-a-temporary-period/increase-in-rate-of-banking-surcharge-for-temporary-period
 metadata:

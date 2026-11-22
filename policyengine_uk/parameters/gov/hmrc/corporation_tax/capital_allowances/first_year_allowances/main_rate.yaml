@@ -14,7 +14,10 @@ values:
           href: https://www.legislation.gov.uk/ukpga/2001/2/section/52
         - title: Capital Allowances Act 2001 s 45U, inserted by Finance Act 2026 s 29(3)
           href: https://www.legislation.gov.uk/ukpga/2001/2/section/45U
-  # Announced at Budget 2026 for Finance Bill 2026-27; not yet enacted.
+  # Announced at Budget 2026 (policy paper of 29 October 2026) for Finance
+  # Bill 2026-27 (Bill 173). Not enacted: as at 22 November 2026 the Bill has
+  # had its Commons first reading (3 November 2026), with second reading set
+  # for 23 November 2026. Clause number not verified.
   2027-01-01:
     value: 0.5
     metadata:

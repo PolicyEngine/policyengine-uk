@@ -16,7 +16,7 @@ values:
     value: .inf
     metadata:
       reference:
-        - title: National Insurance Contributions Act 2014 s.2(4B)-(4G), omitted by the National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.3
+        - title: National Insurance Contributions Act 2014 s.2(4B)-(4G), omitted from 6 April 2025 by the National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.3(3)(a) and (4)
           href: https://www.legislation.gov.uk/ukpga/2014/7/section/2
 metadata:
   unit: currency-GBP

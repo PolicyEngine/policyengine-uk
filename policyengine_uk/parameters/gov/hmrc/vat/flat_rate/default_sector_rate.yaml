@@ -1,10 +1,15 @@
 description: Flat rate percentage for the "any other activity not listed elsewhere" business category of the VAT flat rate scheme, used when a firm's sector rate is not supplied.
 values:
-  # UNVERIFIED start date: the 12% rate is verified on GOV.UK; the date it took effect
-  # is taken as 4 January 2011, when regulation 55K's table was amended for the 20%
-  # standard rate (later 2020-21 amendments were temporary hospitality rates); the
-  # earlier value for this row is not checked.
-  2011-01-04: 0.12
+  # Regulation 55K's table was substituted from 4 January 2011 (SI 2010/2940
+  # reg 4), with the 20% standard rate; later 2020-21 amendments changed only
+  # temporary hospitality rows. Earlier values for this row are not encoded,
+  # so the model applies 12% before 2011.
+  2011-01-04:
+    value: 0.12
+    metadata:
+      reference:
+        - title: The Value Added Tax (Amendment) (No. 3) Regulations 2010 (SI 2010/2940) reg 4 (regulation 55K table substituted from 4 January 2011)
+          href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/55K
 metadata:
   unit: /1
   period: year

@@ -1,7 +1,43 @@
 description: Annual earnings above which earnings count as qualifying earnings for automatic enrolment pension contributions.
-# UNVERIFIED for years before 2019-20: the first value is the 2019-20 band and
-# earlier bands are not encoded, so the model applies £6,136 to earlier years.
+# The first value is the band in force when employer duties began (from
+# 1 October 2012); it is applied to earlier years.
 values:
+  2012-06-15:
+    value: 5_564
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2012/1506 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2012-06-15
+  2013-04-06:
+    value: 5_668
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2013/667 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2013-04-06
+  2014-04-06:
+    value: 5_772
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2014/623 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2014-04-06
+  2015-04-06:
+    value: 5_824
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2015/468 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2015-04-06
+  2017-04-06:
+    value: 5_876
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2017/394 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2017-04-06
+  2018-04-06:
+    value: 6_032
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(a), as substituted by SI 2018/367 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2018-04-06
   2019-04-06:
     value: 6_136
     metadata:

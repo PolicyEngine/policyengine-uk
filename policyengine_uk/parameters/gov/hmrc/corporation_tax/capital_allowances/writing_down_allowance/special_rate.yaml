@@ -1,11 +1,11 @@
 description: Writing-down allowance rate on the special rate pool of plant and machinery, such as integral features and long-life assets, under section 104D(1) of the Capital Allowances Act 2001.
 values:
-  # UNVERIFIED: the 8% rate is confirmed by FA 2019 s 31, but its 1 April
-  # 2012 start (FA 2011 s 10, 10% to 8%) was not fetched.
   2012-04-01:
     value: 0.08
     metadata:
       reference:
+        - title: Finance Act 2011 s 10(3)(a) and (13)(a) (10% to 8% for chargeable periods beginning on or after 1 April 2012 for corporation tax)
+          href: https://www.legislation.gov.uk/ukpga/2011/11/section/10/enacted
         - title: Finance Act 2019 s 31(2) and (8)(a) (8% replaced by 6% for chargeable periods beginning on or after 1 April 2019 for corporation tax)
           href: https://www.legislation.gov.uk/ukpga/2019/1/section/31
   2019-04-01:

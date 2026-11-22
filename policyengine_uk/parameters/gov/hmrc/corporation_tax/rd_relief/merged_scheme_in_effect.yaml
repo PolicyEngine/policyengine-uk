@@ -11,7 +11,7 @@ values:
     metadata:
       reference:
         - title: Finance Act 2024 Sch 1 paras 5 and 16 (Chapter 1A of Part 13 of the Corporation Tax Act 2009 inserted for accounting periods beginning on or after 1 April 2024)
-          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1042G
+          href: https://www.legislation.gov.uk/ukpga/2009/4/part/13/chapter/1A
 metadata:
   unit: bool
   period: year

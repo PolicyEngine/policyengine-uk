@@ -6,6 +6,8 @@ values:
       reference:
         - title: Finance Act 2014 s. 7 and Sch. 1 (abolition of the small profits rate for non-ring-fence profits)
           href: https://www.legislation.gov.uk/ukpga/2014/26/section/7/enacted
+        - title: Finance Act 2014 Sch. 1 para. 22(1) (effect for the financial year 2015 and subsequent financial years)
+          href: https://www.legislation.gov.uk/ukpga/2014/26/schedule/1/enacted
   2023-04-01:
     value: true
     metadata:

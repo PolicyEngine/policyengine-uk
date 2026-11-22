@@ -17,11 +17,11 @@ values:
     metadata:
       reference:
         - title: Corporation Tax Act 2009 s 1045ZA(2) (relevant R&D expenditure at least 30% of relevant expenditure)
-          href: https://www.legislation.gov.uk/ukpga/2009/4/part/13/chapter/2
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1045ZA
 metadata:
   unit: /1
   period: year
   label: R&D intensity threshold
   reference:
     - title: Corporation Tax Act 2009 s 1045ZA
-      href: https://www.legislation.gov.uk/ukpga/2009/4/part/13/chapter/2
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1045ZA

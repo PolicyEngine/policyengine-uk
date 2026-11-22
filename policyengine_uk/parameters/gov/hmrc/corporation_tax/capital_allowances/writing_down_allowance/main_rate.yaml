@@ -10,11 +10,14 @@ values:
     value: 0.14
     metadata:
       reference:
-        - title: Capital Allowances Act 2001 s 56(1), as amended by Finance Act 2026 s 28(1) (18% to 14% from 1 April 2026 for corporation tax)
+        - title: Capital Allowances Act 2001 s 56(1), as amended by Finance Act 2026 s 28(1) and (2)(a) (18% to 14% for chargeable periods beginning on or after 1 April 2026 for corporation tax)
           href: https://www.legislation.gov.uk/ukpga/2001/2/section/56
         - title: HMRC policy paper, Capital allowances - new first year allowance and reducing main rate writing down allowances
           href: https://www.gov.uk/government/publications/new-first-year-allowance-and-main-rate-of-writing-down-allowances/capital-allowances-new-first-year-allowance-and-reducing-main-rate-writing-down-allowances
-  # Announced at Budget 2026 for Finance Bill 2026-27; not yet enacted.
+  # Announced at Budget 2026 (policy paper of 29 October 2026) for Finance
+  # Bill 2026-27 (Bill 173). Not enacted: as at 22 November 2026 the Bill has
+  # had its Commons first reading (3 November 2026), with second reading set
+  # for 23 November 2026. Clause number not verified.
   2027-04-01:
     value: 0.12
     metadata:
