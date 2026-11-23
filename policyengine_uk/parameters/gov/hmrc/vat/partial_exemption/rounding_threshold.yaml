@@ -1,0 +1,12 @@
+description: Under the VAT partial exemption standard method, the recoverable percentage is rounded up to the next whole number where residual input tax averages no more than this amount a month, and to two decimal places otherwise.
+values:
+  2005-04-01: 400_000
+metadata:
+  label: VAT partial exemption whole-number rounding threshold (monthly)
+  unit: currency-GBP
+  period: month
+  reference:
+    - title: The Value Added Tax (Amendment) Regulations 2005 (SI 2005/762), which added reg 101(5)
+      href: https://www.legislation.gov.uk/uksi/2005/762/made
+    - title: The Value Added Tax Regulations 1995 (SI 1995/2518), reg 101(4)-(5), as amended
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/101

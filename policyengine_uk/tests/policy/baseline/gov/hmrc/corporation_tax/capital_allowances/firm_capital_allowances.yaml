@@ -263,3 +263,231 @@
   output:
     # 1 x 1,000,000 = 1,000,000; 0.25 x 1,000,000 = 250,000.
     firm_annual_investment_allowance_limit: [1_000_000, 250_000]
+
+- name: Case 22, disposal of fully expensed plant gives a balancing charge outside the pool.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_main_pool_brought_forward: [1_000_000]
+    firm_disposal_proceeds_main_pool: [200_000]
+    firm_disposal_proceeds_full_expensing: [200_000]
+  output:
+    # Charge 1 x 200,000; pool receipts 200,000 - 200,000 = 0.
+    firm_full_expensing_balancing_charge: [200_000]
+    # 1,000,000 - 0 = 1,000,000.
+    firm_main_pool_balance: [1_000_000]
+    # 18% x 1,000,000 = 180,000.
+    firm_main_pool_writing_down_allowance: [180_000]
+    # Pool balance 1,000,000 is positive: no pool charge.
+    firm_main_pool_balancing_charge: [0]
+    # 180,000 - 200,000 = -20,000.
+    firm_capital_allowances: [-20_000]
+    # 1,000,000 - 180,000 = 820,000.
+    firm_main_pool_carried_forward: [820_000]
+
+- name: Case 23, no fully expensed disposals leaves the pool rules unchanged.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_main_pool_brought_forward: [1_000_000, 1_000_000]
+    firm_disposal_proceeds_main_pool: [200_000, 0]
+    firm_disposal_proceeds_full_expensing: [0, 0]
+  output:
+    # No fully expensed disposals: no charge.
+    firm_full_expensing_balancing_charge: [0, 0]
+    # 18% x (1,000,000 - 200,000) = 144,000; 18% x 1,000,000 = 180,000.
+    firm_main_pool_writing_down_allowance: [144_000, 180_000]
+    # Allowances equal the WDA.
+    firm_capital_allowances: [144_000, 180_000]
+
+- name: Case 24, disposals only partly of fully expensed plant.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_main_pool_brought_forward: [1_000_000]
+    firm_disposal_proceeds_main_pool: [300_000]
+    firm_disposal_proceeds_full_expensing: [200_000]
+  output:
+    # Charge 1 x 200,000.
+    firm_full_expensing_balancing_charge: [200_000]
+    # 1,000,000 - (300,000 - 200,000) = 900,000.
+    firm_main_pool_balance: [900_000]
+    # 18% x 900,000 = 162,000.
+    firm_main_pool_writing_down_allowance: [162_000]
+    # 162,000 - 200,000 = -38,000.
+    firm_capital_allowances: [-38_000]
+
+- name: Case 25, full expensing charge alongside a main pool balancing charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_main_pool_brought_forward: [10_000]
+    firm_disposal_proceeds_main_pool: [225_000]
+    firm_disposal_proceeds_full_expensing: [200_000]
+  output:
+    # Charge 1 x 200,000.
+    firm_full_expensing_balancing_charge: [200_000]
+    # 10,000 - (225,000 - 200,000) = -15,000.
+    firm_main_pool_balance: [-15_000]
+    # Pool charge max(15,000, 0) = 15,000.
+    firm_main_pool_balancing_charge: [15_000]
+    # Negative pool: WDA 0.
+    firm_main_pool_writing_down_allowance: [0]
+    # 0 - 15,000 - 200,000 = -215,000.
+    firm_capital_allowances: [-215_000]
+    # max(-15,000, 0) - 0 = 0.
+    firm_main_pool_carried_forward: [0]
+
+- name: Case 26, fully expensed proceeds capped at main pool proceeds and nil for a sole trader.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, SOLE_TRADER]
+    firm_main_pool_brought_forward: [1_000_000, 1_000_000]
+    firm_disposal_proceeds_main_pool: [0, 200_000]
+    firm_disposal_proceeds_full_expensing: [200_000, 200_000]
+  output:
+    # Company min(200,000, 0) = 0; a sole trader cannot claim full expensing, so 0.
+    firm_full_expensing_balancing_charge: [0, 0]
+    # Company 1,000,000 - 0 = 1,000,000; sole trader 1,000,000 - 200,000 = 800,000.
+    firm_main_pool_balance: [1_000_000, 800_000]
+    # 18% x 1,000,000 = 180,000; 18% x 800,000 = 144,000.
+    firm_capital_allowances: [180_000, 144_000]
+
+- name: Case 27, new main-rate plant for leasing gets the AIA and the 40% FYA, not full expensing.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, SOLE_TRADER]
+    firm_capex_main_pool_new_for_leasing: [2_000_000, 2_000_000]
+  output:
+    # Leasing is excluded from full expensing (s.46 general exclusion 6).
+    firm_full_expensing_allowance: [0, 0]
+    # AIA min(2,000,000, 1,000,000) = 1,000,000.
+    firm_annual_investment_allowance: [1_000_000, 1_000_000]
+    # 40% x (2,000,000 - 1,000,000) = 400,000.
+    firm_main_rate_first_year_allowance: [400_000, 400_000]
+    # FYA spend joins the pool next year, so no WDA.
+    firm_main_pool_writing_down_allowance: [0, 0]
+    # 1,000,000 + 400,000 = 1,400,000.
+    firm_capital_allowances: [1_400_000, 1_400_000]
+    # 2,000,000 - 1,000,000 - 400,000 = 600,000.
+    firm_main_pool_carried_forward: [600_000, 600_000]
+
+- name: Case 28, plant for leasing below the AIA limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_main_pool_new_for_leasing: [300_000]
+  output:
+    # Leasing is excluded from full expensing: 0.
+    firm_full_expensing_allowance: [0]
+    # AIA min(300,000, 1,000,000) = 300,000.
+    firm_annual_investment_allowance: [300_000]
+    # 40% x (300,000 - 300,000) = 0.
+    firm_main_rate_first_year_allowance: [0]
+    # 300,000 + 0 = 300,000.
+    firm_capital_allowances: [300_000]
+    # 300,000 - 300,000 - 0 = 0.
+    firm_main_pool_carried_forward: [0]
+
+- name: Case 29, company with both ordinary new plant and plant for leasing.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_main_pool_new: [500_000]
+    firm_capex_main_pool_new_for_leasing: [1_500_000]
+  output:
+    # Full expensing 100% x 500,000 on the ordinary plant only.
+    firm_full_expensing_allowance: [500_000]
+    # AIA min(1,500,000, 1,000,000) = 1,000,000 on the leasing plant.
+    firm_annual_investment_allowance: [1_000_000]
+    # 40% x (1,500,000 - 1,000,000) = 200,000.
+    firm_main_rate_first_year_allowance: [200_000]
+    # 500,000 + 1,000,000 + 200,000 = 1,700,000.
+    firm_capital_allowances: [1_700_000]
+    # 500,000 - 200,000 = 300,000.
+    firm_main_pool_carried_forward: [300_000]
+
+- name: Case 30, plant for leasing in 2025 before the main-rate FYA.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_main_pool_new_for_leasing: [1_500_000]
+  output:
+    # Leasing is excluded from full expensing: 0.
+    firm_full_expensing_allowance: [0]
+    # AIA min(1,500,000, 1,000,000) = 1,000,000.
+    firm_annual_investment_allowance: [1_000_000]
+    # The 30 April 2025 main-rate FYA rate is 0: 0 x 500,000 = 0.
+    firm_main_rate_first_year_allowance: [0]
+    # 18% x (1,500,000 - 1,000,000) = 90,000.
+    firm_main_pool_writing_down_allowance: [90_000]
+    # 1,000,000 + 90,000 = 1,090,000.
+    firm_capital_allowances: [1_090_000]
+    # 500,000 - 90,000 = 410,000.
+    firm_main_pool_carried_forward: [410_000]
+
+- name: Case 31, AIA goes to plant for leasing before special-rate plant with the 50% FYA in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_special_rate_new: [1_000_000]
+    firm_capex_main_pool_new_for_leasing: [1_000_000]
+  output:
+    # Main-rate FYA 0 is below 50%, so leasing first: min(1,000,000, 1,000,000).
+    firm_aia_main_pool_new: [1_000_000]
+    # 1,000,000 - 1,000,000 = 0 left for special-rate plant.
+    firm_aia_special_rate_new: [0]
+    # 50% x 1,000,000 = 500,000.
+    firm_special_rate_first_year_allowance: [500_000]
+    # 1,000,000 + 500,000 = 1,500,000.
+    firm_capital_allowances: [1_500_000]
+    # 1,000,000 - 500,000 = 500,000 joins the special rate pool next year.
+    firm_special_rate_pool_carried_forward: [500_000]
+
+- name: Case 32, AIA goes to plant for leasing before special-rate plant with the 50% FYA in 2026.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_special_rate_new: [1_000_000]
+    firm_capex_main_pool_new_for_leasing: [1_000_000]
+  output:
+    # Main-rate FYA 40% is below 50%, so leasing first: min(1,000,000, 1,000,000).
+    firm_aia_main_pool_new: [1_000_000]
+    # 1,000,000 - 1,000,000 = 0 left for special-rate plant.
+    firm_aia_special_rate_new: [0]
+    # 40% x (1,000,000 - 1,000,000) = 0.
+    firm_main_rate_first_year_allowance: [0]
+    # 50% x 1,000,000 = 500,000.
+    firm_special_rate_first_year_allowance: [500_000]
+    # 1,000,000 + 500,000 = 1,500,000.
+    firm_capital_allowances: [1_500_000]
+
+- name: Case 33, tied FYA rates in 2027 keep special-rate plant first for the AIA.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY]
+    firm_capex_special_rate_new: [1_000_000]
+    firm_capex_main_pool_new_for_leasing: [1_000_000]
+  output:
+    # Both FYAs are 50%, so special-rate first: min(1,000,000, 1,000,000).
+    firm_aia_special_rate_new: [1_000_000]
+    # 1,000,000 - 1,000,000 = 0 left for leasing plant.
+    firm_aia_main_pool_new: [0]
+    # 50% x (1,000,000 - 0) = 500,000.
+    firm_main_rate_first_year_allowance: [500_000]
+    # 50% x (1,000,000 - 1,000,000) = 0.
+    firm_special_rate_first_year_allowance: [0]
+    # 1,000,000 + 500,000 = 1,500,000.
+    firm_capital_allowances: [1_500_000]

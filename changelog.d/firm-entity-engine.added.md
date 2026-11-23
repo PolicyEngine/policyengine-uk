@@ -4,3 +4,5 @@ Added the R&D expenditure credit notional tax deduction to the payable credit, a
 Added firm business rates for Wales and Scotland with charitable relief, the live music venue limit on the pubs relief large-venue rate, the three-decimal small business rate relief taper factor, and firm employer Class 1A National Insurance.
 Added the PAYE and National Insurance cap on the payable R&D expenditure credit.
 Added the 2026-27 Welsh retail multiplier and the public-service exclusions from the Welsh higher multiplier.
+Rounded the VAT partial exemption recovery percentage up as reg 101(4)-(5) of the VAT Regulations 1995 requires.
+Added the balancing charge on disposals of fully expensed plant (section 59A) and the exclusion of plant for leasing from full expensing, which gets the annual investment allowance and the main-rate first-year allowance instead.

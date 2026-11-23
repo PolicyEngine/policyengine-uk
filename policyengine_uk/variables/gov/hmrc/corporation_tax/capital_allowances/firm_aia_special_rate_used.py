@@ -9,9 +9,12 @@ class firm_aia_special_rate_used(Variable):
         "Annual investment allowance claimed on second-hand special-rate plant and machinery. The allowance goes "
         "first to second-hand special-rate spend, then to new special-rate "
         "spend where no special-rate first-year allowance is available, then "
-        "to second-hand main-rate spend, then to new special-rate spend where "
-        "that first-year allowance is available, then to new main-rate spend "
-        "not fully expensed. This order gives the most relief in the year."
+        "to second-hand main-rate spend. It then goes to new special-rate "
+        "spend that has the special-rate first-year allowance and to new "
+        "main-rate spend not fully expensed (in practice plant for leasing), "
+        "taking first whichever has the lower first-year allowance rate; on "
+        "a tie the special-rate spend goes first. This order gives the most "
+        "relief in the year."
     )
     definition_period = YEAR
     unit = GBP

@@ -7,10 +7,10 @@ class firm_business_rates(Variable):
     entity = Firm
     label = "Business rates of the firm"
     documentation = (
-        "Net business rates the firm pays in England: gross rates less "
-        "reliefs, not below zero. The firm's rateable value is treated as one "
-        "aggregate property. Scotland, Wales and Northern Ireland are not "
-        "modelled and give 0 (firm_in_england)."
+        "Net business rates (non-domestic rates) the firm pays in England, "
+        "Wales or Scotland: gross rates less reliefs, not below zero. The "
+        "firm's rateable value is treated as one aggregate property. "
+        "Northern Ireland is not modelled and gives 0."
     )
     definition_period = YEAR
     unit = GBP

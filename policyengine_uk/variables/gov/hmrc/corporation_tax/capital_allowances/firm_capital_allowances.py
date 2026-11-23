@@ -8,9 +8,10 @@ class firm_capital_allowances(Variable):
     documentation = (
         "Capital allowances claimed in the year, net of balancing charges: "
         "first-year allowances, the annual investment allowance, writing-down "
-        "allowances and the structures and buildings allowance, less any main "
-        "pool balancing charge. Negative where the balancing charge exceeds "
-        "the allowances; deduct from trading profit."
+        "allowances and the structures and buildings allowance, less the main "
+        "pool balancing charge and the balancing charge on disposals of fully "
+        "expensed plant. Negative where the balancing charges exceed the "
+        "allowances; deduct from trading profit."
     )
     definition_period = YEAR
     unit = GBP
@@ -24,4 +25,7 @@ class firm_capital_allowances(Variable):
         "firm_special_rate_pool_writing_down_allowance",
         "firm_structures_and_buildings_allowance",
     ]
-    subtracts = ["firm_main_pool_balancing_charge"]
+    subtracts = [
+        "firm_main_pool_balancing_charge",
+        "firm_full_expensing_balancing_charge",
+    ]

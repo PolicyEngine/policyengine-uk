@@ -44,3 +44,35 @@
     # 20,000 * 0.9 = 18,000; 30,000 - 18,000 = 12,000
     firm_recoverable_input_vat: 18_000
     firm_vat: 12_000
+
+# Partial exemption percentage rounding (SI 1995/2518 reg 101(4)-(5)): up to
+# the next whole percent where input tax averages no more than £400,000 a
+# month, otherwise up to two decimal places.
+- name: Partial exemption percentage is rounded up to a whole number
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: [100_000, 1_000_000, 150_000]
+    firm_exempt_supplies: [200_000, 10_000, 50_000]
+    firm_input_vat: [30_000, 100_000, 20_000]
+  output:
+    # 100,000 / 300,000 = 33.33% -> 34%; 30,000 x 0.34 = 10,200.
+    # 1,000,000 / 1,010,000 = 99.0099% -> 100%; 100,000 x 1 = 100,000.
+    # 150,000 / 200,000 = exactly 75%, unchanged; 20,000 x 0.75 = 15,000.
+    firm_partial_exemption_recovery_share: [0.34, 1, 0.75]
+    firm_recoverable_input_vat: [10_200, 100_000, 15_000]
+
+- name: Above £400,000 a month of input tax the percentage is rounded to two decimals
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_standard_rated_supplies: [100_000_000, 100_000_000]
+    firm_exempt_supplies: [200_000_000, 200_000_000]
+    firm_input_vat: [4_800_000, 4_800_012]
+  output:
+    # 4,800,000 / 12 = 400,000 a month, not more: 33.33% -> 34%;
+    # 4,800,000 x 0.34 = 1,632,000.
+    # 4,800,012 / 12 = 400,001 a month: 33.333...% -> 33.34%;
+    # 4,800,012 x 0.3334 = 1,600,324.
+    firm_partial_exemption_recovery_share: [0.34, 0.3334]
+    firm_recoverable_input_vat: [1_632_000, 1_600_324]

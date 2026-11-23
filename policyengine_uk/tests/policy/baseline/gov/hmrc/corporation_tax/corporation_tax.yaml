@@ -273,3 +273,23 @@
     # 300,000 above the upper limit: 25% x 300,000 = 75,000.
     firm_marginal_relief: [0, 2_999.985, 1_500, 0, 0]
     corporation_tax: [9_500, 9_500.265, 36_000, 62_500, 75_000]
+
+- name: Case 15, full expensing balancing charge raises taxable profit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_n_associated_companies: 0
+    firm_taxable_trading_profit: 500_000
+    firm_main_pool_brought_forward: 1_000_000
+    firm_disposal_proceeds_main_pool: 200_000
+    firm_disposal_proceeds_full_expensing: 200_000
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    # WDA 18% x 1,000,000 = 180,000, less the 200,000 charge = -20,000.
+    firm_capital_allowances: -20_000
+    # 500,000 - (-20,000) = 520,000.
+    firm_profits_before_losses: 520_000
+    # Above the upper limit: 25% x 520,000 = 130,000.
+    corporation_tax: 130_000

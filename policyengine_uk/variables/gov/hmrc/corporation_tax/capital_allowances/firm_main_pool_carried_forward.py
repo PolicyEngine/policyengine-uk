@@ -21,9 +21,11 @@ class firm_main_pool_carried_forward(Variable):
         ).gov.hmrc.corporation_tax.capital_allowances.first_year_allowances
         balance = max_(firm("firm_main_pool_balance", period), 0)
         written_down = balance - firm("firm_main_pool_writing_down_allowance", period)
-        fully_expensed = firm("firm_capex_main_pool_new", period) - firm(
-            "firm_main_pool_new_expenditure_after_full_expensing", period
-        )
+        fully_expensed = add(
+            firm,
+            period,
+            ["firm_capex_main_pool_new", "firm_capex_main_pool_new_for_leasing"],
+        ) - firm("firm_main_pool_new_expenditure_after_full_expensing", period)
         full_expensing_balance = max_(
             fully_expensed - firm("firm_full_expensing_allowance", period), 0
         )

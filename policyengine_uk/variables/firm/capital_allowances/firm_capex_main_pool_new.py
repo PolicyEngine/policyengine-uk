@@ -5,7 +5,7 @@ class firm_capex_main_pool_new(Variable):
     value_type = float
     entity = Firm
     label = "Firm new main-rate plant and machinery expenditure"
-    documentation = "Expenditure in the year on unused, not second-hand plant and machinery that falls in the main pool. Excludes cars."
+    documentation = "Expenditure in the year on unused, not second-hand plant and machinery that falls in the main pool. Excludes cars and plant provided for leasing, which goes in firm_capex_main_pool_new_for_leasing."
     definition_period = YEAR
     hidden_input = True
     unit = GBP
