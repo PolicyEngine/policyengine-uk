@@ -308,3 +308,152 @@
     # 39.9999% is below 40%; 40% meets it; 30% meets the 2024 condition
     # but not the 40% that applied in 2023-24.
     firm_is_rd_intensive: [false, true, false]
+
+# Unrelieved loss (CTA 2009 s.1056(2)(a)): the trading loss is reduced by the
+# relief that could be had against total profits of the same period, so only
+# what non-trading profits cannot absorb is surrenderable.
+- name: Case 20, SME loss fully relieved against non-trading profits in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_qualifying_rd_expenditure: 100_000
+    firm_total_relevant_expenditure: 1_000_000
+    firm_taxable_trading_profit: -100_000
+    firm_non_trading_profits: 400_000
+  output:
+    # 130% x 100,000 = 130,000.
+    firm_rd_additional_deduction: 130_000
+    # Loss 100,000 + 130,000 = 230,000, less 400,000 of non-trading profits, is nil.
+    firm_rd_surrenderable_loss: 0
+    # 14.5% x 0 = 0.
+    firm_rd_payable_credit: 0
+    # 400,000 - 100,000 - 130,000 = 170,000.
+    firm_taxable_profit: 170_000
+    # 19% x 170,000 = 32,300, with no credit to subtract.
+    firm_only_tax: 32_300
+
+- name: Case 21, SME loss partly relieved against non-trading profits in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_qualifying_rd_expenditure: 100_000
+    firm_total_relevant_expenditure: 1_000_000
+    firm_taxable_trading_profit: -100_000
+    firm_non_trading_profits: 50_000
+  output:
+    # Loss 230,000 - 50,000 = 180,000, below the 100,000 + 130,000 = 230,000 cap.
+    firm_rd_surrenderable_loss: 180_000
+    # 14.5% x 180,000 = 26,100.
+    firm_rd_payable_credit: 26_100
+    # 50,000 - 100,000 - 130,000 < 0, so nil.
+    firm_taxable_profit: 0
+
+- name: Case 22, ERIS loss fully relieved against non-trading profits in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_n_associated_companies: 0
+    firm_qualifying_rd_expenditure: 100_000
+    firm_total_relevant_expenditure: 200_000
+    firm_taxable_trading_profit: -100_000
+    firm_non_trading_profits: 400_000
+  output:
+    # Intensity 100,000 / 200,000 = 50%, at least 30%, with a trading loss: ERIS.
+    firm_claims_rd_sme_relief: true
+    # Loss 100,000 + 86% x 100,000 = 186,000, less 400,000 of non-trading profits, is nil.
+    firm_rd_surrenderable_loss: 0
+    # 14.5% x 0 = 0.
+    firm_rd_payable_credit: 0
+    # 400,000 - 100,000 - 86,000 = 214,000.
+    firm_taxable_profit: 214_000
+    # 25% x 214,000 - 3/200 x (250,000 - 214,000) = 53,500 - 540 = 52,960.
+    firm_only_tax: 52_960
+
+# PAYE and NIC cap on the SME payable credit (CTA 2009 s.1058(1)(aa)): from
+# accounting periods beginning on or after 1 April 2021, £20,000 plus three
+# times the relevant PAYE and NIC liabilities (s.1058(1A), from April 2024
+# s.1112B).
+- name: Case 23, SME payable credit capped at the 20,000 fixed amount in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 2_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_rdec_paye_nic_cap_supplied: true
+    firm_relevant_paye_nic_liabilities: 0
+  output:
+    # Loss 1,000,000 + 130% x 1,000,000 = 2,300,000, equal to the cap.
+    firm_rd_surrenderable_loss: 2_300_000
+    # min(14.5% x 2,300,000 = 333,500, 20,000 + 3 x 0 = 20,000) = 20,000.
+    firm_rd_payable_credit: 20_000
+
+- name: Case 24, SME payable credit cap does not bind or is not supplied in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_sme: [true, true]
+    firm_qualifying_rd_expenditure: [1_000_000, 1_000_000]
+    firm_total_relevant_expenditure: [2_000_000, 2_000_000]
+    firm_taxable_trading_profit: [-1_000_000, -1_000_000]
+    firm_rdec_paye_nic_cap_supplied: [true, false]
+    firm_relevant_paye_nic_liabilities: [200_000, 0]
+  output:
+    # Cap 20,000 + 3 x 200,000 = 620,000 > 333,500; without the flag no cap: both 333,500.
+    firm_rd_payable_credit: [333_500, 333_500]
+
+- name: Case 25, ERIS payable credit cap binds with PAYE and NIC in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_sme: [true, true]
+    firm_qualifying_rd_expenditure: [1_000_000, 1_000_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [-1_000_000, -1_000_000]
+    firm_rdec_paye_nic_cap_supplied: [true, true]
+    firm_relevant_paye_nic_liabilities: [50_000, 0]
+  output:
+    # Loss 1,000,000 + 86% x 1,000,000 = 1,860,000, equal to the cap.
+    firm_rd_surrenderable_loss: [1_860_000, 1_860_000]
+    # min(14.5% x 1,860,000 = 269,700, 20,000 + 3 x 50,000 = 170,000); min(269,700, 20,000).
+    firm_rd_payable_credit: [170_000, 20_000]
+
+- name: Case 26, no SME payable credit cap before accounting periods from April 2021.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 2_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_rdec_paye_nic_cap_supplied: true
+    firm_relevant_paye_nic_liabilities: 0
+  output:
+    # No cap in 2020-21: 14.5% x 2,300,000 = 333,500.
+    firm_rd_payable_credit: 333_500
+
+- name: Case 27, SME payable credit cap applies from the 2021-22 accounting period.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_sme: true
+    firm_qualifying_rd_expenditure: 1_000_000
+    firm_total_relevant_expenditure: 2_000_000
+    firm_taxable_trading_profit: -1_000_000
+    firm_rdec_paye_nic_cap_supplied: true
+    firm_relevant_paye_nic_liabilities: 10_000
+  output:
+    # min(14.5% x 2,300,000 = 333,500, 20,000 + 3 x 10,000 = 50,000) = 50,000.
+    firm_rd_payable_credit: 50_000

@@ -12,12 +12,16 @@ class firm_marginal_relief(Variable):
         "Marginal relief for companies with augmented profits above the lower "
         "limit and not above the upper limit: the standard fraction times the "
         "upper limit less augmented profits, times taxable total profits over "
-        "augmented profits."
+        "augmented profits. None for a close investment-holding company or a "
+        "non-UK-resident company (firm_small_profits_rate_excluded)."
     )
     definition_period = YEAR
     unit = GBP
     defined_for = "firm_liable_to_corporation_tax"
-    reference = "https://www.legislation.gov.uk/ukpga/2010/4/section/18B"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2010/4/section/18B",
+        "https://www.legislation.gov.uk/ukpga/2010/4/section/18N",
+    )
 
     def formula(firm, period, parameters):
         p = parameters(period).gov.hmrc.corporation_tax
@@ -27,7 +31,8 @@ class firm_marginal_relief(Variable):
         taxable = firm("firm_taxable_profit", period)
         lower = firm("firm_corporation_tax_lower_limit", period)
         upper = firm("firm_corporation_tax_upper_limit", period)
-        in_band = (augmented > lower) & (augmented <= upper)
+        excluded = firm("firm_small_profits_rate_excluded", period)
+        in_band = (augmented > lower) & (augmented <= upper) & ~excluded
         profit_ratio = np.divide(
             taxable,
             augmented,

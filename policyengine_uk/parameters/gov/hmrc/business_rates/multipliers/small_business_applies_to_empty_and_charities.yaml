@@ -1,0 +1,13 @@
+description: Whether the English small business multiplier also applies to unoccupied property and to property getting mandatory charitable relief; before 2024-25 those were charged at the standard multiplier.
+values:
+  2005-04-01: false
+  2024-04-01: true
+metadata:
+  unit: bool
+  period: year
+  label: Small business multiplier applies to empty and charity property
+  reference:
+    - title: Local Government Finance Act 1988 s.43(5) and s.45(4) as at 1 April 2023 (charities and unoccupied property charged on the non-domestic rating multiplier B)
+      href: https://www.legislation.gov.uk/ukpga/1988/41/section/43/2023-04-01
+    - title: The Non-Domestic Rating (Multipliers and Private Information) Regulations 2024 (SI 2024/111), regs 2-3 (small business multiplier where rateable value is not more than £50,999, for Sch 4ZA charitable relief and Sch 4ZB unoccupied property, from 2024-25)
+      href: https://www.legislation.gov.uk/uksi/2024/111/made

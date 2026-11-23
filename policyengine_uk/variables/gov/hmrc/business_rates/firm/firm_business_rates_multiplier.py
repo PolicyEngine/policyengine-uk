@@ -14,7 +14,9 @@ class firm_business_rates_multiplier(Variable):
         "2026-27 the high-value multiplier at £500,000 or more. From 2026-27 "
         "qualifying retail, hospitality and leisure (RHL) properties below "
         "£500,000 pay the lower RHL multipliers. The small multiplier is "
-        "chosen by rateable value alone; the 1p Transitional Relief "
+        "chosen by rateable value alone from 2024-25; before then unoccupied "
+        "and charity property paid the standard multiplier. The RHL "
+        "multipliers apply to occupied property only. The 1p Transitional Relief "
         "Supplement for 2026-27 is not modelled. "
         "Wales: one multiplier to 2025-26. From 2026-27 the retail "
         "multiplier for shops, kiosks, pharmacies and post offices below "
@@ -46,8 +48,15 @@ class firm_business_rates_multiplier(Variable):
 
         # England
         p = br.multipliers
-        is_rhl = firm("firm_is_rhl_property", period)
-        is_small = rateable_value < p.small_business_threshold
+        occupied = firm("firm_property_occupied", period)
+        # The RHL multipliers apply to occupied property only.
+        is_rhl = firm("firm_is_rhl_property", period) & occupied
+        # Before 2024-25 unoccupied property and charities paid the standard
+        # multiplier whatever their rateable value.
+        small_allowed = p.small_business_applies_to_empty_and_charities | (
+            occupied & ~firm("firm_is_charity", period)
+        )
+        is_small = (rateable_value < p.small_business_threshold) & small_allowed
         is_high_value = rateable_value >= p.high_value_threshold
         small = where(is_rhl, p.small_business_rhl, p.small_business)
         standard = where(is_rhl, p.standard_rhl, p.standard)

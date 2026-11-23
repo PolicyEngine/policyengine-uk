@@ -183,3 +183,57 @@
     # 50,999 x 0.499 = 25,448.501 (above 15,000, so no SBRR).
     # 51,000 x 0.512 = 26,112.
     firm_business_rates: [0, 25_448.501, 26_112]
+
+- name: RHL multipliers apply to occupied property only (2026-27)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [100_000, 100_000]
+    firm_is_rhl_property: [true, true]
+    firm_property_occupied: [true, false]
+    firm_months_empty: [0, 12]
+  output:
+    # Occupied RHL: 100,000 x 0.430 = 43,000. Unoccupied after the 3-month
+    # exemption: the national standard multiplier, 100,000 x 0.480 = 48,000.
+    firm_business_rates_multiplier: [0.430, 0.480]
+    firm_business_rates: [43_000, 48_000]
+
+- name: Before 2024-25 empty and charity property pay the standard multiplier
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [40_000, 40_000, 40_000]
+    firm_is_charity: [false, true, false]
+    firm_property_occupied: [true, true, false]
+    firm_months_empty: [0, 0, 12]
+  output:
+    # Occupied, not a charity: small multiplier 0.499.
+    # Charity: standard 0.512; 40,000 x 0.512 = 20,480, one fifth = 4,096.
+    # Empty after the exemption: 40,000 x 0.512 = 20,480.
+    firm_business_rates_multiplier: [0.499, 0.512, 0.512]
+    firm_business_rates: [19_960, 4_096, 20_480]
+
+- name: From 2024-25 empty and charity property below £51,000 pay the small multiplier
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [40_000, 40_000]
+    firm_is_charity: [true, false]
+    firm_property_occupied: [true, false]
+    firm_months_empty: [0, 12]
+  output:
+    # 40,000 x 0.499 = 19,960; charity pays one fifth, 3,992; empty pays all.
+    firm_business_rates_multiplier: [0.499, 0.499]
+    firm_business_rates: [3_992, 19_960]
+
+- name: Empty property below £2,900 is exempt while empty
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_rateable_value: [2_000, 2_899, 2_900]
+    firm_property_occupied: [false, false, false]
+    firm_months_empty: [12, 12, 12]
+  output:
+    # Below £2,900: exempt all year. At £2,900 (not "less than"):
+    # 2,900 x 0.499 = 1,447.10 with no exemption left after 12 months empty.
+    firm_business_rates: [0, 0, 1_447.1]

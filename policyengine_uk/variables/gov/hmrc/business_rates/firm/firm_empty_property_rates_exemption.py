@@ -12,8 +12,12 @@ class firm_empty_property_rates_exemption(Variable):
         "treats an unoccupied property as empty throughout the year, so the "
         "exemption is gross rates times the months of the exemption period "
         "left at the start of the year (after firm_months_empty) over 12. "
-        "The reoccupation rule in reg 5 and the other "
-        "unoccupied property exemptions are not modelled."
+        "Property with rateable value below £2,900 (from 2017-18; lower "
+        "amounts before, in the parameter) "
+        "is exempt for the whole year while empty (reg 4(g)). The "
+        "reoccupation rule in reg 5 and the other unoccupied property "
+        "exemptions (listed buildings, charity next use and others) are not "
+        "modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -31,6 +35,8 @@ class firm_empty_property_rates_exemption(Variable):
         exempt_months_this_year = clip(
             exemption_months - months_already_empty, 0, MONTHS_IN_YEAR
         )
+        small = firm("firm_rateable_value", period) < p.small_property_threshold
+        exempt_months_this_year = where(small, MONTHS_IN_YEAR, exempt_months_this_year)
         in_england = firm("firm_rates_in_england", period)
         return where(
             occupied | ~in_england, 0, gross * exempt_months_this_year / MONTHS_IN_YEAR

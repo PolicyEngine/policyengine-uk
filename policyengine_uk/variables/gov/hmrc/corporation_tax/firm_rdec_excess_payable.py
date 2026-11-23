@@ -15,7 +15,10 @@ class firm_rdec_excess_payable(Variable):
         "profits chargeable at the main rate ignoring the credit and the "
         "small profits rate otherwise; before April 2024 (section 104N) it is "
         "always the main rate. A company in the "
-        "marginal relief band counts as charged at the main rate. Profits "
+        "marginal relief band counts as charged at the main rate, as does a "
+        "company barred from the small profits rate "
+        "(firm_small_profits_rate_excluded) with profits ignoring the credit; "
+        "with none, it gets the small profits rate (section 1042K(5)(b)). Profits "
         "ignoring the credit are taxable total profits less the credit, "
         "with no recalculation of the carried-forward loss restriction. The "
         "notional tax deduction is not paid: it is set against later "
@@ -68,7 +71,12 @@ class firm_rdec_excess_payable(Variable):
                 taxable - taxable_ex_credit
             )
             lower = firm("firm_corporation_tax_lower_limit", period)
-            main_rate_profits = (taxable_ex_credit > 0) & (augmented_ex_credit > lower)
+            # A company barred from the small profits rate has all its
+            # profits chargeable at the main rate.
+            excluded = firm("firm_small_profits_rate_excluded", period)
+            main_rate_profits = (taxable_ex_credit > 0) & (
+                (augmented_ex_credit > lower) | excluded
+            )
             rate = where(main_rate_profits, p.main_rate, p.small_profits_rate)
         after_step_2 = min_(after_step_1, credit * (1 - rate))
         # Step 3 (s.1042I with s.1112B; before April 2024 s.104N with
