@@ -13,8 +13,9 @@ class would_claim_council_tax_reduction(Variable):
         "Datasets and situations can override this directly. An override "
         "changes the award only where the model simulates the local scheme "
         "(English pensioners, Scotland, Wales, and working-age claimants in "
-        "the supported local authorities); elsewhere council_tax_benefit pays "
-        "the reported amount."
+        "the supported local authorities); elsewhere council_tax_benefit keeps "
+        "the reported amount, subject to its joint-liability and "
+        "non-claimant rules."
     )
     definition_period = YEAR
 
