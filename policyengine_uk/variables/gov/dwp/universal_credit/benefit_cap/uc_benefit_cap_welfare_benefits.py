@@ -15,7 +15,9 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 
 # UC Regs 2013 reg 80(2A): where the welfare benefit is Housing Benefit, "the
 # amount to be used is nil". The Universal Credit cap therefore counts the
-# Housing Benefit cap's benefits other than Housing Benefit.
+# Housing Benefit cap's benefits other than Housing Benefit. Widowed Parent's
+# Allowance remains gross here (regs. 66(1)(b)(vi), 80(4)); the Housing
+# Benefit-only total applies its own income disregard.
 UC_FAMILY_BENEFITS = [
     benefit
     for benefit in FAMILY_BENEFITS
@@ -44,11 +46,14 @@ class uc_benefit_cap_welfare_benefits(Variable):
     entity = BenUnit
     label = "Welfare benefits counted by the Universal Credit benefit cap"
     documentation = (
-        "The welfare benefits the Universal Credit cap counts: those in "
-        "benefit_cap_welfare_benefits, for the same single person or couple, "
-        "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Where the "
+        "The welfare benefits the Universal Credit cap counts, for the same "
+        "single person or couple as benefit_cap_welfare_benefits, with "
+        "Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Widowed Parent's "
+        "Allowance counts in full (regs. 66(1)(b)(vi), 80(4)); the disregard "
+        "in the computed Housing Benefit-only total does not apply. Where the "
         "inputs supply benefit_cap_welfare_benefits, whose total includes "
-        "Housing Benefit, this subtracts the supplied "
+        "the Universal Credit-counted benefits and Housing Benefit, this "
+        "subtracts only the supplied "
         "housing_benefit_pre_benefit_cap. Inputs that supply the combined "
         "total also supply housing_benefit_pre_benefit_cap or this variable, "
         "with a value for every benefit unit; otherwise the formula raises "
@@ -60,6 +65,7 @@ class uc_benefit_cap_welfare_benefits(Variable):
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/2012/5/section/96",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/66",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/79",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/80",
     )
