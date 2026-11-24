@@ -165,6 +165,26 @@
   output:
     uc_housing_costs_element: 0
 
+- name: The input defaults to true, so the same private renter with it unset gets the element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 5_000
+        uc_non_dep_deductions: 0
+        uc_LHA_cap: 6_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    would_claim_uc_housing_costs_element: true
+    uc_housing_costs_element: 5_000
+
 - name: A social renter who would not claim the element gets none
   period: 2026
   absolute_error_margin: 0
