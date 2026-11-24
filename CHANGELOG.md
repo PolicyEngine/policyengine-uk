@@ -1,3 +1,15 @@
+## [2.179.4] - 2026-11-24
+
+### Changed
+
+- Document that Microcosm UK datasets built from microcosm#1550 on carry PIP daily-living and mobility points, so a reform to the PIP point thresholds can move people in microsimulation on them; the Enhanced FRS still stores categories.
+- Spread the Python tests across ten CI shards instead of eight, so each job has more room under its 90-minute limit.
+
+### Fixed
+
+- The Universal Credit education protection for a claimant moved off legacy benefits (SI 2014/1230 reg. 60(1); SR 2016/226 reg. 61(1) in Northern Ireland) now needs a full-time course that reg. 12(2) of the Universal Credit Regulations 2013 (in Northern Ireland, of the Universal Credit Regulations (Northern Ireland) 2016) covers: advanced education, or a course with a student loan or grant for maintenance. A young person whom an existing benefit kept outside the qualifying young person definition on the migration day (SI 2014/1230 reg. 28; SR 2016/226 reg. 29), and who was on another full-time course, met the condition that day. The protection doesn't reach them, and the model no longer pays them Universal Credit through it.
+
+
 ## [2.179.3] - 2026-11-19
 
 ### Changed
