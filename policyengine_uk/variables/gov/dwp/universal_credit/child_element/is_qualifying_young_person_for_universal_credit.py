@@ -34,8 +34,9 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "that switch turns on pays them at their reported amounts in the "
         "dataset year and the nine years after it, and the formula still reads "
         "them in later years. In those years the reform also pays a claimant's "
-        "or partner's own income-related ESA, Housing Benefit and Child Tax "
-        "Credit report whether or not the family claims Universal Credit, so "
+        "or partner's own income-related ESA, Housing Benefit, Child Tax "
+        "Credit and Working Tax Credit reports whether or not the family "
+        "claims Universal Credit, so "
         "while the switch is on the formula leaves out the Universal Credit "
         "claim limbs below. It leaves them out in later years too, when the "
         "model again ends those awards on the family's claim. The model also ends"
@@ -52,11 +53,13 @@ class is_qualifying_young_person_for_universal_credit(Variable):
         "(housing_benefit_eligible) and its Child Tax Credit (is_CTC_eligible),"
         " and the claimant's and partner's income-related ESA "
         "(esa_income_report_closed), when the family claims "
-        "(claims_universal_credit). For a claimant or partner, the formula "
-        "follows those limbs too. The family's claim doesn't end a dependant's "
-        "own award, so for a dependant the formula doesn't. The model ends no "
-        "Working Tax Credit, Income Support or income-based JSA award on the "
-        "claim, so the formula follows no claim limb for them. It can't read "
+        "(claims_universal_credit). Working Tax Credit follows "
+        "wtc_terminated_by_universal_credit_claim, including its all-claimants "
+        "Pension Credit qualifying-age exception. For a claimant or partner, "
+        "the formula follows those limbs too. The family's claim doesn't end "
+        "a dependant's own award, so for a dependant the formula doesn't. The "
+        "model ends no Income Support or income-based JSA award on the claim, "
+        "so the formula follows no claim limb for them. It can't read "
         "housing_benefit_eligible: that variable's Pension Credit route reads "
         "left_pension_route_at_legacy_closure, which reads this variable "
         "through is_uc_entitled and the child element. So the formula keeps a "
@@ -225,12 +228,15 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
         & family_award_open
         & ~claim_ends_own_award
     )
-    # Reg. 8(2) also ends a Working Tax Credit award on a Universal Credit
-    # claim, but is_WTC_eligible keeps paying it (policyengine-uk#2918), so
-    # this limb has no claim term and follows the model.
+    wtc_claim_ends_own_award = (
+        claimant_or_partner
+        & person.benunit("wtc_terminated_by_universal_credit_claim", period)
+        & (not paid_as_reported)
+    )
     working_tax_credit_paying = (
         paying(dwp.tax_credits.active, "working_tax_credit", "tax_credits")
         & family_award_open
+        & ~wtc_claim_ends_own_award
     )
     tax_credits_reported = child_tax_credit_paying * person(
         "child_tax_credit_reported", period

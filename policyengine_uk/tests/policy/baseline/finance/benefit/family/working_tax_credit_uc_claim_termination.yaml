@@ -1,0 +1,692 @@
+# SI 2014/1230 reg 8(2)(a)-(b): an ordinary genuine UC claim ends
+# claimant/joint-claimant tax credits even if UC pays zero. Current 8(2B)
+# saves a single pension-age claimant or BOTH joint claimants, not a mixed
+# age couple merely keeping a protected Pension Credit route.
+# https://www.legislation.gov.uk/uksi/2014/1230/regulation/8
+# https://www.legislation.gov.uk/nisr/2016/226/regulation/6
+# claims_universal_credit is the existing annual claim proxy; these cases
+# do not assert made/deemed/withdrawn claim dates or fractional-year awards.
+# The 2015 England ordinary-claim case is after 16 June 2014. The 2011/2012
+# direct predicate controls do not represent actual UC claims. The 2013
+# full-WTC control has no claim. Modern NI uses 2024.
+# Amount controls: 2024 basic 2,435 + 30-hour element 1,015 = 3,450;
+# 2013 basic 1,920 + 30-hour element 790 = 2,710, with earnings 5,000
+# below the taper threshold. See the cited Schedule 2 in the unchanged
+# elements/basic.yaml and worker.yaml parameters; no model-derived oracle.
+
+- name: Case 1, an ordinary UC claim ends a working age claimant WTC award.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+    working_tax_credit_reported:
+    - 1000
+- name: Case 2, a UC claim ends WTC even when capital makes the UC payment zero.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+        uc_reported_capital: 20000
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    uc_assessable_capital: 20000
+    is_uc_eligible: false
+    universal_credit: 0
+    is_WTC_eligible: false
+    working_tax_credit: 0
+  absolute_error_margin: 0.01
+- name: Case 3, without a UC claim the qualifying worker keeps WTC.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: false
+    is_WTC_eligible: true
+    working_tax_credit: 3450
+  absolute_error_margin: 0.01
+- name: Case 4, a UC receipt report alone is not a claim termination trigger.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+        universal_credit_reported: 1000
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: false
+    universal_credit_reported:
+    - 1000
+    is_WTC_eligible: true
+    working_tax_credit: 3450
+  absolute_error_margin: 0.01
+- name: Case 5, a joint UC claim ends WTC reported by the working first partner.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 40
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 35
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+    working_tax_credit_reported:
+    - 1000
+    - 0
+- name: Case 6, a joint UC claim also ends WTC reported by the second partner.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 40
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+    working_tax_credit_reported:
+    - 0
+    - 1000
+- name: Case 7, a single claimant at Pension Credit age keeps the regulation 8 saving.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    claims_universal_credit: true
+    is_WTC_eligible: true
+- name: Case 8, both pension age joint claimants keep the saving despite a young dependant.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 68
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person3:
+        age: 10
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: false
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    - true
+    - false
+    claims_universal_credit: true
+    is_WTC_eligible: true
+- name: Case 9, one pension age member does not save a mixed age couple WTC award.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 40
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    - false
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Case 10, the mixed age Pension Credit route does not supply the all claimant age saving.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 40
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    meets_pension_credit_age_conditions: true
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    - false
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Case 11, a family claim leaves a nonclaimant young person own reported WTC exclusion.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 40
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 0
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+      person2:
+        age: 18
+        weekly_hours: 0
+        employment_income: 0
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: false
+        is_parent: false
+        is_disabled_for_benefits: false
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_qualifying_young_person_under_universal_credit_regulation_5:
+    - false
+    - true
+    is_qualifying_young_person_for_universal_credit:
+    - false
+    - false
+- name: Case 12, a genuine ordinary England claim in 2015 ends WTC.
+  period: 2015
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+# would_claim_uc is only the model annual intent flag here, not an actual
+# historical UC claim. Direct predicate output avoids the pre-existing
+# full-WTC missing min_hours.couple_with_children parameter at this date.
+- name: Case 13, the 2011 model has no UC claim termination predicate.
+  period: 2011
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    would_claim_uc: true
+    wtc_terminated_by_universal_credit_claim: false
+# would_claim_uc is only the model annual intent flag here, not an actual
+# historical UC claim. Direct predicate output avoids the pre-existing
+# full-WTC missing min_hours.couple_with_children parameter at this date.
+- name: Case 14, the 2012 model has no UC claim termination predicate.
+  period: 2012
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    would_claim_uc: true
+    wtc_terminated_by_universal_credit_claim: false
+- name: Case 15, a modern Northern Ireland UC claim ends WTC.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    claims_universal_credit: true
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Case 16, closing legacy awards still ends WTC without an ordinary UC claim.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: true
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_WTC_eligible: false
+    working_tax_credit: 0
+- name: Case 17, tax credit abolition does not revive WTC when no UC claim is made.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    working_tax_credit: 0
+- name: Case 18, a modern Northern Ireland pension age claimant keeps the age saving.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTHERN_IRELAND
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    claims_universal_credit: true
+    is_WTC_eligible: true
+- name: Case 19, a 2013 worker without a UC claim retains the historical WTC award.
+  period: 2013
+  input:
+    people:
+      person1:
+        age: 35
+        weekly_hours: 30
+        employment_income: 5000
+        working_tax_credit_reported: 1000
+        is_claimant_or_partner: true
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    wtc_terminated_by_universal_credit_claim: false
+    is_WTC_eligible: true
+  absolute_error_margin: 0.01

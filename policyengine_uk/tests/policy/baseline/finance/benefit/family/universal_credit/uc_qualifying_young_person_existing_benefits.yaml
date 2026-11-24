@@ -377,6 +377,8 @@
         is_claimant_or_partner: true
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [claimant, partner]
   output:
     is_qualifying_young_person_for_universal_credit: [false, false]

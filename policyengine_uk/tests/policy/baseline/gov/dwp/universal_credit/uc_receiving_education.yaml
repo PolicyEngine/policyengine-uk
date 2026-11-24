@@ -869,10 +869,11 @@
     is_uc_eligible: false
     universal_credit: 0
 
-- name: Case 33, a couple of 18-year-olds on a joint Working Tax Credit award both leave the qualifying young person route.
-  # Tax Credits Act 2002 s. 3(3)(a): a couple claims jointly, so the award
-  # belongs to both members, and SI 2014/1230 reg. 28 applies to each,
-  # whichever member reports it.
+- name: Case 33, a couple of 18-year-olds on a joint Working Tax Credit award both keep the qualifying young person route after claiming UC.
+  # A couple owns the WTC award jointly (TCA 2002 s3(3)). Its ordinary
+  # UC claim ends that award before UC starts (SI 2014/1230 reg8(2)), so
+  # neither adult is excluded by reg28. Both meet the reg5 young-person
+  # definition and full-time study therefore counts under UC reg12(1A).
   period: 2024
   input:
     people:
@@ -888,14 +889,15 @@
     benunits:
       benunit:
         members: [person1, person2]
+        would_claim_uc: true
     households:
       household:
         members: [person1, person2]
         region: NORTH_EAST
   output:
-    is_qualifying_young_person_for_universal_credit: [false, false]
-    is_qualifying_young_person_for_uc_education: [false, false]
-    uc_receiving_education: [false, false]
+    is_qualifying_young_person_for_universal_credit: [true, true]
+    is_qualifying_young_person_for_uc_education: [true, true]
+    uc_receiving_education: [true, true]
 
 - name: Case 34, the 18-year-old of case 32 claims when DWP moves them off legacy benefits and keeps the award.
   # The claimant reports Housing Benefit, so under SI 2014/1230 reg. 28 they

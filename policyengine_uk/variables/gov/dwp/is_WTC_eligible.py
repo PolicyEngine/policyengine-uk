@@ -44,8 +44,10 @@ class is_WTC_eligible(Variable):
         # A family DWP moved off its legacy benefits keeps no tax credits,
         # even under a reform that restores them (SI 2014/1230 regs 8, 46).
         already_claiming = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
-        ) & ~benunit("legacy_benefits_closed", period)
+            (add(benunit, period, ["working_tax_credit_reported"]) > 0)
+            & ~benunit("legacy_benefits_closed", period)
+            & ~benunit("wtc_terminated_by_universal_credit_claim", period)
+        )
         return (
             (lower_req & meets_lower)
             | (medium_req & meets_medium)
@@ -89,8 +91,10 @@ class is_WTC_eligible(Variable):
         )
         parents = joint_parents & (meets_joint_hours | partner_exception_proxy)
         already_claiming = (
-            add(benunit, period, ["working_tax_credit_reported"]) > 0
-        ) & ~benunit("legacy_benefits_closed", period)
+            (add(benunit, period, ["working_tax_credit_reported"]) > 0)
+            & ~benunit("legacy_benefits_closed", period)
+            & ~benunit("wtc_terminated_by_universal_credit_claim", period)
+        )
         return (
             disabled_worker | older_worker | ordinary_worker | lone_parent | parents
         ) & already_claiming
