@@ -3,7 +3,7 @@ from policyengine_uk.model_api import *
 
 def _ordinary_claim_ends_wtc(benunit, period):
     person = benunit.members
-    claimant = person("is_claimant_or_partner", period)
+    claimant = person("is_uc_single_or_joint_claimant", period)
     at_qualifying_age = person(
         "has_attained_state_pension_credit_qualifying_age", period
     )
@@ -25,8 +25,11 @@ class wtc_terminated_by_universal_credit_claim(Variable):
         "is payable. The existing annual claim proxy must represent a genuine "
         "claim within the applicable rollout. It does not record claim dates, "
         "deemed or withdrawn claims, or every historical basic condition. "
-        "An award remains where the single claimant, or both joint claimants, "
-        "have attained the qualifying age for State Pension Credit. Before "
+        "An award remains where the actual single Universal Credit claimant, "
+        "or both joint Universal Credit claimants, have attained the qualifying "
+        "age for State Pension Credit. A tax-credit partner who cannot join "
+        "the Universal Credit claim is not included in this age test "
+        "(Universal Credit Regulations 2013 reg 3(3)). Before "
         "25 July 2022 an ordinary claim first had to satisfy the basic "
         "conditions; from that date SI 2014/1230 reg 8(2B) expressly excludes "
         "these claimants. A protected mixed-age Pension Credit route alone "
@@ -39,6 +42,7 @@ class wtc_terminated_by_universal_credit_claim(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/1/made",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.legislation.gov.uk/uksi/2022/752/regulation/5/made",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/6",
         "https://www.legislation.gov.uk/nisr/2017/190/article/4/made",

@@ -114,9 +114,10 @@ def qualifying_young_person(person, period, parameters, at_claim_start=False):
     (reg. 8(2A); esa_income_report_closed's run-on), so the formula leaves
     out those two claim limbs. The claim has already ended a tax credit
     award (reg. 8(2)(a)), so the formula keeps the Child Tax Credit limb.
-    Reg. 8(2) ends a Working Tax Credit award too, but is_WTC_eligible keeps
-    that award beside a Universal Credit claim, so the Working Tax Credit
-    limb follows the model (policyengine-uk#2918). In Northern Ireland the
+    The Working Tax Credit limb uses the shared claim-termination rule at
+    claim start too: the pension-age saving applies to the actual single
+    Universal Credit claimant or both joint claimants. The paid-as-reported
+    reform keeps the reported award outside this claim screen. In Northern Ireland the
     claim has also already ended a rate rebate (SR 2016/226 reg. 6(2)), and
     only a rent rebate or allowance runs on (reg. 6(2A)), so there the
     formula keeps the Housing Benefit limb for a report of a rate rebate
