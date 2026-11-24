@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over eight runners, and Result, which fails unless every listed
+# tests split over ten runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/8" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/10" and "Test / Result";
 # "Test / Result" is the one to require.
 #
 # Runners. These jobs, and the check jobs that pull requests, merge queue
@@ -195,6 +195,24 @@ jobs:
     # shard 6/7 of the first lost its runner at 15.2 GiB 51 minutes in, with
     # test_latest_data_smoke.py running. With the certified tests on one shard
     # of seven, run 42231098419 lost that shard at 15.2 GiB.
+    #
+    # Ten, not eight, for time. The durations table on main is the one #2907
+    # built from 11 November's logs and merged on 12 November. Yet in 14 pull
+    # request and merge queue runs started from 14 to 16 November (UTC), the
+    # shards 1/8 to 7/8 that finished took 70 to 89 minutes, 81 on average.
+    # These leave out the runs of #2670 and #2840 and those a newer push
+    # cancelled. Even a perfectly even spread would leave a slow runner little
+    # room. The 90-minute limit cancelled shard 3/8 in runs 43617721320,
+    # 43805734007 and 43814986259 and shard 7/8 in run 43752493693. In merge
+    # queue run 43619418570, shard 7/8's tests passed in 89m37s and the limit
+    # then cancelled the job during its Codecov upload, which failed the
+    # group's Result. Shard 8/8, which ran the tests that need the dataset,
+    # took 20 to 23 minutes; shard 10/10 runs them now. Nine would leave too
+    # little room: on the branch of #2670, which moves to nine shards, shards
+    # 1/9 to 8/9 averaged 72 and 76 minutes (runs 43715128471 and
+    # 43796151601), and shard 5/9 took 86 in the first. On #2840, which adds
+    # tests, the limit cancelled shard 5/9 in run 43777851384; with ten shards
+    # there, shards 1/10 to 9/10 took 62 to 73 minutes (run 43805104592).
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ${{ vars.CI_RUNNER_ARM != '' && (vars.CI_RUNNER_EVENTS == '' || contains(format(',{0},', vars.CI_RUNNER_EVENTS), format(',{0},', github.event_name))) && vars.CI_RUNNER_ARM || 'ubuntu-24.04-arm' }}
@@ -216,7 +234,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
