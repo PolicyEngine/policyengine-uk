@@ -1,6 +1,8 @@
-description: Take-up rate of Universal Credit.
+description: >-
+  Informational take-up rate of Universal Credit; changing this parameter does not
+  affect Universal Credit award calculations.
 values:
   2015-01-01: 0.55
 metadata:
   unit: /1
-  label: Universal Credit take-up rate
+  label: Universal Credit take-up rate (informational)
