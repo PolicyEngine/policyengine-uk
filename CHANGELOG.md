@@ -1,3 +1,36 @@
+## [2.179.4] - 2026-11-24
+
+### Changed
+
+- Document that Microcosm UK datasets built from microcosm#1550 on carry PIP daily-living and mobility points, so a reform to the PIP point thresholds can move people in microsimulation on them; the Enhanced FRS still stores categories.
+- Spread the Python tests across ten CI shards instead of eight, so each job has more room under its 90-minute limit.
+
+### Fixed
+
+- The Universal Credit education protection for a claimant moved off legacy benefits (SI 2014/1230 reg. 60(1); SR 2016/226 reg. 61(1) in Northern Ireland) now needs a full-time course that reg. 12(2) of the Universal Credit Regulations 2013 (in Northern Ireland, of the Universal Credit Regulations (Northern Ireland) 2016) covers: advanced education, or a course with a student loan or grant for maintenance. A young person whom an existing benefit kept outside the qualifying young person definition on the migration day (SI 2014/1230 reg. 28; SR 2016/226 reg. 29), and who was on another full-time course, met the condition that day. The protection doesn't reach them, and the model no longer pays them Universal Credit through it.
+
+
+## [2.179.3] - 2026-11-19
+
+### Changed
+
+- Updated the labour supply parameter-read test and the uprating cache test so they pass when policyengine-core builds parameter-node children on first read.
+
+
+## [2.179.2] - 2026-11-18
+
+### Fixed
+
+- Excluded from the Universal Credit qualifying young person test a person who reports their own income-related ESA, income-based JSA, Income Support, Housing Benefit, Child Tax Credit or Working Tax Credit in a year the model pays that benefit, unless the model's legacy closure, or for a claimant or partner the family's Universal Credit claim, has ended the award on that report or a reform neutralises it, and a claimant or partner on the couple's tax credit award (SI 2014/1230 reg. 28). The Universal Credit education condition reads that test as it stands on the first day of a claimant's Universal Credit award, while a Housing Benefit award (in Northern Ireland, a rent rebate or allowance) or an income-related ESA award the claim ends still runs, and reads every reported existing benefit for the migration day's reg. 60(1) protection. Scotland's working-age Council Tax Reduction reads the Universal Credit qualifying young person test, so it leaves the same young persons out of the applicant's family (SSI 2021/249 reg. 6(1), read with SI 2014/1230 reg. 28(b)). The supplied input `housing_benefit_report_is_rate_rebate_only` marks a Northern Ireland report that covers only a rate rebate, which the claim ends the day before the award (SR 2016/226 reg. 6(2)).
+
+
+## [2.179.1] - 2026-11-16
+
+### Fixed
+
+- The search for the least-tax share of reliefs and allowances now applies the Marriage Allowance rate test at the statutory limits, instead of with room below them (about 3.9p near the £37,700 basic rate limit), so a recipient whose only qualifying share leaves income at a limit gets the reduction. The search keeps the room where float32 could hold income entered over a limit at the limit: where an amount the test reads reaches £65,536, or where the model cannot bound the float32 error in the amounts behind it, such as pay before expenses, under the least amount the entries can sit over a limit. An amount supplied as an input in place of its formula, such as pay set through Simulation.set_input or in a YAML test, counts as an entry: the model bounds that amount's own float32 error, with no bound from £131,072, and does not read the amounts its formula would.
+
+
 ## [2.179.0] - 2026-11-14
 
 ### Added

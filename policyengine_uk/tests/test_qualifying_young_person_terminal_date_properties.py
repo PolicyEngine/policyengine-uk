@@ -17,10 +17,11 @@ Invariants:
    own-right Universal Credit, ESA or JSA, entry age and the two date facts,
    for people not on Income Support: Universal Credit and Pension Credit
    agree, and both equal the regulation's conditions. Income Support is the
-   one exception: SPC reg. 4A(5) lists it and UC reg. 5(5) does not, so a
-   young person on their own Income Support who otherwise qualifies keeps
-   the Universal Credit status and loses the Pension Credit one, on either
-   route.
+   one exception: SPC reg. 4A(5) lists it, and UC reg. 5(5) does not, but SI
+   2014/1230 reg. 28 leaves a young person entitled to an existing benefit,
+   Income Support among them, out of the Universal Credit test. So while
+   Income Support pays, a young person on their own Income Support who
+   otherwise qualifies loses both statuses, on either route.
 4. With the 19th-birthday fact on, both statuses are the earlier definition
    without a terminal date, so nothing changes below 19 or for a 19-year-old
    before the date; switching the fact on never removes the status; and it
@@ -231,7 +232,7 @@ def test_universal_credit_and_pension_credit_agree_on_every_combination():
     )
 
 
-def test_own_income_support_ends_pension_credit_status_only():
+def test_own_income_support_ends_both_statuses():
     # Invariant 3's exception, in 2025-26, while Income Support pays. A
     # pensioner aged 70 with one member aged 16 to 19, over education, entry
     # age, both date facts and the member's own reported Income Support.
@@ -288,12 +289,14 @@ def test_own_income_support_ends_pension_credit_status_only():
             for age, education, entry_age, sixteen, nineteen, _ in rows
         ]
     )
-    np.testing.assert_array_equal(sim.calculate(UC, year)[young], expected)
+    np.testing.assert_array_equal(
+        sim.calculate(UC, year)[young], expected & ~own_income_support
+    )
     np.testing.assert_array_equal(
         sim.calculate(PC, year)[young], expected & ~own_income_support
     )
-    # Not vacuous: own Income Support removes the Pension Credit status from
-    # a 19-year-old before the date.
+    # Not vacuous: own Income Support removes both statuses from a
+    # 19-year-old before the date.
     assert any(
         e and o and row[0] == 19 and row[4]
         for e, o, row in zip(expected, own_income_support, rows)

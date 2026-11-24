@@ -57,6 +57,16 @@ the record.
 
 ``supplied_input_arrays`` answers for every variable. It includes values
 ``set_model_value`` stored, which ``is_model_value`` tells apart.
+
+``is_supplied_input`` also answers for every variable. It takes a value the
+engine has already returned and says whether that value is the input supplied
+for its period. It needs no entry in ``SUPPLIED_INPUT_VARIABLES``, because it
+cannot read a record whose value is gone as supplied. It reads the stored
+input as ``supplied_input`` does. policyengine-core, from the version
+pyproject.toml requires, stores every value the engine fills in (a formula
+result, or a carried-over, uprated or default value) as derived, and
+``stored_supplied_value`` never reads a derived value. And the stored input
+must equal the value the engine returned.
 """
 
 from functools import cache
@@ -382,6 +392,33 @@ def supplied_input(
     period, or cached after a calculation, is not an input, including one
     cached over the input."""
     _check_registered(variable_name)
+    return _supplied_value(population, variable_name, period)
+
+
+def is_supplied_input(population, variable_name: str, period: Period, value) -> bool:
+    """Whether ``value``, which the engine returned for ``variable_name`` and
+    ``period``, is the input supplied for that period (from a situation, a
+    dataset or ``Simulation.set_input``), on this branch or the nearest one it
+    was made from.
+
+    It is not where the engine worked the value out: from a formula, or by
+    carrying over or uprating another period's input. Nor is a value the model
+    stored itself (``set_model_value``), or the default a neutralized variable
+    reads as. With no record of inputs (policyengine-core's legacy mode), no
+    value counts as supplied.
+
+    This answers for any variable (see the module docstring). A caller that
+    walks variables named by parameters, which a reform can change, cannot
+    list them in ``SUPPLIED_INPUT_VARIABLES``."""
+    variable = population.simulation.tax_benefit_system.get_variable(variable_name)
+    if variable.is_neutralized:
+        return False
+    supplied = _supplied_value(population, variable_name, period)
+    return supplied is not None and np.array_equal(supplied, value)
+
+
+def _supplied_value(population, variable_name: str, period: Period):
+    """``supplied_input``, for any variable."""
     simulation = population.simulation
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
     holder = population.get_holder(variable_name)
