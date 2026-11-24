@@ -1,1 +1,0 @@
-Add `would_claim_uc_housing_costs_element`, a benefit unit input that defaults to true and gates `uc_housing_costs_element`, so a dataset can represent a Universal Credit award that carries no housing costs element for a family that rents; such an award gets the higher work allowance.
