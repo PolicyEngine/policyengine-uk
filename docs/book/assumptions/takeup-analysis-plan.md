@@ -90,6 +90,7 @@ Per #1354, with current PolicyEngine UK take-up handling:
 | Universal Credit | `universal_credit` | `would_claim_uc` (input) | `gov.dwp.universal_credit.takeup_rate` | Drawn in the data build, anchored on reported receipt |
 | UC on legacy closure | `claims_uc_at_legacy_closure` | `would_claim_uc_at_legacy_closure` (input) | – | Drawn in Microcosm at DWP's Move to Universal Credit claim rates by legacy benefit combination; the Enhanced FRS does not set it, so it defaults to true |
 | UC childcare element | `uc_childcare_element` (claimed via `uc_childcare_element_claimed`) | `would_claim_uc_childcare` (input) | – | Drawn in Microcosm at single and couple rates; the Enhanced FRS does not set it, so it defaults to true |
+| UC housing costs element | `uc_housing_costs_element` | `would_claim_uc_housing_costs_element` (input) | – | For a data build to set false where a renting family's award statement carries no housing costs element; neither data build sets it yet, so it defaults to true |
 | Pension Credit | `pension_credit` | `would_claim_pc` (input) | `gov.dwp.pension_credit.takeup` | Drawn in the data build, anchored on reported receipt |
 | Child Benefit | `child_benefit` | `would_claim_child_benefit` (input) | `gov.hmrc.child_benefit.takeup.overall` and `.by_age` | Drawn in the data build, anchored on reported receipt |
 | Housing Benefit | `housing_benefit` | `would_claim_housing_benefit` (formula) | `gov.dwp.housing_benefit.takeup` | Follows reported receipt (#1621) |
