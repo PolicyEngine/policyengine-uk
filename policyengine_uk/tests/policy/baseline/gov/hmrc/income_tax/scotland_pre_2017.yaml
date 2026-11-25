@@ -1,0 +1,345 @@
+# Annual labels follow the model's fiscal-year parameter convention:
+# 2015 means 2015-16; 2016 means 2016-17.
+# FA 2014 Sch. 38 para. 12 and SI 2015/2000 art. 3 start the Scottish rate
+# provisions in 2016-17. ITA 2007 s. 11A (2016-04-06), subsections (1)-(3),
+# follows the UK bands for non-savings, non-dividend income in that year.
+# Parliament's 11 February 2016 resolution sets the Scottish component at 10%.
+# HMRC's 2016-17 employer table confirms combined rates of 20%, 40% and 45%,
+# a personal allowance of 11,000 and a basic rate limit of 32,000 for both
+# Scotland and the rest of the UK.
+# https://www.legislation.gov.uk/ukpga/2014/26/schedule/38/paragraph/12
+# https://www.legislation.gov.uk/uksi/2015/2000/article/3/made
+# https://www.legislation.gov.uk/ukpga/2007/3/section/11A/2016-04-06
+# https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2016-to-2017
+# For 2015-16, FA 2015 s. 1 sets 20%/40%/45%; FA 2014 s. 2 as amended
+# by FA 2015 s. 3 sets the personal allowance at 10,600 and the basic rate
+# limit at 31,785. The 31,600 tested here lies below that statutory limit.
+# https://www.legislation.gov.uk/ukpga/2015/11/section/1/enacted
+# https://www.legislation.gov.uk/ukpga/2014/26/section/2
+# https://www.legislation.gov.uk/ukpga/2015/11/section/3/enacted
+# Each person is single, age 40, in their own benefit unit and household.
+# No pension contributions, gifts, finance costs, savings or dividends.
+# property_income supplies net property-business profit. Gross rental
+# receipts remain unknown; the baseline gives no additional property
+# allowance deduction for a profit above the allowance. These cases do not
+# certify the history of the property allowance or expense/election rules.
+
+- name: Case 1, Scottish and English pay uses UK bands in 2015-16.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 42_200
+      person2:
+        age: 40
+        employment_income: 42_200
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # 42,200 - 10,600 = 31,600; 31,600 x 20% = 6,320.
+    income_tax: [6_320, 6_320]
+    personal_allowance: [10_600, 10_600]
+    earned_taxable_income: [31_600, 31_600]
+    earned_income_tax: [6_320, 6_320]
+
+- name: Case 2, Scottish and English pay at the UK basic limit in 2016-17.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 43_000
+      person2:
+        age: 40
+        employment_income: 43_000
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # 43,000 - 11,000 = 32,000; 32,000 x 20% = 6,400.
+    income_tax: [6_400, 6_400]
+    personal_allowance: [11_000, 11_000]
+    earned_taxable_income: [32_000, 32_000]
+    earned_income_tax: [6_400, 6_400]
+
+- name: Case 3, Scottish and English pay above the UK basic limit in 2016-17.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 43_001
+      person2:
+        age: 40
+        employment_income: 43_001
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # 43,001 - 11,000 = 32,001; 32,000 x 20% + 1 x 40% = 6,400.40.
+    income_tax: [6_400.40, 6_400.40]
+    earned_taxable_income: [32_001, 32_001]
+    earned_income_tax: [6_400.40, 6_400.40]
+
+- name: Case 4, Scottish and English pay plus property uses UK bands in 2015-16.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 30_000
+        property_income: 12_200
+      person2:
+        age: 40
+        employment_income: 30_000
+        property_income: 12_200
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # Pay: (30,000 - 10,600) x 20% = 3,880.
+    # Property: 12,200 x 20% = 2,440. Total: 31,600 x 20% = 6,320.
+    income_tax: [6_320, 6_320]
+    personal_allowance: [10_600, 10_600]
+    earned_taxable_income: [19_400, 19_400]
+    taxable_property_income_after_allowances: [12_200, 12_200]
+    earned_income_tax: [3_880, 3_880]
+    property_income_tax: [2_440, 2_440]
+
+- name: Case 5, Scottish and English pay plus property uses UK bands in 2016-17.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 30_000
+        property_income: 13_000
+      person2:
+        age: 40
+        employment_income: 30_000
+        property_income: 13_000
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # Pay: (30,000 - 11,000) x 20% = 3,800.
+    # Property: 13,000 x 20% = 2,600. Total: 32,000 x 20% = 6,400.
+    income_tax: [6_400, 6_400]
+    personal_allowance: [11_000, 11_000]
+    earned_taxable_income: [19_000, 19_000]
+    taxable_property_income_after_allowances: [13_000, 13_000]
+    earned_income_tax: [3_800, 3_800]
+    property_income_tax: [2_600, 2_600]
+
+- name: Case 6, Scottish and English property alone uses UK bands in 2016-17.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        property_income: 43_000
+      person2:
+        age: 40
+        property_income: 43_000
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # The allowance covers property: (43,000 - 11,000) x 20% = 6,400.
+    income_tax: [6_400, 6_400]
+    personal_allowance: [11_000, 11_000]
+    earned_taxable_income: [0, 0]
+    taxable_property_income_after_allowances: [32_000, 32_000]
+    earned_income_tax: [0, 0]
+    property_income_tax: [6_400, 6_400]
+
+- name: Case 7, existing Scottish and English routing remains in 2017-18.
+  # Pinned-main parameter/routing control, not a new 2017-18 legal audit.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 43_500
+        property_income: 1_500
+      person2:
+        age: 40
+        employment_income: 43_500
+        property_income: 1_500
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # Baseline PA 11,500 leaves pay 32,000 and property 1,500.
+    # Scotland: pay 31,500 x 20% + 500 x 40% = 6,500; property 600.
+    # England: pay 32,000 x 20% = 6,400; property 1,500 x 20% = 300.
+    income_tax: [7_100, 6_700]
+    personal_allowance: [11_500, 11_500]
+    earned_taxable_income: [32_000, 32_000]
+    taxable_property_income_after_allowances: [1_500, 1_500]
+    earned_income_tax: [6_500, 6_400]
+    property_income_tax: [600, 300]
+
+- name: Case 8, country determines the Scottish flag before the 2016 start.
+  # Pinned-main geography/flag contract, not a 2015 Scottish-rate law claim.
+  period: 2015
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 42_200
+      person2:
+        age: 40
+        employment_income: 42_200
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    pays_scottish_income_tax: [true, false]
+
+- name: Case 9, country determines the Scottish flag in 2016-17.
+  # Pinned-main geography/flag contract, separate from currency tolerances.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 43_000
+      person2:
+        age: 40
+        employment_income: 43_000
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    pays_scottish_income_tax: [true, false]
+
+- name: Case 10, Scottish and English taxpayers minimise tax on pay and savings in 2016-17.
+  # ITA 2007 s. 25(2) requires the allowance allocation giving the least tax.
+  # FA 2016 s. 4 inserts ss. 12A and 12B from 2016-17: savings nil rate
+  # and a 500 allowance where there is higher-rate but no additional-rate
+  # income, using UK bands for Scottish taxpayers too (s. 12B(8)(b)(iv)).
+  # https://www.legislation.gov.uk/ukpga/2007/3/section/25/2016-04-06
+  # https://www.legislation.gov.uk/ukpga/2016/24/section/4/enacted
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 42_500
+        savings_interest_income: 1_500
+      person2:
+        age: 40
+        employment_income: 42_500
+        savings_interest_income: 1_500
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household1:
+        members: [person1]
+        country: SCOTLAND
+      household2:
+        members: [person2]
+        country: ENGLAND
+  output:
+    # One minimum: PA 10,500 against pay and 500 against savings leaves
+    # pay 32,000 (tax 6,400) and savings 1,000 (500 nil + 500 x 40% = 200).
+    # Total 6,600. PA 10,000 against pay and 1,000 against savings also
+    # gives 6,600, so the component split is not asserted.
+    income_tax: [6_600, 6_600]
+    personal_allowance: [11_000, 11_000]
+    savings_allowance: [500, 500]

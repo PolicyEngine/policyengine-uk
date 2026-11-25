@@ -6,16 +6,19 @@ from policyengine_uk.utils.income_tax import (
 
 
 class property_income_tax(Variable):
-    """Tax on property income, following main UK rates before 2027-28 and
-    separate property rates thereafter for rUK taxpayers; Scottish
-    taxpayers retain the model's Scottish rate treatment.
-    """
+    documentation = (
+        "Property income uses the UK main scale before 2017-18. From "
+        "2017-18, Scottish taxpayers use the Scottish main scale. Other "
+        "UK taxpayers use the UK main scale until separate property rates "
+        "apply from 2027-28. Property income is stacked after other "
+        "non-savings income."
+    )
 
     value_type = float
     entity = Person
     label = "Income tax on property income"
     definition_period = YEAR
-    reference = [
+    reference = (
         dict(
             title="Income Tax (Trading and Other Income) Act 2005, s. 268",
             href="https://www.legislation.gov.uk/ukpga/2005/5/section/268",
@@ -36,10 +39,43 @@ class property_income_tax(Variable):
             title="Budget 2026, paragraph 6.246 (property rates of 24%, 44% and 49%)",
             href="https://assets.publishing.service.gov.uk/media/6ae1ec57bdb574cf1c9b3f12/E03668986_HMT_Budget_2026_ELAY__2_.pdf#page=142",
         ),
-    ]
+        dict(
+            title="Income Tax Act 2007, s. 11A as at 6 April 2016",
+            href="https://www.legislation.gov.uk/ukpga/2007/3/section/11A/2016-04-06",
+        ),
+        dict(
+            title=(
+                "The Scotland Act 2012, Section 25 (Appointed Years) Order 2015, art. 3"
+            ),
+            href="https://www.legislation.gov.uk/uksi/2015/2000/article/3/made",
+        ),
+        dict(
+            title="Scottish Rate of Income Tax Resolution 2016-17 (S4M-15497)",
+            href="https://www.parliament.scot/chamber-and-committees/official-report/"
+            "search-what-was-said-in-parliament/meeting-of-parliament-11-02-2016"
+            "?iob=95367&meeting=10365",
+        ),
+    )
     unit = GBP
 
     def formula(person, period, parameters):
+        rates = parameters(period).gov.hmrc.income_tax.rates
+        property_after_allowances = person(
+            "taxable_property_income_after_allowances", period
+        )
+        other_earned_taxable = max_(
+            0,
+            person("non_savings_income_after_allowances", period)
+            - property_after_allowances,
+        )
+        gross_gift = person("gift_aid_grossed_up", period)
+        return calc_income_tax_with_gift_aid(
+            rates.uk,
+            other_earned_taxable + property_after_allowances,
+            gross_gift,
+        ) - calc_income_tax_with_gift_aid(rates.uk, other_earned_taxable, gross_gift)
+
+    def formula_2017(person, period, parameters):
         """Before 2027-28, property income uses the applicable main scale."""
         rates = parameters(period).gov.hmrc.income_tax.rates
         property_after_allowances = person(

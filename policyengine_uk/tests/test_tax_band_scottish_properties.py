@@ -25,7 +25,7 @@ their band.
 
 The Marriage Allowance income conditions do not read the band. With the
 baseline nil-rate amounts and with reformed limits and amounts, for every
-single person in England, and in Scotland from 2017-18, they hold exactly when
+single person in England and Scotland, they hold exactly when
 the liability charges no income at a rate s. 55B(2)(b) forbids and, with the
 dividend allowance removed (s. 55B(2)(ba)), none at the dividend upper or
 additional rate. So savings at the savings nil rate or the starting rate for
@@ -321,14 +321,9 @@ def test_savings_allowance_does_not_read_the_band():
 # The Marriage Allowance income conditions against the liability, with the
 # baseline nil-rate amounts and with reformed limits and amounts: people
 # alternate between Scotland and England, from 2016-17, the first year of the
-# savings and dividend nil rates. Before 2017-18 the model charges a Scottish
-# taxpayer's non-savings income on its 2017-18 Scottish scale, where Parliament
-# charged it on the rest-of-UK limits (s. 11A(1)). The Marriage Allowance test
-# uses the basic rate limit there, as Parliament did, so this test leaves those
-# people out.
+# savings and dividend nil rates.
 MA_YEARS = list(range(2016, 2027))
 MA_COUNTRIES = ["SCOTLAND", "ENGLAND"]
-FIRST_SCOTTISH_LIMITS_YEAR = 2017
 # The rates Parliament forbids in s. 55B(2)(b), other than the dividend rates:
 # the Scottish higher, advanced and top rates, the higher and additional rates,
 # and the savings higher and additional rates. Each person pays at most one of
@@ -431,15 +426,8 @@ def test_marriage_allowance_follows_the_liability_with_nil_rates(
         forbidden = charged_at(sim, period, FORBIDDEN)
         with law(sim, period, {DIVIDEND_ALLOWANCE: 0}):
             dividends_above_basic = charged_at(sim, period, DIVIDEND_UPPER)
-    checked = np.array(
-        [
-            period >= FIRST_SCOTTISH_LIMITS_YEAR
-            or MA_COUNTRIES[i % len(MA_COUNTRIES)] != "SCOTLAND"
-            for i in range(PEOPLE)
-        ]
-    )
     np.testing.assert_array_equal(
-        meets[checked],
-        ((forbidden < SOME) & (dividends_above_basic < SOME))[checked],
+        meets,
+        (forbidden < SOME) & (dividends_above_basic < SOME),
         err_msg=f"{drawn} in {period} with {changes}",
     )
