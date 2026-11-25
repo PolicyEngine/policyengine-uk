@@ -3,8 +3,9 @@
 bedrooms of benefit-unit members aged 16 or over who are not the claimant or
 partner, the children of other families in the household, foster and
 adoption placements, the additional bedrooms for foster parents and
-overnight care, and the housing cost contributions of in-unit
-non-dependants.
+overnight care, the bedrooms for children and couples who cannot share a
+bedroom because of disability, and the housing cost contributions of
+in-unit non-dependants.
 
 Invariants, for any generated population of households:
 
@@ -95,7 +96,18 @@ Invariants, for any generated population of households:
    - one additional bedroom if anyone so counted, or a child placed with
      the family, has overnight care, and one if the family fosters, has a
      child placed for adoption, or has an approved foster parent between
-     placements.
+     placements;
+   - children who cannot share a bedroom because of disability, among the
+     children so counted: the brute force forbids them any room-mate, and
+     the difference from the unrestricted pairing is additional (UC para
+     12(6), (8); HB reg 13D(3)(ba));
+   - couples one of whom cannot share: one more bedroom for the family's
+     own couple (UC para 12(6A), (9)(d); HB 13D(3)(za)-(zb)) and, under HB,
+     for each couple of a non-dependant's, boarder's or lodger's family
+     counted by a family liable for the rent;
+   - under HB, the bedrooms for people who cannot share count only so far
+     as the dwelling's reported bedrooms exceed the count if everyone could
+     share (reg 13D(3), closing words); unreported (0) means no limit.
 6. In-unit non-dependants: every member of a benefit unit aged 16 or over
    who is neither the claimant nor partner nor a Universal Credit
    qualifying young person nor the household head (the householder in
@@ -136,6 +148,25 @@ Invariants, for any generated population of households:
    Their bedroom then moves between those two claims, and no other claim
    changes. Someone younger can be a qualifying young person, and their
    family's Child Benefit and child element then depend on them.
+10. A child who cannot share: flagging one more child under 16 as unable to
+    share (with a qualifying benefit) raises any family's bedrooms by
+    nothing or one under each scheme, and changes only the families whose
+    size criteria count that child: under UC their own family unless they
+    are a foster child, and the claim counting the household's
+    non-dependants if they are a non-dependant's child and not a foster
+    child; under HB their own family if they are not placed with it, and
+    each family liable for the rent if they are a non-dependant's,
+    boarder's or lodger's child, placed or not.
+11. The dwelling's bedrooms: with them reported, every family's Housing
+    Benefit bedrooms lie between the count if everyone could share and the
+    count with them unreported, and exceed the dwelling's bedrooms only
+    where the count if everyone could share already does.
+12. Couples: flagging one or both members of another family's couple as
+    unable to share gives the couple's own claim exactly one more bedroom
+    under each scheme, and each family liable for the rent exactly one
+    more Housing Benefit bedroom (none under UC) if the couple are
+    occupiers it counts (a non-dependant's, boarder's or lodger's family);
+    no other family changes.
 """
 
 import numpy as np
@@ -156,9 +187,23 @@ OCCUPIER_ROLES = ("non_dependant", "boarder", "lodger")
 EDUCATION = ["NOT_IN_EDUCATION", "UPPER_SECONDARY", "UPPER_SECONDARY", "TERTIARY"]
 KINDS = ["own", "own", "own", "foster", "adopted"]
 OVERNIGHT = st.sampled_from([False, False, False, True])
+CANNOT_SHARE = st.sampled_from([False, False, False, True])
+# Each household's bedrooms: unreported (0) or 1 to 6, as in the FRS. Four
+# entries cover the largest generated population.
+DWELLING_BEDROOMS = st.lists(
+    st.sampled_from([0, 0, 1, 2, 3, 4, 5, 6]), min_size=4, max_size=4
+)
+UNREPORTED = [0, 0, 0, 0]
 
-# (age, is_male, kind, has overnight care)
-child = st.tuples(st.integers(0, 15), st.booleans(), st.sampled_from(KINDS), OVERNIGHT)
+# (age, is_male, kind, has overnight care, cannot share a bedroom). Examples
+# may leave out the last element, which then counts as false.
+child = st.tuples(
+    st.integers(0, 15),
+    st.booleans(),
+    st.sampled_from(KINDS),
+    OVERNIGHT,
+    CANNOT_SHARE,
+)
 
 
 @st.composite
@@ -170,6 +215,9 @@ def family(draw, role):
         ),
         children=draw(st.lists(child, min_size=0, max_size=4)),
         between_placements=draw(st.sampled_from([False, False, False, True])),
+        # How many adults, from the first, cannot share a bedroom with a
+        # partner because of disability (this matters only for two adults).
+        couple_cannot_share=draw(st.sampled_from([0, 0, 0, 1, 2])),
     )
 
 
@@ -231,12 +279,16 @@ def child_scenario(draw, kinds):
         draw(st.booleans()),
         draw(st.sampled_from(kinds)),
         False,
+        False,
     )
     return population, (h, f), added
 
 
-def child_inputs(age, male, kind, overnight):
+def child_inputs(age, male, kind, overnight, cannot_share=False):
     inputs = {"age": age, "is_male": male, "is_household_head": False}
+    if cannot_share:
+        inputs["dla_sc_middle_plus"] = True
+        inputs["cannot_reasonably_share_bedroom_due_to_disability"] = True
     if kind == "foster":
         inputs["is_looked_after_by_local_authority"] = True
     if kind == "adopted":
@@ -247,11 +299,21 @@ def child_inputs(age, male, kind, overnight):
     return inputs
 
 
-def build(population, added=None, supply_roles=True, added_child=None):
+def build(
+    population,
+    added=None,
+    supply_roles=True,
+    added_child=None,
+    num_bedrooms=None,
+    flagged_child=None,
+):
     """One situation for the population, optionally with a person aged 16 to
     19 added to family ``added[0]`` = (household, family) with attributes
     ``added[1]``, or a child ``added_child[1]`` = (age, is_male, kind,
-    overnight) added to family ``added_child[0]``.
+    overnight, cannot share) added to family ``added_child[0]``.
+    ``num_bedrooms`` lists each household's bedrooms (unreported if None).
+    ``flagged_child`` = (household, family, index) marks that child as unable
+    to share a bedroom.
 
     Returns the situation and, per benefit unit, its (household, family).
     An added person with ``is_household_head`` heads the household in place
@@ -275,7 +337,13 @@ def build(population, added=None, supply_roles=True, added_child=None):
                 ids.append(pid)
             if fam["between_placements"]:
                 people[ids[0]]["is_approved_foster_parent_without_placement"] = True
+            for pid in ids[: fam.get("couple_cannot_share", 0)]:
+                people[pid]["pip_dl"] = 5_000
+                people[pid]["cannot_reasonably_share_bedroom_due_to_disability"] = True
             children = list(fam["children"])
+            if flagged_child is not None and flagged_child[:2] == (h, f):
+                i = flagged_child[2]
+                children[i] = tuple(children[i][:4]) + (True,)
             if added_child is not None and added_child[0] == (h, f):
                 children.append(added_child[1])
             for i, spec in enumerate(children):
@@ -308,6 +376,8 @@ def build(population, added=None, supply_roles=True, added_child=None):
             "tenure_type": "RENT_PRIVATELY",
             "brma": "MAIDSTONE",
         }
+        if num_bedrooms is not None:
+            homes[f"h{h}"]["num_bedrooms"] = num_bedrooms[h]
     situation = {"people": people, "benunits": benunits, "households": homes}
     return situation, keys
 
@@ -346,9 +416,13 @@ def own_claims(sim):
 
 def fewest_rooms_for_children(children):
     """Brute force: the fewest rooms holding the children two to a room,
-    where a pair must be of the same sex or both under 10."""
+    where a pair must be of the same sex or both under 10, and a child who
+    cannot share because of disability (a third element that is true) shares
+    with no one."""
 
     def can_share(a, b):
+        if (len(a) > 2 and a[2]) or (len(b) > 2 and b[2]):
+            return False
         return a[1] == b[1] or (a[0] < 10 and b[0] < 10)
 
     def best(remaining):
@@ -368,8 +442,29 @@ def fosters(fam):
     """Whether the family meets the foster parent condition (UC) or has a
     qualifying parent or carer (HB) through its children or adults."""
     return fam["between_placements"] or any(
-        kind in ("foster", "adopted") for _, _, kind, _ in fam["children"]
+        c[2] in ("foster", "adopted") for c in fam["children"]
     )
+
+
+def cannot_share(c):
+    """Whether a generated child cannot share a bedroom."""
+    return len(c) > 4 and c[4]
+
+
+def pairable(children):
+    """(age, is_male) of each child, for the pairing without the condition."""
+    return [c[:2] for c in children]
+
+
+def with_flags(children):
+    """(age, is_male, cannot share) of each child."""
+    return [(c[0], c[1], cannot_share(c)) for c in children]
+
+
+def couple_cannot_share(fam):
+    """The family is a couple one of whom cannot share a bedroom with the
+    other (UC Sch 4 para 12(6A); HB reg 2(1))."""
+    return len(fam["adults"]) == 2 and fam.get("couple_cannot_share", 0) > 0
 
 
 def in_qualifying_education(p, age_limit_for_entry=19):
@@ -704,7 +799,7 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
 
 
 @PROPERTY_SETTINGS
-@given(scenario())
+@given(scenario(), DWELLING_BEDROOMS)
 # A non-dependant's foster child who requires overnight care: the renter's
 # Housing Benefit overnight room (reg 13D(3A)(a)(iii); reg 21(3)).
 @example(
@@ -722,7 +817,8 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
         ],
         (0, 0),
         dict(LOOKED_AFTER_QYP, is_looked_after_by_local_authority=False),
-    )
+    ),
+    UNREPORTED,
 )
 # A looked-after 16-year-old not in education placed with a lone renter: a
 # young person until the 31 August after their 16th birthday (Child Benefit
@@ -734,16 +830,67 @@ def test_a_placed_child_adds_the_carers_bedroom(case):
         [[lone("head", 40)]],
         (0, 0),
         dict(LOOKED_AFTER_QYP, age=16, current_education="NOT_IN_EDUCATION"),
-    )
+    ),
+    UNREPORTED,
 )
-def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
+# Girls aged 12, 8 and 6, the two youngest unable to share: either could be
+# alone in a two-room allocation, but not both, so the family has a third
+# bedroom for them under each scheme (UC para 12(8); HB reg 13D(3)(ba)). The
+# dwelling has five bedrooms, one more than the parent, the added young
+# person and two rooms for the girls, so HB allows it.
+@example(
+    (
+        [
+            [
+                dict(
+                    lone("head", 40),
+                    children=[
+                        (12, False, "own", False, False),
+                        (8, False, "own", False, True),
+                        (6, False, "own", False, True),
+                    ],
+                )
+            ]
+        ],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, is_looked_after_by_local_authority=False),
+    ),
+    [5, 0, 0, 0],
+)
+# A non-dependant couple one of whom cannot share, in a home of three
+# bedrooms: the head's HB claim counts the couple as occupiers and would give
+# them a bedroom each, but the dwelling has no bedroom beyond the three the
+# head's claim has if they could share (the head's, the added young person's
+# and the couple's), so it allows none (reg 13D(3), closing words). The
+# couple's own claim has one more bedroom under each scheme.
+@example(
+    (
+        [
+            [
+                lone("head", 50),
+                dict(
+                    lone("non_dependant", 30),
+                    adults=[(30, False), (29, False)],
+                    couple_cannot_share=1,
+                ),
+            ]
+        ],
+        (0, 0),
+        dict(LOOKED_AFTER_QYP, is_looked_after_by_local_authority=False),
+    ),
+    [3, 0, 0, 0],
+)
+def test_bedrooms_match_a_reference_count_of_the_size_criteria(case, num_bedrooms):
     population, target, person = case
-    situation, keys = build(population, (target, person))
+    situation, keys = build(population, (target, person), num_bedrooms=num_bedrooms)
     sim, uc, hb = bedrooms(situation)
     counted, liable = claim_roles(sim)
     uc_additional = np.asarray(sim.calculate("LHA_additional_bedrooms", YEAR))
     hb_additional = np.asarray(
         sim.calculate("housing_benefit_LHA_additional_bedrooms", YEAR)
+    )
+    hb_cannot_share = np.asarray(
+        sim.calculate("housing_benefit_LHA_cannot_share_bedrooms", YEAR)
     )
     added = flags(person)
     own_claim = own_claims(sim)
@@ -772,6 +919,9 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
             hb_overnight = True
         uc_foster = fosters(fam) or (is_target and added["fostered"])
         hb_carer = fosters(fam) or (is_target and added["placed"])
+        # Couples who cannot share: UC only the renter's own (para 12(6A));
+        # HB every occupier couple (reg 13D(3)(za)-(zb)).
+        uc_couples = hb_couples = int(couple_cannot_share(fam))
         for g, other in enumerate(families):
             if g == f:
                 continue
@@ -809,20 +959,34 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
                     c[3] for c in other["children"]
                 )
                 hb_overnight |= joins and added["overnight"]
-        expected_uc_additional = int(uc_overnight) + int(uc_foster)
+                hb_couples += int(couple_cannot_share(other))
+        # Children who cannot share: the fewest rooms in which none of them
+        # shares, beyond the rooms the children would otherwise need (UC
+        # para 12(6) and (8); HB reg 13D(3)(ba)).
+        uc_child_rooms = fewest_rooms_for_children(pairable(uc_children))
+        uc_disabled_child_rooms = (
+            fewest_rooms_for_children(with_flags(uc_children)) - uc_child_rooms
+        )
+        hb_child_rooms = fewest_rooms_for_children(pairable(hb_children))
+        hb_disabled_child_rooms = (
+            fewest_rooms_for_children(with_flags(hb_children)) - hb_child_rooms
+        )
+        expected_uc_additional = (
+            int(uc_overnight) + int(uc_foster) + uc_disabled_child_rooms + uc_couples
+        )
         expected_hb_additional = int(hb_overnight) + int(hb_carer)
         assert uc_additional[b] == expected_uc_additional
         assert hb_additional[b] == expected_hb_additional
-        assert uc[b] == (
-            uc_rooms
-            + fewest_rooms_for_children([c[:2] for c in uc_children])
-            + expected_uc_additional
-        )
-        assert hb[b] == (
-            hb_rooms
-            + fewest_rooms_for_children([c[:2] for c in hb_children])
-            + expected_hb_additional
-        )
+        assert uc[b] == uc_rooms + uc_child_rooms + expected_uc_additional
+        # HB: the bedrooms if everyone could share, plus those for people who
+        # cannot share, so far as the dwelling has bedrooms beyond the first
+        # (reg 13D(3), closing words).
+        able_to_share = hb_rooms + hb_child_rooms + expected_hb_additional
+        extra = hb_disabled_child_rooms + hb_couples
+        if num_bedrooms[h] > 0:
+            extra = min(extra, max(num_bedrooms[h] - able_to_share, 0))
+        assert hb_cannot_share[b] == extra
+        assert hb[b] == able_to_share + extra
 
 
 def in_unit_non_dependants(sim):
@@ -1167,3 +1331,133 @@ def test_moving_a_non_claiming_adult_out_of_the_benefit_unit_changes_no_claim(ca
         a = calc_in(variable)[keep]
         b = calc_out(variable)[:n][keep]
         assert np.allclose(a, b), variable
+
+
+@st.composite
+def flagged_child_scenario(draw):
+    """A population and one of its children under 16 to flag as unable to
+    share a bedroom (with a qualifying benefit)."""
+    population = draw(st.lists(household(), min_size=1, max_size=4))
+    children = [
+        (h, f, i)
+        for h, families in enumerate(population)
+        for f, fam in enumerate(families)
+        for i in range(len(fam["children"]))
+    ]
+    if not children:
+        population[0][0]["children"].append((5, True, "own", False, False))
+        children = [(0, 0, len(population[0][0]["children"]) - 1)]
+    return population, draw(st.sampled_from(children))
+
+
+@PROPERTY_SETTINGS
+@given(flagged_child_scenario())
+def test_a_child_who_cannot_share_adds_at_most_one_bedroom(case):
+    population, flagged = case
+    before, keys = build(population)
+    after, _ = build(population, flagged_child=flagged)
+    sim_before, uc_before, hb_before = bedrooms(before)
+    sim, uc_after, hb_after = bedrooms(after)
+    counted, liable = claim_roles(sim)
+    # Flagging a child changes neither who counts the non-dependants nor who
+    # is liable for the rent.
+    counted_before, liable_before = claim_roles(sim_before)
+    assert np.array_equal(counted, counted_before)
+    assert np.array_equal(liable, liable_before)
+    # 10. One more child who cannot share raises any family's bedrooms by
+    # nothing or one under each scheme, with the dwelling's bedrooms
+    # unreported: each such child takes a room, but the others then need at
+    # most one fewer.
+    for change in (uc_after - uc_before, hb_after - hb_before):
+        assert np.all((change == 0) | (change == 1))
+    # Only families whose size criteria count the child change.
+    h, f, i = flagged
+    kind = population[h][f]["children"][i][2]
+    role = population[h][f]["role"]
+    for b, key in enumerate(keys):
+        same_household = key[0] == h
+        uc_counts = kind != "foster" and (
+            key == (h, f) or (same_household and counted[b] and role == "non_dependant")
+        )
+        hb_counts = (key == (h, f) and kind == "own") or (
+            same_household and liable[b] and role in OCCUPIER_ROLES
+        )
+        if not uc_counts:
+            assert uc_after[b] == uc_before[b]
+        if not hb_counts:
+            assert hb_after[b] == hb_before[b]
+
+
+@PROPERTY_SETTINGS
+@given(scenario(), DWELLING_BEDROOMS)
+def test_housing_benefit_rooms_never_exceed_the_dwelling_beyond_the_base(
+    case, num_bedrooms
+):
+    population, target, person = case
+    unreported, keys = build(population, (target, person))
+    reported, _ = build(population, (target, person), num_bedrooms=num_bedrooms)
+    sim, _, hb_free = bedrooms(unreported)
+    able = hb_free - np.asarray(
+        sim.calculate("housing_benefit_LHA_cannot_share_bedrooms", YEAR)
+    )
+    _, _, hb = bedrooms(reported)
+    # 11. The dwelling's bedrooms only ever withhold the bedrooms for people
+    # who cannot share: the HB count lies between the count if everyone
+    # could share and the count with the dwelling unreported, and exceeds
+    # the dwelling's bedrooms only where the count if everyone could share
+    # already does.
+    beds = np.array([num_bedrooms[h] for h, _ in keys])
+    assert np.all(able <= hb) and np.all(hb <= hb_free)
+    reported_beds = beds > 0
+    assert np.all(hb[reported_beds] <= np.maximum(able, beds)[reported_beds])
+
+
+@st.composite
+def couple_scenario(draw):
+    """A population with a couple from another family (a sharer's,
+    boarder's, lodger's or non-dependant's) in one household, and how many
+    of the couple's members to flag as unable to share a bedroom."""
+    population = draw(st.lists(household(), min_size=1, max_size=3))
+    h = draw(st.integers(0, len(population) - 1))
+    couple = draw(st.sampled_from(ROLES).flatmap(family))
+    couple["adults"] = draw(
+        st.lists(st.tuples(st.integers(20, 85), OVERNIGHT), min_size=2, max_size=2)
+    )
+    couple["couple_cannot_share"] = 0
+    population[h] = population[h] + [couple]
+    return population, (h, len(population[h]) - 1), draw(st.sampled_from([1, 2]))
+
+
+@PROPERTY_SETTINGS
+@given(couple_scenario())
+def test_a_couple_who_cannot_share_adds_one_bedroom_however_many_qualify(case):
+    population, (h, f), members = case
+    before, keys = build(population)
+    population[h][f]["couple_cannot_share"] = members
+    after, _ = build(population)
+    sim_before, uc_before, hb_before = bedrooms(before)
+    sim, uc_after, hb_after = bedrooms(after)
+    counted, liable = claim_roles(sim)
+    # Flagging the couple changes neither who counts the non-dependants nor
+    # who is liable for the rent.
+    counted_before, liable_before = claim_roles(sim_before)
+    assert np.array_equal(counted, counted_before)
+    assert np.array_equal(liable, liable_before)
+    # 12. Flagging one or both members of a couple from another family, with
+    # a qualifying benefit, gives the couple's own claim one more bedroom
+    # under each scheme (UC para 12(6A), (9)(d); HB reg 13D(3)(za)-(zb)),
+    # and each family liable for the rent one more HB bedroom if the couple
+    # are occupiers it counts (a non-dependant's, boarder's or lodger's
+    # family, 13D(12)), but no more UC bedroom (the disabled person
+    # condition is the renter's own). No other family changes. The
+    # dwelling's bedrooms are unreported.
+    role = population[h][f]["role"]
+    expected_uc = np.zeros(len(keys))
+    expected_hb = np.zeros(len(keys))
+    own = keys.index((h, f))
+    expected_uc[own] = expected_hb[own] = 1
+    if role in OCCUPIER_ROLES:
+        same_household = np.array([k[0] == h for k in keys])
+        expected_hb[same_household & liable] += 1
+    assert np.array_equal(uc_after - uc_before, expected_uc)
+    assert np.array_equal(hb_after - hb_before, expected_hb)

@@ -22,7 +22,12 @@ def child_bedrooms(boys_under_10, boys_10_to_15, girls_under_10, girls_10_to_15)
 
 
 def bedrooms_for_children(
-    benunit, period, own_child=None, other_child=None, counts_other_children=None
+    benunit,
+    period,
+    own_child=None,
+    other_child=None,
+    counts_other_children=None,
+    cannot_share=None,
 ):
     """Bedrooms for the children under 16 in the family's size criteria.
 
@@ -33,6 +38,11 @@ def bedrooms_for_children(
     family's own children. ``counts_other_children`` marks the families that
     count them (by default, every family). The children are allotted to the
     fewest bedrooms with child_bedrooms.
+
+    ``cannot_share`` marks children who have a bedroom of their own because
+    of disability. Each counted child so marked has their own room and the
+    other children are paired as usual: the fewest rooms in which no marked
+    child shares.
     """
     person = benunit.members
     age = person("age", period)
@@ -42,6 +52,8 @@ def bedrooms_for_children(
     if own_child is None:
         own_child = under_16
     own_child = own_child & under_16
+    if cannot_share is None:
+        cannot_share = np.zeros_like(under_16)
 
     def count(group):
         own = benunit.sum(own_child & group)
@@ -52,11 +64,12 @@ def bedrooms_for_children(
             return own + others
         return own + where(counts_other_children, others, 0)
 
-    return child_bedrooms(
-        count(under_10 & male),
-        count(~under_10 & under_16 & male),
-        count(under_10 & ~male),
-        count(~under_10 & under_16 & ~male),
+    sharing = ~cannot_share
+    return count(cannot_share) + child_bedrooms(
+        count(sharing & under_10 & male),
+        count(sharing & ~under_10 & under_16 & male),
+        count(sharing & under_10 & ~male),
+        count(sharing & ~under_10 & under_16 & ~male),
     )
 
 
@@ -114,6 +127,27 @@ def other_family_non_dependants(benunit, period):
     return (other_family & ~no_one_responsible) | passed_on
 
 
+def universal_credit_child_bedrooms(benunit, period, cannot_share=None):
+    """The children's bedrooms in the Universal Credit size criteria (UC Regs
+    2013 Sch 4 para 10(1)(d)-(f) and (2)): the children the renter is
+    responsible for (regs 4 and 4A) and, in the claim that counts the
+    household's non-dependants (uc_non_dependants_counted), the
+    non-dependants' children (see other_family_non_dependants), allotted to
+    the fewest bedrooms. ``cannot_share`` marks children who have a bedroom of
+    their own (see bedrooms_for_children)."""
+    person = benunit.members
+    return bedrooms_for_children(
+        benunit,
+        period,
+        own_child=person(
+            "is_child_or_qualifying_young_person_for_universal_credit", period
+        ),
+        other_child=other_family_non_dependants(benunit, period),
+        counts_other_children=benunit("uc_non_dependants_counted", period),
+        cannot_share=cannot_share,
+    )
+
+
 class LHA_allowed_bedrooms(Variable):
     value_type = float
     entity = BenUnit
@@ -130,7 +164,9 @@ class LHA_allowed_bedrooms(Variable):
         "family that makes no Universal Credit claim of its own (in the claim "
         "that counts the household's non-dependants, which also bears their "
         "contribution), the children's bedrooms, and the additional bedrooms "
-        "for overnight care and foster parents (see LHA_additional_bedrooms). "
+        "for overnight care, foster parents, and children and couples who "
+        "cannot share a bedroom because of disability (see "
+        "LHA_additional_bedrooms). "
         "The formula treats the household head as liable for the rent, so a "
         "head who does not claim is not a non-dependant (para 9(2)(d)); a "
         "head who is a qualifying young person the renter is responsible for "
@@ -230,13 +266,7 @@ class LHA_allowed_bedrooms(Variable):
         # renter's own and their non-dependants', allotted to the fewest
         # bedrooms (para 10(2)). A foster child under 16 is in no one's
         # extended benefit unit (paras 9(1)(b), 9(2)(c) and (g); reg 4(6)(a)).
-        children = bedrooms_for_children(
-            benunit,
-            period,
-            own_child=responsible,
-            other_child=non_dependant,
-            counts_other_children=counted,
-        )
+        children = universal_credit_child_bedrooms(benunit, period)
         # Para 10(3)(b) and para 12: additional bedrooms.
         additional = benunit("LHA_additional_bedrooms", period)
         return 1 + family_rooms + non_dependants + children + additional

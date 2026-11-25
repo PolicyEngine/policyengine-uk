@@ -1,0 +1,10 @@
+description: Whether a child who cannot share a bedroom because of disability has a bedroom of their own in the LHA size criteria.
+values:
+  2011-04-01: false
+  2013-12-04: true
+metadata:
+  unit: bool
+  label: LHA bedroom for a child who cannot share in effect
+  reference:
+    - title: Housing Benefit and Universal Credit (Size Criteria) (Miscellaneous Amendments) Regulations 2013 (SI 2013/2828) regs 2(4), 3(3) and 4(3)
+      href: https://www.legislation.gov.uk/uksi/2013/2828/made
