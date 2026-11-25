@@ -25,7 +25,8 @@ class adjusted_total_income(Variable):
         "None is relieved from "
         "age 75 (s.188(3)(a)). The annual allowance limits tax-relieved "
         "saving through a charge, not the relief itself, so it is not applied "
-        "here. Step 2 adds back payroll giving, which the model does not have."
+        "here. Step 2 adds back qualifying Payroll Giving donations, already "
+        "deducted in calculating taxable employment income."
     )
     definition_period = YEAR
     unit = GBP
@@ -66,4 +67,9 @@ class adjusted_total_income(Variable):
         not_yet_deducted = relieved_contributions - person(
             "net_pay_pension_relief", period
         )
-        return max_(0, total_income - not_yet_deducted)
+        # Step 2 restores the allowed Part 12 deduction, including where
+        # net taxable employment income is nil (ITEPA ss. 11(2), 329(3)).
+        return max_(
+            0,
+            total_income + person("payroll_giving", period) - not_yet_deducted,
+        )

@@ -106,7 +106,8 @@ def annual_allowance_net_income(person, period, parameters):
     )
     # Rebuild adjusted_total_income (s.24A(8)) from actual pay and member
     # contributions, retaining its treatment of brought-forward trade losses
-    # and pension relief. Brought-forward losses only reduce trading profits.
+    # and pension relief. Step 2 adds back the allowed Payroll Giving
+    # deduction. Brought-forward losses only reduce trading profits.
     losses_brought_forward_deducted = trading_profits_before_losses(
         person, period, hmrc
     ) - person("taxable_self_employment_income", period)
@@ -119,7 +120,10 @@ def annual_allowance_net_income(person, period, parameters):
     )
     adjusted_total = np.maximum(
         0,
-        income_before_loss + losses_brought_forward_deducted - relieved_contributions,
+        income_before_loss
+        + losses_brought_forward_deducted
+        + person("payroll_giving", period)
+        - relieved_contributions,
     )
     cap = hmrc.income_tax.reliefs.cap
     loss_cap = np.maximum(cap.amount, cap.rate * adjusted_total)

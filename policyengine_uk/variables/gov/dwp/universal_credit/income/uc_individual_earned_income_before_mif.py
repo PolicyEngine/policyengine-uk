@@ -10,7 +10,8 @@ class uc_individual_earned_income_before_mif(Variable):
     documentation = (
         "The person's actual earned income for Universal Credit: their "
         "earnings, including statutory sick, maternity and paternity pay, "
-        "less allowable employment expenses, their own relievable pension contributions and their own "
+        "less allowable employment expenses and Payroll Giving donations, "
+        "their own relievable pension contributions and their own "
         "income tax and National Insurance in respect of their employment "
         "and self-employment. Concurrent trade results include company "
         "income treated as self-employed earnings under regulation 77; "
@@ -28,7 +29,10 @@ class uc_individual_earned_income_before_mif(Variable):
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
         ),
         dict(
-            title="Universal Credit Regulations (Northern Ireland) 2016 reg. 55(3)(a)",
+            title=(
+                "Universal Credit Regulations (Northern Ireland) 2016 "
+                "reg. 55(3)(a), (6)(c)"
+            ),
             href="https://www.legislation.gov.uk/nisr/2016/216/regulation/55",
         ),
         dict(
@@ -101,9 +105,11 @@ class uc_individual_earned_income_before_mif(Variable):
         # Reg. 55(3)(a) disregards expenses allowed under Chapter 2 of
         # Part 5 ITEPA. This input is the already-allowable amount, after
         # relevant-employment limits, not a claim for arbitrary raw costs.
+        # Reg. 55(5)(c) also deducts qualifying Payroll Giving donations.
         employed = (
             add(person, period, earnings_components)
             - person("employment_expenses", period)
+            - person("payroll_giving", period)
             - employment_tax_and_national_insurance
         )
         # Contributions paid after the person reaches 75 are not relievable

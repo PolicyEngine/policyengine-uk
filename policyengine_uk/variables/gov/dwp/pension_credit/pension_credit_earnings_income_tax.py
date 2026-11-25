@@ -25,7 +25,17 @@ def income_tax_with_inputs_zeroed(simulation, period, variables):
 
 def person_variable_with_inputs_zeroed(simulation, period, variables, output):
     """Each person's ``output`` with every person's value of each of
-    ``variables`` set to nil, on a branch that is dropped afterwards."""
+    ``variables`` set to nil, on a branch that is dropped afterwards.
+
+    Removing all employment sources also removes their Payroll Giving
+    deduction. Other zeroed inputs leave that deduction in place.
+    """
+    if "employment_income" in variables and "payroll_giving" not in variables:
+        employment_sources = employed_earnings_sources(
+            simulation.tax_benefit_system.parameters, period
+        )
+        if all(source in variables for source in employment_sources):
+            variables = [*variables, "payroll_giving"]
     name = "pension_credit_without_" + "_and_".join(variables)
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"

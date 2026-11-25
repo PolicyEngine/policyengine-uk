@@ -1,0 +1,67 @@
+# Exact Boolean consumer tests have no absolute_error_margin.
+# These assert income conditions, not childcare awards. Primary references:
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/6
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/10
+# https://www.legislation.gov.uk/ukpga/2007/3/section/58
+
+- name: Case 1, payroll giving leaves net earnings exactly at the UC cap exception threshold.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 10_000
+        payroll_giving: 484
+    benunits:
+      family:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    uc_benefit_cap_earnings_exception_threshold: 9_516
+    uc_individual_earned_income_before_mif: 9_516
+    is_uc_benefit_cap_exempt_earnings: true
+
+- name: Case 2, one further pound of payroll giving loses the UC earnings exception.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 10_000
+        payroll_giving: 485
+    benunits:
+      family:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    uc_individual_earned_income_before_mif: 9_515
+    is_uc_benefit_cap_exempt_earnings: false
+
+- name: Case 3, payroll giving lowers ANI without reducing Tax-Free Childcare gross work income.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 110_000
+        payroll_giving: 20_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    tax_free_childcare_meets_income_requirements: true
