@@ -13,6 +13,10 @@ the child's parent, or the person themselves:
   ESA: HB Regs 2006 Sch 4 para 12, Sch 5 para 4 and Sch 6 para 5.
 - The working-age council tax reduction passport and non-dependant
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
+- The higher personal allowance for a single applicant under 25 entitled to
+  main phase employment and support allowance, in Scotland's and Wales's
+  working-age council tax reduction schemes: SSI 2021/249 Sch 1 para 1; WSI
+  2013/3029 Sch 7 para 1.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
 - The benefit cap exemption: HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg
@@ -29,6 +33,15 @@ the child's parent, or the person themselves:
   11A(1)(e), 14(4)(b) and 15(4).
 - The higher Pension Credit earnings disregard for a claimant or partner on
   employment and support allowance: SPC Regs 2002 Sch VI para 4(1)(a)(vii).
+- The Childcare Offer for Wales gross income limit for each parent: Welsh
+  Government guidance for local authorities, version 8.3 (April 2026),
+  paragraphs 57 and 69.
+- The non-dependant exemptions, and the rule that a non-dependant on Income
+  Support, income-based JSA or income-related ESA is not in remunerative
+  work, for the person the award is payable to: HB Regs 2006 regs 2(1), (3)
+  and (3A), 6(6) and 74(8); SI 2006/214 regs 6(6) and 55(8); SI 2012/2885
+  Sch 1 para 8(8); SSI 2012/319 reg 48; SSI 2021/249 reg 90; WSI 2013/3029
+  Sch 1 para 3 and Sch 6 para 5.
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -38,7 +51,7 @@ adult) claims in their own right, so:
   member reports never changes any of these readers for the claimant's family
   or for its existing members;
 - adding such a member changes a reader only by ending the family's severe
-  disability premium, or, for the two Council Tax Reduction readers, by
+  disability premium, or, for the three Council Tax Reduction readers, by
   becoming the household head (these families flag none, so the eldest
   member is the head) who is liable and applies alone, so that the applicant
   changes (CTR_APPLICANT_READERS). A non-dependant aged 18 or over ends the
@@ -129,6 +142,7 @@ FAMILY_READERS = [
     "housing_benefit_pension_age_regulations_apply",
     "has_mixed_age_couple_pension_credit_saving",
     "pension_credit_earnings_disregard",
+    "council_tax_reduction_working_age_personal_allowance",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -137,6 +151,10 @@ MEMBER_READERS = [
     "is_on_income_based_jsa",
     "is_on_income_support",
     "extended_childcare_entitlement_limited_capability_or_specified_benefit",
+    "wales_childcare_offer_parent_condition",
+    "housing_benefit_non_dep_deduction_exempt",
+    "council_tax_reduction_non_dep_deduction_exempt",
+    "household_benefits_individual_non_dep_deduction",
 ]
 # Readers built from the members' own ESA and JSA reports, their work and the
 # household's capital alone, which the severe disability premium cannot reach.
@@ -264,13 +282,14 @@ def other_members(draw):
 # added member older than the claimant and partner becomes the liable head,
 # who then applies alone (council_tax_reduction_head_applies_alone). Their
 # presence then changes the applicant, which is intended, so those families
-# are left out of the comparison with the family on its own for these two
+# are left out of the comparison with the family on its own for these
 # readers. What the added member reports still never changes them: the first
 # property compares a silent added member with the member as drawn for every
 # family.
 CTR_APPLICANT_READERS = [
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
+    "council_tax_reduction_working_age_personal_allowance",
 ]
 
 
@@ -500,14 +519,16 @@ def test_adult_non_dependant_ends_the_severe_disability_premium():
 # --- Further family shapes (begin) ---
 # Some readers only bite for a claimant over state pension age (the Housing
 # Benefit regulations that apply, the mixed-age couple saving), for a single
-# applicant under 25, or for parents of a young child of whom only one works
-# (the extended childcare partner condition). The families above rarely take
-# those shapes, so three more properties check every family and member reader
-# on them. The claimant and partner seldom report an award themselves, and on
-# the savings drawn below the £16,000 capital limit the added member's award
-# survives tariff income, so a reader that wrongly counts it changes (£20,000
-# of savings screens income-related ESA and income-based JSA to nil). The
-# shapes pay no rent, so Universal Credit stays far below the benefit cap.
+# applicant under 25, for parents of a young child of whom only one works
+# (the extended childcare partner condition), or for a parent in Wales with
+# gross income just under £100,000 (the Childcare Offer for Wales income
+# limit). The families above rarely take those shapes, so four more
+# properties check every family and member reader on them. The claimant and
+# partner seldom report an award themselves, and on the savings drawn below
+# the £16,000 capital limit the added member's award survives tariff income,
+# so a reader that wrongly counts it changes (£20,000 of savings screens
+# income-related ESA and income-based JSA to nil). The shapes pay no rent, so
+# Universal Credit stays far below the benefit cap.
 # The cap reads only the couple's own awards and the family's
 # (benefit_cap_reduction), not another member's; the first property checks
 # that on JSA_COUPLE_WITH_LODGER, a family that an added member's £3,000 of
@@ -625,6 +646,43 @@ def working_parent_families(draw):
     return [working, not_working], [{"age": draw(st.integers(1, 4))}], household
 
 
+@st.composite
+def high_earning_welsh_parent_families(draw):
+    """Parents of a child aged three or four in Wales, one of whom works and
+    has gross income just under the Childcare Offer for Wales limit of
+    £100,000 (guidance paras 57 and 69). The limit counts the benefit unit's
+    benefits, shared equally between the claimant and any partner, so an
+    added member's own award of £3,000 or more would take that parent over it
+    if it counted: the wages leave room for one child's Child Benefit
+    (£1,354.60 in 2025-26, half each in a couple) but not for the award, even
+    after tariff income on £7,000 of savings (£208)."""
+    couple = draw(st.booleans())
+    earner = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "employment_income": 99_000 if couple else 98_000,
+        **draw(couple_award_reports()),
+    }
+    adults = [earner]
+    if couple:
+        adults.append(
+            {
+                "age": draw(st.integers(25, 45)),
+                "is_parent": True,
+                "employment_income": draw(st.sampled_from([0, 20_000])),
+                "current_education": draw(
+                    st.sampled_from(["NOT_IN_EDUCATION", "TERTIARY"])
+                ),
+                **draw(couple_award_reports()),
+            }
+        )
+    household = {
+        "country": "WALES",
+        "savings": draw(st.sampled_from([0, 7_000])),
+    }
+    return adults, [{"age": draw(st.integers(3, 4))}], household
+
+
 def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
     without = [(*family, None) for family, _ in drawn]
     with_other = [(*family, other) for family, other in drawn]
@@ -737,6 +795,20 @@ def test_sixteen_year_old_own_award_leaves_young_single_readers_unchanged(report
     )
 )
 def test_other_members_awards_never_change_the_readers_for_working_parents(drawn):
+    _family_readers_never_change(drawn)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(high_earning_welsh_parent_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_for_welsh_high_earners(
+    drawn,
+):
     _family_readers_never_change(drawn)
 
 
@@ -1039,6 +1111,145 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
         without, with_other = layouts[i], layouts[len(drawn) + i]
         for a, b in zip(without, with_other):
             assert np.isclose(deduction[a], deduction[b]), drawn[i]
+
+
+# Readers of the non-dependant rules in Housing Benefit and England's
+# pensioner council tax reduction scheme. The property runs in 2025, when
+# Income Support, income-based JSA and income-related ESA are all in payment.
+NON_DEPENDANT_READERS = [
+    "housing_benefit_non_dep_deduction_exempt",
+    "council_tax_reduction_non_dep_deduction_exempt",
+    "council_tax_reduction_individual_non_dep_deduction",
+    "household_benefits_individual_non_dep_deduction",
+]
+
+
+@st.composite
+def non_dependant_units(draw):
+    """A non-dependant benefit unit of one or two claimants aged 22 or 30,
+    each working 35 hours a week on £13,000 or not working, and sometimes
+    reporting £200 or £3,000 of one award; sometimes an adult aged 45 outside
+    their couple who is already a member, with a report of their own; and
+    household savings of nil or £10,000."""
+    claimants = []
+    for _ in range(draw(st.integers(1, 2))):
+        works = draw(st.booleans())
+        claimants.append(
+            {
+                "age": draw(st.sampled_from([22, 30])),
+                "employment_income": 13_000 if works else 0,
+                "hours_worked": 1_820 if works else 0,
+                **NO_AWARDS,
+                draw(st.sampled_from(AWARD_REPORTS)): draw(
+                    st.sampled_from([0, 0, 200, 3_000])
+                ),
+            }
+        )
+    existing = None
+    if draw(st.booleans()):
+        existing = {
+            "age": 45,
+            **NO_AWARDS,
+            draw(st.sampled_from(AWARD_REPORTS)): draw(
+                st.sampled_from([0, 200, 3_000])
+            ),
+        }
+    return claimants, existing, draw(st.sampled_from([0, 10_000]))
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(non_dependant_units(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_non_dependant_readers(drawn):
+    """Adding an adult outside the non-dependant couple, with an award of
+    their own, never changes a non-dependant reader for an existing member.
+
+    Each household in Maidstone has an applicant aged 70, the household head,
+    so England's pensioner scheme applies, and a non-dependant benefit unit
+    (non_dependant_units), with or without the added adult. Savings of £10,000
+    give tariff income of £832 a year, more than a £200 report of
+    income-related ESA or income-based JSA on its own. The claimant's and
+    partner's reports make one award (£3,200 of reports leave £2,368), so a
+    couple whose only report is £200 has no award, and nor does the adult aged
+    45 with a £200 report of their own. Whether anyone is on an award never
+    turns on the added adult's award (HB Regs 2006 reg 2(3), (3A)). A couple in
+    remunerative work is banded on its own gross income, which leaves out the
+    added adult's award (HB Regs 2006 reg 74(4); SI 2006/214 reg 55(4); SI
+    2012/2885 Sch 1 para 8(4)). The benefit unit claims no Universal Credit,
+    tax credits or Child Benefit, so the legacy awards and pay alone decide
+    each case.
+    """
+    people, benunits, households = {}, {}, {}
+    layouts = []
+    for other_present in [False, True]:
+        for i, ((claimants, existing, savings), other) in enumerate(drawn):
+            tag = f"{int(other_present)}_{i}"
+            applicant = f"applicant_{tag}"
+            people[applicant] = {"age": 70, "is_claimant_or_partner": True}
+            members = [(c, True) for c in claimants]
+            if existing is not None:
+                members.append((existing, False))
+            if other_present:
+                members.append((other, False))
+            unit = []
+            for j, (inputs, claimant_or_partner) in enumerate(members):
+                name = f"nondep_{tag}_{j}"
+                people[name] = {
+                    "current_education": "NOT_IN_EDUCATION",
+                    **inputs,
+                    "is_claimant_or_partner": claimant_or_partner,
+                }
+                unit.append(name)
+            benunits[f"applicant_unit_{tag}"] = {
+                "members": [applicant],
+                "claims_all_entitled_benefits": False,
+            }
+            benunits[f"nondep_unit_{tag}"] = {
+                "members": unit,
+                "claims_all_entitled_benefits": False,
+                "would_claim_uc": False,
+                "universal_credit": 0,
+                "child_benefit": 0,
+                "child_tax_credit": 0,
+                "working_tax_credit": 0,
+            }
+            households[f"h_{tag}"] = {
+                "members": [applicant] + unit,
+                "country": "ENGLAND",
+                "local_authority": "MAIDSTONE",
+                "council_tax": 2_000,
+                "savings": savings,
+            }
+            layouts.append([applicant] + unit)
+
+    def timed(entities):
+        return {
+            name: {k: (v if k == "members" else {YEAR: v}) for k, v in inputs.items()}
+            for name, inputs in entities.items()
+        }
+
+    sim = Simulation(
+        situation={
+            "people": timed(people),
+            "benunits": timed(benunits),
+            "households": timed(households),
+        }
+    )
+    k = len(drawn)
+    for variable in NON_DEPENDANT_READERS:
+        values = dict(zip(people, sim.calculate(variable, YEAR)))
+        for i in range(k):
+            without, with_other = layouts[i], layouts[k + i]
+            for a, b in zip(without, with_other):
+                assert np.isclose(values[a], values[b], atol=0.01), (
+                    variable,
+                    drawn[i],
+                )
 
 
 def _difference(variable, base_people, award_people, benunit_inputs=None):

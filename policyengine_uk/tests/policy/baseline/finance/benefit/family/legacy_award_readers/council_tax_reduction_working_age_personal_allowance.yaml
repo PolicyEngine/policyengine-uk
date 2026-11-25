@@ -1,0 +1,139 @@
+# Scotland and Wales working-age council tax reduction: a single applicant
+# under 25 gets the lower personal allowance unless entitled to main phase
+# employment and support allowance (SSI 2021/249 Sch 1 para 1; WSI 2013/3029
+# Sch 7 para 1). The model takes receipt of ESA by the applicant or partner as
+# the main phase: contributory ESA on their own records, and income-related
+# ESA through claimant_or_partner_esa_income where the benefit unit's awards
+# are the applicant's. "other" is a member who is neither the applicant, the
+# partner nor a child or young person they are responsible for, so their
+# income-related ESA is their own claim and leaves the applicant on the lower
+# rate. The applicant is the household head, whom the model takes to be
+# liable, so the applicant applies with the benefit unit's awards
+# (council_tax_reduction_head_applies_alone is false). The cases run in 2025,
+# when income-related ESA is paid for the whole year. Weekly rates for 2025-26
+# (x 52): Scotland £72.90 under 25 and £92.05 at 25 or over (SSI 2025/24 reg
+# 16(a)); Wales £77.65 and £98.10 (W.S.I. 2025/59 reg 9(a)(i)).
+
+- name: Scotland, another member's income-related ESA leaves an applicant under 25 on the lower personal allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        is_household_head: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        is_household_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: SCOTLAND
+        country: SCOTLAND
+  output:
+    council_tax_reduction_head_applies_alone: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    # 72.90 * 52
+    council_tax_reduction_working_age_personal_allowance: 3_790.80
+
+- name: Scotland, the applicant's own income-related ESA gives the higher personal allowance under 25
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        is_household_head: true
+        esa_income_reported: 5_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        is_household_head: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: SCOTLAND
+        country: SCOTLAND
+  output:
+    council_tax_reduction_head_applies_alone: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    # 92.05 * 52
+    council_tax_reduction_working_age_personal_allowance: 4_786.60
+
+- name: Wales, another member's income-related ESA leaves an applicant under 25 on the lower personal allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        is_household_head: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        is_household_head: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: WALES
+        country: WALES
+  output:
+    council_tax_reduction_head_applies_alone: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    # 77.65 * 52
+    council_tax_reduction_working_age_personal_allowance: 4_037.80
+
+- name: Wales, the applicant's own income-related ESA gives the higher personal allowance under 25
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        is_household_head: true
+        esa_income_reported: 5_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        is_household_head: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: WALES
+        country: WALES
+  output:
+    council_tax_reduction_head_applies_alone: false
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 5_000
+    # 98.10 * 52
+    council_tax_reduction_working_age_personal_allowance: 5_101.20
