@@ -1,10 +1,15 @@
-description: Starter Rate for Savings phase-out rate.
+description: Savings starting-rate withdrawal per pound of taxable non-savings income.
 values:
   2014-04-06: 1
 metadata:
-  unit: currency_GBP
+  unit: /1
+  period: year
   label: Savings starter rate phase-out rate
-  description: Rate, above the max Personal Allowance, at which Starter Rate for Savings total amount phases out, for each additional pound of non-savings income
+  description: >-
+    Under custom phase-out reforms, the savings nil-rate slice starts above
+    both the reformed starting-rate limit and the actual starting-rate slice.
+    This stacking preserves the full savings allowance and is a model
+    convention for hypothetical reforms; current law has no phase-out knob.
   reference: 
   - title: Tax on savings interest
     href: https://www.gov.uk/apply-tax-free-interest-on-savings

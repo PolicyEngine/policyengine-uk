@@ -207,7 +207,8 @@
   absolute_error_margin: 0.01
   input:
     # Synthetic parameter control, not a statement of current law:
-    # £4,000 band less50% of£1,430 leaves£3,285; tax£343+£286=£629.
+    # Starter [1,430,4,715), then the full PSA in [4,715,5,715).
+    # £6,000-£3,285-£1,000=£1,715 taxable: £343+£286 wage tax=£629.
     gov.hmrc.income_tax.rates.savings_starter_rate.allowance: 4_000
     gov.hmrc.income_tax.rates.savings_starter_rate.phase_out: 0.5
     age: 55
@@ -218,3 +219,4 @@
     savings_income_tax: 343
     income_tax: 629
     savings_starter_rate_income: 3_285
+    savings_allowance: 1_000
