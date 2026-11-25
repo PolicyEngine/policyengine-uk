@@ -1,12 +1,17 @@
 description: Savings allowance in the higher threshold.
 values:
-  2005-04-01:
+  "0000-01-01":
+    value: 0
+    reference:
+      - title: Finance Act 2016 s. 4(17) (savings nil rate from 2016-17)
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/4/enacted
+  2016-04-06:
     value: 500
     reference:
       - title: Finance Act 2016 s. 4
         href: https://www.legislation.gov.uk/ukpga/2016/24/section/4
 metadata:
-  period: week
+  period: year
   unit: currency-GBP
   label: Personal savings allowance (higher rate)
   reference: https://www.gov.uk/apply-tax-free-interest-on-savings

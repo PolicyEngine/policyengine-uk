@@ -48,7 +48,18 @@ brackets:
         title: Income Tax Act 2007 s. 21 (indexation)
       unit: currency-GBP
     values:
-      2015-04-05: 32000
+      2015-04-06:
+        value: 31_785
+        metadata:
+          reference:
+            - title: Finance Act 2014 s. 2(1)(a)
+              href: https://www.legislation.gov.uk/ukpga/2014/26/section/2/enacted
+      2016-04-06:
+        value: 32_000
+        metadata:
+          reference:
+            - title: Finance Act 2015 s. 4(1)(a), as amended by Finance (No. 2) Act 2015 s. 6(a)
+              href: https://www.legislation.gov.uk/ukpga/2015/33/section/6/enacted
       2017-04-01: 33500
       2018-04-01: 34500
       2019-04-01: 37500
