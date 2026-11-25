@@ -30,7 +30,8 @@ values:
   # member of the benefit unit with an award of their own is not the parent or
   # partner, so their award does not count.
   2022-12-01:
-    - uc_limited_capability_for_WRA  # 14(4)(b)(i)-(ii): limited capability for work, or for work and work-related activity
+    # 14(4)(b)(i)-(ii): LCW includes LCWRA; require supplied current status.
+    - extended_childcare_entitlement_limited_capability_for_work
     - is_entitled_to_carer_benefit  # 11A(1)(a)-(b): carer's allowance, or carer's assistance under the Social Security (Scotland) Act 2018 s.28
     - receives_uc_carer_element  # 11A(1)(c): the carer element under UC Regs reg 29, on an award (reg 14(5)(a) as made: "an award of universal credit [...] that includes the carer element")
     - receives_limited_capability_for_work_credits  # 11A(1)(d): credits for incapacity for work or limited capability for work

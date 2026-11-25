@@ -1,0 +1,885 @@
+# SI 2022/1134 regs 14(4)(b)(i)-(ii) and 15(4)(a)-(b) separately admit
+# LCW and LCWRA. The LCW-only parent can occupy either adult position.
+# Modern role cases use 2025, after SI 2023/276's 30 March 2023 amendment.
+# https://www.legislation.gov.uk/uksi/2022/1134/regulation/14
+# https://www.legislation.gov.uk/uksi/2022/1134/regulation/15
+# The earner receives 20,000 / 4 = 5,000 per quarter, above the reg 18
+# minimum of 10 x 16 x 13 = 2,080, with ANI below 100,000.
+# Other listed benefits/credits are absent. Booleans have no error margin.
+# Calendar2022 samples30April2022: SI2016/1257reg9(1)(b)(viii)'s LCWRA list.
+# Calendar2023 samples30April2023, after both 1December2022 and30March2023.
+# These annual controls do not assert a monthly/December entitlement.
+# https://www.legislation.gov.uk/uksi/2016/1257/regulation/9/made
+
+- name: Case 1, LCW-only first parent qualifies with a working partner in 2025.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - true
+    - false
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+- name: Case 2, LCW-only second parent qualifies with a working partner in 2025.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+- name: Case 3, an ended ESA award with supplied current LCW qualifies in 2025.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+        is_disabled_for_benefits: true
+        esa_income_reported: 3000
+        esa_income_report_closed: true
+        esa_includes_support_component: false
+        uc_limited_capability_for_work: true
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+    has_own_esa_award:
+    - false
+    - true
+    - false
+    uc_limited_capability_for_work:
+    - false
+    - true
+    - false
+    uc_limited_capability_for_WRA:
+    - false
+    - false
+    - false
+    claimant_or_partner_esa_income:
+    - 0
+    - 0
+    - 0
+    esa_income: 0
+- name: Case 4, LCWRA remains sufficient with a working partner in 2025.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: true
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+- name: Case 5, neither capability flag nor a specified benefit qualifies the nonworker.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+- name: Case 6, LCW alone cannot replace a partner meeting the income conditions.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 120000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - true
+    - false
+    - false
+    extended_childcare_entitlement_work_condition:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+- name: Case 7, a lone LCW-only parent cannot use the working-partner exception.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - true
+    - false
+    extended_childcare_entitlement_work_condition:
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+- name: Case 8, calendar 2022 retains the historical LCWRA-only capability criterion.
+  period: 2022
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+- name: Case 9, calendar 2022 retains eligibility through LCWRA and a working partner.
+  period: 2022
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: true
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+- name: Case 10, model year 2023 uses the post-commencement LCW criterion.
+  period: 2023
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: true
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 20000
+        adjusted_net_income: 20000
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3:
+        age: 4
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+        - person3
+        would_claim_extended_childcare: true
+    households:
+      household:
+        members:
+        - person1
+        - person2
+        - person3
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - true
+    - false
+    - false
+    extended_childcare_entitlement_work_condition:
+    - true
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+
+# SI 2022/1134 reg 4 adopts UC regs 39/40: determined or treated-as status.
+# PIP/DLA receipt and ended ESA reports do not supply that current-status fact.
+# Missing status uses the childcare input default below; it is legally unknown.
+# Both capability inputs must be absent from ALL people in missing-status cases:
+# Core otherwise fills omitted people with false in a supplied full-person array.
+- name: Case 11, PIP and a disability proxy do not supply current capability status.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_disabled_for_benefits: true
+        pip: 1_000
+        dla: 0
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+
+- name: Case 12, DLA and a disability proxy do not supply current capability status.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_disabled_for_benefits: true
+        pip: 0
+        dla: 1_000
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+
+- name: Case 13, an ended ESA report does not supply current capability status.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_disabled_for_benefits: true
+        esa_income_reported: 3_000
+        esa_income_report_closed: true
+        esa_includes_support_component: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_eligible: false
+
+- name: Case 14, explicit false capability status is not replaced by a disability proxy.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_disabled_for_benefits: true
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: false
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# Regs 14(4)(b)(ii) and 15(4)(b) admit LCWRA independently of the LCW input.
+- name: Case 15, supplied current LCWRA qualifies even when LCW is supplied false.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        uc_limited_capability_for_work: false
+        uc_limited_capability_for_WRA: true
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
+
+# Reg 11A(1)(e) admits current ESA through its separate specified-benefit route.
+- name: Case 16, current contributory ESA qualifies without supplied capability status.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 0
+        incapacity_benefit: 0
+        sda: 0
+      person2:
+        age: 38
+        is_parent: true
+        employment_income: 0
+        adjusted_net_income: 0
+        minimum_wage: 10
+        is_entitled_to_carer_benefit: false
+        receives_uc_carer_element: false
+        receives_limited_capability_for_work_credits: false
+        esa_contrib: 3_000
+        incapacity_benefit: 0
+        sda: 0
+      person3: {age: 4}
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_extended_childcare: true
+        claimant_or_partner_esa_income: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    extended_childcare_entitlement_limited_capability_for_work:
+    - false
+    - false
+    - false
+    extended_childcare_entitlement_limited_capability_or_specified_benefit:
+    - false
+    - true
+    - false
+    extended_childcare_entitlement_eligible: true
