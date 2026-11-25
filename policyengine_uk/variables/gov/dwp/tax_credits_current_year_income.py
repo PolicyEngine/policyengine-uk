@@ -58,15 +58,17 @@ class tax_credits_current_year_income(Variable):
         "The claimant's, or joint claimants', income for the tax year "
         "(TCA 2002 s.7(4); SI 2002/2006 reg 3), before TCA 2002 s.7(2) lifts "
         "the income test for a claimant on a prescribed benefit. The model "
-        "takes it as the relevant income (s.7(3)). The income test reads "
-        "tax_credits_applicable_income, which is nil while the test is "
-        "lifted; the targeted childcare criteria read this gross figure."
+        "takes it as the relevant income (s.7(3)). Employment income is net "
+        "of qualifying Payroll Giving donations (reg. 4(5)). The income test "
+        "reads tax_credits_applicable_income, which is nil while the test is "
+        "lifted; the targeted childcare criteria read this current-year income."
     )
     definition_period = YEAR
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/21/section/7",
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2002/2006/regulation/4",
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/5",
         "https://www.legislation.gov.uk/uksi/2002/2006/regulation/7",
         "https://www.legislation.gov.uk/ukpga/2003/1/section/577",
@@ -98,7 +100,10 @@ class tax_credits_current_year_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
-        income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
+        # Reg. 4(5) allows the ITEPA s. 713 deduction from employment income.
+        income += add_for_members(
+            benunit, period, STEP_2_COMPONENTS, members
+        ) - add_for_members(benunit, period, ["payroll_giving"], members)
         # SI 2002/2006 reg 3(1) Step Four: only the claimants' losses
         # reduce their joint income; a child's loss is not theirs.
         claimants = person("is_claimant_or_partner", period)

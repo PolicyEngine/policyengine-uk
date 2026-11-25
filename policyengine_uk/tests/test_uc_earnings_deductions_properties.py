@@ -2,8 +2,10 @@
 
 UC Regs 2013 reg. 55(5) and reg. 57(2) deduct from a person's earnings their
 own relievable pension contributions, the income tax and National Insurance
-they pay in respect of their employment or trade, and payroll giving (reg.
-55(5)(c), which the model does not have). The model takes
+they pay in respect of their employment or trade, and qualifying payroll
+giving withheld under an approved scheme (reg. 55(5)(c)). The generated
+populations below leave payroll giving at zero; focused policy YAML tests
+cover nonzero donations. The model takes
 earnings as the lowest slice of the person's non-savings income, after their
 allowances, with other income above it (ITA 2007 s. 16 for savings and
 dividends).

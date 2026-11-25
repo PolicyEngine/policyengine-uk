@@ -1,0 +1,367 @@
+# Frozen independent legal oracles for employment-only, actual qualifying
+# payroll donations withheld by a PAYE payer (UC reg 55(5)(c); ITEPA s713).
+# Amounts use the inherited annual UK fiscal-year representation. They do not
+# certify a monthly RTI/PAYE payroll schedule. Primary references:
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/55
+# https://www.legislation.gov.uk/ukpga/2003/1/section/713
+# https://www.legislation.gov.uk/ukpga/2007/3/section/24A
+# https://www.gov.uk/payroll-giving
+# https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+
+- name: Case 1, zero payroll giving retains taxed earnings and positive Universal Credit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 20_000
+        payroll_giving: 0
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    taxable_employment_income: 20_000
+    income_tax: 1_486
+    ni_class_1_employee: 594.40
+    adjusted_net_income: 20_000
+    adjusted_total_income: 20_000
+    uc_individual_earned_income_before_mif: 17_919.60
+    uc_earned_income: 17_919.60
+    universal_credit_pre_benefit_cap: 865.62
+    universal_credit: 865.62
+
+- name: Case 2, actual payroll giving lowers tax and UC earnings while preserving gross earnings consumers.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 20_000
+        payroll_giving: 1_200
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    taxable_employment_income: 18_800
+    income_tax: 1_246
+    ni_class_1_employee: 594.40
+    adjusted_net_income: 18_800
+    adjusted_total_income: 20_000
+    uc_individual_earned_income_before_mif: 16_959.60
+    uc_earned_income: 16_959.60
+    universal_credit_pre_benefit_cap: 1_393.62
+    universal_credit: 1_393.62
+    pension_credit_earnings: 20_000
+    housing_benefit_net_earnings: 18_159.60
+    tax_free_childcare_expected_declaration_period_income: 5_000
+
+- name: Case 3, each joint claimant keeps their own donation and tax deductions.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 40_000
+        payroll_giving: 0
+      person2:
+        age: 38
+        employment_income: 10_000
+        payroll_giving: 1_000
+    benunits:
+      family:
+        members: [person1, person2]
+        # Unmarried cohabitants make a joint UC claim without a spousal tax transfer.
+        # ITA 2007 s55C(1)(a): https://www.legislation.gov.uk/ukpga/2007/3/section/55C/2024-04-06
+        is_married: false
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 20_000
+  output:
+    taxable_employment_income: [40_000, 9_000]
+    income_tax: [5_486, 0]
+    ni_class_1_employee: [2_194.40, 0]
+    adjusted_net_income: [40_000, 9_000]
+    adjusted_total_income: [40_000, 10_000]
+    uc_individual_earned_income_before_mif: [32_319.60, 9_000]
+    uc_earned_income: 41_319.60
+    universal_credit_pre_benefit_cap: 4_685.42
+    universal_credit: 4_685.42
+
+- name: Case 4, a Gift Aid gift does not become a payroll giving deduction from UC earnings.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 20_000
+        payroll_giving: 0
+        gift_aid: 1_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    taxable_employment_income: 20_000
+    income_tax: 1_486
+    ni_class_1_employee: 594.40
+    adjusted_net_income: 18_750
+    uc_individual_earned_income_before_mif: 17_919.60
+    universal_credit: 865.62
+
+- name: Case 5, payroll giving restores the personal allowance through adjusted net income.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 110_000
+        payroll_giving: 20_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    taxable_employment_income: 90_000
+    adjusted_net_income: 90_000
+    personal_allowance: 12_570
+    income_tax: 23_432
+    ni_class_1_employee: 4_210.60
+    adjusted_total_income: 110_000
+    tax_free_childcare_expected_declaration_period_income: 27_500
+
+- name: Case 6, the relief cap adds back payroll giving while adjusted net income remains reduced.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 240_000
+        payroll_giving: 40_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    taxable_employment_income: 200_000
+    adjusted_net_income: 200_000
+    personal_allowance: 0
+    income_tax: 76_203
+    ni_class_1_employee: 6_810.60
+    adjusted_total_income: 240_000
+    income_tax_relief_cap: 60_000
+
+- name: Case 7, a donation can consume all pay below the personal allowance without creating negative UC earnings.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 10_000
+        payroll_giving: 10_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    taxable_employment_income: 0
+    income_tax: 0
+    ni_class_1_employee: 0
+    adjusted_net_income: 0
+    adjusted_total_income: 10_000
+    uc_individual_earned_income_before_mif: 0
+    uc_earned_income: 0
+    universal_credit_pre_benefit_cap: 4_721.40
+    universal_credit: 4_721.40
+    tax_free_childcare_expected_declaration_period_income: 2_500
+
+- name: Case 8, tax credits deduct payroll giving while the childcare work-income test retains gross pay.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 17_000
+        payroll_giving: 1_000
+        child_tax_credit_reported: 1
+      person2:
+        age: 2
+        date_of_birth: 20220101
+    benunits:
+      family:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        region: LONDON
+  output:
+    taxable_employment_income: [16_000, 0]
+    income_tax: [686, 0]
+    ni_class_1_employee: [354.40, 0]
+    tax_credits_current_year_income: 16_000
+    tax_credits_applicable_income: 16_000
+    tax_free_childcare_expected_declaration_period_income: [4_250, 0]
+
+- name: Case 9, payroll giving is not a direct Pension Credit earnings disregard.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        employment_income: 10_000
+        payroll_giving: 1_000
+        state_pension: 0
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    taxable_employment_income: 9_000
+    income_tax: 0
+    ni_class_1_employee: 0
+    pension_credit_earnings: 10_000
+    pension_credit_earnings_disregard: 260
+    pension_credit_income: 9_740
+    guarantee_credit: 1_603.80
+    housing_benefit_net_earnings: 10_000
+
+# Addendum: final CTC under the inherited annual-rate model contract.
+# SI2002/2007reg7@2024: child3455+family545 =4000 annual maximum.
+# SI2002/2008reg8@2024: threshold19995, taper41%; SI2002/2006reg4(5): s713 deduction.
+# Without PG: 4000-.41*(25000-19995)=1947.95; withPG1200:2439.95; delta492.
+# This annual approximation does not certify HMRC's daily-rounding cash award.
+# https://www.legislation.gov.uk/uksi/2002/2007/regulation/7/2024-04-06
+# https://www.legislation.gov.uk/uksi/2002/2008/regulation/8/2024-04-06
+# https://www.legislation.gov.uk/uksi/2002/2006/regulation/4
+- name: Case 10, payroll giving increases a continuing claimant's positive annual-model Child Tax Credit.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        hours_worked: 624
+        employment_income: 25_000
+        payroll_giving: 1_200
+        child_tax_credit_reported: 1
+      person2:
+        age: 8
+        date_of_birth: 20160405
+    benunits:
+      family:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        region: LONDON
+  output:
+    weekly_hours: [12, 0]
+    income_tax: [2_246, 0]
+    ni_class_1_employee: [994.40, 0]
+    tax_credits_current_year_income: 23_800
+    CTC_maximum_rate: 4_000
+    working_tax_credit: 0
+    child_tax_credit: 2_439.95
+    tax_credits: 2_439.95
+
+# Addendum: the positive-net-pay AND current-loss helper rebuild branch.
+# FA2004s193(2): 400000-100000PG-20000netpay=280000 statutory total income.
+# ITA2007s24A(8): ATI280000+100000PG=380000; cap25%=95000; allowableloss95000.
+# FA2004s228ZA: thresholdincome185000; adjustedincome185000+20000+170000-20000=355000.
+# Threshold185000 does not exceed200000, so the annual allowance remains60000.
+# https://www.legislation.gov.uk/ukpga/2007/3/section/24A
+# https://www.legislation.gov.uk/ukpga/2004/12/section/193/2024-04-06
+# https://www.legislation.gov.uk/ukpga/2004/12/section/228ZA/2024-04-06
+# https://www.legislation.gov.uk/ukpga/2004/12/section/228/2024-04-06
+- name: Case 11, payroll giving is added back when net pay and a trading loss rebuild the pension income tests.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 45
+        employment_income: 400_000
+        payroll_giving: 100_000
+        employee_pension_contributions_reported: 20_000
+        employer_pension_contributions: 150_000
+        defined_benefit_pension_share: 0
+        trading_loss: 100_000
+    benunits:
+      family:
+        members: [person1]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+  output:
+    total_income_charged_to_tax: 280_000
+    adjusted_total_income: 380_000
+    income_tax_relief_cap: 95_000
+    trade_loss_relief_against_general_income: 95_000
+    adjusted_net_income: 185_000
+    pension_annual_allowance_threshold_income: 185_000
+    pension_annual_allowance_adjusted_income: 355_000
+    pension_annual_allowance: 60_000
