@@ -31,7 +31,7 @@ class uc_individual_earned_income_before_mif(Variable):
         dict(
             title=(
                 "Universal Credit Regulations (Northern Ireland) 2016 "
-                "reg. 55(3)(a), (5)(c)"
+                "reg. 55(3)(a), (6)(c)"
             ),
             href="https://www.legislation.gov.uk/nisr/2016/216/regulation/55",
         ),

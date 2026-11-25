@@ -365,3 +365,67 @@
     pension_annual_allowance_threshold_income: 185_000
     pension_annual_allowance_adjusted_income: 355_000
     pension_annual_allowance: 60_000
+
+# Source-bound counterfactuals: ITEPA 2003 s713 and ITA 2007 s24A(8).
+# Actual total=240000-100000+150000=290000; ATI390000; loss cap97500;
+# net192500 and tax72828. Natural no-employment/no-giving total150000;
+# loss cap50000; net100000; PA12570 and tax27432. Employment tax45396.
+# Only counted private-pension income remains after zeroing earnings, so
+# residual uncounted-income tax is zero. This tests tax attribution:
+# Guarantee Credit is nil in both households; no positive paid effect is claimed.
+# https://www.legislation.gov.uk/ukpga/2003/1/section/713
+# https://www.legislation.gov.uk/ukpga/2007/3/section/24A
+- name: Case 12, earnings-zeroed tax branches remove payroll giving with its employment source.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        employment_income: 240_000
+        payroll_giving: 100_000
+        private_pension_income: 150_000
+        state_pension: 0
+        employee_pension_contributions_reported: 0
+        employer_pension_contributions: 0
+        personal_pension_contributions: 0
+        trading_loss: 100_000
+      person2:
+        age: 70
+        employment_income: 0
+        payroll_giving: 0
+        private_pension_income: 150_000
+        state_pension: 0
+        employee_pension_contributions_reported: 0
+        employer_pension_contributions: 0
+        personal_pension_contributions: 0
+        trading_loss: 100_000
+    benunits:
+      actual:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+      natural_reference:
+        members: [person2]
+        is_married: false
+        would_claim_uc: false
+    households:
+      actual_home:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+      reference_home:
+        members: [person2]
+        country: ENGLAND
+        region: LONDON
+  output:
+    income_tax_before_winter_fuel_payment_charge: [72_828, 27_432]
+    adjusted_total_income: [390_000, 150_000]
+    trade_loss_relief_against_general_income: [97_500, 50_000]
+    pension_credit_income_tax_without_employment_income: [27_432, 27_432]
+    pension_credit_income_tax_without_earnings: [27_432, 27_432]
+    pension_credit_employment_income_tax: [45_396, 0]
+    pension_credit_self_employment_income_tax: [0, 0]
+    legacy_means_test_uncounted_income_tax_without_earnings: [0, 0]
+    legacy_means_test_deducted_income_tax: [72_828, 27_432]
+    guarantee_credit: [0, 0]

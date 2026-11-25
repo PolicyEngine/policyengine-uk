@@ -3,8 +3,12 @@
 import numpy as np
 import pytest
 
+from policyengine_core import periods
 from policyengine_uk import Simulation
 from policyengine_uk.tests.test_uc_non_dep_pension_credit import YEAR, mixed_families
+from policyengine_uk.variables.gov.dwp.pension_credit.pension_credit_earnings_income_tax import (
+    income_tax_with_inputs_zeroed,
+)
 
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -105,3 +109,49 @@ def test_earnings_tax_reuse_preserves_calculation_order_and_changed_inputs():
         )
     assert not pc_first.calculate("uc_non_dep_receives_pension_credit", YEAR)[1]
     assert pc_first.branches == {}
+
+
+def test_unearned_income_counterfactual_preserves_qualifying_payroll_giving():
+    """Zeroing pension income leaves the employee's valid donation in place."""
+    year = 2024
+    sim = Simulation(
+        situation={
+            "people": {
+                "person1": {
+                    "age": {year: 60},
+                    "employment_income": {year: 20_000},
+                    "payroll_giving": {year: 1_200},
+                    "private_pension_income": {year: 1_000},
+                }
+            },
+            "benunits": {
+                "family": {
+                    "members": ["person1"],
+                    "is_married": {year: False},
+                    "would_claim_uc": {year: False},
+                }
+            },
+            "households": {
+                "household": {
+                    "members": ["person1"],
+                    "country": {year: "ENGLAND"},
+                    "region": {year: "LONDON"},
+                }
+            },
+        }
+    )
+    # ITEPA s713 still applies because the employment remains. At the
+    # 2024 basic rate, actual tax is (20000-1200+1000-12570)*20%=1446.
+    np.testing.assert_allclose(
+        sim.calculate("income_tax_before_winter_fuel_payment_charge", year),
+        [1_446],
+        atol=0.01,
+        rtol=0,
+    )
+    tax_without_pension = income_tax_with_inputs_zeroed(
+        sim, periods.period(year), ["private_pension_income"]
+    )
+    # Removing only pension gives (20000-1200-12570)*20%=1246. Clearing
+    # payroll giving as well would incorrectly produce1486.
+    np.testing.assert_allclose(tax_without_pension, [1_246], atol=0.01, rtol=0)
+    assert sim.branches == {}

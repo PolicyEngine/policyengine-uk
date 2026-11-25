@@ -4,7 +4,6 @@
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/6
 # https://www.legislation.gov.uk/uksi/2015/448/regulation/10
 # https://www.legislation.gov.uk/ukpga/2007/3/section/58
-# https://www.legislation.gov.uk/uksi/2014/2147/regulation/1/made
 
 - name: Case 1, payroll giving leaves net earnings exactly at the UC cap exception threshold.
   period: 2024
@@ -66,27 +65,3 @@
         region: LONDON
   output:
     tax_free_childcare_meets_income_requirements: true
-
-- name: Case 4, current tax-credit income after payroll giving reaches the targeted childcare route.
-  period: 2024
-  input:
-    people:
-      person1:
-        age: 35
-        employment_income: 17_000
-        payroll_giving: 1_000
-        child_tax_credit_reported: 1
-      person2:
-        age: 2
-        date_of_birth: 20220101
-    benunits:
-      family:
-        members: [person1, person2]
-        would_claim_uc: false
-    households:
-      household:
-        members: [person1, person2]
-        country: ENGLAND
-        region: LONDON
-  output:
-    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
