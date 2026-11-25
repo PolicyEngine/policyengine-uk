@@ -5,6 +5,8 @@ from policyengine_uk.utils.parameters import fiscal_year_average
 
 
 def _domestic_energy_vat(household, period, parameters, electricity_rate, gas_rate):
+    # electricity_rate and gas_rate each carry great_britain and
+    # northern_ireland rates.
     # electricity_consumption and gas_consumption are priced including 5% VAT
     # by the data build, so the VAT-exclusive base is the bill
     # divided by 1.05 (5/105 of the bill is VAT). The divisor is the rate the
@@ -16,14 +18,15 @@ def _domestic_energy_vat(household, period, parameters, electricity_rate, gas_ra
     priced_rate = parameters(period).gov.simulation.vat.energy_input_price_basis_rate
     country = household("country", period)
     northern_ireland = country == country.possible_values.NORTHERN_IRELAND
-    rate = where(
+    electricity_vat = where(
         northern_ireland,
         electricity_rate.northern_ireland,
         electricity_rate.great_britain,
     )
+    gas_vat = where(northern_ireland, gas_rate.northern_ireland, gas_rate.great_britain)
     electricity = household("electricity_consumption", period) / (1 + priced_rate)
     gas = household("gas_consumption", period) / (1 + priced_rate)
-    return electricity * rate + gas * gas_rate
+    return electricity * electricity_vat + gas * gas_vat
 
 
 class domestic_energy_vat(Variable):
@@ -31,8 +34,8 @@ class domestic_energy_vat(Variable):
     documentation = (
         "VAT on the household's electricity and gas bills. Electricity has "
         "its own rate, which is zero in Great Britain from 1 October 2026 and "
-        "in Northern Ireland from 1 April 2027, to 30 June 2027; gas takes the "
-        "reduced rate."
+        "in Northern Ireland from 1 April 2027, to 30 June 2027. Gas has its "
+        "own rate too, which equals the reduced rate in current law."
     )
     entity = Household
     definition_period = YEAR
@@ -51,7 +54,7 @@ class domestic_energy_vat(Variable):
             period,
             parameters,
             vat.domestic_electricity_rate,
-            vat.reduced_rate,
+            vat.domestic_gas_rate,
         )
 
 
@@ -64,17 +67,22 @@ class baseline_domestic_energy_vat(Variable):
 
     def formula(household, period, parameters):
         # The baseline parameter tree keeps its dated values (it is not
-        # converted to fiscal years), so the electricity rates are
+        # converted to fiscal years), so the electricity and gas rates are
         # day-weighted here as the reform tree's are, or a simulation with no
         # reform would show a VAT change in 2026-27.
-        rates = household.simulation.tax_benefit_system.parameters.baseline.gov
-        rates = rates.hmrc.vat.domestic_electricity_rate
+        vat = household.simulation.tax_benefit_system.parameters.baseline.gov.hmrc.vat
         year = period.start.year
-        electricity_rate = SimpleNamespace(
-            great_britain=fiscal_year_average(rates.great_britain, year),
-            northern_ireland=fiscal_year_average(rates.northern_ireland, year),
-        )
-        reduced_rate = parameters(period).baseline.gov.hmrc.vat.reduced_rate
+
+        def day_weighted(rates):
+            return SimpleNamespace(
+                great_britain=fiscal_year_average(rates.great_britain, year),
+                northern_ireland=fiscal_year_average(rates.northern_ireland, year),
+            )
+
         return _domestic_energy_vat(
-            household, period, parameters, electricity_rate, reduced_rate
+            household,
+            period,
+            parameters,
+            day_weighted(vat.domestic_electricity_rate),
+            day_weighted(vat.domestic_gas_rate),
         )

@@ -1,0 +1,28 @@
+description: VAT rate on supplies of domestic gas in England, Wales and Scotland. Domestic gas is a reduced-rate supply, so this follows the reduced rate in current law; it is a separate parameter so that a change to VAT on gas does not move the rate on other reduced-rate goods.
+values:
+  1994-04-01:
+    value: 0.08
+    metadata:
+      reference:
+        - title: "HMRC VAT Fuel and Power Manual: VFUP1000"
+          href: https://www.gov.uk/hmrc-internal-manuals/vat-fuel-and-power/vfup1000
+  1997-09-01:
+    value: 0.05
+    metadata:
+      reference:
+        - title: Value Added Tax Act 1994, section 29A (reduced rate of 5%)
+          href: https://www.legislation.gov.uk/ukpga/1994/23/section/29A
+        - title: "HMRC VAT Fuel and Power Manual: VFUP1000"
+          href: https://www.gov.uk/hmrc-internal-manuals/vat-fuel-and-power/vfup1000
+metadata:
+  unit: /1
+  period: year
+  label: VAT rate on domestic gas, Great Britain
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 7A, Group 1 (supplies of domestic fuel or power)
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
+    - title: VAT Notice 701/19, fuel and power
+      href: https://www.gov.uk/guidance/vat-on-fuel-and-power-notice-70119
+  # Liability follows the date the gas is consumed; a dated change is
+  # day-weighted into the model year, as for domestic electricity.
+  fiscal_year_blend: true

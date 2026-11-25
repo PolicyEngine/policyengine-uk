@@ -77,3 +77,26 @@
     reduced_rate_vat_consumption: 0
     vat: 100
     vat_change: 0
+
+# Domestic gas has its own VAT rate, gov.hmrc.vat.domestic_gas_rate, equal
+# to the 5% reduced rate in current law. £1,050 of gas carries £50 of VAT.
+- name: Northern Ireland gas is taxed at the domestic gas rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    electricity_consumption: 0
+    gas_consumption: 1_050
+  output:
+    domestic_energy_vat: 50
+
+- name: A zero gas rate in Great Britain removes gas VAT only
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.vat.domestic_gas_rate.great_britain: 0
+    region: LONDON
+    electricity_consumption: 1_050
+    gas_consumption: 1_050
+  output:
+    domestic_energy_vat: 50
