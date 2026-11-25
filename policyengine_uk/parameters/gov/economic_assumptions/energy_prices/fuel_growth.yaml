@@ -1,0 +1,24 @@
+# Hand-maintained; the energy price importer does not write this file.
+description: Year-on-year growth in household electricity and gas prices, by calendar quarter, that replaces the OBR utilities forecast for one fuel. No quarter has a value in current law, so both fuels grow at the OBR utilities rate (obr.utilities); a reform sets a quarter, for example from a price cap announcement, to move one fuel apart from the other.
+electricity:
+  description: Year-on-year growth in household electricity prices for a calendar quarter, on the published basis (including the VAT in published prices), as the OBR utilities forecast is. Where no value is set, electricity grows at the OBR utilities forecast.
+  metadata:
+    unit: /1
+    label: Electricity price growth in place of the OBR utilities forecast
+    period: quarter
+    reference:
+      - title: Ofgem, Energy price cap
+        href: https://www.ofgem.gov.uk/energy-price-cap
+  values:
+    2015-01-01: null
+gas:
+  description: Year-on-year growth in household gas prices for a calendar quarter, on the published basis (including the VAT in published prices), as the OBR utilities forecast is. Where no value is set, gas grows at the OBR utilities forecast.
+  metadata:
+    unit: /1
+    label: Gas price growth in place of the OBR utilities forecast
+    period: quarter
+    reference:
+      - title: Ofgem, Energy price cap
+        href: https://www.ofgem.gov.uk/energy-price-cap
+  values:
+    2015-01-01: null

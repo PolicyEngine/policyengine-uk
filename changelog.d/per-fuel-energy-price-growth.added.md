@@ -1,0 +1,1 @@
+Add per-fuel growth parameters for household electricity and gas prices (gov.economic_assumptions.energy_prices.fuel_growth), empty by default, so a reform can move one fuel's price apart from the other after the ONS outturn.
