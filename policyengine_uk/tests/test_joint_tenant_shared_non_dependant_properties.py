@@ -1,0 +1,513 @@
+"""Property-based tests for non-dependants of joint occupiers in Housing
+Benefit and Council Tax Reduction (non_dependant_normally_resides_with).
+
+Invariants, for any generated population of households:
+
+1. Conservation (HB reg 74(5)): in every household, the families' Housing
+   Benefit non-dependant deductions sum to the household's deductions for
+   its non-dependants (one for each non-dependant couple, the higher of the
+   two members', reg 74(3)), whichever joint occupiers each one resides
+   with.
+2. Bounds (CTR Sch 1 para 8(5)): each family's Council Tax Reduction part is
+   between zero and the household's deductions under the family's own
+   scheme (the person-level deduction reports the household head's family's
+   scheme; an applicant under the other scheme has the amounts recomputed
+   under its own); where another family shares the rent, the joint
+   occupiers' parts under each scheme sum to at most the household's
+   deductions under that scheme (a non-dependant of several jointly liable
+   families is split equally per liable person, each family bearing one
+   person's part; one of a single family, a couple included, is that
+   family's whole deduction) and no other family bears any. Where no other
+   family shares the rent, every family's deductions equal the previous
+   formula (differential): the household head's family, the only one that
+   claims, has every other family's deductions, one for each couple.
+3. Differential: with every non-dependant shared (the default), the Housing
+   Benefit deductions equal the previous formula (each family's share of the
+   rent, computed or supplied, times the household's deductions) and the
+   Council Tax Reduction deductions equal the previous formula (the
+   deductions outside the family times
+   council_tax_reduction_joint_liability_share) in every household where the
+   previous formulas classified the joint occupiers correctly: where every
+   joint-occupier family has rent of its own. The rent-based non-dependant
+   flag counts a joint occupier with no rent of its own (no household rent,
+   or a supplied zero share) as a non-dependant; leaving it out is the
+   intended correction. The Council Tax Reduction comparison covers the
+   applicants under the household head's scheme, whose amounts the
+   person-level deduction reports.
+4. Attribution: a shared non-dependant counts in the household head's
+   family's size criteria exactly as when they are the head family's only,
+   and in a sharer's exactly as when they are the other joint occupiers'
+   only; a family that is not a joint occupier bears no deduction.
+5. No-op: in a household with no sharers, the residence input changes
+   nothing.
+6. Universal Credit does not depend on the residence input.
+7. Monotonicity: marking a non-dependant as one joint occupier's only never
+   raises another joint occupier's bedrooms or deductions.
+8. One residence for both Housing Benefit tests: a joint occupier who
+   receives the daily living component of Personal Independence Payment
+   meets the severe disability premium conditions (HB Regs 2006 Sch 3 para
+   14(2)(a)) exactly when no non-dependant resides with them
+   (housing_benefit_has_non_dependant), whichever joint occupiers each
+   non-dependant resides with, and whatever the other joint occupiers' rent.
+"""
+
+import numpy as np
+from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import strategies as st
+
+from policyengine_uk import Simulation
+
+YEAR = 2026
+PROPERTY_SETTINGS = settings(
+    max_examples=8,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+RESIDENCE = [
+    "EVERY_JOINT_OCCUPIER",
+    "HOUSEHOLD_HEAD_FAMILY",
+    "OTHER_JOINT_OCCUPIERS",
+]
+income = st.floats(0, 60_000, allow_nan=False, allow_infinity=False)
+# Amounts are float32 in the model, so sums taken in different orders differ
+# by up to about 1e-3 at these magnitudes: compare money to the penny.
+MONEY_TOLERANCE = 0.01
+
+
+@st.composite
+def family(draw, max_adults=2):
+    return dict(
+        ages=draw(st.lists(st.integers(18, 90), min_size=1, max_size=max_adults)),
+        child_age=draw(st.one_of(st.none(), st.integers(0, 15))),
+        income=draw(income),
+    )
+
+
+@st.composite
+def households(draw):
+    return dict(
+        head=draw(family()),
+        sharers=draw(st.lists(family(), min_size=0, max_size=2)),
+        non_dependants=draw(
+            st.lists(
+                st.tuples(family(), st.sampled_from(RESIDENCE)),
+                min_size=0,
+                max_size=2,
+            )
+        ),
+        lodger=draw(st.booleans()),
+        rent=draw(st.one_of(st.just(0.0), st.floats(2_000, 30_000, allow_nan=False))),
+        # Supplied rent-share weights for the head and up to two sharers
+        # (normalised over the families liable for the rent), or None.
+        share_weights=draw(
+            st.one_of(
+                st.none(),
+                st.lists(
+                    st.one_of(st.just(0.0), st.floats(0.05, 1)),
+                    min_size=3,
+                    max_size=3,
+                ),
+            )
+        ),
+    )
+
+
+population = st.lists(households(), min_size=1, max_size=5)
+
+
+def build(
+    population, residence_override=None, disabled_roles=(), pensioner_families=None
+):
+    """One situation for the whole population, with each family's role. The
+    adults of the families in ``disabled_roles`` receive the daily living
+    component of Personal Independence Payment. ``pensioner_families``, one
+    value for each family in order, supplies council_tax_reduction_pensioner."""
+    people, benunits, homes, roles = {}, {}, {}, []
+    supplied = any(house["share_weights"] is not None for house in population)
+    for h, house in enumerate(population):
+        members = []
+
+        def add_family(name, fam, role, extra):
+            ids = []
+            for i, age in enumerate(fam["ages"]):
+                pid = f"{name}_adult_{i}"
+                people[pid] = {
+                    "age": {YEAR: age},
+                    "is_claimant_or_partner": {YEAR: True},
+                    "is_household_head": {YEAR: False},
+                    "employment_income": {YEAR: fam["income"] if i == 0 else 0},
+                }
+                if role in disabled_roles:
+                    people[pid]["pip_dl"] = {YEAR: 3_000}
+                ids.append(pid)
+            if fam["child_age"] is not None:
+                pid = f"{name}_child"
+                people[pid] = {
+                    "age": {YEAR: fam["child_age"]},
+                    "is_claimant_or_partner": {YEAR: False},
+                    "is_household_head": {YEAR: False},
+                }
+                ids.append(pid)
+            benunits[name] = {"members": ids, **extra}
+            if pensioner_families is not None:
+                benunits[name]["council_tax_reduction_pensioner"] = {
+                    YEAR: bool(pensioner_families[len(roles)])
+                }
+            members.extend(ids)
+            roles.append(role)
+            return ids
+
+        weights = house["share_weights"]
+        shares = [None] * (1 + len(house["sharers"]))
+        if weights is not None and sum(weights[: len(shares)]) > 0:
+            used = weights[: len(shares)]
+            shares = [w / sum(used) for w in used]
+        elif supplied:
+            # policyengine-core treats a variable given for some families as
+            # an input for all, defaulting the rest to zero, so supply the
+            # formula's shares (people liable over people liable in the
+            # household; every adult here is a claimant or partner).
+            adults = [len(house["head"]["ages"])] + [
+                len(sharer["ages"]) for sharer in house["sharers"]
+            ]
+            shares = [a / sum(adults) for a in adults]
+
+        def share_input(i):
+            if shares[i] is None:
+                return {}
+            return {"share_of_household_rent": {YEAR: shares[i]}}
+
+        head_ids = add_family(f"h{h}_head", house["head"], "head", share_input(0))
+        people[head_ids[0]]["is_household_head"] = {YEAR: True}
+        for f, sharer in enumerate(house["sharers"]):
+            add_family(
+                f"h{h}_s{f}",
+                sharer,
+                "sharer",
+                {
+                    "liable_for_share_of_household_rent": {YEAR: True},
+                    **share_input(f + 1),
+                },
+            )
+        for f, (non_dep, residence) in enumerate(house["non_dependants"]):
+            add_family(
+                f"h{h}_n{f}",
+                non_dep,
+                "non_dependant",
+                {
+                    "non_dependant_normally_resides_with": {
+                        YEAR: residence_override or residence
+                    },
+                    **({"share_of_household_rent": {YEAR: 0.0}} if supplied else {}),
+                },
+            )
+        if house["lodger"]:
+            ids = add_family(
+                f"h{h}_l",
+                dict(ages=[40], child_age=None, income=10_000),
+                "lodger",
+                {"share_of_household_rent": {YEAR: 0.0}} if supplied else {},
+            )
+            people[ids[0]]["rent_paid_as_lodger"] = {YEAR: 4_000}
+        homes[f"h{h}"] = {
+            "members": members,
+            "rent": {YEAR: house["rent"]},
+            "tenure_type": {YEAR: "RENT_PRIVATELY"},
+            "brma": {YEAR: "MAIDSTONE"},
+        }
+    situation = {"people": people, "benunits": benunits, "households": homes}
+    return Simulation(situation=situation), np.array(roles)
+
+
+def calc(sim, variable):
+    return np.asarray(sim.calculate(variable, YEAR), dtype=float)
+
+
+def benunit_household(sim):
+    """Household index of each benefit unit."""
+    person_benunit = sim.populations["benunit"].members_entity_id
+    person_household = sim.populations["household"].members_entity_id
+    out = np.zeros(sim.populations["benunit"].count, dtype=int)
+    out[person_benunit] = person_household
+    return out
+
+
+def per_household(sim, benunit_values):
+    return np.bincount(
+        benunit_household(sim),
+        weights=benunit_values,
+        minlength=sim.populations["household"].count,
+    )
+
+
+def person_per_household(sim, person_values):
+    return np.bincount(
+        sim.populations["household"].members_entity_id,
+        weights=person_values,
+        minlength=sim.populations["household"].count,
+    )
+
+
+def per_family_deduction(sim, person_values):
+    """Each family's deduction for its members' amounts: one for the claimant
+    or couple, the higher of the two members' (HB Regs 2006 reg 74(3); SI
+    2012/2885 Sch 1 para 8(3)), and one for each other member."""
+    person_benunit = sim.populations["benunit"].members_entity_id
+    count = sim.populations["benunit"].count
+    couple = calc(sim, "is_claimant_or_partner").astype(bool)
+    higher = np.zeros(count)
+    np.maximum.at(higher, person_benunit[couple], person_values[couple])
+    others = np.bincount(
+        person_benunit, weights=person_values * ~couple, minlength=count
+    )
+    return higher + others
+
+
+def in_joint_occupier_family(sim, roles):
+    """Whether each person belongs to the household head's or a sharer's
+    family: such people are never anyone's non-dependant."""
+    person_role = roles[sim.populations["benunit"].members_entity_id]
+    return (person_role == "head") | (person_role == "sharer")
+
+
+def under_head_scheme(sim, roles):
+    """Whether each family's Council Tax Reduction scheme (pensioner or
+    working-age) is the household head's family's.
+    council_tax_reduction_individual_non_dep_deduction is each person's
+    deduction under that scheme; an applicant under the other scheme has its
+    deductions recomputed, as each claim is assessed under its own family's
+    scheme."""
+    pensioner = calc(sim, "council_tax_reduction_pensioner")
+    head_scheme = per_household(sim, pensioner * (roles == "head"))
+    return pensioner == head_scheme[benunit_household(sim)]
+
+
+def other_scheme_individual_deduction(population, sim, roles):
+    """Each person's Council Tax Reduction non-dependant deduction under the
+    scheme (pensioner or working-age) that the household head's family is
+    not under: council_tax_reduction_individual_non_dep_deduction in the
+    same population with the scheme of each household head's family
+    reversed and every other family's kept."""
+    pensioner = calc(sim, "council_tax_reduction_pensioner")
+    reversed_for_head = np.where(roles == "head", 1 - pensioner, pensioner)
+    other, _ = build(population, pensioner_families=reversed_for_head)
+    return calc(other, "council_tax_reduction_individual_non_dep_deduction")
+
+
+def has_sharer(sim, roles):
+    return (
+        per_household(sim, (roles == "sharer").astype(float))[benunit_household(sim)]
+        > 0
+    )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_housing_benefit_deductions_are_conserved(population):
+    sim, roles = build(population)
+    # A sharer with no rent is not rent-liable, but is still a joint
+    # occupier and so no one's non-dependant (HB reg 3(2)(d)).
+    individual = (
+        calc(sim, "household_benefits_individual_non_dep_deduction")
+        * calc(sim, "is_non_dependant_of_household_head")
+        * ~in_joint_occupier_family(sim, roles)
+    )
+    # One deduction for each non-dependant couple (reg 74(3)).
+    deductions = per_family_deduction(sim, individual)
+    families = calc(sim, "housing_benefit_non_dep_deductions")
+    np.testing.assert_allclose(
+        per_household(sim, families),
+        per_household(sim, deductions),
+        atol=MONEY_TOLERANCE,
+    )
+    # A family that is not a joint occupier bears none.
+    assert np.all(families[(roles == "non_dependant") | (roles == "lodger")] == 0)
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_council_tax_reduction_deductions_are_bounded(population):
+    sim, roles = build(population)
+    deductions = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
+    in_household = person_per_household(sim, deductions)
+    families = calc(sim, "council_tax_reduction_non_dep_deductions")
+    assert np.all(families >= -MONEY_TOLERANCE)
+    # The household's deductions under each scheme bound the applicants
+    # under that scheme: the person-level variable reports the household
+    # head's family's scheme, and the same population with that family's
+    # scheme reversed reports the other.
+    same_scheme = under_head_scheme(sim, roles)
+    other_in_household = person_per_household(
+        sim, other_scheme_individual_deduction(population, sim, roles)
+    )
+    household = benunit_household(sim)
+    bound = np.where(
+        same_scheme, in_household[household], other_in_household[household]
+    )
+    assert np.all(families <= bound + MONEY_TOLERANCE)
+    # Where the rent is shared, the joint occupiers' parts under each scheme
+    # never exceed the household's deductions under it, and no one else
+    # bears any.
+    shared = has_sharer(sim, roles)
+    joint_occupier = (roles == "head") | (roles == "sharer")
+    for scheme, total in [
+        (same_scheme, in_household),
+        (~same_scheme, other_in_household),
+    ]:
+        joint_parts = per_household(sim, families * (shared & joint_occupier & scheme))
+        assert np.all(joint_parts <= total + MONEY_TOLERANCE)
+    assert np.all(families[shared & ~joint_occupier] == 0)
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_council_tax_reduction_is_unchanged_without_sharers(population):
+    """Differential: where no family shares the rent, every family's CTR
+    non-dependant deductions equal the previous formula: the household
+    head's family, the only one that claims, has the deductions of every
+    other family (one for each couple, Sch 1 para 8(3)), and a family that
+    does not claim has none."""
+    sim, roles = build(population)
+    deductions = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
+    own = per_family_deduction(sim, deductions)
+    previous = (roles == "head") * (
+        per_household(sim, own)[benunit_household(sim)] - own
+    )
+    without_sharer = ~has_sharer(sim, roles)
+    np.testing.assert_allclose(
+        calc(sim, "council_tax_reduction_non_dep_deductions")[without_sharer],
+        previous[without_sharer],
+        atol=MONEY_TOLERANCE,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_shared_default_matches_the_previous_formulas(population):
+    sim, roles = build(population, residence_override="EVERY_JOINT_OCCUPIER")
+    household = benunit_household(sim)
+    hb_individual = calc(sim, "household_benefits_individual_non_dep_deduction") * calc(
+        sim, "is_non_dependant_of_household_head"
+    )
+    share = calc(sim, "share_of_household_rent")
+    # One deduction for each non-dependant couple (HB reg 74(3); CTR Sch 1
+    # para 8(3)).
+    previous_hb = (
+        share * per_household(sim, per_family_deduction(sim, hb_individual))[household]
+    )
+    ctr_individual = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
+    own = per_family_deduction(sim, ctr_individual)
+    previous = (per_household(sim, own)[household] - own) * calc(
+        sim, "council_tax_reduction_joint_liability_share"
+    )
+    joint_occupier = (roles == "head") | (roles == "sharer")
+    # The rent-based non-dependant flag counts a joint occupier with no rent
+    # of its own (no household rent, or a supplied zero share) as a
+    # non-dependant; compare only households where every joint occupier has
+    # rent.
+    rentless = joint_occupier & (calc(sim, "benunit_rent") <= 0)
+    positive_rent = per_household(sim, rentless.astype(float))[household] == 0
+    hb = calc(sim, "housing_benefit_non_dep_deductions")
+    np.testing.assert_allclose(
+        hb[positive_rent], previous_hb[positive_rent], atol=MONEY_TOLERANCE
+    )
+    # The person-level deductions are under the household head's family's
+    # scheme, so compare the applicants under that scheme.
+    compared = joint_occupier & positive_rent & under_head_scheme(sim, roles)
+    np.testing.assert_allclose(
+        calc(sim, "council_tax_reduction_non_dep_deductions")[compared],
+        previous[compared],
+        atol=MONEY_TOLERANCE,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_shared_counts_as_head_only_for_the_head_and_as_others_only_for_sharers(
+    population,
+):
+    # Only households with both a sharer and a non-dependant test anything.
+    assume(any(h["sharers"] and h["non_dependants"] for h in population))
+    shared, roles = build(population, residence_override="EVERY_JOINT_OCCUPIER")
+    head_only, _ = build(population, residence_override="HOUSEHOLD_HEAD_FAMILY")
+    others_only, _ = build(population, residence_override="OTHER_JOINT_OCCUPIERS")
+    rooms = "housing_benefit_LHA_allowed_bedrooms"
+    head = roles == "head"
+    sharer = roles == "sharer"
+    np.testing.assert_array_equal(
+        calc(shared, rooms)[head], calc(head_only, rooms)[head]
+    )
+    np.testing.assert_array_equal(
+        calc(shared, rooms)[sharer], calc(others_only, rooms)[sharer]
+    )
+    # Monotonicity: one joint occupier's non-dependant never raises another's
+    # bedrooms or deductions.
+    deductions = "housing_benefit_non_dep_deductions"
+    assert np.all(calc(head_only, rooms)[sharer] <= calc(shared, rooms)[sharer])
+    assert np.all(
+        calc(head_only, deductions)[sharer]
+        <= calc(shared, deductions)[sharer] + MONEY_TOLERANCE
+    )
+    with_sharer = has_sharer(shared, roles)
+    assert np.all(
+        calc(others_only, rooms)[head & with_sharer]
+        <= calc(shared, rooms)[head & with_sharer]
+    )
+    assert np.all(
+        calc(others_only, deductions)[head & with_sharer]
+        <= calc(shared, deductions)[head & with_sharer] + MONEY_TOLERANCE
+    )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(population):
+    sims = [build(population, residence_override=r) for r in RESIDENCE]
+    roles = sims[0][1]
+    without_sharer = ~has_sharer(sims[0][0], roles)
+    for variable in [
+        "housing_benefit_LHA_allowed_bedrooms",
+        "housing_benefit_LHA_additional_bedrooms",
+        "housing_benefit_non_dep_deductions",
+        "council_tax_reduction_non_dep_deductions",
+        "housing_benefit_has_non_dependant",
+    ]:
+        reference = calc(sims[0][0], variable)[without_sharer]
+        for sim, _ in sims[1:]:
+            np.testing.assert_allclose(
+                calc(sim, variable)[without_sharer], reference, atol=MONEY_TOLERANCE
+            )
+    for variable in [
+        "LHA_allowed_bedrooms",
+        "uc_non_dep_deductions",
+        "lha_renter_has_non_dependant",
+    ]:
+        reference = calc(sims[0][0], variable)
+        for sim, _ in sims[1:]:
+            np.testing.assert_allclose(
+                calc(sim, variable), reference, atol=MONEY_TOLERANCE
+            )
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_severe_disability_premium_reads_the_same_residence(population):
+    """A joint occupier whose claimant and partner receive the daily living
+    component of Personal Independence Payment meets the severe disability
+    premium conditions (HB Regs 2006 Sch 3 para 14(2)(a)) exactly when no
+    non-dependant resides with them (reg 3;
+    housing_benefit_has_non_dependant). Every generated non-dependant family
+    has an adult aged 18 or over with no qualifying benefit, so the two
+    tests name the same families. The household heads' families receive the
+    component in one population and the sharers' in the other. The other
+    joint occupiers then receive no qualifying benefit, which tests that
+    they are never non-dependants, whatever their rent."""
+    for role in ["head", "sharer"]:
+        sim, roles = build(population, disabled_roles=(role,))
+        disabled = roles == role
+        applies = calc(sim, "housing_benefit_severe_disability_premium_applies")
+        has_non_dependant = calc(sim, "housing_benefit_has_non_dependant")
+        np.testing.assert_array_equal(
+            applies[disabled], 1 - has_non_dependant[disabled]
+        )
