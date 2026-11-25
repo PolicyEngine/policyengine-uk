@@ -1,3 +1,11 @@
+## [2.180.1] - 2026-11-25
+
+### Fixed
+
+- The rules for `is_claimant_or_partner` now appear in its variable metadata, not only in the class docstring.
+- Label the contributory (New Style) JSA rate parameters correctly: the 18 to 24 rate no longer says income-based, and the other rate applies at 25 or over. Council Tax Reduction take-up now points to its tracking issue and says that an override only changes awards where the local scheme is simulated.
+
+
 ## [2.180.0] - 2026-11-24
 
 ### Added
