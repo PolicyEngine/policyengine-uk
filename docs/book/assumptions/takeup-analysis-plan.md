@@ -87,7 +87,7 @@ Per #1354, with current PolicyEngine UK take-up handling:
 
 | Programme | Variable | Take-up flag | Reference parameter here | Handling |
 |-----------|----------|--------------|--------------------------|----------|
-| Universal Credit | `universal_credit` | `would_claim_uc` (input) | `gov.dwp.universal_credit.takeup_rate` | Drawn in the data build, anchored on reported receipt |
+| Universal Credit | `universal_credit` | `would_claim_uc` (input) | `gov.dwp.universal_credit.takeup_rate` (informational; not read) | Drawn in the data build, anchored on reported receipt |
 | UC on legacy closure | `claims_uc_at_legacy_closure` | `would_claim_uc_at_legacy_closure` (input) | – | Drawn in Microcosm at DWP's Move to Universal Credit claim rates by legacy benefit combination; the Enhanced FRS does not set it, so it defaults to true |
 | UC childcare element | `uc_childcare_element` (claimed via `uc_childcare_element_claimed`) | `would_claim_uc_childcare` (input) | – | Drawn in Microcosm at single and couple rates; the Enhanced FRS does not set it, so it defaults to true |
 | UC housing costs element | `uc_housing_costs_element` | `would_claim_uc_housing_costs_element` (input) | – | For a data build to set false where a renting family's award statement carries no housing costs element for a reason the model doesn't simulate (not claimed, or a liability DWP doesn't treat as eligible), and only where the model would otherwise pay one; neither data build sets it yet, so it defaults to true |
