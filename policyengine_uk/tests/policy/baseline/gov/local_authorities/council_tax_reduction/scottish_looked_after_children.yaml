@@ -1,0 +1,546 @@
+# SSI 2021/249 reg. 7(8), as in force from 1 April 2022, keeps children
+# placed with a parent, a person with parental responsibility or an approved
+# kinship carer in the applicant's family. SSI 2024/230 regs. 1 and 3 replace
+# that provision from 31 October 2024 with an exclusion for foster placements.
+# https://www.legislation.gov.uk/ssi/2021/249/regulation/7/2022-04-01
+# https://www.legislation.gov.uk/ssi/2024/230/regulation/3/made
+# The annual model samples ordinary government parameters on 30 April, so
+# annual 2024 keeps the earlier rule and annual 2025 uses the amended rule.
+# Parent/parental-responsibility placements leave the existing looked-after
+# input false, following its documented Universal Credit input convention.
+# UNSPECIFIED preserves the existing input's treatment as a compatibility
+# fallback; it does not classify every such child as a foster placement.
+
+- name: Case 1, an approved kinship placement increases a working Scottish applicant's child allowance and reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 10_000
+        weekly_hours: 15
+      person2:
+        age: 8
+        is_household_head: false
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # Income below the applicable amount gives full liability (reg. 13).
+    council_tax_reduction: 1_800
+    is_looked_after_child: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_pensioner: false
+    # SSI 2026/56 reg. 14: 109.85 * 52 for the child and 95.55 * 52
+    # for the applicant. The family premium for a new claim is zero.
+    council_tax_reduction_working_age_child_amounts: 5_712.20
+    council_tax_reduction_working_age_personal_allowance: 4_968.60
+    council_tax_reduction_working_age_applicable_amount: 10_680.80
+    # Wages fall below the personal allowance and NI primary threshold.
+    # Fifteen hours fails the 16-hour additional-disregard work condition.
+    income_tax: [0, 0]
+    national_insurance: [0, 0]
+    # SSI 2021/249 Sch. 3 para. 5: 25 * 52; income = 10,000 - 1,300.
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_working_age_applicable_income: 8_700
+    council_tax_reduction_non_dep_deductions: 0
+    # The Scottish placement input does not change Universal Credit.
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    uc_child_index: [-1, -1]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+
+- name: Case 2, a foster placement leaves the same Scottish applicant single and tapers the reduction.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 10_000
+        weekly_hours: 15
+      person2:
+        age: 8
+        is_household_head: false
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: FOSTER_CARER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # Reg. 13: 1,800 - (9,740 - 4,968.60) * 0.20 = 845.72.
+    council_tax_reduction: 845.72
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+    council_tax_reduction_working_age_child_amounts: 0
+    # SSI 2026/56 reg. 14: 95.55 * 52 for a single applicant aged 35.
+    council_tax_reduction_working_age_personal_allowance: 4_968.60
+    council_tax_reduction_working_age_applicable_amount: 4_968.60
+    income_tax: [0, 0]
+    national_insurance: [0, 0]
+    # Sch. 3 para. 11: 5 * 52; income = 10,000 - 260.
+    council_tax_reduction_working_age_earnings_disregard: 260
+    council_tax_reduction_working_age_applicable_income: 9_740
+    council_tax_reduction_non_dep_deductions: 0
+
+- name: Case 3, another looked-after placement counts in Scotland after the foster-only amendment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 10_000
+        weekly_hours: 15
+      person2:
+        age: 8
+        is_household_head: false
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: OTHER_LOOKED_AFTER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # The same arithmetic as Case 1 gives the full reduction.
+    council_tax_reduction: 1_800
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    # The same arithmetic as Case 1 follows from the same family amounts.
+    council_tax_reduction_working_age_child_amounts: 5_712.20
+    council_tax_reduction_working_age_applicable_amount: 10_680.80
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_working_age_applicable_income: 8_700
+
+- name: Case 4, an unspecified placement preserves the existing looked-after exclusion and cash award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+        employment_income: 10_000
+        weekly_hours: 15
+      person2:
+        age: 8
+        is_household_head: false
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: UNSPECIFIED
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    # The compatibility fallback retains Case 2's tapered award.
+    council_tax_reduction: 845.72
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+    # The compatibility fallback retains Case 2's single-applicant amounts.
+    council_tax_reduction_working_age_child_amounts: 0
+    council_tax_reduction_working_age_applicable_amount: 4_968.60
+    council_tax_reduction_working_age_earnings_disregard: 260
+    council_tax_reduction_working_age_applicable_income: 9_740
+
+- name: Case 5, omitting the new input preserves the existing Scottish looked-after exclusion.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 6, the approved kinship exception applies in the first annual year of the 2021 regulations.
+  period: 2022
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+
+- name: Case 7, an approved kinship placement counts before the 2024 amendment.
+  period: 2023
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+
+- name: Case 8, the new placement input leaves Scotland's pre-2022 Child Benefit route unchanged.
+  period: 2021
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 9, another looked-after placement is excluded under the 2023 rule.
+  period: 2023
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: OTHER_LOOKED_AFTER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 10, annual 2024 keeps the looked-after exclusion sampled on 30 April.
+  period: 2024
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: OTHER_LOOKED_AFTER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 11, annual 2025 applies the foster-only amendment to another looked-after placement.
+  period: 2025
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: OTHER_LOOKED_AFTER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+
+- name: Case 12, a foster placement is excluded before the amendment as well.
+  period: 2023
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: FOSTER_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 13, the unspecified compatibility fallback also retains the 2023 exclusion.
+  period: 2023
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: UNSPECIFIED
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 14, a parent or person with parental responsibility retains a child before the amendment.
+  period: 2023
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: false
+        scottish_council_tax_reduction_child_placement: PARENT_OR_PARENTAL_RESPONSIBILITY
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+
+- name: Case 15, a parent or person with parental responsibility retains a child after the amendment.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: false
+        scottish_council_tax_reduction_child_placement: PARENT_OR_PARENTAL_RESPONSIBILITY
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+
+- name: Case 16, an ordinary child retains the existing treatment with an unspecified placement.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: false
+        scottish_council_tax_reduction_child_placement: UNSPECIFIED
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+
+- name: Case 17, the Scottish kinship input does not change the Welsh child definition.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: WALES}
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 18, the Scottish pension-age route keeps its existing looked-after exclusion.
+  period: 2026
+  input:
+    people:
+      person1: {age: 70, is_claimant_or_partner: true}
+      person2:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    council_tax_reduction_pensioner: true
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 19, a 17-year-old in non-advanced education qualifies under the Scottish kinship exception.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 17
+        # The no-education route ended on 1 September 2025.
+        date_of_birth: 20090201
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+
+- name: Case 20, a looked-after placement does not make a 17-year-old outside education or training a qualifying young person.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true}
+      person2:
+        age: 17
+        # The no-education route ended on 1 September 2025.
+        date_of_birth: 20090201
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        is_in_approved_training: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: OTHER_LOOKED_AFTER
+    benunits:
+      benunit: {members: [person1, person2], would_claim_uc: false}
+    households:
+      household: {members: [person1, person2], country: SCOTLAND}
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    is_council_tax_reduction_lone_parent: false
+
+- name: Case 21, a kinship carer receives positive standard-only Universal Credit without a child element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 35
+        is_household_head: true
+        is_claimant_or_partner: true
+      person2:
+        age: 8
+        is_household_head: false
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    claims_universal_credit: true
+    is_looked_after_child: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    uc_child_index: [-1, -1]
+    uc_individual_child_element: [0, 0]
+    uc_child_element: 0
+    # The 2026-27 single claimant aged 25+ amount is 424.90 a month.
+    # No earnings, rent, other income, capital or deductions: 424.90 * 12.
+    uc_standard_allowance: 5_098.80
+    universal_credit: 5_098.80
+
+- name: Case 22, an approved kinship input does not make a claimant their own qualifying young person.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 17
+        date_of_birth: 20090201
+        is_claimant_or_partner: true
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_looked_after_by_local_authority: true
+        scottish_council_tax_reduction_child_placement: APPROVED_KINSHIP_CARER
+    benunits:
+      benunit: {members: [person1], would_claim_uc: false}
+    households:
+      household: {members: [person1], country: SCOTLAND}
+  output:
+    is_qualifying_young_person_for_universal_credit: true
+    is_child_or_young_person_for_council_tax_reduction: false
+    is_council_tax_reduction_lone_parent: false
