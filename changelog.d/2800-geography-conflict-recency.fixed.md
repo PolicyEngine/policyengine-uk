@@ -1,0 +1,1 @@
+Preserve dated household geography, reject unresolved known-nation conflicts at public reads, and retain applicable snapshot history without reviving expired BRMA overrides. Remove the unused cross-field decoder scan for region, country and BRMA overlays while retaining physical validation and local-authority applicability reads.

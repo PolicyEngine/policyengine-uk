@@ -601,5 +601,12 @@ class local_authority(Variable):
     default_value = LocalAuthority.MAIDSTONE
     entity = Household
     label = "Local Authority"
-    documentation = "The local authority for this household (this is often the same as your Broad Rental Market Area, but may differ)."
+    documentation = (
+        "The household's local authority, defaulting to Maidstone when it is "
+        "not provided. A later supplied council can supersede an older "
+        "region. A council made incompatible by a newer region is stale: "
+        "reads needing that council require a new supplied council, while "
+        "historical inputs remain unchanged. Local authorities and Broad "
+        "Rental Market Areas have different boundaries."
+    )
     definition_period = YEAR

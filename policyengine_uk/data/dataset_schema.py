@@ -262,6 +262,9 @@ class UKSingleYearDataset:
                     input_variables, period=fiscal_year
                 )
 
+        from policyengine_uk.utils.geography import attach_household_presence
+
+        attach_household_presence(entity_dfs["household"], simulation, fiscal_year)
         return UKSingleYearDataset(
             person=entity_dfs["person"],
             benunit=entity_dfs["benunit"],

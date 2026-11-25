@@ -15,6 +15,7 @@ project:
       children:
       - file: docs/book/usage/getting-started.md
       - file: docs/book/usage/simulations.md
+      - file: policyengine_uk/data/geography/README.md
       - file: docs/book/usage/scenarios.md
       - file: docs/book/usage/dynamics.md
     # A `file:` entry fixes its page's place in a section. A `pattern:` entry
