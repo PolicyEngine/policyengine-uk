@@ -1,0 +1,12 @@
+description: A person must have reached this age to claim Personal Independence Payment; below it, disability support comes through Disability Living Allowance.
+values:
+  2013-04-08: 16
+metadata:
+  unit: year
+  period: year
+  label: PIP minimum age
+  reference:
+    - title: Personal Independence Payment (Transitional Provisions) Regulations 2013, reg. 5(1)
+      href: https://www.legislation.gov.uk/uksi/2013/387/regulation/5
+    - title: Personal Independence Payment (Transitional Provisions) Regulations (Northern Ireland) 2016, reg. 5(1)
+      href: https://www.legislation.gov.uk/nisr/2016/227/regulation/5

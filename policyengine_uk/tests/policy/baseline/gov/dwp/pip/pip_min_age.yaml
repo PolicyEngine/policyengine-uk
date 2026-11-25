@@ -1,0 +1,54 @@
+# SI 2013/387 reg 5(1) and NI SR 2016/227 reg 5(1): no claim for PIP may be
+# made by a person who has not reached 16. Weekly rates from 6 April 2026
+# (Benefit and pension rates 2026 to 2027): daily living 76.70 / 114.60,
+# mobility 30.30 / 80.00. 52 weeks a year.
+
+- name: A 15-year-old with enhanced PIP categories gets no PIP
+  period: 2026
+  input:
+    age: 15
+    pip_dl_category: ENHANCED
+    pip_m_category: ENHANCED
+  output:
+    pip_dl: 0
+    pip_m: 0
+    pip: 0
+    receives_enhanced_pip_dl: false
+
+- name: A 16-year-old with enhanced PIP categories gets both enhanced rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 16
+    pip_dl_category: ENHANCED
+    pip_m_category: ENHANCED
+  output:
+    # 114.60 x 52 and 80.00 x 52
+    pip_dl: 5959.20
+    pip_m: 4160
+    pip: 10119.20
+    receives_enhanced_pip_dl: true
+
+- name: A 40-year-old with standard PIP categories gets both standard rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+    pip_m_category: STANDARD
+  output:
+    # 76.70 x 52 and 30.30 x 52
+    pip_dl: 3988.40
+    pip_m: 1575.60
+    receives_enhanced_pip_dl: false
+
+- name: Raising the minimum age to 18 removes a 17-year-old's PIP
+  period: 2026
+  input:
+    gov.dwp.pip.min_age: 18
+    age: 17
+    pip_dl_category: STANDARD
+    pip_m_category: STANDARD
+  output:
+    pip_dl: 0
+    pip_m: 0
