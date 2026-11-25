@@ -143,6 +143,40 @@ the model uses the rate in force on 30 April for the whole labelled year.
 This change does not introduce a pay-reference-period calculation or alter
 the dated rate parameters.
 
+## Extended childcare capability inputs
+
+For the extended childcare capability route under the rules effective from
+1 December 2022, supply either `uc_limited_capability_for_work` (LCW) or
+`uc_limited_capability_for_WRA` (LCWRA) as true for the person and modelled year.
+These inputs record a current determination or statutory treated-as status
+under [Universal Credit regulation 39](https://www.legislation.gov.uk/uksi/2013/376/regulation/39)
+or [regulation 40](https://www.legislation.gov.uk/uksi/2013/376/regulation/40).
+For example:
+
+```python
+"parent": {
+    "uc_limited_capability_for_work": {2026: True},
+}
+```
+
+The childcare reader accepts a supplied true value for either status, including
+LCWRA when the supplied LCW value is false. Callers must supply current status
+for each modelled year. Calculated or cached capability flags, model-stored
+values and values the engine carries from another year do not count as supplied
+current status. Disability Living Allowance, Personal Independence Payment and
+disability proxy flags do not establish these capability inputs.
+
+When neither status is supplied as true for that year, the capability route
+returns false as a conservative missing-input convention. Missing status does
+not establish that the person lacks the legal status. Current entitlement to
+Employment and Support Allowance (ESA) can qualify through the separate
+[specified-benefit route](https://www.legislation.gov.uk/uksi/2022/1134/regulation/11A).
+An ended ESA award alone does not establish continuing capability status;
+supply that status explicitly to use the capability route after an award ends.
+This contract applies to the childcare reader; global Universal Credit
+capability defaults and the pre-December-2022 childcare list retain their
+existing behaviour.
+
 ## Simulating policy scenarios
 
 To test policy changes, create a scenario and apply it to your simulation. This example shows what happens when we increase Universal Credit's standard allowance for single people over 25 from the current rate to £500 per month:

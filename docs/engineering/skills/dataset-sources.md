@@ -150,6 +150,29 @@ advance apprenticeship tenure, so a producer or caller must supply changed
 classifications for later years rather than rely on a carried input to
 expire automatically.
 
+## Extended childcare capability status
+
+For the childcare capability route under the rules effective from 1 December
+2022, producers must supply current `uc_limited_capability_for_work` or
+`uc_limited_capability_for_WRA` person values for each modelled year. A true
+value records a legal determination or statutory treated-as status under
+Universal Credit regulations 39 or 40. Disability-benefit receipt and an ESA
+support-component default do not establish that fact. See the
+[calculator input contract](../../book/usage/simulations.md#extended-childcare-capability-inputs).
+
+The childcare-specific reader accepts only genuinely supplied current-year
+true values. It rejects calculated or cached flags, model-stored values and
+values the engine carries from another year. With neither status supplied as
+true, the capability route defaults to false; missing data does not establish
+that a person lacks the legal status. This change adds no status imputation or
+dataset migration and does not establish prevalence in existing releases.
+
+Current ESA entitlement retains its separate specified-benefit route. An ended
+ESA report alone does not establish continuing capability status; producers
+must supply that status explicitly to use the capability route. This contract
+does not change global Universal Credit defaults or the pre-December-2022
+childcare list.
+
 ## ISA balances and subscriptions
 
 Producers can export per-person `cash_isa_balance` and
