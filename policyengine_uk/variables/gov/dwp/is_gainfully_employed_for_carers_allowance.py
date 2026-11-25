@@ -8,11 +8,13 @@ class is_gainfully_employed_for_carers_allowance(Variable):
     documentation = (
         "Whether the person's weekly net earnings exceed the Carer's Allowance "
         "earnings limit, so that they are treated as gainfully employed and "
-        "are not entitled to the allowance. The regulation tests the earnings "
-        "of the preceding week; annual earnings are spread evenly over 52 "
-        "weeks. A fraction of a penny is disregarded, as regulation 5 of the "
+        "are not entitled to the allowance. The formula reads "
+        "carers_allowance_weekly_earnings_above_limit, which spreads annual "
+        "earnings over 52 weeks and compares them with the limit in whole "
+        "pence, disregarding a fraction of a penny as regulation 5 of the "
         "Computation of Earnings Regulations requires when that favours the "
-        "claimant."
+        "claimant. Any excess, however small, means the person is gainfully "
+        "employed."
     )
     definition_period = YEAR
     reference = [
@@ -31,4 +33,7 @@ class is_gainfully_employed_for_carers_allowance(Variable):
     ]
 
     def formula(person, period, parameters):
+        # The excess is positive wherever earnings exceed the limit (at least
+        # 1p for a limit in whole pence), which float32 holds as a positive
+        # amount, and exactly zero otherwise.
         return person("carers_allowance_weekly_earnings_above_limit", period) > 0

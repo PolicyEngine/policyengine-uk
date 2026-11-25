@@ -352,7 +352,6 @@
 "policyengine_uk/tests/test_carers_allowance_earnings_taper.py::test_an_overlapping_benefit_equal_to_the_award_leaves_nothing_received[2031]" = 98
 "policyengine_uk/tests/test_salary_sacrifice_ni_measure_properties.py::test_measures_equal_the_difference_of_complete_liabilities[current law]" = 98
 "policyengine_uk/tests/test_carer_overlapping_benefits_properties.py::test_claiming_a_carer_benefit_reduced_to_nil_increases_pension_credit" = 97
-"policyengine_uk/tests/test_carers_allowance_earnings_limit_properties.py::test_net_earnings_never_fall_as_pay_rises" = 97
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_for_young_singles" = 97
 "policyengine_uk/tests/test_scottish_carer_supplement_award_weeks_properties.py::test_supplement_is_monotonic_in_a_supplied_payment" = 97
 "policyengine_uk/tests/test_legacy_award_readers_properties.py::test_other_members_awards_never_change_the_readers_at_pension_age" = 96
