@@ -478,7 +478,11 @@ def _inputs(person, period, income_tax):
         pension=values("pension_contributions_relief"),
         earned_exclusions=earned_exclusions,
         gift=values("gift_aid_grossed_up"),
-        scottish=np.asarray(person("pays_scottish_income_tax", period)),
+        # Scotland used the UK non-savings bands before 2017-18.
+        scottish=(
+            np.asarray(person("pays_scottish_income_tax", period))
+            & (period.start.year >= 2017)
+        ),
         savings_allowance=values("savings_allowance"),
         marriage_allowance_reduction=values("marriage_allowance_reduction_at_stake"),
         rate_test_non_savings_limit=np.asarray(limits.non_savings, dtype=np.float64),
