@@ -21,14 +21,17 @@ from policyengine_uk.variables.gov.dwp.universal_credit.disability_element.limit
 # UC Regs 2013 reg 83(1) names, for each benefit, whose receipt (or
 # entitlement) lifts the cap.
 
-# "a claimant is receiving" (reg 83(1)(b)-(e)): industrial injuries benefit,
-# attendance allowance, which reg 2 defines to include armed forces
-# independence payment, and a war pension, which includes the Armed Forces
-# Compensation Scheme's guaranteed income payments.
+# "a claimant is receiving" (GB reg 83(1)(b)-(e)): industrial injuries
+# benefit; attendance allowance, which reg 2 defines to include armed
+# forces independence payment; a war pension (GB reg 83(1)(d), NI reg
+# 83(1)(e)), including a widow's, widower's or surviving civil partner's
+# pension ((2)(a)(i) in both); and a guaranteed income payment under the
+# Armed Forces Compensation Scheme (GB reg 83(1)(e), NI reg 83(1)(f)).
 CLAIMANT_BENEFITS = [
     "attendance_allowance",
     "armed_forces_independence_payment",
     "iidb",
+    "war_widows_pension",
     "afcs",
 ]
 
@@ -61,7 +64,10 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "allowance (including armed forces independence payment, reg. 2), a "
         "war pension or armed forces compensation, disability living "
         "allowance, personal independence payment, carer's allowance or "
-        "carer support payment. A claimant is the single claimant or each "
+        "carer support payment. War pensions include a widow's, widower's "
+        "or surviving civil partner's pension (GB reg. 83(1)(d) and "
+        "(2)(a)(i); NI UC Regs 2016 reg. 83(1)(e) and (2)(a)(i)). "
+        "A claimant is the single claimant or each "
         "joint claimant (is_uc_assessed_claimant): a partner who cannot be a "
         "joint claimant, so that the other member claims as a single person "
         "(reg. 3(3)), is not one, and another member of the benefit unit, "
@@ -73,6 +79,7 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/83",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/83",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",

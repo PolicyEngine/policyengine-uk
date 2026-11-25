@@ -1772,3 +1772,369 @@
     is_uc_benefit_cap_exempt: false
     is_housing_benefit_benefit_cap_exempt: false
     benefit_cap_reduction: 3_247
+
+# Issue2792: GB UC Regs2013 reg83(1)(d), (2)(a)(i); NI UC Regs2016
+# reg83(1)(e), (2)(a)(i). Receipt by a claimant, including each joint
+# claimant, lifts the UC cap. Another member's receipt does not.
+# Each case contains its own otherwise-identical zero-pension comparator.
+# Full-award pairs use no entered UC amount: (424.90+303.94)*12+20,000
+# =28,746.08. Child Benefit 27.05*52=1,406.60; without the exception,
+# the reduction is 28,746.08+1,406.60-22,020=8,132.68 and final UC 20,613.40.
+# The remaining cases enter a pre-cap award, as above, solely to isolate
+# the cap's claimant scope; they never enter an exemption or final award.
+# uc_has_deduction:false records no debt deductions. Raw and applied cap
+# reductions agree under the current minimum-payable floor.
+# In the last case, uc_is_ineligible_partner states a reg3(3) exclusion
+# (NI reg3(2)); the derived single-claimant and person masks are asserted.
+# Housing Benefit's separate exemption list is outside this UC repair.
+
+- name: Case 70, War Widow UC cap - GB reported pension.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: false}
+      person4: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+  output:
+    universal_credit: [20613.4, 28746.08]
+    uc_benefit_cap_reduction: [8132.68, 0]
+    uc_benefit_cap_reduction_after_floor: [8132.68, 0]
+    uc_deductions: [0, 0]
+    universal_credit_pre_benefit_cap: [28746.08, 28746.08]
+    uc_standard_allowance: [5098.8, 5098.8]
+    uc_child_element: [3647.28, 3647.28]
+    uc_housing_costs_element: [20000, 20000]
+    child_benefit: [1406.6, 1406.6]
+    uc_unearned_income: [0, 0]
+    war_widows_pension: [0, 0, 520, 0]
+- name: Case 71, War Widow UC cap - NI reported pension.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: false}
+      person4: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTHERN_IRELAND
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+      household2:
+        members: [person3, person4]
+        region: NORTHERN_IRELAND
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+  output:
+    universal_credit: [20613.4, 28746.08]
+    uc_benefit_cap_reduction: [8132.68, 0]
+    uc_benefit_cap_reduction_after_floor: [8132.68, 0]
+    uc_deductions: [0, 0]
+    universal_credit_pre_benefit_cap: [28746.08, 28746.08]
+    uc_standard_allowance: [5098.8, 5098.8]
+    uc_child_element: [3647.28, 3647.28]
+    uc_housing_costs_element: [20000, 20000]
+    child_benefit: [1406.6, 1406.6]
+    uc_unearned_income: [0, 0]
+    war_widows_pension: [0, 0, 520, 0]
+- name: Case 72, War Widow UC cap - GB smallest positive currency receipt.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 35, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0.01,
+        uc_is_ineligible_partner: false}
+      person4: {age: 5, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        would_claim_child_benefit: true
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 20000
+        tenure_type: RENT_FROM_COUNCIL
+        num_bedrooms: 2
+  output:
+    universal_credit: [20613.4, 28746.08]
+    uc_benefit_cap_reduction: [8132.68, 0]
+    uc_benefit_cap_reduction_after_floor: [8132.68, 0]
+    uc_deductions: [0, 0]
+    universal_credit_pre_benefit_cap: [28746.08, 28746.08]
+    uc_standard_allowance: [5098.8, 5098.8]
+    uc_child_element: [3647.28, 3647.28]
+    uc_housing_costs_element: [20000, 20000]
+    child_benefit: [1406.6, 1406.6]
+    uc_unearned_income: [0, 0]
+    war_widows_pension: [0, 0, 0.01, 0]
+- name: Case 73, War Widow UC cap - receipt by the joint claimant head.
+  period: 2026
+  input:
+    people:
+      person1: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: false}
+      person4: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 30000
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 30000
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    universal_credit: [22020, 30000]
+    uc_benefit_cap_reduction: [7980, 0]
+    uc_benefit_cap_reduction_after_floor: [7980, 0]
+    uc_deductions: [0, 0]
+    is_uc_assessed_claimant: [true, true, true, true]
+    is_uc_single_or_joint_claimant: [true, true, true, true]
+    uc_member_of_couple_claims_as_single_person: [false, false]
+    is_uc_benefit_cap_exempt_specified_benefit: [false, true]
+    war_widows_pension: [0, 0, 520, 0]
+- name: Case 74, War Widow UC cap - receipt by the joint claimant partner.
+  period: 2026
+  input:
+    people:
+      person1: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person4: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 30000
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 30000
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    universal_credit: [22020, 30000]
+    uc_benefit_cap_reduction: [7980, 0]
+    uc_benefit_cap_reduction_after_floor: [7980, 0]
+    uc_deductions: [0, 0]
+    is_uc_assessed_claimant: [true, true, true, true]
+    is_uc_single_or_joint_claimant: [true, true, true, true]
+    uc_member_of_couple_claims_as_single_person: [false, false]
+    is_uc_benefit_cap_exempt_specified_benefit: [false, true]
+    war_widows_pension: [0, 0, 0, 520]
+- name: Case 75, War Widow UC cap - a non-dependent adult does not exempt the claimant.
+  period: 2026
+  input:
+    people:
+      person1: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 30, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person3: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person4: {age: 30, is_claimant_or_partner: false, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: false}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 18000
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 18000
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    universal_credit: [14753, 14753]
+    uc_benefit_cap_reduction: [3247, 3247]
+    uc_benefit_cap_reduction_after_floor: [3247, 3247]
+    uc_deductions: [0, 0]
+    is_uc_assessed_claimant: [true, false, true, false]
+    is_uc_single_or_joint_claimant: [true, false, true, false]
+    is_uc_benefit_cap_exempt_specified_benefit: [false, false]
+    war_widows_pension: [0, 0, 0, 520]
+- name: Case 76, War Widow UC cap - a nonclaimant partner does not exempt the single claimant.
+  period: 2026
+  input:
+    people:
+      person1: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person2: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: true}
+      person3: {age: 40, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 0,
+        uc_is_ineligible_partner: false}
+      person4: {age: 38, is_claimant_or_partner: true, employment_income: 0, war_widows_pension_reported: 520,
+        uc_is_ineligible_partner: true}
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 18000
+      benunit2:
+        members: [person3, person4]
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        uc_has_deduction: false
+        universal_credit_pre_benefit_cap: 18000
+    households:
+      household1:
+        members: [person1, person2]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+      household2:
+        members: [person3, person4]
+        region: NORTH_EAST
+        council_tax: 0
+        rent: 0
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    universal_credit: [14753, 14753]
+    uc_benefit_cap_reduction: [3247, 3247]
+    uc_benefit_cap_reduction_after_floor: [3247, 3247]
+    uc_deductions: [0, 0]
+    is_uc_assessed_claimant: [true, true, true, true]
+    is_uc_single_or_joint_claimant: [true, false, true, false]
+    uc_member_of_couple_claims_as_single_person: [true, true]
+    is_uc_benefit_cap_exempt_specified_benefit: [false, false]
+    war_widows_pension: [0, 0, 0, 520]
