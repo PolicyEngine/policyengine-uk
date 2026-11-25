@@ -1,0 +1,461 @@
+# Carer's Allowance statutory education status, supplied for the whole year.
+# Changed-rule oracle: SSCBA 1992 s.70(3), independently for Great Britain
+# (1992 c.4) and Northern Ireland (1992 c.7), excludes a person receiving
+# full-time education from entitlement, including entitlement before overlap.
+# https://www.legislation.gov.uk/ukpga/1992/4/section/70
+# https://www.legislation.gov.uk/ukpga/1992/7/section/70
+#
+# The raw programme-specific status is classified externally. These cases do
+# not calculate education hours or infer the status from education stage or
+# the separate Universal Credit full-time-course input. They hold the status
+# constant throughout the modeled year. Great Britain's reg.5(3) includes
+# vacations and temporary interruptions of an ongoing course; that detail is
+# not asserted as a current Northern Ireland rule.
+# https://www.legislation.gov.uk/uksi/1976/409/regulation/5
+#
+# Positive cash expectations preserve pinned-main model rates and behavior.
+# At 5987eb3caff5ac59c565f06232d7503cf9d7f191, the 2026 CA rate is
+# 86.45 a week: 86.45 * 52 = 4,495.40. The unchanged Scottish CSP rate is
+# also 86.45 a week. These are regression controls, not fresh certification
+# of the 2026 uprating legislation. Other inputs supply primitive facts;
+# no eligibility, candidate award, final benefit or pension output is forced.
+# Each adult child and their mature parent have separate benefit units.
+
+- name: Case 1, England excludes a carer whose ongoing course includes vacations.
+  # The caller has classified the ongoing course, including its vacations,
+  # as full-time education under the GB CA rule for the whole year.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [0, 0]
+    carers_allowance_pre_overlap: [0, 0]
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+
+- name: Case 2, Wales applies the statutory status to a non-tertiary course.
+  # A course can satisfy the CA definition without the generic course flag
+  # or TERTIARY stage supplying that classification.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 25
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: POST_SECONDARY
+        is_in_full_time_education: false
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 55
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: WALES
+  output:
+    carers_allowance_pre_couple_limit: [0, 0]
+    carers_allowance_pre_overlap: [0, 0]
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+
+- name: Case 3, Northern Ireland excludes a carer with its statutory status.
+  # The caller supplies the applicable NI statutory status. This case uses
+  # the NI primary education bar and assumes no detailed GB reg.5 rule.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTHERN_IRELAND
+  output:
+    carers_allowance_pre_couple_limit: [0, 0]
+    carers_allowance_pre_overlap: [0, 0]
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+
+- name: Case 4, an explicit false CA status preserves the award on a full-time tertiary course.
+  # The caller classifies this course outside the programme's statutory
+  # definition. Course designation and enrolment level do not override it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+        is_in_full_time_education: true
+        is_in_full_time_education_for_carers_allowance: false
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 5, tertiary enrolment alone leaves an omitted CA status at its default.
+  # Default false preserves the prior model award. It does not establish
+  # whether this person's education meets the statutory definition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 6, the generic full-time course flag leaves an omitted CA status at its default.
+  # The generic input supplies the UC course designation. This regression
+  # preserves the CA default when no programme-specific status is supplied.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: POST_SECONDARY
+        is_in_full_time_education: true
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 7, a course that ended before the year leaves a false status and a full award.
+  # The course ended before 2026 began. The input describes the whole year;
+  # this case asserts no within-year course-end transition or proration.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: NOT_IN_EDUCATION
+        is_in_full_time_education_for_carers_allowance: false
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 8, a current-year false classification overrides the prior year's true status.
+  # The course ended before 2026. The caller supplies false for 2026,
+  # replacing the prior year's true classification under normal input carry.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        is_in_full_time_education_for_carers_allowance:
+          2025: true
+          2026: false
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 9, reported receipt cannot bypass the statutory education bar.
+  # Caring hours are unrecorded. The existing model uses reported receipt
+  # for the caring-hours route, but s.70(3) still bars the computed award.
+  # The reported amount supplies no downstream candidate or final award.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        carers_allowance_reported: 4_000
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [0, 0]
+    carers_allowance_pre_overlap: [0, 0]
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+
+- name: Case 10, false status preserves receipt imputation when caring hours are unrecorded.
+  # Preserved model convention, not a new legal oracle: reported receipt
+  # supplies the caring route and the model computes its full rate rather
+  # than copying the 4,000 reported amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        carers_allowance_reported: 4_000
+        cares_for_severely_disabled_person: true
+        is_in_full_time_education_for_carers_allowance: false
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [4_495.40, 0]
+    carers_allowance_pre_overlap: [4_495.40, 0]
+    carers_allowance: [4_495.40, 0]
+
+- name: Case 11, the eligible partner receives the same-caree couple's award.
+  # The couple cares for person1's parent, person3. Both provide 40 hours.
+  # Person1 is the elder head and reports receipt, but the statutory status
+  # removes person1 before the existing couple election selects an award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        carers_allowance_reported: 4_000
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 38
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        is_in_full_time_education_for_carers_allowance: false
+      person3:
+        age: 65
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        partners_care_for_same_severely_disabled_person: true
+      benunit2:
+        members: [person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [0, 4_495.40, 0]
+    carers_allowance_pre_overlap: [0, 4_495.40, 0]
+    carers_allowance: [0, 4_495.40, 0]
+
+- name: Case 12, education removes underlying entitlement even when pension already removes payment.
+  # A pension-age adult child cares for their parent. The reported pension
+  # is 6,000 annually. Payment alone cannot reveal the education defect:
+  # the education bar must remove the award before overlap and entitlement.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 70
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        state_pension_reported: 6_000
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 90
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance_pre_couple_limit: [0, 0]
+    carers_allowance_pre_overlap: [0, 0]
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [false, false]
+    receives_carer_benefit: [false, false]
+
+- name: Case 13, a false status preserves underlying entitlement after the pension overlap.
+  # The otherwise identical carer has no education exclusion. A constant
+  # 6,000 reported new State Pension exceeds the preserved 4,495.40 CA rate.
+  # The existing overlap rule leaves entitlement but pays no allowance.
+  # Boolean expectations are exact and have no currency error margin.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 70
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        state_pension_reported: 6_000
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: false
+      person2:
+        age: 90
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: LONDON
+  output:
+    carers_allowance: [0, 0]
+    is_entitled_to_carer_benefit: [true, false]
+    receives_carer_benefit: [false, false]
+
+- name: Case 14, the CA-specific status leaves Scottish Carer Support Payment unchanged.
+  # This preserves existing CSP behavior; it does not certify all Scottish
+  # education rules. From 2025 Scotland's existing replacement leaves CA
+  # at zero, while the new CA-specific input does not alter CSP computation.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        care_hours: 40
+        cares_for_severely_disabled_person: true
+        current_education: TERTIARY
+        is_in_full_time_education_for_carers_allowance: true
+      person2:
+        age: 60
+        pip_dl_points: 8
+    benunits:
+      benunit1:
+        members: [person1]
+      benunit2:
+        members: [person2]
+    households:
+      household:
+        members: [person1, person2]
+        region: SCOTLAND
+  output:
+    carers_allowance: [0, 0]
+    carer_support_payment_pre_couple_limit: [4_495.40, 0]
+    carer_support_payment_pre_overlap: [4_495.40, 0]
+    carer_support_payment: [4_495.40, 0]

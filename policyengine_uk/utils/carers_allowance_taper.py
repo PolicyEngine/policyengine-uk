@@ -57,6 +57,7 @@ def carers_allowance_weekly_by_part_of_year(person, period, parameters):
         & (meets_work_condition | receives_ca)
         & would_claim
         & meets_age_condition
+        & ~person("is_in_full_time_education_for_carers_allowance", period)
     )
     # SSCBA 1992 s. 70(1)(b): no allowance for anyone gainfully employed,
     # which reg. 8 of the 1976 Regulations defines by an earnings limit.
