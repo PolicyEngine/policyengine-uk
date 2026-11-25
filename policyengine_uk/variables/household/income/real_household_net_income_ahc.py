@@ -11,4 +11,4 @@ class real_household_net_income_ahc(Variable):
 
     def formula(household, period, parameters):
         net_income = household("household_net_income_ahc", period)
-        return net_income * household("inflation_adjustment", period)
+        return net_income * household("inflation_adjustment_ahc", period)

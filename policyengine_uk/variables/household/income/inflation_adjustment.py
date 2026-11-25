@@ -33,8 +33,10 @@ class inflation_adjustment_ahc(Variable):
     documentation = (
         "Ratio of one price index on 1 January of "
         "gov.simulation.price_base_year to the same index in the period. The "
-        "formula uses consumer_price_index_ahc where that index has a value "
-        "on both dates, and consumer_price_index on both dates otherwise."
+        "formula uses consumer_price_index_ahc when both years are at least "
+        "gov.simulation.ahc_price_index_start_year and both dates have AHC "
+        "values. Otherwise it uses consumer_price_index on both dates. The "
+        "start year records model coverage; the CPI fallback is an approximation."
     )
     entity = Household
     definition_period = YEAR
@@ -46,7 +48,13 @@ class inflation_adjustment_ahc(Variable):
         base_date = price_base_date(parameters, period)
         ahc_base = indices.consumer_price_index_ahc(base_date)
         ahc_period = indices.consumer_price_index_ahc(period)
-        if ahc_base is not None and ahc_period is not None:
+        first_ahc_year = int(
+            parameters(period).gov.simulation.ahc_price_index_start_year
+        )
+        within_ahc_coverage = (
+            int(base_date[:4]) >= first_ahc_year and period.start.year >= first_ahc_year
+        )
+        if within_ahc_coverage and ahc_base is not None and ahc_period is not None:
             ratio = ahc_base / ahc_period
         else:
             cpi = indices.consumer_price_index

@@ -1,0 +1,21 @@
+description: First calendar year supported by the model's price index for real incomes after housing costs.
+values:
+  0000-01-01: 2022
+metadata:
+  unit: year
+  period: year
+  economy: false
+  label: First modeled year for after housing costs prices
+  documentation: |
+    The model stores after housing costs price growth from 2022. Comparisons
+    using either an earlier base year or an earlier income year use ordinary
+    Consumer Price Index values on both dates. The official ONS exclusion
+    series extends back to 1996; this setting records the model's coverage,
+    not the official series' first year or a legal commencement date.
+  reference:
+    - title: PolicyEngine-UK stored after housing costs price growth
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/5987eb3caff5ac59c565f06232d7503cf9d7f191/policyengine_uk/parameters/gov/economic_assumptions/yoy_growth.yaml#L592
+    - title: DWP Households Below Average Income quality and methodology report 2014/15
+      href: https://assets.publishing.service.gov.uk/media/5a74abb640f0b61df477785e/households-below-average-income-quality-metholodogy-2014-2015.pdf#page=61
+    - title: ONS consumer price index series excluding rents, maintenance repairs and water charges, January 1996 to April 2025
+      href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
