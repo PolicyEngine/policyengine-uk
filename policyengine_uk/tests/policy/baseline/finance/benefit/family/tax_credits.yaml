@@ -36,6 +36,8 @@
   period: 2020
   absolute_error_margin: 0
   input:
+    would_claim_uc: false
+    would_claim_uc_at_legacy_closure: false
     age: 35
     weekly_hours: 40
     working_tax_credit_reported: true
@@ -58,6 +60,8 @@
   period: 2020
   absolute_error_margin: 0
   input:
+    would_claim_uc: false
+    would_claim_uc_at_legacy_closure: false
     age: 60
     weekly_hours: 16
     working_tax_credit_reported: true

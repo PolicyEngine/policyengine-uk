@@ -25,7 +25,12 @@ def situation(families, reverse=False):
             names.append(name)
         if reverse:
             names.reverse()
-        benunits[f"family_{i}"] = {"members": names}
+        # These WTC-only controls assume no ordinary or legacy-closure UC claim.
+        benunits[f"family_{i}"] = {
+            "members": names,
+            "would_claim_uc": {YEAR: False},
+            "would_claim_uc_at_legacy_closure": {YEAR: False},
+        }
         households[f"household_{i}"] = {"members": names}
     if reverse:
         people = dict(reversed(list(people.items())))

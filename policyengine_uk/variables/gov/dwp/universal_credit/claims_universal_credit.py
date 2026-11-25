@@ -9,7 +9,10 @@ class claims_universal_credit(Variable):
         "Whether this family claims Universal Credit: it would claim it "
         "anyway (would_claim_uc), or it claims when DWP moves it off its "
         "legacy benefits or the abolition of income-related ESA reaches its "
-        "award (claims_uc_at_legacy_closure). Universal Credit is "
+        "award (claims_uc_at_legacy_closure). Working Tax Credit follows "
+        "wtc_terminated_by_universal_credit_claim, retaining an award where "
+        "all its claimants have attained the Pension Credit qualifying age. "
+        "Universal Credit is "
         "paid only to claiming families. A claim ends the family's Housing "
         "Benefit continuing award and Child Tax Credit, and the claimant's "
         "and partner's income-related ESA (esa_income_report_closed). Once "
@@ -19,7 +22,7 @@ class claims_universal_credit(Variable):
         "8(3) and 46(2); housing_benefit_eligible), and Universal Credit "
         "then leaves that rent out (uc_housing_costs_element). For other "
         "claimants the model doesn't represent the overlap of Universal "
-        "Credit with Working Tax Credit, Income Support and income-based "
+        "Credit with Income Support and income-based "
         "JSA."
     )
     definition_period = YEAR

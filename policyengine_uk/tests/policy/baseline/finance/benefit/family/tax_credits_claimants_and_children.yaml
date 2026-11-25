@@ -52,6 +52,8 @@
         current_education: UPPER_SECONDARY
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [parent_1, parent_2, student]
   output:
     is_WTC_eligible: true
@@ -74,6 +76,8 @@
         current_education: UPPER_SECONDARY
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [parent, student]
   output:
     is_WTC_eligible: true
@@ -118,6 +122,8 @@
         weekly_hours: 16
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [parent_1, parent_2, student]
   output:
     is_WTC_eligible: true
@@ -136,6 +142,8 @@
         is_severely_disabled_for_benefits: true
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [worker]
   output:
     WTC_severely_disabled_element: 1_390
@@ -161,6 +169,8 @@
         age: 10
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: [parent, teenager, child]
   output:
     is_child_for_working_tax_credit_childcare_element: [false, false, true]

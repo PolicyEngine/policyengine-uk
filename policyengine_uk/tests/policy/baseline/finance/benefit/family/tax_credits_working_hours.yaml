@@ -52,6 +52,8 @@
         is_claimant_or_partner: true
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - adult_0
         - adult_1
@@ -105,6 +107,8 @@
         is_disabled_for_benefits: false
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - adult_0
         - adult_1
@@ -183,6 +187,8 @@
         is_disabled_for_benefits: false
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - adult_0
         - adult_1
@@ -239,6 +245,8 @@
         employment_income: 0
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - adult_0
         - adult_1
@@ -332,6 +340,8 @@
         employment_income: 0
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - adult_0
         - adult_1
@@ -436,6 +446,8 @@
         is_parent: false
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - worker
   output:
@@ -456,6 +468,8 @@
         age: 10
     benunits:
       family:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members:
         - worker
         - child_0

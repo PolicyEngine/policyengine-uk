@@ -335,6 +335,8 @@
         childcare_expenses: 6_000
     benunits:
       benunit:
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         members: ["student", "child"]
         # Tax credits closed in 2025; keep the award to test the overlap.
         legacy_benefits_closed: false
