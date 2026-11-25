@@ -2,7 +2,8 @@ from policyengine_uk.model_api import *
 
 
 class is_claimant_or_partner(Variable):
-    """The single adult or couple a benefit unit is formed around.
+    documentation = """
+    The single adult or couple a benefit unit is formed around.
 
     In benefit law this is the claimant and their partner, as opposed to the
     children and young persons they are responsible for (SSCBA 1992 s.137(1)
