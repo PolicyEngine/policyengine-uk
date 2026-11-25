@@ -17,16 +17,59 @@ tracked in [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669)
 - Both are added to `market_income`, `household_market_income` and
   `hbai_household_net_income`. `maintenance_expenses` (maintenance paid) is
   subtracted in `market_income` and `hbai_household_net_income`.
-- Only `spousal_maintenance_income` feeds the means tests:
+- `spousal_maintenance_income` counts as the claimant's or partner's income
+  in these means tests:
   - Universal Credit unearned income
     ([UC Regulations 2013 reg. 66(1)(d)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66));
   - Pension Credit income
     ([State Pension Credit Regulations 2002 reg. 15(5)(d)](https://www.legislation.gov.uk/uksi/2002/1792/regulation/15)),
     but not savings credit qualifying income (reg. 9(f));
+  - Income Support income, in full, as a liable relative payment
+    ([IS Regulations 1987 regs. 54 to 58](https://www.legislation.gov.uk/uksi/1987/1967/part/V/chapter/VII));
   - Housing Benefit income, less £15 a week where the family includes a child
     or young person
     ([HB Regulations 2006 Sch. 5 para. 47](https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/47);
-    [HB (SPC) Regulations 2006 reg. 29(1)(o) and Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2006/214/regulation/29)).
+    [HB (SPC) Regulations 2006 reg. 29(1)(o)](https://www.legislation.gov.uk/uksi/2006/214/regulation/29)
+    and [Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/20));
+  - Council Tax Reduction income, also less £15 a week where the family
+    includes a child or young person
+    ([SI 2012/2885 Sch. 5 para. 20](https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/20)
+    sets this for pension-age applicants in England). For working-age
+    applicants with Universal Credit, the model counts it in full in the
+    five English council schemes it holds and in Wales: Wales, Merton,
+    Kingston upon Thames, Newham and Westminster count it through the
+    Universal Credit income figure, and Oxford, from April 2026, as other
+    unearned income under its Appendix 3. Applicants without Universal
+    Credit in those five schemes, and Oxford's with it before April 2026,
+    have the same £15 disregard. For working-age applicants in other English
+    councils, the model uses the reported reduction in place of a local
+    income assessment. It caps the report at the claimant's share of the
+    bill only when that share is below the full bill, another claim in the
+    household receives a positive simulated reduction, and the model flags
+    no one counted in the share as a possible excluded student. The
+    model leaves spousal maintenance out of Scotland's working-age scheme,
+    and out of the Welsh one for applicants without Universal Credit,
+    although both count it less £15 a week: Scotland where the family
+    includes a child or young person, Wales where the applicable amount
+    includes a family premium
+    ([SSI 2021/249 reg. 57(1)(d) and (6)](https://www.legislation.gov.uk/ssi/2021/249/regulation/57);
+    [WSI 2013/3029 Sch. 6 para. 17](https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17)
+    and [Sch. 9 para. 49](https://www.legislation.gov.uk/wsi/2013/3029/schedule/9/paragraph/49)).
+    [#2931](https://github.com/PolicyEngine/policyengine-uk/issues/2931) tracks the fix.
+- `maintenance_income` counts in none of those, except in Oxford City
+  Council's Council Tax Reduction scheme for Universal Credit applicants
+  from April 2026.
+- Both count towards the Childcare Offer for Wales income limit
+  ([Welsh Government, Assessing parents' income, question 9](https://www.gov.wales/sites/default/files/publications/2023-04/atisn17333doc1.pdf#page=7);
+  [guidance for local authorities, para. 69](https://www.gov.wales/sites/default/files/publications/2026-04/childcare-offer-for-wales-guidance-for-local-authorities-april-2026-english_0.pdf#page=18)).
+  Both also count in a non-dependant's gross income for the Housing Benefit
+  non-dependant deduction, and for the Council Tax Reduction one in the
+  English pension-age, Scottish and Welsh schemes; the five English council
+  schemes count only spousal maintenance there. Neither the Housing Benefit
+  list nor the English pension-age list of non-dependant income disregards
+  covers maintenance
+  ([HB Regulations 2006 reg. 74(9)](https://www.legislation.gov.uk/uksi/2006/213/regulation/74);
+  [SI 2012/2885 Sch. 1 para. 8(9)](https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8)).
 - UC earned income does not net off maintenance paid.
 - `uc_deductions` does cover child maintenance collected from a paying
   parent's UC award, but only in aggregate: it sits in the above-cap excess
