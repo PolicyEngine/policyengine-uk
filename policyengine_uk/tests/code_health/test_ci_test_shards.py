@@ -138,7 +138,7 @@ def test_shard_does_not_depend_on_the_process(conftest):
 
 
 @PROPERTY_SETTINGS
-@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 8))
+@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 16))
 def test_shards_partition_any_collection(conftest, ids, shards):
     members = {
         shard: [nodeid for nodeid in ids if conftest.shard_of(nodeid, shards) == shard]
@@ -184,7 +184,7 @@ _durations = st.dictionaries(nodeids, st.floats(0, 3_000, allow_nan=False), max_
 
 
 @PROPERTY_SETTINGS
-@given(durations=_durations, shards=st.integers(1, 8), data=st.data())
+@given(durations=_durations, shards=st.integers(1, 16), data=st.data())
 def test_balanced_shards_bound_the_gap_by_the_longest_test(
     conftest, durations, shards, data
 ):
@@ -201,7 +201,7 @@ def test_balanced_shards_bound_the_gap_by_the_longest_test(
 
 
 @PROPERTY_SETTINGS
-@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 8))
+@given(ids=st.lists(nodeids, max_size=40, unique=True), shards=st.integers(1, 16))
 def test_shards_partition_a_collection_with_listed_tests(conftest, ids, shards):
     listed = list(conftest.read_shard_durations())[:20]
     collection = sorted(set(ids) | set(listed))
@@ -265,7 +265,7 @@ class _CollectedTest:
 @PROPERTY_SETTINGS
 @given(
     collection=st.dictionaries(nodeids, st.booleans(), max_size=40),
-    shards=st.integers(2, 8),
+    shards=st.integers(2, 16),
 )
 def test_the_last_shard_runs_exactly_the_tests_that_need_the_dataset(
     conftest, collection, shards
