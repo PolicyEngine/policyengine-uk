@@ -61,6 +61,7 @@ GOV_SPENDING_VARIABLES = [
     "carer_support_payment",
     "scottish_carer_supplement",
     "disability_basic_income",
+    "armed_forces_independence_payment",
 ]
 
 

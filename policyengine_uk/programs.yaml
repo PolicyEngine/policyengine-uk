@@ -990,6 +990,12 @@ budget_terms:
     kind: programme
     notes: Reported amounts. Not yet in the coverage list.
 
+  - variable: armed_forces_independence_payment
+    name: Armed Forces Independence Payment
+    budget: benefit
+    kind: programme
+    notes: Reported annual AFIP cash, separate from afcs in the model. Entitlement and rates are not calculated. Not yet in the coverage list.
+
   - variable: bsp
     name: Bereavement Support Payment
     budget: benefit
@@ -1227,3 +1233,4 @@ budget_order:
     - carer_support_payment
     - scottish_carer_supplement
     - disability_basic_income
+    - armed_forces_independence_payment

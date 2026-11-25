@@ -273,8 +273,12 @@ def test_household_tax_variables_equal_main():
 
 
 def test_household_benefit_variables_equal_main():
-    assert HOUSEHOLD_BENEFIT_VARIABLES == MAIN_HOUSEHOLD_BENEFIT_VARIABLES
-    assert budget_variables("benefit") == MAIN_HOUSEHOLD_BENEFIT_VARIABLES
+    assert HOUSEHOLD_BENEFIT_VARIABLES == MAIN_HOUSEHOLD_BENEFIT_VARIABLES + [
+        "armed_forces_independence_payment"
+    ]
+    assert budget_variables("benefit") == MAIN_HOUSEHOLD_BENEFIT_VARIABLES + [
+        "armed_forces_independence_payment"
+    ]
 
 
 def test_council_tax_and_uprating_rules_equal_main():
