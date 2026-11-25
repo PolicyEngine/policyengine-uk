@@ -91,6 +91,67 @@
     housing_benefit: 0
     universal_credit: 0
 
+- name: GB working-age private renter of a caravan keeps a continuing award until 30 June 2026
+  # The council determines no maximum rent (LHA) for a caravan (SI 2006/213
+  # reg 13C(5)(d)(i)), so the tenure test reads the private tenancy, and the
+  # abolition reaches the award on the same date as any other.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        region: LONDON
+  output:
+    LHA_eligible: false
+    # 86 / 365
+    housing_benefit_payable_share: 0.235616
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+    # 5,200 * 86 / 365
+    housing_benefit: 1_225.21
+
+- name: GB working-age private renter of a caravan has no award by 2027
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: false
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        region: LONDON
+  output:
+    LHA_eligible: false
+    housing_benefit_payable_share: 0
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
 - name: Scotland follows the Great Britain date
   period: 2026
   absolute_error_margin: 0.01
