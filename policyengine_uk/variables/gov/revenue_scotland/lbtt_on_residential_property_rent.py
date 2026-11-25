@@ -11,6 +11,7 @@ class lbtt_on_residential_property_rent(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "lbtt_liable"
     reference = "https://www.legislation.gov.uk/asp/2013/11/schedule/1/paragraph/3"
 
     def formula(household, period, parameters):

@@ -8,6 +8,7 @@ class land_and_buildings_transaction_tax(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    defined_for = "lbtt_liable"
 
     def formula(household, period):
         LBTTS = [
