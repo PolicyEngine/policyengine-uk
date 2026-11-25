@@ -9,16 +9,15 @@
    the NEDC column and later cars the WLTP column (ITEPA 2003 s. 139A).
    A diesel car not meeting RDE2 adds 4 points, up to the maximum.
 2. Budget 2026: the company_car_tax_rise_2030 scenario raises every
-   appropriate percentage for 2030-31 by one point, to a maximum of 40%. It
-   changes a company car holder's income tax and their employer's Class 1A,
+   appropriate percentage for 2030-31 by one point, to a maximum of 40%.
+   With all three employer NI incidence shares set to zero, it changes a
+   company car holder's income tax and their employer's Class 1A,
    nothing else (their student loan repayment included), and nobody else's
    tax; 2029-30 is unchanged. COMPANY_CAR_TAX_RISE_2030 passed as a reform
    dict gives the same results.
 3. Employer NI: Class 1A follows the secondary percentage (SSCBA 1992
    s. 10(5)), so an employer rate reform moves it. The employer NI
-   incidence covers secondary Class 1 only, so no household bears Class 1A:
-   the fixed-employer-cost pay response and the employer cost change that
-   the capital and consumer channels spread leave it out. And
+   incidence can be disabled explicitly for static tax comparisons. The
    baseline_employer_cost and adjusted_employer_cost still equal each
    simulation's employer_cost for a company car holder, as they do for
    everyone else.
@@ -30,12 +29,20 @@ import numpy as np
 import pytest
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import Scenario
 from policyengine_uk.scenarios import company_car_tax_rise_2030
 from policyengine_uk.scenarios.company_car_tax_rise_2030 import (
     COMPANY_CAR_TAX_RISE_2030,
 )
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
+INCIDENCE = "gov.contrib.policyengine.employer_ni"
+STATIC_INCIDENCE = {
+    f"{INCIDENCE}.{channel}_incidence": {"2020-04-06.2100-12-31": 0}
+    for channel in ["employee", "consumer", "capital"]
+}
+STATIC_SCENARIO = Scenario(parameter_changes=STATIC_INCIDENCE)
 
 # Each table, in percentage points: the rate for 0 g/km; for 1 to 50 g/km by
 # electric range (130 miles or more, 70-129, 40-69, 30-39, under 30); for
@@ -258,11 +265,12 @@ TAX_AND_INCOME = [
 
 
 @pytest.mark.parametrize("year", [2029, 2030, 2031])
-def test_2030_31_rise_changes_only_holders_income_tax_and_class_1a(year):
+def test_static_2030_31_rise_changes_only_holders_income_tax_and_class_1a(year):
     cars = [HOLDER, {}]
     baseline = Simulation(situation=situation(year, cars))
     reformed = Simulation(
-        situation=situation(year, cars), scenario=company_car_tax_rise_2030
+        situation=situation(year, cars),
+        scenario=company_car_tax_rise_2030 + STATIC_SCENARIO,
     )
     change = {
         variable: values(reformed, variable, year) - values(baseline, variable, year)
@@ -325,8 +333,11 @@ def test_a_company_car_raises_gov_tax_by_its_income_tax_and_class_1a():
 EMPLOYER_RATE = "gov.hmrc.national_insurance.class_1.employer_scale[1].rate"
 
 
-def test_class_1a_follows_an_employer_rate_reform_outside_the_fixed_cost_response():
-    reform = {EMPLOYER_RATE: {"2026-04-06.2100-12-31": 0.16}}
+def test_class_1a_follows_an_employer_rate_reform_with_static_incidence():
+    reform = {
+        EMPLOYER_RATE: {"2026-04-06.2100-12-31": 0.16},
+        **STATIC_INCIDENCE,
+    }
     cars = [HOLDER, {}]
     baseline = Simulation(situation=situation(2026, cars))
     reformed = Simulation(situation=situation(2026, cars), reform=reform)
@@ -336,16 +347,17 @@ def test_class_1a_follows_an_employer_rate_reform_outside_the_fixed_cost_respons
     np.testing.assert_allclose(
         values(reformed, "ni_class_1a", 2026), 0.16 * benefits, rtol=1e-6
     )
-    # The pay response holds employer cost before Class 1A, so the holder's
-    # pay moves exactly as the other employee's does, and so does the cost
-    # change the capital and consumer channels would spread.
+    # With all three incidence shares zero, pay is unchanged and employers
+    # retain the whole liability increase, including Class 1A for the holder.
     pay_change = values(reformed, "employer_ni_fixed_employer_cost_change", 2026)
-    assert pay_change[0] < 0
-    assert pay_change[0] == pytest.approx(pay_change[1], abs=0.01)
+    np.testing.assert_allclose(pay_change, 0, atol=0, rtol=0)
     cost_change = values(reformed, "adjusted_employer_cost", 2026) - values(
         reformed, "baseline_employer_cost", 2026
     )
-    assert cost_change[0] == pytest.approx(cost_change[1], abs=0.01)
+    assert cost_change[1] > 0
+    assert cost_change[0] - cost_change[1] == pytest.approx(
+        0.01 * benefits[0], abs=0.01
+    )
     # Agreement: the incidence variables' costs equal employer_cost in each
     # simulation, for the holder too.
     np.testing.assert_allclose(
@@ -378,17 +390,12 @@ def test_the_parameter_changes_as_a_reform_dict_match_the_scenario(year):
         )
 
 
-INCIDENCE = "gov.contrib.policyengine.employer_ni"
-
-
-def test_no_household_bears_the_class_1a_on_the_2030_31_rise():
-    # With half of an employer NI change borne by employees, the rest would
-    # go to capital and consumers through adjusted_employer_cost less
-    # baseline_employer_cost. Neither covers Class 1A, so the rise's Class 1A
-    # moves no pay and leaves nothing for those channels to spread.
+def test_all_three_zero_shares_leave_the_2030_31_rise_static():
+    # Disable every incidence channel explicitly. The cost replicas still
+    # account for the Class 1A increase, which employers retain in this case.
     reform = {
         **COMPANY_CAR_TAX_RISE_2030,
-        f"{INCIDENCE}.employee_incidence": {"2030-04-06.2100-12-31": 0.5},
+        **STATIC_INCIDENCE,
     }
     simulation = Simulation(situation=situation(2030, [HOLDER]), reform=reform)
     class_1a_change = values(simulation, "ni_class_1a", 2030) - values(
@@ -403,7 +410,13 @@ def test_no_household_bears_the_class_1a_on_the_2030_31_rise():
             err_msg=variable,
         )
     np.testing.assert_allclose(
-        values(simulation, "adjusted_employer_cost", 2030),
-        values(simulation, "baseline_employer_cost", 2030),
+        values(simulation, "adjusted_employer_cost", 2030)
+        - values(simulation, "baseline_employer_cost", 2030),
+        class_1a_change,
         atol=0.01,
     )
+    for variable in [
+        "employer_ni_response_consumer_incidence",
+        "employer_ni_response_capital_incidence",
+    ]:
+        np.testing.assert_allclose(values(simulation, variable, 2030), 0, atol=0)

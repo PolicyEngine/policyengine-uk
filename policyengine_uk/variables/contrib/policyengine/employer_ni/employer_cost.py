@@ -5,11 +5,10 @@ class employer_cost(Variable):
     label = "employer cost"
     documentation = (
         "Pay, statutory sick, maternity and paternity pay, employer pension "
-        "contributions and the secondary Class 1 contributions on them. "
-        "Benefits in kind and the Class 1A contributions on them are left "
-        "out, as baseline_employer_cost and adjusted_employer_cost leave "
-        "them out, so a fixed-employer-cost response to an employer NI "
-        "reform holds this cost."
+        "contributions and employer National Insurance: secondary Class 1 "
+        "and Class 1A. The cost excludes the tax valuation of the benefits "
+        "in kind themselves. The employer NI incidence formulas hold this "
+        "modeled cost subject to the cash-pay floor and incidence assumptions."
     )
     entity = Person
     definition_period = YEAR
@@ -28,7 +27,7 @@ class employer_cost(Variable):
         )
         return (
             person("employment_income", period)
-            + person("ni_class_1_employer", period)
+            + person("ni_employer", period)
             + person("employer_pension_contributions", period)
             + benefits
         )

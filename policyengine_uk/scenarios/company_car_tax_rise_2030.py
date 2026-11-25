@@ -8,6 +8,11 @@ baseline keeps 2029-30's rates for 2030-31 and this scenario applies the
 rise from 6 April 2030. Table 6.1 of Budget 2026 (row 86) costs it at
 +£310m in 2030-31 and +£345m in 2031-32.
 
+The default modelled result includes Class 1A incidence under the existing
+employer National Insurance assumptions. For a static comparison, set all
+three incidence shares to zero in both the baseline and the reform, following
+docs/book/assumptions/employer-ni-incidence.md#secondary-class-1-and-class-1a.
+
 Sources: Budget 2026, overview of tax legislation and rates, paragraph 1.25;
 HMRC, "Taxation of company cars: the appropriate percentage for tax years
 2030 to 2031 and 2031 to 2032" (28 October 2026).

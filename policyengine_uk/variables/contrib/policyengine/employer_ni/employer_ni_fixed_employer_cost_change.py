@@ -74,7 +74,8 @@ class employer_ni_fixed_employer_cost_change(Variable):
         baseline_employer_ni = r_b * max_(
             ni_class_1_income - pen_con_subtracted_b + ni_only_earnings_b - t_b, 0
         )
-        c_b = ni_class_1_income + baseline_employer_ni
+        baseline_class_1a = baseline_person("ni_class_1a", period)
+        c_b = ni_class_1_income + baseline_employer_ni + baseline_class_1a
 
         # Calculate reform employer cost
         reform_parameters = parameters(period)
@@ -84,22 +85,35 @@ class employer_ni_fixed_employer_cost_change(Variable):
         p_r = reform_parameters.gov.contrib.policyengine.employer_ni.exempt_employer_pension_contributions
         pen_con_subtracted_r = employer_pension_contributions if p_r else 0
 
-        # Early return if no change in parameters
-        if r_b == r_r and p_b == p_r and np.array_equal(t_b, t_r):
+        reform_class_1a = person("ni_class_1a", period)
+
+        # A benefits-only reform can change Class 1A without changing Class 1.
+        if (
+            r_b == r_r
+            and p_b == p_r
+            and np.array_equal(t_b, t_r)
+            and np.array_equal(baseline_class_1a, reform_class_1a)
+        ):
             return 0
 
-        # Calculate new NIC earnings keeping employer cost constant. Solve
-        # c_b = x + r_r * max(x - k_r, 0) for x, the cost before employer NI,
+        # Class 1A is independent of pay. Subtract its reform liability from
+        # the baseline total cost, then solve K = x + r_r * max(x - k_r, 0)
+        # for x, the cost before secondary Class 1 contributions,
         # where k_r is the point at which the reformed charge starts: the
         # threshold plus exempt pension contributions, less the NIC-only
         # excess. The cost is continuous and strictly increasing in x, so
-        # x = c_b where c_b is at or below k_r (no reformed charge), and
+        # x = K where K is at or below k_r (no reformed charge), and
         # otherwise the linear solution above it. NIC earnings include
         # statutory pay and the excess, so this also holds where pay alone is
         # below a threshold but NIC earnings are above it, and where a reform
         # moves the threshold across a person's earnings.
+        class_1_cost_target = c_b - reform_class_1a
         k_r = pen_con_subtracted_r + t_r - ni_only_earnings_r
-        new_ni_class_1_income = where(c_b <= k_r, c_b, (c_b + r_r * k_r) / (1 + r_r))
+        new_ni_class_1_income = where(
+            class_1_cost_target <= k_r,
+            class_1_cost_target,
+            (class_1_cost_target + r_r * k_r) / (1 + r_r),
+        )
 
         # Find difference in employment income: the reformed pay before this
         # change includes the reform's own salary sacrifice pay terms.
