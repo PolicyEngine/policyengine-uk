@@ -828,3 +828,82 @@
     is_uc_single_or_joint_claimant:
     - false
     - true
+
+# Reg 8(2B) saves a pension-age single claimant. Omitted claimant inputs derive
+# from the ordinary adult's benefit-unit structure, as in the source fallback.
+- name: Case 22, omitted claimant inputs derive the pension-age single claimant saving.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5_000
+        working_tax_credit_reported: 1_000
+        is_parent: false
+        is_disabled_for_benefits: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_claimant_or_partner:
+    - true
+    is_uc_single_or_joint_claimant:
+    - true
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    claims_universal_credit: true
+    wtc_terminated_by_universal_credit_claim: false
+    is_WTC_eligible: true
+
+# The same family supplies a contradictory false UC claimant flag while the
+# annual claim proxy remains true. This tests supplied-input precedence and
+# the conservative nonempty-set guard, not a legal absence of a claimant.
+- name: Case 23, an explicit empty UC claimant set does not establish the age saving.
+  period: 2024
+  input:
+    people:
+      person1:
+        age: 70
+        weekly_hours: 16
+        employment_income: 5_000
+        working_tax_credit_reported: 1_000
+        is_parent: false
+        is_disabled_for_benefits: false
+        is_uc_single_or_joint_claimant: false
+    benunits:
+      benunit:
+        members:
+        - person1
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+        legacy_benefits_closed: false
+        would_claim_WTC: true
+    households:
+      household:
+        members:
+        - person1
+        region: NORTH_EAST
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    is_claimant_or_partner:
+    - true
+    is_uc_single_or_joint_claimant:
+    - false
+    has_attained_state_pension_credit_qualifying_age:
+    - true
+    claims_universal_credit: true
+    wtc_terminated_by_universal_credit_claim: true
+    is_WTC_eligible: false
+    working_tax_credit: 0

@@ -7,6 +7,8 @@ def _ordinary_claim_ends_wtc(benunit, period):
     at_qualifying_age = person(
         "has_attained_state_pension_credit_qualifying_age", period
     )
+    # The claim proxy can be true while supplied roles identify no claimant.
+    # An empty set cannot establish the pension-age saving through all().
     all_claimants_at_qualifying_age = (benunit.sum(claimant) > 0) & benunit.all(
         ~claimant | at_qualifying_age
     )
@@ -27,7 +29,11 @@ class wtc_terminated_by_universal_credit_claim(Variable):
         "deemed or withdrawn claims, or every historical basic condition. "
         "An award remains where the actual single Universal Credit claimant, "
         "or both joint Universal Credit claimants, have attained the qualifying "
-        "age for State Pension Credit. A tax-credit partner who cannot join "
+        "age for State Pension Credit. Claimant roles derive from benefit-unit "
+        "structure when not supplied. Supplied role and claimant flags take "
+        "precedence. A true claim proxy with no identified claimant does not "
+        "establish this saving; ordinary claim termination still applies. "
+        "A tax-credit partner who cannot join "
         "the Universal Credit claim is not included in this age test "
         "(Universal Credit Regulations 2013 reg 3(3)). Before "
         "25 July 2022 an ordinary claim first had to satisfy the basic "
