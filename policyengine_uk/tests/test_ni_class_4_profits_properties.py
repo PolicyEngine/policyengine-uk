@@ -5,6 +5,9 @@ chargeable to income tax under ITTOIA 2005 Part 2 Chapter 2, which are after
 capital allowances (CAA 2001 s. 247) and the trading allowance (ITTOIA 2005
 ss. 783AF and 783AI), less trading losses as Sch. 2 para. 3 allows.
 
+The generated reference comparisons hold Income Tax opening losses
+(`loss_relief`) at zero, isolating the separate Class 4 loss balances.
+
 Invariants, for every generated case:
 
 1. Differential: ni_class_4_profits_before_losses, ni_class_4_loss_relief,
@@ -119,13 +122,14 @@ def reference_allowance(simulation, year):
 
 
 def reference_trade(profit, receipts, capital_allowances, allowance, current_loss):
-    """Independent profits and eligible annual Class 4 loss.
+    """Independent Class 4 trade values with no Income Tax opening losses.
 
     Compare ordinary-expense profit less the current loss with allowance
     profit, which excludes that loss (ITTOIA ss. 783AF and 783AI). Ties use
-    the allowance. Only a loss supplied for this year affects the allowance
-    election or enters the separate Class 4 balance, even if the engine
-    fills in a current Income Tax loss from an earlier input.
+    the allowance. The caller holds Income Tax opening loss_relief at zero;
+    only a loss supplied for this year then affects the allowance election
+    or enters the separate Class 4 balance. Inherited trading_loss values
+    are not new losses.
     """
     ordinary_profit = max(Fraction(0), profit - capital_allowances)
     if receipts > 0 and receipts >= profit:
@@ -233,6 +237,7 @@ def sim(request):
                     "self_employment_gross_receipts",
                     "capital_allowances",
                     "trading_loss",
+                    "loss_relief",
                 ]
             },
         }
@@ -502,6 +507,7 @@ def test_losses_carry_forward_over_many_years(years, opening_balance, random):
         "age": {first_year: 40},
         "self_employment_income": dict(zip(periods, (profit for profit, _ in years))),
         "trading_loss": dict(zip(periods, (loss for _, loss in years))),
+        "loss_relief": {period: 0 for period in periods},
     }
     supplied = None
     if opening_balance is not None:
@@ -656,6 +662,7 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
         "self_employment_income": dict(
             zip(periods, (profit for profit, _, _ in years))
         ),
+        "loss_relief": {period: 0 for period in periods},
     }
     if entered:
         person["trading_loss"] = entered

@@ -1,0 +1,58 @@
+- name: Ordinary net-pay relief leaves only the remaining pay for current loss use
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    taxable_social_security_income: 0
+    employment_income:
+      2024: 2_000
+      2025: 0
+    employee_pension_contributions:
+      2024: 1_000
+      2025: 0
+    self_employment_income:
+      2024: 0
+      2025: 10_000
+    trading_loss:
+      2024: 10_000
+    trading_allowance_deduction:
+      2024: 0
+      2025: 0
+  output:
+    trade_loss_relief_against_general_income: 1_000
+    loss_relief:
+      2025: 9_000
+    taxable_self_employment_income:
+      2025: 1_000
+
+- name: No ordinary net-pay deduction leaves the same income available for loss use
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: [40, 75, 40]
+    taxable_social_security_income: [0, 0, 0]
+    employment_income:
+      2024: [2_000, 2_000, 2_000]
+      2025: [0, 0, 0]
+    employee_pension_contributions:
+      2024: [0, 1_000, 0]
+      2025: [0, 0, 0]
+    personal_pension_contributions:
+      2024: [0, 0, 800]
+      2025: [0, 0, 0]
+    self_employment_income:
+      2024: [0, 0, 0]
+      2025: [10_000, 10_000, 10_000]
+    trading_loss:
+      2024: [10_000, 10_000, 10_000]
+    trading_allowance_deduction:
+      2024: [0, 0, 0]
+      2025: [0, 0, 0]
+  output:
+    # No contribution, age-ineligible contribution and RAS-only contribution.
+    net_pay_pension_relief: [0, 0, 0]
+    trade_loss_relief_against_general_income: [2_000, 2_000, 2_000]
+    loss_relief:
+      2025: [8_000, 8_000, 8_000]
+    taxable_self_employment_income:
+      2025: [2_000, 2_000, 2_000]
