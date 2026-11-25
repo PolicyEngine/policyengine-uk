@@ -10,7 +10,7 @@ class carers_allowance_pre_couple_limit(Variable):
     entity = Person
     label = "Carer's Allowance before the couple and overlap restrictions"
     documentation = (
-        "The existing age, caring, earnings and take-up calculation before "
+        "The age, caring, education, earnings and take-up calculation before "
         "the same-person couple restriction and overlapping-benefit adjustment. "
         "This candidate amount is not final entitlement or payment. In the "
         "year the Budget 2026 earnings taper starts, it adds the award before "
