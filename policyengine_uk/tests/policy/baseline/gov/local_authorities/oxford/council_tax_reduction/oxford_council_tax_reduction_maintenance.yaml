@@ -1,0 +1,187 @@
+# Oxford City Council Council Tax Reduction Scheme 2026 to 2027:
+# https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27
+# https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4
+# Part 1 paragraphs 9 and 15: annual income / 52; 100% support through
+# 480.00 a week, 75% from 480.01 through 530.00.
+# Appendix 5 applies to working-age applicants without Universal Credit and
+# ignores the first 15 a week of maintenance other than child maintenance.
+# Its working-age maintenance item has no child condition.
+# 25,220 / 52 = 485; (25,220 - 15 * 52) / 52 = 470: 100% of a 1,000 bill.
+# Without the disregard, 485 would give 75% of that bill. This is a static
+# source comparison, not a result obtained by running the old model.
+# At 520 annual maintenance, min(520, 15 * 52) = 520; counted income is 0.
+# All households have no UC claim, other income, capital or non-dependants.
+# Benefit receipt reports and claim intents isolate the maintenance income.
+# No applicable-income, liability-selector or CTR-award input is supplied.
+
+- name: Case 1, Oxford disregards maintenance for a working-age applicant without a child or UC.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        is_household_head: true
+        is_parent: false
+        employment_income: 0
+        self_employment_income: 0
+        private_pension_income: 0
+        property_income: 0
+        savings_interest_income: 0
+        dividend_income: 0
+        spousal_maintenance_income: 25_220
+        maintenance_income: 0
+        widowed_parents_allowance_reported: 0
+        income_support_reported: 0
+        jsa_income_reported: 0
+        jsa_contrib_reported: 0
+        esa_income_reported: 0
+        esa_contrib_reported: 0
+        carers_allowance_reported: 0
+        incapacity_benefit_reported: 0
+        state_pension_reported: 0
+        child_benefit_reported: 0
+        working_tax_credit_reported: 0
+        child_tax_credit_reported: 0
+    benunits:
+      benunit:
+        members: [person1]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        would_claim_IS: false
+        would_claim_WTC: false
+        would_claim_CTC: false
+        would_claim_child_benefit: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_000
+        savings: 0
+        owned_land: 0
+        other_residential_property_value: 0
+        non_residential_property_value: 0
+  output:
+    council_tax_reduction_applicable_income: 24_440
+    oxford_council_tax_reduction: 1_000
+
+- name: Case 2, Oxford retains the same maintenance disregard for a family with a child and no UC.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        is_household_head: true
+        is_parent: true
+        employment_income: 0
+        self_employment_income: 0
+        private_pension_income: 0
+        property_income: 0
+        savings_interest_income: 0
+        dividend_income: 0
+        spousal_maintenance_income: 25_220
+        maintenance_income: 0
+        widowed_parents_allowance_reported: 0
+        income_support_reported: 0
+        jsa_income_reported: 0
+        jsa_contrib_reported: 0
+        esa_income_reported: 0
+        esa_contrib_reported: 0
+        carers_allowance_reported: 0
+        incapacity_benefit_reported: 0
+        state_pension_reported: 0
+        child_benefit_reported: 0
+        working_tax_credit_reported: 0
+        child_tax_credit_reported: 0
+      person2:
+        age: 5
+        is_claimant_or_partner: false
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        would_claim_IS: false
+        would_claim_WTC: false
+        would_claim_CTC: false
+        would_claim_child_benefit: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_000
+        savings: 0
+        owned_land: 0
+        other_residential_property_value: 0
+        non_residential_property_value: 0
+  output:
+    council_tax_reduction_applicable_income: 24_440
+    oxford_council_tax_reduction: 1_000
+
+- name: Case 3, Oxford disregards a child-free applicant's maintenance below fifteen pounds weekly.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_claimant_or_partner: true
+        is_household_head: true
+        is_parent: false
+        employment_income: 0
+        self_employment_income: 0
+        private_pension_income: 0
+        property_income: 0
+        savings_interest_income: 0
+        dividend_income: 0
+        spousal_maintenance_income: 520
+        maintenance_income: 0
+        widowed_parents_allowance_reported: 0
+        income_support_reported: 0
+        jsa_income_reported: 0
+        jsa_contrib_reported: 0
+        esa_income_reported: 0
+        esa_contrib_reported: 0
+        carers_allowance_reported: 0
+        incapacity_benefit_reported: 0
+        state_pension_reported: 0
+        child_benefit_reported: 0
+        working_tax_credit_reported: 0
+        child_tax_credit_reported: 0
+    benunits:
+      benunit:
+        members: [person1]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+        would_claim_IS: false
+        would_claim_WTC: false
+        would_claim_CTC: false
+        would_claim_child_benefit: false
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_000
+        savings: 0
+        owned_land: 0
+        other_residential_property_value: 0
+        non_residential_property_value: 0
+  output:
+    council_tax_reduction_applicable_income: 0
+    oxford_council_tax_reduction: 1_000
