@@ -85,3 +85,32 @@
     uc_housing_costs_element: 8_000
     uc_work_allowance: 5_124 # 427 * 12
     housing_benefit: 0
+
+# An award that carries no housing costs element gets the higher work
+# allowance (reg 22(2)(a)). The family is on Universal Credit outside specified
+# or temporary accommodation, so Housing Benefit doesn't pay the rent instead.
+- name: The same claimant whose award carries no housing costs element gets the higher work allowance, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 12_000
+        uc_limited_capability_for_WRA: true
+        housing_benefit_reported: 8_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        would_claim_uc_housing_costs_element: false
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 8_000
+  output:
+    uc_housing_costs_element: 0
+    uc_work_allowance: 8_520 # 710 * 12
+    housing_benefit: 0

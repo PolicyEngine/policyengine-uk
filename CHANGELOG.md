@@ -1,3 +1,41 @@
+## [2.180.1] - 2026-11-25
+
+### Fixed
+
+- The rules for `is_claimant_or_partner` now appear in its variable metadata, not only in the class docstring.
+- Label the contributory (New Style) JSA rate parameters correctly: the 18 to 24 rate no longer says income-based, and the other rate applies at 25 or over. Council Tax Reduction take-up now points to its tracking issue and says that an override only changes awards where the local scheme is simulated.
+
+
+## [2.180.0] - 2026-11-24
+
+### Added
+
+- Add `would_claim_uc_housing_costs_element`, a benefit unit input that defaults to true and gates `uc_housing_costs_element`, so a dataset can represent a Universal Credit award that carries no housing costs element for a family that rents; such an award gets the higher work allowance.
+
+### Fixed
+
+- The model now takes the rent, less the prescribed deduction for meals, as the Housing Benefit eligible rent of a private renter in a houseboat, caravan or mobile home, instead of capping it at the Local Housing Allowance (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)). By default `LHA_eligible` returns false where the household's recorded `accommodation_type` is `MOBILE`. `housing_benefit_eligible` reads `benunit_is_renting` in place of `LHA_eligible`, so these families stay eligible, and a supplied `LHA_eligible` now selects the eligible-rent calculation without changing eligibility. The model has no rent officer's rent amount, so it can overstate their Housing Benefit.
+
+
+## [2.179.4] - 2026-11-24
+
+### Changed
+
+- Document that Microcosm UK datasets built from microcosm#1550 on carry PIP daily-living and mobility points, so a reform to the PIP point thresholds can move people in microsimulation on them; the Enhanced FRS still stores categories.
+- Spread the Python tests across ten CI shards instead of eight, so each job has more room under its 90-minute limit.
+
+### Fixed
+
+- The Universal Credit education protection for a claimant moved off legacy benefits (SI 2014/1230 reg. 60(1); SR 2016/226 reg. 61(1) in Northern Ireland) now needs a full-time course that reg. 12(2) of the Universal Credit Regulations 2013 (in Northern Ireland, of the Universal Credit Regulations (Northern Ireland) 2016) covers: advanced education, or a course with a student loan or grant for maintenance. A young person whom an existing benefit kept outside the qualifying young person definition on the migration day (SI 2014/1230 reg. 28; SR 2016/226 reg. 29), and who was on another full-time course, met the condition that day. The protection doesn't reach them, and the model no longer pays them Universal Credit through it.
+
+
+## [2.179.3] - 2026-11-19
+
+### Changed
+
+- Updated the labour supply parameter-read test and the uprating cache test so they pass when policyengine-core builds parameter-node children on first read.
+
+
 ## [2.179.2] - 2026-11-18
 
 ### Fixed
