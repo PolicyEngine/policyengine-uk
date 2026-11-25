@@ -1,6 +1,6 @@
 description: >-
-  Informational take-up rate of Universal Credit; changing this parameter does not
-  affect Universal Credit award calculations.
+  No model formula reads this Universal Credit take-up rate. Dataset builds set
+  the would_claim_uc benefit-unit input used in Universal Credit claim decisions.
 values:
   2015-01-01: 0.55
 metadata:
