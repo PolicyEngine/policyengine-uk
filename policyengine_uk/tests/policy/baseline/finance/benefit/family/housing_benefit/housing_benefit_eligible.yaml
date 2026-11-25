@@ -1,8 +1,9 @@
-# In 2021 a working-age family (age defaults to 40) with a reported award and
-# no Universal Credit claim keeps Housing Benefit on the continuing-award
-# route if it rents, from a social landlord or privately. The next eight
-# cases test that route. Private renters qualify whether or not the Local
-# Housing Allowance sets their eligible rent (see lha_mobile_homes.yaml).
+# In 2021, before working-age awards were abolished, a working-age family (age
+# defaults to 40) with a reported award and no Universal Credit claim keeps
+# Housing Benefit on the continuing-award route if it rents, from a social
+# landlord or privately. The next eight cases test that route. Private renters
+# qualify whether or not the Local Housing Allowance sets their eligible rent
+# (see lha_mobile_homes.yaml).
 
 - name: Social housing eligible
   # The social housing flag alone opens the route, as it did when the formula

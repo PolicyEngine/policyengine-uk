@@ -61,7 +61,7 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 
 EDUCATIONS = tuple(item.name for item in EducationType)
 NON_ADVANCED = ("UPPER_SECONDARY", "POST_SECONDARY")
-YEARS = (2024, 2025, 2026)
+YEARS = (2024, 2025, 2026, 2027)
 EXISTING_BENEFITS = (
     "jsa_income_reported",
     "esa_income_reported",
@@ -81,10 +81,13 @@ REG_5_5_REPORTS = (
 # The existing benefits the model pays in each year: tax credits until 5 April
 # 2025 (gov.dwp.tax_credits.active), Income Support and income-based JSA until
 # 31 March 2026 (gov.dwp.income_support.active, gov.dwp.JSA.income.active).
+# Income-related ESA and Housing Benefit stay listed: their abolitions end
+# each award by its payable share, which open_awards reads.
 PAYING = {
     2024: set(EXISTING_BENEFITS),
     2025: set(EXISTING_BENEFITS) - set(TAX_CREDITS),
     2026: {"esa_income_reported", "housing_benefit_reported"},
+    2027: {"esa_income_reported", "housing_benefit_reported"},
 }
 SETTINGS = settings(
     max_examples=25,
@@ -365,7 +368,10 @@ def open_awards(sim, year, claim_limbs=True):
     claim_limbs, the family's Universal Credit claim leave the award on it
     open, person by person. The claim ends the claimant's and partner's own
     income-related ESA, Housing Benefit outside the Pension Credit age
-    conditions and Child Tax Credit, and nobody else's."""
+    conditions and Child Tax Credit, and nobody else's. The abolitions end
+    an income-related ESA or Housing Benefit award in a year in which it is
+    not payable (esa_income_payable_share, housing_benefit_payable_share),
+    whether or not anyone claims."""
     own_open = ~sim.calculate("person_legacy_benefits_closed", year)
     family_closed = sim.calculate("legacy_benefits_closed", year, map_to="person")
     pension_age = sim.calculate(
@@ -376,11 +382,16 @@ def open_awards(sim, year, claim_limbs=True):
         claim_ends = sim.calculate(
             "claims_universal_credit", year, map_to="person"
         ) & sim.calculate("is_claimant_or_partner", year)
+    esa_payable = sim.calculate("esa_income_payable_share", year) > 0
+    housing_benefit_payable = (
+        sim.calculate("housing_benefit_payable_share", year, map_to="person") > 0
+    )
     return {
         "income_support_reported": own_open,
         "jsa_income_reported": own_open,
-        "esa_income_reported": own_open & ~claim_ends,
-        "housing_benefit_reported": pension_age | (~family_closed & ~claim_ends),
+        "esa_income_reported": own_open & ~claim_ends & esa_payable,
+        "housing_benefit_reported": (pension_age | (~family_closed & ~claim_ends))
+        & housing_benefit_payable,
         "child_tax_credit_reported": ~family_closed & ~claim_ends,
         "working_tax_credit_reported": ~family_closed,
     }

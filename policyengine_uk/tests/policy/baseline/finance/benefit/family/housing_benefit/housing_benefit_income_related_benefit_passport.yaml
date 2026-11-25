@@ -165,9 +165,10 @@
   # SI 2006/214 reg 5(2) disapplies the pension-age ones), so Sch 5 para 4 and
   # Sch 6 para 5 disregard the State Pension and the savings. Guarantee Credit
   # is set to nil to show the result does not come from the Pension Credit
-  # passport. Members over State Pension age keep the award all year. The
-  # private pension would otherwise take the couple's income above their
-  # applicable amount.
+  # passport. The private pension would otherwise take the couple's income
+  # above their applicable amount. The couple has no SI 2019/37 art. 4
+  # saving, so its working-age award ends on 1 July 2026 (SI 2025/1148
+  # art. 7); not claiming Universal Credit, it is paid for 86/365 of 2026-27.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -183,6 +184,7 @@
       benunit:
         members: [older, younger]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         guarantee_credit: 0
         esa_income: 6_000
     households:
@@ -196,7 +198,8 @@
     housing_benefit_assessable_capital: 0
     housing_benefit_applicable_income: 0
     housing_benefit_entitlement: 6_240
-    housing_benefit: 6_240
+    # 6,240 x 86/365.
+    housing_benefit: 1_470.25
 
 - name: Mixed-age couple with contributory ESA only is not passported
   period: 2026

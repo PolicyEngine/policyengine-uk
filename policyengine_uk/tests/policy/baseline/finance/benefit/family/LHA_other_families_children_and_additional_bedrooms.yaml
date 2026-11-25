@@ -1303,7 +1303,12 @@
     # (aged 25 or over, £95.55 a week), so no taper: 14,360.32 - 5,470.40 =
     # 8,889.92. At two bedrooms: 10,830.04 - 5,470.40 = 5,359.64, so the
     # placed child adds 3,530.28 (67.89 a week * 52).
-    housing_benefit: [8_889.92, 0]
+    housing_benefit_entitlement: [8_889.92, 0]
+    # The renter (60) is under the qualifying age for State Pension Credit,
+    # so the award is paid for the 86 of the 365 days from 6 April 2026
+    # before working-age Housing Benefit is abolished on 1 July 2026 (SI
+    # 2025/1148 art. 7(3)): 8,889.92 * 86 / 365 = 2,094.61.
+    housing_benefit: [2_094.61, 0]
 
 - name: A non-dependant's child placed for adoption raises the renter's final Housing Benefit
   period: 2026
@@ -1339,9 +1344,10 @@
     # adoption with the claimant or partner, so the renter has 3 bedrooms
     # and the daughter's own claim 2 (herself and the qualifying parent or
     # carer room). HB: 276.16 * 52 - 105.20 * 52 = 14,360.32 - 5,470.40 =
-    # 8,889.92.
+    # 8,889.92, paid for 86/365 of 2026-27 as in the foster case: 2,094.61.
     housing_benefit_LHA_allowed_bedrooms: [3, 2]
-    housing_benefit: [8_889.92, 0]
+    housing_benefit_entitlement: [8_889.92, 0]
+    housing_benefit: [2_094.61, 0]
     # The renter does not claim Universal Credit; "A non-dependant's child
     # placed for adoption" has the Universal Credit rooms, [3, 3].
 

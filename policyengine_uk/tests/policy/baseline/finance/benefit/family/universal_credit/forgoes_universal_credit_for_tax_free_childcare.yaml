@@ -45,6 +45,28 @@
     universal_credit_pre_benefit_cap: 0
 
 - name: A family whose claim would end a legacy award keeps its claim
+  # Working-age Housing Benefit is payable until 30 June 2026 (SI 2025/1148
+  # art. 7(3)), so in 2026-27 a claim still ends the award. From 2027-28 the
+  # abolition has ended it either way (below).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    uc_maximum_amount: 21_993
+    uc_income_reduction: 20_000
+    tax_free_childcare_without_universal_credit: 2_400
+    housing_benefit_reported: 5_000
+    legacy_benefits_closed: false
+  output:
+    # 6 April to 30 June 2026 is 86 of the 365 days of 2026-27.
+    housing_benefit_payable_share: 0.235616
+    forgoes_universal_credit_for_tax_free_childcare: false
+    universal_credit_pre_benefit_cap: 1_993
+
+- name: A Housing Benefit award its abolition has ended ends either way, so the award is still forgone
+  # The claimant (40) is under the qualifying age for State Pension Credit,
+  # outside specified and temporary accommodation and has no saved
+  # income-related ESA, so no saving in SI 2025/1148 art. 7(4) keeps the
+  # award after 30 June 2026.
   period: 2027
   absolute_error_margin: 0.01
   input:
@@ -54,8 +76,9 @@
     housing_benefit_reported: 5_000
     legacy_benefits_closed: false
   output:
-    forgoes_universal_credit_for_tax_free_childcare: false
-    universal_credit_pre_benefit_cap: 1_993
+    housing_benefit_payable_share: 0
+    forgoes_universal_credit_for_tax_free_childcare: true
+    universal_credit_pre_benefit_cap: 0
 
 - name: A legacy award DWP has closed ends either way, so the award is still forgone
   period: 2027

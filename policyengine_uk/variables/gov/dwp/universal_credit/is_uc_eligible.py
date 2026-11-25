@@ -96,20 +96,30 @@ class is_uc_eligible(Variable):
         # State Pension Credit. The model reads the year's reported receipt
         # instead. legacy_award_is_closed never closes the legacy awards of a
         # family whose claimant or partner reports Pension Credit
-        # (pension_credit_reported), so legacy_benefits_closed is false and it
-        # makes no closure claim. reg_60a reads reported Working Tax Credit,
-        # so a family whose Working Tax Credit tapered to nil, which reg
+        # (pension_credit_reported), so legacy_benefits_closed is false and
+        # the legacy closure prompts no claim. From 2026-27 the working-age
+        # Housing Benefit abolition can (claims_uc_at_legacy_closure): a
+        # mixed-age couple without the SI 2019/37 saving is off the Pension
+        # Credit age conditions (reg 6A(4) and (5)), so unless another
+        # modelled saving applies (reg 6A(2) accommodation, or art. 7(4)(b))
+        # SI 2025/1148 art. 7(4)(a) does not save its Housing Benefit, and a
+        # report of Pension Credit does not stop the abolition prompting its
+        # claim. Reg 60A then applies on reported
+        # Working Tax Credit, as on any closure claim; reg_60a does not read
+        # the Pension Credit report. Because it reads the Working Tax Credit
+        # report, a family whose Working Tax Credit tapered to nil, which reg
         # 60A(2) also covers, is not modelled as a reg 60A migrant.
-        # Any other pension-age Working Tax Credit recipient can make the
-        # reg 60A claim, whether or not it would claim Pension Credit in the
-        # model (would_claim_pc). Except in prescribed cases, no one is
+        # Any pension-age Working Tax Credit recipient that makes a closure
+        # claim can use reg 60A, whether or not it would claim Pension Credit
+        # in the model (would_claim_pc). Except in prescribed cases, no one is
         # entitled to State Pension Credit without making, or being treated
         # as making, a claim (SSAA 1992 s.1(1) and (4)(ab)), so for a family
         # that has not claimed it this matches the regulation. Where the
         # report and the award differ, it does not: a family with an award it
         # does not report is treated as a reg 60A migrant, where the
-        # regulation refuses the waiver, and one reporting Pension Credit it
-        # is not awarded makes no closure claim.
+        # regulation refuses the waiver. The legacy closure does not move a
+        # family reporting Pension Credit it is not awarded, but the Housing
+        # Benefit abolition can, as above.
         # The formula reads the Working Tax Credit reports of the claimant and
         # partner only. A couple both aged 16 or over and in the UK must
         # claim a tax credit together (Tax Credits Act 2002 s.3(3)), and
