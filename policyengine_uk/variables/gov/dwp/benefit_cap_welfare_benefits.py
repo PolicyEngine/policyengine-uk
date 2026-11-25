@@ -18,6 +18,10 @@ from policyengine_uk.variables.gov.dwp.jsa_income import (
 # reg. 75C(2)(b)), so this total includes it. Universal Credit counts Housing
 # Benefit as nil (UC Regs 2013 reg. 80(2A)), so its cap reads
 # uc_benefit_cap_welfare_benefits, these benefits without Housing Benefit.
+# On the Housing Benefit-only route, reg. 75C(4) counts Widowed Parent's
+# Allowance after its income disregard (Sch. 5 para. 16(b)). The shared list
+# keeps the gross award for Universal Credit; the formula replaces it only
+# where the family has no Universal Credit award before the cap.
 # Universal Credit before the cap is in the total too; HB reg. 75F(1)(g) puts a
 # family receiving it outside the Housing Benefit cap. A family in specified
 # or temporary accommodation can receive both awards (housing_benefit_eligible),
@@ -63,9 +67,18 @@ class benefit_cap_welfare_benefits(Variable):
         "count. The total includes Universal Credit and Housing Benefit "
         "before the cap (universal_credit_pre_benefit_cap, "
         "housing_benefit_pre_benefit_cap). Universal Credit's cap reads "
-        "uc_benefit_cap_welfare_benefits, which totals the same benefits "
-        "with Housing Benefit at nil (UC Regs 2013 reg. 80(2A)). Inputs that "
-        "supply this total include Housing Benefit in it. They also supply "
+        "uc_benefit_cap_welfare_benefits, which takes Housing Benefit as nil "
+        "(UC Regs 2013 reg. 80(2A)) and counts Widowed Parent's Allowance in "
+        "full. Without an award of Universal Credit before the cap, this "
+        "computed total counts Widowed Parent's Allowance after the Housing "
+        "Benefit income disregard (HB Regs 2006 reg. 75C(4), Sch. 5 para. "
+        "16(b)); with such a Universal Credit award it keeps the gross "
+        "allowance. A supplied total for a family without a Universal Credit "
+        "award before the cap already counts Widowed Parent's Allowance after "
+        "the Housing Benefit income disregard; the model uses the supplied "
+        "total as given. For Universal Credit, inputs that supply this total "
+        "include its counted benefits, with the gross allowance, and Housing "
+        "Benefit in it. They also supply "
         "housing_benefit_pre_benefit_cap, which "
         "uc_benefit_cap_welfare_benefits subtracts, or supply "
         "uc_benefit_cap_welfare_benefits itself, with a value for every "
@@ -86,6 +99,7 @@ class benefit_cap_welfare_benefits(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/80",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75A",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75C",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/16",
     )
 
     def formula(benunit, period, parameters):
@@ -111,9 +125,17 @@ class benefit_cap_welfare_benefits(Variable):
             income_related_esa_award_on_reports,
             couple,
         )
-        return income_based + add_for_members(
+        total = income_based + add_for_members(
             benunit,
             period,
             CLAIMANT_OR_PARTNER_BENEFITS + FAMILY_BENEFITS,
             couple,
         )
+        gross_wpa = add_for_members(
+            benunit, period, ["widowed_parents_allowance"], couple
+        )
+        counted_wpa = benunit(
+            "housing_benefit_widowed_parents_allowance_income", period
+        )
+        on_universal_credit = benunit("universal_credit_pre_benefit_cap", period) > 0
+        return total - where(on_universal_credit, 0, gross_wpa - counted_wpa)

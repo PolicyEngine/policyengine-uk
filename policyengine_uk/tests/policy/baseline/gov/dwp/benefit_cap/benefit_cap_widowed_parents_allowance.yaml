@@ -1,0 +1,267 @@
+# HB Regs 2006 regs 75C(4), 40(2), Sch 5 para 16(b): councils count
+# Widowed Parent's Allowance after the £15 weekly disregard. Each claimant
+# or couple below has one recipient, no other Sch 5 para 34 disregards, and no tax
+# payable on the allowance. The £20 combined weekly ceiling cannot bind.
+# Awards before the cap are inputs; these cases test the basket and cap,
+# rather than eligibility for or the means test of those awards. In particular,
+# supplied WPA receipts do not certify the recipients' underlying entitlement.
+
+- name: Case 1, Housing Benefit counts the original family's allowance after the disregard.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 6_000
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # 6,000 - 15 * 52 = 5,220. Basket = 18,000 + 1,354.60 + 5,220.
+    # Reg 75CA(2)(d) limit 22,020; reg 75D reduction = 24,574.60 - 22,020.
+    benefit_cap_welfare_benefits: 24_574.60
+    housing_benefit_benefit_cap_reduction: 2_554.60
+    housing_benefit: 15_445.40
+
+- name: Case 2, an allowance below the disregard contributes no negative amount.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 260
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # The whole £5 weekly allowance is disregarded; 18,000 + 1,354.60.
+    benefit_cap_welfare_benefits: 19_354.60
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit: 18_000
+
+- name: Case 3, an allowance at the disregard contributes nothing to the Housing Benefit cap.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 780
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # 780 = 15 * 52; the counted allowance is exactly zero.
+    benefit_cap_welfare_benefits: 19_354.60
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit: 18_000
+
+- name: Case 4, Housing Benefit counts the partner's allowance and excludes another adult's award.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 32
+        is_claimant_or_partner: true
+      person2:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 6_000
+      person3:
+        age: 10
+        is_claimant_or_partner: false
+      person4:
+        age: 45
+        is_claimant_or_partner: false
+        widowed_parents_allowance: 9_000
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        relation_type: COUPLE
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+        region: NORTH_EAST
+  output:
+    # The couple has one recipient: 6,000 - 780. The unrelated adult's
+    # own allowance is outside this claimant's cap (HB reg 75A).
+    benefit_cap_welfare_benefits: 24_574.60
+    housing_benefit_benefit_cap_reduction: 2_554.60
+    housing_benefit: 15_445.40
+
+- name: Case 5, a supplied Universal Credit award keeps the gross allowance in both cap baskets.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 6_000
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        # A supplied positive award remains the route even with no claim intent.
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        in_specified_or_temporary_accommodation: true
+        universal_credit_pre_benefit_cap: 18_000
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # UC regs 66(1)(b)(vi), 80(4): WPA remains 6,000 in full.
+    # Combined basket = 18,000 UC + 18,000 HB + 6,000 WPA + 1,354.60 CB.
+    # UC reg 80(2A) takes the 18,000 of Housing Benefit out of UC's basket.
+    benefit_cap_welfare_benefits: 43_354.60
+    uc_benefit_cap_welfare_benefits: 25_354.60
+
+- name: Case 6, a supplied combined cap total retains its Housing Benefit subtraction contract.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        widowed_parents_allowance: 6_000
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+        would_claim_housing_benefit: true
+        in_specified_or_temporary_accommodation: true
+        universal_credit_pre_benefit_cap: 18_000
+        housing_benefit_pre_benefit_cap: 6_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+        benefit_cap_welfare_benefits: 31_354.60
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # The supplied combined total includes Housing Benefit. The existing
+    # input contract removes exactly the supplied 6,000: 31,354.60 - 6,000.
+    uc_benefit_cap_welfare_benefits: 25_354.60
+
+- name: Case 7, Maternity Allowance remains fully counted for the Housing Benefit cap.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        is_claimant_or_partner: true
+        maternity_allowance: 6_000
+      person2:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+        child_benefit: 1_354.60
+        child_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        working_tax_credit: 0
+    households:
+      household:
+        members: [person1, person2]
+        region: NORTH_EAST
+  output:
+    # Reg 40 and Sch 5 provide no corresponding £15 disregard for MA.
+    # 18,000 + 1,354.60 + 6,000 = 25,354.60; excess over 22,020 = 3,334.60.
+    benefit_cap_welfare_benefits: 25_354.60
+    housing_benefit_benefit_cap_reduction: 3_334.60
+    housing_benefit: 14_665.40
