@@ -109,11 +109,11 @@ def test_a_float32_annual_amount_is_taken_to_the_penny_first():
     assert round_down_to_pounds(np.float32(1406.5999755859375)) == 1406
 
 
-# Structural reforms are chosen when the simulation is built, so the switch has
-# to be set before data load.
+# Enable the household-based reform for the 2026 period these tests calculate.
+# Apply the parameter change before loading the test household.
 HOUSEHOLD_BASED = Scenario(
     applied_before_data_load=True,
-    parameter_changes={"gov.contrib.conservatives.cb_hitc_household": {"2025": True}},
+    parameter_changes={"gov.contrib.conservatives.cb_hitc_household": {"2026": True}},
 )
 
 
