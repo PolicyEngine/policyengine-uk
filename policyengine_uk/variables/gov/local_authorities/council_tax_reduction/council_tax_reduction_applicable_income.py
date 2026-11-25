@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_oxford_working_age,
     is_scotland_scheme,
 )
 from policyengine_uk.variables.household.demographic.country import Country
@@ -27,7 +28,9 @@ class council_tax_reduction_applicable_income(Variable):
         "earnings disregards and the rest). Spousal maintenance counts less one "
         "£15 weekly disregard where the applicant's family includes a child "
         "or young person (the statutory family-premium condition in England's "
-        "default and Welsh schemes). "
+        "default and Welsh schemes). Oxford also applies the disregard to "
+        "working-age applicants without Universal Credit who have no child "
+        "or young person. "
         "Widowed Parent's Allowance counts less £15 weekly per recipient. "
         "We count no child maintenance. Scotland's working-age maintenance "
         "rule, like Universal Credit, requires a court order or agreement; "
@@ -149,6 +152,8 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1A/paragraph/2",
         "https://www.legislation.gov.uk/ukpga/1992/14/section/13A",
         "https://www.newham.gov.uk/downloads/file/209/discretionary-council-tax-reductions-for-individual-council-tax-payers",
+        "https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2025-26/4#appendix5",
+        "https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27/4#appendix5",
     ]
 
     def formula(benunit, period, parameters):
@@ -320,8 +325,20 @@ class council_tax_reduction_applicable_income(Variable):
         has_child = applicant_family & benunit(
             "is_responsible_for_child_or_young_person_for_council_tax_reduction", period
         )
+        universal_credit_award = benunit(
+            "council_tax_reduction_universal_credit_award", period
+        )
+        # Oxford 2025-26 and 2026-27 Appendix 5, "Income partially ignored",
+        # disregards non-child maintenance for working-age applicants without
+        # Universal Credit, with no child condition.
+        oxford_working_age_non_uc = (
+            is_oxford_working_age(
+                benunit.household("local_authority", period), country, pensioner
+            )
+            & ~universal_credit_award
+        )
         maintenance_disregard = where(
-            has_child,
+            has_child | oxford_working_age_non_uc,
             min_(maintenance, disregards.maintenance * WEEKS_IN_YEAR),
             0,
         )
@@ -363,9 +380,7 @@ class council_tax_reduction_applicable_income(Variable):
         #   partner, as Universal Credit itself does (UC Regs 2013 reg
         #   3(2)(a)). The model cannot represent reg 3(2)'s other statuses or
         #   a claim awaiting determination (reg 3(1)(b)(ii), from April 2023).
-        universal_credit_route = ~pensioner & benunit(
-            "council_tax_reduction_universal_credit_award", period
-        )
+        universal_credit_route = ~pensioner & universal_credit_award
         scottish_working_age_scheme = is_scotland_scheme(country) & ~pensioner
         p_scotland = parameters(
             period
