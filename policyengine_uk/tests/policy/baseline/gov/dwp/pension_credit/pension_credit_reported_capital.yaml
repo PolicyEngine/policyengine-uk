@@ -1,6 +1,8 @@
 # Expected values are hand-computed from SPC Regs 2002 reg 15(6): deemed income
 # is 1 pound a week for every 500 pounds, or part of 500 pounds, of capital
 # above 10,000 pounds, times 52 weeks a year.
+# Property expectations deduct 10% sale expenses followed by secured debt:
+# https://www.legislation.gov.uk/uksi/2002/1792/regulation/19
 
 - name: With no reported capital (the default, -1), household capital is the proxy.
   period: 2025
@@ -174,3 +176,330 @@
     pension_credit_income: 9_000
     # minimum guarantee 218.15 a week (2024-25, SI 2024/242) x 52 - 9,000
     guarantee_credit: 218.15 * 52 - 9_000
+
+- name: Pension Credit values overseas land and property less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    pension_credit_assessable_capital: 9_000
+
+- name: Pension Credit preserves household allocation for overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 75
+      second:
+        age: 75
+      partner:
+        age: 75
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    pension_credit_assessable_capital: [5_400, 10_800]
+
+- name: Pension Credit reported capital overrides overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 75
+      second:
+        age: 75
+      partner:
+        age: 75
+    benunits:
+      reporting:
+        members: first
+        pension_credit_reported_capital: 4_000
+      unreported:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The override replaces its own proxy; the other unit keeps its two-thirds share.
+    pension_credit_assessable_capital: [4_000, 10_800]
+
+- name: Pension Credit values unclassified other real estate less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    other_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    pension_credit_assessable_capital: 9_000
+
+- name: Pension Credit preserves household allocation for unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 75
+      second:
+        age: 75
+      partner:
+        age: 75
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    pension_credit_assessable_capital: [5_400, 10_800]
+
+- name: Pension Credit reported capital overrides unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 75
+      second:
+        age: 75
+      partner:
+        age: 75
+    benunits:
+      reporting:
+        members: first
+        pension_credit_reported_capital: 4_000
+      unreported:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The override replaces its own proxy; the other unit keeps its two-thirds share.
+    pension_credit_assessable_capital: [4_000, 10_800]
+
+- name: Pension Credit deducts sale expenses before combined secured debt for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 80_000
+  output:
+    # max(0, 90% of 120,000 - 80,000); no separate buy-to-let input.
+    pension_credit_assessable_capital: 28_000
+
+- name: Pension Credit floors combined property equity at zero for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 120_000
+  output:
+    # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
+    pension_credit_assessable_capital: 0
+
+- name: Pension Credit counts overseas property with no financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 20_000
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 18_000
+
+- name: Pension Credit retains overseas property with a zero financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 18_000
+
+- name: Pension Credit counts other property with no financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    other_property_value: 20_000
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 18_000
+
+- name: Pension Credit retains other property with a zero financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    other_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 18_000
+
+- name: Pension Credit adds property to the financial report while replacing financial proxies
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    savings: 50_000
+    corporate_wealth: 30_000
+    lifetime_isa_countable_capital: 5_000
+    overseas_property_value: 20_000
+    other_property_value: 10_000
+    benunit_reported_capital: 6_000
+  output:
+    # Financial proxies are replaced; each property category is valued once.
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 33_000
+
+- name: A complete Pension Credit override still replaces new property and financial reports
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 20_000
+    other_property_value: 20_000
+    benunit_reported_capital: 6_000
+    pension_credit_reported_capital: 0
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Pension Credit financial reports retain domestic property with expenses and debt deducted once
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    benunit_reported_capital: 2_000
+    owned_land: 10_000
+    owned_land_secured_debt: 3_000
+    other_residential_property_value: 20_000
+    other_residential_property_secured_debt: 8_000
+    non_residential_property_value: 30_000
+    non_residential_property_secured_debt: 7_000
+  output:
+    # 2,000 + (9,000 - 3,000) + (18,000 - 8,000) + (27,000 - 7,000).
+    pension_credit_assessable_capital: 38_000
+
+- name: Pension Credit financial reports preserve the pension-age property allocation
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 75
+      second:
+        age: 75
+      partner:
+        age: 75
+    benunits:
+      reporting:
+        members: first
+        benunit_reported_capital: 0
+      unreported:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    pension_credit_reported_capital: [-1, -1]
+    pension_credit_assessable_capital: [5_400, 10_800]
+
+- name: Savings-credit-only Housing Benefit inherits retained overseas property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    benunit_reported_capital: 0
+    overseas_property_value: 20_000
+    housing_benefit_pension_age_regulations_apply: true
+    in_receipt_of_savings_credit_only: true
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    pension_credit_assessable_capital: 18_000
+    housing_benefit_assessable_capital: 18_000
+
+- name: Savings-credit-only Housing Benefit inherits retained other property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    benunit_reported_capital: 0
+    other_property_value: 20_000
+    housing_benefit_pension_age_regulations_apply: true
+    in_receipt_of_savings_credit_only: true
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    pension_credit_assessable_capital: 18_000
+    housing_benefit_assessable_capital: 18_000
+
+- name: Pension Credit values large overseas property without an intermediate reported total
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 145635.68
+  output:
+    # Stored gross 145635.6875 less 10%, rounded down, is 131072.11.
+    # Final float32 storage gives 131072.109375.
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 131072.109375
+
+- name: A zero financial report cannot reduce large overseas property through extra float32 rounding
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    overseas_property_value: 145635.68
+    benunit_reported_capital: 0
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 131072.109375
+
+- name: Pension Credit values large other property without an intermediate reported total
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    other_property_value: 145635.68
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 131072.109375
+
+- name: A zero financial report cannot reduce large other property through extra float32 rounding
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 75
+    other_property_value: 145635.68
+    benunit_reported_capital: 0
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 131072.109375

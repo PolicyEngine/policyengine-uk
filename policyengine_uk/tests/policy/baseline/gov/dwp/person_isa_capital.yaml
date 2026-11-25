@@ -8,7 +8,16 @@
 # reg 88(2); ESA reg 83(2)). The formula subtracts the identified ISA balances
 # from the household's capital, then allocates the remainder by claimant and
 # partner counts, between pension-age adults for Pension Credit, or wholly to
-# a unit on the IS, JSA or ESA claim path.
+# a unit on the IS, JSA or ESA claim path. Each programme values the pool's
+# share-like holdings with expenses of sale (directly held shares, and all of
+# an unitemised corporate_wealth) at market value less 10% (UC Regs 2013 reg
+# 49(1)(a); HB Regs 2006 reg 47; IS Regs 1987 reg 49; JSA Regs 1996 reg 111;
+# ESA Regs 2008 reg 113; SPC Regs 2002 reg 19). It counts savings, cash ISAs
+# and each stocks and shares ISA balance the formula moves out of
+# share_like_capital at face value: an ISA is valued at what the holder would
+# get by withdrawing it (ADM H1656-H1658; DMG 29662-29664, 52662,
+# 84748-84750), and the model reads H1656's silence on costs of sale as no
+# deduction.
 
 - name: Case 1, a lodger's cash ISA stays out of the main benefit unit's capital.
   period: 2025
@@ -70,7 +79,7 @@
     # The formula subtracts the child's 6,000 from savings 9,000 plus
     # share_like_capital 6,000 and allocates the remaining 9,000 by claimant
     # counts: 6,000 to the parents and 3,000 to the child's unit, which adds
-    # the 6,000 ISA.
+    # the 6,000 ISA at face value.
     uc_assessable_capital: [6_000, 9_000]
     housing_benefit_assessable_capital: [6_000, 9_000]
 
@@ -101,10 +110,11 @@
   output:
     share_like_capital: 9_000
     # The formula subtracts the child's 6,000 ISA from corporate wealth
-    # 9,000 and allocates the remaining 3,000: 2,000 to the parents and 1,000
-    # to the child's unit.
-    uc_assessable_capital: [2_000, 7_000]
-    housing_benefit_assessable_capital: [2_000, 7_000]
+    # 9,000, values the remaining 3,000 less 10% at 2,700 and allocates it:
+    # 1,800 to the parents and 900 to the child's unit, which adds the 6,000
+    # ISA at face value.
+    uc_assessable_capital: [1_800, 6_900]
+    housing_benefit_assessable_capital: [1_800, 6_900]
 
 - name: Case 4, a parent's Income Support claim does not count an adult child's cash ISA.
   period: 2025
@@ -180,6 +190,8 @@
         members: [parent, adult_child]
         savings: 2_000
   output:
+    # The parent's claiming unit takes the 2,000 of savings; the child's unit
+    # counts the 5,000 ISA at face value.
     esa_income_assessable_capital: [2_000, 5_000]
 
 - name: Case 7, a pensioner couple's Pension Credit counts their own ISAs and not a lodger's.
@@ -209,7 +221,7 @@
     # The formula subtracts all three balances from savings 4,000, cash_isa
     # 9,000 and share_like_capital 2,000, and allocates the remaining 4,000
     # between the two pension-age adults. The couple's unit adds their own
-    # 3,000 and 2,000.
+    # 3,000 cash ISA and 2,000 stocks and shares ISA at face value.
     pension_credit_assessable_capital: [9_000, 0]
 
 - name: Case 8, a dependent child's junior ISA counts in no benefit unit.
@@ -268,7 +280,8 @@
   output:
     # Joint claimants' combined capital (WRA 2012 s 5(2)(a)): the formula
     # allocates savings of 6,000 by claimant counts, 4,000 to the couple and
-    # 2,000 to the lodger, and the couple's unit adds their 4,000 and 3,000.
+    # 2,000 to the lodger, and the couple's unit adds their 4,000 cash ISA
+    # and the 3,000 stocks and shares ISA at face value.
     uc_assessable_capital: [11_000, 2_000]
     housing_benefit_assessable_capital: [11_000, 2_000]
 
@@ -368,7 +381,7 @@
         age: 30
       lodger:
         age: 30
-        stocks_and_shares_isa_balance: 34_000
+        stocks_and_shares_isa_balance: 30_600
     benunits:
       tenant_unit:
         members: tenant
@@ -378,13 +391,15 @@
       household:
         members: [tenant, lodger]
   output:
-    # Pooling this ISA would give each claimant 17,000, above reg 18's
-    # 16,000 limit. The formula attributes it to its holder.
-    uc_assessable_capital: [0, 34_000]
+    # The ISA of 30,600 exceeds reg 18's 16,000 limit. Pooling it would give
+    # each claimant 15,300, within the limit. The formula attributes it to
+    # its holder.
+    uc_assessable_capital: [0, 30_600]
 
 # Cases 14 to 17: where balances exceed a household total, the model counts
 # exactly the total, so a holder at a capital limit or a tariff threshold
-# stays on its boundary.
+# stays on its boundary. In Cases 14 and 15 the stocks and shares total is the
+# boundary itself, since a stocks and shares ISA counts at face value.
 # The model stores amounts in float32 (spacing 0.0009765625 at 16,000), and
 # absolute_error_margin 0 fails on one unit in the last place.
 
@@ -398,7 +413,7 @@
         cash_isa_balance: 16_790
       stocks_holder:
         age: 30
-        stocks_and_shares_isa_balance: 16_790
+        stocks_and_shares_isa_balance: 18_567
     benunits:
       cash_unit:
         members: cash_holder
@@ -566,6 +581,7 @@
         share_like_capital: 100
   output:
     stocks_and_shares_isa_countable_capital: 100
+    # UC counts the 100 at face value.
     uc_assessable_capital: 100
 
 - name: Case 19, a child's ISA counts in no unit when the parent reports the family's capital.

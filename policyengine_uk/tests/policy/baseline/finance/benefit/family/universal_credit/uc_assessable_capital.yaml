@@ -2,6 +2,9 @@
 # UC Regulations 2013 reg.18(2) includes a single claimant's partner's capital.
 # https://www.legislation.gov.uk/ukpga/2012/5/section/5
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/18
+# Property expectations deduct 10% sale expenses, then secured debt, under
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/49
+# Capital above the limit fails https://www.legislation.gov.uk/uksi/2013/376/regulation/18
 # Allocating unreported household capital by claimant/partner count is a
 # PolicyEngine convention, not a statutory allocation rule.
 
@@ -163,3 +166,263 @@
     household_uc_unreported_claimants: 0
     # No claimant weights means no allocation: guarded zero instead of 0/0.
     uc_assessable_capital: 0
+
+- name: Universal Credit values overseas land and property less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    uc_assessable_capital: 9_000
+
+- name: Universal Credit preserves household allocation for overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    uc_assessable_capital: [5_400, 10_800]
+
+- name: Universal Credit reported capital overrides overseas land and property
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      reporting:
+        members: first
+        uc_reported_capital: 4_000
+      unreported:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        overseas_property_value: 18_000
+  output:
+    # The complete override consumes its property share; it is not redistributed.
+    uc_assessable_capital: [4_000, 10_800]
+
+- name: Universal Credit values unclassified other real estate less sale expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 10_000
+  output:
+    # 10,000 gross less 10% sale expenses; no identified secured debt.
+    uc_assessable_capital: 9_000
+
+- name: Universal Credit preserves household allocation for unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      single:
+        members: first
+      couple:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The 16,200 net household value is shared by one and two adults.
+    uc_assessable_capital: [5_400, 10_800]
+
+- name: Universal Credit reported capital overrides unclassified other real estate
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+      second:
+        age: 40
+      partner:
+        age: 40
+    benunits:
+      reporting:
+        members: first
+        uc_reported_capital: 4_000
+      unreported:
+        members: [second, partner]
+    households:
+      household:
+        members: [first, second, partner]
+        other_property_value: 18_000
+  output:
+    # The complete override consumes its property share; it is not redistributed.
+    uc_assessable_capital: [4_000, 10_800]
+
+- name: Universal Credit deducts sale expenses before combined secured debt for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 80_000
+  output:
+    # max(0, 90% of 120,000 - 80,000); no separate buy-to-let input.
+    uc_assessable_capital: 28_000
+
+- name: Universal Credit floors combined property equity at zero for second homes and buy-to-let
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    # Second homes of 50,000 and buy-to-let of 70,000 share one component.
+    other_residential_property_value: 120_000
+    other_residential_property_secured_debt: 120_000
+  output:
+    # max(0, 90% of 120,000 - 120,000); no separate buy-to-let input.
+    uc_assessable_capital: 0
+
+- name: A financial report retains overseas and domestic property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    benunit_reported_capital: 0
+    overseas_property_value: 18_000
+    other_residential_property_value: 10_000
+  output:
+    # Regulation 49: 90% of both property stocks, independent of financial reports.
+    uc_property_capital: 25_200
+    uc_assessable_capital: 25_200
+
+- name: A financial report retains unclassified other and domestic property capital
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    benunit_reported_capital: 0
+    other_property_value: 18_000
+    non_residential_property_value: 10_000
+  output:
+    # Regulation 49: 90% of both property stocks, independent of financial reports.
+    uc_property_capital: 25_200
+    uc_assessable_capital: 25_200
+
+- name: Overseas property exceeds the UC capital limit without a financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+  output:
+    # UC regulation 49(1)-(2): market value less 10% sale expenses, no debt.
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A zero financial report preserves overseas property above the UC capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A complete UC override replaces overseas property and the financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    overseas_property_value: 20_000
+    benunit_reported_capital: 0
+    uc_reported_capital: 4_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 4_000
+    is_uc_eligible: true
+
+- name: Unclassified other property exceeds the UC capital limit without a financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A zero financial report preserves unclassified other property above the UC capital limit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+    benunit_reported_capital: 0
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: A complete UC override replaces unclassified other property and the financial report
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    other_property_value: 20_000
+    benunit_reported_capital: 0
+    uc_reported_capital: 4_000
+  output:
+    uc_property_capital: 18_000
+    uc_assessable_capital: 4_000
+    is_uc_eligible: true
+
+- name: A financial report adds to all property with sale expenses and secured debt applied once
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    savings: 50_000
+    benunit_reported_capital: 2_000
+    overseas_property_value: 20_000
+    other_property_value: 10_000
+    other_residential_property_value: 20_000
+    other_residential_property_secured_debt: 8_000
+    non_residential_property_value: 30_000
+    non_residential_property_secured_debt: 30_000
+  output:
+    # 18,000 + 9,000 + (18,000 - 8,000) + max(0, 27,000 - 30,000).
+    uc_property_capital: 37_000
+    uc_assessable_capital: 39_000
+    is_uc_eligible: false
