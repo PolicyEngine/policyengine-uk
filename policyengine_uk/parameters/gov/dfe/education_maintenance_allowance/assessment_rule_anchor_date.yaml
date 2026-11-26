@@ -1,0 +1,12 @@
+description: The explicit EMA assessment selects the fixed 2026/27 source-cohort rules at this lookup anchor, independently of the requested cash period.
+values:
+  # A model lookup constant, not statutory scheme commencement or cash eligibility.
+  0001-01-01: 20260901
+metadata:
+  label: EMA fixed-cohort rule lookup date
+  unit: date
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: Education Maintenance Allowance Wales Scheme 2026/2027, paragraph 1
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/the-education-maintenance-allowance-wales-scheme-2026-2027.pdf#page=1

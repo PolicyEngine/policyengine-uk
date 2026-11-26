@@ -1,0 +1,11 @@
+description: The supported 2026/27 Education Maintenance Allowance assessment uses this minimum birth date.
+values:
+  2026-09-01: 20060702
+metadata:
+  label: EMA minimum birth date
+  unit: date
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: "Northern Ireland EMA2026/27 application notes, assessment rules #page 2,6,20-23"
+      href: https://www.nidirect.gov.uk/sites/default/files/2026-06/ema-ni-application-notes-2627-e-o-PDF_0.pdf#page=2

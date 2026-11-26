@@ -1,0 +1,11 @@
+description: The supported 2026/27 Education Maintenance Allowance assessment uses this maximum supported years.
+values:
+  2026-09-01: 3
+metadata:
+  label: EMA maximum supported years
+  unit: year
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: "Northern Ireland current EMA payment and confirmation rules"
+      href: https://www.nidirect.gov.uk/articles/education-maintenance-allowance-explained

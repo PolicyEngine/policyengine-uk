@@ -1,0 +1,11 @@
+description: The supported 2026/27 Education Maintenance Allowance assessment uses this extended supported years.
+values:
+  2026-08-17: 4
+metadata:
+  label: EMA extended supported years
+  unit: year
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: "Highland Council school EMA guidance2026/27, source-bound assessment rules #page 2-3,7-9"
+      href: https://www.highland.gov.uk/downloads/file/962/ema-guidance-notes-2025-26#page=2
