@@ -1,0 +1,16 @@
+description: HMRC pays this single amount under the Covid-19 support scheme for working households receiving tax credits in the selected fiscal payment year.
+values:
+  0001-01-01: 0
+  # Fiscal payment years, not the date of the qualifying tax-credit award.
+  # The extension permits payment in 2021-22 or 2022-23, but not a second payment.
+  2021-04-06: 500
+  2023-04-06: 0
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Tax credit Covid-19 support payment amount
+  reference:
+    - title: "Covid-19 support scheme initial Direction, Schedule paragraphs 2-3 and 10 #page 2,4"
+      href: https://assets.publishing.service.gov.uk/media/606ee5ede90e076f4f581acd/WTC_Direction_060421.pdf#page=2
+    - title: Covid-19 support scheme extension Direction, Schedule paragraphs 2-5 and 9
+      href: https://www.gov.uk/government/publications/further-treasury-direction-made-under-section-76-of-the-coronavirus-act-2020/treasury-direction-made-under-section-76-of-the-coronavirus-act-2020

@@ -442,6 +442,29 @@ programs:
     verified_start_year: 2022
     notes: HMRC administered Working Tax Credit and Child Tax Credit until they ended on 5 April 2025
 
+  - id: tax_credit_covid_support_payment
+    name: Tax credit Covid-19 support payment
+    full_name: "Covid-19 support scheme: working households receiving tax credits"
+    category: Benefits
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: tax_credit_covid_support_payment
+    budget: benefit
+    budget_uprating: []
+    parameter_prefix: gov.hmrc.tax_credit_covid_support_payment
+    verified_start_year: 2021
+    verified_end_year: 2022
+    notes: >-
+      One-off £500 per historical single or joint tax-credit claim, separate
+      from ordinary Working Tax Credit and Child Tax Credit. Requires supplied
+      verified initial/extension eligibility facts and one fiscal payment year;
+      no historical award, fraud, termination or family-change inference.
+      Initial payments belong to 2021-22; extension payments can belong to
+      2021-22 or 2022-23, without a second payment for initial entitlement.
+      Modelled HBAI-style inclusion follows the general state-support definition,
+      not verified payment-specific survey imputation or weekly allocation.
+
   - id: sda
     name: SDA
     full_name: Severe Disablement Allowance
@@ -1227,3 +1250,4 @@ budget_order:
     - carer_support_payment
     - scottish_carer_supplement
     - disability_basic_income
+    - tax_credit_covid_support_payment
