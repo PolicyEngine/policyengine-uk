@@ -15,7 +15,10 @@ class has_qualifying_site_or_mooring_liability(Variable):
         "overall benefit eligibility: programme-specific age, claim and "
         "accommodation conditions still apply. Enter the qualifying amount "
         "in benunit_rent; benunit_is_rent_liable remains a separate liability "
-        "condition. This input covers site and mooring payments only, not "
+        "condition. For Universal Credit, independently supply "
+        "qualifying_site_or_mooring_provider_is_social to identify a "
+        "social provider for this amount; ownership does not identify "
+        "the provider. This input covers site and mooring payments only, not "
         "ordinary mortgage payments or other owner costs. It does not "
         "determine tenancy, rent allocation or the household head's liability."
     )

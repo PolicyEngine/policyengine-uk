@@ -337,3 +337,331 @@
   output:
     uc_housing_costs_element: 0
     universal_credit: 5_098.8
+
+# Provider routing is separate from caravan/houseboat ownership and payment type.
+# GB: UC Sch4 paras2/3/20/22/25/30/33/34; NI paras2/3/19/21/24/29/32/33.
+# Council/registered-provider status is established outside the model. All positive
+# social cases have one bedroom, commercial qualifying payments and no reductions.
+# 2026 Barnsley one-bed LHA: 415/month x12 =4980; qualifying social rent=6000.
+# Standard allowance: 424.90/month x12 =5098.80; GB final awards=10078.80/11098.80,
+# below the outside-London single cap of14753. No calculated money input is forced.
+# NI Belfast one-bed LHA: 605.47/month x12 =7265.64; rent8400 gives final UC
+# 12364.44(private) and13498.80(social), a1134.36 difference, both below the cap.
+# NI social provider means the Housing Executive or a registered housing association.
+# The two owner guard cases deliberately omit payment qualification or liability;
+# provider status alone does not supply either fact or overall UC entitlement.
+# https://www.legislation.gov.uk/uksi/2013/376/schedule/4
+# https://www.legislation.gov.uk/nisr/2016/216/schedule/4
+# https://www.legislation.gov.uk/nisr/2026/54/regulation/3
+# https://www.gov.uk/government/publications/universal-credit-local-housing-allowance-rates-2026-to-2027
+# https://www.nidirect.gov.uk/articles/universal-credit-payments-housing
+# https://www.nidirect.gov.uk/articles/benefit-cap
+
+- name: Case 13, a caravan owner paying a council pitch charge uses the social provider route.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 11098.8
+    uc_housing_costs_element: 6000.0
+
+- name: Case 14, an explicit private provider keeps a qualifying owner subject to LHA.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 10078.8
+    uc_housing_costs_element: 4980.0
+
+- name: Case 15, the omitted provider input retains the private route for a qualifying owner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 10078.8
+    uc_housing_costs_element: 4980.0
+
+- name: Case 16, a provider fact alone does not qualify an ordinary owner payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        qualifying_site_or_mooring_provider_is_social: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 5098.8
+    uc_housing_costs_element: 0.0
+
+- name: Case 17, a social provider does not override the absence of payment liability.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: true
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 5098.8
+    uc_housing_costs_element: 0.0
+
+- name: Case 18, specified or temporary accommodation still excludes a social provider owner element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 5098.8
+    uc_housing_costs_element: 0.0
+
+- name: Case 19, an owner social provider amount remains subject to housing element take up.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: true
+        would_claim_uc_housing_costs_element: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 5098.8
+    uc_housing_costs_element: 0.0
+
+- name: Case 20, a provider fact without the qualifying payment flag leaves a private tenancy capped.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: false
+        qualifying_site_or_mooring_provider_is_social: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 10078.8
+    uc_housing_costs_element: 4980.0
+
+- name: Case 21, the existing council tenancy route has priority over the qualifying private route.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: YORKSHIRE
+        brma: BARNSLEY
+        tenure_type: RENT_FROM_COUNCIL
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 6000
+  output:
+    universal_credit: 11098.8
+    uc_housing_costs_element: 6000.0
+
+- name: Case 22, a financed houseboat owner paying a registered NI housing association receives the social amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+      person2:
+        age: 40
+    benunits:
+      family1:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: false
+      family2:
+        members: [person2]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        qualifying_site_or_mooring_provider_is_social: true
+    households:
+      home1:
+        members: [person1]
+        country: NORTHERN_IRELAND
+        region: NORTHERN_IRELAND
+        brma: BELFAST
+        tenure_type: OWNED_WITH_MORTGAGE
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 8400
+      home2:
+        members: [person2]
+        country: NORTHERN_IRELAND
+        region: NORTHERN_IRELAND
+        brma: BELFAST
+        tenure_type: OWNED_WITH_MORTGAGE
+        accommodation_type: MOBILE
+        num_bedrooms: 1
+        rent: 8400
+  output:
+    universal_credit: [12364.44, 13498.8]
+    uc_housing_costs_element: [7265.64, 8400]
