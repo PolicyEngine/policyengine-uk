@@ -406,7 +406,24 @@ print(f"Total UK income tax revenue: £{total_income_tax:.1f}bn")
 
 ## Microsimulation analysis
 
-The `Microsimulation` class extends `Simulation` with survey weights for population estimates:
+The `Microsimulation` class extends `Simulation` with survey weights for population estimates.
+
+When constructed from a dataset, `Microsimulation` emits one `UserWarning`
+listing omitted Boolean `would_claim_*` inputs that have no formula and default
+to `True`, such as `would_claim_uc` and `would_claim_carers_allowance`.
+These calculator defaults do not establish benefit eligibility or certify
+population take-up rates. Supply take-up assumptions appropriate to the dataset,
+or suppress the diagnostic explicitly:
+
+```python
+sim = Microsimulation(dataset=dataset, warn_on_missing_takeup_inputs=False)
+```
+
+The check counts an input as supplied if it has at least one genuine input
+period, including an explicit scenario override. It does not check every year
+or record, and it does not verify calibration. The warning leaves inputs and
+calculation results unchanged. Plain `Simulation` and situation-built
+`Microsimulation` do not emit this diagnostic.
 
 ```python
 from policyengine_uk import Microsimulation
