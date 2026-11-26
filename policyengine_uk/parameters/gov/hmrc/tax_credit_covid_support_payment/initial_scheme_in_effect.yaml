@@ -1,0 +1,12 @@
+description: HMRC pays initial-direction Covid-19 support for working households receiving tax credits only in the 2021-22 fiscal payment year.
+values:
+  0001-01-01: false
+  2021-04-06: true
+  2022-04-06: false
+metadata:
+  unit: bool
+  period: year
+  label: Initial tax credit Covid-19 support payment year
+  reference:
+    - title: "Covid-19 support scheme initial Direction, Schedule paragraphs 3 and 10 #page 2,4"
+      href: https://assets.publishing.service.gov.uk/media/606ee5ede90e076f4f581acd/WTC_Direction_060421.pdf#page=2

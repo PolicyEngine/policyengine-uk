@@ -11,8 +11,9 @@ policyengine_uk.programs. The tests check:
    total names the same terms as the registry.
 2. Differential: HOUSEHOLD_TAX_VARIABLES and HOUSEHOLD_BENEFIT_VARIABLES
    equal, in order, the lists the formula modules held as literals at commit
-   2da212abcf2086337fc088a4a1236f4ae7b6af63, and the council tax and
-   uprating rules match the ones those formulas applied.
+   2da212abcf2086337fc088a4a1236f4ae7b6af63, with the explicit issue #235
+   addition below; the council tax and uprating rules retain their stated
+   historical behavior, with that fixed one-off payment also excluded.
 3. budget_programs() returns the same records in a fresh interpreter,
    whichever module that interpreter imports first.
 4. Properties: every budget_programs() variable exists, none repeats, and
@@ -155,6 +156,8 @@ MAIN_HOUSEHOLD_BENEFIT_VARIABLES = [
     "carer_support_payment",
     "scottish_carer_supplement",
     "disability_basic_income",
+    # Issue #235 adds this separate payment after the historical list.
+    "tax_credit_covid_support_payment",
 ]
 
 # The rules those formulas applied: abolishing council tax removed these
@@ -165,7 +168,12 @@ MAIN_DROPPED_WHEN_ABOLISHING_COUNCIL_TAX = {
     "high_value_council_tax_surcharge",
     "council_tax_benefit",
 }
-MAIN_UPRATING_EXCEPTIONS = {"state_pension": ("all",), "basic_income": ()}
+MAIN_UPRATING_EXCEPTIONS = {
+    "state_pension": ("all",),
+    "basic_income": (),
+    # Issue #235: the fixed historical GBP500 payment is not benefit-uprated.
+    "tax_credit_covid_support_payment": (),
+}
 
 
 def flagged(budget):

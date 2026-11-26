@@ -19,6 +19,10 @@ class hbai_benefits(Variable):
         "universal_credit",
         "working_tax_credit",
         "child_tax_credit",
+        # State-cash inclusion follows DWP's general HBAI income definition;
+        # payment-specific survey imputation and weekly allocation are not verified.
+        # https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2022/households-below-average-income-series-quality-and-methodology-information-report-fye-2022#income-definition
+        "tax_credit_covid_support_payment",
         "attendance_allowance",
         "afcs",
         "bsp",

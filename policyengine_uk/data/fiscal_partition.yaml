@@ -1340,3 +1340,11 @@ spending_heads:
     sign: any
     zero_at_baseline: expected
     caseload: false
+  - id: tax_credit_covid_support_payment
+    label: Tax credit Covid-19 support payment
+    variable: tax_credit_covid_support_payment
+    entity: benunit
+    report_group: cost_of_living_support
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected

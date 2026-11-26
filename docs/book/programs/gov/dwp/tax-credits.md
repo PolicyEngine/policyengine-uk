@@ -151,6 +151,55 @@ non-earned disregard for unearned income is the
 `means_test/non_earned_disregard.yaml` parameter. Awards below
 `min_benefit` (a £26-ish floor) are paid as zero.
 
+## One-off Covid-19 support payment
+
+The [initial Treasury Direction](https://assets.publishing.service.gov.uk/media/606ee5ede90e076f4f581acd/WTC_Direction_060421.pdf#page=2)
+provided a single £500 payment for a qualifying historical tax-credit claim.
+On 2 March 2021, the claim needed a current non-nil WTC award, or nil WTC
+together with non-nil CTC, subject to the direction's termination,
+non-payability and fraud exclusions. A joint claim receives one payment,
+not one per partner. The initial payment belongs to fiscal year 2021-22.
+
+The [September 2021 extension](https://www.gov.uk/government/publications/further-treasury-direction-made-under-section-76-of-the-coronavirus-act-2020/treasury-direction-made-under-section-76-of-the-coronavirus-act-2020)
+covers a qualifying final decision for a period including 2 March 2021 where
+there was no entitlement under the initial direction. It retains specified
+termination, disqualification and fraud restrictions. An extension payment
+can belong to 2021-22 or 2022-23; it does not pay an initial recipient again.
+
+PolicyEngine models this as `tax_credit_covid_support_payment`, separate from
+ordinary WTC and CTC. Three annual benefit-unit inputs describe one historical
+single or joint claim:
+
+- `tax_credit_covid_support_payment_initial_eligible`: a verified qualifying
+  claim under the initial direction, including all its legal conditions.
+- `tax_credit_covid_support_payment_extension_eligible`: a verified qualifying
+  final-decision claim under the extension, including no initial entitlement.
+- `tax_credit_covid_support_payment_year`: the single fiscal payment year's
+  start, either `2021` or `2022`; `0` means timing has not been established.
+
+Both eligibility inputs default to `False`. Annual tax-credit receipts,
+current eligibility and simulated WTC do not establish these historical facts.
+Keep the same payment-year value in every requested model year: an initial
+claim assigned `2021` pays £500 in 2021 and nothing in 2022, while an extension
+assigned `2022` pays nothing in 2021 and £500 in 2022. Initial entitlement
+prevents an extension payment even if both eligibility inputs are supplied.
+The caller assigns each historical claim to one benefit unit once; the model
+does not reconstruct intervening separations or new couples.
+
+The separate cash enters household income and government spending once. It
+stays outside ordinary tax-credit awards, taxable income and benefit
+means-test income, consistent with [Finance Act 2021 section 31](https://www.legislation.gov.uk/ukpga/2021/26/section/31/enacted)
+and [HMRC's historical guidance](https://www.gov.uk/guidance/new-one-off-500-payment-for-working-households-receiving-tax-credits).
+The amount is not scaled by generic benefit-uprating reforms. The model does
+not determine recovery or tax charges on wrongly received payments, change
+supplied capital stocks, or model a payment-retention history or detailed
+capital-disregard period.
+
+We include this separate cash in modelled HBAI-style state support, following
+[DWP's general inclusion of state support and acknowledgement of the payment](https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2022/households-below-average-income-series-quality-and-methodology-information-report-fye-2022#income-definition).
+This is an inference about the income measure; it does not reproduce or verify
+DWP's payment-specific survey imputation or weekly allocation.
+
 ## Scheme end
 
 From `2025-04-06` onwards the `tax_credits` variable returns zero

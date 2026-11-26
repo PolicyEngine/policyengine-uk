@@ -1,0 +1,172 @@
+# Initial Treasury Direction, Schedule paragraphs 2-6: one GBP500 payment
+# per qualifying single or joint claim, based on the award on 2 March 2021.
+# https://assets.publishing.service.gov.uk/media/606ee5ede90e076f4f581acd/WTC_Direction_060421.pdf#page=2
+# Extension Direction, Schedule paragraphs 3-8: a qualifying final decision
+# can give payment by the end of 2022-23, but initial entitlement excludes it.
+# https://www.gov.uk/government/publications/further-treasury-direction-made-under-section-76-of-the-coronavirus-act-2020/treasury-direction-made-under-section-76-of-the-coronavirus-act-2020
+# The two eligibility inputs are verified historical facts, including their
+# exclusions. These cases do not reconstruct those facts from annual awards.
+# Model year 2021 represents FY2021-22; model year 2022 represents FY2022-23.
+
+- name: Case 1, absent historical eligibility gives no payment.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment_initial_eligible: false
+    tax_credit_covid_support_payment_extension_eligible: false
+    tax_credit_covid_support_payment: 0
+
+- name: Case 2, an unknown payment year gives no payment.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_initial_eligible: true
+  output:
+    tax_credit_covid_support_payment_year: 0
+    tax_credit_covid_support_payment: 0
+
+- name: Case 3, initial eligibility pays GBP500 in its actual payment year.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_year: 2021
+    working_tax_credit: 0
+    child_tax_credit: 0
+  output:
+    tax_credit_covid_support_payment: 500
+
+- name: Case 4, extension eligibility can pay in 2021-22.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 500
+
+- name: Case 5, extension eligibility can pay in 2022-23.
+  period: 2022
+  input:
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2022
+  output:
+    tax_credit_covid_support_payment: 500
+
+- name: Case 6, initial eligibility does not authorize a late initial payment.
+  period: 2022
+  input:
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_year: 2022
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 7, both historical flags still give one initial payment.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 500
+
+- name: Case 8, initial entitlement excludes a later extension payment.
+  period: 2022
+  input:
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2022
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 9, annual Working Tax Credit is not the qualifying-date fact.
+  period: 2021
+  input:
+    working_tax_credit: 5_000
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 10, Child Tax Credit alone does not establish historical entitlement.
+  period: 2021
+  input:
+    working_tax_credit: 0
+    child_tax_credit: 3_000
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 11, a verified nil-WTC and positive-CTC qualifying award can receive support.
+  # Initial Direction paragraph 4(b). The historical flag certifies that
+  # route; the current annual awards cannot establish the 2 March facts.
+  period: 2021
+  input:
+    working_tax_credit: 0
+    child_tax_credit: 3_000
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 500
+
+- name: Case 12, one initial payment does not recur in other fiscal years.
+  period: 2021
+  input:
+    tax_credit_covid_support_payment_initial_eligible:
+      2020: true
+      2021: true
+      2022: true
+      2023: true
+    tax_credit_covid_support_payment_year:
+      2020: 2021
+      2021: 2021
+      2022: 2021
+      2023: 2021
+  output:
+    tax_credit_covid_support_payment:
+      2020: 0
+      2021: 500
+      2022: 0
+      2023: 0
+
+- name: Case 13, one extension payment does not recur in other fiscal years.
+  period: 2022
+  input:
+    tax_credit_covid_support_payment_extension_eligible:
+      2020: true
+      2021: true
+      2022: true
+      2023: true
+    tax_credit_covid_support_payment_year:
+      2020: 2022
+      2021: 2022
+      2022: 2022
+      2023: 2022
+  output:
+    tax_credit_covid_support_payment:
+      2020: 0
+      2021: 0
+      2022: 500
+      2023: 0
+
+- name: Case 14, extension eligibility cannot pay before the scheme.
+  period: 2020
+  input:
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2020
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 15, extension eligibility cannot pay after the scheme.
+  period: 2023
+  input:
+    tax_credit_covid_support_payment_extension_eligible: true
+    tax_credit_covid_support_payment_year: 2023
+  output:
+    tax_credit_covid_support_payment: 0
+
+- name: Case 16, a qualifying Northern Ireland claim receives the same payment.
+  period: 2021
+  input:
+    region: NORTHERN_IRELAND
+    tax_credit_covid_support_payment_initial_eligible: true
+    tax_credit_covid_support_payment_year: 2021
+  output:
+    tax_credit_covid_support_payment: 500
