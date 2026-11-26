@@ -18,6 +18,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
     households:
@@ -91,6 +92,7 @@
     benunits:
       benunit:
         members: [adult]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
     households:
@@ -160,6 +162,7 @@
     benunits:
       benunit:
         members: [parent, child]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
     households:
@@ -269,6 +272,7 @@
     benunits:
       benunit:
         members: [grandparent, child]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
     households:
@@ -356,6 +360,7 @@
     benunits:
       benunit:
         members: [older, younger]
+        benunit_is_rent_liable: true
         has_mixed_age_couple_pension_credit_saving: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: false
@@ -389,6 +394,7 @@
     benunits:
       benunit:
         members: [older, younger, child]
+        benunit_is_rent_liable: true
         has_mixed_age_couple_pension_credit_saving: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
@@ -437,6 +443,7 @@
     benunits:
       benunit:
         members: [adult]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: false
     households:
@@ -510,6 +517,7 @@
     benunits:
       benunit:
         members: [adult]
+        benunit_is_rent_liable: true
         would_claim_uc: false
         would_claim_uc_at_legacy_closure: true
     households:

@@ -211,6 +211,7 @@
     benunits:
       family:
         members: [claimant, partner]
+        benunit_is_rent_liable: true
         disability_premium: 0
         enhanced_disability_premium: 0
         severe_disability_premium: 0
@@ -518,6 +519,7 @@
     benunits:
       family:
         members: [claimant, partner]
+        benunit_is_rent_liable: true
     households:
       household:
         members: [claimant, partner]

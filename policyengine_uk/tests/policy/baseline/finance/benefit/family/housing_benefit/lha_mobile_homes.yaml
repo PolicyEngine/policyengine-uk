@@ -42,9 +42,9 @@
     LHA_eligible: false
 
 - name: The LHA doesn't apply to an owner-occupier of a caravan, who gets no Housing Benefit
-  # Housing Benefit can meet an owner's site payments and mooring charges
-  # (reg 12(1)(f) and (g)). The model doesn't cover them: an owner-occupier
-  # doesn't rent, so it pays no Housing Benefit.
+  # Owning the caravan alone does not establish a qualifying site or
+  # mooring payment. No qualifying payment-type input is supplied here,
+  # so this ordinary owner still gets no Housing Benefit.
   period: 2025
   input:
     age: 70
@@ -57,6 +57,7 @@
 - name: Pension-age private renter in a caravan can claim Housing Benefit
   period: 2025
   input:
+    benunit_is_rent_liable: true
     age: 70
     tenure_type: RENT_PRIVATELY
     accommodation_type: MOBILE
@@ -68,6 +69,7 @@
   # SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i).
   period: 2025
   input:
+    benunit_is_rent_liable: true
     age: 70
     region: NORTHERN_IRELAND
     tenure_type: RENT_PRIVATELY
@@ -80,6 +82,7 @@
   # Reg 13C(5)(d)(i) has no age condition.
   period: 2025
   input:
+    benunit_is_rent_liable: true
     age: 25
     housing_benefit_reported: 1
     would_claim_uc: false
@@ -103,6 +106,7 @@
     benunits:
       benunit:
         members: [adult, partner]
+        benunit_is_rent_liable: true
     households:
       household:
         members: [adult, partner]

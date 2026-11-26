@@ -23,6 +23,7 @@
   period: 2025
   absolute_error_margin: 0
   input:
+    benunit_is_rent_liable: true
     in_social_housing: true
     housing_benefit_reported: 4_000
     would_claim_uc: false

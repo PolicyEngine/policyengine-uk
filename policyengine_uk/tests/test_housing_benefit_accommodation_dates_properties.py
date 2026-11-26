@@ -476,6 +476,8 @@ def test_r1_universal_credit_leaves_the_rent_out(units, year):
 def test_r2_eligibility_ignores_the_claim_and_the_closure(units, year):
     natural = accommodation_simulation(units, year)
     tenure_and_capital = natural.calculate("housing_benefit_eligible", year)
+    # Liability comes from the raw rent, normalized to the engine input dtype.
+    rent_liable = np.asarray([unit["rent"] for unit in units], dtype=np.float32) > 0
     # The tenure and capital tests, read from the same simulation.
     social = natural.populations["benunit"].any(
         natural.calculate("in_social_housing", year)
@@ -492,7 +494,7 @@ def test_r2_eligibility_ignores_the_claim_and_the_closure(units, year):
         hb_capital.working_age.limit,
     )
     np.testing.assert_array_equal(
-        tenure_and_capital, (social | lha) & (capital <= limit)
+        tenure_and_capital, rent_liable & (social | lha) & (capital <= limit)
     )
     for claims in (False, True):
         for closed in (False, True):
