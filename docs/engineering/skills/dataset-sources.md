@@ -328,6 +328,18 @@ with a reporting family, so Child Tax Credit, Working Tax Credit and Income
 Support take-up also follow reported claims there. Explicit inputs override
 these defaults, including a future calibrated dataset column (uk-data#448).
 
+Dataset-built `Microsimulation` objects also emit one construction-time
+`UserWarning` naming formula-less Boolean `would_claim_*` inputs that default
+to `True` and have no genuine supplied input period. The check uses the final
+variable registry and readable holder input periods, so formulas, neutralized
+definitions, explicit scenario inputs and DataFrame period replays are
+respected; calculated caches do not count as supplied inputs. One supplied
+period is enough: this is an omission-by-variable diagnostic, not a check of
+every year or record or a certification of take-up calibration. It changes no
+defaults, inputs or results. Pass `warn_on_missing_takeup_inputs=False` to
+`Microsimulation` to suppress it. Plain `Simulation` and situation-built
+`Microsimulation` do not emit this diagnostic.
+
 Do not rebuild an existing data-built simulation by calling core's
 `SimulationBuilder.build_from_dict` directly. In core 3.33.2 this leaves stale
 dataset provenance, which copies inherit. Use UK `build_from_situation` instead.

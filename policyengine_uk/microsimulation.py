@@ -1,4 +1,5 @@
 # Standard library imports
+import warnings
 from typing import List, Optional
 
 # Third-party imports
@@ -9,6 +10,7 @@ from microdf import MicroDataFrame, MicroSeries
 from policyengine_core.tracers import SimpleTracer
 
 from .simulation import Simulation
+from .utils.data_source import built_from_data
 
 
 class Microsimulation(Simulation):
@@ -17,6 +19,33 @@ class Microsimulation(Simulation):
     Provides weighted calculations using survey weights for population-level
     estimates and statistics.
     """
+
+    def __init__(self, *args, warn_on_missing_takeup_inputs: bool = True, **kwargs):
+        """Initialize a weighted simulation and its optional take-up diagnostic."""
+        super().__init__(*args, **kwargs)
+
+        if warn_on_missing_takeup_inputs and built_from_data(self):
+            missing_inputs = sorted(
+                name
+                for name, variable in self.tax_benefit_system.variables.items()
+                if name.startswith("would_claim_")
+                and variable.value_type is bool
+                and not variable.formulas
+                and variable.default_value is True
+                and not variable.is_neutralized
+                and not self.get_holder(name).get_input_periods(self.branch_name)
+            )
+            if missing_inputs:
+                warnings.warn(
+                    "Dataset-built Microsimulation is using calculator take-up "
+                    "defaults of True for inputs without supplied input periods: "
+                    f"{', '.join(missing_inputs)}. "
+                    "These defaults do not establish benefit eligibility or "
+                    "certify take-up rates. Supply take-up inputs or set "
+                    "warn_on_missing_takeup_inputs=False to suppress this warning.",
+                    UserWarning,
+                    stacklevel=2,
+                )
 
     def get_weights(
         self, variable_name: str, period: str, map_to: Optional[str] = None
