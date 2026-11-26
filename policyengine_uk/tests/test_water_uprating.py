@@ -180,7 +180,7 @@ def test_the_projection_fingerprint_covers_both_water_series():
 KNOWN_REGIONS = [region for region in REGIONS if region != "UNKNOWN"]
 
 
-def _one_household_per_known_region(charges):
+def _one_household_per_known_region(charges, base_year=2024):
     ids = np.arange(1, len(KNOWN_REGIONS) + 1)
     return UKSingleYearDataset(
         person=pd.DataFrame(
@@ -203,7 +203,7 @@ def _one_household_per_known_region(charges):
                 "water_and_sewerage_charges": charges,
             }
         ),
-        fiscal_year=2024,
+        fiscal_year=base_year,
     )
 
 
@@ -243,3 +243,97 @@ def test_microsimulation_gives_scotland_scottish_water_growth():
         * (1 + ENGLAND_AND_WALES("2025-01-01"))
         * (1 + ENGLAND_AND_WALES("2026-01-01"))
     )
+
+
+# WICS Final Determination 2027-33, physical pages 389-390 and 394:
+# Table 163 and section 9.6.1/Table 171 assume that the West Central
+# Bioresources conditions are met, without the uncertain-cost allowance.
+# The real cap is 2.5% throughout: 2.5% core in 2027-2029, then 0.5% core
+# plus 2.0% conditional WCB in 2030-2032. Add Table 164's charging CPI
+# (3.2%, 2.1%, 1.9%, 2.0%, 2.0%, 2.0%) in percentage points. Section
+# 9.5.12 uses prior-October CPI for 2027, then prior-September CPI from 2028.
+# These are forecasts, not Scottish Water's later annual announcements.
+# Table 174 (physical page 396) independently corroborates addition for
+# the first two years: Band D 652.32 -> 689.50 -> 721.22. Its later years
+# include uncertain-cost allowances and do not supply these expectations.
+# Annual rates and cumulative factors from FY2026 were calculated with
+# Decimal before model execution; no intermediate cash rounding is applied.
+# https://www.wics.scot/system/files/2026-11/Final-Determination-2027-33-main-document.pdf#page=389
+FINAL_SCOTTISH_CENTRAL_PROFILE = (
+    (2027, 0.057, 1.057),
+    (2028, 0.046, 1.105622),
+    (2029, 0.044, 1.154269368),
+    (2030, 0.045, 1.206211489560),
+    (2031, 0.045, 1.260491006590200),
+    (2032, 0.045, 1.317213101886759000),
+)
+FINAL_SCOTTISH_ANNUAL_RATES = [
+    (year, growth) for year, growth, _ in FINAL_SCOTTISH_CENTRAL_PROFILE
+]
+
+
+@pytest.mark.parametrize("year, growth", FINAL_SCOTTISH_ANNUAL_RATES)
+def test_final_scottish_water_growth_matches_wics_central_forecast(year, growth):
+    """Pin the WCB-met, no-uncertain-cost forecast to the final source."""
+    assert SCOTLAND(f"{year}-01-01") == pytest.approx(growth, abs=1e-12)
+
+
+@pytest.mark.parametrize("year, growth", FINAL_SCOTTISH_ANNUAL_RATES)
+def test_final_scottish_water_growth_keeps_country_controls(year, growth):
+    charges = _uprated(
+        ["SCOTLAND", "LONDON", "WALES", "NORTHERN_IRELAND", "UNKNOWN", "SCOTLAND"],
+        [500.0, 500.0, 500.0, 500.0, 500.0, 0.0],
+        year,
+    )
+    unchanged_ofwat = 500 * (1 + ENGLAND_AND_WALES(f"{year}-01-01"))
+    assert charges == pytest.approx(
+        [
+            500 * (1 + growth),
+            unchanged_ofwat,
+            unchanged_ofwat,
+            500,
+            unchanged_ofwat,
+            0,
+        ],
+        abs=0.01,
+    )
+
+
+def test_final_scottish_water_profile_compounds_from_2026_in_dataset():
+    """Apply every final-source year, including years beyond the old horizon."""
+    extended = extend_single_year_dataset(
+        _one_household_per_known_region(500.0, base_year=2026),
+        parameters,
+        end_year=2032,
+    )
+    sim = Microsimulation(dataset=extended)
+
+    for year, _, factor in FINAL_SCOTTISH_CENTRAL_PROFILE:
+        unchanged_ofwat = 500 * np.prod(
+            [
+                1 + ENGLAND_AND_WALES(f"{previous_year}-01-01")
+                for previous_year in range(2027, year + 1)
+            ]
+        )
+        expected = [
+            500 * factor
+            if region == "SCOTLAND"
+            else 500
+            if region == "NORTHERN_IRELAND"
+            else unchanged_ofwat
+            for region in KNOWN_REGIONS
+        ]
+        np.testing.assert_allclose(
+            extended[year].household["water_and_sewerage_charges"].to_numpy(),
+            expected,
+            rtol=0,
+            atol=0.01,
+            err_msg=f"Dataset water charges for {year}",
+        )
+        np.testing.assert_allclose(
+            sim.calculate("water_and_sewerage_charges", year).values,
+            expected,
+            rtol=0,
+            atol=0.01,
+            err_msg=f"Microsimulation water charges for {year}",
+        )

@@ -2391,22 +2391,29 @@ scottish_water:
     #   announced and WICS approved for each year. Every council tax band's
     #   charge is a fixed fraction of Band D, so each band rises by the same
     #   percentage.
-    # - 2027-2029: the core cap in WICS's Draft Determination for 2027-33
-    #   (consultation 30 June to 1 September 2026), CPI + 2% in each of the
-    #   first three years (para. 9.1.3), with CPI from WICS's forecast of
-    #   October CPI in the previous year, 1.9%, 1.9% and 2.1% (Table 68, from
-    #   OBR's March 2026 forecast). WICS publishes the Final Determination on
-    #   29 October 2026; replace these with it.
-    # Later years hold the 2029-30 rate.
+    # - 2027-2032: a projection using WICS's Final Determination for 2027-33
+    #   (12 November 2026), Tables 163-164 and section 9.6.1/Table 171.
+    #   The central forecast adds 2.5 percentage points to charge inflation
+    #   of 3.2%, 2.1%, 1.9%, 2.0%, 2.0% and 2.0%. It assumes that Scottish
+    #   Water meets the West Central Bioresources conditions: in 2030-2032,
+    #   the unconditional real cap is 0.5%, plus a conditional 2.0% for WCB.
+    #   The additional conditional 0.3% for uncertain costs is excluded.
+    #   Charge inflation uses the previous October for 2027-28, then the
+    #   previous September from 2028-29. These are projected cap-profile
+    #   increases, not announced annual charges; replace them with outturns
+    #   when available. The core cap applies cumulatively over the period.
     values:
       2022-01-01: 0.042
       2023-01-01: 0.05
       2024-01-01: 0.088
       2025-01-01: 0.099
       2026-01-01: 0.0867
-      2027-01-01: 0.039
-      2028-01-01: 0.039
-      2029-01-01: 0.041
+      2027-01-01: 0.057
+      2028-01-01: 0.046
+      2029-01-01: 0.044
+      2030-01-01: 0.045
+      2031-01-01: 0.045
+      2032-01-01: 0.045
     metadata:
       unit: /1
       label: Scottish Water household charges growth
@@ -2421,10 +2428,8 @@ scottish_water:
           href: https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement
         - title: Scottish Water, "Average water bills to rise £42 in 2026" (22 January 2026; 8.67%)
           href: https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026
-        - title: WICS, Strategic Review of Charges 2027-33 Draft Determination (June 2026), para. 9.1.3 (CPI + 2% core cap) and Table 68 (CPI forecast, p. 258)
-          href: https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf
-        - title: WICS, "WICS publishes 2027-33 Draft Determination" (Final Determination 29 October 2026)
-          href: https://wics.scot/latest/wics-publishes-2027-33-draft-determination
+        - title: "WICS, Strategic Review of Charges 2027-33 Final Determination (12 November 2026), Tables 163-164 and section 9.6.1/Table 171 #page 389-390,394"
+          href: https://www.wics.scot/system/files/2026-11/Final-Determination-2027-33-main-document.pdf#page=389
 finance_ni:
   domestic_rates:
     description: Growth in the average Northern Ireland domestic rates bill (regional rate plus district rate), used to project the domestic_rates dataset input.
