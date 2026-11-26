@@ -6,6 +6,21 @@ def bsp_input_periods(person, name):
     return person.get_holder(name).get_input_periods(person.simulation.branch_name)
 
 
+def bsp_supplied_array_at_or_before(person, name, period):
+    """Read the latest applicable genuine input, never a calculated cache."""
+    supplied_periods = [
+        supplied_period
+        for supplied_period in bsp_input_periods(person, name)
+        if supplied_period.start <= period.start
+    ]
+    if not supplied_periods:
+        return None
+    supplied_period = max(supplied_periods, key=lambda item: item.start)
+    return person.get_holder(name).get_array(
+        supplied_period, person.simulation.branch_name
+    )
+
+
 class bsp_calculated_initial_payment(Variable):
     value_type = float
     entity = Person
@@ -22,13 +37,15 @@ class bsp_calculated_initial_payment(Variable):
     )
 
     def formula_2017_01_01(person, period, parameters):
-        if not bsp_input_periods(
-            person, "bsp_initial_payment_year"
-        ) or not bsp_input_periods(person, "bsp_initial_payment_rate"):
+        paid_year = bsp_supplied_array_at_or_before(
+            person, "bsp_initial_payment_year", period
+        )
+        rate = bsp_supplied_array_at_or_before(
+            person, "bsp_initial_payment_rate", period
+        )
+        if paid_year is None or rate is None:
             return person.empty_array()
         p = parameters(period).gov.dwp.bsp
-        paid_year = person("bsp_initial_payment_year", period)
-        rate = person("bsp_initial_payment_rate", period)
         categories = rate.possible_values
         amount = select(
             [rate == categories.STANDARD, rate == categories.HIGHER],

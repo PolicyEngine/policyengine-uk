@@ -92,6 +92,48 @@ def test_initial_receipt_is_fixed_and_instalments_need_real_current_year_facts()
     assert paid.calculate("bsp_calculated_monthly_payments", 2027).tolist() == [450]
 
 
+def test_historical_initial_receipt_does_not_authorise_a_derived_later_year():
+    sim = Simulation(
+        situation=one_person(
+            {
+                "bsp_add_calculated_award": {2025: True, 2026: True},
+                "bsp_initial_payment_year": {2025: 2025},
+                "bsp_initial_payment_rate": {2025: "STANDARD"},
+            }
+        )
+    )
+    assert sim.calculate("bsp_calculated_initial_payment", 2025).tolist() == [2500]
+    # A genuine historical record establishes the fixed actual year. It must
+    # not legitimise a later derived value which pretends that cash recurred.
+    sim.get_holder("bsp_initial_payment_year").put_in_cache(
+        np.array([2026], dtype=np.int32),
+        period(2026),
+        sim.branch_name,
+        derived=True,
+    )
+    assert sim.calculate("bsp_calculated_initial_payment", 2026).tolist() == [0]
+
+    category = Simulation(
+        situation=one_person(
+            {
+                "bsp_add_calculated_award": {2026: True},
+                "bsp_initial_payment_year": {2025: 2026},
+                "bsp_initial_payment_rate": {2025: "STANDARD"},
+            }
+        )
+    )
+    category_holder = category.get_holder("bsp_initial_payment_rate")
+    category_holder.put_in_cache(
+        category_holder.variable.possible_values.encode(np.array(["HIGHER"])),
+        period(2026),
+        category.branch_name,
+        derived=True,
+    )
+    # The actual fixed category remains STANDARD, despite a derived cache
+    # attempting to price that same initial receipt at the higher amount.
+    assert category.calculate("bsp_calculated_initial_payment", 2026).tolist() == [2500]
+
+
 def test_full_reported_cells_and_explicit_final_cash_overrides_are_preserved():
     person = {"age": {YEAR: 40}, "bsp_reported": {YEAR: 7123.45}, **award_facts()}
     sim = Simulation(situation=one_person(copy.deepcopy(person)))
