@@ -13,10 +13,13 @@ class uc_housing_costs_element(Variable):
         "rent payments (UC Regs 2013 Sch 1 paras 3(h), 3(i), 3A and 3B; NI: "
         "SR 2016/216 Sch 1 paras 3(e), 3(ea), 4 and 4A), so the element is "
         "nil for a family with in_specified_or_temporary_accommodation; "
-        "Housing Benefit pays that rent instead (housing_benefit_eligible)."
+        "Housing Benefit pays that rent instead (housing_benefit_eligible). "
+        "The element is also nil for a family that would not claim it "
+        "(would_claim_uc_housing_costs_element, true by default)."
     )
     definition_period = YEAR
     unit = GBP
+    defined_for = "would_claim_uc_housing_costs_element"
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/1/paragraph/3",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/1/paragraph/3A",
