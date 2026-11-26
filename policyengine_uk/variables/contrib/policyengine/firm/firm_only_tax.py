@@ -13,8 +13,9 @@ class firm_only_tax(Variable):
         "household side, so they are left out. The Employment Allowance is "
         "left out too: firm_tax_change_total subtracts its full change, "
         "which with the gross change in ni_employer counts the change in "
-        "what firms pay. Reforms to the VAT registration threshold and flat "
-        "rate scheme are not yet carried to households."
+        "what firms pay. firm_tax_change_total also adds the change in firm "
+        "VAT from VAT rules other than the rates, with the rates held at "
+        "baseline."
     )
     entity = Firm
     definition_period = YEAR

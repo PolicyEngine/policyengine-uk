@@ -514,3 +514,122 @@ def test_firm_only_parameter_reform_total_and_incidence(parameter, value, expect
     assert total == pytest.approx([expected, expected], abs=0.01)
     incidence = np.asarray(simulation.calculate("firm_tax_incidence", YEAR))
     assert (incidence * HOUSEHOLD_WEIGHTS).sum() == pytest.approx(expected, abs=0.01)
+
+
+def vat_dataset() -> UKSingleYearDataset:
+    """The dataset above with VAT supplies, 2026-27 (20% standard rate,
+    registration above 90,000, flat rate scheme joining limit 150,000,
+    default flat rate 12%), weights 5 / 7 / 11:
+
+    - firm 1: standard-rated supplies 2,000,000 and input VAT 100,000:
+      400,000 - 100,000 = 300,000;
+    - firm 2: 95,000 and 5,000, just over the threshold: 19,000 - 5,000 =
+      14,000;
+    - firm 3: 120,000 on the flat rate scheme: 12% x (120,000 + 24,000) =
+      17,280.
+
+    Weighted firm VAT: 5 x 300,000 + 7 x 14,000 + 11 x 17,280 = 1,788,080.
+    """
+    data = dataset()
+    data.firm["firm_standard_rated_supplies"] = [2_000_000.0, 95_000.0, 120_000.0]
+    data.firm["firm_input_vat"] = [100_000.0, 5_000.0, 0.0]
+    data.firm["firm_uses_flat_rate_scheme"] = [False, False, True]
+    return data
+
+
+VAT_RATE_REFORM = {"gov.hmrc.vat.standard_rate": {"2020-01-01.2035-12-31": 0.25}}
+VAT_THRESHOLD_REFORM = {
+    "gov.hmrc.vat.registration.threshold": {"2020-01-01.2035-12-31": 100_000}
+}
+
+
+def test_vat_at_baseline_rates_matches_firm_vat_without_a_reform():
+    """With no reform, the firm-only total's VAT under reform rules at
+    baseline rates is the weighted firm_vat."""
+    from policyengine_uk.variables.contrib.policyengine.firm.firm_tax_change_total import (
+        _vat_under_reform_rules_at_baseline_rates,
+    )
+
+    simulation = Microsimulation(dataset=vat_dataset())
+    assert np.asarray(simulation.calculate("firm_vat", YEAR)) == pytest.approx(
+        [300_000, 14_000, 17_280], abs=0.01
+    )
+    firms = simulation.populations["firm"]
+    assert _vat_under_reform_rules_at_baseline_rates(
+        firms, firms, YEAR
+    ) == pytest.approx(1_788_080, abs=0.1)
+
+
+def test_vat_rate_reform_does_not_reach_firm_incidence():
+    """VAT rates reach households through vat, so a 25% standard rate moves
+    firm_vat (firm 1: 500,000 - 100,000 = 400,000) but not the firm-only
+    total."""
+    simulation = Microsimulation(dataset=vat_dataset(), reform=VAT_RATE_REFORM)
+    assert np.asarray(simulation.calculate("firm_vat", YEAR))[0] == pytest.approx(
+        400_000, abs=0.01
+    )
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([0, 0], abs=0.1)
+
+
+def test_vat_threshold_reform_reaches_firm_incidence():
+    """A 100,000 threshold deregisters firm 2 (95,000), which stops paying
+    14,000: -7 x 14,000 = -98,000. Firm 3 (120,000) stays registered."""
+    simulation = Microsimulation(dataset=vat_dataset(), reform=VAT_THRESHOLD_REFORM)
+    assert np.asarray(simulation.calculate("firm_vat_registered", YEAR)).tolist() == [
+        True,
+        False,
+        True,
+    ]
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([-98_000, -98_000], abs=0.1)
+
+
+def test_flat_rate_percentage_reform_reaches_firm_incidence():
+    """A 15% default flat rate: firm 3 pays 15% x 144,000 = 21,600, 4,320
+    more: 11 x 4,320 = 47,520."""
+    simulation = Microsimulation(
+        dataset=vat_dataset(),
+        reform={
+            "gov.hmrc.vat.flat_rate.default_sector_rate": {
+                "2020-01-01.2035-12-31": 0.15
+            }
+        },
+    )
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([47_520, 47_520], abs=0.1)
+
+
+def test_vat_rate_and_threshold_reform_drops_the_interaction():
+    """With both, firm 2's deregistration is valued at baseline rates
+    (14,000), not at the reform's (95,000 x 25% - 5,000 = 18,750): the total
+    is the threshold change alone, -98,000."""
+    simulation = Microsimulation(
+        dataset=vat_dataset(), reform={**VAT_RATE_REFORM, **VAT_THRESHOLD_REFORM}
+    )
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([-98_000, -98_000], abs=0.1)
+
+
+def test_vat_threshold_cut_registers_a_partly_exempt_firm():
+    """Firm 2 with 85,000 of standard-rated and 15,000 of exempt supplies
+    is under the 90,000 threshold. Cut to 80,000, it registers: recovery
+    share 85,000 / 100,000 = 85%, so it deducts 85% x 5,000 = 4,250 of
+    input VAT and pays 17,000 - 4,250 = 12,750: 7 x 12,750 = 89,250."""
+    data = vat_dataset()
+    data.firm.loc[1, "firm_standard_rated_supplies"] = 85_000.0
+    data.firm["firm_exempt_supplies"] = [0.0, 15_000.0, 0.0]
+    simulation = Microsimulation(
+        dataset=data,
+        reform={
+            "gov.hmrc.vat.registration.threshold": {"2020-01-01.2035-12-31": 80_000}
+        },
+    )
+    assert np.asarray(
+        simulation.baseline.calculate("firm_vat_registered", YEAR)
+    ).tolist() == [True, False, True]
+    assert np.asarray(simulation.calculate("firm_vat", YEAR))[1] == pytest.approx(
+        12_750, abs=0.01
+    )
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([89_250, 89_250], abs=0.1)

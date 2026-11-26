@@ -15,6 +15,8 @@ class firm_vat(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/1994/23/section/25"
 
     def formula(firm, period, parameters):
+        # Keep in step with _vat_under_reform_rules_at_baseline_rates in
+        # policyengine_uk/variables/contrib/policyengine/firm/firm_tax_change_total.py.
         registered = firm("firm_vat_registered", period)
         liability = firm("firm_vat_liability_if_registered", period)
         return where(registered, liability, 0)

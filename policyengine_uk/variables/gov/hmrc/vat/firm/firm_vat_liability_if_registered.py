@@ -15,6 +15,8 @@ class firm_vat_liability_if_registered(Variable):
     unit = GBP
 
     def formula(firm, period, parameters):
+        # Keep in step with _vat_under_reform_rules_at_baseline_rates in
+        # policyengine_uk/variables/contrib/policyengine/firm/firm_tax_change_total.py.
         uses_frs = firm("firm_uses_flat_rate_scheme", period)
         eligible = firm("firm_flat_rate_scheme_eligible", period)
         flat_rate = firm("firm_vat_flat_rate_liability", period)
