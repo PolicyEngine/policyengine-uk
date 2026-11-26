@@ -203,3 +203,98 @@ def test_lha_freeze_moves_a_flat_renter_but_not_a_caravan_renter():
     flat, caravan = 0, 1
     assert frozen[flat] < unfrozen[flat] < 30_000
     assert frozen[caravan] == unfrozen[caravan] == 30_000
+
+
+def test_ni_qualifying_mooring_payment_reaches_final_uc_award():
+    """NI Sch1 para2(c), Sch4 paras19/21/24: the eligible payment reaches UC."""
+    year = 2026
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for index, qualifies in enumerate((True, False), 1):
+        person = f"person{index}"
+        family = f"family{index}"
+        home = f"home{index}"
+        situation["people"][person] = {"age": {year: 40}}
+        situation["benunits"][family] = {
+            "members": [person],
+            "is_married": {year: False},
+            "would_claim_uc": {year: True},
+            "would_claim_housing_benefit": {year: False},
+            "has_qualifying_site_or_mooring_liability": {year: qualifies},
+        }
+        situation["households"][home] = {
+            "members": [person],
+            "country": {year: "NORTHERN_IRELAND"},
+            "region": {year: "NORTHERN_IRELAND"},
+            "brma": {year: "BELFAST"},
+            "tenure_type": {year: "OWNED_OUTRIGHT"},
+            "accommodation_type": {year: "MOBILE"},
+            "rent": {year: 5_200},
+        }
+    sim = Simulation(situation=situation)
+    # nidirect's current 2026/27 Belfast one-bed LHA is 605.47/month,
+    # above 5,200/year. The NI single cap is 283.71/week. Even standard
+    # allowance 424.90/month + 5,200/year = 10,298.80 stays below that cap.
+    # Only the qualifying-payment fact differs; the unchanged standard
+    # allowance cancels, so this asserts a final UC difference, not NI base cash.
+    # https://www.nidirect.gov.uk/articles/universal-credit-payments-housing
+    # https://www.nidirect.gov.uk/articles/benefit-cap
+    # https://www.legislation.gov.uk/nisr/2026/54/regulation/3
+    np.testing.assert_allclose(
+        sim.calculate("uc_housing_costs_element", year),
+        [5_200, 0],
+        atol=0.01,
+        rtol=0,
+    )
+    credit = sim.calculate("universal_credit", year)
+    assert credit[0] > 0
+    np.testing.assert_allclose(credit[0] - credit[1], 5_200, atol=0.01, rtol=0)
+
+
+def test_co_resident_without_rent_liability_is_not_hb_eligible():
+    """A co-resident with no rental share has neither liability nor an HB award."""
+    year = 2026
+    sim = Simulation(
+        situation={
+            "people": {
+                "person1": {
+                    "age": {year: 70},
+                    "state_pension": {year: 0},
+                    "is_household_head": {year: True},
+                },
+                "person2": {"age": {year: 70}, "state_pension": {year: 0}},
+            },
+            "benunits": {
+                "family1": {
+                    "members": ["person1"],
+                    "is_married": {year: False},
+                    "would_claim_housing_benefit": {year: True},
+                    "would_claim_uc": {year: False},
+                },
+                "family2": {
+                    "members": ["person2"],
+                    "is_married": {year: False},
+                    "would_claim_housing_benefit": {year: True},
+                    "would_claim_uc": {year: False},
+                },
+            },
+            "households": {
+                "home": {
+                    "members": ["person1", "person2"],
+                    "country": {year: "ENGLAND"},
+                    "region": {year: "LONDON"},
+                    "tenure_type": {year: "RENT_PRIVATELY"},
+                    "accommodation_type": {year: "MOBILE"},
+                    "rent": {year: 5_200},
+                }
+            },
+        }
+    )
+    # No rent, liability or sharing intermediate is supplied. Existing
+    # allocation assigns the householder the rent and the co-resident zero;
+    # issue2930 must honour that result without changing issue2833 allocation.
+    np.testing.assert_allclose(sim.calculate("benunit_rent", year), [5_200, 0])
+    np.testing.assert_array_equal(
+        sim.calculate("benunit_is_rent_liable", year), [True, False]
+    )
+    assert not sim.calculate("housing_benefit_eligible", year)[1]
+    assert sim.calculate("housing_benefit", year)[1] == 0

@@ -1,0 +1,339 @@
+# Current 2026 qualifying site/mooring payments: UC Regs 2013 regs 25/26,
+# Sch 1 para 2(c)/(d), Sch 4 paras 20/22/25; NI regs 26/27, Sch 1 para 2,
+# Sch 4 paras 19/21/24. Ordinary mortgage repayments are not tested as rent.
+# Single age 40 standard allowance: 424.90/month x 12 = 5,098.80.
+# 2026 Inner South East London one-bed LHA: 1,295.50/month x 12 = 15,546.
+# A 5,200 payment is below that cap; 5,098.80 + 5,200 = 10,298.80,
+# below the single London annual benefit cap of 16,967. No income, capital,
+# non-dependants or other awards reduce these raw-input cases.
+# https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+# https://www.gov.uk/government/publications/universal-credit-local-housing-allowance-rates-2026-to-2027
+# https://www.legislation.gov.uk/uksi/2013/376/schedule/4
+
+- name: Case 1, a qualifying owner site payment reaches the final Universal Credit award.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 5_200
+    universal_credit: 10_298.8
+
+- name: Case 2, a financed houseboat owner receives the qualifying mooring amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_WITH_MORTGAGE
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 5_200
+    universal_credit: 10_298.8
+
+- name: Case 3, the default false payment-type input leaves an owner with the standard allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+- name: Case 4, an explicit false payment-type flag excludes an owner housing amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+- name: Case 5, qualifying payment type cannot override an explicit absence of liability.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+- name: Case 6, a private tenant without liability has no housing element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+- name: Case 7, an ordinary liable private tenant retains the housing element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 5_200
+    universal_credit: 10_298.8
+
+- name: Case 8, an ordinary liable social tenant retains the housing element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 5_200
+    universal_credit: 10_298.8
+
+- name: Case 9, a qualifying owner remains subject to the private LHA and final benefit caps.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 20_000
+  output:
+    uc_housing_costs_element: 15_546
+    universal_credit_pre_benefit_cap: 20_644.8
+    uc_benefit_cap: 16_967
+    universal_credit: 16_967
+
+- name: Case 10, a social tenant without liability has no housing element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+- name: Case 11, an owner who does not take up the housing element receives only the standard allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        would_claim_uc_housing_costs_element: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8
+
+# The qualifying payment-type fact does not assert overall UC entitlement;
+# specified/temporary accommodation still excludes it from this element.
+- name: Case 12, specified or temporary accommodation remains outside the UC housing element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: true
+        would_claim_housing_benefit: false
+        has_qualifying_site_or_mooring_liability: true
+        in_specified_or_temporary_accommodation: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    uc_housing_costs_element: 0
+    universal_credit: 5_098.8

@@ -229,6 +229,7 @@
     benunits:
       benunit:
         members: [person1]
+        benunit_is_rent_liable: true
     households:
       household:
         members: [person1]
@@ -348,6 +349,7 @@
     benunits:
       benunit:
         members: [person1]
+        benunit_is_rent_liable: true
     households:
       household:
         members: [person1]

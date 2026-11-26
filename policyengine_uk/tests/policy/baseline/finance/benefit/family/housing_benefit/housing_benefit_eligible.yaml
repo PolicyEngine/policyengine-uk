@@ -5,10 +5,11 @@
 # Housing Allowance sets their eligible rent (see lha_mobile_homes.yaml).
 
 - name: Social housing eligible
-  # The social housing flag alone opens the route, as it did when the formula
-  # read LHA_eligible for private renters.
+  # The social housing flag opens the tenure route; the claimant also
+  # has the explicitly supplied payment liability.
   period: 2021
   input:
+    benunit_is_rent_liable: true
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: true
     housing_benefit_reported: 1
@@ -30,6 +31,7 @@
     benunits:
       benunit:
         members: [adult, partner]
+        benunit_is_rent_liable: true
         would_claim_uc: false  # continuing award route: not claiming Universal Credit
         benunit_is_renting: false
     households:
@@ -41,6 +43,7 @@
 - name: Private renter eligible
   period: 2021
   input:
+    benunit_is_rent_liable: true
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: false
     housing_benefit_reported: 1
@@ -75,6 +78,7 @@
   # eligibility gate.
   period: 2021
   input:
+    benunit_is_rent_liable: true
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
     housing_benefit_reported: 1
     tenure_type: RENT_PRIVATELY
@@ -84,10 +88,11 @@
     housing_benefit_eligible: true
 
 - name: A supplied LHA_eligible of false leaves a private renter with a reported award eligible
-  # The flag selects the eligible-rent calculation; the tenure decides
-  # eligibility.
+  # The flag selects the eligible-rent calculation; tenure and payment
+  # liability decide this claimant's eligibility.
   period: 2021
   input:
+    benunit_is_rent_liable: true
     would_claim_uc: false  # continuing award route: not claiming Universal Credit
     housing_benefit_reported: 1
     tenure_type: RENT_PRIVATELY

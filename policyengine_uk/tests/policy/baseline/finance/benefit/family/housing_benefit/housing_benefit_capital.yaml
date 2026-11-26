@@ -10,6 +10,7 @@
     benunits:
       benunit:
         members: person
+        benunit_is_rent_liable: true
         would_claim_uc: false
     households:
       household:
@@ -188,6 +189,7 @@
     benunits:
       benunit:
         members: person
+        benunit_is_rent_liable: true
         guarantee_credit: 0
         would_claim_uc: false
         housing_benefit_applicable_income_disregard: 0
@@ -236,6 +238,7 @@
     benunits:
       benunit:
         members: person
+        benunit_is_rent_liable: true
         # The passport needs a guarantee credit that is paid. Pension Credit
         # income here is 10,000 plus 80 x 52 = 4,160 deemed from capital,
         # 14,160 in all, above the 2025-26 standard minimum guarantee
@@ -268,6 +271,7 @@
     benunits:
       benunit:
         members: person
+        benunit_is_rent_liable: true
         would_claim_uc: false
     households:
       household:

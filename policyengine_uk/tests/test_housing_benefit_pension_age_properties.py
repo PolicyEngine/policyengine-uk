@@ -185,6 +185,7 @@ def test_new_claims_follow_the_pension_age_route(units):
         expected = (
             wholly_pension_age(unit)
             and values["renting"][i]
+            and np.float32(unit["rent"]) > 0
             and values["capital_ok"][i]
         )
         assert bool(values["housing_benefit_eligible"][i]) == expected, unit
@@ -207,7 +208,11 @@ def test_dataset_take_up_stays_anchored_to_reported_claims(units):
         if values["housing_benefit"][i] > 0:
             assert unit["hb_reported"] > 0, unit
         if not wholly_pension_age(unit):
-            renting_within_capital = values["renting"][i] and values["capital_ok"][i]
+            renting_within_capital = (
+                values["renting"][i]
+                and np.float32(unit["rent"]) > 0
+                and values["capital_ok"][i]
+            )
             continuing_award = (
                 unit["hb_reported"] > 0
                 and not unit["would_claim_uc"]

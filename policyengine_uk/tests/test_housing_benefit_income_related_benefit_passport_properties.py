@@ -277,11 +277,12 @@ def test_receipt_never_lowers_pre_cap_housing_benefit(units, benefit, amount):
 def test_passported_social_tenant_gets_the_rent_at_any_age(units, benefit, amount):
     awards = [{**{b: 0.0 for b in BENEFITS}, benefit: amount} for _ in units]
     rents = np.array([unit["rent"] for unit in units])
+    rent_liable = np.asarray(rents, dtype=np.float32) > 0
     for first, second in [(40, 35), (70, 35), (70, 68)]:
         ages = [[first, second] for _ in units]
         values = calculate(units, awards=awards, ages=ages)
         assert receipt(values).all()
-        assert values["housing_benefit_eligible"].all()
+        np.testing.assert_array_equal(values["housing_benefit_eligible"], rent_liable)
         assert np.allclose(values["housing_benefit_entitlement"], rents, atol=0.01)
 
 

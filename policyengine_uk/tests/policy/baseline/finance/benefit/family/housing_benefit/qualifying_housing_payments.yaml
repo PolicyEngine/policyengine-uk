@@ -1,0 +1,333 @@
+# Current 2026 qualifying payment liabilities, not ordinary owner costs.
+# GB: SI 2006/213 and SI 2006/214 reg 12(1)(f)/(g); NI: SR 2006/405
+# and SR 2006/406 reg 13(1)(f)/(g). The explicit payment-type input means
+# actual/deemed liability, home occupation and relevant exclusions have been
+# established outside the model; rent supplies only the qualifying amount.
+# With no income, capital, non-dependants or meals, the existing non-LHA
+# eligible-rent approximation pays the supplied 5,200. No PC cash is asserted.
+# https://www.legislation.gov.uk/uksi/2006/214/regulation/12
+# https://www.legislation.gov.uk/nisr/2006/406/regulation/13
+
+- name: Case 1, an owner receives Housing Benefit for a qualifying mobile-home site payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 5_200
+
+- name: Case 2, a financed houseboat owner receives Housing Benefit for a qualifying mooring charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_WITH_MORTGAGE
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 5_200
+
+- name: Case 3, positive generic rent does not establish a qualifying owner payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 0
+
+- name: Case 4, an explicit false payment-type flag leaves an owner without Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 0
+
+- name: Case 5, the qualifying payment-type flag does not override absent liability.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: true
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 0
+
+- name: Case 6, a private tenant without liability receives no Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 0
+
+- name: Case 7, a liable private mobile-home tenant retains Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_PRIVATELY
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 5_200
+
+- name: Case 8, a liable social tenant retains Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 5_200
+
+- name: Case 9, a Northern Ireland owner receives Housing Benefit for a qualifying site payment.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: NORTHERN_IRELAND
+        region: NORTHERN_IRELAND
+        brma: BELFAST
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 5_200
+
+- name: Case 10, a social tenant without liability receives no Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    housing_benefit: 0
+
+- name: Case 11, a qualifying owner keeps owner tenure and passes the liability gateway.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        has_qualifying_site_or_mooring_liability: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    has_qualifying_site_or_mooring_liability: true
+    benunit_is_renting: false
+    benunit_is_rent_liable: true
+    housing_benefit_eligible: true
+
+- name: Case 12, the payment-type input defaults to false for an ordinary owner.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+    benunits:
+      benunit:
+        members: [person1]
+        is_married: false
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        region: LONDON
+        brma: INNER_SOUTH_EAST_LONDON
+        tenure_type: OWNED_OUTRIGHT
+        accommodation_type: MOBILE
+        rent: 5_200
+  output:
+    has_qualifying_site_or_mooring_liability: false
+    benunit_is_renting: false
+    housing_benefit_eligible: false
