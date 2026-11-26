@@ -54,10 +54,15 @@ This holds to the end of the dataset projection (2032). After it, policyengine-c
 | 2024 | 8.8% | [WICS, charges scheme 2024-25](https://wics.scot/publications/price-setting/strategic-review-charges-2021-27/scottish-waters-charges-scheme/charges-scheme-2024-25) |
 | 2025 | 9.9% | [Scottish Water, 28 January 2025](https://www.scottishwater.co.uk/About-Us/News-and-Views/2025/01/Charges-2025-to-2026-Announcement) |
 | 2026 | 8.67% | [Scottish Water, 22 January 2026](https://www.scottishwater.co.uk/about-us/news-and-views/2026/01/230126-charges-2026) |
-| 2027 | 3.9% | [WICS Draft Determination 2027-33](https://wics.scot/system/files/2026-06/Draft-Determination-2027-33.pdf): the CPI + 2% core cap (para. 9.1.3) with WICS's CPI forecast of 1.9% (Table 68) |
-| 2028 | 3.9% | As above |
-| 2029 | 4.1% | As above, with CPI at 2.1% |
+| 2027 | 5.7% | Final Determination central projection: CPI forecast 3.2% plus 2.5 percentage points |
+| 2028 | 4.6% | CPI forecast 2.1% plus 2.5 percentage points |
+| 2029 | 4.4% | CPI forecast 1.9% plus 2.5 percentage points |
+| 2030 | 4.5% | CPI forecast 2.0% plus 0.5 points core and 2.0 points conditional WCB allowance |
+| 2031 | 4.5% | As above |
+| 2032 | 4.5% | As above |
 
-Each year is the charging year starting in April, so 2025 is 2025-26. Later years to 2032 hold the 2029-30 rate. [WICS publishes its Final Determination for 2027-33](https://wics.scot/latest/wics-publishes-2027-33-draft-determination) on 29 October 2026; the 2027-2029 values should then be replaced with it.
+Each year is the charging year starting in April, so 2027 is 2027-28. The 2027-2032 values project the central profile in WICS's [Final Determination for 2027-33](https://www.wics.scot/system/files/2026-11/Final-Determination-2027-33-main-document.pdf#page=389) (12 November 2026; Tables 163-164 and section 9.6.1/Table 171, PDF pages 389-390 and 394). The price-inflation forecast is 3.2%, 2.1%, 1.9%, 2.0%, 2.0% and 2.0%; the charge measure uses October CPI in the previous year for 2027-28, then September CPI in the previous year from 2028-29.
+
+The projection follows WICS's central assumption that Scottish Water meets the West Central Bioresources conditions. For 2030-2032, the unconditional real cap is 0.5%, with a further 2.0% conditional on those conditions being met; the projection includes that allowance. It excludes the separate 0.3% conditional allowance for uncertain costs, which WICS also leaves out of its central revenue modelling. These values describe a projected cap profile, not announced annual charges. The core cap applies cumulatively, so Scottish Water can vary the annual profile within it. Replace each projection with the announced increase when available.
 
 `policyengine_uk/utils/create_ahc_deflator.py` still reads the England and Wales index. It is a standalone script that the model does not run.
