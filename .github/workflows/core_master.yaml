@@ -1,0 +1,74 @@
+# The firm entity and the code that reads policyengine-core internals,
+# tested against core's default branch, master.
+#
+# policyengine-uk gives the firm entity a root population by replacing core's
+# TaxBenefitSystem.instantiate_entities and Simulation.clone, imports core's
+# private _branch_clone, and reads private Simulation and Holder attributes in
+# simulation.py. A core release that renames any of them would break
+# `import policyengine_uk` for every user. pyproject.toml caps core below the
+# next minor version, and this job runs the tests that use those internals on
+# core's master, so a rename shows here before a release reaches the cap.
+#
+# It is not a required check: a red run means core master has moved, not that
+# the pull request is wrong. The core version gate
+# (tests/code_health/test_core_version_gate.py) is left out, because it fails
+# by design on any core it has not qualified. It runs on pull requests that
+# change code, every Monday, and by hand.
+
+name: Core master
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - policyengine_uk/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/core_master.yaml
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: core-master-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  Core-Master:
+    name: Firm and core-internals tests on policyengine-core master
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Install the locked environment
+        uses: ./.github/actions/test-environment
+      - name: Install policyengine-core from master
+        run: |
+          set -euo pipefail
+          uv pip install --python .venv/bin/python \
+            "policyengine-core @ git+https://github.com/PolicyEngine/policyengine-core@master"
+          python -c "import importlib.metadata as m; print('policyengine-core', m.version('policyengine-core'))"
+      - name: Smoke-import
+        run: python -c "import policyengine_uk; print('import OK')"
+      - name: Python tests
+        run: >-
+          pytest -n 4
+          policyengine_uk/tests/test_firm_entity.py
+          policyengine_uk/tests/test_firm_incidence.py
+          policyengine_uk/tests/test_firm_regression_gate.py
+          policyengine_uk/tests/test_firm_yaml_guard.py
+          policyengine_uk/tests/test_entity_ids.py
+          policyengine_uk/tests/test_subsample.py
+          policyengine_uk/tests/test_input_dataframe_export.py
+          policyengine_uk/tests/test_dataframe_dataset.py
+          policyengine_uk/tests/test_supplied_inputs.py
+          policyengine_uk/tests/test_measurement_branches.py
+      - name: Firm YAML tests
+        run: >-
+          policyengine-core test -c policyengine_uk
+          policyengine_uk/tests/policy/integration/firm
+          policyengine_uk/tests/policy/baseline/gov/hmrc/corporation_tax
+          policyengine_uk/tests/policy/baseline/gov/hmrc/business_rates/firm

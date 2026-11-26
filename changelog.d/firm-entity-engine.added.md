@@ -8,3 +8,4 @@ Rounded the VAT partial exemption recovery percentage up as reg 101(4)-(5) of th
 Added the balancing charge on disposals of fully expensed plant (section 59A) and the exclusion of plant for leasing from full expensing, which gets the annual investment allowance and the main-rate first-year allowance instead.
 Applied the English RHL multipliers to occupied property only, the standard multiplier to empty and charity property before 2024-25, and the empty property exemption below £2,900 rateable value.
 Set the SME R&D payable credit's trading loss against the same period's non-trading profits (CTA 2009 s.1056(2)(a)), capped that credit by PAYE and NIC from April 2021, and added `firm_small_profits_rate_excluded` for close investment-holding and non-resident companies.
+Capped policyengine-core below 3.38, because the firm entity reads core internals, and added a Core master workflow that runs the firm and core-internals tests against core's default branch.
