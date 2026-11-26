@@ -1,0 +1,29 @@
+# Outside the Pension Credit, Universal Credit and passported routes, each
+# scheme calculates capital at its current market or surrender value less,
+# where there would be expenses attributable to the sale, 10 per cent, and
+# less the amount of any encumbrance secured on it (SI 2012/2885 Sch 1 para
+# 32; SI 2012/2886 Sch para 65; WSI 2013/3029 Sch 1 para 26 and Sch 6 para
+# 28; SSI 2012/319 reg 42; SSI 2012/303 reg 46; SSI 2021/249 reg 70(1)).
+# Expected values are worked by hand from those provisions.
+
+- name: The household route values mortgaged land less sale expenses and the mortgage
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      applicant:
+        age: 40
+    benunits:
+      benunit:
+        members: applicant
+        would_claim_uc: false
+    households:
+      household:
+        members: applicant
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        # 50,000 less 10% (5,000) less the 20,000 secured on it = 25,000.
+        owned_land: 50_000
+        owned_land_secured_debt: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 25_000

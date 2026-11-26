@@ -1,0 +1,17 @@
+description: >
+  Whether a fraction of a penny in a Pension Credit capital calculation is
+  disregarded (true) rather than rounded to the nearest penny (false). A
+  fraction of a penny is treated as a penny only where that is to the
+  claimant's advantage, and is otherwise disregarded; for capital that means
+  rounding down. DMG 84763 values shares the same way.
+values:
+  2003-10-06: true
+metadata:
+  label: Pension Credit capital rounded down to the penny
+  period: year
+  unit: bool
+  reference:
+    - title: State Pension Credit Regulations 2002 reg. 24A
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/24A
+    - title: State Pension Credit Regulations (Northern Ireland) 2003 reg. 24A
+      href: https://www.legislation.gov.uk/nisr/2003/28/regulation/24A
