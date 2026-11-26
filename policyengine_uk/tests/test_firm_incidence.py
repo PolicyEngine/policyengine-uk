@@ -2,7 +2,7 @@
 
 ``firm_tax`` and ``firm_only_tax`` are firm liabilities. ``firm_tax_change_total``
 is the firm_weight-weighted change in ``firm_only_tax`` between a reform and
-its baseline, and ``firm_tax_incidence`` spreads it over households. Both are
+its baseline, less the change in the Employment Allowance, and ``firm_tax_incidence`` spreads it over households. Both are
 0 in a household situation and without a baseline, and are not yet terms of
 any household tax.
 """
@@ -267,21 +267,86 @@ EMPLOYER_NI_REFORM = {
 }
 
 
-def test_employer_ni_rate_reform_does_not_reach_firm_incidence():
-    """Employer NI rates reach households through ni_employer, so the larger
-    Employment Allowance a rate rise brings a firm under the cap (3,000 to
-    4,000 for the second firm) must not count as a firm-only tax change."""
+def test_employer_ni_rate_rise_nets_out_for_a_firm_under_the_allowance():
+    """Household ni_employer counts the gross change in employer NI, so the
+    firm-only total subtracts the full change in the Employment Allowance.
+    A 15% to 20% rate rise takes the second firm's liability from 3,000 to
+    4,000, still under the 10,500 allowance: its allowance rises by 1,000 and
+    it pays nothing either way. Weighted: -7 x 1,000 = -7,000, which offsets
+    the 7,000 of extra gross employer NI on the household side."""
     simulation = Microsimulation(
         dataset=small_payroll_dataset(), reform=EMPLOYER_NI_REFORM
     )
-    allowance_change = np.asarray(
-        simulation.calculate("employment_allowance", YEAR)
-    ) - np.asarray(simulation.baseline.calculate("employment_allowance", YEAR))
-    assert allowance_change == pytest.approx([0, 1_000, 0], abs=0.01)
-    for variable in ("firm_tax_change_total", "firm_tax_incidence"):
-        assert np.asarray(simulation.calculate(variable, YEAR)) == pytest.approx(
-            [0, 0], abs=0.01
+
+    def change(variable):
+        return np.asarray(simulation.calculate(variable, YEAR)) - np.asarray(
+            simulation.baseline.calculate(variable, YEAR)
         )
+
+    allowance_change = change("employment_allowance")
+    assert allowance_change == pytest.approx([0, 1_000, 0], abs=0.01)
+    # For every firm, the gross change less the allowance change is the
+    # change in what it pays.
+    assert change("firm_employer_ni_before_allowance") - allowance_change == (
+        pytest.approx(change("firm_employer_ni"), abs=0.01)
+    )
+    assert change("firm_employer_ni")[1] == pytest.approx(0, abs=0.01)
+    total = np.asarray(simulation.calculate("firm_tax_change_total", YEAR))
+    assert total == pytest.approx([-7_000, -7_000], abs=0.01)
+    # Capital incidence by shareholding 0.002 and 0.004.
+    incidence = np.asarray(simulation.calculate("firm_tax_incidence", YEAR))
+    assert incidence == pytest.approx([-14, -28], abs=0.01)
+
+
+def test_april_2025_package_nets_out_for_a_firm_under_the_allowance():
+    """The April 2025 employer NI package on a 2024-25 firm: rate 13.8% to
+    15%, secondary threshold 9,100 to 5,000 a year, allowance 5,000 to
+    10,500. Four employees on a 60,000 paybill: gross liability
+    (60,000 - 4 x 9,100) x 13.8% = 3,256.80 becomes
+    (60,000 - 4 x 5,000) x 15% = 6,000. Both are under the allowance, so
+    the firm pays nothing either way. The household side counts the gross
+    rise of 2,743.20; the firm-only total subtracts the same rise in the
+    allowance: -7 x 2,743.20 = -19,202.40. The package also removed the
+    100,000 prior-year limit; that is not reformed here, since the firm is
+    far below it."""
+    data = dataset(2024)
+    data.firm = data.firm.iloc[1:2].copy()
+    data.firm["firm_paybill"] = 60_000.0
+    data.firm["firm_employees"] = 4.0
+    data.firm["firm_taxable_trading_profit"] = 0.0
+    data.firm["firm_rateable_value"] = 0.0
+    simulation = Microsimulation(
+        dataset=data,
+        reform={
+            "gov.hmrc.national_insurance.class_1.employer_scale[1].rate": {
+                "2020-01-01.2035-12-31": 0.15
+            },
+            "gov.hmrc.national_insurance.class_1.employer_scale[1].threshold": {
+                "2020-01-01.2035-12-31": 5_000 / 52
+            },
+            "gov.hmrc.national_insurance.employment_allowance.amount": {
+                "2020-01-01.2035-12-31": 10_500
+            },
+        },
+    )
+
+    def both(variable):
+        return (
+            np.asarray(simulation.baseline.calculate(variable, 2024)),
+            np.asarray(simulation.calculate(variable, 2024)),
+        )
+
+    gross_before, gross_after = both("firm_employer_ni_before_allowance")
+    assert gross_before == pytest.approx([3_256.80], abs=0.01)
+    assert gross_after == pytest.approx([6_000], abs=0.01)
+    allowance_before, allowance_after = both("employment_allowance")
+    assert allowance_before == pytest.approx(gross_before, abs=0.01)
+    assert allowance_after == pytest.approx(gross_after, abs=0.01)
+    paid_before, paid_after = both("firm_employer_ni")
+    assert paid_before == pytest.approx([0], abs=0.01)
+    assert paid_after == pytest.approx([0], abs=0.01)
+    total = np.asarray(simulation.calculate("firm_tax_change_total", 2024))
+    assert total == pytest.approx([-19_202.40, -19_202.40], abs=0.01)
 
 
 def test_employment_allowance_reform_reaches_firm_incidence():
@@ -300,28 +365,49 @@ def test_employment_allowance_reform_reaches_firm_incidence():
     assert total == pytest.approx([27_500, 27_500], abs=0.01)
 
 
-def test_employer_ni_rate_reform_does_not_flip_prior_year_eligibility():
-    """In 2024-25 a firm whose prior-year secondary liabilities reach
-    100,000 loses the allowance. A rate rise that lifts a firm from 90,000
-    to about 130,000 of liabilities would take its 5,000 allowance away;
-    that is an employer NI change, reaching households through ni_employer,
-    so the firm-only total holds last year's liabilities at baseline and
-    does not move. 2024-25: 13.8% above 9,100 a year; one employee paid
-    9,100 + 90,000 / 0.138 = 661,275 (about 90,000 of liabilities)."""
+def prior_year_limit_dataset() -> UKSingleYearDataset:
+    """One 2024-25 firm (weight 5) with about 90,000 of secondary Class 1
+    liabilities: 13.8% above 9,100 a year, one employee paid
+    9,100 + 90,000 / 0.138 = 661,275."""
     data = dataset(2024)
     data.firm = data.firm.iloc[:1].copy()
     data.firm["firm_paybill"] = 9_100 + 90_000 / 0.138
     data.firm["firm_employees"] = 1.0
     data.firm["firm_taxable_trading_profit"] = 0.0
     data.firm["firm_rateable_value"] = 0.0
-    simulation = Microsimulation(dataset=data, reform=EMPLOYER_NI_REFORM)
+    return data
+
+
+def test_employer_ni_rate_rise_past_the_prior_year_limit_counts_the_lost_allowance():
+    """In 2024-25 a firm whose prior-year secondary liabilities reach
+    100,000 loses the allowance. With no prior-year input, they default to
+    this year's liabilities under the simulation's own rules, so a rate rise
+    that lifts the firm from about 90,000 to about 130,000 takes its 5,000
+    allowance away. Household ni_employer counts only the gross rise, so the
+    firm-only total counts the lost allowance: 5 x 5,000 = 25,000."""
+    simulation = Microsimulation(
+        dataset=prior_year_limit_dataset(), reform=EMPLOYER_NI_REFORM
+    )
     baseline_eligible = simulation.baseline.calculate(
         "employment_allowance_eligible", 2024
     )
     reform_eligible = simulation.calculate("employment_allowance_eligible", 2024)
-    # The flip the total must not count.
     assert np.asarray(baseline_eligible).tolist() == [True]
     assert np.asarray(reform_eligible).tolist() == [False]
+    total = np.asarray(simulation.calculate("firm_tax_change_total", 2024))
+    assert total == pytest.approx([25_000, 25_000], abs=0.01)
+
+
+def test_supplied_prior_year_liabilities_keep_the_allowance_through_a_rate_rise():
+    """Supplied prior-year liabilities of 90,000 are the same in both
+    simulations, so the firm keeps its 5,000 allowance (its liability is
+    above 5,000 either way) and the firm-only total does not move."""
+    data = prior_year_limit_dataset()
+    data.firm["firm_prior_year_secondary_class_1_liabilities"] = 90_000.0
+    simulation = Microsimulation(dataset=data, reform=EMPLOYER_NI_REFORM)
+    assert np.asarray(
+        simulation.calculate("employment_allowance", 2024)
+    ) == pytest.approx([5_000])
     total = np.asarray(simulation.calculate("firm_tax_change_total", 2024))
     assert total == pytest.approx([0, 0], abs=0.01)
 
@@ -343,18 +429,12 @@ def test_dataset_with_a_firmless_baseline_raises():
 
 
 @pytest.mark.parametrize("year", [2025, 2024])
-def test_employment_allowance_under_rules_matches_the_variables(year):
-    """With no reform, the firm-only total's copy of the Employment Allowance
-    rules gives the same weighted allowance as employment_allowance."""
-    from policyengine_uk.variables.contrib.policyengine.firm.firm_tax_change_total import (
-        _employment_allowance_under_rules,
-    )
-
+def test_employment_allowance_eligibility_exclusions(year):
+    """A charity public body (eligible), a non-charity public body
+    (excluded), a single-director company (excluded), a non-claimant group
+    member (excluded), and two ordinary firms with prior-year liabilities
+    over and under 100,000 (the over one excluded in 2024-25 only)."""
     data = dataset(year)
-    # A charity public body (eligible), a non-charity public body (excluded),
-    # a single-director company (excluded), a non-claimant group member
-    # (excluded), and two ordinary firms with prior-year liabilities over and
-    # under 100,000 (the over one excluded in 2024-25 only).
     data.firm = pd.DataFrame(
         {
             "firm_id": [1, 2, 3, 4, 5, 6],
@@ -376,14 +456,6 @@ def test_employment_allowance_under_rules_matches_the_variables(year):
         }
     )
     simulation = Microsimulation(dataset=data)
-    firms = simulation.populations["firm"]
-    liability = firms("firm_employer_ni_before_allowance", year)
-    expected = (
-        np.asarray(simulation.calculate("employment_allowance", year))
-        * np.asarray(firms("firm_weight", year))
-    ).sum()
-    actual = _employment_allowance_under_rules(simulation, year, firms, liability)
-    assert actual == pytest.approx(expected)
     eligible = np.asarray(simulation.calculate("employment_allowance_eligible", year))
     if year == 2024:
         assert eligible.tolist() == [True, False, False, False, False, True]

@@ -11,9 +11,9 @@ class firm_only_tax(Variable):
         "rates, less R&D tax credits paid out to the firm. Employer National Insurance rates and thresholds, and VAT "
         "rates, reach households through ni_employer and vat on the "
         "household side, so they are left out. The Employment Allowance is "
-        "left out too, because it moves with employer National Insurance "
-        "liability: firm_tax_change_total adds the change in its rules "
-        "separately. Reforms to the VAT registration threshold and flat "
+        "left out too: firm_tax_change_total subtracts its full change, "
+        "which with the gross change in ni_employer counts the change in "
+        "what firms pay. Reforms to the VAT registration threshold and flat "
         "rate scheme are not yet carried to households."
     )
     entity = Firm
