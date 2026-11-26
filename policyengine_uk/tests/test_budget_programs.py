@@ -155,6 +155,8 @@ MAIN_HOUSEHOLD_BENEFIT_VARIABLES = [
     "carer_support_payment",
     "scottish_carer_supplement",
     "disability_basic_income",
+    # Added for issue 220; the preceding entries retain the historical oracle.
+    "education_maintenance_allowance",
 ]
 
 # The rules those formulas applied: abolishing council tax removed these

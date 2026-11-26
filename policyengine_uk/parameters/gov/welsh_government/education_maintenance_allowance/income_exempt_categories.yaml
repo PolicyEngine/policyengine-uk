@@ -1,0 +1,11 @@
+description: The supported 2026/27 Education Maintenance Allowance assessment uses this income exempt categories.
+values:
+  2026-09-01: ["IN_LOCAL_AUTHORITY_CARE", "WALES_CARE_LEAVER", "RESPONSIBLE_FOR_OWN_CHILD", "INCOME_SUPPORT", "INCOME_RELATED_ESA", "UNIVERSAL_CREDIT", "YOUTH_JUSTICE"]
+metadata:
+  label: EMA income exempt categories
+  unit: list
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: "Education Maintenance Allowance Wales Scheme 2026/2027, operative assessment rules #page 5-11"
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/the-education-maintenance-allowance-wales-scheme-2026-2027.pdf#page=5

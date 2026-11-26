@@ -1340,3 +1340,11 @@ spending_heads:
     sign: any
     zero_at_baseline: expected
     caseload: false
+  - id: education_maintenance_allowance
+    label: Education Maintenance Allowance
+    variable: education_maintenance_allowance
+    entity: person
+    report_group: childcare_and_education
+    totals: [gov_spending, household_benefits]
+    sign: nonnegative
+    zero_at_baseline: expected

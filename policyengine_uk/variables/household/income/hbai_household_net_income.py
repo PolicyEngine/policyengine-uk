@@ -39,6 +39,8 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "universal_credit",
     "working_tax_credit",
     "child_tax_credit",
+    # HBAI includes education grants separately from state support.
+    "education_maintenance_allowance",
     "attendance_allowance",
     "afcs",
     "bsp",

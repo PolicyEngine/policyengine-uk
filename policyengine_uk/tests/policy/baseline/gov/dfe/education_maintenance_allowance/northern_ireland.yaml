@@ -1,0 +1,246 @@
+# Independent oracles: NI application notes 2026/27, pages 2 and 4-24;
+# Little Book pages 1-4; payment guide page 1. Prior confirmations include negatives.
+- name: "Case 1, Northern Ireland income ceilings are inclusive and another qualifying young person raises the limit."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [20500, 20500.01, 22500, 22500.01]
+    ema_income_is_known: [true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 1, 1]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0]
+  output:
+    ema_weekly_award: [30, 0, 30, 0]
+
+- name: "Case 2, Northern Ireland uses the actual published July birthday window."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20060702, 20060701, 20100701, 20100702, 0]
+    ema_residency_conditions_met: [true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0, 0]
+  output:
+    ema_weekly_award: [30, 0, 30, 0, 0]
+
+- name: "Case 3, Northern Ireland allows full-time school or a college course of at least fifteen hours."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "SCHOOL", "SCHOOL", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true, true, true]
+    ema_course_is_full_time: [false, true, true, false, true, true]
+    ema_course_learning_hours: [15, 14.99, 14, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [3, 3, 3, 3, 4, 3]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0, 0, 0]
+    ema_incompatible_course_funding: [false, false, false, false, false, true]
+  output:
+    ema_weekly_award: [30, 0, 30, 0, 0, 0]
+
+- name: "Case 4, Northern Ireland support does not exceed three academic years or assume unknown history."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 1, 2, 3, -1]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0, 0]
+  output:
+    ema_weekly_award: [30, 30, 30, 0, 0]
+
+- name: "Case 5, Northern Ireland independence does not exempt the assessed income test."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true, true]
+    ema_financial_category: ["INDEPENDENT", "IN_LOCAL_AUTHORITY_CARE", "RESPONSIBLE_FOR_OWN_CHILD", "INCOME_SUPPORT", "INCOME_RELATED_ESA", "UNIVERSAL_CREDIT"]
+    ema_assessed_income: [30000, 30000, 30000, 30000, 30000, 30000]
+    ema_income_is_known: [true, true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0, 0, 0]
+  output:
+    ema_weekly_award: [0, 0, 0, 0, 0, 0]
+
+- name: "Case 6, Northern Ireland independently assessed zero income must be known."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026]
+    ema_date_of_birth: [20090401, 20090401]
+    ema_residency_conditions_met: [true, true]
+    ema_financial_category: ["INDEPENDENT", "INDEPENDENT"]
+    ema_assessed_income: [0, 0]
+    ema_income_is_known: [true, false]
+    ema_other_qualifying_dependants: [0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true]
+    ema_course_is_full_time: [false, false]
+    ema_course_learning_hours: [15, 15]
+    ema_course_duration_weeks: [40, 40]
+    ema_qualification_level: [2, 2]
+    ema_payable_weeks: [2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0]
+  output:
+    ema_weekly_award: [30, 0]
+
+- name: "Case 7, all previous positive and negative confirmations consume the Northern Ireland lifetime cap."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 116, 117, -1]
+  output:
+    education_maintenance_allowance: [60, 30, 0, 0]
+
+- name: "Case 8, Northern Ireland bonuses are actual qualified counts rather than an automatic two hundred pounds."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true, true, true]
+    ema_course_is_full_time: [false, false, false, false]
+    ema_course_learning_hours: [15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2]
+    ema_assessment_country: ["NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND", "NORTHERN_IRELAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0, 0, 0]
+    ema_qualifying_bonus_count: [0, 1, 2, 3]
+  output:
+    education_maintenance_allowance: [60, 160, 260, 260]
+
+- name: "Case 9, a weekly award does not impute paid weeks or bonuses."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: 2026
+    ema_date_of_birth: 20090401
+    ema_residency_conditions_met: true
+    ema_financial_category: "DEPENDENT"
+    ema_assessed_income: 0
+    ema_income_is_known: true
+    ema_other_qualifying_dependants: 0
+    ema_course_type: "FURTHER_EDUCATION"
+    ema_provider_approved: true
+    ema_course_is_full_time: false
+    ema_course_learning_hours: 15
+    ema_course_duration_weeks: 40
+    ema_qualification_level: 2
+    ema_payable_weeks: 0
+    ema_assessment_country: "NORTHERN_IRELAND"
+    ema_prior_supported_academic_years: 0
+    ema_prior_positive_or_negative_confirmations: 0
+    ema_qualifying_bonus_count: 0
+  output:
+    education_maintenance_allowance: 0
+    ema_weekly_award: 30
+
+- name: "Case 10, English and unknown schemes are unsupported despite complete Northern Ireland facts."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026]
+    ema_date_of_birth: [20090401, 20090401]
+    ema_residency_conditions_met: [true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0]
+    ema_income_is_known: [true, true]
+    ema_other_qualifying_dependants: [0, 0]
+    ema_course_type: ["FURTHER_EDUCATION", "FURTHER_EDUCATION"]
+    ema_provider_approved: [true, true]
+    ema_course_is_full_time: [false, false]
+    ema_course_learning_hours: [15, 15]
+    ema_course_duration_weeks: [40, 40]
+    ema_qualification_level: [2, 2]
+    ema_payable_weeks: [2, 2]
+    ema_assessment_country: ["ENGLAND", "UNKNOWN"]
+    ema_prior_supported_academic_years: [0, 0]
+    ema_prior_positive_or_negative_confirmations: [0, 0]
+  output:
+    education_maintenance_allowance: [0, 0]
+    ema_weekly_award: [0, 0]

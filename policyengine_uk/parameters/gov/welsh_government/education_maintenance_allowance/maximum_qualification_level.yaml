@@ -1,0 +1,11 @@
+description: The supported 2026/27 Education Maintenance Allowance assessment uses this maximum qualification level.
+values:
+  2026-09-01: 3
+metadata:
+  label: EMA maximum qualification level
+  unit: /1
+  period: year
+  preserve_calendar_dates: true
+  reference:
+    - title: "Education Maintenance Allowance Wales Scheme 2026/2027, operative assessment rules #page 5-11"
+      href: https://www.gov.wales/sites/default/files/publications/2026-04/the-education-maintenance-allowance-wales-scheme-2026-2027.pdf#page=5

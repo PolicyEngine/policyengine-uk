@@ -489,6 +489,27 @@ programs:
     budget: benefit
     verified_start_year: 2022
 
+  - id: education_maintenance_allowance
+    name: Education Maintenance Allowance
+    full_name: Education Maintenance Allowance
+    category: Education
+    agency: Devolved education administrations
+    status: partial
+    coverage: Wales and Northern Ireland; Highland school route in Scotland
+    variable: education_maintenance_allowance
+    budget: benefit
+    parameter_prefix: gov.dfe.education_maintenance_allowance
+    verified_start_year: 2026
+    verified_end_year: 2027
+    notes: >-
+      One explicit 2026/27 academic assessment from supplied DOB, source-defined
+      assessed income and course, residency and history facts. Weekly financial
+      award is separate from actual qualifying weeks and NI bonuses allocated
+      to the exact model cash year. Scotland is Highland schools only; other
+      Scottish councils, colleges, home and action-plan routes are unsupported.
+      Legacy child_ema/adult_ema and producer mappings are unchanged. No automatic
+      multi-academic-year, monthly, immigration or application-history ledger.
+
   # --- DfE programs ---
   - id: universal_childcare_entitlement
     name: Universal childcare entitlement (15h)
@@ -1227,3 +1248,4 @@ budget_order:
     - carer_support_payment
     - scottish_carer_supplement
     - disability_basic_income
+    - education_maintenance_allowance

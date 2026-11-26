@@ -1,0 +1,176 @@
+# Independent oracles: Highland EMA guidance 2026/27, pages 2-4 and 6-17.
+# This is the Highland school route only. January 2027 can fall in fiscal 2026.
+- name: "Case 1, Highland income ceilings include equality and count other qualifying dependants."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [24421, 24421.01, 26884, 26884.01]
+    ema_income_is_known: [true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 1, 1]
+    ema_course_type: ["SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL"]
+    ema_provider_approved: [true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true]
+    ema_course_learning_hours: [21, 21, 21, 21]
+    ema_course_duration_weeks: [40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0]
+    ema_scotland_highland_school: [true, true, true, true]
+  output:
+    ema_weekly_award: [30, 0, 30, 0]
+
+- name: "Case 2, Highland published birth cohorts include the winter pupil who is still fifteen in January."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20070301, 20070228, 20100930, 20101001, 20110228, 20110301]
+    ema_residency_conditions_met: [true, true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0]
+    ema_course_type: ["SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL"]
+    ema_provider_approved: [true, true, true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true, true, true]
+    ema_course_learning_hours: [21, 21, 21, 21, 21, 21]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0, 0]
+    ema_scotland_highland_school: [true, true, true, true, true, true]
+    age: [19, 19, 15, 15, 15, 15]
+  output:
+    education_maintenance_allowance: [60, 0, 60, 60, 60, 0]
+    ema_weekly_award: [30, 0, 30, 30, 30, 0]
+
+- name: "Case 3, Highland school scope does not generalise to another Scottish council or college."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0]
+    ema_course_type: ["SCHOOL", "SCHOOL", "FURTHER_EDUCATION", "PREPARATION_FOR_LIFE_OR_WORK"]
+    ema_provider_approved: [true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true]
+    ema_course_learning_hours: [21, 21, 21, 21]
+    ema_course_duration_weeks: [40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0]
+    ema_scotland_highland_school: [true, false, true, true]
+  output:
+    ema_weekly_award: [30, 0, 0, 0]
+
+- name: "Case 4, Highland ordinary support lasts three years and specified extended categories four."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0, 0]
+    ema_course_type: ["SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL"]
+    ema_provider_approved: [true, true, true, true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true, true, true, true]
+    ema_course_learning_hours: [21, 21, 21, 21, 21, 21, 21]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 2, 3, 3, 3, 4, -1]
+    ema_scotland_highland_school: [true, true, true, true, true, true, true]
+    ema_extended_duration_category: ["NONE", "NONE", "NONE", "VULNERABLE", "YOUNG_CARER", "YOUNG_CARER", "NONE"]
+  output:
+    ema_weekly_award: [30, 30, 0, 30, 30, 0, 0]
+
+- name: "Case 5, Highland twenty-one hours can be relaxed only for a documented specified flexible arrangement."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true, true]
+    ema_financial_category: ["DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT", "DEPENDENT"]
+    ema_assessed_income: [0, 0, 0, 0, 0, 0]
+    ema_income_is_known: [true, true, true, true, true, true]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0]
+    ema_course_type: ["SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL"]
+    ema_provider_approved: [true, true, true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true, true, true]
+    ema_course_learning_hours: [21, 20.99, 15, 15, 15, 15]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0, 0]
+    ema_scotland_highland_school: [true, true, true, true, true, true]
+    ema_extended_duration_category: ["NONE", "NONE", "VULNERABLE", "YOUNG_CARER", "NONE", "VULNERABLE"]
+    ema_flexible_learning_arrangement: [false, false, true, true, true, false]
+  output:
+    ema_weekly_award: [30, 0, 30, 30, 0, 0]
+
+- name: "Case 6, Highland flexibility does not waive provider approval."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: 2026
+    ema_date_of_birth: 20090401
+    ema_residency_conditions_met: true
+    ema_financial_category: "DEPENDENT"
+    ema_assessed_income: 0
+    ema_income_is_known: true
+    ema_other_qualifying_dependants: 0
+    ema_course_type: "SCHOOL"
+    ema_provider_approved: false
+    ema_course_is_full_time: true
+    ema_course_learning_hours: 15
+    ema_course_duration_weeks: 40
+    ema_qualification_level: 2
+    ema_payable_weeks: 2
+    ema_assessment_country: "SCOTLAND"
+    ema_prior_supported_academic_years: 0
+    ema_scotland_highland_school: true
+    ema_extended_duration_category: "VULNERABLE"
+    ema_flexible_learning_arrangement: true
+  output:
+    ema_weekly_award: 0
+
+- name: "Case 7, Highland financial exemptions use contribution-based ESA rather than Welsh care-leaver status."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    ema_academic_year: [2026, 2026, 2026, 2026, 2026, 2026, 2026]
+    ema_date_of_birth: [20090401, 20090401, 20090401, 20090401, 20090401, 20090401, 20090401]
+    ema_residency_conditions_met: [true, true, true, true, true, true, true]
+    ema_financial_category: ["IN_LOCAL_AUTHORITY_CARE", "INCOME_SUPPORT", "CONTRIBUTION_BASED_ESA", "UNIVERSAL_CREDIT", "WALES_CARE_LEAVER", "INCOME_RELATED_ESA", "INDEPENDENT"]
+    ema_assessed_income: [100000, 100000, 100000, 100000, 100000, 100000, 100000]
+    ema_income_is_known: [false, false, false, false, false, false, false]
+    ema_other_qualifying_dependants: [0, 0, 0, 0, 0, 0, 0]
+    ema_course_type: ["SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL", "SCHOOL"]
+    ema_provider_approved: [true, true, true, true, true, true, true]
+    ema_course_is_full_time: [true, true, true, true, true, true, true]
+    ema_course_learning_hours: [21, 21, 21, 21, 21, 21, 21]
+    ema_course_duration_weeks: [40, 40, 40, 40, 40, 40, 40]
+    ema_qualification_level: [2, 2, 2, 2, 2, 2, 2]
+    ema_payable_weeks: [2, 2, 2, 2, 2, 2, 2]
+    ema_assessment_country: ["SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND", "SCOTLAND"]
+    ema_prior_supported_academic_years: [0, 0, 0, 0, 0, 0, 0]
+    ema_scotland_highland_school: [true, true, true, true, true, true, true]
+  output:
+    ema_weekly_award: [30, 30, 30, 30, 0, 0, 0]
