@@ -8,4 +8,4 @@ class bsp(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["bsp_reported"]
+    adds = ["bsp_reported", "bsp_calculated"]

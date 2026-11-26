@@ -1,0 +1,11 @@
+description: The UK limits a Bereavement Support Payment award to this combined number of standard and higher instalments.
+values:
+  2017-04-06: 18
+metadata:
+  label: Maximum combined BSP instalments for one award
+  unit: count
+  reference:
+    - title: GOV.UK Bereavement Support Payment, maximum payments
+      href: https://www.gov.uk/bereavement-support-payment/what-youll-get
+    - title: Northern Ireland Direct, Bereavement Support Payment, Payments
+      href: https://www.nidirect.gov.uk/articles/bereavement-support-payment

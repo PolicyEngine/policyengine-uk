@@ -1,0 +1,292 @@
+# Independent primary sources: GOV.UK BSP, What you'll get; NI Direct BSP, Payments.
+# Explicit facts describe already-qualified, actual receipts; no entitlement calendar is inferred.
+# The combined eighteen-instalment and mixed-history rejection tests bind the frozen API contract.
+- name: "Case 1, default reported cash remains authoritative without an additional-award opt-in."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_reported: 725.13
+  output:
+    bsp_calculated: 0
+    bsp: 725.13
+
+- name: "Case 2, the qualified standard initial payment is two thousand five hundred pounds."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 2026
+    bsp_initial_payment_rate: "STANDARD"
+    bsp_standard_instalments: 0
+    bsp_higher_instalments: 0
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 0
+  output:
+    bsp_calculated_initial_payment: 2500
+    bsp_calculated_monthly_payments: 0
+    bsp_calculated: 2500
+    bsp: 2500
+
+- name: "Case 3, the qualified higher initial payment is three thousand five hundred pounds."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 2026
+    bsp_initial_payment_rate: "HIGHER"
+    bsp_standard_instalments: 0
+    bsp_higher_instalments: 0
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 0
+  output:
+    bsp_calculated_initial_payment: 3500
+    bsp_calculated: 3500
+    bsp: 3500
+
+- name: "Case 4, the initial component needs both a known category and its fixed actual receipt year."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true]
+    bsp_initial_payment_year: [2026, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "STANDARD", "HIGHER"]
+    bsp_standard_instalments: [0, 0, 0]
+    bsp_higher_instalments: [0, 0, 0]
+    bsp_instalments_received_before_year: [0, 0, 0]
+    bsp_reported: [0, 0, 0]
+  output:
+    bsp_calculated_initial_payment: [0, 0, 0]
+    bsp: [0, 0, 0]
+
+- name: "Case 5, an initial payment is neither repeated nor moved to the requested year."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true]
+    bsp_initial_payment_year: [2025, 2026, 2027]
+    bsp_initial_payment_rate: ["STANDARD", "STANDARD", "STANDARD"]
+    bsp_standard_instalments: [0, 0, 0]
+    bsp_higher_instalments: [0, 0, 0]
+    bsp_instalments_received_before_year: [0, 0, 0]
+    bsp_reported: [0, 0, 0]
+  output:
+    bsp_calculated_initial_payment: [0, 2500, 0]
+    bsp_calculated: [0, 2500, 0]
+
+- name: "Case 6, standard instalments use one hundred pounds and may include eighteen actual arrears receipts."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true]
+    bsp_initial_payment_year: [0, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [1, 12, 18]
+    bsp_higher_instalments: [0, 0, 0]
+    bsp_instalments_received_before_year: [0, 0, 0]
+    bsp_reported: [0, 0, 0]
+  output:
+    bsp_calculated_monthly_payments: [100, 1200, 1800]
+    bsp: [100, 1200, 1800]
+
+- name: "Case 7, higher instalments use three hundred fifty pounds without a twelve-receipt cash-year cap."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true]
+    bsp_initial_payment_year: [0, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [0, 0, 0]
+    bsp_higher_instalments: [1, 12, 18]
+    bsp_instalments_received_before_year: [0, 0, 0]
+    bsp_reported: [0, 0, 0]
+  output:
+    bsp_calculated_monthly_payments: [350, 4200, 6300]
+    bsp: [350, 4200, 6300]
+
+- name: "Case 8, disjoint standard and higher receipt counts retain their own qualified rates."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true]
+    bsp_initial_payment_year: [0, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [3, 0, 7]
+    bsp_higher_instalments: [4, 9, 11]
+    bsp_instalments_received_before_year: [0, 9, 0]
+    bsp_reported: [0, 0, 0]
+  output:
+    bsp_calculated_monthly_payments: [1700, 3150, 4550]
+    bsp: [1700, 3150, 4550]
+
+- name: "Case 9, full standard and higher awards include the initial amount plus eighteen instalments."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true]
+    bsp_initial_payment_year: [2026, 2026]
+    bsp_initial_payment_rate: ["STANDARD", "HIGHER"]
+    bsp_standard_instalments: [18, 0]
+    bsp_higher_instalments: [0, 18]
+    bsp_instalments_received_before_year: [0, 0]
+    bsp_reported: [0, 0]
+  output:
+    bsp_calculated_initial_payment: [2500, 3500]
+    bsp_calculated_monthly_payments: [1800, 6300]
+    bsp_calculated: [4300, 9800]
+    bsp: [4300, 9800]
+
+- name: "Case 10, a known prior count leaves exactly the remaining lifetime instalments."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true, true]
+    bsp_initial_payment_year: [0, 0, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [18, 2, 1, 0]
+    bsp_higher_instalments: [0, 0, 0, 0]
+    bsp_instalments_received_before_year: [0, 16, 17, 18]
+    bsp_reported: [0, 0, 0, 0]
+  output:
+    bsp_calculated_monthly_payments: [1800, 200, 100, 0]
+
+- name: "Case 11, inconsistent mixed allocations are rejected without choosing which rate to trim."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true, true, true, true]
+    bsp_initial_payment_year: [0, 0, 0, 0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [1, 0, 1, 1, 0]
+    bsp_higher_instalments: [1, 2, 2, 0, 0]
+    bsp_instalments_received_before_year: [17, 17, 16, 18, 19]
+    bsp_reported: [0, 0, 0, 0, 0]
+  output:
+    bsp_calculated_monthly_payments: [0, 0, 0, 0, 0]
+    bsp: [0, 0, 0, 0, 0]
+
+- name: "Case 12, unknown or negative receipt history does not assume a fresh eighteen-instalment award."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true]
+    bsp_initial_payment_year: [0, 0]
+    bsp_initial_payment_rate: ["UNKNOWN", "UNKNOWN"]
+    bsp_standard_instalments: [1, 1]
+    bsp_higher_instalments: [0, 0]
+    bsp_instalments_received_before_year: [-1, -2]
+    bsp_reported: [0, 0]
+  output:
+    bsp_calculated_monthly_payments: [0, 0]
+    bsp: [0, 0]
+
+- name: "Case 13, negative instalment counts invalidate only the monthly component."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true]
+    bsp_initial_payment_year: [2026, 2026]
+    bsp_initial_payment_rate: ["STANDARD", "STANDARD"]
+    bsp_standard_instalments: [-1, 0]
+    bsp_higher_instalments: [0, -1]
+    bsp_instalments_received_before_year: [0, 0]
+    bsp_reported: [123.45, 123.45]
+  output:
+    bsp_calculated_initial_payment: [2500, 2500]
+    bsp_calculated_monthly_payments: [0, 0]
+    bsp_calculated: [2500, 2500]
+    bsp: [2623.45, 2623.45]
+
+- name: "Case 14, independently qualified monthly receipts do not require an initial payment."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 0
+    bsp_initial_payment_rate: "UNKNOWN"
+    bsp_standard_instalments: 6
+    bsp_higher_instalments: 0
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 0
+  output:
+    bsp_calculated_initial_payment: 0
+    bsp_calculated_monthly_payments: 600
+    bsp_calculated: 600
+    bsp: 600
+
+- name: "Case 15, the additional award preserves the entire potentially mixed reported cell."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: [true, true]
+    bsp_initial_payment_year: [2026, 2026]
+    bsp_initial_payment_rate: ["STANDARD", "STANDARD"]
+    bsp_standard_instalments: [2, 2]
+    bsp_higher_instalments: [0, 0]
+    bsp_instalments_received_before_year: [0, 0]
+    bsp_reported: [0, 7123.45]
+  output:
+    bsp_calculated: [2700, 2700]
+    bsp: [2700, 9823.45]
+
+- name: "Case 16, unselected additional facts do not replace or increase reported cash."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: false
+    bsp_initial_payment_year: 2026
+    bsp_initial_payment_rate: "HIGHER"
+    bsp_standard_instalments: 0
+    bsp_higher_instalments: 18
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 725.13
+  output:
+    bsp_calculated: 0
+    bsp: 725.13
+
+- name: "Case 17, pre-2017 calculated support is zero while legacy reported cash survives."
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 2016
+    bsp_initial_payment_rate: "STANDARD"
+    bsp_standard_instalments: 18
+    bsp_higher_instalments: 0
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 724.25
+  output:
+    bsp_calculated: 0
+    bsp: 724.25
+
+- name: "Case 18, the first supported fiscal year uses the four-rate financial surface."
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 2017
+    bsp_initial_payment_rate: "STANDARD"
+    bsp_standard_instalments: 18
+    bsp_higher_instalments: 0
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 100
+  output:
+    bsp_calculated: 4300
+    bsp: 4400
+
+- name: "Case 19, a verified Northern Ireland award has the same sourced financial rates."
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    bsp_add_calculated_award: true
+    bsp_initial_payment_year: 2026
+    bsp_initial_payment_rate: "HIGHER"
+    bsp_standard_instalments: 0
+    bsp_higher_instalments: 6
+    bsp_instalments_received_before_year: 0
+    bsp_reported: 0
+    country: "NORTHERN_IRELAND"
+  output:
+    bsp_calculated_initial_payment: 3500
+    bsp_calculated_monthly_payments: 2100
+    bsp_calculated: 5600
+    bsp: 5600

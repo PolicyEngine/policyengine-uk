@@ -1,17 +1,16 @@
 # Bereavement support: BSP formula and historical WPA (planned)
 
 ```{warning}
-**Currently reported-only.** PolicyEngine UK models the Bereavement
-Support Payment (BSP) as `adds = ["bsp_reported"]`, so the value
-flows through from the dataset, with no derived eligibility or
-rule-based amount. This page captures the proposed formula-based
-extension covering both BSP and the legacy Widowed Parent's Allowance
-(WPA) for historical analysis. Tracks
+**Partial financial calculation; reported by default.** PolicyEngine UK
+preserves all reported BSP cash and can add explicitly disjoint calculated
+payments for one independently qualified award. See the
+[BSP calculation contract](bsp-calculation.md) for the current inputs, rates
+and limits. Automatic eligibility, claim/death/remedial calendars and population
+mapping remain unimplemented. This page retains the broader proposed extension
+covering BSP and historical Widowed Parent's Allowance (WPA), tracking
 [#466](https://github.com/PolicyEngine/policyengine-uk/issues/466) and
-the related historical-WPA ask in
 [#465](https://github.com/PolicyEngine/policyengine-uk/issues/465).
-Updated October 2026: still reported-only; the facts below were checked
-against GOV.UK and legislation.gov.uk. The data notes cover both the
+The data notes cover both the
 Enhanced FRS (policyengine-uk-data, which policyengine-uk's own tests
 still pin at 1.58.1) and Microcosm UK, which replaced it as the certified
 default UK dataset in policyengine.py 6.10.0 (21 October 2026).
@@ -19,7 +18,7 @@ default UK dataset in policyengine.py 6.10.0 (21 October 2026).
 
 ## What's currently modelled
 
-Just the FRS-reported amount:
+Reported cash remains the default, with an explicitly disjoint opt-in addition:
 
 ```python
 class bsp(Variable):
@@ -29,14 +28,14 @@ class bsp(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["bsp_reported"]
+    adds = ["bsp_reported", "bsp_calculated"]
 ```
 
 That means:
 
-- Reform analyses changing BSP rates have no household-level surface.
-- Anyone bereaved after the FRS reference week never appears as a BSP
-  recipient even if eligible.
+- Rate reforms can use the explicit calculated-award surface.
+- Default population results still rely on reported cash; new bereavements are
+  not automatically imputed or qualified.
 - The Enhanced FRS
   ([`frs.py`](https://github.com/PolicyEngine/policyengine-uk-data/blob/main/policyengine_uk_data/datasets/frs.py))
   fills `bsp_reported` from FRS benefit codes 6 and 9, and so did
@@ -85,6 +84,12 @@ That means:
 ## Proposed scope
 
 ### Phase 1: rule-based BSP formula
+
+The explicit financial subset is now implemented as described in the
+[BSP calculation contract](bsp-calculation.md). The design below records the
+broader original proposal, not the current API or an automatic entitlement
+engine; its normal-schedule 0–12 approximation does not cap actual cash-year
+receipts under the implemented lifetime-history guard.
 
 The BSP under the [Pensions Act 2014, Part 5][pa-2014-5] and the
 [Bereavement Support Payment Regulations 2017][bsp-regs] (SI 2017/410)

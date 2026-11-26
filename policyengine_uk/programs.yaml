@@ -466,6 +466,19 @@ programs:
     verified_start_year: 2022
     notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. The Scottish Government replaced it with Pension Age Winter Heating Payment from winter 2024-25. From winter 2025-26 HMRC recovers payments from higher-income recipients through the winter fuel payment charge (income tax)
 
+  - id: bsp
+    name: Bereavement Support Payment
+    full_name: Bereavement Support Payment
+    category: Benefits
+    agency: DWP and Department for Communities
+    status: partial
+    coverage: UK
+    variable: bsp
+    budget: benefit
+    parameter_prefix: gov.dwp.bsp
+    verified_start_year: 2017
+    notes: Reported cash plus explicitly disjoint, opt-in calculated cash for one independently qualified award. No automatic entitlement, claim calendar, producer split or population imputation; later initial-payment adjustments are excluded.
+
   - id: ssmg
     name: Sure Start Maternity Grant
     full_name: Sure Start Maternity Grant
@@ -989,12 +1002,6 @@ budget_terms:
     budget: benefit
     kind: programme
     notes: Reported amounts. Not yet in the coverage list.
-
-  - variable: bsp
-    name: Bereavement Support Payment
-    budget: benefit
-    kind: programme
-    notes: Not yet in the coverage list.
 
   - variable: war_widows_pension
     name: War Widow's or Widower's Pension
