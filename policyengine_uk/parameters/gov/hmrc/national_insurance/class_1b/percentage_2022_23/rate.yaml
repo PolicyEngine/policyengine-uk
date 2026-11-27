@@ -1,0 +1,10 @@
+description: Class 1B percentage for 2022-23.
+values:
+  2022-04-06: 0.1453
+metadata:
+  unit: /1
+  period: year
+  label: Class 1B percentage for 2022-23
+  reference:
+    - title: Health and Social Care Levy (Repeal) Act 2022 Schedule paragraph 3(1)
+      href: https://www.legislation.gov.uk/ukpga/2022/43/schedule/paragraph/3/enacted

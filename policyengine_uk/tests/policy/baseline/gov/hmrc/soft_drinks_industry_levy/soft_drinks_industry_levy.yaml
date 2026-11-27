@@ -1,0 +1,73 @@
+# Soft drinks industry levy (Finance Act 2017 Part 2). 2,000,000 litres at the
+# higher rate and 3,000,000 at the lower rate in each year.
+- name: Year transitions, before the levy and at each rate change.
+  absolute_error_margin: 0.5
+  period: 2017
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_litres_lower_rate: [3_000_000]
+  output:
+    soft_drinks_industry_levy: [0]
+
+- name: 2018-19 rates, 24p and 18p.
+  absolute_error_margin: 0.5
+  period: 2018
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_litres_lower_rate: [3_000_000]
+  output:
+    # 480,000 + 540,000.
+    soft_drinks_industry_levy: [1_020_000]
+
+- name: 2024-25 still at the 2018 rates.
+  absolute_error_margin: 0.5
+  period: 2024
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_litres_lower_rate: [3_000_000]
+  output:
+    soft_drinks_industry_levy: [1_020_000]
+
+- name: 2025-26 rates, 25.9p and 19.4p.
+  absolute_error_margin: 0.5
+  period: 2025
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_litres_lower_rate: [3_000_000]
+  output:
+    # 518,000 + 582,000.
+    soft_drinks_industry_levy: [1_100_000]
+
+- name: 2026-27 rates, 27.8p and 20.8p.
+  absolute_error_margin: 0.5
+  period: 2026
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_litres_lower_rate: [3_000_000]
+  output:
+    # 556,000 + 624,000.
+    soft_drinks_industry_levy: [1_180_000]
+
+- name: Small producer boundary at 1 million litres, and supplied group production.
+  absolute_error_margin: 0.5
+  period: 2025
+  input:
+    firm_sdil_litres_higher_rate: [1_000_000, 1_000_001, 500_000, 0]
+    firm_sdil_annual_production_litres: [1_000_000, 1_000_001, 1_500_000, 0]
+  output:
+    # Exactly 1 million litres is not more than the limit, so exempt.
+    # 1,000,001 x 0.259 = 259,000.26. 500,000 x 0.259 = 129,500, since the
+    # group produces more than 1 million litres.
+    soft_drinks_industry_levy: [0, 259_000, 129_500, 0]
+    firm_tax: [0, 259_000, 129_500, 0]
+    firm_only_tax: [0, 259_000, 129_500, 0]
+
+- name: A supplied production of 0 is read as not supplied.
+  absolute_error_margin: 0.5
+  period: 2025
+  input:
+    firm_sdil_litres_higher_rate: [2_000_000]
+    firm_sdil_annual_production_litres: [0]
+  output:
+    # Own litres 2,000,000 are used for the small producer test.
+    soft_drinks_industry_levy: [518_000]

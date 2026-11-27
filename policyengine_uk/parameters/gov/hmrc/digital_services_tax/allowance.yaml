@@ -1,0 +1,10 @@
+description: Amount of a group's UK digital services revenues deducted before digital services tax is charged.
+values:
+  2020-04-01: 25_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Digital services tax allowance
+  reference:
+    - title: Finance Act 2020 s.47(3)
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/47

@@ -1,0 +1,15 @@
+description: Share of relevant IP profits brought into the Patent Box deduction, phased in from 60% in the financial year 2013 to 100% from 1 April 2017. Before 1 April 2013 there was no Patent Box.
+values:
+  0000-01-01: 0
+  2013-04-01: 0.6
+  2014-04-01: 0.7
+  2015-04-01: 0.8
+  2016-04-01: 0.9
+  2017-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Patent Box relevant IP profits share
+  reference:
+    - title: Finance Act 2012 Schedule 2 paragraph 8
+      href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/2/paragraph/8

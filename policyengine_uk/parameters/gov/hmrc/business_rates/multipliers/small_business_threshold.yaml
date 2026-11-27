@@ -1,0 +1,15 @@
+description: Properties with rateable value below this amount pay a small business multiplier in England.
+# BRIL 5/2025 para 1: "less than £51,000 RV", unchanged from 2026-27. The 2017
+# Order sets "not more than £50,999". So £50,999 pays the small multiplier and
+# £51,000 the standard one.
+values:
+  2017-04-01: 51_000
+metadata:
+  label: Business rates small business multiplier threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: The Non-Domestic Rating (Reliefs, Thresholds and Amendment) (England) Order 2017 art 2 (not more than £50,999)
+      href: https://www.legislation.gov.uk/uksi/2017/102/article/2/made
+    - title: Business Rates Information Letter 5/2025, para 1
+      href: https://www.gov.uk/government/publications/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027/52025-confirmation-of-budget-package-and-the-non-domestic-rating-multipliers-for-20262027

@@ -1,0 +1,11 @@
+description: Whether Northern Ireland non-domestic rates are modelled for the year. Rate poundages are held from 2023-24, so earlier years give no Northern Ireland bill.
+values:
+  0000-01-01: false
+  2023-04-01: true
+metadata:
+  unit: bool
+  period: year
+  label: Northern Ireland non-domestic rates modelled
+  reference:
+    - title: Rates (Northern Ireland) Order 1977 Article 6
+      href: https://www.legislation.gov.uk/nisi/1977/2157/article/6

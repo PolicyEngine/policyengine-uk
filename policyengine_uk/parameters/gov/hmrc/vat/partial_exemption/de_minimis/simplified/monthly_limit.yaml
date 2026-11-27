@@ -1,0 +1,12 @@
+description: Under the VAT partial exemption simplified de minimis test, all input tax is recoverable where total input tax less input tax used exclusively for taxable supplies averages no more than this amount a month, and exempt supplies are within the exempt supplies share.
+values:
+  2010-04-01: 625
+metadata:
+  label: VAT partial exemption simplified de minimis monthly limit
+  unit: currency-GBP
+  period: month
+  reference:
+    - title: The Value Added Tax Regulations 1995 (SI 1995/2518), reg 105A
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/105A
+    - title: The Value Added Tax (Amendment) Regulations 2010 (SI 2010/559)
+      href: https://www.legislation.gov.uk/uksi/2010/559/made

@@ -1,0 +1,14 @@
+description: Properties in Wales with rateable value at or below this amount get 100% small business rates relief.
+values:
+  2023-04-01: 6_000
+metadata:
+  label: Wales SBRR full relief threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Welsh Government, Non-domestic rates collected by local councils, April 2024 to March 2025 (100% relief up to £6,000, tapering from £6,001 to £12,000)
+      href: https://gov.wales/non-domestic-rates-actuals-april-2024-march-2025-html
+    - title: Business Wales, Non-domestic rates small business rates relief (2026-27 liability)
+      href: https://businesswales.gov.wales/non-domestic-rates-small-business-rates-relief
+    - title: The Non-Domestic Rating (Small Business Relief) (Wales) Order 2017 (SI 2017/1229)
+      href: https://www.legislation.gov.uk/wsi/2017/1229/made

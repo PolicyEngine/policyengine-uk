@@ -1,0 +1,21 @@
+description: Whether the merged research and development scheme applies. From accounting periods beginning on 1 April 2024 a company claims the merged R&D expenditure credit unless it is a loss-making R&D intensive SME, which claims enhanced R&D intensive support instead; before then every SME claimed under the SME scheme and large companies claimed the R&D expenditure credit.
+values:
+  2012-04-01:
+    value: false
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 Part 13 Chapter 2 (SME scheme for all SMEs before 1 April 2024)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/part/13/chapter/2/2023-04-01
+  2024-04-01:
+    value: true
+    metadata:
+      reference:
+        - title: Finance Act 2024 Sch 1 paras 5 and 16 (Chapter 1A of Part 13 of the Corporation Tax Act 2009 inserted for accounting periods beginning on or after 1 April 2024)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/part/13/chapter/1A
+metadata:
+  unit: bool
+  period: year
+  label: R&D merged scheme in effect
+  reference:
+    - title: Corporation Tax Act 2009 Part 13 Chapter 1A
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1042G

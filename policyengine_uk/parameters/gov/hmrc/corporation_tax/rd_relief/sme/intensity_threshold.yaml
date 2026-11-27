@@ -1,0 +1,27 @@
+description: Minimum share of a company's relevant expenditure spent on research and development for it to be R&D intensive, under section 1045ZA of the Corporation Tax Act 2009. An infinite value means no intensive regime applied.
+values:
+  2015-04-01:
+    value: .inf
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1058(1)(a) as at 1 April 2020 (one payable credit rate for every loss-making SME)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058/2020-04-01
+  2023-04-01:
+    value: 0.4
+    metadata:
+      reference:
+        - title: Finance Act 2024 Sch 1 para 21(4), as substituted by Finance Act 2025 s 30 (section 1045ZA read with 40% in place of 30% for periods beginning before 1 April 2024)
+          href: https://www.legislation.gov.uk/ukpga/2024/3/schedule/1/paragraph/21
+  2024-04-01:
+    value: 0.3
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1045ZA(2) (relevant R&D expenditure at least 30% of relevant expenditure)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1045ZA
+metadata:
+  unit: /1
+  period: year
+  label: R&D intensity threshold
+  reference:
+    - title: Corporation Tax Act 2009 s 1045ZA
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1045ZA

@@ -1,0 +1,28 @@
+# Firm YAML tests give firm variables directly, with no `firms:` block: core's
+# YAML builder ignores a `firms:` block and leaves the simulation with no
+# firms. With variable-only input every population, the firm's included, has
+# one record per array element.
+- name: Case 1, one firm's inputs are read back.
+  period: 2025
+  input:
+    firm_paybill: 500_000
+    firm_employees: 20
+    firm_is_bank: true
+  output:
+    firm_paybill: 500_000
+    firm_employees: 20
+    firm_is_bank: true
+    firm_weight: 1
+    firm_legal_form: COMPANY
+
+- name: Case 2, several firms given as arrays, one value per firm.
+  period: 2025
+  input:
+    firm_paybill: [100_000, 2_000_000, 0]
+    firm_legal_form: [COMPANY, SOLE_TRADER, PARTNERSHIP]
+    firm_in_freeport: [false, true, false]
+  output:
+    firm_paybill: [100_000, 2_000_000, 0]
+    firm_legal_form: [COMPANY, SOLE_TRADER, PARTNERSHIP]
+    firm_in_freeport: [false, true, false]
+    firm_n_associated_companies: [0, 0, 0]

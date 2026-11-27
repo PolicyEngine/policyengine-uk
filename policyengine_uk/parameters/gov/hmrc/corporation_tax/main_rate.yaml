@@ -1,0 +1,33 @@
+description: Main rate of corporation tax charged on a company's taxable total profits. From the financial year 2023 it applies in full only where augmented profits exceed the upper limit; before then it was the single rate on all non-ring-fence profits. Values are dated from the 1 April start of each financial year and cover the financial year 2015 onwards.
+values:
+  2015-04-01:
+    value: 0.2
+    metadata:
+      reference:
+        - title: Finance Act 2013 s. 6(1) (main rate for financial year 2015)
+          href: https://www.legislation.gov.uk/ukpga/2013/29/section/6/enacted
+        - title: Finance Act 2015 s. 6(2) (main rate for financial year 2016)
+          href: https://www.legislation.gov.uk/ukpga/2015/11/section/6/enacted
+  2017-04-01:
+    value: 0.19
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2015 s. 7(1) (financial years 2017 to 2019)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/section/7/enacted
+        - title: Finance Act 2020 ss. 5 and 6 (financial years 2020 and 2021)
+          href: https://www.legislation.gov.uk/ukpga/2020/14/section/5
+        - title: Finance Act 2021 s. 6(2)(a) (financial year 2022)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/6
+  2023-04-01:
+    value: 0.25
+    metadata:
+      reference:
+        - title: Finance Act 2021 s. 6(2)(b) (financial year 2023)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/6
+metadata:
+  unit: /1
+  period: year
+  label: Corporation tax main rate
+  reference:
+    - title: Corporation Tax Act 2010 s. 3 (charge to corporation tax)
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/3

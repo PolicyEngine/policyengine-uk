@@ -1,0 +1,13 @@
+description: Whether a company can claim group relief for carried-forward losses surrendered by other group companies. It can for accounting periods from 1 April 2017.
+values:
+  0000-01-01: false
+  2017-04-01: true
+metadata:
+  unit: bool
+  period: year
+  label: Group relief for carried-forward losses applies
+  reference:
+    - title: Corporation Tax Act 2010 Part 5A
+      href: https://www.legislation.gov.uk/ukpga/2010/4/part/5A
+    - title: Finance (No. 2) Act 2017 Sch. 4 para. 190 (accounting periods from 1 April 2017)
+      href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/4/paragraph/190

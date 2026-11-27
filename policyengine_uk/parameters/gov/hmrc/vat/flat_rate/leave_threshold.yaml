@@ -1,0 +1,17 @@
+description: A business must leave the VAT flat rate scheme when its VAT-inclusive total turnover in the year exceeds this amount. Encoded for reference; the model applies only the joining test.
+values:
+  2011-01-04:
+    value: 230_000
+    metadata:
+      reference:
+        - title: Value Added Tax Regulations 1995 reg 55M(1)(a), as amended by the Value Added Tax (Amendment) (No. 3) Regulations 2010 (SI 2010/2940) reg 5(a) from 4 January 2011
+          href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/55M
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT flat rate scheme leaving threshold
+  reference:
+    - title: Value Added Tax Regulations 1995, regulation 55M(1)(a)
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/55M
+    - title: VAT Notice 733, section 3.5
+      href: https://www.gov.uk/guidance/flat-rate-scheme-for-small-businesses-vat-notice-733--2

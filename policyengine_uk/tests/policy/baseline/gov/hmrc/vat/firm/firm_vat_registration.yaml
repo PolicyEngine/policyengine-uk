@@ -1,0 +1,126 @@
+# VAT registration (VATA 1994 Sch 1 para 1): registered when taxable supplies
+# (standard + reduced + zero rated, ex-VAT) exceed the threshold, or voluntarily.
+# Threshold: £85,000 from 1 April 2017, £90,000 from 1 April 2024. A year's
+# parameters are read at 30 April of that year (the fiscal year it starts),
+# so 2023 resolves to £85,000 and 2024 and 2025 to £90,000. Standard rate 20%.
+
+- name: 2025 threshold is £90,000 and must be exceeded
+  period: 2025
+  input:
+    firm_standard_rated_supplies: [89_000, 90_000, 91_000]
+    firm_input_vat: [0, 0, 0]
+  output:
+    firm_vat_taxable_turnover: [89_000, 90_000, 91_000]
+    firm_vat_registered: [false, false, true]
+    # 91,000 * 0.2 = 18,200
+    firm_vat_liability_if_registered: [17_800, 18_000, 18_200]
+    firm_vat: [0, 0, 18_200]
+
+- name: 2023 threshold is £85,000 and must be exceeded
+  period: 2023
+  input:
+    firm_standard_rated_supplies: [85_000, 86_000]
+  output:
+    firm_vat_registered: [false, true]
+    # 86,000 * 0.2 = 17,200
+    firm_vat: [0, 17_200]
+
+- name: £88,000 turnover is registered in 2023 (threshold £85,000)
+  period: 2023
+  input:
+    firm_standard_rated_supplies: 88_000
+  output:
+    firm_vat_registered: true
+    # 88,000 * 0.2 = 17,600
+    firm_output_vat: 17_600
+    firm_vat: 17_600
+
+- name: £88,000 turnover is not registered in 2025 (threshold £90,000)
+  period: 2025
+  input:
+    firm_standard_rated_supplies: 88_000
+  output:
+    firm_vat_registered: false
+    firm_output_vat: 17_600
+    firm_vat: 0
+
+- name: Zero-rated supplies count towards the threshold and give a repayment
+  period: 2025
+  input:
+    firm_zero_rated_supplies: 100_000
+    firm_input_vat: 5_000
+  output:
+    firm_vat_taxable_turnover: 100_000
+    firm_vat_registered: true
+    firm_output_vat: 0
+    # 0 - 5,000 = -5,000 (repayment)
+    firm_vat: -5_000
+
+- name: Exempt supplies do not count towards the threshold
+  period: 2025
+  input:
+    firm_standard_rated_supplies: 50_000
+    firm_exempt_supplies: 60_000
+  output:
+    firm_vat_taxable_turnover: 50_000
+    firm_vat_registered: false
+    firm_vat: 0
+
+- name: Voluntary registration below the threshold with a repayment
+  period: 2025
+  input:
+    firm_standard_rated_supplies: [20_000, 20_000]
+    firm_input_vat: [6_000, 6_000]
+    firm_vat_voluntarily_registered: [true, false]
+  output:
+    firm_vat_registered: [true, false]
+    # Output 20,000 * 0.2 = 4,000; 4,000 - 6,000 = -2,000
+    firm_output_vat: [4_000, 4_000]
+    firm_vat_normal_liability: [-2_000, -2_000]
+    firm_vat: [-2_000, 0]
+
+- name: Voluntarily registered firm with no supplies recovers all input VAT
+  period: 2025
+  input:
+    firm_input_vat: 1_000
+    firm_vat_voluntarily_registered: true
+  output:
+    firm_partial_exemption_recovery_share: 1
+    firm_vat: -1_000
+
+- name: £90,001 is registered in 2025 (£1 above the £90,000 threshold)
+  period: 2025
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 90_001
+  output:
+    # 90,001 > 90,000 (Sch 1 para 1(1)(a) "has exceeded").
+    firm_vat_registered: true
+    # 90,001 * 0.2 = 18,000.2
+    firm_vat: 18_000.2
+
+- name: £85,001 is registered in 2023 (threshold £85,000)
+  period: 2023
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: 85_001
+  output:
+    firm_vat_registered: true
+    # 85,001 * 0.2 = 17,000.2
+    firm_vat: 17_000.2
+
+- name: 2024 change year uses the £90,000 threshold in force at 30 April
+  period: 2024
+  # Margin 0.01 for float32 storage.
+  absolute_error_margin: 0.01
+  input:
+    firm_standard_rated_supplies: [85_001, 88_000, 90_000, 90_001]
+  output:
+    # SI 2024/307 raised the threshold to £90,000 from 1 April 2024. Read at
+    # 30 April 2024, so 85,001 and 88,000 (above the old £85,000) and 90,000
+    # (not exceeding) are unregistered; 90,001 is registered.
+    firm_vat_registered: [false, false, false, true]
+    # 90,001 * 0.2 = 18,000.2
+    firm_vat: [0, 0, 0, 18_000.2]

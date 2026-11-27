@@ -1,0 +1,17 @@
+description: Retail properties in Wales with rateable value below this amount pay the retail non-domestic rating multiplier.
+# Zero before 2026-27 (no property is below it), so a reform to the single
+# pre-2026 multiplier (the standard parameter) reaches every Welsh property.
+# From 1 April 2027 WSI 2026/133 renames this the lower multiplier and
+# widens it to about 37 descriptions; that change is not modelled.
+values:
+  2023-04-01: 0
+  2026-04-01: 51_000
+metadata:
+  label: Wales retail multiplier threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: The Non-Domestic Rating (Description of Differential Multipliers) (Wales) Regulations 2025 (WSI 2025/1163), reg 3 ("a rateable value of less than £51,000")
+      href: https://www.legislation.gov.uk/wsi/2025/1163/made
+    - title: Business Wales, Non-domestic rates multipliers 2026-27
+      href: https://businesswales.gov.wales/non-domestic-rates-multipliers

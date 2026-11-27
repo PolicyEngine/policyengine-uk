@@ -1,0 +1,199 @@
+# 2025-26: secondary threshold 96.153846 x 52 = 5,000; rate 15%; EA 10,500.
+- name: Case 1, firm employer NICs in 2025-26 with and without the EA binding.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 40_000, 2_000_000]
+    firm_employees: [10, 2, 40]
+  output:
+    # 300,000 - 10 x 5,000 = 250,000; 40,000 - 2 x 5,000 = 30,000;
+    # 2,000,000 - 40 x 5,000 = 1,800,000.
+    firm_class_1_earnings_above_secondary_threshold: [250_000, 30_000, 1_800_000]
+    # 15% of each.
+    firm_employer_ni_before_allowance: [37_500, 4_500, 270_000]
+    # min(10,500, liability).
+    employment_allowance: [10_500, 4_500, 10_500]
+    firm_employer_ni: [27_000, 0, 259_500]
+
+# 2024-25: secondary threshold 175 x 52 = 9,100; rate 13.8%; EA 5,000.
+- name: Case 2, firm employer NICs in 2024-25.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    # 300,000 - 91,000 = 209,000; x 0.138 = 28,842; less 5,000.
+    firm_class_1_earnings_above_secondary_threshold: [209_000]
+    firm_employer_ni_before_allowance: [28_842]
+    employment_allowance: [5_000]
+    firm_employer_ni: [23_842]
+
+- name: Case 3, zero-rated earnings for under-21s, apprentices and freeport staff.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000]
+    firm_employees: [10, 10]
+    firm_zero_rated_class_1_earnings: [50_000, 400_000]
+  output:
+    # (250,000 - 50,000) x 15% = 30,000; zero-rated above the base gives 0.
+    firm_employer_ni_before_allowance: [30_000, 0]
+    employment_allowance: [10_500, 0]
+    firm_employer_ni: [19_500, 0]
+
+- name: Case 4, supplied earnings above the threshold override the average-pay default.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+  output:
+    # 100,000 x 15% = 15,000; less 10,500.
+    firm_employer_ni_before_allowance: [15_000]
+    firm_employer_ni: [4_500]
+
+- name: Case 5, a paybill below the headcount times the threshold gives no NICs.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [40_000, 0]
+    firm_employees: [10, 0]
+  output:
+    # 40,000 - 50,000 < 0.
+    firm_class_1_earnings_above_secondary_threshold: [0, 0]
+    firm_employer_ni: [0, 0]
+
+- name: Case 6, staff supplied as paid below the secondary threshold leave the average.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000, 20_000]
+    firm_employees: [10, 10, 5]
+    firm_employees_below_secondary_threshold: [3, 0, 5]
+    firm_paybill_below_secondary_threshold: [12_000, 0, 20_000]
+  output:
+    # Firm 1: 3 staff paid 4,000 each (12,000) are below 5,000.
+    # (300,000 - 12,000) - (10 - 3) x 5,000 = 288,000 - 35,000 = 253,000,
+    # against 250,000 from the plain average.
+    # Firm 2: no split supplied, the plain average: 300,000 - 50,000 = 250,000.
+    # Firm 3: every employee below the threshold: 0 - 0 x 5,000 = 0.
+    firm_class_1_earnings_above_secondary_threshold: [253_000, 250_000, 0]
+    # 15% of each: 37,950; 37,500; 0.
+    firm_employer_ni_before_allowance: [37_950, 37_500, 0]
+    # Less the 10,500 Employment Allowance (capped at the liability).
+    firm_employer_ni: [27_450, 27_000, 0]
+
+- name: Case 7, inconsistent pay-distribution inputs are clipped.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [200_000, 300_000, 300_000, 20_000]
+    firm_employees: [10, 10, 10, 5]
+    firm_employees_below_secondary_threshold: [15, -3, 3, 5]
+    firm_paybill_below_secondary_threshold: [60_000, -12_000, 40_000, 30_000]
+  output:
+    # Secondary threshold 5,000.
+    # Firm 1: headcount 15 capped at 10; paybill 60,000 capped at
+    # min(200,000, 10 x 5,000) = 50,000. (200,000 - 50,000) - 0 x 5,000 = 150,000.
+    # Firm 2: negative inputs floored at 0, the plain average:
+    # 300,000 - 10 x 5,000 = 250,000.
+    # Firm 3: paybill 40,000 capped at 3 x 5,000 = 15,000.
+    # (300,000 - 15,000) - 7 x 5,000 = 285,000 - 35,000 = 250,000.
+    # Firm 4: paybill 30,000 capped at min(20,000, 25,000) = 20,000.
+    # (20,000 - 20,000) - 0 x 5,000 = 0.
+    firm_class_1_earnings_above_secondary_threshold: [150_000, 250_000, 250_000, 0]
+
+# The same firm in every case below: 10 staff, paybill 500,000.
+- name: Case 8, Employment Allowance at exactly 100,000 of prior-year liabilities in 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_claims_employment_allowance: [true, true, true]
+    firm_employees: [10, 10, 10]
+    firm_paybill: [500_000, 500_000, 500_000]
+    firm_prior_year_secondary_class_1_liabilities: [99_999.99, 100_000, 100_000.01]
+  output:
+    # NICA 2014 s.2(4B): no allowance where the prior year's secondary Class 1
+    # liabilities were 100,000 or more. Float32 keeps 99,999.99 below and
+    # 100,000.01 above 100,000 (spacing about 0.008).
+    employment_allowance_eligible: [true, false, false]
+    # (500,000 - 10 x 9,100) x 13.8% = 409,000 x 0.138 = 56,442.
+    firm_employer_ni_before_allowance: [56_442, 56_442, 56_442]
+    # min(5,000, 56,442) = 5,000 for the eligible firm only.
+    employment_allowance: [5_000, 0, 0]
+    # 56,442 - 5,000 = 51,442; 56,442; 56,442.
+    firm_employer_ni: [51_442, 56_442, 56_442]
+
+- name: Case 9, no prior-year liability test from 2025-26.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_claims_employment_allowance: [true]
+    firm_employees: [10]
+    firm_paybill: [500_000]
+    firm_prior_year_secondary_class_1_liabilities: [1_000_000]
+  output:
+    # The 100,000 test was removed from 6 April 2025, so 1,000,000 of
+    # prior-year liabilities still gets min(10,500, 67,500) = 10,500.
+    employment_allowance: [10_500]
+    # (500,000 - 10 x 5,000) x 15% = 67,500; less 10,500 = 57,000.
+    firm_employer_ni: [57_000]
+
+- name: Case 10, the same firm in 2023-24.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_employees: [10]
+    firm_paybill: [500_000]
+  output:
+    # Secondary threshold 175 x 52 = 9,100; rate 13.8%:
+    # (500,000 - 91,000) x 0.138 = 56,442.
+    firm_employer_ni_before_allowance: [56_442]
+    # Less the 5,000 Employment Allowance (firm_claims_employment_allowance
+    # defaults to true): 51,442.
+    firm_employer_ni: [51_442]
+
+- name: Case 11, the same firm in 2026-27.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_employees: [10]
+    firm_paybill: [500_000]
+  output:
+    # Secondary threshold 96.153846 x 52 = 5,000; rate 15%:
+    # (500,000 - 50,000) x 0.15 = 67,500.
+    firm_employer_ni_before_allowance: [67_500]
+    # Less the 10,500 Employment Allowance: 57,000.
+    firm_employer_ni: [57_000]
+
+# Precedence of the employer NIC base, 2025-26 (threshold 5,000): a supplied
+# base, then the pay split, then the plain average.
+- name: Edge cases of the pay split.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000, 300_000]
+    firm_employees: [10, 10, 10]
+    firm_employees_below_secondary_threshold: [4, 0, 4]
+    firm_paybill_below_secondary_threshold: [12_000, 12_000, 0]
+  output:
+    # The split: 288,000 - 30,000 = 258,000. Pay without a headcount is
+    # capped at 0 x the threshold, so ignored: 250,000. A headcount without
+    # pay treats those staff as paid 0: 300,000 - 6 x 5,000 = 270,000.
+    firm_class_1_earnings_above_secondary_threshold: [258_000, 250_000, 270_000]
+
+- name: A supplied base is used as given, even with a pay split.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_employees_below_secondary_threshold: [4]
+    firm_paybill_below_secondary_threshold: [12_000]
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+  output:
+    # The split alone would give 258,000.
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+    firm_employer_ni_before_allowance: [15_000]

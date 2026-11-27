@@ -1,0 +1,10 @@
+description: A group is liable to digital services tax only where its worldwide digital services revenues exceed this amount.
+values:
+  2020-04-01: 500_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Digital services tax worldwide revenue threshold
+  reference:
+    - title: Finance Act 2020 s.46
+      href: https://www.legislation.gov.uk/ukpga/2020/14/section/46

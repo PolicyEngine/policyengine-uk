@@ -1,6 +1,7 @@
 """Export recorded inputs without treating formulas or caches as provenance."""
 
 import pandas as pd
+from policyengine_core.populations import GroupPopulation
 
 from policyengine_uk.utils.supplied_inputs import _is_model_value
 
@@ -67,7 +68,15 @@ def input_dataframe(simulation):
             periods_by_variable.setdefault(variable, set()).add(period)
 
     columns = {}
+    person_key = simulation.persons.entity.key
     for name, variable in simulation.tax_benefit_system.variables.items():
+        population = simulation.populations.get(variable.entity.key)
+        if variable.entity.key != person_key and not isinstance(
+            population, GroupPopulation
+        ):
+            # A root (firm) variable: firms are not people, so the frame of
+            # one row per person has no place for it.
+            continue
         for period in sorted(periods_by_variable.get(name, ()), key=str):
             if variable.definition_period != period.unit:
                 continue

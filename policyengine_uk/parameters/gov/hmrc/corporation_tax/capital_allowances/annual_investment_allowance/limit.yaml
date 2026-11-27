@@ -1,0 +1,38 @@
+description: Maximum annual investment allowance a business can claim for a year on plant and machinery expenditure under section 51A of the Capital Allowances Act 2001, shared between related businesses and group companies.
+values:
+  2014-04-01:
+    value: 500_000
+    metadata:
+      reference:
+        - title: Finance Act 2014 s 10(1) and (3) (£500,000 from 1 April 2014 for corporation tax to 31 December 2015)
+          href: https://www.legislation.gov.uk/ukpga/2014/26/section/10
+  2016-01-01:
+    value: 200_000
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2015 s 8(1) (£200,000 for expenditure incurred on or after 1 January 2016)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/section/8
+  2019-01-01:
+    value: 1_000_000
+    metadata:
+      reference:
+        - title: Finance Act 2019 s 32(1) (£1,000,000 for 1 January 2019 to 31 March 2023, as extended by Finance Act 2022 s 12(1))
+          href: https://www.legislation.gov.uk/ukpga/2019/1/section/32
+  2023-04-01:
+    value: 1_000_000
+    metadata:
+      reference:
+        - title: Capital Allowances Act 2001 s 51A(5), as substituted by Finance (No. 2) Act 2023 s 8(2)(a) (permanent £1,000,000)
+          href: https://www.legislation.gov.uk/ukpga/2001/2/section/51A
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Annual investment allowance limit
+  # The limit changed on 1 January in 2016 and 2019. Day-weighting over the
+  # fiscal year approximates the time-apportioned limit CAA 2001 and the
+  # amending Acts give a chargeable period that straddles the change (for
+  # example Finance Act 2019 Sch 13), for a firm with an April to March year.
+  fiscal_year_blend: true
+  reference:
+    - title: Capital Allowances Act 2001 s 51A(5)
+      href: https://www.legislation.gov.uk/ukpga/2001/2/section/51A

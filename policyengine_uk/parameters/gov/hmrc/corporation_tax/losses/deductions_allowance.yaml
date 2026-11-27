@@ -1,0 +1,12 @@
+description: Corporation tax deductions allowance for a company or group, the amount of profits against which carried-forward losses can be set without the 50% restriction.
+values:
+  2017-04-01: 5_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Corporation tax losses deductions allowance
+  reference:
+    - title: Corporation Tax Act 2010 s. 269ZR(2) and s. 269ZW
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/269ZR
+    - title: Finance (No. 2) Act 2017 Sch. 4 para. 190 (accounting periods from 1 April 2017)
+      href: https://www.legislation.gov.uk/ukpga/2017/32/schedule/4/paragraph/190

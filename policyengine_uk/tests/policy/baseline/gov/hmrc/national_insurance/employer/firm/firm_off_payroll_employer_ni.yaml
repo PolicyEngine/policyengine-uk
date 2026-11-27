@@ -1,0 +1,109 @@
+# Off-payroll working rules (SI 2000/727 regs 14, 17, 18). Secondary threshold
+# x 52: 5,000 (2025-26), 9,100 (2022-23 to 2024-25), 8,840 (2021-22), 8,788
+# (2020-21). Rates 15% (2025-26), 13.8% (2023-24, 2024-25 and 2020-21 to
+# 2021-22), 15.05% (2022-23 read at 30 April).
+- name: Deemed payments above the threshold for each deemed worker, 2025-26.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000, 100_000, 100_000, 0, -50_000]
+    firm_off_payroll_deemed_workers: [2, 0, 30, 0, -3]
+  output:
+    # (100,000 - 10,000) x 15%; no workers so no threshold; 30 x 5,000
+    # covers it; nothing; negatives count as 0.
+    firm_off_payroll_employer_ni: [13_500, 15_000, 0, 0, 0]
+
+- name: 2024-25 at 13.8% above 9,100 per worker.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000]
+    firm_off_payroll_deemed_workers: [2]
+  output:
+    # (100,000 - 18,200) x 13.8% = 11,288.40.
+    firm_off_payroll_employer_ni: [11_288.4]
+
+- name: 2022-23 at 15.05%.
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000]
+    firm_off_payroll_deemed_workers: [2]
+  output:
+    # 81,800 x 15.05% = 12,310.90.
+    firm_off_payroll_employer_ni: [12_310.9]
+
+- name: Before April 2021 only public authority clients are fee-payers.
+  period: 2020
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000, 100_000]
+    firm_off_payroll_deemed_workers: [2, 2]
+    firm_is_public_body: [false, true]
+  output:
+    # (100,000 - 17,576) x 13.8% = 11,374.51.
+    firm_off_payroll_employer_ni: [0, 11_374.51]
+    firm_off_payroll_levy_earnings: [0, 100_000]
+
+- name: From April 2021 private clients are fee-payers too.
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000]
+    firm_off_payroll_deemed_workers: [2]
+  output:
+    # (100,000 - 17,680) x 13.8% = 11,360.16.
+    firm_off_payroll_employer_ni: [11_360.16]
+
+- name: Before April 2017 there are no off-payroll contributions.
+  period: 2016
+  absolute_error_margin: 1
+  input:
+    firm_off_payroll_deemed_payments: [100_000]
+    firm_is_public_body: [true]
+  output:
+    firm_off_payroll_employer_ni: [0]
+    firm_off_payroll_levy_earnings: [0]
+
+- name: The Employment Allowance cannot be set against off-payroll contributions.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [30_000]
+    firm_employees: [2]
+    firm_off_payroll_deemed_payments: [100_000]
+    firm_off_payroll_deemed_workers: [2]
+  output:
+    # Own payroll: (30,000 - 10,000) x 15% = 3,000, all covered.
+    employment_allowance: [3_000]
+    firm_employer_ni: [0]
+    firm_off_payroll_employer_ni: [13_500]
+    firm_tax: [13_500]
+    # Off-payroll NIC is not firm-only; the levy is 0 under the allowance.
+    firm_only_tax: [0]
+
+- name: Off-payroll contributions do not count towards the allowance cap, 2024-25.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [800_000]
+    firm_employees: [10]
+    firm_off_payroll_deemed_payments: [500_000]
+    firm_off_payroll_deemed_workers: [5]
+  output:
+    # (800,000 - 91,000) x 13.8% = 97,842; (500,000 - 45,500) x 13.8% = 62,721.
+    firm_employer_ni_before_allowance: [97_842]
+    employment_allowance: [5_000]
+    firm_off_payroll_employer_ni: [62_721]
+
+- name: Deemed payments count in the apprenticeship levy pay bill.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [2_900_000, 2_900_000]
+    firm_employees: [100, 100]
+    firm_off_payroll_deemed_payments: [0, 200_000]
+  output:
+    # 0.5% x 2,900,000 = 14,500 is under the allowance; 0.5% x 3,100,000 =
+    # 15,500 less 15,000 = 500.
+    apprenticeship_levy: [0, 500]

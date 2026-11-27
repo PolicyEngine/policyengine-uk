@@ -1,0 +1,19 @@
+description: Additional factor added to the basic property rate in Scotland for properties with rateable value above the higher threshold (the higher property rate).
+values:
+  2023-04-01: 0.026
+  2024-04-01: 0.061
+  2025-04-01: 0.07
+  2026-04-01: 0.067
+metadata:
+  label: Scotland higher property supplement
+  unit: /1
+  period: year
+  reference:
+    - title: Levying regulations SSI 2023/30 reg 6(4) (0.026)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made
+    - title: Levying regulations SSI 2024/4 reg 6(4) (0.061)
+      href: https://www.legislation.gov.uk/ssi/2024/4/made
+    - title: Levying regulations SSI 2025/38 reg 6 (0.07)
+      href: https://www.legislation.gov.uk/ssi/2025/38/made
+    - title: Levying regulations SSI 2026/68 reg 6(3) (0.067)
+      href: https://www.legislation.gov.uk/ssi/2026/68/made

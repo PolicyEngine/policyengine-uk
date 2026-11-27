@@ -1,0 +1,10 @@
+description: The special IP rate of corporation tax that the Patent Box deduction gives on a company's relevant IP profits.
+values:
+  2013-04-01: 0.1
+metadata:
+  unit: /1
+  period: year
+  label: Patent Box special IP rate
+  reference:
+    - title: Corporation Tax Act 2010 s.357A(4)
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/357A

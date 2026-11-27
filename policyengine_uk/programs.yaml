@@ -266,6 +266,178 @@ programs:
     verified_end_year: 2030
     notes: Receipts allocated to households by shareholding. Local and central rating lists; outturn from 2020-21 (Northern Ireland's first year) to 2025-26 (Wales 2024-25), then OBR March 2026 receipts forecasts to 2030-31.
 
+  # --- Firm-side programs (firm entity; not in the budget totals) ---
+  - id: corporation_tax
+    name: Corporation tax
+    full_name: Corporation Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: corporation_tax
+    parameter_prefix: gov.hmrc.corporation_tax
+    verified_start_year: 2026
+    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief, group relief for a claimed amount (Parts 5 and 5A) and the Patent Box deduction on supplied relevant IP profits. No quarterly instalments. Not in household_tax or gov_tax.
+
+  - id: bank_surcharge
+    name: Bank surcharge
+    full_name: Bank Corporation Tax Surcharge
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: bank_surcharge
+    parameter_prefix: gov.hmrc.bank_surcharge
+    verified_start_year: 2026
+    notes: Firm-level surcharge on banking companies' profits above the surcharge allowance. The 6% rate announced for 1 January 2027 to 31 March 2028 is not yet enacted. Not in household_tax or gov_tax.
+
+  - id: apprenticeship_levy
+    name: Apprenticeship levy
+    full_name: Apprenticeship Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: apprenticeship_levy
+    parameter_prefix: gov.hmrc.apprenticeship_levy
+    verified_start_year: 2017
+    notes: Firm-level levy on the paybill less the levy allowance, with the allowance shared across connected employers. Not in household_tax or gov_tax.
+
+  - id: firm_employer_ni
+    name: Employer National Insurance (firms)
+    full_name: Class 1 secondary National Insurance contributions of employers
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_employer_ni
+    parameter_prefix: gov.hmrc.national_insurance.class_1
+    verified_start_year: 2024
+    notes: Firm-level employer National Insurance after the Employment Allowance, plus off-payroll Class 1 (firm_off_payroll_employer_ni), Class 1A on termination awards and Class 1B as separate variables. Earnings above the secondary threshold are approximated from paybill and employees unless given as an input. The household-side measure is ni_employer under the national_insurance entry. Not in household_tax or gov_tax.
+
+  - id: employment_allowance
+    name: Employment Allowance
+    full_name: Employment Allowance against employer National Insurance
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: employment_allowance
+    parameter_prefix: gov.hmrc.national_insurance.employment_allowance
+    verified_start_year: 2024
+    notes: Firm-level allowance, capped at the employer's Class 1 secondary liability. Covers the single-director and public-body exclusions and the prior-year liabilities limit for 2020-21 to 2024-25. Not in household_tax or gov_tax.
+
+  - id: firm_business_rates
+    name: Business rates (firms)
+    full_name: Non-domestic rates payable by firms in England, Wales, Scotland and Northern Ireland
+    category: Taxes
+    agency: Local
+    status: partial
+    coverage: England
+    variable: firm_business_rates
+    parameter_prefix: gov.hmrc.business_rates
+    verified_start_year: 2023
+    verified_end_year: 2027
+    notes: Firm-level statutory liability on one aggregate property per firm. England with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs; Wales (standard, retail and higher multipliers, SBRR and charitable relief) and Scotland (poundage, Small Business Bonus Scheme and charitable relief) from 2023-24; Northern Ireland (regional and district rates, small business rate relief, charity exemption, unoccupied property) from 2023-24 where a district is supplied, with 2027-28 Northern Ireland poundages carried forward, not verified. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
+
+  - id: firm_vat
+    name: VAT (firms)
+    full_name: Value Added Tax payable by registered businesses
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_vat
+    parameter_prefix: gov.hmrc.vat
+    verified_start_year: 2025
+    notes: Firm-level output VAT less recoverable input VAT, with partial exemption (direct attribution and, if flagged, the de minimis tests), the registration threshold and the flat rate scheme including the limited cost trader rate. Registration is tested on annual turnover; no cash or annual accounting. The household-side measure is the vat entry. Not in household_tax or gov_tax.
+
+  - id: soft_drinks_industry_levy
+    name: Soft drinks industry levy
+    full_name: Soft Drinks Industry Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: soft_drinks_industry_levy
+    parameter_prefix: gov.hmrc.soft_drinks_industry_levy
+    verified_start_year: 2018
+    verified_end_year: 2026
+    notes: Firm-level levy per litre of chargeable soft drinks at the higher and lower sugar bands, with the 1 million litre small producer exemption. Litres are firm inputs. Rates after 2026-27 carry forward. Not in household_tax or gov_tax.
+
+  - id: plastic_packaging_tax
+    name: Plastic packaging tax
+    full_name: Plastic Packaging Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: plastic_packaging_tax
+    parameter_prefix: gov.hmrc.plastic_packaging_tax
+    verified_start_year: 2022
+    verified_end_year: 2026
+    notes: Firm-level tax per tonne of plastic packaging with less than 30% recycled plastic, for firms at or above the 10 tonne registration threshold over the year. Tonnes are firm inputs. Rates after 2026-27 carry forward. Not in household_tax or gov_tax.
+
+  - id: residential_property_developer_tax
+    name: Residential property developer tax
+    full_name: Residential Property Developer Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: residential_property_developer_tax
+    parameter_prefix: gov.hmrc.residential_property_developer_tax
+    verified_start_year: 2022
+    notes: Firm-level 4% charge on supplied RPD profits above the group-shared £25 million allowance, companies only. Not deductible for corporation tax. Not in household_tax or gov_tax.
+
+  - id: digital_services_tax
+    name: Digital services tax
+    full_name: Digital Services Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: digital_services_tax
+    parameter_prefix: gov.hmrc.digital_services_tax
+    verified_start_year: 2020
+    notes: Firm-level 2% of group UK digital services revenues above £25 million, where worldwide revenues exceed £500 million and UK revenues exceed £25 million, shared by UK revenues. Revenues are inputs; the alternative charge is not modelled. Not in household_tax or gov_tax.
+
+  - id: energy_profits_levy
+    name: Energy profits levy
+    full_name: Energy (Oil and Gas) Profits Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: energy_profits_levy
+    parameter_prefix: gov.hmrc.energy_profits_levy
+    verified_start_year: 2022
+    notes: Firm-level levy on supplied levy profits (after the investment and decarbonisation allowances), day-weighted 25%, 35% and 38% rates to 31 March 2030. The price floor is not modelled. Not in household_tax or gov_tax.
+
+  - id: firm_minimum_wage_cost
+    name: Minimum wage floor (firms)
+    full_name: Firm cost of meeting the National Minimum Wage
+    category: Other
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: firm_minimum_wage_cost
+    parameter_prefix: gov.hmrc.minimum_wage
+    verified_start_year: 2026
+    notes: Extra pay needed to bring a firm's low-paid block up to the adult rate, at the block's average hourly wage. It raises the paybill read by the apprenticeship levy and the default employer NIC and auto-enrolment approximations. A firm cost, not a tax; not in household_tax or gov_tax. Younger-worker and apprentice rates not modelled.
+
+  - id: auto_enrolment_employer_contribution
+    name: Auto-enrolment employer contribution
+    full_name: Automatic enrolment employer minimum pension contribution
+    category: Other
+    agency: DWP
+    status: partial
+    coverage: UK
+    variable: firm_auto_enrolment_employer_contribution
+    parameter_prefix: gov.dwp.auto_enrolment
+    verified_start_year: 2025
+    notes: Firm-level employer minimum contribution on qualifying earnings, approximated from paybill and employees.
+
   - id: minimum_wage
     name: National Minimum Wage
     full_name: National Minimum Wage / National Living Wage

@@ -1,0 +1,25 @@
+description: Whether the payable SME R&D tax credit is capped by reference to the company's PAYE and NIC liabilities, under section 1058(1)(aa) of the Corporation Tax Act 2009. The cap was removed for accounting periods ending on or after 1 April 2012 and reintroduced, as £20,000 plus three times those liabilities, for accounting periods beginning on or after 1 April 2021.
+values:
+  2012-04-01:
+    value: false
+    metadata:
+      reference:
+        - title: Finance Act 2012 Sch 3 para 15(2) (cap in section 1058(1)(b) omitted)
+          href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/3/paragraph/15
+        - title: Finance Act 2012 Sch 3 para 39 (accounting periods ending on or after 1 April 2012)
+          href: https://www.legislation.gov.uk/ukpga/2012/14/schedule/3/paragraph/39
+  2021-04-01:
+    value: true
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1058(1)(aa) and (1A) as at 1 April 2022 (inserted by Finance Act 2021 Sch 3 para 2)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058/2022-04-01
+        - title: Finance Act 2021 Sch 3 para 4 (accounting periods beginning on or after 1 April 2021)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/schedule/3/paragraph/4
+metadata:
+  unit: bool
+  period: year
+  label: R&D SME payable credit PAYE and NIC cap applies
+  reference:
+    - title: Corporation Tax Act 2009 s 1058
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058

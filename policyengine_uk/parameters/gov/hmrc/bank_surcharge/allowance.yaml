@@ -1,0 +1,23 @@
+description: Bank corporation tax surcharge allowance, the amount of a banking company's surcharge profits not charged to the surcharge. For a group it is shared between the group's banking companies.
+values:
+  2016-01-01:
+    value: 25_000_000
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2015 Sch. 3 (Corporation Tax Act 2010 s. 269DJ(3) as inserted)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/schedule/3/enacted
+  2023-04-01:
+    value: 100_000_000
+    metadata:
+      reference:
+        - title: Finance Act 2022 s. 6(2)(c) and (3)
+          href: https://www.legislation.gov.uk/ukpga/2022/3/section/6
+        - title: Corporation Tax Act 2010 s. 269DJ(3)
+          href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DJ
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bank surcharge allowance
+  reference:
+    - title: Corporation Tax Act 2010 ss. 269DA(3)-(4), 269DE and 269DJ
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DJ

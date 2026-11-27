@@ -1,0 +1,71 @@
+description: Annual earnings up to which earnings count as qualifying earnings for automatic enrolment pension contributions.
+# The first value is the band in force when employer duties began (from
+# 1 October 2012); it is applied to earlier years.
+values:
+  2012-06-15:
+    value: 42_475
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2012/1506 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2012-06-15
+  2013-04-06:
+    value: 41_450
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2013/667 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2013-04-06
+  2014-04-06:
+    value: 41_865
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2014/623 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2014-04-06
+  2015-04-06:
+    value: 42_385
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2015/468 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2015-04-06
+  2016-04-06:
+    value: 43_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2016/435 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2016-04-06
+  2017-04-06:
+    value: 45_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2017/394 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2017-04-06
+  2018-04-06:
+    value: 46_350
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2018/367 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2018-04-06
+  2019-04-06:
+    value: 50_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2019/374 art 2(b)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13/2019-04-06
+  2021-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.13(1)(b), as substituted by SI 2021/314 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/13
+  2026-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: "DWP: Review of the automatic enrolment earnings trigger and qualifying earnings band for 2026/27"
+          href: https://www.gov.uk/government/publications/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Automatic enrolment qualifying earnings upper limit
+  reference:
+    - title: Pensions Act 2008 s.13(1)(b)
+      href: https://www.legislation.gov.uk/ukpga/2008/30/section/13

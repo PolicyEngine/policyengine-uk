@@ -1,0 +1,110 @@
+# The rate is day-weighted over each 6 April to 5 April year, so the 6% rate
+# from 1 January 2027 enters the 2026 label for 95 of 365 days, and the
+# return to 3% on 1 April 2028 enters the 2027 label for 5 of 366 days.
+- name: Case 1, bank surcharge in 2026-27.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY]
+    firm_is_bank: [true, true, false]
+    firm_taxable_trading_profit: [150_000_000, 80_000_000, 150_000_000]
+    firm_capital_allowances: [0, 0, 0]
+    firm_rd_additional_deduction: [0, 0, 0]
+    firm_rd_expenditure_credit: [0, 0, 0]
+  output:
+    # Rate: 6 April 2026 to 31 December 2026 is 270 days at 3%; 1 January
+    # 2027 to 5 April 2027 is 95 days at 6%. (270 x 0.03 + 95 x 0.06) / 365
+    # = 13.8 / 365 = 0.0378082. Times (150m - 100m) = 1,890,410.96. Below the
+    # allowance and non-banks pay none.
+    bank_surcharge: [1_890_410.96, 0, 0]
+    corporation_tax: [37_500_000, 20_000_000, 37_500_000]
+
+- name: Case 2, mostly the 6% temporary rate in 2027-28.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_bank: true
+    firm_taxable_trading_profit: 150_000_000
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    # Rate: 6 April 2027 to 31 March 2028 is 361 days at 6%; 1 April 2028
+    # to 5 April 2028 is 5 days at 3%. (361 x 0.06 + 5 x 0.03) / 366
+    # = 21.81 / 366 = 0.0595902. Times 50m = 2,979,508.20.
+    bank_surcharge: 2_979_508.20
+
+- name: Case 3, back to 3% in 2028-29.
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_bank: true
+    firm_taxable_trading_profit: 150_000_000
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    bank_surcharge: 1_500_000
+
+- name: Case 4, 8% above 25m in 2022-23.
+  period: 2022
+  # Values are float32: near 10m one step is 1, so allow it.
+  absolute_error_margin: 1
+  input:
+    firm_legal_form: COMPANY
+    firm_is_bank: true
+    firm_taxable_trading_profit: 150_000_000
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    # Rate: 6 April 2022 to 31 March 2023 is 360 days at 8%; 1 April 2023
+    # to 5 April 2023 is 5 days at 3%. (360 x 0.08 + 5 x 0.03) / 365
+    # = 28.95 / 365 = 0.0793151. The allowance is not blended and reads
+    # 25m. Times (150m - 25m) = 9,914,383.56.
+    bank_surcharge: 9_914_383.56
+
+- name: Case 5, partnerships pay no bank surcharge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: PARTNERSHIP
+    firm_is_bank: true
+    firm_taxable_trading_profit: 150_000_000
+    firm_capital_allowances: 0
+    firm_rd_additional_deduction: 0
+    firm_rd_expenditure_credit: 0
+  output:
+    bank_surcharge: 0
+
+- name: Case 6, the R&D expenditure credit is left out of surcharge profits.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: COMPANY
+    firm_is_bank: true
+    firm_taxable_trading_profit: 200_000_000
+    firm_qualifying_rd_expenditure: 50_000_000
+    firm_total_relevant_expenditure: 1_000_000_000
+  output:
+    # RDEC 20% x 50m = 10m, a taxable receipt: taxable total profits 210m.
+    # Surcharge profits deduct it (s. 269DA(2)): 210m - 10m = 200m.
+    # 3% x (200m - 100m) = 3.0m.
+    firm_rd_expenditure_credit: 10_000_000
+    firm_taxable_profit: 210_000_000
+    bank_surcharge: 3_000_000
+
+- name: Case 7, a bank in a group with half the surcharge allowance.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_bank: [true, true]
+    firm_taxable_trading_profit: [150_000_000, 150_000_000]
+    firm_bank_surcharge_allowance_share: [0.5, 1]
+  output:
+    # Group share: allowance 0.5 x 100m = 50m; 3% x (150m - 50m) = 3.0m.
+    # Whole allowance: 3% x (150m - 100m) = 1.5m.
+    bank_surcharge: [3_000_000, 1_500_000]

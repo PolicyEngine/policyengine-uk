@@ -1,0 +1,25 @@
+# Freeport and investment zone employer NIC relief (NICA 2022 s.1) gives a 0%
+# secondary rate on an eligible employee's earnings up to the freeport upper
+# secondary threshold. The firm model takes those earnings through
+# firm_zero_rated_class_1_earnings; firm_in_freeport alone changes nothing.
+# 2025-26: secondary threshold 5,000 a year; rate 15%; EA 10,500.
+- name: Case 1, freeport and investment zone relief passes through the zero-rated earnings input.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [1_000_000, 1_000_000, 1_000_000]
+    firm_employees: [20, 20, 20]
+    firm_in_freeport: [false, true, true]
+    # Firm 3: 10 eligible staff each earning at least 25,000, the freeport
+    # upper secondary threshold, so each has 25,000 - 5,000 = 20,000 zero-rated:
+    # 10 x 20,000 = 200,000. The model has no freeport threshold parameter, so
+    # the caller computes this.
+    firm_zero_rated_class_1_earnings: [0, 0, 200_000]
+  output:
+    # 1,000,000 - 20 x 5,000 = 900,000 above the threshold for all three.
+    firm_class_1_earnings_above_secondary_threshold: [900_000, 900_000, 900_000]
+    # Firms 1 and 2: 0.15 x 900,000 = 135,000 (the flag alone gives no relief).
+    # Firm 3: 0.15 x (900,000 - 200,000) = 105,000.
+    firm_employer_ni_before_allowance: [135_000, 135_000, 105_000]
+    # Less the 10,500 EA.
+    firm_employer_ni: [124_500, 124_500, 94_500]

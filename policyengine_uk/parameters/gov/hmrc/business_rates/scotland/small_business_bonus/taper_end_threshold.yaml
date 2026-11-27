@@ -1,0 +1,14 @@
+description: Small Business Bonus Scheme relief in Scotland tapers to 0% at this rateable value; single-entry properties must be below it.
+values:
+  2023-04-01: 20_000
+metadata:
+  label: Scotland SBBS taper end threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: SSI 2023/30 reg 3(1)(b) (rateable value of less than £20,000)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made
+    - title: SSI 2026/68 reg 3(1) (rateable value of less than £20,000)
+      href: https://www.legislation.gov.uk/ssi/2026/68/made
+    - title: Scottish Government, Local government finance circular 7/2026, Table 3 (relief = 25 x ((20000 - RV) / 5000))
+      href: https://www.gov.scot/publications/local-government-finance-circular-7-2026-non-domestic-rates-relief-guidance/pages/non-domestic-rates-relief-information-for-scottish-local-authorities/

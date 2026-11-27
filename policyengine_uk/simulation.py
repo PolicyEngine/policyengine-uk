@@ -13,11 +13,12 @@ import pandas as pd
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import Period, period as period_
+from policyengine_core.periods import ETERNITY, Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.simulations.simulation import (
+    _branch_clone,
     _uprating_index_value,
 )
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
@@ -34,7 +35,11 @@ from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
 )
-from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
+from policyengine_uk.utils.entity_ids import (
+    ENTITY_ID_VARIABLES,
+    FIRM_ID_VARIABLE,
+    check_entity_ids,
+)
 from policyengine_uk.utils.scenario import ConstructionReformState, Scenario
 from policyengine_uk.data.economic_assumptions import (
     BEREAVEMENT_SPLIT_INPUTS,
@@ -233,6 +238,88 @@ def _current_law_uprating_fingerprint(capital_gains_projection) -> str:
             system.parameters
         )
     return _current_law_uprating_fingerprints[key]
+
+
+def _root_population_keys(simulation) -> list:
+    """Keys of ``simulation``'s root populations (the firm's): those that are
+    neither its system's person population nor one of its group populations.
+
+    policyengine-core knows only people and groups of people, so its
+    ``clone`` and ``_bind_to_tax_benefit_system`` leave these out; the UK
+    ``Simulation`` handles them itself."""
+    system = simulation.tax_benefit_system
+    populations = getattr(simulation, "populations", None) or {}
+    if system is None:
+        return []
+    own = {system.person_entity.key, *system.group_entity_keys}
+    return [key for key in populations if key not in own]
+
+
+def _root_entity(system, key):
+    """The entity of ``system`` with ``key``. A cloned system copies its
+    ``entities`` apart from its person and group entities, so look it up
+    there."""
+    for entity in system.entities:
+        if entity.key == key:
+            return entity
+    return None
+
+
+def _with_firm_ids(table):
+    """``table``, a firm table, with a ``firm_id`` column: a table without
+    one numbers its firms 0, 1, ... in the order it gives them, as
+    ``UKSingleYearDataset.from_simulation`` does. None stays None."""
+    if table is None or FIRM_ID_VARIABLE in table.columns:
+        return table
+    return table.assign(**{FIRM_ID_VARIABLE: np.arange(len(table))})
+
+
+def _firm_table_in_population_order(table, firm_ids):
+    """``table``, a year's firm table, with its rows in the order of the firm
+    population's ``firm_ids`` (the first year's order), or None if there is
+    no table. A table without ``firm_id`` numbers its firms 0, 1, ... .
+
+    Each year's table must give exactly the first year's firms, each once:
+    the population is built from the first year, so a later year's extra or
+    missing firms would otherwise be dropped or left without inputs."""
+    if table is None:
+        return None
+    table = _with_firm_ids(table)
+    ids = table[FIRM_ID_VARIABLE].to_numpy()
+    firm_ids = np.asarray(firm_ids)
+    if np.array_equal(ids, firm_ids):
+        return table
+    position = pd.Series(np.arange(len(ids)), index=ids)
+    if (
+        len(ids) != len(firm_ids)
+        or position.index.has_duplicates
+        or set(ids.tolist()) != set(firm_ids.tolist())
+    ):
+        raise ValueError(
+            "Each year's firm table must give the same firms, each once, as "
+            f"the first year's: the first year gives {len(firm_ids)} firm(s), "
+            f"this table {len(ids)} row(s) with different firm ids."
+        )
+    return table.iloc[position.loc[firm_ids].to_numpy()]
+
+
+def _core_dataset_firm_ids(data, system):
+    """The firm ids of a core dataset's ``data`` (``{variable: {period:
+    values}}``): its ``firm_id`` values for their first period, or, without
+    them, 0, 1, ... for as many firms as its firm variables' first values
+    give. None if it has no firm variables."""
+    if FIRM_ID_VARIABLE in data:
+        values = data[FIRM_ID_VARIABLE]
+        return np.asarray(values[next(iter(values))])
+    for variable, values in data.items():
+        if variable not in system.variables or not values:
+            continue
+        if system.variables[variable].entity.key != "firm":
+            continue
+        first = np.asarray(values[next(iter(values))])
+        if first.ndim > 0:
+            return np.arange(len(first))
+    return None
 
 
 def get_default_dataset_url() -> str:
@@ -698,8 +785,156 @@ class Simulation(CoreSimulation):
         if variable_name in CGT_DATASET_INPUTS:
             self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
 
+    def _bind_to_tax_benefit_system(self) -> None:
+        """Bind every population to this simulation's system, as core does,
+        including the root (firm) populations core does not know.
+
+        Core binds the person and group populations, and raises for any
+        other. Take the root populations out while it runs, then bind each
+        to the system's entity of its key and each of its holders to the
+        system's variable, dropping holders (and their input records) for
+        variables the system does not have in that entity, as core does for
+        the others."""
+        roots = _root_population_keys(self)
+        if not roots:
+            super()._bind_to_tax_benefit_system()
+            return
+        populations = self.populations
+        taken = {key: populations.pop(key) for key in roots}
+        try:
+            super()._bind_to_tax_benefit_system()
+        finally:
+            populations.update(taken)
+        system = self.tax_benefit_system
+        variables = system.variables
+        dropped = set()
+        for key, population in taken.items():
+            entity = _root_entity(system, key)
+            if entity is not None:
+                population.entity = entity
+            for name, holder in list(population._holders.items()):
+                variable = variables.get(name)
+                if (
+                    variable is None
+                    or variable.entity.key != key
+                    or (variable.definition_period == ETERNITY)
+                    != holder._memory_storage.is_eternal
+                ):
+                    del population._holders[name]
+                    dropped.add(name)
+                else:
+                    holder.variable = variable
+        if not dropped:
+            return
+        user_input_keys = getattr(self, "_user_input_keys", None)
+        if user_input_keys is not None and any(
+            key[0] in dropped for key in user_input_keys
+        ):
+            self._user_input_keys = {
+                key for key in user_input_keys if key[0] not in dropped
+            }
+        input_variables = getattr(self, "input_variables", None)
+        if input_variables is not None and any(
+            name in dropped for name in input_variables
+        ):
+            self.input_variables = [
+                name for name in input_variables if name not in dropped
+            ]
+
+    @contextmanager
+    def _exporting_people_only(self):
+        """While core exports one row (or list entry) per person, leave out
+        the variables of root (firm) populations: firms are not people, and
+        their values do not map to them."""
+        roots = set(_root_population_keys(self))
+        variables = self.tax_benefit_system.variables
+        exportable = self._get_exportable_input_periods
+
+        def periods(variable_name, include_computed_variables):
+            if variables[variable_name].entity.key in roots:
+                return []
+            return exportable(variable_name, include_computed_variables)
+
+        # Restore whatever was there before (an instance override from an
+        # enclosing call, or none), so nested exports leave it as found.
+        missing = object()
+        previous = self.__dict__.get("_get_exportable_input_periods", missing)
+        self._get_exportable_input_periods = periods
+        try:
+            yield
+        finally:
+            if previous is missing:
+                del self._get_exportable_input_periods
+            else:
+                self._get_exportable_input_periods = previous
+
+    def _to_person_dataframe(self, get_periods, include_computed_variables=False):
+        roots = set(_root_population_keys(self))
+        variables = self.tax_benefit_system.variables
+
+        def periods(variable_name):
+            if variables[variable_name].entity.key in roots:
+                return []
+            return get_periods(variable_name)
+
+        return super()._to_person_dataframe(
+            periods, include_computed_variables=include_computed_variables
+        )
+
+    def to_input_dict(self, include_computed_variables: bool = False) -> dict:
+        """Export the inputs as core does, one entry per person, leaving out
+        firm variables (firms are not people)."""
+        with self._exporting_people_only():
+            return super().to_input_dict(
+                include_computed_variables=include_computed_variables
+            )
+
+    def map_result(self, values, source_entity: str, target_entity: str, how=None):
+        """Map values between entities, as core does. A root (firm)
+        population has no members, so its values map only to itself: core
+        would route a firm-to-person mapping back through itself without
+        end."""
+        if source_entity != target_entity:
+            roots = set(_root_population_keys(self))
+            if source_entity in roots or target_entity in roots:
+                raise ValueError(
+                    f"Cannot map values from {source_entity} to {target_entity}: "
+                    "firms have no members, so firm values do not map to "
+                    "people or households, or the reverse."
+                )
+        return super().map_result(values, source_entity, target_entity, how=how)
+
     def clone(self, *args, **kwargs) -> "Simulation":
+        # Core's clone shares cached arrays when ``get_branch`` (or a
+        # subsample's baseline copy) announced it, and marks the request
+        # used; read it first, so the firm population shares them too.
+        request = _branch_clone.get()
+        share_arrays = (
+            request is not None and request.pending and request.simulation is self
+        )
         clone = super().clone(*args, **kwargs)
+        # Core copies only the person and group populations, and the copy of
+        # this simulation's attributes left the firm shortcut pointing at
+        # this simulation's population. Give the clone its own copy, bound
+        # to the clone's system.
+        for key in _root_population_keys(self):
+            # The patched core clone (policyengine_uk.tax_benefit_system)
+            # has already given the clone its own copy, bound to it.
+            existing = clone.populations.get(key)
+            if (
+                existing is not None
+                and existing is not self.populations[key]
+                and getattr(existing, "simulation", None) is clone
+            ):
+                setattr(clone, key, existing)
+                continue
+            sharing = {"share_arrays": True} if share_arrays else {}
+            population = self.populations[key].clone(clone, **sharing)
+            entity = _root_entity(clone.tax_benefit_system, key)
+            if entity is not None:
+                population.entity = entity
+            clone.populations[key] = population
+            setattr(clone, key, population)
         clone._construction_reform_state = copy.deepcopy(
             getattr(self, "_construction_reform_state", None)
         )
@@ -1210,7 +1445,12 @@ class Simulation(CoreSimulation):
         """Build simulation from a situation dictionary.
 
         Args:
-            situation: Dictionary describing household composition and characteristics
+            situation: Dictionary describing household composition and
+                characteristics. An optional ``firms`` entry, mapping each
+                firm's name to its inputs (``{variable: {period: value}}`` or
+                ``{variable: value}`` for the default period), gives the
+                simulation firms; without it the simulation has none. A
+                situation of firms alone has no people.
         """
         self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
@@ -1218,15 +1458,67 @@ class Simulation(CoreSimulation):
             SimulationBuilder,
         )  # Import here to avoid circular dependency
 
+        # A copy: the caller's situation also builds a reform's baseline.
+        situation = dict(situation)
+        firms = situation.pop("firms", None)
+        variables = self.tax_benefit_system.variables
+        root_inputs = sorted(
+            name
+            for name in situation
+            if name in variables
+            and variables[name].entity.key in _root_population_keys(self)
+        )
+        if root_inputs:
+            raise ValueError(
+                "A situation gives firms through its 'firms' entry, "
+                "{name: {variable: value}}, not as variables of its own: "
+                f"{', '.join(root_inputs)}."
+            )
         builder = SimulationBuilder()
         builder.default_period = self.default_input_period
-        builder.build_from_dict(self.tax_benefit_system, situation, self)
+        if firms is not None and not situation:
+            # Firms alone: no people, benefit units or households.
+            builder.build_default_simulation(self.tax_benefit_system, 0, self)
+            self.input_variables = []
+        else:
+            builder.build_from_dict(self.tax_benefit_system, situation, self)
         self.has_axes = builder.has_axes
+        # Core's builder knows only people and their groups, and its
+        # variable-only route gives every population, the firm's included,
+        # one record per person. A situation's firms come from its ``firms``
+        # entry alone.
+        self._build_firms_from_situation(firms or {})
         self._capture_cgt_supplied_inputs()
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period
         )
+
+    def _build_firms_from_situation(self, firms: Dict) -> None:
+        """Give the firm population the firms of a situation's ``firms``
+        entry, and their inputs."""
+        from policyengine_core.simulations.simulation_builder import (
+            SimulationBuilder,
+        )
+
+        population = self.populations["firm"]
+        population.count = 0
+        population.ids = []
+        for holder in population._holders.values():
+            holder.delete_arrays()
+        population._holders = {}
+        if not firms:
+            return
+        builder = SimulationBuilder()
+        builder.default_period = self.default_input_period
+        builder.add_person_entity(population.entity, firms)
+        builder.finalize_variables_init(population)
+        known = set(self.input_variables or ())
+        self.input_variables = list(self.input_variables or ()) + [
+            name
+            for name, holder in population._holders.items()
+            if name not in known and holder.get_known_periods()
+        ]
 
     def build_from_dataset_source(
         self, dataset_source: Union[str, os.PathLike]
@@ -1477,7 +1769,9 @@ class Simulation(CoreSimulation):
                     "benunit_id",
                     "household_id",
                 ],
-            )
+            ),
+            # Firms, if the dataset has any, in the order it gives them.
+            firm_id=_core_dataset_firm_ids(data, self.tax_benefit_system),
         )
 
         self._isa_income_contracts = resolve_contracts(
@@ -1559,12 +1853,28 @@ class Simulation(CoreSimulation):
             _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         # Use first year to establish entity structure
         first_year = dataset[dataset.years[0]]
+        first_firm_table = _with_firm_ids(first_year.firm)
+        if first_firm_table is None:
+            later = [
+                year for year in dataset.years[1:] if dataset[year].firm is not None
+            ]
+            if later:
+                raise ValueError(
+                    f"The dataset gives a firm table for {later[0]} but not for "
+                    f"its first year, {dataset.years[0]}: the first year's "
+                    "firm table sets the simulation's firms."
+                )
         self.build_from_ids(
             first_year.person.person_id,
             first_year.person.person_benunit_id,
             first_year.person.person_household_id,
             first_year.benunit.benunit_id,
             first_year.household.household_id,
+            firm_id=(
+                None
+                if first_firm_table is None
+                else first_firm_table[FIRM_ID_VARIABLE].to_numpy()
+            ),
         )
         self._isa_income_contracts = {
             year: copy.deepcopy(dataset[year].isa_income_contract)
@@ -1583,6 +1893,14 @@ class Simulation(CoreSimulation):
                     if variable not in self.tax_benefit_system.variables:
                         continue
                     self.set_input(variable, year, table[variable])
+            firm_table = _firm_table_in_population_order(
+                dataset[year].firm, self.populations["firm"].ids
+            )
+            if firm_table is not None:
+                for variable in firm_table.columns:
+                    if variable not in self.tax_benefit_system.variables:
+                        continue
+                    self.set_input(variable, year, firm_table[variable].to_numpy())
 
         # Retain the dataset actually loaded, including the copied base amounts
         # and price declaration when economic assumptions were disabled.
@@ -1628,6 +1946,7 @@ class Simulation(CoreSimulation):
         person_household_id: np.ndarray,
         benunit_id: np.ndarray,
         household_id: np.ndarray,
+        firm_id: Optional[np.ndarray] = None,
     ) -> None:
         """Build simulation entities from ID arrays.
 
@@ -1637,6 +1956,8 @@ class Simulation(CoreSimulation):
             person_household_id: Array mapping persons to households
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
+            firm_id: Optional array of firm IDs. Firms have no members and
+                keep the order given. Without it the simulation has no firms.
 
         Warns:
             EntityIdWarning: If an ID is not a whole number, or is outside the
@@ -1663,6 +1984,10 @@ class Simulation(CoreSimulation):
             ),
         ):
             check_entity_ids(self.tax_benefit_system.variables[variable_name], ids)
+        if firm_id is not None:
+            check_entity_ids(
+                self.tax_benefit_system.variables[FIRM_ID_VARIABLE], firm_id
+            )
 
         builder = SimulationBuilder()
         builder.populations = self.tax_benefit_system.instantiate_entities()
@@ -1671,6 +1996,8 @@ class Simulation(CoreSimulation):
         builder.declare_person_entity("person", person_id)
         builder.declare_entity("benunit", np.unique(benunit_id))
         builder.declare_entity("household", np.unique(household_id))
+        if firm_id is not None:
+            builder.declare_entity("firm", np.asarray(firm_id))
 
         # Link persons to benefit units and households
         builder.join_with_persons(
@@ -1746,6 +2073,11 @@ class Simulation(CoreSimulation):
         Returns:
             This simulation, subsampled.
         """
+        if self.populations["firm"].count > 0:
+            raise NotImplementedError(
+                "Cannot subsample a simulation with firms: the subsample draws "
+                "households, and firms are not members of households."
+            )
         return subsample_simulation(
             self,
             n=n,
@@ -1783,7 +2115,8 @@ class Simulation(CoreSimulation):
                 holder.delete_arrays(known_period)
 
     def calculate_all(self, year: int) -> None:
-        person, benunit, household = (
+        person, benunit, household, firm = (
+            pd.DataFrame(),
             pd.DataFrame(),
             pd.DataFrame(),
             pd.DataFrame(),
@@ -1798,15 +2131,20 @@ class Simulation(CoreSimulation):
                 benunit[variable.name] = result
             elif entity == "household":
                 household[variable.name] = result
+            elif entity == "firm":
+                firm[variable.name] = result
 
         person = MicroDataFrame(person, weights="person_weight")
         benunit = MicroDataFrame(benunit, weights="benunit_weight")
         household = MicroDataFrame(household, weights="household_weight")
+        has_firms = self.populations["firm"].count > 0
+        firm = MicroDataFrame(firm, weights="firm_weight") if has_firms else None
 
         return UKSingleYearDataset(
             person=person,
             benunit=benunit,
             household=household,
+            firm=firm,
             fiscal_year=year,
             savings_income_projection=getattr(self, "_savings_income_projection", None),
         )

@@ -1,0 +1,27 @@
+description: First-year allowance rate for companies on new and unused main-rate plant and machinery, as a share of the expenditure. It is the super-deduction of 130% for expenditure from 1 April 2021 to 31 March 2023 and full expensing of 100% from 1 April 2023.
+values:
+  2012-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Finance Act 2021 s 9 (no general first-year allowance for main-rate plant before the super-deduction)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/9
+  2021-04-01:
+    value: 1.3
+    metadata:
+      reference:
+        - title: Finance Act 2021 s 9(2) (super-deduction of 130% on expenditure incurred from 1 April 2021 to 31 March 2023 by a company)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/9
+  2023-04-01:
+    value: 1
+    metadata:
+      reference:
+        - title: Capital Allowances Act 2001 s 45S and s 52(3) Table (100% for expenditure qualifying under section 45S that is not special rate expenditure)
+          href: https://www.legislation.gov.uk/ukpga/2001/2/section/52
+metadata:
+  unit: /1
+  period: year
+  label: Full expensing rate
+  reference:
+    - title: Capital Allowances Act 2001 s 45S (company, unused and not second-hand, incurred on or after 1 April 2023)
+      href: https://www.legislation.gov.uk/ukpga/2001/2/section/45S

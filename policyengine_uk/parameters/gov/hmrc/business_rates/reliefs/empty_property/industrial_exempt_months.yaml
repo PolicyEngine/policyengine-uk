@@ -1,0 +1,12 @@
+description: Unoccupied qualifying industrial property in England pays no rates for this many months of continuous vacancy.
+values:
+  2008-04-01: 6
+metadata:
+  label: Empty industrial property rates exemption period
+  unit: month
+  period: year
+  reference:
+    - title: The Non-Domestic Rating (Unoccupied Property) (England) Regulations 2008 reg 4(b)
+      href: https://www.legislation.gov.uk/uksi/2008/386/regulation/4
+    - title: The Non-Domestic Rating (Unoccupied Property) (England) Regulations 2008 reg 1 (in force 1 April 2008)
+      href: https://www.legislation.gov.uk/uksi/2008/386/regulation/1/made

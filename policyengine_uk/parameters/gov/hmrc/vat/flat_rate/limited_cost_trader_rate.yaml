@@ -1,0 +1,12 @@
+description: Flat rate percentage applied to VAT-inclusive turnover for limited cost traders in the VAT flat rate scheme, whatever their sector.
+values:
+  2017-04-01: 0.165
+metadata:
+  unit: /1
+  period: year
+  label: VAT flat rate for limited cost traders
+  reference:
+    - title: The Value Added Tax (Amendment) Regulations 2017 (SI 2017/295), regulation 7 inserting regulation 55KA
+      href: https://www.legislation.gov.uk/uksi/2017/295/made
+    - title: VAT Notice 733, section 4.4
+      href: https://www.gov.uk/guidance/flat-rate-scheme-for-small-businesses-vat-notice-733--2

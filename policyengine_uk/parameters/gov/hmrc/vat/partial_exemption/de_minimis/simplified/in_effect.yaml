@@ -1,0 +1,10 @@
+description: Whether the VAT partial exemption simplified de minimis test applies. It was added from 1 April 2010.
+values:
+  0000-01-01: false
+  2010-04-01: true
+metadata:
+  label: VAT partial exemption simplified de minimis test in effect
+  unit: bool
+  reference:
+    - title: The Value Added Tax (Amendment) Regulations 2010 (SI 2010/559)
+      href: https://www.legislation.gov.uk/uksi/2010/559/made

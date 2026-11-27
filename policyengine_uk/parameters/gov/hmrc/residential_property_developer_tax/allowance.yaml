@@ -1,0 +1,10 @@
+description: Annual residential property developer tax allowance, shared within a group, deducted from RPD profits before the tax is charged.
+values:
+  2022-04-01: 25_000_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Residential property developer tax allowance
+  reference:
+    - title: Finance Act 2022 s.33 and s.43
+      href: https://www.legislation.gov.uk/ukpga/2022/3/section/43

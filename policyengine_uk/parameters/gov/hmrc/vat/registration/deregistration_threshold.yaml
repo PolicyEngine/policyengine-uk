@@ -1,0 +1,20 @@
+description: A VAT-registered business may cancel its registration when the value of its taxable supplies (excluding VAT) in the next 12 months is expected to be no more than this threshold.
+values:
+  2010-04-01: 68_000
+  2011-04-01: 71_000
+  2012-04-01: 75_000
+  2013-04-01: 77_000
+  2014-04-01: 79_000
+  2015-04-01: 80_000
+  2016-04-01: 81_000
+  2017-04-01: 83_000
+  2024-04-01: 88_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT deregistration threshold
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 1, paragraph 4
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/1/paragraph/4
+    - title: VAT Notice 700/1 supplement, section 5.2 (deregistration limits)
+      href: https://www.gov.uk/government/publications/vat-notice-7001-should-i-be-registered-for-vat/vat-notice-7001-supplement--2

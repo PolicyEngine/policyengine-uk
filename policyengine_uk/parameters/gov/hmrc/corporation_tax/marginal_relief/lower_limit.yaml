@@ -1,0 +1,10 @@
+description: Lower limit of augmented profits for corporation tax, at or below which the small profits rate applies. It is divided by one plus the number of associated companies.
+values:
+  2023-04-01: 50_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Corporation tax lower limit
+  reference:
+    - title: Corporation Tax Act 2010 s. 18D(2)(a) and (3)(a)
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/18D

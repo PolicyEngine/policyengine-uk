@@ -1,0 +1,188 @@
+description: Non-domestic district rate in Northern Ireland, in pounds per pound of net annual value, set by each district council for the rate year beginning 1 April. Years before 2023-24 are not modelled, and 2026-27 values carry forward until later rates are added.
+UNKNOWN:
+  values:
+    2023-04-01: 0
+  metadata:
+    label: Northern Ireland non-domestic district rate, unknown district
+    unit: currency-GBP
+ANTRIM_AND_NEWTOWNABBEY:
+  values:
+    2023-04-01: 0.262079
+    2024-04-01: 0.275128
+    2025-04-01: 0.288790
+    2026-04-01: 0.297391
+  metadata:
+    label: Northern Ireland non-domestic district rate, Antrim and Newtownabbey
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+ARDS_AND_NORTH_DOWN:
+  values:
+    2023-04-01: 0.262740
+    2024-04-01: 0.278467
+    2025-04-01: 0.288537
+    2026-04-01: 0.301556
+  metadata:
+    label: Northern Ireland non-domestic district rate, Ards and North Down
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+ARMAGH_CITY_BANBRIDGE_AND_CRAIGAVON:
+  values:
+    2023-04-01: 0.284645
+    2024-04-01: 0.299353
+    2025-04-01: 0.311069
+    2026-04-01: 0.319765
+  metadata:
+    label: Northern Ireland non-domestic district rate, Armagh City, Banbridge and Craigavon
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+BELFAST:
+  values:
+    2023-04-01: 0.293221
+    2024-04-01: 0.309162
+    2025-04-01: 0.327692
+    2026-04-01: 0.342388
+  metadata:
+    label: Northern Ireland non-domestic district rate, Belfast
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+CAUSEWAY_COAST_AND_GLENS:
+  values:
+    2023-04-01: 0.276325
+    2024-04-01: 0.295282
+    2025-04-01: 0.306049
+    2026-04-01: 0.316287
+  metadata:
+    label: Northern Ireland non-domestic district rate, Causeway Coast and Glens
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+DERRY_CITY_AND_STRABANE:
+  values:
+    2023-04-01: 0.354362
+    2024-04-01: 0.377408
+    2025-04-01: 0.395993
+    2026-04-01: 0.413735
+  metadata:
+    label: Northern Ireland non-domestic district rate, Derry City and Strabane
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+FERMANAGH_AND_OMAGH:
+  values:
+    2023-04-01: 0.244180
+    2024-04-01: 0.255700
+    2025-04-01: 0.265309
+    2026-04-01: 0.270502
+  metadata:
+    label: Northern Ireland non-domestic district rate, Fermanagh and Omagh
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+LISBURN_AND_CASTLEREAGH:
+  values:
+    2023-04-01: 0.247146
+    2024-04-01: 0.256984
+    2025-04-01: 0.267250
+    2026-04-01: 0.278596
+  metadata:
+    label: Northern Ireland non-domestic district rate, Lisburn and Castlereagh
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+MID_AND_EAST_ANTRIM:
+  values:
+    2023-04-01: 0.341696
+    2024-04-01: 0.382215
+    2025-04-01: 0.397448
+    2026-04-01: 0.409175
+  metadata:
+    label: Northern Ireland non-domestic district rate, Mid and East Antrim
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+MID_ULSTER:
+  values:
+    2023-04-01: 0.254449
+    2024-04-01: 0.269452
+    2025-04-01: 0.283324
+    2026-04-01: 0.292958
+  metadata:
+    label: Northern Ireland non-domestic district rate, Mid Ulster
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+NEWRY_MOURNE_AND_DOWN:
+  values:
+    2023-04-01: 0.272846
+    2024-04-01: 0.290334
+    2025-04-01: 0.301884
+    2026-04-01: 0.310337
+  metadata:
+    label: Northern Ireland non-domestic district rate, Newry, Mourne and Down
+    unit: currency-GBP
+    reference:
+      - title: Department for Communities Circular LG 09/2023, district rates 2023-24, Table 4
+        href: https://www.communities-ni.gov.uk/sites/default/files/publications/communities/lg-09-2023.pdf
+      - title: Department of Finance, rate poundages 2024-25 to 2026-27
+        href: https://www.finance-ni.gov.uk/articles/rate-poundages
+      - title: Department for Communities, district rates 2026-27
+        href: https://www.communities-ni.gov.uk/sites/default/files/2026-02/district-rates-2026-2027.pdf
+metadata:
+  label: Northern Ireland non-domestic district rate
+  reference:
+    - title: Rates (Northern Ireland) Order 1977 Article 6
+      href: https://www.legislation.gov.uk/nisi/1977/2157/article/6

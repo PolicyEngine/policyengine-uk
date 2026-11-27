@@ -1,0 +1,62 @@
+# Energy profits levy on 1,000,000 of levy profits. The rate is day-weighted
+# over 6 April to 5 April: 25% from 26 May 2022, 35% from 1 January 2023, 38%
+# from 1 November 2024, 0 from 1 April 2030.
+- name: Before the levy, 2021-22.
+  period: 2021
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    energy_profits_levy: [0]
+
+- name: 2022-23, part year at 25% and 35%.
+  period: 2022
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    # 50 days at 0, 220 at 25%, 95 at 35%: (220 x 0.25 + 95 x 0.35) / 365.
+    energy_profits_levy: [241_781]
+
+- name: 2023-24 at 35%.
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    energy_profits_levy: [350_000]
+
+- name: 2024-25, 35% then 38% from 1 November 2024.
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    # (209 x 0.35 + 156 x 0.38) / 365.
+    energy_profits_levy: [362_822]
+
+- name: 2025-26 at 38%, companies only, no levy on a loss.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_legal_form: [COMPANY, COMPANY, SOLE_TRADER]
+    firm_epl_profits: [1_000_000, -1_000_000, 1_000_000]
+  output:
+    energy_profits_levy: [380_000, 0, 0]
+    firm_only_tax: [380_000, 0, 0]
+
+- name: 2029-30, the last year, with 5 days of the next label at 0.
+  period: 2029
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    energy_profits_levy: [374_795]
+
+- name: From 2030-31 the levy has ended.
+  period: 2030
+  absolute_error_margin: 1
+  input:
+    firm_epl_profits: [1_000_000]
+  output:
+    energy_profits_levy: [0]

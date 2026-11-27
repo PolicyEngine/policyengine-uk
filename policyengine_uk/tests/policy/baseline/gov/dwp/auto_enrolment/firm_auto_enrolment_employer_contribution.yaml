@@ -1,0 +1,101 @@
+# 2025-26 band 6,240 to 50,270 (width 44,030); employer minimum 3%.
+- name: Case 1, average-pay qualifying earnings and the 3% employer minimum.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 40_000, 0, 1_000_000]
+    firm_employees: [10, 10, 0, 10]
+  output:
+    # Average pay 30,000: (30,000 - 6,240) x 10 = 237,600.
+    # Average 4,000 is below the lower limit: 0. No employees: 0.
+    # Average 100,000 is capped at the band width: 44,030 x 10 = 440,300.
+    firm_auto_enrolment_qualifying_earnings: [237_600, 0, 0, 440_300]
+    # 3% of each.
+    firm_auto_enrolment_employer_contribution: [7_128, 0, 0, 13_209]
+
+- name: Case 2, 2019-20 band of 6,136 to 50,000.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+  output:
+    # (30,000 - 6,136) x 10 = 238,640; x 3% = 7,159.2.
+    firm_auto_enrolment_qualifying_earnings: [238_640]
+    firm_auto_enrolment_employer_contribution: [7_159.2]
+
+- name: Case 3, supplied qualifying earnings override the default.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    firm_auto_enrolment_employer_contribution: [3_000]
+
+- name: Case 4, transitional employer minimums of 1% and 2%.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    # 2017-18 is in the first transitional period: 1%.
+    firm_auto_enrolment_employer_contribution: [1_000]
+
+- name: Case 5, second transitional period.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    firm_auto_enrolment_qualifying_earnings: [100_000]
+  output:
+    # 2018-19: 2%.
+    firm_auto_enrolment_employer_contribution: [2_000]
+
+# 2025-26: trigger 10,000; band 6,240 to 50,270 (width 44,030); 3%.
+- name: Case 6, staff below the earnings trigger and above the upper limit leave the average.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 300_000, 100_000, 300_000]
+    firm_employees: [10, 10, 10, 3]
+    firm_employees_below_auto_enrolment_earnings_trigger: [2, 0, 4, 0]
+    firm_paybill_below_auto_enrolment_earnings_trigger: [16_000, 0, 20_000, 0]
+    firm_employees_above_auto_enrolment_upper_limit: [1, 0, 0, 3]
+    firm_paybill_above_auto_enrolment_upper_limit: [100_000, 0, 0, 300_000]
+  output:
+    # Firm 1: 2 staff paid 8,000 are not enrolled; 1 paid 100,000 gives the
+    # band width 44,030. The other 7 share 300,000 - 16,000 - 100,000 =
+    # 184,000: 184,000 - 7 x 6,240 = 140,320. Total 140,320 + 44,030 = 184,350.
+    # Firm 2: no split supplied, the plain average: (30,000 - 6,240) x 10 = 237,600.
+    # Firm 3: 4 staff paid 5,000 are not enrolled. The other 6 share 80,000:
+    # 80,000 - 6 x 6,240 = 42,560 (the plain average gives 37,600).
+    # Firm 4: all 3 above the upper limit: 3 x 44,030 = 132,090.
+    firm_auto_enrolment_qualifying_earnings: [184_350, 237_600, 42_560, 132_090]
+    # 3% of each.
+    firm_auto_enrolment_employer_contribution: [5_530.5, 7_128, 1_276.8, 3_962.7]
+
+# 2025-26: band 6,240 to 50,270 (width 44,030).
+- name: Case 7, inconsistent pay-distribution inputs are clipped.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [300_000, 300_000, 300_000, 300_000]
+    firm_employees: [10, 10, 10, 10]
+    firm_employees_below_auto_enrolment_earnings_trigger: [12, -2, 0, 2]
+    firm_paybill_below_auto_enrolment_earnings_trigger: [400_000, -16_000, 0, 16_000]
+    firm_employees_above_auto_enrolment_upper_limit: [5, -1, 2, 10]
+    firm_paybill_above_auto_enrolment_upper_limit: [50_000, -100_000, 60_000, 290_000]
+  output:
+    # Firm 1: below-trigger headcount 12 capped at 10 and paybill 400,000 at
+    # 300,000; above-upper headcount capped at 10 - 10 = 0 and paybill at
+    # 300,000 - 300,000 = 0. Nobody is left: 0.
+    # Firm 2: negative inputs floored at 0, the plain average:
+    # (30,000 - 6,240) x 10 = 237,600.
+    # Firm 3: 2 above the upper limit with 60,000 < 2 x 50,270 = 100,540 is
+    # inconsistent, so they rejoin the rest: (30,000 - 6,240) x 10 = 237,600.
+    # Firm 4: 2 below the trigger with 16,000. Above-upper headcount capped at
+    # 10 - 2 = 8 and paybill at 300,000 - 16,000 = 284,000 < 8 x 50,270 =
+    # 402,160, so the 8 rejoin the rest: 8 share 284,000, average 35,500;
+    # (35,500 - 6,240) x 8 = 234,080.
+    firm_auto_enrolment_qualifying_earnings: [0, 237_600, 237_600, 234_080]

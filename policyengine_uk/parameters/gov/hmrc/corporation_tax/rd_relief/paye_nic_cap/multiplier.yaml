@@ -1,0 +1,25 @@
+description: Multiple of a company's relevant PAYE and NIC liabilities added to the fixed amount in the cap on the payable SME R&D tax credit (from accounting periods beginning on or after 1 April 2021) and on the payable merged R&D expenditure credit (from 1 April 2024).
+values:
+  2021-04-01:
+    value: 3
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1058(1A)(b) as at 1 April 2022 (inserted by Finance Act 2021 Sch 3 para 2(3))
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058/2022-04-01
+        - title: Finance Act 2021 Sch 3 para 4 (accounting periods beginning on or after 1 April 2021)
+          href: https://www.legislation.gov.uk/ukpga/2021/26/schedule/3/paragraph/4
+  2024-04-01:
+    value: 3
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1112B(2)(b)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1112B
+metadata:
+  unit: /1
+  period: year
+  label: R&D expenditure credit PAYE and NIC cap multiplier
+  reference:
+    - title: Corporation Tax Act 2009 s 1112B
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1112B
+    - title: Corporation Tax Act 2009 s 1058(1)(aa)
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058

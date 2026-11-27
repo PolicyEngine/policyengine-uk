@@ -1,0 +1,16 @@
+description: Whether a company whose only employee paid earnings liable to secondary Class 1 contributions is a director is excluded from the Employment Allowance.
+values:
+  0000-01-01: false
+  2016-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2014 s.2(4A), inserted by SI 2016/344 reg 2
+          href: https://www.legislation.gov.uk/ukpga/2014/7/section/2/2016-04-06
+metadata:
+  unit: bool
+  period: year
+  label: Employment Allowance single-director company exclusion
+  reference:
+    - title: National Insurance Contributions Act 2014 s.2(4A)
+      href: https://www.legislation.gov.uk/ukpga/2014/7/section/2

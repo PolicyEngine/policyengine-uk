@@ -1,0 +1,149 @@
+# Firm tax as the sum of its programs, for two companies run through every
+# firm-side program at once. Variable-only inputs: each array position is one
+# firm (YAML firm tests never use a `firms:` block, which the runner ignores).
+#
+# Period 2026 is the 2026-27 fiscal year. Its values: employer Class 1 rate 15% above a secondary threshold of £96.153846 a week
+# (x 52 = 4,999.999992 a year, about 5,000 per employee); Employment
+# Allowance 10,500; apprenticeship levy 0.5% less a 15,000 allowance;
+# corporation tax 25% main, 19% small profits, marginal relief fraction 3/200
+# between 50,000 and 250,000; full expensing 100%; RDEC 20%; business rates
+# multipliers for England of 43.2p (small, rateable value under 51,000),
+# 48p (standard) and 50.8p (high value, 500,000 or more); small business rate
+# relief tapering from 12,000 to 15,000; VAT 20% standard rate.
+
+- name: Case 1, mid-size and small company across every firm program.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_employees: [80, 3]
+    firm_paybill: [4_000_000, 90_000]
+    firm_taxable_trading_profit: [1_500_000, 120_000]
+    firm_capex_main_pool_new: [400_000, 0]
+    firm_qualifying_rd_expenditure: [200_000, 0]
+    firm_rateable_value: [200_000, 13_500]
+    firm_standard_rated_supplies: [8_000_000, 300_000]
+    firm_zero_rated_supplies: [500_000, 0]
+    firm_exempt_supplies: [0, 100_000]
+    firm_input_vat: [900_000, 20_000]
+  output:
+    # Employer NI.
+    # Mid-size: (4,000,000 - 80 x 5,000) x 15% = 3,600,000 x 15% = 540,000.
+    # Small: (90,000 - 3 x 5,000) x 15% = 75,000 x 15% = 11,250.
+    firm_employer_ni_before_allowance: [540_000, 11_250]
+    # Employment Allowance: min(10,500, liability) for both.
+    employment_allowance: [10_500, 10_500]
+    # 540,000 - 10,500 = 529,500; 11,250 - 10,500 = 750.
+    firm_employer_ni: [529_500, 750]
+    # Apprenticeship levy: 0.5% x 4,000,000 - 15,000 = 5,000;
+    # 0.5% x 90,000 = 450 < 15,000, so 0.
+    apprenticeship_levy: [5_000, 0]
+    # Corporation tax. The mid-size company is not an SME, so it claims RDEC:
+    # 20% x 200,000 = 40,000, which is taxable and then set against the tax.
+    firm_rd_expenditure_credit: [40_000, 0]
+    # Full expensing deducts all 400,000 of new main-pool plant.
+    firm_capital_allowances: [400_000, 0]
+    # 1,500,000 + 40,000 - 400,000 = 1,140,000; 120,000.
+    firm_taxable_profit: [1_140_000, 120_000]
+    # Mid-size: above the upper limit, 25% x 1,140,000 = 285,000.
+    # Small: 25% x 120,000 = 30,000 less marginal relief
+    # 3/200 x (250,000 - 120,000) = 1,950, so 28,050.
+    firm_marginal_relief: [0, 1_950]
+    corporation_tax_before_credits: [285_000, 28_050]
+    # 285,000 - 40,000 RDEC = 245,000.
+    corporation_tax: [245_000, 28_050]
+    bank_surcharge: [0, 0]
+    # Business rates. Mid-size: 200,000 x 48p = 96,000, no relief.
+    # Small: 13,500 x 43.2p = 5,832, less small business rate relief of
+    # (15,000 - 13,500) / (15,000 - 12,000) = 50%, so 2,916.
+    firm_gross_business_rates: [96_000, 5_832]
+    firm_small_business_rate_relief: [0, 2_916]
+    firm_business_rates: [96_000, 2_916]
+    # VAT. Mid-size: output 20% x 8,000,000 = 1,600,000 (zero-rated supplies
+    # bear none) less input VAT 900,000, fully recoverable: 700,000.
+    # Small: output 20% x 300,000 = 60,000 less 20,000 x 300/(300+100)
+    # = 15,000 recoverable under partial exemption: 45,000.
+    firm_output_vat: [1_600_000, 60_000]
+    firm_recoverable_input_vat: [900_000, 15_000]
+    firm_vat: [700_000, 45_000]
+    # Sum of the parts.
+    # Mid-size: 245,000 + 0 + 5,000 + 529,500 + 96,000 + 700,000 = 1,575,500.
+    # Small: 28,050 + 0 + 0 + 750 + 2,916 + 45,000 = 76,716.
+    firm_tax: [1_575_500, 76_716]
+    # Firm-only rules: corporation tax, bank surcharge, apprenticeship levy and
+    # business rates (the Employment Allowance moves with employer NI and is
+    # left out).
+    # Mid-size: 245,000 + 0 + 5,000 + 96,000 = 346,000.
+    # Small: 28,050 + 0 + 0 + 2,916 = 30,966.
+    firm_only_tax: [346_000, 30_966]
+
+- name: Case 2, bank with losses brought forward and the bank surcharge.
+  period: 2026
+  # Values are float32: at tens of millions one step is 4, so allow it.
+  absolute_error_margin: 4
+  input:
+    firm_is_bank: [true]
+    firm_employees: [1_000]
+    firm_paybill: [100_000_000]
+    firm_taxable_trading_profit: [160_000_000]
+    firm_losses_brought_forward: [10_000_000]
+    firm_rateable_value: [2_000_000]
+  output:
+    # Employer NI: (100,000,000 - 1,000 x 5,000) x 15% = 14,250,000, less the
+    # 10,500 Employment Allowance = 14,239,500.
+    firm_employer_ni: [14_239_500]
+    # Apprenticeship levy: 0.5% x 100,000,000 - 15,000 = 485,000.
+    apprenticeship_levy: [485_000]
+    # Losses: at most the 5,000,000 deductions allowance plus 50% of profits
+    # above it, 5,000,000 + 50% x 155,000,000 = 82,500,000; the 10,000,000
+    # brought forward is under that, so all of it is used.
+    firm_losses_used: [10_000_000]
+    # 160,000,000 - 10,000,000 = 150,000,000 at 25% = 37,500,000.
+    firm_taxable_profit: [150_000_000]
+    corporation_tax: [37_500_000]
+    # Bank surcharge rate for 2026-27, day-weighted from 6 April 2026: 270
+    # days at 3% and 95 days at 6% from 1 January 2027, (270 x 3% + 95 x 6%)
+    # / 365 = 13.8 / 365. Times (150,000,000 - 100,000,000 allowance)
+    # = 1,890,410.96.
+    bank_surcharge: [1_890_410.96]
+    # Business rates: 2,000,000 x 50.8p high-value multiplier = 1,016,000.
+    firm_business_rates: [1_016_000]
+    # firm_tax: 37,500,000 + 1,890,410.96 + 485,000 + 14,239,500 + 1,016,000
+    # + 0 VAT = 55,130,910.96.
+    firm_tax: [55_130_910.96]
+    # firm_only_tax: 37,500,000 + 1,890,410.96 + 485,000 + 1,016,000
+    # = 40,891,410.96.
+    firm_only_tax: [40_891_410.96]
+
+- name: Case 3, R&D tax credits paid out reduce firm tax.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Lab: an R&D-intensive loss-making SME (qualifying R&D 400,000 of
+    # 1,000,000 relevant expenditure, intensity 40%). Large company: R&D of
+    # 400,000 and no trading profit, so its RDEC exceeds its tax.
+    firm_is_sme: [true, false]
+    firm_qualifying_rd_expenditure: [400_000, 400_000]
+    firm_total_relevant_expenditure: [1_000_000, 4_000_000]
+    firm_taxable_trading_profit: [-200_000, 0]
+    firm_employees: [10, 0]
+    firm_paybill: [400_000, 0]
+  output:
+    # Lab (ERIS): additional deduction 86% x 400,000 = 344,000; loss
+    # 200,000 + 344,000 = 544,000, under the cap 400,000 + 344,000 = 744,000;
+    # payable credit 14.5% x 544,000 = 78,880.
+    firm_rd_additional_deduction: [344_000, 0]
+    firm_rd_payable_credit: [78_880, 0]
+    # Large company (RDEC): 20% x 400,000 = 80,000, taxable; 80,000 is in the
+    # marginal relief band: 25% x 80,000 - 3/200 x (250,000 - 80,000)
+    # = 17,450 before credits; the credit discharges it and 62,550 is paid.
+    firm_rd_expenditure_credit: [0, 80_000]
+    corporation_tax_before_credits: [0, 17_450]
+    corporation_tax: [0, 0]
+    firm_rdec_excess_payable: [0, 62_550]
+    # Lab employer NI: (400,000 - 10 x 5,000) x 15% = 52,500 less the 10,500
+    # Employment Allowance = 42,000.
+    firm_employer_ni: [42_000, 0]
+    # firm_tax: 42,000 - 78,880 = -36,880; 0 - 62,550 = -62,550.
+    firm_tax: [-36_880, -62_550]
+    # firm_only_tax leaves employer NI out: -78,880 and -62,550.
+    firm_only_tax: [-78_880, -62_550]

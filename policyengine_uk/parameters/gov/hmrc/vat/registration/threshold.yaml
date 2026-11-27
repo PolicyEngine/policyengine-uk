@@ -1,0 +1,22 @@
+description: A business must register for VAT when the value of its taxable supplies (standard-, reduced- and zero-rated, excluding VAT) over the previous 12 months exceeds this threshold.
+values:
+  2010-04-01: 70_000
+  2011-04-01: 73_000
+  2012-04-01: 77_000
+  2013-04-01: 79_000
+  2014-04-01: 81_000
+  2015-04-01: 82_000
+  2016-04-01: 83_000
+  2017-04-01: 85_000
+  2024-04-01: 90_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT registration threshold
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 1, paragraph 1(1)
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/1/paragraph/1
+    - title: The Value Added Tax (Increase of Registration Limits) Order 2024 (SI 2024/307)
+      href: https://www.legislation.gov.uk/uksi/2024/307/made
+    - title: VAT Notice 700/1 supplement, section 2.2 (registration thresholds)
+      href: https://www.gov.uk/government/publications/vat-notice-7001-should-i-be-registered-for-vat/vat-notice-7001-supplement--2

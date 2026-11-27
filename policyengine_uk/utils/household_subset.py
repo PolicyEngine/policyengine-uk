@@ -16,6 +16,7 @@ from contextlib import contextmanager
 from typing import Optional
 
 import numpy as np
+from policyengine_core.populations import GroupPopulation
 
 # Every formula that reads beyond its own households directly: a weighted
 # total, a weighted rank or median, records spread by weight over the
@@ -45,6 +46,7 @@ WHOLE_POPULATION_VARIABLES = frozenset(
         "employer_ni_response_capital_incidence",
         "employer_ni_response_consumer_incidence",
         "employment_income_behavioral_response",
+        "firm_tax_incidence",
         "household_income_decile",
         "household_income_decile_ahc",
         "household_wealth_decile",
@@ -161,6 +163,11 @@ def _positions(simulation, households):
     for key, population in simulation.populations.items():
         if key == "person":
             continue
+        if not isinstance(population, GroupPopulation):
+            # A root population (the firm's) has no members in households:
+            # keep it whole.
+            positions[key] = np.arange(population.count)
+            continue
         members = np.asarray(population.members_entity_id)
         kept = np.zeros(population.count, dtype=bool)
         kept[members[kept_people]] = True
@@ -222,7 +229,7 @@ def _restrict(branch, positions) -> bool:
             # The branch's arrays are its own copies now, not views of its
             # parent's (see InMemoryStorage.clone).
             storage.__dict__.pop("_shared", None)
-        if key != "person":
+        if isinstance(population, GroupPopulation):
             new_position = np.full(population.count, -1)
             new_position[kept] = np.arange(len(kept))
             population.members_entity_id = new_position[

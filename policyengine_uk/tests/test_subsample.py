@@ -346,11 +346,13 @@ def test_other_supplied_weights_keep_their_totals_over_their_own_entity():
 def test_every_weight_variable_is_listed():
     """A new sampling weight must be rescaled by a subsample, so it has to be
     listed. A variable that only ends in "weight" must be left out on purpose:
-    household_bus_fare_age_weight shares out bus fare spending by age."""
+    household_bus_fare_age_weight shares out bus fare spending by age, and
+    firm_weight weights firms, which a subsample of households does not draw
+    (a simulation with firms is not subsampled)."""
     named = {
         name for name in CountryTaxBenefitSystem().variables if name.endswith("weight")
     }
-    assert named == WEIGHT_VARIABLES | {"household_bus_fare_age_weight"}
+    assert named == WEIGHT_VARIABLES | {"household_bus_fare_age_weight", "firm_weight"}
 
 
 # Inputs.

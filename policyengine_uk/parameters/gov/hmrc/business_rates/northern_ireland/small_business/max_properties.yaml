@@ -1,0 +1,10 @@
+description: Northern Ireland small business rate relief is not given where the occupier has more than this many hereditaments.
+values:
+  2023-04-01: 3
+metadata:
+  unit: /1
+  period: year
+  label: Northern Ireland small business rate relief maximum hereditaments
+  reference:
+    - title: SR 2010/4 reg 3
+      href: https://www.legislation.gov.uk/nisr/2010/4

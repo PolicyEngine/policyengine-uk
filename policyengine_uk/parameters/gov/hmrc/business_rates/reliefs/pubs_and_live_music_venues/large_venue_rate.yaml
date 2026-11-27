@@ -1,0 +1,17 @@
+description: Business rates relief for live music venues (not pubs) in England with rateable value at or above the large venue threshold, as a share of the rates bill left after other reliefs.
+# BRIL 8/2026 Annex para 6(b) keeps 15% for live music venues with rateable
+# value of £1m or more in 2027-28 and 2028-29. Pubs get the main rate (35%)
+# whatever their rateable value. In 2026-27 the rate equals the main rate.
+values:
+  2023-04-01: 0
+  2026-04-01: 0.15
+  2029-04-01: 0
+metadata:
+  label: Pubs and live music venues relief rate for large live music venues
+  unit: /1
+  period: year
+  reference:
+    - title: GOV.UK, Pubs and live music venues relief (15% for 2026 to 2027)
+      href: https://www.gov.uk/apply-for-business-rate-relief/pubs-and-live-music-venues-relief
+    - title: Business Rates Information Letter 8/2026, Technical Annex para 6(b)
+      href: https://www.gov.uk/government/publications/82026-details-of-the-budget-package-and-the-multipliers-for-20272028/82026-details-of-the-budget-package-and-the-multipliers-for-20272028

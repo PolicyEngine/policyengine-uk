@@ -1,0 +1,10 @@
+description: Upper limit of augmented profits for corporation tax, above which the main rate applies without marginal relief. It is divided by one plus the number of associated companies.
+values:
+  2023-04-01: 250_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Corporation tax upper limit
+  reference:
+    - title: Corporation Tax Act 2010 s. 18D(2)(b) and (3)(b)
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/18D

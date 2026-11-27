@@ -1,0 +1,20 @@
+description: Relevant percentage of an employer's pay bill charged as apprenticeship levy, before the levy allowance.
+# The levy is charged for tax years beginning on or after 6 April 2017
+# (Finance Act 2016 s.120(2)), so the model states a zero before then.
+values:
+  0000-01-01: 0
+  2017-04-06:
+    value: 0.005
+    metadata:
+      reference:
+        - title: Finance Act 2016 s.99(6)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/99
+        - title: Finance Act 2016 s.120(2) (tax year means the 12 months beginning with 6 April 2017 or any subsequent year)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/120
+metadata:
+  unit: /1
+  period: year
+  label: Apprenticeship levy rate
+  reference:
+    - title: Finance Act 2016 s.99
+      href: https://www.legislation.gov.uk/ukpga/2016/24/section/99

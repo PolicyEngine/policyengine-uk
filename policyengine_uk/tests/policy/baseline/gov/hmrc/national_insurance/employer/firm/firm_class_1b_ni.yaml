@@ -1,0 +1,61 @@
+# Class 1B on PAYE settlement agreements (SSCBA 1992 s.10A): the secondary
+# percentage of chargeable earnings plus the tax paid, 14.53% in 2022-23.
+- name: 2025-26 at 15%.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_psa_chargeable_earnings: [60_000, 0, 1, 0, -5_000]
+    firm_psa_income_tax: [40_000, 40_000, 0, 0, -1]
+  output:
+    firm_class_1b_ni: [15_000, 6_000, 0.15, 0, 0]
+
+- name: 2024-25 at 13.8%.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_psa_chargeable_earnings: [60_000]
+    firm_psa_income_tax: [40_000]
+  output:
+    firm_class_1b_ni: [13_800]
+
+- name: 2022-23 at the fixed 14.53%.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_psa_chargeable_earnings: [60_000]
+    firm_psa_income_tax: [40_000]
+  output:
+    firm_class_1b_ni: [14_530]
+
+- name: 2023-24 back at the secondary percentage, 13.8%.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    firm_psa_chargeable_earnings: [60_000]
+    firm_psa_income_tax: [40_000]
+  output:
+    firm_class_1b_ni: [13_800]
+
+- name: 2021-22 at 13.8%.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    firm_psa_chargeable_earnings: [60_000]
+    firm_psa_income_tax: [40_000]
+  output:
+    firm_class_1b_ni: [13_800]
+
+- name: The Employment Allowance cannot be set against Class 1B, which is firm-only.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [30_000]
+    firm_employees: [2]
+    firm_psa_chargeable_earnings: [6_000]
+    firm_psa_income_tax: [4_000]
+  output:
+    employment_allowance: [3_000]
+    firm_employer_ni: [0]
+    firm_class_1b_ni: [1_500]
+    firm_tax: [1_500]
+    firm_only_tax: [1_500]

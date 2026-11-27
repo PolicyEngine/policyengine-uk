@@ -1,0 +1,10 @@
+description: Unoccupied non-domestic property in Northern Ireland with net annual value below this amount is not charged.
+values:
+  2023-04-01: 2_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Northern Ireland unoccupied property exemption threshold
+  reference:
+    - title: The Rates (Unoccupied Hereditaments) Regulations (Northern Ireland) 2011 (SR 2011/36)
+      href: https://www.legislation.gov.uk/nisr/2011/36

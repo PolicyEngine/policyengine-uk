@@ -1,0 +1,128 @@
+# Scotland non-domestic rates. Basic property rate 0.498 (2023-24 to 2025-26),
+# 0.481 (2026-27). Supplements above £51,000 up to £100,000 / above £100,000:
+# 0.013 / 0.026 (2023-24), 0.047 / 0.061 (2024-25), 0.056 / 0.07 (2025-26),
+# 0.054 / 0.067 (2026-27). SBBS single entry: 100% at RV £12,000 or less,
+# 100 - 75 x (1 - (15,000 - RV) / 3,000) % to £15,000,
+# 25 x (20,000 - RV) / 5,000 % to £20,000. Margin 0.01 for float32 storage.
+- name: Scotland poundage bands, 2026-27
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
+    firm_rateable_value: [51_000, 51_001, 100_000, 100_001, 1_000_000]
+  output:
+    # 51,000 x 0.481 = 24,531 (basic property rate).
+    # 51,001 x (0.481 + 0.054) = 51,001 x 0.535 = 27,285.535.
+    # 100,000 x 0.535 = 53,500.
+    # 100,001 x (0.481 + 0.067) = 100,001 x 0.548 = 54,800.548.
+    # 1,000,000 x 0.548 = 548,000.
+    firm_business_rates_multiplier: [0.481, 0.535, 0.535, 0.548, 0.548]
+    firm_business_rates: [24_531, 27_285.535, 53_500, 54_800.548, 548_000]
+
+- name: Scotland higher property rate, 2023-24
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [SCOTLAND, SCOTLAND]
+    firm_rateable_value: [80_000, 1_000_000]
+  output:
+    # 80,000 x (0.498 + 0.013) = 80,000 x 0.511 = 40,880.
+    # 1,000,000 x (0.498 + 0.026) = 524,000.
+    firm_business_rates: [40_880, 524_000]
+
+- name: Scotland higher property rate, 2024-25
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    firm_region: SCOTLAND
+    firm_rateable_value: 1_000_000
+  output:
+    # 1,000,000 x (0.498 + 0.061) = 559,000.
+    firm_business_rates: 559_000
+
+- name: Scotland higher property rate, 2025-26
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    firm_region: SCOTLAND
+    firm_rateable_value: 1_000_000
+  output:
+    # 1,000,000 x (0.498 + 0.07) = 568,000.
+    firm_business_rates: 568_000
+
+- name: Scotland SBBS at its boundaries, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
+    firm_rateable_value: [12_000, 12_001, 13_500, 15_000, 15_001, 17_500, 19_999, 20_000]
+  output:
+    # Gross = RV x 0.481.
+    # 12,000 -> 5,772; 100% -> rates 0.
+    # 12,001 -> 5,772.481; 100 - 75 x (1 - 2,999 / 3,000) = 99.975%
+    #   -> relief 5,771.037880, rates 1.443120.
+    # 13,500 -> 6,493.5; 100 - 75 x 0.5 = 62.5% -> relief 4,058.4375.
+    # 15,000 -> 7,215; 25% -> relief 1,803.75.
+    # 15,001 -> 7,215.481; 25 x 4,999 / 5,000 = 24.995%
+    #   -> relief 1,803.509476.
+    # 17,500 -> 8,417.5; 12.5% -> relief 1,052.1875.
+    # 19,999 -> 9,619.519; 0.005% -> relief 0.480976.
+    # 20,000 -> 9,620; 0%.
+    firm_gross_business_rates: [5_772, 5_772.481, 6_493.5, 7_215, 7_215.481, 8_417.5, 9_619.519, 9_620]
+    firm_business_rates_reliefs: [5_772, 5_771.037880, 4_058.4375, 1_803.75, 1_803.509476, 1_052.1875, 0.480976, 0]
+    firm_business_rates: [0, 1.443120, 2_435.0625, 5_411.25, 5_411.971524, 7_365.3125, 9_619.038024, 9_620]
+
+- name: Scotland SBBS needs one occupied property
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [SCOTLAND, SCOTLAND, SCOTLAND]
+    firm_rateable_value: [10_000, 10_000, 10_000]
+    firm_n_properties: [1, 2, 1]
+    firm_property_occupied: [true, true, false]
+  output:
+    # 10,000 x 0.498 = 4,980. One occupied property: 100% relief.
+    # Two properties (multi-entry SBBS not modelled) or unoccupied: none.
+    firm_business_rates_reliefs: [4_980, 0, 0]
+    firm_business_rates: [0, 4_980, 4_980]
+
+# Mandatory charitable relief in Scotland: the rate may not exceed one fifth
+# (Local Government (Financial Provisions etc.) (Scotland) Act 1962 s.4(2)).
+# SBBS is reduced by any s.4(2) reduction, but only down to nil (levying
+# regulations reg 3(4), 2023 to 2026), so a charity gets the larger of the
+# two reliefs.
+- name: Scotland large charity gets 80% charitable relief
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: SCOTLAND
+    firm_rateable_value: 1_000_000
+    firm_is_charity: true
+  output:
+    # 1,000,000 x (0.481 + 0.067) = 548,000; relief 548,000 x 0.8 = 438,400;
+    # rates 109,600.
+    firm_charitable_rate_relief: 438_400
+    firm_business_rates_reliefs: 438_400
+    firm_business_rates: 109_600
+
+- name: Scotland small charity gets the larger of SBBS and charitable relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_region: [SCOTLAND, SCOTLAND, SCOTLAND, SCOTLAND]
+    firm_rateable_value: [10_000, 12_001, 13_500, 10_000]
+    firm_n_properties: [1, 1, 1, 2]
+    firm_is_charity: [true, true, true, true]
+  output:
+    # Gross = RV x 0.481.
+    # 10,000 -> 4,810. SBBS 100% (4,810) exceeds charity 3,848, so relief
+    #   4,810 and rates 0.
+    # 12,001 -> 5,772.481. SBBS 99.975% = 5,771.037880 exceeds charity
+    #   4,617.9848; rates 1.443120.
+    # 13,500 -> 6,493.5. SBBS 62.5% = 4,058.4375 is below charity
+    #   6,493.5 x 0.8 = 5,194.8; relief 5,194.8, rates 1,298.7.
+    # 10,000 on two properties: multi-entry SBBS is not modelled, so charity
+    #   relief only, 3,848; rates 962.
+    firm_charitable_rate_relief: [3_848, 4_617.9848, 5_194.8, 3_848]
+    firm_business_rates_reliefs: [4_810, 5_771.037880, 5_194.8, 3_848]
+    firm_business_rates: [0, 1.443120, 1_298.7, 962]

@@ -1,0 +1,40 @@
+description: Annual earnings above which an employer must automatically enrol an eligible jobholder in a pension scheme.
+# The firm-level formulas do not read this value, because they do not observe
+# each employee's pay. The caller applies it by supplying the employees paid
+# below it and their pay (firm_employees_below_auto_enrolment_earnings_trigger
+# and firm_paybill_below_auto_enrolment_earnings_trigger), whom the formula
+# treats as not enrolled.
+# The first value is the trigger in force when employer duties began (from
+# 1 October 2012); it is applied to earlier years.
+values:
+  2012-06-15:
+    value: 8_105
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.3(1)(c), as substituted by SI 2012/1506 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/3/2012-06-15
+  2013-04-06:
+    value: 9_440
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.3(1)(c), as substituted by SI 2013/667 art 2
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/3/2013-04-06
+  2014-04-06:
+    value: 10_000
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.3(1)(c), as substituted by SI 2014/623 art 2(1)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/3
+  2026-04-06:
+    value: 10_000
+    metadata:
+      reference:
+        - title: "DWP: Review of the automatic enrolment earnings trigger and qualifying earnings band for 2026/27"
+          href: https://www.gov.uk/government/publications/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627/review-of-the-automatic-enrolment-earnings-trigger-and-qualifying-earnings-band-for-202627
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Automatic enrolment earnings trigger
+  reference:
+    - title: Pensions Act 2008 s.3(1)(c)
+      href: https://www.legislation.gov.uk/ukpga/2008/30/section/3

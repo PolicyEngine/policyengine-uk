@@ -1,0 +1,10 @@
+description: >-
+  Share of a change in firm-only tax liability that falls on workers through lower pay, allocated by each household's share of UK employment income.
+values:
+  2010-01-01: 0
+metadata:
+  label: Firm tax labour incidence
+  unit: /1
+  reference:
+    - title: PolicyEngine-UK employer NI employee incidence parameter
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/70014b3c12dea44773d0b06370416ed12e64f32e/policyengine_uk/parameters/gov/contrib/policyengine/employer_ni/employee_incidence.yaml

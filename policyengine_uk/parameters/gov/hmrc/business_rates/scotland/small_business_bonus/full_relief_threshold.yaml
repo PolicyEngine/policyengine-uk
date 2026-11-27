@@ -1,0 +1,14 @@
+description: Single-entry properties in Scotland with rateable value at or below this amount get 100% Small Business Bonus Scheme relief.
+values:
+  2023-04-01: 12_000
+metadata:
+  label: Scotland SBBS full relief threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: SSI 2023/30 reg 3(3) table (£12,000 or less, 100%)
+      href: https://www.legislation.gov.uk/ssi/2023/30/made
+    - title: SSI 2026/68 reg 3(3) table (£12,000 or less, 100%)
+      href: https://www.legislation.gov.uk/ssi/2026/68/made
+    - title: Scottish Government, Local government finance circular 7/2026, Table 3
+      href: https://www.gov.scot/publications/local-government-finance-circular-7-2026-non-domestic-rates-relief-guidance/pages/non-domestic-rates-relief-information-for-scottish-local-authorities/

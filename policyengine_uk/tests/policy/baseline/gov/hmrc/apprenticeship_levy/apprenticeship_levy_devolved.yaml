@@ -1,0 +1,22 @@
+# The apprenticeship levy (FA 2016 Part 6) is UK-wide: it applies the same way
+# whatever the firm's region. 2025-26: 0.5% of the pay bill less a 15,000
+# allowance, floored at zero.
+- name: Case 1, the levy is the same in each nation.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [5_000_000, 5_000_000, 5_000_000, 5_000_000]
+    firm_region: [LONDON, SCOTLAND, WALES, NORTHERN_IRELAND]
+  output:
+    # 0.005 x 5,000,000 = 25,000 - 15,000 = 10,000 for every firm.
+    apprenticeship_levy: [10_000, 10_000, 10_000, 10_000]
+
+- name: Case 2, a devolved firm below the break-even pay bill pays nothing.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [2_000_000, 2_000_000, 2_000_000]
+    firm_region: [SCOTLAND, WALES, NORTHERN_IRELAND]
+  output:
+    # 0.005 x 2,000,000 = 10,000 - 15,000 < 0 -> 0.
+    apprenticeship_levy: [0, 0, 0]

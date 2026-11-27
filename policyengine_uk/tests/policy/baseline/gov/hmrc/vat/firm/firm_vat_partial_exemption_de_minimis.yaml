@@ -1,0 +1,115 @@
+# Partial exemption de minimis (SI 1995/2518 regs 105A, 106) and direct
+# attribution (reg 101(2)). 2025-26: standard rate 20%, threshold 90,000.
+# The annual de minimis limit is 625 x 12 = 7,500.
+- name: De minimis original test at its 7,500 boundary.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [150_000, 150_000]
+    firm_exempt_supplies: [50_000, 50_000]
+    firm_input_vat: [30_000, 30_004]
+    firm_applies_partial_exemption_de_minimis: [true, true]
+  output:
+    # Share 75%. Exempt input tax 7,500 (passes, and is under half of
+    # 30,000) and 7,501 (fails). The second recovers 75% x 30,004 = 22,503.
+    firm_recoverable_input_vat: [30_000, 22_503]
+    # Output VAT 30,000.
+    firm_vat: [0, 7_497]
+
+- name: The same firms without the de minimis flag use the standard method.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [150_000, 150_000]
+    firm_exempt_supplies: [50_000, 50_000]
+    firm_input_vat: [30_000, 30_004]
+  output:
+    firm_recoverable_input_vat: [22_500, 22_503]
+
+- name: De minimis half-of-input-tax test and the simplified test's exempt supplies share.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    # Input VAT 10,000. Shares 50%, 49.5% rounded up to 50%, and 49%.
+    firm_standard_rated_supplies: [100_000, 99_000, 98_000]
+    firm_exempt_supplies: [100_000, 101_000, 102_000]
+    firm_input_vat: [10_000, 10_000, 10_000]
+    firm_applies_partial_exemption_de_minimis: [true, true, true]
+  output:
+    # Exempt input 5,000, 5,000 and 5,100: within 7,500, and the first two
+    # are exactly half of input tax, so pass. The third is over half, and
+    # its exempt supplies are over half of all supplies, so the simplified
+    # test fails too.
+    firm_recoverable_input_vat: [10_000, 10_000, 4_900]
+    # Output VAT 20,000, 19,800 and 19,600.
+    firm_vat: [10_000, 9_800, 14_700]
+
+- name: The simplified test passes where the original test fails.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [300_000]
+    firm_exempt_supplies: [200_000]
+    firm_input_vat: [6_000]
+    firm_input_vat_attributable_to_exempt_supplies: [6_000]
+    firm_applies_partial_exemption_de_minimis: [true]
+  output:
+    # All 6,000 is exempt input tax, more than half of input tax, so the
+    # original test fails. Input tax less taxable-attributable tax is 6,000,
+    # within 7,500, and exempt supplies are 40% of all supplies.
+    firm_recoverable_input_vat: [6_000]
+    firm_vat: [54_000]
+
+- name: The simplified test does not exist before April 2010.
+  period: 2009
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [300_000]
+    firm_exempt_supplies: [200_000]
+    firm_input_vat: [6_000]
+    firm_input_vat_attributable_to_exempt_supplies: [6_000]
+    firm_applies_partial_exemption_de_minimis: [true]
+  output:
+    # The original test fails (6,000 is all of input tax), so nothing is
+    # recovered.
+    firm_recoverable_input_vat: [0]
+
+- name: Direct attribution under the standard method, above the de minimis limits.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [600_000]
+    firm_exempt_supplies: [400_000]
+    firm_input_vat: [100_000]
+    firm_input_vat_attributable_to_taxable_supplies: [40_000]
+    firm_input_vat_attributable_to_exempt_supplies: [10_000]
+    firm_applies_partial_exemption_de_minimis: [true]
+  output:
+    # 40,000 + 60% x 50,000 residual = 70,000. Exempt input 30,000 fails.
+    firm_recoverable_input_vat: [70_000]
+    firm_vat: [50_000]
+
+- name: Attributed input VAT above total input VAT is capped, taxable first.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [600_000]
+    firm_exempt_supplies: [400_000]
+    firm_input_vat: [100_000]
+    firm_input_vat_attributable_to_taxable_supplies: [80_000]
+    firm_input_vat_attributable_to_exempt_supplies: [50_000]
+  output:
+    # Taxable 80,000, exempt capped at 20,000, residual 0.
+    firm_recoverable_input_vat: [80_000]
+
+- name: The de minimis tests are not applied to negative input VAT.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_standard_rated_supplies: [150_000]
+    firm_exempt_supplies: [50_000]
+    firm_input_vat: [-4_000]
+    firm_applies_partial_exemption_de_minimis: [true]
+  output:
+    # The standard method as without the flag: 75% x -4,000.
+    firm_recoverable_input_vat: [-3_000]

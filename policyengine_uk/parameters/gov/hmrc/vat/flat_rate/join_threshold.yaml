@@ -1,0 +1,17 @@
+description: A business may join the VAT flat rate scheme if it expects the value of its taxable supplies (excluding VAT) in the next year to be no more than this amount.
+values:
+  2003-04-10:
+    value: 150_000
+    metadata:
+      reference:
+        - title: The Value Added Tax (Amendment) (No. 2) Regulations 2003 (SI 2003/1069) reg 7(1)(a) (£100,000 to £150,000 in regulation 55L(1)(a)(i), from 10 April 2003)
+          href: https://www.legislation.gov.uk/uksi/2003/1069/regulation/7/made
+metadata:
+  unit: currency-GBP
+  period: year
+  label: VAT flat rate scheme joining threshold
+  reference:
+    - title: Value Added Tax Regulations 1995, regulation 55L(1)(a)(i)
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/55L
+    - title: VAT Notice 733, section 2.5
+      href: https://www.gov.uk/guidance/flat-rate-scheme-for-small-businesses-vat-notice-733--2

@@ -34,6 +34,12 @@ ENTITY_ID_VARIABLES = (
     "household_id",
 )
 
+# The variable that stores the identifiers of firms, the optional root
+# population ``build_from_ids`` takes as ``firm_id``. Kept apart from
+# ``ENTITY_ID_VARIABLES``: firms have no members, and a dataset need not have
+# any.
+FIRM_ID_VARIABLE = "firm_id"
+
 
 class EntityIdWarning(UserWarning):
     """An identifier changes when the simulation stores it."""

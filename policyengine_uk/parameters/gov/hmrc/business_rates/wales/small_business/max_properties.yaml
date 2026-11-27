@@ -1,0 +1,12 @@
+description: A business in Wales gets small business rates relief on at most this many properties in each local authority.
+# The firm model has no local authority, so this is applied to the firm's
+# total number of properties.
+values:
+  2023-04-01: 2
+metadata:
+  label: Wales SBRR maximum properties
+  unit: int
+  period: year
+  reference:
+    - title: Business Wales, Non-domestic rates small business rates relief ("limited to two properties per business in each local authority")
+      href: https://businesswales.gov.wales/non-domestic-rates-small-business-rates-relief

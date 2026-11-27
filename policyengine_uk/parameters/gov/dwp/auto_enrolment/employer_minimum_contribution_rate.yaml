@@ -1,0 +1,42 @@
+description: Minimum employer contribution to a money purchase scheme used for automatic enrolment, as a share of the jobholder's qualifying earnings.
+# Employer duties began with the largest employers on 1 October 2012 and were
+# staged in by employer size to 2018. The first transitional period (1%) ran
+# to 5 April 2018 and the second (2%) to 5 April 2019 (SI 2010/4 reg 5, as
+# amended by SI 2016/719).
+values:
+  0000-01-01: 0
+  # SI 2012/1682 brought the automatic enrolment provisions not already in
+  # force into force on 30 June 2012; duties applied to employers in stages
+  # from 1 October 2012, so the model dates the first rate to the first
+  # staging date.
+  2012-10-01:
+    value: 0.01
+    metadata:
+      reference:
+        - title: The Pensions Act 2008 (Commencement No. 13) Order 2012 (SI 2012/1682), explanatory note
+          href: https://www.legislation.gov.uk/uksi/2012/1682/note/made
+        - title: Pensions Act 2008 s.29(1)(a) (first transitional period)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/29/2018-04-06
+  2018-04-06:
+    value: 0.02
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.29(3)(a) (second transitional period)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/29/2018-04-06
+        - title: The Employers' Duties (Implementation) Regulations 2010 reg 5
+          href: https://www.legislation.gov.uk/uksi/2010/4/regulation/5
+  2019-04-06:
+    value: 0.03
+    metadata:
+      reference:
+        - title: Pensions Act 2008 s.20(1)(b)
+          href: https://www.legislation.gov.uk/ukpga/2008/30/section/20
+        - title: The Employers' Duties (Implementation) Regulations 2010 reg 5
+          href: https://www.legislation.gov.uk/uksi/2010/4/regulation/5
+metadata:
+  unit: /1
+  period: year
+  label: Automatic enrolment employer minimum contribution rate
+  reference:
+    - title: Pensions Act 2008 s.20(1)(b)
+      href: https://www.legislation.gov.uk/ukpga/2008/30/section/20

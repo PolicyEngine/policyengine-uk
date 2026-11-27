@@ -1,0 +1,58 @@
+description: Bank corporation tax surcharge rate charged on a banking company's surcharge profits above its surcharge allowance. Dates are the legal start dates; each year label is the day-weighted average over 6 April to 5 April, which approximates the apportionment of an accounting period that straddles a change (1 January 2016, 1 January 2027).
+values:
+  2015-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2015 Sch. 3 para. 14 and 18 (surcharge from 1 January 2016)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/schedule/3/enacted
+  2016-01-01:
+    value: 0.08
+    metadata:
+      reference:
+        - title: Finance (No. 2) Act 2015 Sch. 3 (Corporation Tax Act 2010 s. 269DA(1) as inserted)
+          href: https://www.legislation.gov.uk/ukpga/2015/33/schedule/3/enacted
+  2023-04-01:
+    value: 0.03
+    metadata:
+      reference:
+        - title: Finance Act 2022 s. 6(1) and (3)
+          href: https://www.legislation.gov.uk/ukpga/2022/3/section/6
+        - title: Corporation Tax Act 2010 s. 269DA(1)
+          href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DA
+  # Finance Bill 2026-27 (Bill 173) clause 7, per HMRC BKM409200. Not enacted:
+  # as at 22 November 2026 the Bill has had its Commons first reading (3
+  # November 2026), with second reading set for 23 November 2026. The 6% rate
+  # and the 2028-04-01 return to 3% have provisional statutory effect only
+  # (Provisional Collection of Taxes Act 1968).
+  2027-01-01:
+    value: 0.06
+    metadata:
+      reference:
+        - title: HMRC policy paper, Increase in rate of Banking Surcharge for a temporary period (Budget 2026)
+          href: https://www.gov.uk/government/publications/increase-in-the-banking-surcharge-rate-for-a-temporary-period/increase-in-rate-of-banking-surcharge-for-temporary-period
+        - title: HMRC Banking Manual BKM409200
+          href: https://www.gov.uk/hmrc-internal-manuals/banking-manual/bkm409200
+  2028-04-01:
+    value: 0.03
+    metadata:
+      reference:
+        - title: HMRC Banking Manual BKM409200 (rate reverts to 3% from 1 April 2028)
+          href: https://www.gov.uk/hmrc-internal-manuals/banking-manual/bkm409200
+        - title: HMRC policy paper, Increase in rate of Banking Surcharge for a temporary period (Budget 2026)
+          href: https://www.gov.uk/government/publications/increase-in-the-banking-surcharge-rate-for-a-temporary-period/increase-in-rate-of-banking-surcharge-for-temporary-period
+metadata:
+  unit: /1
+  period: year
+  label: Bank surcharge rate
+  # Commencement provisions split an accounting period that straddles a rate
+  # change in two and apportion profits between the parts by time (for
+  # example Finance Act 2022 s. 6(4)-(6) with Corporation Tax Act 2010
+  # s. 1172). Day-weighting over the fiscal year approximates that for a firm
+  # with an April to March year, as for the annual investment allowance
+  # limit. The window runs from 6 April, so a change dated 1 April (2023,
+  # 2028) puts 5 days at the new rate into the previous year label.
+  fiscal_year_blend: true
+  reference:
+    - title: Corporation Tax Act 2010 s. 269DA
+      href: https://www.legislation.gov.uk/ukpga/2010/4/section/269DA

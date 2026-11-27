@@ -1,0 +1,18 @@
+description: Unoccupied non-domestic property in England with rateable value below this amount pays no rates for as long as it stays empty.
+values:
+  2008-04-01: 2_200
+  2009-04-01: 15_000
+  2010-04-01: 18_000
+  2011-04-01: 2_600
+  2017-04-01: 2_900
+metadata:
+  label: Empty property small rateable value exemption threshold
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: The Non-Domestic Rating (Unoccupied Property) (England) Regulations 2008 reg 4(g) ("whose rateable value is less than £2,200")
+      href: https://www.legislation.gov.uk/uksi/2008/386/regulation/4
+    - title: The Non-Domestic Rating (Unoccupied Property) (England) (Amendment) Regulations 2017 (SI 2017/102), art 4(2) (£2,200 in 2008-09, £15,000 in 2009-10, £18,000 in 2010-11, £2,600 from 2011-12, £2,900 from 2017-18)
+      href: https://www.legislation.gov.uk/uksi/2017/102/article/4
+    - title: GOV.UK, Empty property relief ("buildings with a rateable value under £2,900 - until they're reoccupied")
+      href: https://www.gov.uk/apply-for-business-rate-relief/empty-property-relief

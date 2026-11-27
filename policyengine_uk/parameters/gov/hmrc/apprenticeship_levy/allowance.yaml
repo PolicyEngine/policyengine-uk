@@ -1,0 +1,20 @@
+description: Levy allowance deducted from an employer's apprenticeship levy charge, shared between the members of a company unit of connected companies.
+values:
+  0000-01-01: 0
+  2017-04-06:
+    value: 15_000
+    metadata:
+      reference:
+        - title: Finance Act 2016 s.99(5)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/99
+        - title: Finance Act 2016 s.120(2)
+          href: https://www.legislation.gov.uk/ukpga/2016/24/section/120
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Apprenticeship levy allowance
+  reference:
+    - title: Finance Act 2016 s.99(5)
+      href: https://www.legislation.gov.uk/ukpga/2016/24/section/99
+    - title: Finance Act 2016 s.101 (connected companies share one allowance)
+      href: https://www.legislation.gov.uk/ukpga/2016/24/section/101

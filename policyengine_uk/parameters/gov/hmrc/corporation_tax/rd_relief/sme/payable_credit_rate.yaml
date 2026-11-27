@@ -1,0 +1,23 @@
+description: Payable research and development tax credit for a loss-making small or medium-sized enterprise that is not R&D intensive, as a share of its surrenderable loss, under section 1058(1)(a) of the Corporation Tax Act 2009. From April 2024 such a company claims the merged scheme credit instead, so the rate no longer applies.
+values:
+  2014-04-01:
+    value: 0.145
+    metadata:
+      reference:
+        - title: Finance Act 2014 s 31(1) (11% to 14.5% for expenditure incurred on or after 1 April 2014)
+          href: https://www.legislation.gov.uk/ukpga/2014/26/section/31
+        - title: Corporation Tax Act 2009 s 1058(1)(a) as at 1 April 2020 (14.5%, substituted by Finance Act 2014 s 31(1))
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058/2020-04-01
+  2023-04-01:
+    value: 0.1
+    metadata:
+      reference:
+        - title: Corporation Tax Act 2009 s 1058(1)(a), as amended by Finance Act 2023 s 4(3)(d) (10% for expenditure incurred on or after 1 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058/2023-04-01
+metadata:
+  unit: /1
+  period: year
+  label: R&D SME payable credit rate
+  reference:
+    - title: Corporation Tax Act 2009 s 1058(1)(a)
+      href: https://www.legislation.gov.uk/ukpga/2009/4/section/1058
