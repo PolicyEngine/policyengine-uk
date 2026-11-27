@@ -92,8 +92,17 @@ class firm_business_rates_multiplier(Variable):
         )
         scotland = s.basic + supplement
 
+        # Northern Ireland: regional rate plus the council's district rate.
+        ni = parameters(period).gov.hmrc.business_rates.northern_ireland
+        if ni.modelled:
+            district = firm("firm_northern_ireland_district", period)
+            northern_ireland = ni.regional_rate + ni.district_rate[district]
+        else:
+            northern_ireland = 0
+        is_ni = firm("firm_rates_in_northern_ireland", period)
+
         return select(
-            [region == regions.WALES, region == regions.SCOTLAND],
-            [wales, scotland],
+            [region == regions.WALES, region == regions.SCOTLAND, is_ni],
+            [wales, scotland, northern_ireland],
             default=england,
         )

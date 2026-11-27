@@ -10,7 +10,8 @@ class firm_losses_used(Variable):
         "Carried-forward losses set against the year's profits, up to the "
         "deductions allowance plus 50% of profits above it. Losses are treated "
         "as one pool against total profits; the separate trading and "
-        "non-trading caps are not distinguished."
+        "non-trading caps are not distinguished. Profits are taken after "
+        "Part 5 group relief (firm_group_relief), which comes first."
     )
     definition_period = YEAR
     unit = GBP
@@ -23,7 +24,12 @@ class firm_losses_used(Variable):
 
     def formula(firm, period, parameters):
         p = parameters(period).gov.hmrc.corporation_tax.losses
-        profits = max_(firm("firm_profits_before_losses", period), 0)
+        # Part 5 group relief is deducted first (CTA 2010 s.137(4)-(5)).
+        profits = max_(
+            firm("firm_profits_before_losses", period)
+            - firm("firm_group_relief", period),
+            0,
+        )
         allowance = p.deductions_allowance * firm(
             "firm_deductions_allowance_share", period
         )

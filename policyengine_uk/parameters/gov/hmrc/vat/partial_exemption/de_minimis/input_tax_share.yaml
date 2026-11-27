@@ -1,0 +1,9 @@
+description: Under the VAT partial exemption de minimis test, exempt input tax must be no more than this share of all input tax, as well as within the monthly limit.
+values:
+  1995-10-20: 0.5
+metadata:
+  label: VAT partial exemption de minimis input tax share
+  unit: /1
+  reference:
+    - title: The Value Added Tax Regulations 1995 (SI 1995/2518), reg 106(1)(b)
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/106

@@ -1,0 +1,11 @@
+description: Whether Northern Ireland small business rate relief is in effect. SR 2026/45 extends it to rate years ending before 1 April 2027, and no later extension has been made.
+values:
+  2023-04-01: true
+  2027-04-01: false
+metadata:
+  unit: bool
+  period: year
+  label: Northern Ireland small business rate relief in effect
+  reference:
+    - title: The Rates (Small Business Hereditament Relief) (Amendment) Regulations (Northern Ireland) 2026 (SR 2026/45)
+      href: https://www.legislation.gov.uk/nisr/2026/45/made

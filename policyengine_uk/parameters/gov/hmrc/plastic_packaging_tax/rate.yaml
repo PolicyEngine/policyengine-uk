@@ -1,0 +1,28 @@
+description: Plastic packaging tax charged per tonne of chargeable plastic packaging components.
+# The tax is charged from 1 April 2022, so the model states a zero before then.
+values:
+  0000-01-01: 0
+  2022-04-01:
+    value: 200
+    metadata:
+      reference:
+        - title: Finance Act 2021 s.45, as enacted
+          href: https://www.legislation.gov.uk/ukpga/2021/26/section/45/enacted
+  2023-04-01: 210.82
+  2024-04-01: 217.85
+  2025-04-01: 223.69
+  2026-04-01:
+    value: 228.82
+    metadata:
+      reference:
+        - title: Finance Act 2026 s.104
+          href: https://www.legislation.gov.uk/ukpga/2026/11/section/104
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Plastic packaging tax rate per tonne
+  reference:
+    - title: Finance Act 2021 s.45, as amended
+      href: https://www.legislation.gov.uk/ukpga/2021/26/section/45
+    - title: Plastic Packaging Tax policy paper (GOV.UK), rates from April 2022 to April 2026
+      href: https://www.gov.uk/government/publications/introduction-of-plastic-packaging-tax/plastic-packaging-tax

@@ -277,7 +277,7 @@ programs:
     variable: corporation_tax
     parameter_prefix: gov.hmrc.corporation_tax
     verified_start_year: 2026
-    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief. No group relief, Patent Box or quarterly instalments. Not in household_tax or gov_tax.
+    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief, and group relief for a claimed amount (Parts 5 and 5A). No Patent Box or quarterly instalments. Not in household_tax or gov_tax.
 
   - id: bank_surcharge
     name: Bank surcharge
@@ -313,7 +313,7 @@ programs:
     variable: firm_employer_ni
     parameter_prefix: gov.hmrc.national_insurance.class_1
     verified_start_year: 2024
-    notes: Firm-level employer National Insurance after the Employment Allowance. Earnings above the secondary threshold are approximated from paybill and employees unless given as an input. The household-side measure is ni_employer under the national_insurance entry. Not in household_tax or gov_tax.
+    notes: Firm-level employer National Insurance after the Employment Allowance, plus off-payroll Class 1 (firm_off_payroll_employer_ni), Class 1A on termination awards and Class 1B as separate variables. Earnings above the secondary threshold are approximated from paybill and employees unless given as an input. The household-side measure is ni_employer under the national_insurance entry. Not in household_tax or gov_tax.
 
   - id: employment_allowance
     name: Employment Allowance
@@ -329,7 +329,7 @@ programs:
 
   - id: firm_business_rates
     name: Business rates (firms)
-    full_name: Non-domestic rates payable by firms in England, Wales and Scotland
+    full_name: Non-domestic rates payable by firms in England, Wales, Scotland and Northern Ireland
     category: Taxes
     agency: Local
     status: partial
@@ -338,7 +338,7 @@ programs:
     parameter_prefix: gov.hmrc.business_rates
     verified_start_year: 2023
     verified_end_year: 2027
-    notes: Firm-level statutory liability on one aggregate property per firm. England with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs; Wales (standard, retail and higher multipliers, SBRR and charitable relief) and Scotland (poundage, Small Business Bonus Scheme and charitable relief) from 2023-24; Northern Ireland not modelled. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
+    notes: Firm-level statutory liability on one aggregate property per firm. England with small business, charitable, retail hospitality and leisure, pubs and live music, and empty property reliefs; Wales (standard, retail and higher multipliers, SBRR and charitable relief) and Scotland (poundage, Small Business Bonus Scheme and charitable relief) from 2023-24; Northern Ireland (regional and district rates, small business rate relief, charity exemption, unoccupied property) from 2023-24 where a district is supplied, with 2027-28 Northern Ireland poundages carried forward, not verified. No transitional relief. The business_rates entry is the separate household allocation of UK receipts. Not in household_tax or gov_tax.
 
   - id: firm_vat
     name: VAT (firms)
@@ -350,7 +350,33 @@ programs:
     variable: firm_vat
     parameter_prefix: gov.hmrc.vat
     verified_start_year: 2025
-    notes: Firm-level output VAT less recoverable input VAT, with partial exemption, the registration threshold and the flat rate scheme including the limited cost trader rate. Registration is tested on annual turnover; no cash or annual accounting. The household-side measure is the vat entry. Not in household_tax or gov_tax.
+    notes: Firm-level output VAT less recoverable input VAT, with partial exemption (direct attribution and, if flagged, the de minimis tests), the registration threshold and the flat rate scheme including the limited cost trader rate. Registration is tested on annual turnover; no cash or annual accounting. The household-side measure is the vat entry. Not in household_tax or gov_tax.
+
+  - id: soft_drinks_industry_levy
+    name: Soft drinks industry levy
+    full_name: Soft Drinks Industry Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: soft_drinks_industry_levy
+    parameter_prefix: gov.hmrc.soft_drinks_industry_levy
+    verified_start_year: 2018
+    verified_end_year: 2026
+    notes: Firm-level levy per litre of chargeable soft drinks at the higher and lower sugar bands, with the 1 million litre small producer exemption. Litres are firm inputs. Rates after 2026-27 carry forward. Not in household_tax or gov_tax.
+
+  - id: plastic_packaging_tax
+    name: Plastic packaging tax
+    full_name: Plastic Packaging Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: plastic_packaging_tax
+    parameter_prefix: gov.hmrc.plastic_packaging_tax
+    verified_start_year: 2022
+    verified_end_year: 2026
+    notes: Firm-level tax per tonne of plastic packaging with less than 30% recycled plastic, for firms at or above the 10 tonne registration threshold over the year. Tonnes are firm inputs. Rates after 2026-27 carry forward. Not in household_tax or gov_tax.
 
   - id: firm_minimum_wage_cost
     name: Minimum wage floor (firms)

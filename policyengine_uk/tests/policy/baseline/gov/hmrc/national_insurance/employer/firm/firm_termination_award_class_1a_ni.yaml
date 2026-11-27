@@ -1,0 +1,65 @@
+# Class 1A on termination awards above 30,000 (SSCBA 1992 s.10(1A); ITEPA
+# 2003 s.403), from 6 April 2020, at the secondary Class 1 percentage.
+- name: The 30,000 threshold, 2025-26 at 15%.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_termination_awards: [30_000, 30_001, 130_000, 250_000, 100_000, 50_000, -1]
+    firm_termination_award_recipients: [1, 1, 1, 5, 5, 0, 0]
+  output:
+    # 0; 1 x 15%; 100,000 x 15%; (250,000 - 150,000) x 15%; 0; 50,000
+    # treated as above the threshold; 0.
+    firm_termination_award_class_1a_ni: [0, 0.15, 15_000, 15_000, 0, 7_500, 0]
+
+- name: 2024-25 at 13.8%.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    firm_termination_awards: [130_000]
+    firm_termination_award_recipients: [1]
+  output:
+    firm_termination_award_class_1a_ni: [13_800]
+
+- name: 2022-23 at 15.05%, not the fixed 14.53% for benefits in kind.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    firm_termination_awards: [130_000]
+    firm_termination_award_recipients: [1]
+    firm_class_1a_benefits: [100_000]
+  output:
+    firm_termination_award_class_1a_ni: [15_050]
+    firm_class_1a_ni: [14_530]
+
+- name: 2020-21, the first year, at 13.8%.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    firm_termination_awards: [130_000]
+    firm_termination_award_recipients: [1]
+  output:
+    firm_termination_award_class_1a_ni: [13_800]
+
+- name: Before April 2020 there is no Class 1A on termination awards.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    firm_termination_awards: [130_000]
+    firm_termination_award_recipients: [1]
+  output:
+    firm_termination_award_class_1a_ni: [0]
+
+- name: The Employment Allowance cannot be set against it, and it is firm-only.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    firm_paybill: [30_000]
+    firm_employees: [2]
+    firm_termination_awards: [130_000]
+    firm_termination_award_recipients: [1]
+  output:
+    employment_allowance: [3_000]
+    firm_employer_ni: [0]
+    apprenticeship_levy: [0]
+    firm_tax: [15_000]
+    firm_only_tax: [15_000]

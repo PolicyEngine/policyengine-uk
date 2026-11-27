@@ -1,0 +1,35 @@
+description: Non-domestic regional rate in Northern Ireland, in pounds per pound of net annual value, for the rate year beginning 1 April. Years before 2023-24 are not modelled, and the 2026-27 value carries forward until a later rate is added.
+values:
+  2023-04-01:
+    value: 0.2790
+    metadata:
+      reference:
+        - title: The Regional Rates (Northern Ireland) Regulations 2023 (SI 2023/198) reg 2(2)
+          href: https://www.legislation.gov.uk/uksi/2023/198/made
+  2024-04-01:
+    value: 0.2902
+    metadata:
+      reference:
+        - title: The Rates (Regional Rates) Order (Northern Ireland) 2024 (SR 2024/28) art 3(1)
+          href: https://www.legislation.gov.uk/nisr/2024/28/made
+  2025-04-01:
+    value: 0.2989
+    metadata:
+      reference:
+        - title: The Rates (Regional Rates) Order (Northern Ireland) 2025 (SR 2025/27) art 3
+          href: https://www.legislation.gov.uk/nisr/2025/27/made
+  2026-04-01:
+    value: 0.3079
+    metadata:
+      reference:
+        - title: The Rates (Regional Rates) Order (Northern Ireland) 2026 (SR 2026/19) art 3(1)
+          href: https://www.legislation.gov.uk/nisr/2026/19/made
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Northern Ireland non-domestic regional rate
+  reference:
+    - title: Rates (Northern Ireland) Order 1977 Article 6
+      href: https://www.legislation.gov.uk/nisi/1977/2157/article/6
+    - title: Department of Finance, rate poundages
+      href: https://www.finance-ni.gov.uk/articles/rate-poundages

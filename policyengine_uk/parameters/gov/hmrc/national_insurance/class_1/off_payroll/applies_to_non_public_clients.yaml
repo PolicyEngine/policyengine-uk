@@ -1,0 +1,13 @@
+description: Whether the off-payroll working rules apply to medium and large clients outside the public sector. They do from 6 April 2021.
+values:
+  0000-01-01: false
+  2021-04-06: true
+metadata:
+  unit: bool
+  period: year
+  label: Off-payroll working rules apply to non-public clients
+  reference:
+    - title: The Social Security Contributions (Intermediaries) (Amendment) Regulations 2020 (SI 2020/1220) reg 1
+      href: https://www.legislation.gov.uk/uksi/2020/1220/regulation/1
+    - title: The Social Security Contributions (Intermediaries) Regulations 2000 (SI 2000/727) reg 14(8A)
+      href: https://www.legislation.gov.uk/uksi/2000/727/regulation/14

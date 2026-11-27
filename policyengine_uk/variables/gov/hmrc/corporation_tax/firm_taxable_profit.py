@@ -7,8 +7,9 @@ class firm_taxable_profit(Variable):
     entity = Firm
     label = "Firm taxable total profits"
     documentation = (
-        "Profits chargeable to corporation tax after carried-forward losses. "
-        "Group relief is not modelled."
+        "Profits chargeable to corporation tax: total profits less Part 5 "
+        "group relief, then carried-forward losses, then Part 5A group "
+        "relief for carried-forward losses (CTA 2010 s.137(4)-(5))."
     )
     definition_period = YEAR
     unit = GBP
@@ -17,5 +18,13 @@ class firm_taxable_profit(Variable):
 
     def formula(firm, period, parameters):
         profits = firm("firm_profits_before_losses", period)
-        losses_used = firm("firm_losses_used", period)
-        return max_(profits - losses_used, 0)
+        deductions = add(
+            firm,
+            period,
+            [
+                "firm_group_relief",
+                "firm_losses_used",
+                "firm_group_relief_for_carried_forward_losses",
+            ],
+        )
+        return max_(profits - deductions, 0)

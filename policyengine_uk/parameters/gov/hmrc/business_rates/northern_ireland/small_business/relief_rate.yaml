@@ -1,0 +1,28 @@
+description: Northern Ireland small business rate relief as a share of the bill, by the net annual value of a wholly occupied hereditament. Each band includes its upper limit.
+metadata:
+  type: single_amount
+  threshold_unit: currency-GBP
+  amount_unit: /1
+  label: Northern Ireland small business rate relief rate
+  reference:
+    - title: The Rates (Small Business Hereditament Relief) Regulations (Northern Ireland) 2010 (SR 2010/4) reg 3
+      href: https://www.legislation.gov.uk/nisr/2010/4
+    - title: SR 2010/4 reg 3 as at 1 April 2023
+      href: https://www.legislation.gov.uk/nisr/2010/4/2023-04-01
+brackets:
+  - threshold:
+      2023-04-01: -.inf
+    amount:
+      2023-04-01: 0.5
+  - threshold:
+      2023-04-01: 2_000
+    amount:
+      2023-04-01: 0.25
+  - threshold:
+      2023-04-01: 5_000
+    amount:
+      2023-04-01: 0.2
+  - threshold:
+      2023-04-01: 15_000
+    amount:
+      2023-04-01: 0

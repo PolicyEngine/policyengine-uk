@@ -1,0 +1,62 @@
+# Plastic packaging tax (Finance Act 2021 Part 2), 100 chargeable tonnes.
+- name: Before the tax, 2021-22.
+  absolute_error_margin: 0.01
+  period: 2021
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100]
+  output:
+    plastic_packaging_tax: [0]
+
+- name: 2022-23, £200 a tonne.
+  absolute_error_margin: 0.01
+  period: 2022
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100]
+  output:
+    plastic_packaging_tax: [20_000]
+
+- name: 2023-24, £210.82 a tonne.
+  absolute_error_margin: 0.01
+  period: 2023
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100]
+  output:
+    plastic_packaging_tax: [21_082]
+
+- name: 2024-25, £217.85 a tonne.
+  absolute_error_margin: 0.01
+  period: 2024
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100]
+  output:
+    plastic_packaging_tax: [21_785]
+
+- name: 2025-26, £223.69 a tonne.
+  absolute_error_margin: 0.01
+  period: 2025
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100]
+  output:
+    plastic_packaging_tax: [22_369]
+
+- name: 2026-27, £228.82 a tonne, with a part tonne.
+  absolute_error_margin: 0.01
+  period: 2026
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [100, 10.5]
+  output:
+    # 10.5 x 228.82 = 2,402.61.
+    plastic_packaging_tax: [22_882, 2_402.61]
+
+- name: The 10 tonne registration test, 2025-26.
+  absolute_error_margin: 0.01
+  period: 2025
+  input:
+    firm_plastic_packaging_tonnes_chargeable: [9.999, 10, 4, 0, 12]
+    firm_plastic_packaging_tonnes_total: [9.999, 10, 10, 50, 0]
+  output:
+    # Under 10 tonnes is not liable to register. At 10 tonnes it is:
+    # 10 x 223.69 = 2,236.90. 4 chargeable of 10 in total: 894.76. Nothing
+    # chargeable: 0. A total below the chargeable tonnes counts as the
+    # chargeable tonnes: 12 x 223.69 = 2,684.28.
+    plastic_packaging_tax: [0, 2_236.90, 894.76, 0, 2_684.28]

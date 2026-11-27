@@ -1,0 +1,13 @@
+description: Whether Class 1A contributions are charged on termination awards above the threshold. They are from 6 April 2020.
+values:
+  0000-01-01: false
+  2020-04-06: true
+metadata:
+  unit: bool
+  period: year
+  label: Class 1A on termination awards in effect
+  reference:
+    - title: The National Insurance Contributions (Termination Awards and Sporting Testimonials) Act 2019 (Commencement) Regulations 2020 (SI 2020/285) reg 2
+      href: https://www.legislation.gov.uk/uksi/2020/285
+    - title: Social Security Contributions and Benefits Act 1992 s.10(1A)-(1C)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/10

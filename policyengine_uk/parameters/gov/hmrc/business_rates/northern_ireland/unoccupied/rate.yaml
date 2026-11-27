@@ -1,0 +1,10 @@
+description: Share of the occupied bill charged on unoccupied non-domestic property in Northern Ireland.
+values:
+  2023-04-01: 0.5
+metadata:
+  unit: /1
+  period: year
+  label: Northern Ireland unoccupied property rate share
+  reference:
+    - title: Rates (Northern Ireland) Order 1977 Schedule 8A paragraph 2
+      href: https://www.legislation.gov.uk/nisi/1977/2157/schedule/8A

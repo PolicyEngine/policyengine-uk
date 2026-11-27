@@ -1,0 +1,108 @@
+# Group relief (CTA 2010 Parts 5 and 5A). 2025-26: main rate 25%, small
+# profits rate 19%, limits 50,000 and 250,000, marginal relief fraction 3/200.
+- name: Part 5 group relief is capped at total profits, with marginal relief edges.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [300_000, 300_000, 300_000, 300_000, -100_000]
+    firm_group_relief_claimed: [400_000, 100_000, 250_000, 249_999, 50_000]
+  output:
+    firm_group_relief: [300_000, 100_000, 250_000, 249_999, 0]
+    firm_taxable_profit: [0, 200_000, 50_000, 50_001, 0]
+    # 200,000 x 25% - 3/200 x 50,000 = 49,250; 50,000 x 19%; 50,001 at the
+    # main rate less marginal relief 3/200 x 199,999 = 9,500.265.
+    corporation_tax: [0, 49_250, 9_500, 9_500.27, 0]
+
+- name: Part 5 group relief comes before carried-forward losses and their restriction.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_taxable_trading_profit: [12_000_000]
+    firm_group_relief_claimed: [2_000_000]
+    firm_losses_brought_forward: [20_000_000]
+  output:
+    # Profits after group relief 10,000,000: 5,000,000 + 50% x 5,000,000.
+    firm_losses_used: [7_500_000]
+    firm_taxable_profit: [2_500_000]
+    corporation_tax: [625_000]
+
+- name: Part 5A relief uses the room left after the firm's own losses.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_taxable_trading_profit: [12_000_000, 12_000_000]
+    firm_losses_brought_forward: [3_000_000, 10_000_000]
+    firm_group_relief_for_carried_forward_losses_claimed: [6_000_000, 6_000_000]
+  output:
+    # Relevant maximum 5,000,000 + 50% x 7,000,000 = 8,500,000. First firm:
+    # own losses 3,000,000 all used, room 5,500,000. Second: 8,500,000 of
+    # 10,000,000 own losses used, so no Part 5A relief.
+    firm_losses_used: [3_000_000, 8_500_000]
+    firm_group_relief_for_carried_forward_losses: [5_500_000, 0]
+    firm_taxable_profit: [3_500_000, 3_500_000]
+    corporation_tax: [875_000, 875_000]
+
+- name: Part 5A relief starts in April 2017.
+  period: 2016
+  absolute_error_margin: 1
+  input:
+    firm_taxable_trading_profit: [12_000_000]
+    firm_group_relief_for_carried_forward_losses_claimed: [6_000_000]
+  output:
+    # 20% main rate, no Part 5A relief.
+    firm_group_relief_for_carried_forward_losses: [0]
+    corporation_tax: [2_400_000]
+
+- name: Part 5A relief in 2017-18, at 19%.
+  period: 2017
+  absolute_error_margin: 1
+  input:
+    firm_taxable_trading_profit: [12_000_000]
+    firm_group_relief_for_carried_forward_losses_claimed: [6_000_000]
+  output:
+    # 5,000,000 + 50% x 7,000,000 = 8,500,000 is above the claim.
+    firm_group_relief_for_carried_forward_losses: [6_000_000]
+    corporation_tax: [1_140_000]
+
+- name: Group relief across the April 2023 rate change, 2022-23.
+  period: 2022
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [300_000]
+    firm_group_relief_claimed: [200_000]
+  output:
+    corporation_tax: [19_000]
+
+- name: Group relief across the April 2023 rate change, 2023-24.
+  period: 2023
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [300_000]
+    firm_group_relief_claimed: [200_000]
+  output:
+    # 100,000 x 25% - 3/200 x 150,000.
+    corporation_tax: [22_750]
+
+- name: A sole trader gets no group relief.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_legal_form: [SOLE_TRADER]
+    firm_taxable_trading_profit: [300_000]
+    firm_group_relief_claimed: [100_000]
+  output:
+    firm_group_relief: [0]
+    corporation_tax: [0]
+
+- name: Bank surcharge adds back group relief from non-banking companies.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_is_bank: [true, true]
+    firm_taxable_trading_profit: [300_000_000, 300_000_000]
+    firm_group_relief_claimed: [50_000_000, 50_000_000]
+    firm_non_banking_group_relief_claimed: [50_000_000, 0]
+  output:
+    corporation_tax: [62_500_000, 62_500_000]
+    # 3% above 100,000,000: (300m - 100m) x 3% and (250m - 100m) x 3%.
+    bank_surcharge: [6_000_000, 4_500_000]

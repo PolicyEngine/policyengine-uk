@@ -1,0 +1,12 @@
+description: Class 1A contributions are charged on each employee's termination awards above this amount, the ITEPA 2003 s.403 threshold.
+values:
+  2020-04-06: 30_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Class 1A termination award threshold
+  reference:
+    - title: Income Tax (Earnings and Pensions) Act 2003 s.403(1) and (4)
+      href: https://www.legislation.gov.uk/ukpga/2003/1/section/403
+    - title: Social Security Contributions and Benefits Act 1992 s.10(1A)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/10

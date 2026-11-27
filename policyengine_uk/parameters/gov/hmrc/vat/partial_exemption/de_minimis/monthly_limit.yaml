@@ -1,0 +1,12 @@
+description: Under the VAT partial exemption de minimis test, exempt input tax is treated as attributable to taxable supplies where it averages no more than this amount a month and is no more than the share of all input tax set by the input tax share parameter.
+values:
+  1995-10-20: 625
+metadata:
+  label: VAT partial exemption de minimis monthly limit
+  unit: currency-GBP
+  period: month
+  reference:
+    - title: The Value Added Tax Regulations 1995 (SI 1995/2518), reg 106(1), as made
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/106/made
+    - title: The Value Added Tax Regulations 1995 (SI 1995/2518), reg 106(1), as amended
+      href: https://www.legislation.gov.uk/uksi/1995/2518/regulation/106

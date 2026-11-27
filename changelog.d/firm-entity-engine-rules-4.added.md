@@ -1,0 +1,1 @@
+Added off-payroll employer National Insurance, Class 1A on termination awards, Class 1B, group relief, the VAT partial exemption de minimis tests and direct attribution, Northern Ireland business rates, the soft drinks industry levy and the plastic packaging tax to the firm entity, all inert at their default inputs.

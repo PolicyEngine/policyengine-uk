@@ -1,0 +1,169 @@
+# Northern Ireland non-domestic rates: net annual value x (regional rate +
+# district rate) (Rates (NI) Order 1977 Art 6). Belfast 2026-27: 0.3079 +
+# 0.342388 = 0.650288.
+- name: Without a district a Northern Ireland firm's rates stay at 0.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_rateable_value: [30_000]
+  output:
+    firm_business_rates: [0]
+
+- name: Belfast 2026-27, above the small business bands.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [30_000]
+  output:
+    firm_business_rates_multiplier: [0.650288]
+    firm_business_rates: [19_508.64]
+    firm_only_tax: [19_508.64]
+
+- name: A district outside Northern Ireland is ignored.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [WALES]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [30_000]
+  output:
+    # The Welsh standard multiplier, 0.502.
+    firm_business_rates: [15_060]
+
+- name: Derry City and Strabane 2023-24 (0.2790 + 0.354362).
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [DERRY_CITY_AND_STRABANE]
+    firm_rateable_value: [100_000]
+  output:
+    firm_business_rates: [63_336.2]
+
+- name: Derry City and Strabane 2024-25 (0.2902 + 0.377408).
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [DERRY_CITY_AND_STRABANE]
+    firm_rateable_value: [100_000]
+  output:
+    firm_business_rates: [66_760.8]
+
+- name: Derry City and Strabane 2025-26 (0.2989 + 0.395993).
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [DERRY_CITY_AND_STRABANE]
+    firm_rateable_value: [100_000]
+  output:
+    firm_business_rates: [69_489.3]
+
+- name: Derry City and Strabane 2026-27 (0.3079 + 0.413735).
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [DERRY_CITY_AND_STRABANE]
+    firm_rateable_value: [100_000]
+  output:
+    firm_business_rates: [72_163.5]
+
+- name: Before 2023-24 Northern Ireland rates are not modelled.
+  period: 2022
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [30_000]
+  output:
+    firm_business_rates: [0]
+
+- name: Small business rate relief band edges, Belfast 2026-27.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST, BELFAST, BELFAST, BELFAST, BELFAST, BELFAST]
+    firm_rateable_value: [2_000, 2_001, 5_000, 5_001, 15_000, 15_001]
+  output:
+    # 50% up to 2,000; 25% up to 5,000; 20% up to 15,000; none above.
+    firm_business_rates: [650.288, 975.92, 2_438.58, 2_601.67, 7_803.456, 9_754.97]
+
+- name: Small business rate relief in Fermanagh and Omagh 2026-27.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [FERMANAGH_AND_OMAGH]
+    firm_rateable_value: [10_000]
+  output:
+    # 10,000 x (0.3079 + 0.270502) = 5,784.02, less 20%.
+    firm_business_rates: [4_627.216]
+
+- name: Small business rate relief, Belfast 2023-24 (0.2790 + 0.293221).
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [4_000]
+  output:
+    # 4,000 x 0.572221 = 2,288.884, less 25%.
+    firm_business_rates: [1_716.663]
+
+- name: No small business rate relief above three properties or for industrial property.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST, BELFAST, BELFAST]
+    firm_rateable_value: [4_000, 4_000, 4_000]
+    firm_n_properties: [3, 4, 1]
+    firm_is_industrial_property: [false, false, true]
+  output:
+    # 4,000 x 0.650288 = 2,601.152; less 25% = 1,950.864.
+    firm_business_rates: [1_950.864, 2_601.152, 2_601.152]
+
+- name: Charity property in Northern Ireland is exempt.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [30_000]
+    firm_is_charity: [true]
+  output:
+    firm_business_rates: [0]
+    firm_charitable_rate_relief: [0]
+
+- name: Unoccupied property pays half after three months empty, Belfast 2026-27.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST, BELFAST, BELFAST, BELFAST, BELFAST]
+    firm_rateable_value: [30_000, 30_000, 1_999, 2_000, 30_000]
+    firm_property_occupied: [false, false, false, false, false]
+    firm_months_empty: [3, 0, 3, 3, 3]
+    firm_is_industrial_property: [false, false, false, false, true]
+  output:
+    # 19,508.64 x 50% = 9,754.32; empty from the start of the year, 9 of
+    # 12 months: 7,315.74; below 2,000 is exempt; 2,000 x 0.650288 x 50% =
+    # 650.288; industrial is exempt.
+    firm_business_rates: [9_754.32, 7_315.74, 0, 650.288, 0]
+
+- name: Small business rate relief lapses from 2027-28 under the law as it stands.
+  period: 2027
+  absolute_error_margin: 0.1
+  input:
+    firm_region: [NORTHERN_IRELAND]
+    firm_northern_ireland_district: [BELFAST]
+    firm_rateable_value: [2_000]
+  output:
+    # 2026-27 poundages carry forward: 2,000 x 0.650288.
+    firm_business_rates: [1_300.576]

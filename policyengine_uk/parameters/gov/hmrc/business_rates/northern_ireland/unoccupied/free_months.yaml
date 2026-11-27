@@ -1,0 +1,10 @@
+description: Unoccupied non-domestic property in Northern Ireland is not charged for this many months after it becomes unoccupied.
+values:
+  2023-04-01: 3
+metadata:
+  unit: month
+  period: year
+  label: Northern Ireland unoccupied property free months
+  reference:
+    - title: The Rates (Unoccupied Hereditaments) Regulations (Northern Ireland) 2011 (SR 2011/36)
+      href: https://www.legislation.gov.uk/nisr/2011/36

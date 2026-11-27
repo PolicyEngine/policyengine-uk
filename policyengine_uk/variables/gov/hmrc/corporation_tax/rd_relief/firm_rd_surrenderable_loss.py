@@ -16,8 +16,10 @@ class firm_rd_surrenderable_loss(Variable):
         "(section 1056(2)(a)), so the loss is reduced by the company's "
         "positive non-trading profits, against which firm_profits_before_losses "
         "already sets it. Losses brought forward are ignored, as section "
-        "1056(3) requires. Carry-back, group and consortium relief (section "
-        "1056(2)(b) and (c)) are not modelled."
+        "1056(3) requires. The loss is also reduced by any "
+        "loss surrendered as group relief (section 1056(2)(c), "
+        "firm_trading_loss_surrendered). Carry-back (section 1056(2)(b)) is "
+        "not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -38,6 +40,8 @@ class firm_rd_surrenderable_loss(Variable):
         # s.1056(2)(a): relief against total profits of the same period,
         # whether or not claimed, reduces the loss.
         same_period_relief = max_(firm("firm_non_trading_profits", period), 0)
-        unrelieved = max_(trading_loss - same_period_relief, 0)
+        # s.1056(2)(c): loss surrendered as group relief.
+        surrendered = max_(firm("firm_trading_loss_surrendered", period), 0)
+        unrelieved = max_(trading_loss - same_period_relief - surrendered, 0)
         cap = firm("firm_qualifying_rd_expenditure", period) + deduction
         return min_(unrelieved, cap)

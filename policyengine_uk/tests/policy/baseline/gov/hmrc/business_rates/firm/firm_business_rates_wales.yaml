@@ -146,7 +146,7 @@
     firm_business_rates_multiplier: [0.502, 0.515]
     firm_business_rates: [100_400, 103_000]
 
-- name: Northern Ireland is not modelled
+- name: Northern Ireland without a district is not modelled
   period: 2026
   input:
     firm_region: NORTHERN_IRELAND

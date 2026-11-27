@@ -1,0 +1,31 @@
+description: Soft drinks industry levy charged per litre of chargeable soft drink with 8 grams or more of sugar per 100 millilitres.
+# The levy is charged from 6 April 2018, so the model states a zero before then.
+values:
+  0000-01-01: 0
+  2018-04-06:
+    value: 0.24
+    metadata:
+      reference:
+        - title: Finance Act 2017 s.30 (£2.40 per 10 litres), as enacted
+          href: https://www.legislation.gov.uk/ukpga/2017/10/section/30/enacted
+  2025-04-01:
+    value: 0.259
+    metadata:
+      reference:
+        - title: Finance Act 2025 s.79 (£2.59 per 10 litres)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/79
+  2026-04-01:
+    value: 0.278
+    metadata:
+      reference:
+        - title: Finance Act 2026 s.108
+          href: https://www.legislation.gov.uk/ukpga/2026/11/section/108
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Soft drinks industry levy higher rate per litre
+  reference:
+    - title: Finance Act 2017 Part 2
+      href: https://www.legislation.gov.uk/ukpga/2017/10/part/2
+    - title: Check if your drink is liable for the Soft Drinks Industry Levy (GOV.UK)
+      href: https://www.gov.uk/guidance/check-if-your-drink-is-liable-for-the-soft-drinks-industry-levy

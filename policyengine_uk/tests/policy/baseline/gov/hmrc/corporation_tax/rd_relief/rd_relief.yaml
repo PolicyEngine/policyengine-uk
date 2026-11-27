@@ -457,3 +457,19 @@
   output:
     # min(14.5% x 2,300,000 = 333,500, 20,000 + 3 x 10,000 = 50,000) = 50,000.
     firm_rd_payable_credit: 50_000
+
+- name: A trading loss surrendered as group relief cannot also be surrendered for the ERIS credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    firm_legal_form: [COMPANY, COMPANY]
+    firm_is_sme: [true, true]
+    firm_qualifying_rd_expenditure: [300_000, 300_000]
+    firm_total_relevant_expenditure: [1_000_000, 1_000_000]
+    firm_taxable_trading_profit: [-100_000, -100_000]
+    firm_trading_loss_surrendered: [58_000, 500_000]
+  output:
+    # Loss 358,000 (as in Case 3) less 58,000 surrendered = 300,000; credit
+    # 14.5% x 300,000 = 43,500. Surrendering more than the loss leaves 0.
+    firm_rd_surrenderable_loss: [300_000, 0]
+    firm_rd_payable_credit: [43_500, 0]

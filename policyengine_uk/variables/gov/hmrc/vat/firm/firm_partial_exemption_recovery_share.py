@@ -11,10 +11,11 @@ class firm_partial_exemption_recovery_share(Variable):
         "101(4)-(5)): to the next whole percent where input tax averages no "
         "more than £400,000 a month, otherwise to two decimal places. A firm "
         "with no supplies recovers all of its input VAT. The ratio is applied "
-        "to all input VAT, so input tax directly attributable to taxable or "
-        "exempt supplies is not separated from residual input tax, and the "
-        "£400,000 test uses all input VAT. The de minimis limits and special "
-        "methods are not modelled; supply a value to override the default. "
+        "to residual input tax, which is all input VAT unless parts are "
+        "supplied as directly attributable to taxable or exempt supplies, "
+        "and the £400,000 test reads residual input tax (reg 101(5)). The "
+        "de minimis tests are in firm_recoverable_input_vat. Special methods "
+        "are not modelled; supply a value to override the default. "
         "Supplies are stored in single precision, so above about £16.7m a "
         "ratio that is a whole percentage can round one point high."
     )
@@ -38,7 +39,17 @@ class firm_partial_exemption_recovery_share(Variable):
         # ratio that is a whole percentage in exact arithmetic is not pushed
         # up by float error.
         p = parameters(period).gov.hmrc.vat.partial_exemption
-        monthly_input_vat = firm("firm_input_vat", period) / MONTHS_IN_YEAR
+        input_vat = firm("firm_input_vat", period)
+        taxable_direct = min_(
+            max_(firm("firm_input_vat_attributable_to_taxable_supplies", period), 0),
+            max_(input_vat, 0),
+        )
+        exempt_direct = min_(
+            max_(firm("firm_input_vat_attributable_to_exempt_supplies", period), 0),
+            max_(input_vat - taxable_direct, 0),
+        )
+        residual = input_vat - taxable_direct - exempt_direct
+        monthly_input_vat = residual / MONTHS_IN_YEAR
         scale = where(monthly_input_vat > p.rounding_threshold, 1e4, 1e2)
         rounded = np.ceil(share * scale - 1e-6) / scale
         # Adding 0 turns the -0.0 from ceil(-1e-6) into 0.
