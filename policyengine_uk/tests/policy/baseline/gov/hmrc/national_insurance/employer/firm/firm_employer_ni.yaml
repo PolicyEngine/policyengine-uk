@@ -183,3 +183,17 @@
     # capped at 0 x the threshold, so ignored: 250,000. A headcount without
     # pay treats those staff as paid 0: 300,000 - 6 x 5,000 = 270,000.
     firm_class_1_earnings_above_secondary_threshold: [258_000, 250_000, 270_000]
+
+- name: A supplied base is used as given, even with a pay split.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000]
+    firm_employees: [10]
+    firm_employees_below_secondary_threshold: [4]
+    firm_paybill_below_secondary_threshold: [12_000]
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+  output:
+    # The split alone would give 258,000.
+    firm_class_1_earnings_above_secondary_threshold: [100_000]
+    firm_employer_ni_before_allowance: [15_000]

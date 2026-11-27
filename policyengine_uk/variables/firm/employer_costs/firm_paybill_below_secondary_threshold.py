@@ -8,6 +8,10 @@ class firm_paybill_below_secondary_threshold(Variable):
     documentation = (
         "Total Class 1 earnings for the year of the employees counted in "
         "firm_employees_below_secondary_threshold. Defaults to 0."
+        " Measure the split at the simulated year's secondary threshold "
+        "(£9,100 in 2022-23 to 2024-25, £5,000 from 2025-26); with a split "
+        "measured at another threshold, or a reform to the threshold, the "
+        "base is approximate."
     )
     definition_period = YEAR
     hidden_input = True

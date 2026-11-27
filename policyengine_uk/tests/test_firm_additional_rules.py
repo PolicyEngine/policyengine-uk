@@ -1,4 +1,6 @@
-"""Reform-to-incidence tests for the firm rules added in the fourth audit.
+"""Tests for the firm rules added in the fourth audit: reform-to-incidence
+tests, and a check of every firm input's visibility and the new inputs'
+defaults (default-inertness itself rests on the full YAML suite).
 
 Each test reforms one parameter of a new rule and checks that the weighted
 change reaches ``firm_tax_change_total`` and that household

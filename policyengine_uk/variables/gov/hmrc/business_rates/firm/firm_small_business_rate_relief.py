@@ -22,7 +22,8 @@ class firm_small_business_rate_relief(Variable):
         "with one property, and not for a charity, which gets charitable "
         "relief instead. Not modelled: relief kept on the main property when "
         "the other properties are each under £2,900 and in total under "
-        "£20,000 (£28,000 in London), the grace period after taking on a "
+        "£20,000 (£28,000 in London), replaced by BRIL 8/2026 with a single "
+        "£29,999 aggregate threshold, the grace period after taking on a "
         "second property, and the exclusion of vape shops."
     )
     definition_period = YEAR

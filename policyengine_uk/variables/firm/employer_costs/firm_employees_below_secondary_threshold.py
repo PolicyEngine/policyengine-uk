@@ -11,6 +11,10 @@ class firm_employees_below_secondary_threshold(Variable):
         "contributions. Used with their pay to remove them from the "
         "average-pay approximation of earnings above the threshold. Defaults "
         "to 0, which keeps the plain average-pay approximation."
+        " Measure the split at the simulated year's secondary threshold "
+        "(£9,100 in 2022-23 to 2024-25, £5,000 from 2025-26); with a split "
+        "measured at another threshold, or a reform to the threshold, the "
+        "base is approximate."
     )
     definition_period = YEAR
     hidden_input = True
