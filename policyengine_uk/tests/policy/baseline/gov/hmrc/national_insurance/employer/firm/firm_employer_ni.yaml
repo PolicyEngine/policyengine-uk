@@ -167,3 +167,19 @@
     firm_employer_ni_before_allowance: [67_500]
     # Less the 10,500 Employment Allowance: 57,000.
     firm_employer_ni: [57_000]
+
+# Precedence of the employer NIC base, 2025-26 (threshold 5,000): a supplied
+# base, then the pay split, then the plain average.
+- name: Edge cases of the pay split.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    firm_paybill: [300_000, 300_000, 300_000]
+    firm_employees: [10, 10, 10]
+    firm_employees_below_secondary_threshold: [4, 0, 4]
+    firm_paybill_below_secondary_threshold: [12_000, 12_000, 0]
+  output:
+    # The split: 288,000 - 30,000 = 258,000. Pay without a headcount is
+    # capped at 0 x the threshold, so ignored: 250,000. A headcount without
+    # pay treats those staff as paid 0: 300,000 - 6 x 5,000 = 270,000.
+    firm_class_1_earnings_above_secondary_threshold: [258_000, 250_000, 270_000]

@@ -9,7 +9,9 @@ class firm_tax(Variable):
         "levy, employer National Insurance (secondary Class 1 after the Employment Allowance, "
         "off-payroll secondary Class 1, Class 1A on benefits in kind and on "
         "termination awards, and Class 1B), business rates, VAT, the soft "
-        "drinks industry levy and the plastic packaging tax, less R&D tax credits paid out to the firm "
+        "drinks industry levy, the plastic packaging tax, the residential "
+        "property developer tax, the digital services tax and the energy "
+        "profits levy, less R&D tax credits paid out to the firm "
         "(R&D expenditure credit above its corporation tax, and the payable "
         "credit for loss-making SMEs: every SME claiming the SME scheme "
         "before April 2024, and R&D-intensive SMEs from then). This is liability, not "
@@ -34,6 +36,9 @@ class firm_tax(Variable):
         "firm_business_rates",
         "soft_drinks_industry_levy",
         "plastic_packaging_tax",
+        "residential_property_developer_tax",
+        "digital_services_tax",
+        "energy_profits_levy",
         "firm_vat",
     ]
     subtracts = ["firm_rdec_excess_payable", "firm_rd_payable_credit"]

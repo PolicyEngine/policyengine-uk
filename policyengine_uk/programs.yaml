@@ -277,7 +277,7 @@ programs:
     variable: corporation_tax
     parameter_prefix: gov.hmrc.corporation_tax
     verified_start_year: 2026
-    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief, and group relief for a claimed amount (Parts 5 and 5A). No Patent Box or quarterly instalments. Not in household_tax or gov_tax.
+    notes: Firm-level liability of companies. Main and small profits rates with marginal relief and the associated-companies divisor, loss relief with the deductions allowance, capital allowances (full expensing, first-year allowances, AIA, writing-down allowances, SBA) and merged-scheme R&D relief, group relief for a claimed amount (Parts 5 and 5A) and the Patent Box deduction on supplied relevant IP profits. No quarterly instalments. Not in household_tax or gov_tax.
 
   - id: bank_surcharge
     name: Bank surcharge
@@ -377,6 +377,42 @@ programs:
     verified_start_year: 2022
     verified_end_year: 2026
     notes: Firm-level tax per tonne of plastic packaging with less than 30% recycled plastic, for firms at or above the 10 tonne registration threshold over the year. Tonnes are firm inputs. Rates after 2026-27 carry forward. Not in household_tax or gov_tax.
+
+  - id: residential_property_developer_tax
+    name: Residential property developer tax
+    full_name: Residential Property Developer Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: residential_property_developer_tax
+    parameter_prefix: gov.hmrc.residential_property_developer_tax
+    verified_start_year: 2022
+    notes: Firm-level 4% charge on supplied RPD profits above the group-shared £25 million allowance, companies only. Not deductible for corporation tax. Not in household_tax or gov_tax.
+
+  - id: digital_services_tax
+    name: Digital services tax
+    full_name: Digital Services Tax
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: digital_services_tax
+    parameter_prefix: gov.hmrc.digital_services_tax
+    verified_start_year: 2020
+    notes: Firm-level 2% of group UK digital services revenues above £25 million, where worldwide revenues exceed £500 million and UK revenues exceed £25 million, shared by UK revenues. Revenues are inputs; the alternative charge is not modelled. Not in household_tax or gov_tax.
+
+  - id: energy_profits_levy
+    name: Energy profits levy
+    full_name: Energy (Oil and Gas) Profits Levy
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: energy_profits_levy
+    parameter_prefix: gov.hmrc.energy_profits_levy
+    verified_start_year: 2022
+    notes: Firm-level levy on supplied levy profits (after the investment and decarbonisation allowances), day-weighted 25%, 35% and 38% rates to 31 March 2030. The price floor is not modelled. Not in household_tax or gov_tax.
 
   - id: firm_minimum_wage_cost
     name: Minimum wage floor (firms)

@@ -207,3 +207,59 @@ def test_northern_ireland_regional_rate_reform_reaches_firm_incidence():
     assert baseline == pytest.approx([0, 0, 19_508.64], abs=0.1)
     assert total == pytest.approx([30_393, 30_393], abs=1)
     assert incidence == pytest.approx(30_393, abs=1)
+
+
+def test_patent_box_special_rate_reform_reaches_firm_incidence():
+    # Firm 1: profit 1,000,000 with 400,000 of relevant IP profits, 2026-27.
+    # Baseline deduction 400,000 x 15/25 = 240,000. With a 15% special rate:
+    # 400,000 x 10/25 = 160,000, so 80,000 more profit at 25% = 20,000;
+    # 5 x 20,000 = 100,000.
+    data = dataset(firm_relevant_ip_profits=[400_000.0, 0.0, 0.0])
+    _, total, incidence = change_total_and_incidence(
+        data, {"gov.hmrc.corporation_tax.patent_box.special_ip_rate": {ALWAYS: 0.15}}
+    )
+    assert total == pytest.approx([100_000, 100_000], abs=1)
+    assert incidence == pytest.approx(100_000, abs=1)
+
+
+@pytest.mark.parametrize(
+    "column, values, parameter, value, expected",
+    [
+        # Firm 1: 100m of RPD profits. 5% instead of 4% on 75m: 750,000; x 5.
+        (
+            "firm_rpd_profits",
+            [100_000_000.0, 0.0, 0.0],
+            "gov.hmrc.residential_property_developer_tax.rate",
+            0.05,
+            3_750_000,
+        ),
+        # Firm 2: 100m of UK digital services revenues in a group with 600m
+        # worldwide (supplied below). 3% instead of 2% on 75m: 750,000; x 7.
+        (
+            "firm_uk_digital_services_revenues",
+            [0.0, 100_000_000.0, 0.0],
+            "gov.hmrc.digital_services_tax.rate",
+            0.03,
+            5_250_000,
+        ),
+        # Firm 3: 1m of levy profits. 40% instead of 38%: 20,000; x 11.
+        (
+            "firm_epl_profits",
+            [0.0, 0.0, 1_000_000.0],
+            "gov.hmrc.energy_profits_levy.rate",
+            0.40,
+            220_000,
+        ),
+    ],
+    ids=["rpdt", "dst", "epl"],
+)
+def test_profit_tax_rate_reforms_reach_firm_incidence(
+    column, values, parameter, value, expected
+):
+    data = dataset(
+        **{column: values},
+        firm_group_digital_services_revenues=[0.0, 600_000_000.0, 0.0],
+    )
+    _, total, incidence = change_total_and_incidence(data, {parameter: {ALWAYS: value}})
+    assert total == pytest.approx([expected, expected], abs=1)
+    assert incidence == pytest.approx(expected, abs=1)

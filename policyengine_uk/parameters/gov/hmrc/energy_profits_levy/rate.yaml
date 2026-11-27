@@ -1,0 +1,37 @@
+description: Energy profits levy rate charged on a company's levy profits, 0 before 26 May 2022. Dates are the legal start dates; each year label is the day-weighted average over 6 April to 5 April, which approximates the apportionment of an accounting period that straddles a change.
+# The zero starts at 2015-04-01, not 0000-01-01: fiscal_year_blend needs
+# parseable dates, as for the bank surcharge rate.
+values:
+  2015-04-01: 0
+  2022-05-26:
+    value: 0.25
+    metadata:
+      reference:
+        - title: Energy (Oil and Gas) Profits Levy Act 2022 s.1, as enacted
+          href: https://www.legislation.gov.uk/ukpga/2022/40/enacted
+  2023-01-01:
+    value: 0.35
+    metadata:
+      reference:
+        - title: Finance Act 2023 s.1
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/1
+  2024-11-01:
+    value: 0.38
+    metadata:
+      reference:
+        - title: Finance Act 2025 s.15
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/15
+  2030-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Finance Act 2025 s.17 (levy ends 31 March 2030)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/17
+metadata:
+  unit: /1
+  period: year
+  label: Energy profits levy rate
+  fiscal_year_blend: true
+  reference:
+    - title: Energy (Oil and Gas) Profits Levy Act 2022
+      href: https://www.legislation.gov.uk/ukpga/2022/40

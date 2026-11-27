@@ -9,7 +9,8 @@ class firm_only_tax(Variable):
         "firm_tax_incidence without counting a change twice: corporation "
         "tax, the bank surcharge, the apprenticeship levy, business rates, "
         "Class 1A on termination awards, Class 1B, the soft drinks industry "
-        "levy and the plastic packaging tax, less R&D tax credits paid out "
+        "levy, the plastic packaging tax, the residential property developer "
+        "tax, the digital services tax and the energy profits levy, less R&D tax credits paid out "
         "to the firm. Class 1A on termination awards and Class 1B have no "
         "household-side counterpart, so they belong here. Off-payroll "
         "secondary Class 1 and Class 1A on benefits in kind are left out "
@@ -35,5 +36,8 @@ class firm_only_tax(Variable):
         "firm_class_1b_ni",
         "soft_drinks_industry_levy",
         "plastic_packaging_tax",
+        "residential_property_developer_tax",
+        "digital_services_tax",
+        "energy_profits_levy",
     ]
     subtracts = ["firm_rdec_excess_payable", "firm_rd_payable_credit"]

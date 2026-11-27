@@ -1,0 +1,35 @@
+# Digital services tax (Finance Act 2020 Part 2): 2% of the group's UK digital
+# services revenues above 25,000,000, where worldwide revenues exceed
+# 500,000,000 and UK revenues exceed 25,000,000.
+- name: Thresholds, allowance and group share, 2025-26.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_legal_form: [COMPANY, COMPANY, COMPANY, COMPANY, COMPANY, COMPANY, SOLE_TRADER]
+    firm_uk_digital_services_revenues: [100_000_000, 100_000_000, 25_000_000, 25_001_000, 40_000_000, 100_000_000, 100_000_000]
+    firm_group_uk_digital_services_revenues: [0, 0, 0, 0, 100_000_000, 0, 0]
+    firm_group_digital_services_revenues: [500_000_000, 501_000_000, 600_000_000, 600_000_000, 600_000_000, 0, 600_000_000]
+  output:
+    # Worldwide not over 500m: 0. 2% x 75m = 1,500,000. UK not over 25m: 0.
+    # 2% x 1,000 = 20. 2% x 75m x 40/100 = 600,000. Worldwide defaults to the
+    # UK total: 0. DST applies to any person: 1,500,000.
+    digital_services_tax: [0, 1_500_000, 0, 20, 600_000, 0, 1_500_000]
+
+- name: Before April 2020 there is no DST.
+  period: 2019
+  absolute_error_margin: 0.5
+  input:
+    firm_uk_digital_services_revenues: [100_000_000]
+    firm_group_digital_services_revenues: [600_000_000]
+  output:
+    digital_services_tax: [0]
+
+- name: 2020-21, the first year, firm-only.
+  period: 2020
+  absolute_error_margin: 0.5
+  input:
+    firm_uk_digital_services_revenues: [100_000_000]
+    firm_group_digital_services_revenues: [600_000_000]
+  output:
+    digital_services_tax: [1_500_000]
+    firm_only_tax: [1_500_000]

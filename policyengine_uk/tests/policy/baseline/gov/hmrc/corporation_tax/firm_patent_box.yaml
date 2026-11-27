@@ -1,0 +1,111 @@
+# Patent Box (CTA 2010 s.357A): deduction RP x (AR - 10%) / AR, where AR is
+# the main rate before April 2023 and, from then, the small profits rate if
+# the company is charged at it (F(No.2)A 2023 s.11; HMRC CIRD201020).
+- name: Main rate company, 2025-26.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000, 60_000, 100_000]
+    firm_relevant_ip_profits: [400_000, 30_000, 250_000]
+  output:
+    # 400,000 x 15/25 = 240,000; CT on 760,000 at 25% = 190,000.
+    # 30,000 x 15/25 = 18,000 on profit 60,000 (AR 25%); 42,000 is under
+    # the lower limit, so 19% = 7,980. 250,000 is capped at the 100,000
+    # trading profit: 60,000; 40,000 at 19% = 7,600.
+    firm_patent_box_deduction: [240_000, 18_000, 60_000]
+    corporation_tax: [190_000, 7_980, 7_600]
+
+- name: Small profits rate company, and the AR boundary at 50,000, 2025-26.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [40_000, 50_000, 50_001]
+    firm_relevant_ip_profits: [20_000, 10_000, 10_000]
+  output:
+    firm_patent_box_applicable_rate: [0.19, 0.19, 0.25]
+    # 20,000 x 9/19 = 9,473.68, CT 19% x 30,526.32 = 5,800.
+    # 10,000 x 9/19 = 4,736.84, CT 19% x 45,263.16 = 8,600.
+    # 10,000 x 15/25 = 6,000, profit 44,001 under the lower limit: 8,360.19.
+    firm_patent_box_deduction: [9_473.68, 4_736.84, 6_000]
+    corporation_tax: [5_800, 8_600, 8_360.19]
+
+- name: Phase-in of relevant IP profits, 2015-16 (80%, main rate 20%).
+  period: 2015
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    # 0.8 x 400,000 x 10/20 = 160,000; 20% x 840,000.
+    corporation_tax: [168_000]
+
+- name: Phase-in, 2016-17 (90%, main rate 20%).
+  period: 2016
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    # 0.9 x 400,000 x 10/20 = 180,000; 20% x 820,000.
+    corporation_tax: [164_000]
+
+- name: Full relevant IP profits from April 2017 (main rate 19%).
+  period: 2017
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    # 400,000 x 9/19 = 189,473.68; 19% x 810,526.32 = 154,000.
+    corporation_tax: [154_000]
+
+- name: 2022-23 at the 19% main rate.
+  period: 2022
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    corporation_tax: [154_000]
+
+- name: 2023-24 at the 25% main rate.
+  period: 2023
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    corporation_tax: [190_000]
+
+- name: No Patent Box before April 2013.
+  period: 2012
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [1_000_000]
+    firm_relevant_ip_profits: [400_000]
+  output:
+    firm_patent_box_deduction: [0]
+
+- name: No Patent Box for a sole trader or on a trading loss.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_legal_form: [SOLE_TRADER, COMPANY]
+    firm_taxable_trading_profit: [1_000_000, -50_000]
+    firm_relevant_ip_profits: [400_000, 400_000]
+  output:
+    firm_patent_box_deduction: [0, 0]
+
+- name: The applicable rate ignores carried-forward losses, a documented simplification.
+  period: 2025
+  absolute_error_margin: 0.5
+  input:
+    firm_taxable_trading_profit: [200_000]
+    firm_relevant_ip_profits: [100_000]
+    firm_losses_brought_forward: [180_000]
+  output:
+    # Pre-deduction profit 200,000 is above the 50,000 lower limit, so AR is
+    # 25%: 100,000 x 15/25 = 60,000. Losses then cover the 140,000 left.
+    firm_patent_box_applicable_rate: [0.25]
+    firm_patent_box_deduction: [60_000]
+    firm_taxable_profit: [0]
