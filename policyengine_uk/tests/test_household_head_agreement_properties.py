@@ -106,7 +106,7 @@ OUTPUTS = [
     "housing_benefit_LHA_allowed_bedrooms",
     "LHA_additional_bedrooms",
     "housing_benefit_LHA_additional_bedrooms",
-    "lha_renter_has_non_dependant",
+    "universal_credit_renter_has_non_dependant",
     "council_tax_reduction_claimant_benunit",
     "council_tax_reduction_individual_non_dep_deduction_eligible",
     "pays_rent_to_householder",

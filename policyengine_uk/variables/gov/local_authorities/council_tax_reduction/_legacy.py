@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    apportioned_non_dependant_deductions,
+    resides_with_every_joint_occupier,
+)
 from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
 )
@@ -23,6 +27,45 @@ def is_full_time_student_non_dep(person, period):
     return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
         person("in_HE", period)
     )
+
+
+def council_tax_reduction_joint_liability_non_dep_deductions(
+    benunit, period, family_amount, own_in_unit=0
+):
+    """Each family's deductions for the household's non-dependants, before
+    the applicant's exemption (``family_amount``, each family's deduction
+    for its own non-dependant members; ``own_in_unit``, the part of it for
+    the non-dependants within the family's own benefit unit).
+
+    A non-dependant of every joint occupier is apportioned equally between
+    the liable people (SI 2012/2885 Sch 1 para 8(5); WSI 2013/3029 Sch 1 para
+    3(5) and Sch 6 para 5(5); SSI 2021/249 reg 90(5); SSI 2012/319 reg
+    48(5)), each family bearing one person's part as for the council tax
+    itself (council_tax_reduction_joint_liability_share): each family has
+    every other family's deductions and its own in-unit ones, times that
+    share. Where no family other than the household head's shares the rent,
+    that is every non-dependant, as before.
+
+    Where one does, another family's non-dependant can instead reside with
+    only some of the joint occupiers (non_dependant_normally_resides_with).
+    That one is apportioned equally between the liable people among those
+    joint occupiers, and one who resides with only one of them is deducted in
+    full from that family, a couple included: the model cannot tell whether
+    both partners are named tenants liable under LGFA 1992 s.6 (when the
+    literal para 8(5) would split it between them) or liable only as spouses
+    (s.9).
+    """
+    person = benunit.members
+    counted = person("is_benunit_head", period) * benunit.project(family_amount)
+    every = resides_with_every_joint_occupier(benunit, period)
+    in_household = benunit.max(person.household.sum(counted * every))
+    own = where(benunit.any(every), family_amount, 0)
+    share = benunit("council_tax_reduction_joint_liability_share", period)
+    of_every_joint_occupier = (in_household - own + own_in_unit) * share
+    of_some_joint_occupiers = apportioned_non_dependant_deductions(
+        benunit, period, counted * ~every, equally=True
+    )
+    return of_every_joint_occupier + of_some_joint_occupiers
 
 
 def applicant_has_universal_credit(benunit, period):
@@ -147,23 +190,19 @@ def local_non_dep_deductions(
             benunit.sum(deductions),
             deduction_for_benunit,
         )
-    is_benunit_head = benunit.members("is_benunit_head", period)
-    deductions_to_count = is_benunit_head * benunit.project(deduction_for_benunit)
-    deductions_in_household = benunit.max(
-        benunit.members.household.sum(deductions_to_count)
-    )
     # A non-dependant of two or more jointly liable people is apportioned
-    # equally between them (SI 2012/2885 Sch 1 para 8(5)).
-    share = benunit("council_tax_reduction_joint_liability_share", period)
+    # equally between them (SI 2012/2885 Sch 1 para 8(5)); see
+    # council_tax_reduction_joint_liability_non_dep_deductions.
+    non_dependants = council_tax_reduction_joint_liability_non_dep_deductions(
+        benunit, period, deduction_for_benunit
+    )
     # No deduction from an applicant who, or whose partner, is blind or gets a
     # qualifying disability benefit, whatever other claimants in the household
     # get (the councils' schemes follow SI 2012/2886 Sch para 30(6)).
     applicant_exempt = benunit(
         "council_tax_reduction_applicant_has_non_dep_exemption", period
     )
-    return where(
-        applicant_exempt, 0, (deductions_in_household - deduction_for_benunit) * share
-    )
+    return where(applicant_exempt, 0, non_dependants)
 
 
 def normal_gross_income_non_dep_deduction(

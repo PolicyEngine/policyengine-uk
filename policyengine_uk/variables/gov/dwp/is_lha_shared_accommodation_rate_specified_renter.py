@@ -15,8 +15,9 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "accommodation age threshold and not excepted by a disability benefit "
         "(para 29(5); armed forces independence payment counts as attendance "
         "allowance, reg. 2) or as a foster parent or adopter (para 29(9A)); "
-        "not responsible for a child or qualifying young person; and with no "
-        "non-dependant under the household composition proxy. The age and "
+        "not responsible for a child or qualifying young person under UC "
+        "regs 4 and 5; and with no non-dependant (see "
+        "universal_credit_renter_has_non_dependant). The age and "
         "the exceptions are the renter's own: the other member of a couple "
         "claiming as a single person is neither the renter nor a "
         "non-dependant (para 9(2)(b)). Other paragraph 29 exceptions are not "
@@ -31,6 +32,8 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/4",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
     )
 
     def formula(benunit, period, parameters):
@@ -64,15 +67,16 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         return (
             (~benunit("is_couple", period) | claims_as_single_person)
             & (renter_age < p.shared_accommodation_age_threshold)
-            # Para 28(3)-(4). A Housing Benefit young person who is not a
-            # Universal Credit qualifying young person is a non-dependant
-            # (para 9), which the household composition proxy does not
-            # identify; either way the renter is not a specified renter.
+            # Para 28(3)-(4): responsibility for a child or qualifying young
+            # person under UC regs 4 and 5, and the para 9 non-dependant. A
+            # Housing Benefit young person who is not a Universal Credit
+            # qualifying young person is a non-dependant (para 9(2)), which
+            # universal_credit_renter_has_non_dependant counts.
             & ~benunit(
-                "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
+                "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
                 period,
             )
-            & ~benunit("lha_renter_has_non_dependant", period)
+            & ~benunit("universal_credit_renter_has_non_dependant", period)
             & ~excepted_disabled_renter
             & ~excepted_foster_parent
         )

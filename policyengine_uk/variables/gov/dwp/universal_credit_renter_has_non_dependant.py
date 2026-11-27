@@ -4,13 +4,18 @@ from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
 )
 
 
-class lha_renter_has_non_dependant(Variable):
+class universal_credit_renter_has_non_dependant(Variable):
     value_type = bool
     entity = BenUnit
-    label = "LHA renter has a non-dependant (Universal Credit)"
+    label = "Universal Credit renter has a non-dependant"
     documentation = (
-        "Universal Credit: someone in this benefit unit who is neither a "
-        "claimant or partner nor a child or young person, or, for the claim "
+        "Universal Credit: someone in this benefit unit who is a Universal "
+        "Credit non-dependant (is_benefit_unit_non_dependant_for_universal_credit: "
+        "aged 16 or over and neither the claimant or partner, a qualifying "
+        "young person, the renter's foster child, the household head nor a "
+        "member who pays the household head as a boarder or lodger; the "
+        "last two are liable for their own occupation, para 9(2)(d)), or, "
+        "for the claim "
         "that counts the household's non-dependants (see "
         "uc_non_dependants_counted), anyone that claim treats as a "
         "non-dependant from another family (see other_family_non_dependants). "
@@ -27,35 +32,35 @@ class lha_renter_has_non_dependant(Variable):
         "tenants and other "
         "sharers of the rent, boarders and lodgers are not non-dependants, and "
         "the flag leaves out a child or qualifying young person no one in the "
-        "renter's extended benefit unit is responsible for (para 9(2)(g)). A "
-        "child or young person placed with the family as a foster child or "
-        "for adoption is not the renter's non-dependant. Housing Benefit uses "
+        "renter's extended benefit unit is responsible for (para 9(2)(g)). "
+        "The test uses Universal Credit's own qualifying young person (reg "
+        "5), not Housing Benefit's or a rule for every 16-year-old: a Child "
+        "Benefit young person past the Universal Credit terminal date is a "
+        "non-dependant here. Housing Benefit uses "
         "housing_benefit_has_non_dependant."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/21",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
     )
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        # A child or young person under either scheme (UC reg 5; HB reg 19)
-        # is a dependant, not a non-dependant.
-        age = person("age", period)
-        # A foster child or a child placed for adoption is not a
-        # non-dependant either (UC Sch 4 para 9(2)(c) and (g); HB reg 3(2)(c)
-        # and reg 21(3)).
-        child_or_qyp = (
-            person("is_child_or_qualifying_young_person_for_universal_credit", period)
-            | person("is_child_or_young_person_for_legacy_benefits", period)
-            | person("is_child_or_young_person_placed_with_family", period)
-            | ((age >= 16) & (age < 17))
+        # UC Regs 2013 Sch 4 para 9(1)(c) and (2)(a)-(d), (g): a member of the
+        # renter's benefit unit aged 16 or over who is neither the claimant or
+        # partner, a qualifying young person (reg 5) nor the renter's foster
+        # child (para 9(2)(c), (3)). There is no separate rule for
+        # 16-year-olds: one outside reg 5 is a non-dependant (para 28(4)), and
+        # one within it is a qualifying young person the renter is
+        # responsible for (para 28(3)) unless no one in the extended benefit
+        # unit is (para 9(2)(g)), so outside that case the renter is not a
+        # specified renter either way.
+        within_benefit_unit = benunit.any(
+            person("is_benefit_unit_non_dependant_for_universal_credit", period)
         )
-        within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_qyp)
         # UC Regs 2013 Sch 4 para 28(4): "no person is a non-dependant in
         # relation to the renter". The people from other families whom the
         # counting claim treats as its non-dependants are those whose

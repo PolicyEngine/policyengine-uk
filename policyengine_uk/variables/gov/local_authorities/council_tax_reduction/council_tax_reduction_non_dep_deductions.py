@@ -2,6 +2,9 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     deduction_per_family,
 )
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    council_tax_reduction_joint_liability_non_dep_deductions,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._national_non_dependants import (
     household_head_family_is_pensioner,
     individual_non_dep_deduction,
@@ -22,7 +25,9 @@ class council_tax_reduction_non_dep_deductions(Variable):
         "are not pensioners, when the couple's own Universal Credit award "
         "assesses either member), one for each other non-dependant, each "
         "under the applicant family's own scheme and apportioned between "
-        "jointly liable applicants; none if the applicant or partner is exempt."
+        "the jointly liable applicants the non-dependant normally resides "
+        "with (see non_dependant_normally_resides_with), by default every "
+        "one; none if the applicant or partner is exempt."
     )
     definition_period = YEAR
     unit = GBP
@@ -81,17 +86,20 @@ class council_tax_reduction_non_dep_deductions(Variable):
             pensioner = head_family_pensioner ^ (scheme == "other")
             both = universal_credit_couple & ~pensioner
             family_amount = deduction_per_family(benunit, period, amounts, both)
-            # Each family's amount counted once.
-            counted = person("is_benunit_head", period) * benunit.project(family_amount)
-            in_household = benunit.max(person.household.sum(counted))
             own_in_unit = deduction_per_family(benunit, period, amounts * in_unit, both)
-            non_dependants[scheme] = in_household - family_amount + own_in_unit
+            # A non-dependant of two or more jointly liable people is
+            # apportioned equally between them (Sch 1 para 8(5)), and one who
+            # resides with only one of them is that one's alone: each
+            # family's amount counted once, between the applicants the
+            # non-dependant normally resides with.
+            non_dependants[scheme] = (
+                council_tax_reduction_joint_liability_non_dep_deductions(
+                    benunit, period, family_amount, own_in_unit
+                )
+            )
         own_scheme_is_heads = (
             benunit("council_tax_reduction_pensioner", period) == head_family_pensioner
         )
-        # A non-dependant of two or more jointly liable people is apportioned
-        # equally between them (Sch 1 para 8(5)).
-        share = benunit("council_tax_reduction_joint_liability_share", period)
         # Only a family that claims bears deductions; a non-dependant's own
         # family does not.
         claims = benunit("council_tax_reduction_claimant_benunit", period)
@@ -104,6 +112,5 @@ class council_tax_reduction_non_dep_deductions(Variable):
             claims
             * where(
                 own_scheme_is_heads, non_dependants["head"], non_dependants["other"]
-            )
-            * share,
+            ),
         )

@@ -645,7 +645,7 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     # non-dependant's, so that claim's renter is no specified renter (UC
     # Sch 4 para 28(4)).
     has_non_dependant = np.asarray(
-        sim.calculate("lha_renter_has_non_dependant", YEAR)
+        sim.calculate("universal_credit_renter_has_non_dependant", YEAR)
     ).astype(bool)
     gained = (uc_after > uc_before) & same_household & counted
     gained[t] = False

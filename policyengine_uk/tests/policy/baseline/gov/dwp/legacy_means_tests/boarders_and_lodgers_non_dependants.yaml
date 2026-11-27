@@ -659,7 +659,7 @@
     is_uc_non_dependant_of_household_head: [false, false, true]
     benunits:
       householder_unit:
-        lha_renter_has_non_dependant: true
+        universal_credit_renter_has_non_dependant: true
         is_lha_shared_accommodation_rate_specified_renter: false
         LHA_allowed_bedrooms: 2
         uc_non_dep_deductions: 1_158.60
@@ -712,7 +712,7 @@
     is_uc_non_dependant_of_household_head: [false, false, false]
     benunits:
       householder_unit:
-        lha_renter_has_non_dependant: false
+        universal_credit_renter_has_non_dependant: false
         is_lha_shared_accommodation_rate_specified_renter: true
         LHA_allowed_bedrooms: 1
         uc_housing_costs_element: 7_800
