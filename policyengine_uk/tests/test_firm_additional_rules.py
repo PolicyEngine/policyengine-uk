@@ -263,3 +263,50 @@ def test_profit_tax_rate_reforms_reach_firm_incidence(
     _, total, incidence = change_total_and_incidence(data, {parameter: {ALWAYS: value}})
     assert total == pytest.approx([expected, expected], abs=1)
     assert incidence == pytest.approx(expected, abs=1)
+
+
+def test_every_firm_input_is_hidden_and_has_an_inert_default():
+    """Firm inputs stay out of the household builder (core reads firm as a
+    person entity), and each new rule's inputs default to no effect."""
+    from policyengine_uk import CountryTaxBenefitSystem
+
+    variables = CountryTaxBenefitSystem().variables
+    firm_inputs = [
+        variable
+        for variable in variables.values()
+        if variable.entity.key == "firm"
+        and not variable.formulas
+        and not variable.adds
+        and not variable.subtracts
+    ]
+    assert firm_inputs
+    assert [v.name for v in firm_inputs if not v.hidden_input] == []
+    new_inputs = {
+        "firm_off_payroll_deemed_payments": 0,
+        "firm_off_payroll_deemed_workers": 0,
+        "firm_termination_awards": 0,
+        "firm_termination_award_recipients": 0,
+        "firm_psa_chargeable_earnings": 0,
+        "firm_psa_income_tax": 0,
+        "firm_group_relief_claimed": 0,
+        "firm_group_relief_for_carried_forward_losses_claimed": 0,
+        "firm_non_banking_group_relief_claimed": 0,
+        "firm_trading_loss_surrendered": 0,
+        "firm_input_vat_attributable_to_taxable_supplies": 0,
+        "firm_input_vat_attributable_to_exempt_supplies": 0,
+        "firm_applies_partial_exemption_de_minimis": False,
+        "firm_sdil_litres_higher_rate": 0,
+        "firm_sdil_litres_lower_rate": 0,
+        "firm_plastic_packaging_tonnes_chargeable": 0,
+        "firm_relevant_ip_profits": 0,
+        "firm_rpd_profits": 0,
+        "firm_rpdt_allowance_share": 1,
+        "firm_uk_digital_services_revenues": 0,
+        "firm_group_uk_digital_services_revenues": 0,
+        "firm_group_digital_services_revenues": 0,
+        "firm_epl_profits": 0,
+    }
+    for name, default in new_inputs.items():
+        assert variables[name].default_value == default, name
+    district = variables["firm_northern_ireland_district"]
+    assert district.default_value.name == "UNKNOWN"
